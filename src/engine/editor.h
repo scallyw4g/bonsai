@@ -540,10 +540,15 @@ enum world_edit_selection_mode
 {
   SelectionMode_Noop,
 
-  SelectionMode_Resize,
+  SelectionMode_ResizeSingleLinearAxis,
+  SelectionMode_ResizeBothLinearAxies,
+  SelectionMode_ResizeAllAxies,
+
   SelectionMode_TranslateLinear,
   SelectionMode_TranslatePlanar,
 };
+poof(string_and_value_tables(world_edit_selection_mode))
+#include <generated/string_and_value_tables_world_edit_selection_mode.h>
 
 enum world_edit_tool
 {

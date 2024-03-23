@@ -54,7 +54,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; }
+  /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 

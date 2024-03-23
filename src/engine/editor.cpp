@@ -143,10 +143,29 @@ CS(ui_toggle_hashtable_iterator &Iter)
 poof(do_editor_ui_for_container(ui_toggle_hashtable))
 #include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h>
 
-#if DO_EDITOR_UI_FOR_ENTITY_TYPE
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS);
-#endif
+
+
+
+poof(do_editor_ui_for_compound_type(input_event))
+#include <generated/do_editor_ui_for_compound_type_input_event.h>
+
+poof(do_editor_ui_for_compound_type(input))
+#include <generated/do_editor_ui_for_compound_type_input.h>
+
+poof(do_editor_ui_for_compound_type(platform))
+#include <generated/do_editor_ui_for_compound_type_platform.h>
+
+poof(do_editor_ui_for_compound_type(bonsai_stdlib))
+#include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h>
+
+
+
+
+
+
+
+
+
 
 poof(string_and_value_tables(particle_spawn_type))
 #include <generated/string_and_value_tables_particle_spawn_type.h>
@@ -426,7 +445,19 @@ ModifySelectionAABB(rect3 *SelectionRegion, v3i UpdateVector, face_index Face, w
   {
     InvalidCase(SelectionMode_Noop);
 
-    case SelectionMode_Resize:
+    case SelectionMode_ResizeAllAxies:
+    {
+      Result.Max += UpdateVector;
+      Result.Min -= UpdateVector;
+    } break;
+
+    case SelectionMode_ResizeBothLinearAxies:
+    {
+      Result.Max += UpdateVector;
+      Result.Min -= UpdateVector;
+    } break;
+
+    case SelectionMode_ResizeSingleLinearAxis:
     {
       switch (Face)
       {
@@ -499,8 +530,23 @@ ConstrainUpdateVector(v3 UpdateVector, face_index Face, world_edit_selection_mod
   {
     case SelectionMode_Noop: { } break;
 
+    case SelectionMode_ResizeAllAxies:
+    {
+      v3 Constraint = NormalForFace(Face);
+      v3 SingleChannel = UpdateVector*Constraint;
+      r32 MaxChannel = Max(Max(SingleChannel.r, SingleChannel.b), SingleChannel.g);
+      if (MaxChannel == 0) { MaxChannel = Min(Min(SingleChannel.r, SingleChannel.g), SingleChannel.b); }
+      Result = V3(MaxChannel);
+    } break;
+
+    case SelectionMode_ResizeBothLinearAxies:
+    {
+      v3 Constraint = NormalForFace(Face);
+      Result *= Constraint;
+    } break;
+
     case SelectionMode_TranslateLinear:
-    case SelectionMode_Resize:
+    case SelectionMode_ResizeSingleLinearAxis:
     {
       v3 Constraint = Abs(NormalForFace(Face));
       Result *= Constraint;
@@ -592,7 +638,9 @@ DoSelectonModification( engine_resources *Engine,
     case SelectionMode_Noop: { return Result; }
 
     case SelectionMode_TranslateLinear:
-    case SelectionMode_Resize:
+    case SelectionMode_ResizeSingleLinearAxis:
+    case SelectionMode_ResizeBothLinearAxies:
+    case SelectionMode_ResizeAllAxies:
     {
       Normal   = NormalForFace(SelectionState->ClickedFace);
       v3 PerpN = Cross(Normal, Camera->Front);
@@ -1795,19 +1843,34 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
         if (Editor->Selection.ClickedFace)
         {
           world_edit_selection_mode SelectionMode = {};
-          if (Input->Shift.Pressed && Input->Ctrl.Pressed)
+
+          // Intentionally an el-if chain from most specific, to least.  What's the alternative?
+          //
+          // Shift is resize
+          // Ctrl  is move
+          //
+          if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
+          {
+            SelectionMode = SelectionMode_ResizeAllAxies;
+          }
+          else if (Input->Shift.Pressed && Input->Alt.Pressed)
+          {
+            SelectionMode = SelectionMode_ResizeBothLinearAxies;
+          }
+          else if (Input->Ctrl.Pressed && Input->Alt.Pressed)
           {
             SelectionMode = SelectionMode_TranslateLinear;
           }
           else if (Input->Shift.Pressed)
           {
-            SelectionMode = SelectionMode_Resize;
+            SelectionMode = SelectionMode_ResizeSingleLinearAxis;
           }
           else if (Input->Ctrl.Pressed)
           {
             SelectionMode =  SelectionMode_TranslatePlanar;
           }
 
+          /* Info("%S", ToString(SelectionMode)); */
           /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
 
           rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, *SelectionAABB);
@@ -1834,6 +1897,24 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
     DEBUG_DrawSimSpaceAABB(Engine, SelectionAABB, BaseColor, Thickness);
   }
 
+
+  // Don't fire selection changed event when dragging selection with selection edit tool
+  if (Editor->SelectionClicks != 1)
+  {
+    if (AreEqual(Editor->SelectionRegion, Editor->PrevSelectionRegion))
+    {
+      Editor->SelectionChanged = False;
+    }
+    else
+    {
+      Editor->SelectionChanged = True;
+    }
+    Editor->PrevSelectionRegion = Editor->SelectionRegion;
+  }
+
+
+
+
   return AABBTest;
 }
 
@@ -1854,23 +1935,6 @@ DoWorldEditor(engine_resources *Engine)
   //
   aabb SelectionAABB = {};
   aabb_intersect_result AABBTest = EditWorldSelection(Engine, &SelectionAABB);
-
-
-  // Don't fire selection changed event when dragging selection with selection edit tool
-  if (Editor->SelectionClicks != 1)
-  {
-    if (AreEqual(Editor->SelectionRegion, Editor->PrevSelectionRegion))
-    {
-      Editor->SelectionChanged = False;
-    }
-    else
-    {
-      Editor->SelectionChanged = True;
-    }
-    Editor->PrevSelectionRegion = Editor->SelectionRegion;
-  }
-
-
 
   ui_toggle_button_group WorldEditToolButtonGroup = {};
   ui_toggle_button_group WorldEditModeButtonGroup = {};
