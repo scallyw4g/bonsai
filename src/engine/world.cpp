@@ -38,7 +38,8 @@ GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
   auto MinP = Region.Min;
   auto MaxP = Region.Max;
 
-  world_position Delta = MaxP.WorldP - MinP.WorldP + 1;
+  Assert(MaxP.WorldP >= MinP.WorldP);
+  v3i Delta = MaxP.WorldP - MinP.WorldP + 1;
   u32 TotalChunkCount = Abs(Volume(Delta));
 
   world_chunk_ptr_buffer Result = {};
@@ -156,5 +157,23 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
       }
     }
   }
+}
+
+link_internal world_chunk
+GatherVoxelsOverlappingArea(engine_resources *Engine, rect3cp Rect, memory_arena *Memory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  v3 CopyDim = GetDim(World, Rect);
+  s32 VoxelCount = s32(Volume(CopyDim));
+  voxel *V = Allocate(voxel, Memory, VoxelCount);
+
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Rect, Engine->WorldUpdateMemory);
+  GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Rect), &Chunks, V, VoxelCount);
+
+  world_chunk Result = {};
+  Result.Voxels = V;
+  Result.Dim = V3i(CopyDim);
+  return Result;
 }
 

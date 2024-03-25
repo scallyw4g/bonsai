@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:297:0
+// src/engine/editor.cpp:316:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -9,7 +9,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
     // support not drawing the toggl-y thing if we just want to dump the members.
     b32 DrawChildren = True;
     b32 DidToggle = False;
-    if (Name)
+    if (Name.Count)
     {
       if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_chunk", Element), &DefaultUiRenderParams_Generic))
       {

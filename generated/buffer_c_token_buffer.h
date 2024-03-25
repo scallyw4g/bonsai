@@ -25,6 +25,13 @@ CTokenBufferBuffer( umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+LastIndex(c_token_buffer_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline umm
 ZerothIndex(c_token_buffer_buffer *Buf)
 {
   umm Result = 0;

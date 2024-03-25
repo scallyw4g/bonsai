@@ -5,7 +5,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -36,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u64 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -67,7 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s32 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -98,7 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u32 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -129,7 +129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s16 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -160,7 +160,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u16 *Value, cs Name, ui_rende
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -191,7 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, s8 *Value, cs Name, ui_render
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {
@@ -222,7 +222,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, u8 *Value, cs Name, ui_render
 {
   Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
   if (Value)
   {

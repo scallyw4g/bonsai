@@ -5,11 +5,36 @@
 #if LEVEL_FILE_DEBUG_MODE
 
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM() { u64 Tag = LEVEL_FILE_DEBUG_OBJECT_DELIM; Ensure( Serialize(Bytes, &Tag) ); }
-#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; Error("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
+#define MAYBE_READ_DEBUG_OBJECT_DELIM() { u64 Tag = Read_u64(Bytes); if ( Tag != LEVEL_FILE_DEBUG_OBJECT_DELIM ) { Result = False; SoftError("Reading Object Delim Failed in file (" __FILE__ ":" STRINGIZE(__LINE__) ")"); } }
 #else
 #define MAYBE_WRITE_DEBUG_OBJECT_DELIM(...)
 #define MAYBE_READ_DEBUG_OBJECT_DELIM(...)
 #endif
+
+poof(
+  func default_marshal(struct_t) @code_fragment
+  {
+    struct_t.map(member)
+    {
+      member.has_tag(no_serialize)?
+      {
+      }
+      {
+        member.is_array?
+        {
+          RangeIterator(Index, member.array)
+          {
+            Live->member.name[Index] = Stored->member.name[Index];
+          }
+        }
+        {
+          Live->member.name = Stored->member.name;
+        }
+      }
+    }
+  }
+)
+
 
 //
 // Primitives
@@ -32,8 +57,11 @@ poof(
       Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Ignored = 0, umm Count = 1)
       {
         Assert(Count > 0);
-        *Element = *Cast((type.name)*, Bytes->At);
-        Bytes->At += sizeof((type.name)) * Count;
+
+        umm ByteCount = sizeof((type.name)) * Count;
+        CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+        Bytes->At += ByteCount;
+
         Assert(Bytes->At <= Bytes->End);
         return True;
       }
@@ -42,6 +70,8 @@ poof(
     }
   }
 )
+
+
 
 
 //
@@ -152,7 +182,17 @@ poof(
                 {
                   member.is_array?
                   {
-                    Result &= Serialize(Bytes, Element->(member.name), member.array);
+                    {
+                      member.has_tag(array_length)?
+                      {
+                        // TODO(Jesse): Should this really be a safe cast?
+                        umm ThisCount = umm(Element->member.tag_value(array_length));
+                      }
+                      {
+                        umm ThisCount = member.array;
+                      }
+                      Result &= Serialize(Bytes, Element->(member.name), ThisCount);
+                    }
                   }
                   {
                     Result &= Serialize(Bytes, &Element->(member.name));
@@ -256,9 +296,16 @@ poof(
               {
                 member.is_array?
                 {
-                  RangeIterator(ElementIndex, member.array)
                   {
-                    Result &= Deserialize(Bytes, &Element->(member.name)[ElementIndex], Memory);
+                    member.has_tag(array_length)?
+                    {
+                      // TODO(Jesse): Should this really be a safe cast?
+                      umm Count = umm(Element->member.tag_value(array_length));
+                    }
+                    {
+                      umm Count = member.array;
+                    }
+                    Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
                   }
                 }
                 {

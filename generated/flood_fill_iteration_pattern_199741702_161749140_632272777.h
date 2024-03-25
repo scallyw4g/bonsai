@@ -1,4 +1,6 @@
-// src/engine/world_chunk.cpp:4562:0
+// src/engine/world_chunk.cpp:4364:0
+
+random_series ColorEntropy = {4654376543246};
 
 voxel *V = {};
 // TODO(Jesse): Do we want to try and keep the amount of temp memory to a minimum here?
@@ -11,6 +13,8 @@ voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), T
 Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
 while (AtElements(&Stack))
 {
+  b32 OverwriteVoxel = False;
+
   voxel_stack_element Element = Pop(&Stack);
   v3i SimVoxP = Element.VoxSimP + AllDirections[Element.Dir];
   v3i RelVoxP = SimVoxP - SimSpaceUpdateBounds.Min;
@@ -22,7 +26,9 @@ while (AtElements(&Stack))
 
     v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
-     if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0) 
+    
+      if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0)
+    
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
       {
@@ -36,11 +42,24 @@ while (AtElements(&Stack))
     }
 
     
-                  if ( LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f) && V->Flags & Voxel_Filled )
-                     { V->Flags = Voxel_Empty; }
-                
+      if ( LengthSq(CenterToVoxP) < RadiusSquared-1.f && V->Flags & Voxel_Filled )
+         { V->Flags = Voxel_Empty; }
+    
 
     V->Flags |= Voxel_MarkBit;
+
+    if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
+      ((OverwriteVoxel == False) && (Invert == True))  )
+    {
+      if (Mode == WorldEdit_Mode_Paint)
+      {
+        V->Color = NewVoxelValue->Color;
+      }
+      else
+      {
+        *V = *NewVoxelValue;
+      }
+    }
   }
 }
 
@@ -60,20 +79,20 @@ while (AtElements(&Stack))
       V = CopiedChunk->Voxels+VoxelIndex;
 
       
-                  v3i CenterToVoxP = SimVoxP - EditCenterP;
-                  if (LengthSq(CenterToVoxP) < Square(Sphere->Radius-1.f))
-                  {
-                    if (V->Flags & Voxel_Filled)
-                    {
-                      V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
-                    }
+      v3i CenterToVoxP = SimVoxP - EditCenterP;
+      if (LengthSq(CenterToVoxP) < RadiusSquared-1.f)
+      {
+        if (V->Flags & Voxel_Filled)
+        {
+          V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
+        }
 
-                  }
-                  else if (LengthSq(CenterToVoxP) < RadiusSquared)
-                  {
-                    V->Color = GREY_8;
-                  }
-                
+      }
+      else if (LengthSq(CenterToVoxP) < RadiusSquared)
+      {
+        V->Color = GREY_8;
+      }
+    
 
       if ( (V->Flags&Voxel_MarkBit))
       {

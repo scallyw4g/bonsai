@@ -4,7 +4,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -26,7 +26,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -48,7 +48,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -69,7 +69,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -90,7 +90,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -110,7 +110,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {
@@ -130,7 +130,7 @@ link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   /* PushTableStart(Ui); */
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
   if (Value)
   {

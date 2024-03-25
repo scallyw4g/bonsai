@@ -88,7 +88,7 @@ poof(
         type.member(0, (E) 
         {
           /* PushTableStart(Ui); */
-            if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+            if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
             if (Value)
             {
@@ -120,7 +120,7 @@ poof(
       {
         Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
-        if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
+        if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
 
         if (Value)
         {
@@ -162,7 +162,7 @@ poof(
         // support not drawing the toggl-y thing if we just want to dump the members.
         b32 DrawChildren = True;
         b32 DidToggle = False;
-        if (Name)
+        if (Name.Count)
         {
           if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), &DefaultUiRenderParams_Generic))
           {
@@ -258,7 +258,7 @@ poof(
     link_internal void
     DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
     {
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
       cs ElementName = ToStringPrefixless(*Element);
       ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
@@ -267,7 +267,7 @@ poof(
         PushNewRow(Ui);
         enum_t.map(value)
         {
-          if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+          if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
           if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
           {
             enum_t.has_tag(bitfield)?
@@ -363,7 +363,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 {
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
     PushTableStart(Ui);
-      if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
+      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
@@ -377,7 +377,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 
         v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
 
-        Text(Ui, ValueText, &DefaultStyle, TextRenderParam_NoAdvanceLayout, Offset);
+        Text(Ui, ValueText, &DefaultStyle, UiElementLayoutFlag_NoAdvance, Offset);
       }
 
       interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
@@ -398,7 +398,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
-  if (Name) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
+  if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
@@ -429,7 +429,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
     {
       if (*Value)
       {
-        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, QuadRenderParam_NoAdvance );
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, UiElementLayoutFlag_NoAdvance );
       }
     }
     else
@@ -437,7 +437,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
       PushColumn(Ui, CSz("(null)"), Params);
     }
 
-    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, QuadRenderParam_Default );
+    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, UiElementLayoutFlag_Default );
 
 
 
@@ -459,7 +459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  if (Name) { PushColumn(Ui, CS(Name), Params); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
     PushColumn(Ui, CSz("(null)"), &DefaultUiRenderParams_Column);
@@ -510,6 +510,7 @@ enum ui_noise_type
 {
   NoiseType_Perlin,
   NoiseType_Voronoi,
+  NoiseType_White,
 };
 
 poof(string_and_value_tables(ui_noise_type))
@@ -539,10 +540,15 @@ enum world_edit_selection_mode
 {
   SelectionMode_Noop,
 
-  SelectionMode_Resize,
+  SelectionMode_ResizeSingleLinearAxis,
+  SelectionMode_ResizeBothLinearAxies,
+  SelectionMode_ResizeAllAxies,
+
   SelectionMode_TranslateLinear,
   SelectionMode_TranslatePlanar,
 };
+poof(string_and_value_tables(world_edit_selection_mode))
+#include <generated/string_and_value_tables_world_edit_selection_mode.h>
 
 enum world_edit_tool
 {
@@ -561,8 +567,8 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Single,
   WorldEdit_BrushType_Asset,
   WorldEdit_BrushType_Entity,
-  WorldEdit_BrushType_Shape,
-  WorldEdit_BrushType_Noise,
+  /* WorldEdit_BrushType_Shape, */
+  /* WorldEdit_BrushType_Noise, */
   WorldEdit_BrushType_Layered,
 };
 
@@ -620,6 +626,11 @@ struct generic_noise_params
   v3i SrcToDest  = {-1*Global_ChunkApronMinDim}; \
   u16 ColorIndex = Cast(generic_noise_params*, (P))->Color
 
+
+struct white_noise_params
+{
+  r32 Threshold = 0.5f;
+};
 
 struct perlin_noise_params
 {
@@ -791,13 +802,31 @@ struct shape_layer
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
-struct noise_layer
+struct noise_layer poof(@version(1))
+{
+  ui_noise_type Type;
+
+  white_noise_params   White;
+  perlin_noise_params  Perlin;
+  voronoi_noise_params Voronoi;
+};
+
+struct noise_layer_0
 {
   ui_noise_type Type;
 
   perlin_noise_params  Perlin;
   voronoi_noise_params Voronoi;
 };
+
+
+link_internal void
+Marshal(noise_layer_0 *Stored, noise_layer *Live)
+{
+  poof(default_marshal(noise_layer_0))
+#include <generated/default_marshal_noise_layer_0.h>
+}
+
 
 
 
@@ -812,7 +841,36 @@ poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
 // TODO(Jesse): Rename to `brush` ..?
-struct brush_settings poof(@version(1))
+struct brush_settings poof(@version(2))
+{
+  brush_layer_type Type;
+
+  noise_layer Noise;
+  shape_layer Shape;
+
+  //
+  // Common across brush types
+  //
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  //
+  // TODO(Jesse): Rename to dilation
+  rect3i Offset;
+
+  v3i NoiseBasisOffset;
+
+  u16 Color = 1; // Default to white
+  b8 Invert;
+};
+poof(are_equal(brush_settings))
+#include <generated/are_equal_brush_settings.h>
+
+
+struct brush_settings_1
 {
   brush_layer_type Type;
 
@@ -834,8 +892,6 @@ struct brush_settings poof(@version(1))
 
   u16 Color = 1; // Default to white
 };
-poof(are_equal(brush_settings))
-#include <generated/are_equal_brush_settings.h>
 
 struct brush_settings_0
 {
@@ -858,15 +914,12 @@ struct brush_settings_0
   u16 Color = 1; // Default to white
 };
 
-poof(
-  func default_marshal(struct_t) @code_fragment
-  {
-    struct_t.map(member)
-    {
-      Live->member.name = Stored->member.name;
-    }
-  }
-)
+link_internal void
+Marshal(brush_settings_1 *Stored, brush_settings *Live)
+{
+  poof(default_marshal(brush_settings_1))
+#include <generated/default_marshal_brush_settings_1.h>
+}
 
 link_internal void
 Marshal(brush_settings_0 *Stored, brush_settings *Live)
@@ -875,7 +928,7 @@ Marshal(brush_settings_0 *Stored, brush_settings *Live)
 #include <generated/default_marshal_brush_settings_0.h>
 }
 
-// TODO(Jesse): Rename to `brush` ..?
+
 struct brush_layer
 {
   brush_settings Settings;
@@ -885,15 +938,67 @@ struct brush_layer
 };
 
 
+
+#define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
-#define MAX_BRUSH_LAYERS 8
-struct layered_brush_editor
+#define MAX_BRUSH_LAYERS 16
+struct layered_brush_editor poof(@version(2))
 {
-  s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS];
+  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
+  // not fuck around with allocating a single string when we load these in.
+  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
+
+  s32 LayerCount;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+
+  b8 SeedBrushWithSelection;
+  b8 BrushFollowsCursor;
 
   chunk_thumbnail Preview; poof(@no_serialize)
 };
+
+struct layered_brush_editor_1
+{
+  char NameBuf[NameBuf_Len];
+
+  s32 LayerCount = 1;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+
+  b8 SeedBrushWithSelection;
+  b8 BrushFollowsCursor;
+
+  chunk_thumbnail Preview; poof(@no_serialize)
+};
+
+struct layered_brush_editor_0
+{
+  s32 LayerCount = 1;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+
+  chunk_thumbnail Preview; poof(@no_serialize)
+  b8 SeedBrushWithSelection; poof(@no_serialize)
+};
+
+link_internal void
+Marshal(layered_brush_editor_1 *Stored, layered_brush_editor *Live)
+{
+  poof(default_marshal(layered_brush_editor_1))
+#include <generated/default_marshal_layered_brush_editor_1.h>
+}
+
+link_internal void
+Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
+{
+  poof(default_marshal(layered_brush_editor_0))
+#include <generated/default_marshal_layered_brush_editor_0.h>
+}
+
+
+
+
+
+
+
 
 
 struct level_editor
@@ -901,21 +1006,16 @@ struct level_editor
   memory_arena *Memory;
 
   world_edit_tool       Tool;
-  world_edit_params     Params;
-  world_edit_brush_type BrushType;
-
   world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
 
+  world_edit_brush_type BrushType;
+  world_edit_params     Params;
 
-  // TODO(Jesse): Think of a better naming scheme for these..
-  // NOTE(Jesse): Brushes
-  // {
-       // TODO(Jesse): Consolodate?  Maybe not so the settings persist, but maybe..
-       brush_layer Noise;
-       brush_layer Shape;
+  b8 SelectionFollowsCursor;
 
-       layered_brush_editor LayeredBrushEditor;
-  // }
+  /* brush_layer Noise; */
+  /* brush_layer Shape; */
+  layered_brush_editor LayeredBrushEditor;
 
   u64 EngineDebugViewModeToggleBits;
 

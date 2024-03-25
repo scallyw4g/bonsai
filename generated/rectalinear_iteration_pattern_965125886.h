@@ -1,17 +1,32 @@
-// src/engine/world_chunk.cpp:4220:0
+// src/engine/world_chunk.cpp:4362:0
 
 DimIterator(x, y, z, UpdateDim)
 {
-  v3i SimRelVoxP = V3i(x,y,z);
-  v3i SimVoxP = SimRelVoxP + SimSpaceUpdateBounds.Min;
-  voxel *V = CopiedChunk->Voxels + GetIndex(SimRelVoxP, UpdateDim);
+  b32 OverwriteVoxel = False;
+
+  v3i VoxP = V3i(x,y,z);
+  v3i SimVoxP = VoxP + SimSpaceUpdateBounds.Min;
+  voxel *V = CopiedChunk->Voxels + GetIndex(VoxP, UpdateDim);
 
   
         if ( (V->Flags&VoxelFaceMask) && Contains(SSRect, SimVoxP))
         {
-          V->Color = NewVoxelValue->Color;
+          OverwriteVoxel = True;
         }
       
+
+  if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
+    ((OverwriteVoxel == False) && (Invert == True))  )
+  {
+    if (Mode == WorldEdit_Mode_Paint)
+    {
+      V->Color = NewVoxelValue->Color;
+    }
+    else
+    {
+      *V = *NewVoxelValue;
+    }
+  }
 }
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:382:0
+// src/engine/editor.cpp:401:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -9,7 +9,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
     // support not drawing the toggl-y thing if we just want to dump the members.
     b32 DrawChildren = True;
     b32 DidToggle = False;
-    if (Name)
+    if (Name.Count)
     {
       if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lighting_render_group", Element), &DefaultUiRenderParams_Generic))
       {

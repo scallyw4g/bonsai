@@ -1,16 +1,16 @@
-// src/engine/editor.cpp:229:0
+// src/engine/editor.cpp:248:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Uninitialized"), UiId(Window, "enum Chunk_Uninitialized", Element), Params))
     {
       *Element = Chunk_Uninitialized;
@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Queued"), UiId(Window, "enum Chunk_Queued", Element), Params))
     {
       *Element = Chunk_Queued;
@@ -28,7 +28,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("VoxelsInitialized"), UiId(Window, "enum Chunk_VoxelsInitialized", Element), Params))
     {
       *Element = Chunk_VoxelsInitialized;
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Garbage"), UiId(Window, "enum Chunk_Garbage", Element), Params))
     {
       *Element = Chunk_Garbage;

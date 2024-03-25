@@ -1,16 +1,16 @@
-// src/engine/editor.cpp:164:0
+// src/engine/editor.cpp:183:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  if (Name) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
   ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Free"), UiId(Window, "enum EntityState_Free", Element), Params))
     {
       *Element = EntityState_Free;
@@ -19,7 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Spawned"), UiId(Window, "enum EntityState_Spawned", Element), Params))
     {
       *Element = EntityState_Spawned;
@@ -28,7 +28,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Destroyed"), UiId(Window, "enum EntityState_Destroyed", Element), Params))
     {
       *Element = EntityState_Destroyed;
@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    if (Name) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reserved"), UiId(Window, "enum EntityState_Reserved", Element), Params))
     {
       *Element = EntityState_Reserved;

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:325:0
+// src/engine/editor.cpp:344:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -9,7 +9,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
     // support not drawing the toggl-y thing if we just want to dump the members.
     b32 DrawChildren = True;
     b32 DidToggle = False;
-    if (Name)
+    if (Name.Count)
     {
       if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle layered_brush_editor", Element), &DefaultUiRenderParams_Generic))
       {
@@ -26,6 +26,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (ToggleButton(Ui, CSz("v NameBuf[(256) + 1]"), CSz("> NameBuf[(256) + 1]"), UiId(Window, "toggle layered_brush_editor char  NameBuf", Element->NameBuf), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, (256) + 1)
+        {
+          DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
+ PushNewRow(Ui); 
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->LayerCount,
@@ -39,11 +56,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Layers[8]"), CSz("> Layers[8]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
+      if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 8)
+        RangeIterator(ArrayIndex, 16)
         {
           DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
           
@@ -55,6 +72,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
       
+      DoEditorUi(Ui,
+        Window,
+&Element->SeedBrushWithSelection,
+        CSz("SeedBrushWithSelection"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->BrushFollowsCursor,
+        CSz("BrushFollowsCursor"),
+        Params
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->Preview,

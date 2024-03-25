@@ -1259,6 +1259,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
     {
       switch (Editor->BrushType)
       {
+#if 0
         case WorldEdit_BrushType_Noise:
         {
           Chunk = &Editor->Noise.Preview.Chunk;
@@ -1286,6 +1287,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
             } break;
           }
         } break;
+#endif
 
         case WorldEdit_BrushType_Layered:
         {
@@ -1365,7 +1367,8 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   GL.Disable(GL_CULL_FACE);
 
-  DrawEditorPreview(Engine, &SG->DepthShader);
+  // NOTE(Jesse): So there's a visual distinction between preview and instantiated
+  /* DrawEditorPreview(Engine, &SG->DepthShader); */
 
   DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 

@@ -626,7 +626,7 @@ DoEngineDebug(engine_resources *Engine)
 
       PushTableStart(Ui);
 
-        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), ColumnRenderParam_LeftAlign); PushNewRow(Ui);
+        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
 
         u32 StartOuter = StartColumn(Ui);
           PushTableStart(Ui);
