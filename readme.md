@@ -1,5 +1,5 @@
 
-![hero_banner](screenshots/dusk_defence.png)
+![hero_banner](screenshots/two_doors.png)
 
 # Welcome to Bonsai!
 
@@ -63,6 +63,8 @@ See the docs on the [build process](docs/01_build_process.md).
 ![banner](screenshots/grass.png)
 
 ![banner](screenshots/8_skele.png)
+
+![banner](screenshots/dusk_defence.png)
 
 # Wishlist
 
