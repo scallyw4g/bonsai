@@ -6,6 +6,26 @@
 	This is a pretty large feature that's not super well documented.  Stay tuned
 	for tutorials on YouTube.
 
+- Added TextBox in ui
+	Takes a pointer to the char buffer to write the new text into.
+
+- Added two new resize modes to the selection
+
+- Added White noise
+
+- Change noise generation to internally operate on blocks of memory that are multiples of the SIMD register size.
+	User code should not be affected by this change, other than to now be able
+	to reliably assume the chunks passed to the world gen functions are
+	right-sized to just blast through the whole thing in the SIMD path.  The
+	unused portion is discarded.
+
+- Added SkyColor to graphics struct
+
+- Fix spamming SoftError from worker threads if a world chunk buffer was not large enough to fit all geometry.
+	The new behavior is to print the error once, then go silent.
+
+- A few minor bugfixes and usability improvements
+
 * 1.4.3
 
 - @Shawnecy fixed some UI bugs
