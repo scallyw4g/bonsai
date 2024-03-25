@@ -1020,7 +1020,14 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
           case ShapeType_Rect:
           {
-            Shape->Rect.Region = RectMinDim({}, V3(SelectionDim));
+            rect3 Region = RectMinDim({}, V3(SelectionDim));
+
+            Region.Min += V3(Settings->Offset.Min);
+            Region.Max += V3(Settings->Offset.Max);
+
+            Shape->Rect.Region.Min = Min(Region.Min, Region.Max);
+            Shape->Rect.Region.Max = Max(Region.Min, Region.Max);
+
             ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
             FinalizeChunkInitialization(Chunk);
             QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
@@ -1500,11 +1507,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
 
   b32 AnyBrushSettingsUpdated = False;
+  if (SelectionComplete(Editor->SelectionClicks))
   {
-    RangeIterator(LayerIndex, LayeredBrush->LayerCount)
     {
-      brush_layer *Layer = Layers + LayerIndex;
-      AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
+      RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+      {
+        brush_layer *Layer = Layers + LayerIndex;
+        AnyBrushSettingsUpdated |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
+      }
     }
   }
 
@@ -1833,7 +1843,7 @@ EditWorldSelection(engine_resources *Engine, rect3 *SelectionAABB)
 
           HighlightFace(Engine, Face, *SelectionAABB, InsetWidth, HiColor, HiThickness);
 
-          if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
+          if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
           {
             v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
             Editor->Selection.ClickedFace = Face;
@@ -1924,6 +1934,13 @@ GetSelectionCenterP(world *World, level_editor *Editor)
 {
   v3i Dim = GetSelectionDim(World, Editor);
   cp Result = Canonicalize(World, Editor->SelectionRegion.Min + V3(Dim/2));
+  return Result;
+}
+
+link_internal b32
+InputStateIsValidToApplyEdit(input *Input)
+{
+  b32 Result = Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed && !Input->Alt.Pressed;
   return Result;
 }
 
@@ -2192,7 +2209,7 @@ DoWorldEditor(engine_resources *Engine)
           /* case WorldEdit_BrushType_Noise: */
           case WorldEdit_BrushType_Layered:
           {
-            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
+            if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
             {
               world_chunk *Chunk = 0;
               v3i Offset = V3i(s32_MAX);
@@ -2259,10 +2276,10 @@ DoWorldEditor(engine_resources *Engine)
 
           case WorldEdit_BrushType_Selection:
           {
-            if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-            {
-              ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, Editor->Params.Mode, Editor->Params.Modifier);
-            }
+            /* if (AABBTest.Face && InputStateIsValidToApplyEdit(Input)) */
+            /* { */
+            /*   ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, Editor->Params.Mode, Editor->Params.Modifier); */
+            /* } */
           } break;
 
         }
@@ -2387,7 +2404,7 @@ DoWorldEditor(engine_resources *Engine)
   //
 
 
-  if (Input->Ctrl.Pressed || Input->Shift.Pressed) { Ui->RequestedForceCapture = True; }
+  if (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
 
   if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
 

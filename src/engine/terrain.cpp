@@ -2311,17 +2311,17 @@ Terrain_Voronoi3D( world_chunk *Chunk,
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
-      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-        r32 NoiseValue = VoronoiNoise3D((V3(x,y,z) + NoiseBasis) / Period, Squareness, MaskChance);
+        v3 RepeatBasisInCells = V3(8);
+        v3  NoiseInput = NoiseMod((V3(x,y,z) + NoiseBasis)/Period, RepeatBasisInCells);
+
+        r32 NoiseValue = VoronoiNoise3D(NoiseInput, Squareness, MaskChance, RepeatBasisInCells);
         NoiseValue = Clamp01(NoiseValue);
         NoiseValue *= Amplitude;
 
