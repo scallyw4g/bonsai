@@ -1,24 +1,4 @@
 
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesFilteredHelper(file_traversal_node Node, u64 Params)
-{
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params *HelperParams = ReinterpretCast(filtered_file_traversal_helper_params*, Params);
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, HelperParams);
-  return Result;
-}
-
-link_internal b32 DefaultFileFilter(file_traversal_node *Node) { return True; }
-
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesHelper(file_traversal_node Node, u64 Window)
-{
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params HelperParams = {(window_layout*)Window, DefaultFileFilter};
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, &HelperParams);
-  return Result;
-}
-
 link_internal void
 DoLevelWindow(engine_resources *Engine)
 {
@@ -32,8 +12,7 @@ DoLevelWindow(engine_resources *Engine)
   PushTableStart(Ui);
     if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
     {
-      Global_SerializeTypeTableArena = AllocateArena();
-      Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
+      u8_cursor_block_array OutputStream = BeginSerialization();
 
       u32 ChunkCount = 0;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -43,16 +22,6 @@ DoLevelWindow(engine_resources *Engine)
           ++ChunkCount;
         }
       }
-
-      /* native_file LevelFile = OpenFile("../bonsai_levels/test.level", "w+b"); */
-
-      u8_cursor_block_array OutputStream = {};
-      {
-        OutputStream.BlockSize = Megabytes(32);
-        u8_cursor First = U8Cursor(OutputStream.BlockSize, Global_SerializeTypeTableArena);
-        Ensure( Push(&OutputStream, &First) );
-      }
-
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -74,7 +43,6 @@ DoLevelWindow(engine_resources *Engine)
 
 
       Serialize(&OutputStream, &Header);
-      /* WriteToFile(&LevelFile, (u8*)&Header, sizeof(level_header)); */
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -98,31 +66,12 @@ DoLevelWindow(engine_resources *Engine)
 
       v3_cursor *Palette = GetColorPalette();
       Serialize(&OutputStream, Palette);
-      /* Serialize(&LevelFile, Palette); */
 
-
-      u8_cursor_block_array TypeBufferOutputStream = {};
+      const char *Filename = "../bonsai_levels/test.level";
+      if (FinalizeSerialization(&OutputStream, Filename) == False)
       {
-        TypeBufferOutputStream.BlockSize = Megabytes(32);
-
-        u8_cursor First = U8Cursor(TypeBufferOutputStream.BlockSize, Global_SerializeTypeTableArena);
-        Ensure( Push(&TypeBufferOutputStream, &First) );
-
-        bonsai_type_info_buffer TypeBuffer = ToBuffer(&Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-        Serialize(&TypeBufferOutputStream, &TypeBuffer);
+        SoftError("Could not serialize (%s).", Filename);
       }
-
-
-      native_file LevelFile = OpenFile("../bonsai_levels/test.level", FilePermission_Write);
-        u64 FileFormatVersion = LEVEL_FILE_FORMAT_VERSION_NUMBER;
-        WriteToFile(&LevelFile, FileFormatVersion);
-        WriteToFile(&LevelFile, &TypeBufferOutputStream);
-        WriteToFile(&LevelFile, &OutputStream);
-      CloseFile(&LevelFile);
-
-      Global_SerializeTypeTable = {};
-      VaporizeArena(Global_SerializeTypeTableArena);
-      Global_SerializeTypeTableArena = 0;
     }
   PushTableEnd(Ui);
   PushNewRow(Ui);
@@ -136,76 +85,26 @@ DoLevelWindow(engine_resources *Engine)
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
-    u8_stream LevelBytes = U8_StreamFromFile(Filename, Thread->PermMemory);
 
-    b32 Error = False;
+    u8_cursor LevelBytes = BeginDeserialization(Filename, GetTranArena());
     if (LevelBytes.Start)
     {
-      u64 LevelHeaderVersion = {};
-      Deserialize(&LevelBytes, &LevelHeaderVersion, 0);
-
-      Global_SerializeTypeTableArena = AllocateArena();
-      switch(LevelHeaderVersion)
-      {
-        case 0:
-        {
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
-
-          {
-            entity *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 1;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-
-          {
-            camera *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 0;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-
-          {
-            level_header *Dummy = 0;
-            auto TI = TypeInfo(Dummy);
-            TI.Version = 0;
-            Insert(TI, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-        } break;
-
-        case 1:
-        {
-          bonsai_type_info_buffer TypeInfoBuffer = {};
-          Deserialize(&LevelBytes, &TypeInfoBuffer, Thread->TempMemory);
-          Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
-
-          IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
-          {
-            Insert(*TypeInfo, &Global_SerializeTypeTable, Global_SerializeTypeTableArena);
-          }
-        } break;
-
-        default: { Error=True; SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
-      }
-
       level_header LevelHeader = {};
-      Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory);
 
 
+      if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
       {
-        engine_settings *EngineSettings = &GetEngineResources()->Settings;
-        LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-        LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-        LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+        {
+          engine_settings *EngineSettings = &GetEngineResources()->Settings;
+          LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+          LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+          LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
 
-        LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-        LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-        LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-      }
+          LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+          LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+          LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+        }
 
-
-      if (Error == False)
-      {
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
         SoftResetEngine(Engine);
@@ -256,6 +155,7 @@ DoLevelWindow(engine_resources *Engine)
 
 #if 1
 
+        b32 Error = False;
         u32 EntityCount = LevelHeader.EntityCount;
         RangeIterator_t(u32, EntityIndex, EntityCount)
         {
@@ -284,11 +184,8 @@ DoLevelWindow(engine_resources *Engine)
 
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }
-
-      Global_SerializeTypeTable = {};
-      VaporizeArena(Global_SerializeTypeTableArena);
-      Global_SerializeTypeTableArena = 0;
     }
+    FinalizeDeserialization(&LevelBytes);
 
   }
   PushWindowEnd(Ui, &Window);
@@ -373,7 +270,7 @@ DoEntityWindow(engine_resources *Engine)
 
       if (Editor->Entity.ClickedFace)
       {
-        selection_mode SelectionMode = {};
+        world_edit_selection_mode SelectionMode = {};
         if (Input->Shift.Pressed && Input->Ctrl.Pressed)
         {
           SelectionMode = SelectionMode_TranslateLinear;
@@ -441,7 +338,7 @@ DoAssetWindow(engine_resources *Engine)
 
     PushWindowStart(Ui, &Window);
 
-    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz(""));
+    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
 
     switch (Engine->EngineDebug.AssetWindowViewMode)
     {
@@ -528,14 +425,13 @@ DoAssetWindow(engine_resources *Engine)
               {
                 SyncGpuBuffersImmediate(Engine, &Model->Meshes);
 
-                v2i ThumbnailDim = V2i(128);
-
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
+                  v2i ThumbnailDim = V2i(128);
                   texture T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, CSz("Thumbnail"));
                   asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f, {});
+                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f);
 
                   Push(&Editor->AssetThumbnails, &Thumb);
                 }
@@ -544,36 +440,26 @@ DoAssetWindow(engine_resources *Engine)
                 texture *Texture      = &Thumb->Texture;
                 camera  *ThumbCamera  = &Thumb->Camera;
 
-                interactable_handle B = PushButtonStart(Ui, UiId(&AssetViewWindow, "asset_texture_viewport", Thumb) );
-                  u32 Index = StartColumn(Ui);
-                    if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(ThumbnailDim), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
-                    PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
-                    PushForceAdvance(Ui, V2(8, 0));
-                  EndColumn(Ui, Index);
-                PushButtonEnd(Ui);
-
-                v3 ModelCenterpointOffset = Model->Dim/-2.f;
                 if (EngineDebug->ResetAssetNodeView)
                 {
                   AssetViewWindow.Scroll = {};
                   AssetViewWindow.CachedScroll = {};
+
+                  v3 ModelCenterpointOffset = Model->Dim/-2.f;
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
 
+                interactable_handle B = RenderAndInteractWithThumbnailTexture(Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
+                if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+                PushForceAdvance(Ui, V2(8, 0));
 
-                v2 MouseDP = {};
-                r32 CameraZDelta = {};
                 if (Pressed(Ui, &B))
                 {
-                  EngineDebug->ModelIndex = ModelIndex;
-
-                  if (Input->LMB.Pressed) {MouseDP = GetMouseDelta(Plat)*2.f; }
-                  if (Input->RMB.Pressed) { CameraZDelta += GetMouseDelta(Plat).y*2.f; }
-                  UpdateGameCamera(World, MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
                   RenderToTexture(Engine, Thumb, Model, {});
+                  EngineDebug->ModelIndex = ModelIndex;
                 }
 
                 if ( Engine->MousedOverVoxel.Tag )
@@ -637,9 +523,6 @@ DoWorldEditDebugWindow(engine_resources *Engine)
   {
     PushWindowStart(Ui, &Window);
 
-    /* camera C = {};; */
-    /* StandardCamera(&C, 10000.f, 100.f, DEFAULT_CAMERA_BLENDING, {}); */
-
     UpdateGameCamera(World, {}, {}, {}, &Debug->WorldEditDebugThumb.Camera, {});
     if (Debug->WorldEditDebugMesh.At)
     {
@@ -656,27 +539,36 @@ DoEngineDebug(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+
+  // TODO(Jesse): Rework with DoEditorUi ?
   ui_toggle_button_group EditorButtonGroup =
-    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, "engine_debug_view_mode");
+    ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
-  Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits;
+  engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Entities))
-  {
-    DoEntityWindow(Engine);
-  }
+  /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Level))
-  {
-    DoLevelWindow(Engine);
-  }
-
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldEdit))
+  // NOTE(Jesse): Do the world editor first so the SelectionChanged flag gets
+  // set before the rest of the UI code runs.  This is not strictly necessary
+  // for correctness, but  avoids a frame of lag.
+  // @selection_changed_flag
+  //
+  if (ViewMode & EngineDebugViewMode_WorldEdit)
   {
     DoWorldEditor(Engine);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_WorldChunks))
+  if (ViewMode & EngineDebugViewMode_Entities)
+  {
+    DoEntityWindow(Engine);
+  }
+
+  if (ViewMode & EngineDebugViewMode_Level)
+  {
+    DoLevelWindow(Engine);
+  }
+
+  if (ViewMode & EngineDebugViewMode_WorldChunks)
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
     WorldChunkWindow.Title = EngineDebug->PickedChunk ?
@@ -718,7 +610,7 @@ DoEngineDebug(engine_resources *Engine)
   }
 
 #if 1
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Textures))
+  if (ViewMode & EngineDebugViewMode_Textures)
   {
     v2 DefaultTextureDim = V2(250);
 
@@ -734,7 +626,7 @@ DoEngineDebug(engine_resources *Engine)
 
       PushTableStart(Ui);
 
-        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), ColumnRenderParam_LeftAlign); PushNewRow(Ui);
+        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
 
         u32 StartOuter = StartColumn(Ui);
           PushTableStart(Ui);
@@ -791,48 +683,42 @@ DoEngineDebug(engine_resources *Engine)
   }
 #endif
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_RenderSettings))
+  if (ViewMode & EngineDebugViewMode_RenderSettings)
   {
     v2 WindowDim = {{1200.f, 250.f}};
     local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_Align_Right);
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, &RenderSettingsWindow);
-      DoEditorUi(Ui, &RenderSettingsWindow, Settings, CSz("Graphics Settings"));
+      DoEditorUi(Ui, &RenderSettingsWindow, Settings, {});
     PushWindowEnd(Ui, &RenderSettingsWindow);
   }
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_EngineDebug))
+  if (ViewMode & EngineDebugViewMode_EngineDebug)
   {
     v2 WindowDim = {{1200.f, 250.f}};
 
     {
       local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_Align_Right);
       PushWindowStart(Ui, &Window);
-        PushTableStart(Ui);
-        DoEditorUi(Ui, &Window, EngineDebug, CSz("Engine Debug"));
-        PushTableEnd(Ui);
-        /* DoEditorUi(Ui, &EngineDebug->UiDebug, CSz("UI Debug")); */
-        /* DoEditorUi(Ui, &EngineDebug->Render,  CSz("Graphics Debug")); */
+        DoEditorUi(Ui, &Window, EngineDebug, {});
       PushWindowEnd(Ui, &Window);
     }
     {
       local_persist window_layout Window = WindowLayout("Engine");
       PushWindowStart(Ui, &Window);
-        PushTableStart(Ui);
-        DoEditorUi(Ui, &Window, Engine, CSz("Engine Resources"));
-        PushTableEnd(Ui);
+        DoEditorUi(Ui, &Window, Engine, {});
       PushWindowEnd(Ui, &Window);
     }
 
     DoGraphicsDebugWindow(Engine);
 
-    DoWorldEditDebugWindow(Engine);
+    /* DoWorldEditDebugWindow(Engine); */
   }
 
   /* Debug_DrawTextureToDebugQuad(&Engine->RTTGroup.DebugShader); */
 
-  if (ToggledOn(&EditorButtonGroup, EngineDebugViewMode_Assets))
+  if (ViewMode & EngineDebugViewMode_Assets)
   {
     DoAssetWindow(Engine);
   }

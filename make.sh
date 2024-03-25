@@ -564,6 +564,7 @@ if [ $BundleRelease -eq 1 ]; then
     external/bonsai_stdlib/shaders/*                                       \
     assets/*                                                               \
     models/*                                                               \
+    brushes/*                                                              \
     \
     .root_marker                                                           \
     settings.init                                                          \

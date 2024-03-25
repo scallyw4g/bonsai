@@ -25,6 +25,13 @@ U32Buffer( umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+LastIndex(u32_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline umm
 ZerothIndex(u32_buffer *Buf)
 {
   umm Result = 0;

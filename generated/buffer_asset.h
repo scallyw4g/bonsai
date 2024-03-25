@@ -1,4 +1,4 @@
-// src/engine/asset.h:178:0
+// src/engine/asset.h:180:0
 
 struct asset_buffer
 {
@@ -21,6 +21,13 @@ AssetBuffer( umm ElementCount, memory_arena* Memory)
     Warn("Attempted to allocate asset_buffer of 0 length.");
   }
 
+  return Result;
+}
+
+link_inline umm
+LastIndex(asset_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
   return Result;
 }
 

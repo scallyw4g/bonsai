@@ -1,6 +1,23 @@
 // src/engine/settings.h:28:0
 
 link_internal counted_string
+ToStringPrefixless(shadow_quality_setting Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ShadowQualitySetting_High: { Result = CSz("High"); } break;
+    case ShadowQualitySetting_Med: { Result = CSz("Med"); } break;
+    case ShadowQualitySetting_Low: { Result = CSz("Low"); } break;
+    case ShadowQualitySetting_Off: { Result = CSz("Off"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(shadow_quality_setting Type)
 {
   counted_string Result = {};
@@ -13,6 +30,7 @@ ToString(shadow_quality_setting Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

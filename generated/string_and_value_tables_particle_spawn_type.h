@@ -1,4 +1,21 @@
-// src/engine/editor.cpp:160:0
+// src/engine/editor.cpp:170:0
+
+link_internal counted_string
+ToStringPrefixless(particle_spawn_type Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ParticleSpawnType_None: { Result = CSz("None"); } break;
+    case ParticleSpawnType_Random: { Result = CSz("Random"); } break;
+    case ParticleSpawnType_Expanding: { Result = CSz("Expanding"); } break;
+    case ParticleSpawnType_Contracting: { Result = CSz("Contracting"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
 
 link_internal counted_string
 ToString(particle_spawn_type Type)
@@ -13,6 +30,7 @@ ToString(particle_spawn_type Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

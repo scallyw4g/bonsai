@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:257:0
+// src/engine/serdes.cpp:260:0
 
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
@@ -159,7 +159,11 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 
 
 
-    Result &= Serialize(Bytes, Element->Colors, 6);
+    {
+      umm ThisCount = 6;
+
+      Result &= Serialize(Bytes, Element->Colors, ThisCount);
+    }
 
 
 
@@ -353,9 +357,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  RangeIterator(ElementIndex, 6)
   {
-    Result &= Deserialize(Bytes, &Element->Colors[ElementIndex]);
+    umm Count = 6;
+
+    Result &= Deserialize(Bytes, Element->Colors, Memory, Count);
   }
 
 

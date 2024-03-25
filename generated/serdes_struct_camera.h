@@ -55,25 +55,25 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
 
 
-    Result &= Serialize(Bytes, &Element->Pitch);
+    Result &= Serialize(Bytes, &Element->TargetPitch);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Roll);
+    Result &= Serialize(Bytes, &Element->TargetRoll);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Yaw);
+    Result &= Serialize(Bytes, &Element->TargetYaw);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DistanceFromTarget);
+    Result &= Serialize(Bytes, &Element->TargetDistanceFromTarget);
 
 
 
@@ -180,7 +180,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Pitch, Memory);
+  Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
 
 
 
@@ -188,7 +188,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Roll, Memory);
+  Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
 
 
 
@@ -196,7 +196,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Yaw, Memory);
+  Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
 
 
 
@@ -204,7 +204,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
+  Result &= Deserialize(Bytes, &Element->TargetDistanceFromTarget, Memory);
 
 
 

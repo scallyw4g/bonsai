@@ -118,7 +118,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
                          Canonical_Position(Voxel_Position(0), WorldCenter + V3i(0,0,1)),
                          &GameState->Entropy );
 
-  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f, DEFAULT_CAMERA_BLENDING, GameState->Player->P);
+  StandardCamera(Graphics->Camera, 10000.0f, 2000.0f);
   Graphics->Camera->GhostId = GameState->Player->Id;
 
   return GameState;

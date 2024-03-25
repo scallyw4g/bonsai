@@ -324,3 +324,5 @@ GetEntityCenterP(world *World, entity *Entity)
   return BaseP;
 }
 
+link_internal entity *
+GetEntity(entity **EntityTable, entity_id Id);

@@ -1,19 +1,37 @@
-// src/engine/editor.cpp:332:0
+// src/engine/editor.cpp:329:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle texture", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
+    // support not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
     {
-      PushNewRow(Ui);
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle texture", Element), &DefaultUiRenderParams_Generic))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
 
+    if (DrawChildren)
+    {
       PushTableStart(Ui);
-      PushForceUpdateBasis(Ui, V2(20.f, 0.f));
-      DoEditorUi(Ui, Window, &Element->ID, CSz("u32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+&Element->ID,
+        CSz("ID"),
+        Params
+        );
 
 
 
@@ -21,28 +39,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ED
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->Dim, CSz("v2i Dim"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&Element->Dim,
+        CSz("Dim"),
+        Params
+        );
 
 
 
 
 
       
-      DoEditorUi(Ui, Window, &Element->Slices, CSz("u32 Slices"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, &Element->Channels, CSz("u32 Channels"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&Element->Slices,
+        CSz("Slices"),
+        Params
+        );
 
 
 
@@ -50,9 +64,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ED
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, Cast(b8*, &Element->IsDepthTexture), CSz("b32 IsDepthTexture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      DoEditorUi(Ui,
+        Window,
+&Element->Channels,
+        CSz("Channels"),
+        Params
+        );
 
 
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->IsDepthTexture),
+        CSz("IsDepthTexture"),
+        &DefaultUiRenderParams_Checkbox
+        );
 
 
 
@@ -60,25 +90,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ED
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, &Element->DebugName, CSz("cs DebugName"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
+      DoEditorUi(Ui,
+        Window,
+&Element->DebugName,
+        CSz("DebugName"),
+        Params
+        );
 
 
 
 
 
       PushNewRow(Ui);
-      PushForceUpdateBasis(Ui, V2(-20.f, 0.f));
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }
+    else
+    {
+      PushNewRow(Ui);
+    }
 
-    PushNewRow(Ui);
   }
   else
   {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
     PushNewRow(Ui);
   }
 

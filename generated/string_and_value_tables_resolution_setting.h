@@ -1,6 +1,22 @@
 // src/engine/settings.h:26:0
 
 link_internal counted_string
+ToStringPrefixless(resolution_setting Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case ResolutionSetting_4096x2160: { Result = CSz("4096x2160"); } break;
+    case ResolutionSetting_1920x1080: { Result = CSz("1920x1080"); } break;
+    case ResolutionSetting_1280x720: { Result = CSz("1280x720"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
 ToString(resolution_setting Type)
 {
   counted_string Result = {};
@@ -12,6 +28,7 @@ ToString(resolution_setting Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

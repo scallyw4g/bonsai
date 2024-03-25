@@ -152,7 +152,9 @@ void main()
       float LightCosTheta = clamp( dot( FragNormal, FragToLight), 0.0f, 1.0f);
 
       float Distance = distance(FragPosition.xyz, LightPosition);
-      float LightAtt = 1.0f/(Distance*Distance);
+
+      float LightAtt = 0.f;
+      if (Distance > 0) { LightAtt = 1.0f/(Distance*Distance); }
 
       vec3 reflectionVector = reflect(FragToLight, FragNormal);
       vec3 CameraToFrag = normalize(FragPosition.xyz - CameraP);

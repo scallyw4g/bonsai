@@ -343,13 +343,14 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
+  GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   SetDefaultFramebufferClearColors();
 
   /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
   /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -805,99 +806,43 @@ RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, 
   }
 }
 
-link_internal void
+link_internal b32
 SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *Camera)
 {
-  auto RTTGroup = &Engine->RTTGroup;
-
-  // GL stuff
+  b32 Result = (Texture->ID != 0);
+  if (Result)
   {
-    /* GL.DisableVertexAttribArray(1); */
+    auto RTTGroup = &Engine->RTTGroup;
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+    // GL stuff
+    {
+      /* GL.DisableVertexAttribArray(1); */
 
-    GL.UseProgram(RTTGroup->Shader.ID);
+      GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+      GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
-    SetViewport(V2(Texture->Dim));
+      GL.UseProgram(RTTGroup->Shader.ID);
 
-    RTTGroup->ViewProjection =
-      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
-      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
-      /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, V2(Texture->Dim)) *
-      ViewMatrix(Engine->World->ChunkDim, Camera)
-      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
-      /* * Translate( V3(-10) ) */
-      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
-      ;
+      SetViewport(V2(Texture->Dim));
 
-    /* BindShaderUniforms(&RTTGroup->Shader); */
-    BindUniform(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
-    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture->ID, 0);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
-    /* Ensure(CheckAndClearFramebuffer()); */
+      RTTGroup->ViewProjection =
+        ProjectionMatrix(Camera, V2(Texture->Dim)) *
+        ViewMatrix(Engine->World->ChunkDim, Camera) ;
 
-    GL.Enable(GL_DEPTH_TEST);
+      BindUniform(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
+
+      RTTGroup->FBO.Attachments = 0;
+      FramebufferTexture(&RTTGroup->FBO, Texture);
+      SetDrawBuffers(&RTTGroup->FBO);
+
+      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      /* Ensure(CheckAndClearFramebuffer()); */
+
+      GL.Enable(GL_DEPTH_TEST);
+    }
   }
+  return Result;
 }
-
-#if 0
-link_internal void
-RenderToTexture(engine_resources *Engine, texture *Texture, untextured_3d_geometry_buffer *Src, v3 Offset)
-{
-  auto World    = Engine->World;
-  auto RTTGroup = &Engine->RTTGroup;
-
-  // GL stuff
-  {
-    /* texture *Tex = RTTGroup->Texture; */
-
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-
-    GL.UseProgram(RTTGroup->Shader.ID);
-
-    SetViewport(V2(Texture->Dim));
-
-#if 1
-    auto Camera = RTTGroup->Camera;
-#else
-    camera *Camera = Engine->Graphics->Camera;
-#endif
-
-    RTTGroup->ViewProjection =
-      /* Translate( GetRenderP(World->ChunkDim, Camera->CurrentP, Camera) ) * */
-      /* Translate( GetSimSpaceP(World, CameraTarget) ) * */
-      /* Translate( V3(-10) ) * */
-      ProjectionMatrix(Camera, Texture->Dim.x, Texture->Dim.y) *
-      ViewMatrix(World->ChunkDim, Camera)
-      /* + Translate2(V3(-0.01f, 0.f, 0.f)) */
-      /* * Translate( V3(-10) ) */
-      /* Translate( GetSimSpaceP(World, Camera->CurrentP) ); */
-      ;
-
-    BindShaderUniforms(&RTTGroup->Shader);
-    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Texture->ID, 0);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    /* FramebufferTexture(&Engine->RTTGroup.FBO, Texture); */
-    /* Ensure(CheckAndClearFramebuffer()); */
-  }
-
-  // Geometry stuff
-  {
-    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
-    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
-
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-    FlushBuffersToCard(&RTTGroup->GeoBuffer);
-  }
-
-  GL.Enable(GL_DEPTH_TEST);
-  Draw(RTTGroup->GeoBuffer.Buffer.At);
-  RTTGroup->GeoBuffer.Buffer.At = 0;
-}
-#endif
 
 link_internal void
 DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
@@ -1049,7 +994,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
 
-    TryBindUniform(Shader, "ModelMatrix", &LocalTransform);
+    Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
     DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
@@ -1057,32 +1002,50 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
 {
-  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
-  DrawLod(Engine, &Engine->RTTGroup.Shader, &Model->Meshes, 0.f, Offset);
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
+  {
+    DrawLod(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
+  }
+  else
+  {
+    Warn("Attempted to render to an unallocated texture.");
+  }
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset, camera *Camera = 0)
 {
-  SetupRenderToTextureShader(Engine, &Thumb->Texture, &Thumb->Camera);
+  RenderToTexture(Engine, Thumb, &Model->Meshes, Offset, Camera);
+}
 
-  auto RTTGroup = &Engine->RTTGroup;
-
-  // Geometry stuff
+link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset, camera *Camera = 0)
+{
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
-    MapGpuElementBuffer(&RTTGroup->GeoBuffer);
-    untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+    auto RTTGroup = &Engine->RTTGroup;
 
-    v3 Basis = Offset;
-    BufferVertsChecked(Src, Dest, Basis, V3(1.0f));
-    FlushBuffersToCard(&RTTGroup->GeoBuffer);
+    // Geometry stuff
+    {
+      MapGpuElementBuffer(&RTTGroup->GeoBuffer);
+      untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+
+      BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
+      FlushBuffersToCard(&RTTGroup->GeoBuffer);
+    }
+
+    GL.Enable(GL_DEPTH_TEST);
+    Draw(RTTGroup->GeoBuffer.Buffer.At);
+    RTTGroup->GeoBuffer.Buffer.At = 0;
   }
-
-  GL.Enable(GL_DEPTH_TEST);
-  Draw(RTTGroup->GeoBuffer.Buffer.At);
-  RTTGroup->GeoBuffer.Buffer.At = 0;
+  else
+  {
+    Warn("Attempted to render to an unallocated texture.");
+  }
 }
 
 link_internal void
@@ -1244,18 +1207,9 @@ DoWorldChunkStuff()
 
 
 link_internal void
-DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
+DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
 {
-  TIMED_FUNCTION();
-
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  v3i Radius = World->VisibleRegion/2;
-  v3i Min = World->Center - Radius;
-  v3i Max = World->Center + Radius;
-
-  SetupGBufferShader(ApplicationResolution, Graphics);
-
   RangeIterator_t(u32, ChunkIndex, World->HashSize)
   {
     world_chunk *Chunk = World->ChunkHash[ChunkIndex];
@@ -1271,7 +1225,7 @@ DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
         // update job gets pushed is more straight-forward?
 
         SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
-        v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
+        v3 Basis = GetRenderP(Engine, Chunk->WorldP);
         DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
 
 #if 0
@@ -1289,14 +1243,105 @@ DrawWorldToGBuffer(engine_resources *Engine, v2i ApplicationResolution)
       }
     }
   }
+}
 
-  DrawEntitiesToGBuffer( ApplicationResolution, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
+link_internal void
+DrawEditorPreview(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_chunk *Chunk = {};
+  v3 Basis = {};
+
+  switch (Editor->Tool)
+  {
+    case WorldEdit_Tool_Brush:
+    {
+      switch (Editor->BrushType)
+      {
+#if 0
+        case WorldEdit_BrushType_Noise:
+        {
+          Chunk = &Editor->Noise.Preview.Chunk;
+          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+        } break;
+
+        case WorldEdit_BrushType_Shape:
+        {
+          Chunk = &Editor->Shape.Preview.Chunk;
+          switch (Editor->Shape.Settings.Shape.Type)
+          {
+            case ShapeType_None: {} break;
+
+            case ShapeType_Rect:
+            {
+              Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
+            } break;
+
+            case ShapeType_Sphere:
+            {
+              world_update_op_shape_params_sphere *Sphere = &Editor->Shape.Settings.Shape.Sphere;
+              cp Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f) - V3(Sphere->Radius));
+              Location.Offset = Floor(Location.Offset);
+              Basis = GetRenderP(Engine, Location);
+            } break;
+          }
+        } break;
+#endif
+
+        case WorldEdit_BrushType_Layered:
+        {
+          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
+          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
+          Chunk = &LayeredBrushEditor->Preview.Chunk;
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min);
+        } break;
+
+        default: {} break;
+      }
+    } break;
+
+    default: {} break;
+  }
+
+  if (Chunk)
+  {
+    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+  }
+}
+
+link_internal void
+DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+
+  v3i Radius = World->VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
+
+  SetupGBufferShader(ApplicationResolution, Graphics);
+
+  DrawWorld(Engine, ApplicationResolution);
+
+  shader *Shader = &Graphics->gBuffer->gBufferShader;
+  DrawEditorPreview(Engine, Shader);
+
+  { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
+    BindUniform(Shader, "DrawMajorGrid", False);
+    BindUniform(Shader, "DrawMinorGrid", False);
+    r32 dt = Plat->dt;
+    DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
+  }
 
   TeardownGBufferShader(Graphics);
 }
 
 link_internal void
-DrawWorldToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
+DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
 {
   TIMED_FUNCTION();
 
@@ -1321,6 +1366,9 @@ DrawWorldToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
   GL.Disable(GL_CULL_FACE);
+
+  // NOTE(Jesse): So there's a visual distinction between preview and instantiated
+  /* DrawEditorPreview(Engine, &SG->DepthShader); */
 
   DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
 

@@ -1,4 +1,4 @@
-// examples/turn_based/game.cpp:1122:0
+// examples/turn_based/game.cpp:1117:0
 
 link_internal bonsai_type_info
 TypeInfo(entity_game_data *Ignored)

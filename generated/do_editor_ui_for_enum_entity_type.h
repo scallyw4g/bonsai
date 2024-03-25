@@ -1,54 +1,67 @@
-// examples/turn_based/game_types.h:48:0
+// examples/turn_based/game_types.h:78:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  if (Name) { PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
-  cs ElementName = ToString(*Element);
-  if (ToggleButton(Ui, ElementName, ElementName, UiId(Window, "enum value.type value.name", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_Default"), UiId(Window, "enum EntityType_Default", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityType_Default", Element), Params))
     {
       *Element = EntityType_Default;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_Enemy"), UiId(Window, "enum EntityType_Enemy", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Enemy"), UiId(Window, "enum EntityType_Enemy", Element), Params))
     {
       *Element = EntityType_Enemy;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_Player"), UiId(Window, "enum EntityType_Player", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Player"), UiId(Window, "enum EntityType_Player", Element), Params))
     {
       *Element = EntityType_Player;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_Fireball"), UiId(Window, "enum EntityType_Fireball", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Fireball"), UiId(Window, "enum EntityType_Fireball", Element), Params))
     {
       *Element = EntityType_Fireball;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_Loot"), UiId(Window, "enum EntityType_Loot", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Loot"), UiId(Window, "enum EntityType_Loot", Element), Params))
     {
       *Element = EntityType_Loot;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
-    PushColumn(Ui, CSz("")); // Skip the first Name column
-    if (Button(Ui, CSz("EntityType_ItemSpawn"), UiId(Window, "enum EntityType_ItemSpawn", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("ItemSpawn"), UiId(Window, "enum EntityType_ItemSpawn", Element), Params))
     {
       *Element = EntityType_ItemSpawn;
 
+
+      SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
   }

@@ -25,6 +25,13 @@ TileRulesetBuffer( umm ElementCount, memory_arena* Memory)
 }
 
 link_inline umm
+LastIndex(tile_ruleset_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
+  return Result;
+}
+
+link_inline umm
 ZerothIndex(tile_ruleset_buffer *Buf)
 {
   umm Result = 0;

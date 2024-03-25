@@ -108,6 +108,12 @@ GetWorld()
   return Global_EngineResources->World;
 }
 
+link_internal v3i
+GetWorldChunkDim()
+{
+  return GetWorld()->ChunkDim;
+}
+
 link_weak bonsai_stdlib *
 GetStdlib()
 {
@@ -123,10 +129,19 @@ GetLevelEditor()
   return &Global_EngineResources->Editor;
 }
 
+link_internal entity *
+GetCameraGhost(engine_resources *Engine)
+{
+  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics->Camera->GhostId);
+  return Result;
+}
+
 #define UNPACK_ENGINE_RESOURCES(Res) \
   UNPACK_DATA_RESOURCES(Res)         \
   UNPACK_GRAPHICS_RESOURCES(Res)
 
+ // TODO(Jesse): make this unpack DT
+ // r32                        dt            = Plat->dt;
 #define UNPACK_DATA_RESOURCES(Res)                                    \
   platform                  *Plat          = &(Res)->Stdlib.Plat;     \
   world                     *World         =  Res->World;             \

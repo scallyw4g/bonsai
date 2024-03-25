@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:265:0
+// src/engine/editor.cpp:272:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model_buffer *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -20,6 +20,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model_buffer *Container, cs N
   {
     PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
   }
 }
 

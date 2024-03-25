@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:516:0
+// src/engine/world_chunk.h:518:0
 
 struct standing_spot_buffer
 {
@@ -21,6 +21,13 @@ StandingSpotBuffer( umm ElementCount, memory_arena* Memory)
     Warn("Attempted to allocate standing_spot_buffer of 0 length.");
   }
 
+  return Result;
+}
+
+link_inline umm
+LastIndex(standing_spot_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
   return Result;
 }
 

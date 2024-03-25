@@ -14,6 +14,8 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
+  /* Initialize_Global_UpdateWorldCallbackTable(); */
+
   b32 Result = InitializeOpenglFunctions();
   return Result;
 }
@@ -28,6 +30,8 @@ Bonsai_Init(engine_resources *Resources)
   Result &= InitEngineDebug(&Resources->EngineDebug);
   Result &= InitEditor(&Resources->Editor);
   Result &= InitEngineResources(Resources);
+
+  /* Initialize_Global_UpdateWorldCallbackTable(); */
 
   return Result;
 }
@@ -50,7 +54,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; }
+  /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
@@ -120,6 +124,43 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UiFrameBegin(Ui);         // Clear UI interactions
   DoEngineDebug(Resources); // Do Editor/Debug UI
+
+#if 0
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
+      PushTableStart(Ui);
+        RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
+      PushTableEnd(Ui);
+      PushNewRow(Ui); // TODO(Jesse)(bug, ui): If you take this out, the textures overlap one another.  Bug
+      PushTableStart(Ui);
+        RenderAndInteractWithThumbnailTexture(Ui, &TestWindow, "test_foo_string", &Editor->NoiseLayer.Preview.Thumbnail);
+      PushTableEnd(Ui);
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
+
+#if 0
+  // NOTE(Jesse): This is fixed
+  // @enum_button_group_aligns_poorly_after_toggle_button
+  {
+    local_persist window_layout TestWindow = WindowLayout("TestWindow");
+    PushWindowStart(Ui, &TestWindow);
+
+    ui_id BogusInteractionId = UiId(&TestWindow, "test_window_toggle_interaction", 0u);
+      if (ToggleButton(Ui, CSz("v Label"), CSz("v Label"), BogusInteractionId))
+      {
+
+        PushTableStart(Ui);
+          Button(Ui, CSz("Foo"), BogusInteractionId);
+          Button(Ui, CSz("Boo"), BogusInteractionId);
+          Button(Ui, CSz("Goo"), BogusInteractionId);
+        PushTableEnd(Ui);
+      }
+
+    PushWindowEnd(Ui, &TestWindow);
+  }
+#endif
 
 #if 0
   {
@@ -242,7 +283,7 @@ Bonsai_Simulate(engine_resources *Resources)
   if (CameraGhost) { CameraTargetP = CameraGhost->P; }
 
   b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
-  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
+  b32 DoZoomDelta = DoPositionDelta; //UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
@@ -251,7 +292,6 @@ Bonsai_Simulate(engine_resources *Resources)
   Resources->Graphics->gBuffer->ViewProjection =
     ProjectionMatrix(Camera, Plat->ScreenDim) *
     ViewMatrix(World->ChunkDim, Camera);
-
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
@@ -353,9 +393,13 @@ Bonsai_Render(engine_resources *Resources)
   EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
   EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
-  DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings));
+  /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
+  /* DrawEditorChunkPreviewToGBuffer(); */
 
-  DrawWorldToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
+  // Editor preview, World, Entities
+  DrawStuffToGBufferTextures(Resources, GetApplicationResolution(&Resources->Settings));
+
+  DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
 
   // TODO(Jesse): Move into engine debug
   DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
@@ -488,19 +532,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       }
       else
       {
-        s32 Frequency = 50;
-        s32 Amplititude = 15;
-        s32 StartingZDepth = -5;
+        s32 Period = 150;
+        s32 Amplititude = 10;
+        s32 StartingZDepth = -25;
+        u16 Color = GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
-        InitializeWorldChunkPerlinPlane( Thread,
-                                         Chunk,
-                                         Chunk->Dim,
-                                         &AssetFile,
-                                         Frequency,
-                                         Amplititude,
-                                         StartingZDepth,
-                                         ChunkInitFlag_ComputeStandingSpots );
+        u32 Octaves = 1;
+        InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves);
       }
 
     } break;

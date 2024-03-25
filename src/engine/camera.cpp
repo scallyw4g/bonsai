@@ -12,9 +12,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
   Camera->Front = Normalize(V3(Px, Py, Pz));
 
   Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
-  Camera->Up = Normalize(Cross(Camera->Front, Camera->Right));
-
-  /* Camera->ViewingTarget = TargetViewP; */
+  Camera->Up    = Normalize(Cross(Camera->Front, Camera->Right));
 
   auto NewCameraP = Canonicalize(World->ChunkDim, TargetViewP - (Camera->Front*Camera->DistanceFromTarget));
   Camera->CurrentP = NewCameraP;
@@ -103,11 +101,11 @@ GetMouseDelta(platform *Plat)
 
 link_internal void
 UpdateGameCamera( world *World,
-                  v2 MouseDelta,
-                  r32 CameraZoomDelta,
-                  cp TargetViewP,
-                  camera *Camera,
-                  r32 Dt )
+                     v2  MouseDelta,
+                    r32  CameraZoomDelta,
+                     cp  TargetViewP,
+                 camera *Camera,
+                    r32  Dt )
 {
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
   Camera->TargetYaw += MouseDelta.x;
@@ -133,6 +131,14 @@ UpdateGameCamera( world *World,
   UpdateCameraP(World, TargetViewP, Camera);
 }
 
+
+link_internal void
+SetCameraTarget(v3 Target, camera *Camera)
+{
+  world *World = GetWorld();
+  UpdateGameCamera(World, {}, {}, Canonical_Position(World->ChunkDim, Target, {}), Camera, 0.33f);
+}
+
 link_internal void
 UpdateGameCamera( world *World,
                   v2 MouseDelta,
@@ -155,16 +161,16 @@ UpdateGameCamera( world *World,
     if (DoZoomDelta)
     {
       CameraZoomDelta = -1.f*Input->MouseWheelDelta/500.f;
+      if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
     }
 
-    if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
   }
 
   UpdateGameCamera(World, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera, Dt);
 }
 
 link_internal void
-StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, cp InitialTarget)
+StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
 {
   Clear(Camera);
 
@@ -182,6 +188,10 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, c
   Camera->TargetYaw = -PI32*0.15f;
 
   Camera->TargetDistanceFromTarget = DistanceFromTarget;
+
+  // NOTE(Jesse): Can't do this because this gets called before the world's
+  // initialized.  I guess we could check and conditionall call it .. but .. meh
+  // UpdateGameCamera(GetWorld(), {}, {}, {}, Camera, 0.f);
 }
 
 link_internal bool

@@ -69,7 +69,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Resources->CameraTargetP = &GameState->Player->P;
 
-  StandardCamera(Graphics->Camera, 10000.0f, 800.0f, GameState->Player->P);
+  StandardCamera(Graphics->Camera, 10000.0f, 800.0f);
 
   return GameState;
 }

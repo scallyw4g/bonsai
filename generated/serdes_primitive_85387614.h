@@ -12,8 +12,11 @@ link_internal b32
 Deserialize(u8_cursor *Bytes, chunk_flag *Element, memory_arena *Ignored = 0, umm Count = 1)
 {
   Assert(Count > 0);
-  *Element = *Cast(chunk_flag*, Bytes->At);
-  Bytes->At += sizeof(chunk_flag) * Count;
+
+  umm ByteCount = sizeof(chunk_flag) * Count;
+  CopyMemory( Cast(u8*, Bytes->At), Cast(u8*, Element), ByteCount);
+  Bytes->At += ByteCount;
+
   Assert(Bytes->At <= Bytes->End);
   return True;
 }

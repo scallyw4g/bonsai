@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:409:0
+// src/engine/world_chunk.h:411:0
 
 struct world_chunk_ptr_buffer
 {
@@ -21,6 +21,13 @@ WorldChunkPtrBuffer( umm ElementCount, memory_arena* Memory)
     Warn("Attempted to allocate world_chunk_ptr_buffer of 0 length.");
   }
 
+  return Result;
+}
+
+link_inline umm
+LastIndex(world_chunk_ptr_buffer *Buf)
+{
+  umm Result = Buf->Count > 0? Buf->Count-1 : 0;
   return Result;
 }
 

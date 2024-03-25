@@ -481,7 +481,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
       else
       {
-        s32 Frequency = 0; // Ignored
+        s32 Period = 0; // Ignored
         s32 Amplititude = 0; // Ignored
         s32 StartingZDepth = -400;
         u32 OctaveCount = 3;
@@ -501,7 +501,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
         /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots); */
         /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Frequency, Amplititude, StartingZDepth, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, V3(Period), Amplititude, StartingZDepth, GRASS_GREEN, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
       }
     }
   }
@@ -1095,8 +1095,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           v2 SpriteSize = V2(96);
 
           PushButtonStart(Ui, ButtonId);
-            PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray,                                              0, SpriteSize, zDepth_TitleBar, BackgroundTint, QuadRenderParam_NoAdvance);
-            PushTexturedQuadColumn(Ui, &Resources->Ui.SpriteTextureArray, Global_SpriteIndexFromActionIndex[ActionIndex], SpriteSize,     zDepth_Text,           Tint);
+            s32 SpriteIndex = Global_SpriteIndexFromActionIndex[ActionIndex];
+            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray,           0, SpriteSize, zDepth_TitleBar, BackgroundTint, UiElementLayoutFlag_NoAdvance);
+            PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray, SpriteIndex, SpriteSize,     zDepth_Text,           Tint, UiElementLayoutFlag_Default);
           PushButtonEnd(Ui);
 
           PushForceAdvance(Ui, V2(16, 0));
@@ -1173,7 +1174,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = World_Position(5, -4, 0);
   canonical_position PlayerSpawnP = Canonical_Position(Voxel_Position(0), WorldCenter + World_Position(0,0,1));
 
-  StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f, DEFAULT_CAMERA_BLENDING, PlayerSpawnP);
+  StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f);
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 

@@ -64,7 +64,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f, DEFAULT_CAMERA_BLENDING, CameraTargetP);
+  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
@@ -82,4 +82,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   f32 dt = Plat->dt;
+
+#if 0
+  if (Input->LMB.Clicked)
+  {
+    random_series E = {654367547654};
+    if (Resources->MousedOverVoxel.Tag)
+    {
+      cp PickCP = Canonical_Position(&Resources->MousedOverVoxel.Value);
+      DoSplotion( Resources, PickCP, 8.f, &E, GetTranArena());
+    }
+  }
+#endif
+
 }

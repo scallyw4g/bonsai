@@ -1,4 +1,20 @@
-// src/engine/editor.cpp:163:0
+// src/engine/editor.cpp:173:0
+
+link_internal counted_string
+ToStringPrefixless(file_traversal_type Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+    case FileTraversalType_None: { Result = CSz("None"); } break;
+    case FileTraversalType_Dir: { Result = CSz("Dir"); } break;
+    case FileTraversalType_File: { Result = CSz("File"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
 
 link_internal counted_string
 ToString(file_traversal_type Type)
@@ -12,6 +28,7 @@ ToString(file_traversal_type Type)
 
     
   }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
 }
 

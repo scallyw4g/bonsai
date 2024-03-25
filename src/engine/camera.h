@@ -40,15 +40,15 @@ struct camera poof(@version(2))
 
   v3 RenderSpacePosition;
 
-  r32 Pitch;
-  r32 Roll;
-  r32 Yaw;
-  r32 DistanceFromTarget;
+  r32 Pitch;              poof(@no_serialize)
+  r32 Roll;               poof(@no_serialize)
+  r32 Yaw;                poof(@no_serialize)
+  r32 DistanceFromTarget; poof(@no_serialize)
 
-  r32 TargetPitch;              poof(@no_serialize)
-  r32 TargetRoll;               poof(@no_serialize)
-  r32 TargetYaw;                poof(@no_serialize)
-  r32 TargetDistanceFromTarget; poof(@no_serialize)
+  r32 TargetPitch;
+  r32 TargetRoll;
+  r32 TargetYaw;
+  r32 TargetDistanceFromTarget;
 
   r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
 
@@ -163,5 +163,5 @@ inline v2
 GetMouseDelta(platform *Plat);
 
 link_internal void
-StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend, cp InitialTarget);
+StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend = DEFAULT_CAMERA_BLENDING);
 

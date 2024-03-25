@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/rect.h:104:0
+// external/bonsai_stdlib/src/rect.h:113:0
 
 link_internal rect3i
 RectMinMax(v3i Min, v3i Max)
@@ -34,6 +34,15 @@ link_internal rect3i
 RectMinDim(v3i Min, v3i Dim)
 {
   rect3i Result = { Min, Min + Dim };
+  return Result;
+}
+
+link_internal rect3i
+RectCenterRad(v3i Center, v3i Rad)
+{
+  auto Min = Center-Rad;
+  auto Max = Center+Rad;
+  rect3i Result = RectMinMax(Min, Max);
   return Result;
 }
 

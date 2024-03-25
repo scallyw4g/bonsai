@@ -1,5 +1,17 @@
 
 void
+SetDrawBuffers(framebuffer *FBO)
+{
+  u32 *Attachments = Allocate(u32, GetTranArena(), FBO->Attachments);
+  for (u32 AttIndex = 0; AttIndex < FBO->Attachments; ++AttIndex)
+  {
+    Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
+  }
+
+  GL.DrawBuffers((s32)FBO->Attachments, Attachments);
+}
+
+void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
 {
   for (int KernelIndex = 0;
@@ -226,7 +238,7 @@ MakeLightingShader( memory_arena *GraphicsMemory,
 
   AssertNoGlErrors;
 
-#if 1
+#if 0
   if (Lights)
   {
     *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
@@ -286,6 +298,7 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
     GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
 
     FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
+    SetDrawBuffers(&Result.FBOs[Index]);
 
     Ensure(CheckAndClearFramebuffer());
   }
@@ -307,17 +320,6 @@ CreateGbuffer(memory_arena *Memory)
   return gBuffer;
 }
 
-void
-SetDrawBuffers(framebuffer *FBO)
-{
-  u32 *Attachments = Allocate(u32, GetTranArena(), FBO->Attachments);
-  for (u32 AttIndex = 0; AttIndex < FBO->Attachments; ++AttIndex)
-  {
-    Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
-  }
-
-  GL.DrawBuffers((s32)FBO->Attachments, Attachments);
-}
 
 shader
 CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
@@ -452,9 +454,6 @@ InitializeShadowRenderGroup(shadow_render_group *SG, v2i ShadowMapResolution)
   /* glDrawBuffer(GL_NONE); */
   /* glReadBuffer(GL_NONE); */
 
-  // For debug-only visualization of this texture
-  /* SG->DebugTextureShader = MakeSimpleTextureShader(SG->ShadowMap, GraphicsMemory); */
-
   SG->DepthShader = LoadShaders( CSz(BONSAI_SHADER_PATH "DepthRTT.vertexshader"), CSz(BONSAI_SHADER_PATH "DepthRTT.fragmentshader") );
   SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
 
@@ -469,40 +468,8 @@ InitializeShadowRenderGroup(shadow_render_group *SG, v2i ShadowMapResolution)
   return true;
 }
 
-#if 0
-link_internal b32
-InitializeLightingRenderGroup(lighting_render_group *Lighting, memory_arena *GraphicsMemory)
-{
-  game_lights *Lights = &Lighting->Lights;
-
-  // NOTE(Jesse): The lights positions and colors are passed to the GPU in textures, the old-school way.
-  Lights->ColorTex    = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
-  Lights->PositionTex = MakeTexture_RGB(V2i(MAX_LIGHTS, 1), 0, GraphicsMemory);
-  AssertNoGlErrors;
-
-  Lights->IndexToUV = 1.0f / MAX_LIGHTS;
-
-  Lighting->Shader =
-    MakeLightingShader(GraphicsMemory, gBuffer->Textures, SG->ShadowMap,
-                       AoGroup->Texture, &SG->MVP, &Lighting->Lights, Result->Camera,
-                       &SG->Sun.Position, &SG->Sun.Color);
-
-
-  // NOTE(Jesse): This is used for bloom
-  Lighting->FBO = GenFramebuffer();
-  Lighting->BloomTex = MakeTexture_RGB( V2i(LUMINANCE_MAP_RESOLUTION_X, LUMINANCE_MAP_RESOLUTION_Y), 0, GraphicsMemory);
-
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
-  FramebufferTexture(&Lighting->FBO, Lighting->BloomTex);
-  SetDrawBuffers(&Lighting->FBO);
-
-  b32 Result = CheckAndClearFramebuffer();
-  return Result;
-}
-#endif
-
 link_internal void
-InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize, memory_arena *Memory)
+InitRenderToTextureGroup(render_entity_to_texture_group *Group, memory_arena *Memory)
 {
   // TODO(Jesse): Can this not re-use the gpu-map in the 3D renderer?
   AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
@@ -510,35 +477,24 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, v2i TextureSize,
   Group->FBO = GenFramebuffer();
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
-#if 0
-  s32 ImageSize = 4*Volume(TextureSize);
-  f32 *Image = Allocate(f32, Memory, ImageSize);
-
-  for (s32 PixIndex = 0; PixIndex < ImageSize; PixIndex += 4)
-  {
-    Image[PixIndex] = 255.f;
-  }
-#else
   f32 *Image = 0;
-#endif
 
-  // TODO(Jesse)(make_texture_rgba): Can we use MakeTexture_RGBA
+  /* u32 Channels = 4; */
+  /* texture Texture = GenTexture(TextureSize, CSz("RenderToTexture"), Channels); */
 
-  u32 Channels = 4;
-  texture Texture = GenTexture(TextureSize, CSz("RenderToTexture"), Channels);
-
-  GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image);
+  /* GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, Image); */
 
   // NOTE(Jesse): This has to be attachment0 (first texture thing attached to
   // framebuffer) because the render code expects it to be.
   /* Push(&Group->Textures, Texture); */
-  Group->FBO.Attachments++;
-  FramebufferTexture(&Group->FBO, &Texture);
+  /* Group->FBO.Attachments++; */
+  /* FramebufferTexture(&Group->FBO, &Texture); */
 
-  texture DepthTexture = MakeDepthTexture( TextureSize, CSz("RenderToTexture Depth"));
+  // TODO(Jesse): Should we not hard-code the depth texture size here?
+  texture DepthTexture = MakeDepthTexture( V2i(1024), CSz("RenderToTexture Depth"));
   FramebufferDepthTexture(&DepthTexture);
 
-  SetDrawBuffers(&Group->FBO);
+  /* SetDrawBuffers(&Group->FBO); */
 
   /* Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection); */
   Group->Shader = MakeRenderToTextureShader(Memory, 0);
@@ -607,6 +563,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+#if 0
 link_internal void
 InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena *Memory)
 {
@@ -619,6 +576,7 @@ InitBloomRenderGroup(bloom_render_group *Group, m4 *ViewProjection, memory_arena
   *Current = GetUniform(Memory, &Group->Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 }
+#endif
 
 link_internal graphics *
 GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
@@ -669,8 +627,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     Lighting->DuskIntensity = 0.50f;
   }
 
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f, DEFAULT_CAMERA_BLENDING, {});
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f, DEFAULT_CAMERA_BLENDING, {});
+  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
 
   Result->Camera = &Result->GameCamera;
 
@@ -735,8 +693,9 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
-
-                         &SG->MVP, &Lighting->Lights, Result->Camera,
+                         &SG->MVP,
+                         &Lighting->Lights,
+                         Result->Camera,
                          &Result->Settings.Lighting.SunP,
                          &Result->Settings.Lighting.CurrentSunColor,
 
@@ -783,7 +742,7 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   // TODO(Jesse): Move RTTGroup onto graphics?
   {
     engine_resources *Resources = GetEngineResources();
-    InitRenderToTextureGroup(&Resources->RTTGroup, V2i(256), GraphicsMemory);
+    InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
   }
 
   Result->Gaussian      = MakeGaussianBlurRenderGroup(&Result->Settings.ApplicationResolution, GraphicsMemory);

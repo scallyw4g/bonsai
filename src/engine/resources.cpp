@@ -58,15 +58,13 @@ InitEngineDebug(engine_debug *Debug)
   Debug->Textures.Memory = Debug->Memory;
 
   {
-    Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(1024,1024), 0, CSz("WorldEditDebugTexture"));
-    StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f, {});
+    Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(256), 0, CSz("WorldEditDebugTexture"));
+    StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f);
     AllocateMesh(&Debug->WorldEditDebugMesh,  u32(Kilobytes(64*16)), Debug->Memory);
   }
 
   return Result;
 }
-
-
 
 enum hard_reset_flags
 {
@@ -153,10 +151,9 @@ HardResetEngine(engine_resources *Engine)
   VaporizeArena(Engine->World->ChunkMemory);
   Engine->World->ChunkMemory = AllocateArena();
 
-  VaporizeArena(Engine->Editor.Memory);
-  Engine->Editor = {};
-  Engine->Editor.Memory = AllocateArena();
+  HardResetEditor(&Engine->Editor);
 
+  // TODO(Jesse)(leak): This leaks the texture handles; make a HardResetEngineDebug()
   VaporizeArena(Engine->EngineDebug.Memory);
   Engine->EngineDebug = {};
   Engine->EngineDebug.Memory = AllocateArena();
