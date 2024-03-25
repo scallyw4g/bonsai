@@ -14,7 +14,7 @@ remove the CRT entirely, though it's unclear when/if I'll get around to it.
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
 
-![banner](screenshots/5_skele.png)
+![banner](screenshots/orks.png)
 
 ## Renderer Features
 
@@ -65,6 +65,8 @@ See the docs on the [build process](docs/01_build_process.md).
 ![banner](screenshots/8_skele.png)
 
 ![banner](screenshots/dusk_defence.png)
+
+![banner](screenshots/5_skele.png)
 
 # Wishlist
 
