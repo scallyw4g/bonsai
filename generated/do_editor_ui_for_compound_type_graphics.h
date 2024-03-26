@@ -40,6 +40,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
+&Element->SunBasis,
+        CSz("SunBasis"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->FogPower,
         CSz("FogPower"),
         Params

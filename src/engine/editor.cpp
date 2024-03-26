@@ -1365,6 +1365,25 @@ SaveBrush(layered_brush_editor *LayeredBrush, const char *FilenameZ)
 
 
 link_internal void
+NewBrush(layered_brush_editor *LayeredBrush)
+{
+  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+  brush_layer *Layers =  LayeredBrush->Layers;
+
+  ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+
+  cs Src = CSz("_untitled.brush");
+  CopyString(&Src, &BrushNameBuf);
+
+  LayeredBrush->LayerCount = 1;
+  RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
+  {
+    brush_layer *Layer = Layers + LayerIndex;
+    Layer->Settings = {};
+  }
+}
+
+link_internal void
 BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1374,6 +1393,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
   cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
 
+  b32 IsNewBrush = False;
+  if (LayeredBrush->NameBuf[0] == 0 && LayeredBrush->LayerCount == 0)
+  {
+    NewBrush(LayeredBrush);
+    IsNewBrush = True;
+  }
 
   {
     PushWindowStart(Ui, BrushSettingsWindow);
@@ -1450,17 +1475,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
-        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-
-        cs Src = CSz("_untitled.brush");
-        CopyString(&Src, &BrushNameBuf);
-
-        LayeredBrush->LayerCount = 1;
-        RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
-        {
-          brush_layer *Layer = Layers + LayerIndex;
-          Layer->Settings = {};
-        }
+        NewBrush(LayeredBrush);
+        IsNewBrush = True;
       }
 
       if (LayeredBrush->LayerCount)
@@ -1502,9 +1518,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     PushWindowEnd(Ui, BrushSettingsWindow);
   }
 
-  {
-  }
-
 
   b32 AnyBrushSettingsUpdated = False;
   if (SelectionComplete(Editor->SelectionClicks))
@@ -1536,7 +1549,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         {
           brush_layer *Layer = Layers + LayerIndex;
 
-          if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer)))
+          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
+          if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
           {
             if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
             {
@@ -1562,10 +1576,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               EditLayerIndex = LayerIndex;
             }
 
-
-
             DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
           }
+
+          if (IsNewBrush && LayerIndex == 0)
+          {
+            SetToggleButton(Ui, ToggleId, True);
+          }
+
           PushNewRow(Ui);
         }
         PushTableEnd(Ui);

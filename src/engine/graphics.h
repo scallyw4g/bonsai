@@ -9,9 +9,6 @@ struct gaussian_render_group
   texture Textures[2];
 
   shader Shader;
-
-  /* shader DebugTextureShader0; */
-  /* shader DebugTextureShader1; */
 };
 
 struct transparency_render_group
@@ -35,6 +32,8 @@ struct bloom_render_group
 struct graphics
 {
   render_settings Settings;
+
+  v3 SunBasis;
 
   r32 FogPower;
   v3  FogColor;

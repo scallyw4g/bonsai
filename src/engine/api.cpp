@@ -315,9 +315,9 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
   v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
 
-  Lighting->SunP.x = Sin(tDay);
-  Lighting->SunP.y = Cos(tDay);
-  Lighting->SunP.z = (1.3f+Cos(tDay))/2.f;
+  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
+  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
+  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
 
   if (tDaytime > 0.f)
   {
