@@ -161,6 +161,9 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     v3 *SunPosition,
                     v3 *SunColor,
 
+                    v3  *FogColor,
+                    r32 *FogPower,
+
                     b32 *UseSsao,
                     b32 *UseShadowMapping,
                     b32 *UseLightingBloom
@@ -219,6 +222,12 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, FogColor, "FogColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, FogPower, "FogPower");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseSsao, "UseSsao");
@@ -608,6 +617,10 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
   Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
 
+  Result->FogPower = 2.f;
+  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
+
+  Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
   {
     lighting_settings *Lighting = &Result->Settings.Lighting;
@@ -698,6 +711,9 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          Result->Camera,
                          &Result->Settings.Lighting.SunP,
                          &Result->Settings.Lighting.CurrentSunColor,
+
+                         &Result->FogColor,
+                         &Result->FogPower,
 
                          &Result->Settings.UseSsao,
                          &Result->Settings.UseShadowMapping,

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4604:0
+// src/engine/world_chunk.cpp:4607:0
 
 random_series ColorEntropy = {4654376543246};
 

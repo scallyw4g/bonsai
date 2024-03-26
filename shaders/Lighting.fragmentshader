@@ -25,6 +25,10 @@ uniform vec3 SunPosition;
 uniform vec3 SunColor;
 uniform vec3 CameraP;
 
+uniform r32  FogPower;
+uniform vec3 FogColor;
+
+
 uniform bool UseSsao;
 uniform bool UseShadowMapping;
 uniform bool UseLightingBloom;
@@ -261,11 +265,10 @@ void main()
      */
     // TODO(Jesse): Can do squared?
     float DistanceToFrag = distance(CameraP, FragPosition.xyz);
-    float MaxFogDist = 6000.f;
+    float MaxFogDist = 20000.f;
 
     float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
-    v3 FogColor = V3(0.01f, 0.04f, 0.15f);
-    v3 Fog = FogContrib * FogColor;
+    v3 Fog = FogContrib * FogColor * FogPower;
 #else
     v3 Fog = V3(0);
 #endif
