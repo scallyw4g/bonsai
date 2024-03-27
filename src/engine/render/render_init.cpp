@@ -423,12 +423,12 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
-  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"));
+  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"), TextureStorageFormat_RGBA16F);
 
-  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"));
+  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), TextureStorageFormat_RGBA16F);
 
   // NOTE(Jesse): Depth gets stuffed into A value here.
-  gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"));
+  gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"), TextureStorageFormat_RGBA32F);
 
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Color);
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Normal);
@@ -724,8 +724,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     // NOTE(Jesse): This is used for bloom
     Lighting->FBO = GenFramebuffer();
 
-    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"));
-    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"));
+    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"), TextureStorageFormat_RGB16F);
+    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"), TextureStorageFormat_RGB16F);
 
     /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
     /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
