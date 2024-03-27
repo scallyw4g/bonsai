@@ -578,13 +578,13 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   {
     u32 Channels = 4;
     Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
 
   {
     u32 Channels = 2;
     Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG16F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
