@@ -295,6 +295,7 @@ Bonsai_Simulate(engine_resources *Resources)
   m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
 
   Resources->Graphics->gBuffer->InverseViewMatrix = Inverse(ViewMat);
+  Resources->Graphics->gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
   Resources->Graphics->gBuffer->ViewProjection = ProjMat * ViewMat;
 
 #if BONSAI_DEBUG_SYSTEM_API

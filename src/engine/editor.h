@@ -467,7 +467,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_rend
 }
 
 
-poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
+poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 

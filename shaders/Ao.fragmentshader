@@ -2,8 +2,9 @@ in vec2 UV;
 out float Output;
 
 /* uniform sampler2D gColor; */
-uniform sampler2D gPosition;
+/* uniform sampler2D gPosition; */
 uniform sampler2D gNormal;
+uniform sampler2D gDepth;
 
 uniform sampler2D SsaoNoiseTexture;
 uniform vec3 SsaoNoiseTile;
@@ -12,6 +13,8 @@ uniform vec3 SsaoNoiseTile;
 const int SSAO_KERNEL_SIZE = 32;
 uniform vec3 SsaoKernel[SSAO_KERNEL_SIZE];
 
+uniform mat4 InverseViewMatrix;
+uniform mat4 InverseProjectionMatrix;
 uniform mat4 ViewProjection;
 
 // Tuning
@@ -22,8 +25,18 @@ uniform mat4 ViewProjection;
 void main()
 {
   vec3  FragNormal   = texture(gNormal,   UV).rgb; // modelspace
-  vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace
-  float FragDepth    = texture(gPosition, UV).w;   // Linear
+  /* vec3  FragPosition = texture(gPosition, UV).rgb; // worldspace */
+
+  float FragDepthNonlinear = texture(gDepth, UV).r;
+  v3 FragPosition = WorldPositionFromNonlinearDepth(FragDepthNonlinear, UV, InverseProjectionMatrix, InverseViewMatrix);
+
+
+
+  float FragDepth = Linearize(FragDepthNonlinear, 5000.f, 0.1f);
+
+  /* Output = FragPosition.y; */
+  /* Output = FragDepth; */
+  /* return; */
 
   vec3 Noise = texture(SsaoNoiseTexture, UV*SsaoNoiseTile.xy).xyz;
 
@@ -59,10 +72,11 @@ void main()
     vec2 SampleUV = Projected.xy / Projected.w;
 
     // NDC to screen space [-1, 1] -> [0, 1]
-    SampleUV = (SampleUV.xy * 0.5) + 0.5;
+    SampleUV = (SampleUV.xy * 0.5f) + 0.5f;
 
     // get Sample depth:
-    float SampleDepth = texture(gPosition, SampleUV).w;
+    float SampleDepth = Linearize(texture(gDepth, SampleUV).r, 5000.f, 0.1f);
+    /* float SampleDepth = texture(gPosition, SampleUV).w; */
     float DepthDelta = (BiasedFragDepth - SampleDepth);
 
 #if 0

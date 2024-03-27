@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:413:0
+// src/engine/editor.cpp:404:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ui_debug", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle g_buffer_render_group", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiValues,
-        CSz("OutlineUiValues"),
+&Element->FBO,
+        CSz("FBO"),
         Params
         );
 
@@ -37,12 +37,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiButtons,
-        CSz("OutlineUiButtons"),
+&Element->Textures,
+        CSz("Textures"),
         Params
         );
 
@@ -50,12 +49,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiTables,
-        CSz("OutlineUiTables"),
+&Element->gBufferShader,
+        CSz("gBufferShader"),
         Params
         );
 
@@ -63,12 +61,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->OutlineUiTableColumns,
-        CSz("OutlineUiTableColumns"),
+&Element->InverseViewMatrix,
+        CSz("InverseViewMatrix"),
         Params
         );
 
@@ -76,12 +73,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->DebugBreakOnElementClick,
-        CSz("DebugBreakOnElementClick"),
+&Element->InverseProjectionMatrix,
+        CSz("InverseProjectionMatrix"),
         Params
         );
 
@@ -89,20 +85,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
-&Element->DebugBreakUiCommand,
-        CSz("DebugBreakUiCommand"),
+&Element->ViewProjection,
+        CSz("ViewProjection"),
         Params
         );
-
-
-
-
-
-      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

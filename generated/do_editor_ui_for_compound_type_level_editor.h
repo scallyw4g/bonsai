@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:419:0
+// src/engine/editor.cpp:422:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -103,6 +103,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         Window,
 &Element->LayeredBrushEditor,
         CSz("LayeredBrushEditor"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->RootChunkNeedsNewMesh),
+        CSz("RootChunkNeedsNewMesh"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+&Element->MostRecentSelectionRegionMin,
+        CSz("MostRecentSelectionRegionMin"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->NextSelectionRegionMin,
+        CSz("NextSelectionRegionMin"),
         Params
         );
 
