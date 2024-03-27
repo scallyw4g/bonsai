@@ -1,3 +1,15 @@
+* 1.5.1
+
+- Fog now driven from C++ (and, by extension, the editor)
+
+- Improved UX when opening brush menu for the first time
+
+- Fixed the preview jank when using a layered brush.
+	The preview should now appear stable in the viewport
+
+- Tuned some gBuffer texture sizes & turned down default shadow quality
+	This is in an effort to get mid-end cards running at >60fps on 4k
+
 * 1.5.0
 
 - @Shawnecy Chased down a divide by zero in the lighting shader
