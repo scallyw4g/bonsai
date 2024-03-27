@@ -7,7 +7,7 @@
 - Fixed the preview jank when using a layered brush.
 	The preview should now appear stable in the viewport
 
-- Tuned some gBuffer texture sizes & turned down default shadow quality
+- Tuned some gBuffer texture storage resolution, transparency buffer storage resolution, & turned down default shadow quality
 	This is in an effort to get mid-end cards running at >60fps on 4k
 
 * 1.5.0
