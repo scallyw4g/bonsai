@@ -664,13 +664,14 @@ DoEngineDebug(engine_resources *Engine)
               }
           PushTableEnd(Ui);
         EndColumn(Ui, StartOuter);
+        PushNewRow(Ui);
 
       PushTableEnd(Ui);
 
-      if ( (GetIndex(&TextureIndex)+1) % 6 == 0)
-      {
-        PushNewRow(Ui);
-      }
+      /* if ( (GetIndex(&TextureIndex)+1) % 6 == 0) */
+      /* { */
+      /*   PushNewRow(Ui); */
+      /* } */
     }
 
 
