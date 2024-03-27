@@ -31,6 +31,7 @@ struct g_buffer_render_group
   framebuffer FBO;
   g_buffer_textures Textures;
   shader gBufferShader;
+  m4 InverseViewMatrix;
   m4 ViewProjection;
 };
 

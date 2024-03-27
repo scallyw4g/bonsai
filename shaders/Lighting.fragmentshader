@@ -6,6 +6,7 @@ layout (location = 1) out vec3 BloomColor;
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
+uniform sampler2D gDepth;
 uniform sampler2D shadowMap;
 uniform sampler2D Ssao;
 
@@ -19,6 +20,7 @@ uniform sampler2D TransparencyCount;
 uniform bool BravoilMyersOIT;
 uniform bool BravoilMcGuireOIT;
 
+uniform mat4 InverseViewMatrix;
 uniform mat4 ShadowMVP;
 
 uniform vec3 SunPosition;
@@ -88,7 +90,6 @@ vec3 LightingCalc(float AttenuationFactor, vec3 LightColor, vec3 FragToLight, ve
 
 void main()
 {
-
   vec2 gBufferTextureDim = ApplicationResolution;
   ivec2 texelCoord = ivec2(gBufferUV*gBufferTextureDim);
   vec4 FragPosition = texelFetch(gPosition, texelCoord, 0);

@@ -155,7 +155,9 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *BravoilMyersOIT,
                     b32 *BravoilMcGuireOIT,
 
+                    m4 *InverseViewMatrix,
                     m4 *ShadowMVP,
+
                     game_lights *Lights,
                     camera *Camera,
                     v3 *SunPosition,
@@ -180,6 +182,9 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
@@ -706,7 +711,9 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
+                         &Result->gBuffer->InverseViewMatrix,
                          &SG->MVP,
+
                          &Lighting->Lights,
                          Result->Camera,
                          &Result->Settings.Lighting.SunP,
