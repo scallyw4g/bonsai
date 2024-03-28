@@ -10,6 +10,8 @@
 - Tuned some gBuffer texture storage resolution, transparency buffer storage resolution, & turned down default shadow quality
 	This is in an effort to get mid-end cards running at >60fps on 4k
 
+- Fix some assertions due to new memory sizing requirements on world gen chunks
+
 * 1.5.0
 
 - @Shawnecy Chased down a divide by zero in the lighting shader
