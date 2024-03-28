@@ -2321,7 +2321,7 @@ Terrain_Voronoi3D( world_chunk *Chunk,
         v3 RepeatBasisInCells = V3(8);
         v3  NoiseInput = NoiseMod((V3(x,y,z) + NoiseBasis)/Period, RepeatBasisInCells);
 
-        r32 NoiseValue = VoronoiNoise3D(NoiseInput, Squareness, MaskChance, RepeatBasisInCells);
+        r32 NoiseValue = VoronoiNoise3D_Tiled(NoiseInput, RepeatBasisInCells, Squareness, MaskChance);
         NoiseValue = Clamp01(NoiseValue);
         NoiseValue *= Amplitude;
 

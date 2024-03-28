@@ -289,9 +289,14 @@ Bonsai_Simulate(engine_resources *Resources)
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
   // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
-  Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->ScreenDim) *
-    ViewMatrix(World->ChunkDim, Camera);
+
+
+  m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
+  m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
+
+  Resources->Graphics->gBuffer->InverseViewMatrix = Inverse(ViewMat);
+  Resources->Graphics->gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
+  Resources->Graphics->gBuffer->ViewProjection = ProjMat * ViewMat;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
@@ -315,9 +320,9 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
   v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
   v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
 
-  Lighting->SunP.x = Sin(tDay);
-  Lighting->SunP.y = Cos(tDay);
-  Lighting->SunP.z = (1.3f+Cos(tDay))/2.f;
+  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
+  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
+  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
 
   if (tDaytime > 0.f)
   {

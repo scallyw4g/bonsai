@@ -14,8 +14,8 @@
 // When I get around to improving the shadows it'll control more than that..
 //
 
-   shadow_quality = ShadowQualitySetting_High
-// shadow_quality = ShadowQualitySetting_Med
+// shadow_quality = ShadowQualitySetting_High
+   shadow_quality = ShadowQualitySetting_Med
 // shadow_quality = ShadowQualitySetting_Low
 // shadow_quality = ShadowQualitySetting_Off
 

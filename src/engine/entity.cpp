@@ -1450,7 +1450,7 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
         {
           if (UiCapturedMouseInput(Ui) == False)
           {
-            f32 CameraSpeed = Camera->DistanceFromTarget * Camera->Blend/40.f;
+            f32 CameraSpeed = Camera->DistanceFromTarget * Camera->Blend/100.f;
             v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
             Offset.z = 0; // Constrain to XY plane
 

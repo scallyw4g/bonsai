@@ -16,6 +16,15 @@ compiler, and a few appropriate system headers.
 
 ![banner](screenshots/orks.png)
 
+# Quickstart
+
+Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
+for your platform of choice (as long as it's Windows or Linux ;)
+
+## Build from Source
+
+See the docs on the [build process](docs/01_build_process.md).
+
 ## Renderer Features
 
 * Deferred Shading
@@ -49,12 +58,6 @@ compiler, and a few appropriate system headers.
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
-
-# Getting Started
-
-## Building
-
-See the docs on the [build process](docs/01_build_process.md).
 
 # Gallery
 

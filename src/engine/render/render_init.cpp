@@ -155,11 +155,17 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *BravoilMyersOIT,
                     b32 *BravoilMcGuireOIT,
 
+                    m4 *InverseViewMatrix,
+                    m4 *InverseProjectionMatrix,
                     m4 *ShadowMVP,
+
                     game_lights *Lights,
                     camera *Camera,
                     v3 *SunPosition,
                     v3 *SunColor,
+
+                    v3  *FogColor,
+                    r32 *FogPower,
 
                     b32 *UseSsao,
                     b32 *UseShadowMapping,
@@ -176,7 +182,10 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition");
+/*   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
+  /* Current = &(*Current)->Next; */
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
@@ -195,6 +204,12 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
@@ -219,6 +234,12 @@ MakeLightingShader( memory_arena *GraphicsMemory,
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, FogColor, "FogColor");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, FogPower, "FogPower");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseSsao, "UseSsao");
@@ -359,8 +380,13 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewPr
 }
 
 shader
-MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
-    texture *SsaoNoiseTexture, v3 *SsaoNoiseTile, m4 *ViewProjection)
+MakeSsaoShader(      memory_arena *GraphicsMemory,
+                g_buffer_textures *gTextures,
+                          texture *SsaoNoiseTexture,
+                               v3 *SsaoNoiseTile,
+                               m4 *InverseViewMatrix,
+                               m4 *InverseProjectionMatrix,
+                               m4 *ViewProjection )
 {
   shader Shader = LoadShaders( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
@@ -369,16 +395,25 @@ MakeSsaoShader(memory_arena *GraphicsMemory, g_buffer_textures *gTextures,
   /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
   /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition");
-  Current = &(*Current)->Next;
+  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
+  /* Current = &(*Current)->Next; */
 
   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
@@ -414,16 +449,16 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
-  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"));
+  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"), TextureStorageFormat_RGBA16F);
 
-  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"));
+  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), TextureStorageFormat_RGBA16F);
 
   // NOTE(Jesse): Depth gets stuffed into A value here.
-  gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"));
+  /* gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"), TextureStorageFormat_RGBA32F); */
 
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Color);
   FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Normal);
-  FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Position);
+  /* FramebufferTexture(&gBuffer->FBO, &gBuffer->Textures.Position); */
   SetDrawBuffers(&gBuffer->FBO);
 
   gBuffer->Textures.Depth = MakeDepthTexture( ApplicationResolution, CSz("gBufferDepth") );
@@ -543,13 +578,13 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   {
     u32 Channels = 4;
     Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
 
   {
     u32 Channels = 2;
     Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG16F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
@@ -608,6 +643,10 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
   Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
 
+  Result->FogPower = 2.f;
+  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
+
+  Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
   {
     lighting_settings *Lighting = &Result->Settings.Lighting;
@@ -693,11 +732,17 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.BravoilMyersOIT,
                          &Result->Settings.BravoilMcGuireOIT,
 
+                         &gBuffer->InverseViewMatrix,
+                         &gBuffer->InverseProjectionMatrix,
                          &SG->MVP,
+
                          &Lighting->Lights,
                          Result->Camera,
                          &Result->Settings.Lighting.SunP,
                          &Result->Settings.Lighting.CurrentSunColor,
+
+                         &Result->FogColor,
+                         &Result->FogPower,
 
                          &Result->Settings.UseSsao,
                          &Result->Settings.UseShadowMapping,
@@ -708,8 +753,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     // NOTE(Jesse): This is used for bloom
     Lighting->FBO = GenFramebuffer();
 
-    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"));
-    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"));
+    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"), TextureStorageFormat_RGB16F);
+    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"), TextureStorageFormat_RGB16F);
 
     /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
     /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
@@ -756,6 +801,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                                    &gBuffer->Textures,
                                    &AoGroup->NoiseTexture,
                                    &AoGroup->NoiseTile,
+                                   &gBuffer->InverseViewMatrix,
+                                   &gBuffer->InverseProjectionMatrix,
                                    &gBuffer->ViewProjection );
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");

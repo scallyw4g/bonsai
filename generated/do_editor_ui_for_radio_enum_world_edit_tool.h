@@ -23,7 +23,6 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
     { CSz("Brush"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Brush")), WorldEdit_Tool_Brush },
     { CSz("Eyedropper"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
     { CSz("BlitEntity"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
-    { CSz("StandingSpots"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_StandingSpots")), WorldEdit_Tool_StandingSpots },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

@@ -339,6 +339,16 @@ GetSimSpaceRect3i(world *World, rect3cp Rect)
   return Result;
 }
 
+struct world;
+link_internal rect3
+GetSimSpaceRect(world *World, rect3cp Rect)
+{
+  v3 Min = GetSimSpaceP(World, Rect.Min);
+  v3 Max = GetSimSpaceP(World, Rect.Max);
+  rect3 Result = RectMinMax(Min, Max);
+  return Result;
+}
+
 link_internal rect3
 GetSimSpaceAABB(world *World, rect3cp Rect)
 {

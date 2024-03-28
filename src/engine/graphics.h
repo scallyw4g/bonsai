@@ -9,9 +9,6 @@ struct gaussian_render_group
   texture Textures[2];
 
   shader Shader;
-
-  /* shader DebugTextureShader0; */
-  /* shader DebugTextureShader1; */
 };
 
 struct transparency_render_group
@@ -36,7 +33,11 @@ struct graphics
 {
   render_settings Settings;
 
-  v3 SkyColor = {{0.02f, 0.04f, 0.46f}};
+  v3 SunBasis;
+
+  r32 FogPower;
+  v3  FogColor;
+  v3 SkyColor;
 
   // Default cameras, game code can do it's own thing if it wants to.
   camera GameCamera;

@@ -467,7 +467,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_rend
 }
 
 
-poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion}));
+poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 #include <generated/do_editor_ui_for_vector_type_688873645.h>
 
 
@@ -557,7 +557,7 @@ enum world_edit_tool
   WorldEdit_Tool_Brush,         // world_edit_brush_type
   WorldEdit_Tool_Eyedropper,
   WorldEdit_Tool_BlitEntity,
-  WorldEdit_Tool_StandingSpots, // Recomputes standing spots for an area
+  /* WorldEdit_Tool_StandingSpots, // Recomputes standing spots for an area */
 };
 
 enum world_edit_brush_type
@@ -1016,6 +1016,12 @@ struct level_editor
   /* brush_layer Noise; */
   /* brush_layer Shape; */
   layered_brush_editor LayeredBrushEditor;
+
+  b32 RootChunkNeedsNewMesh;
+
+  cp  MostRecentSelectionRegionMin;
+  cp  NextSelectionRegionMin;
+  cp  EditorPreviewRegionMin;
 
   u64 EngineDebugViewModeToggleBits;
 

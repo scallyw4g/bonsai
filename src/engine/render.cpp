@@ -909,9 +909,10 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles 
   FlushBuffersToCard(Handles);
 }
 
-link_internal void
+link_internal b32
 SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 {
+  b32 Result = False;
   Assert(ThreadLocal_ThreadIndex == 0);
 
   RangeIterator(MeshIndex, MeshIndex_Count)
@@ -927,6 +928,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         AllocateGpuElementBuffer(Handles, Mesh->At);
         CopyToGpuBuffer(Mesh, Handles);
+        Result = True;
       }
 
       DeallocateMesh(Mesh, &Engine->MeshFreelist);
@@ -935,6 +937,8 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 
   // TODO(Jesse): Is this actually a thing??
   FullBarrier;
+
+  return Result;
 }
 
 link_internal m4
@@ -1294,7 +1298,11 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
           layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
           Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min);
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin);
+          /* Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min); */
+          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min); */
+          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->EditorPreviewRegionMin); */
+          /* Basis = {}; */
         } break;
 
         default: {} break;
@@ -1306,7 +1314,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
 
   if (Chunk)
   {
-    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
     DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
   }
 }
