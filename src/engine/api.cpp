@@ -289,9 +289,14 @@ Bonsai_Simulate(engine_resources *Resources)
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
   // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
-  Resources->Graphics->gBuffer->ViewProjection =
-    ProjectionMatrix(Camera, Plat->ScreenDim) *
-    ViewMatrix(World->ChunkDim, Camera);
+
+
+  m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
+  m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
+
+  Resources->Graphics->gBuffer->InverseViewMatrix = Inverse(ViewMat);
+  Resources->Graphics->gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
+  Resources->Graphics->gBuffer->ViewProjection = ProjMat * ViewMat;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
