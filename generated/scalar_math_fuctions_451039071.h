@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/math.h:323:0
+// external/bonsai_stdlib/src/math.h:301:0
 
 inline r32
 Clamp( r32 Min, r32 Value, r32 Max )
