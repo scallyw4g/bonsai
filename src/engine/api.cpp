@@ -283,7 +283,12 @@ Bonsai_Simulate(engine_resources *Resources)
   if (CameraGhost) { CameraTargetP = CameraGhost->P; }
 
   b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
-  b32 DoZoomDelta = DoPositionDelta; //UiHoveredMouseInput(Ui) == False;
+
+  // NOTE(Jesse): Don't remember what bug I fixed by changing this to DoPositionDelta,
+  // but it broke scrolling on laptop trackpads (where nothing is clicked).  Going to
+  // remove it until I remember what the bug was ..
+  /* b32 DoZoomDelta = DoPositionDelta; */
+  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
   UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
@@ -389,9 +394,9 @@ Bonsai_Render(engine_resources *Resources)
   if (CameraGhost)
   {
     v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.x = fmodf(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.y = fmodf(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.z = fmodf(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.x = Mod(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.y = Mod(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
+    Graphics->Settings.OffsetOfWorldCenterToGrid.z = Mod(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
   }
 #endif
 

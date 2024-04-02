@@ -422,7 +422,7 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
     {
       v3 EntitySimP = GetSimSpaceBaseP(World, Entity);
 
-      r32 AnimOffset = Sin(fmodf(Plat->GameTime*2.f, PI32*2.f)) + 3.f;
+      r32 AnimOffset = Sin(Mod(Plat->GameTime*2.f, PI32*2.f)) + 3.f;
       v3 NewP = EntitySimP + V3(0.f, 0.f, Entity->_CollisionVolumeRadius.z*2.f + AnimOffset) - V3(Carrying->_CollisionVolumeRadius.xy, 0.f);
 
       Carrying->P = SimSpaceToCanonical(World,  NewP);
