@@ -19,13 +19,6 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   World->VisibleRegion = VisibleRegion;
   World->Center = Center;
 
-  World->ColorPalette = V3Cursor(u16_MAX, WorldChunkMemory);
-
-  RangeIterator_t(u32, ColorIndex, u8_MAX)
-  {
-    Push(&World->ColorPalette, MAGICAVOXEL_DEFAULT_PALETTE[ColorIndex]);
-  }
-
   return World;
 }
 

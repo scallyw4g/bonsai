@@ -2,7 +2,7 @@
 link_internal v3_cursor *
 GetColorPalette()
 {
-  v3_cursor *Palette = &GetEngineResources()->World->ColorPalette;
+  v3_cursor *Palette = &GetEngineResources()->Graphics->ColorPalette;
   return Palette;
 }
 

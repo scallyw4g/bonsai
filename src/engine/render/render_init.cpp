@@ -343,7 +343,7 @@ CreateGbuffer(memory_arena *Memory)
 
 
 shader
-CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
+CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
@@ -353,6 +353,9 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewPr
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, ColorPaletteTexture, "ColorPalette");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
@@ -674,7 +677,6 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(1));
 
-
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))
   {
@@ -754,7 +756,7 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     Lighting->FBO = GenFramebuffer();
 
     Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"), TextureStorageFormat_RGB16F);
-    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"), TextureStorageFormat_RGB16F);
+    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"),    TextureStorageFormat_RGB16F);
 
     /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
     /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
@@ -784,18 +786,32 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 
   }
 
+  engine_resources *Resources = GetEngineResources();
+
   // TODO(Jesse): Move RTTGroup onto graphics?
-  {
-    engine_resources *Resources = GetEngineResources();
-    InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
-  }
+  InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
 
   Result->Gaussian      = MakeGaussianBlurRenderGroup(&Result->Settings.ApplicationResolution, GraphicsMemory);
 
   AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(Result->Settings.iApplicationResolution, AoGroup, GraphicsMemory);
 
+  // TODO(Jesse): Should this go on a different arena?
+  Result->ColorPalette = V3Cursor(u16_MAX, GraphicsMemory);
+  RangeIterator_t(u32, ColorIndex, u8_MAX)
+  {
+    Push(&Result->ColorPalette, MAGICAVOXEL_DEFAULT_PALETTE[ColorIndex]/255.f);
+  }
+
+  s32 ColorCount = s32(AtElements(&Result->ColorPalette));
+  Assert(ColorCount == 255);
+  {
+    if (Result->ColorPaletteTexture.ID) { DeleteTexture(&Result->ColorPaletteTexture); }
+    Result->ColorPaletteTexture =
+      MakeTexture_RGB( V2i(ColorCount, 1), Result->ColorPalette.Start, CSz("ColorPalette"));
+  }
+
   gBuffer->gBufferShader =
-    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
+    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
 
   AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
                                    &gBuffer->Textures,

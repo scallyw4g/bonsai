@@ -13,6 +13,10 @@ uniform vec3 CameraToWorld;
 uniform mat4 ModelMatrix;
 uniform mat4 ViewProjection;
 
+uniform sampler2D ColorPalette;
+
+
+
 // TODO(Jesse): Pass in a m3 here.  I didn't have an m3 struct, so I didn't
 // bother, but I should do that at some point..
 //
@@ -20,7 +24,7 @@ uniform mat4 NormalMatrix; // Inverted and transposed ModelMatrix.
 
 void main()
 {
-  MaterialColor = V3(float(vertexColor)/float(256));
+  MaterialColor = texelFetch(ColorPalette, ivec2(vertexColor, 0), 0).rgb;
   TransEmiss = in_TransEmiss;
 
   v4 ModelVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);

@@ -31,20 +31,13 @@ InitEngineResources(engine_resources *Engine)
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
     bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
-    /* LoadBitmapsFromFolderUnordered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps); */
-    /* LoadBitmapsFromFolderUnordered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps); */
-    /* Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64)); */
-
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
-
-    // TODO(Jesse): Can this be turned into a bitmap_buffer_buffer statically somehow so as to avoid the ArrayCount?
-    /* bitmap_buffer Buffers[] = { Bitmaps64, Bitmaps44 }; */
-    /* Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBufferArray(Buffers, ArrayCount(Buffers), V2i(64,64)); */
   }
 
   Engine->EntityTable = AllocateEntityTable(WorldAndEntityArena, TOTAL_ENTITY_COUNT);
+
   return Result;
 }
 

@@ -137,7 +137,6 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   GL.DisableVertexAttribArray(2);
   GL.DisableVertexAttribArray(3);
 
-
   return Result;
 }
 
