@@ -459,6 +459,7 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(0);
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
+  GL.DisableVertexAttribArray(3);
 
 
   /* DebugVisualize(Ui, &Resources->MeshFreelist); */

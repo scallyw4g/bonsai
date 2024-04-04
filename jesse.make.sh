@@ -14,11 +14,10 @@
   BuildSingleExample examples/terrain_gen \
   BuildSingleExample examples/project_and_level_picker \
   BuildSingleExample examples/turn_based \
+  BuildSingleExample examples/the_wanderer \
+  BuildSingleExample examples/transparency \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-  # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/graveyard \
-  # BuildSingleExample examples/transparency \
-  # BuildSingleExample examples/transparency \
   # BuildTests \
 
 # ./make.sh BundleRelease

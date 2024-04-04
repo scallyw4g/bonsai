@@ -847,31 +847,37 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 link_internal void
 DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
 {
-  GL.EnableVertexAttribArray(0);
+  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_INDEX_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(2);
-  GL.EnableVertexAttribArray(3);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
+  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_SHORT, GL_FALSE, sizeof(matl), (void*)OffsetOf(ColorIndex, matl));  // Color */
+  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 2, GL_SHORT, GL_FALSE, sizeof(matl), (void*)OffsetOf(ColorIndex, matl));  // Color */
+  GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);  // Color
+  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);  // Color */
+
+  GL.VertexAttribPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)OffsetOf(Transparency, matl)); // Trans/Emiss
+  /* GL.VertexAttribPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12); // Trans/Emiss */
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-  GL.DisableVertexAttribArray(3);
+  GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_COLOR_INDEX_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
 link_internal void

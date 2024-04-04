@@ -1,7 +1,7 @@
-layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 vertexNormal_modelspace;
-layout(location = 2) in uint vertexColor; // NOTE(Jesse): 16-bit
-layout(location = 3) in vec2 in_TransEmiss;
+layout(location =    VERTEX_POSITION_LAYOUT_LOCATION) in vec3 vertexPosition_modelspace;
+layout(location =      VERTEX_NORMAL_LAYOUT_LOCATION) in vec3 vertexNormal_modelspace;
+layout(location = VERTEX_COLOR_INDEX_LAYOUT_LOCATION) in uint vertexColor; // NOTE(Jesse): 16-bit
+layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in vec2 in_TransEmiss;
 
 out vec3 vertexP_worldspace;
 out vec3 vertexN_worldspace;
