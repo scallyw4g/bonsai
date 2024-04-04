@@ -28,8 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Color,
-        CSz("Color"),
+&Element->ColorIndex,
+        CSz("ColorIndex"),
         Params
         );
 
@@ -37,7 +37,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 
-      
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
 &Element->Transparency,

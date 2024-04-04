@@ -1,6 +1,6 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 layout(location = 1) in vec3 vertexNormal_modelspace;
-layout(location = 2) in vec3 vertexColor;
+layout(location = 2) in uint vertexColor; // NOTE(Jesse): 16-bit
 layout(location = 3) in vec2 in_TransEmiss;
 
 out vec3 vertexP_worldspace;
@@ -20,7 +20,7 @@ uniform mat4 NormalMatrix; // Inverted and transposed ModelMatrix.
 
 void main()
 {
-  MaterialColor = vertexColor;
+  MaterialColor = V3(float(vertexColor)/float(256));
   TransEmiss = in_TransEmiss;
 
   v4 ModelVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);

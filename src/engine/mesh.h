@@ -421,7 +421,7 @@ BufferVertsChecked(
 
 
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss)
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   /* TIMED_FUNCTION(); */
 
@@ -456,52 +456,56 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 Color
 
 inline void
 DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh,
-                     v3 RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+                     v3 RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter, TransEmiss);
 }
 
 inline void
 DrawVoxel_CenterDim( untextured_3d_geometry_buffer *Mesh,
-                     v3i RenderP_VoxelCenter, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+                     v3i RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   DrawVoxel(Mesh, V3(RenderP_VoxelCenter), Color, Diameter, TransEmiss);
 }
 
+#if 0
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh,
-           v3 RenderP_VoxelCenter, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+           v3 RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v3 Color = GetColorData(ColorIndex);
+  /* v3 Color = GetColorData(ColorIndex); */
   DrawVoxel(Mesh, RenderP_VoxelCenter, Color, Diameter, TransEmiss);
 }
+#endif
 
 inline void
 DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh,
-                  v3 RenderP_VoxelMin, v3 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+                  v3 RenderP_VoxelMin, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   v3 HalfDim = Diameter/2.f;
   v3 VoxelCenter = RenderP_VoxelMin + HalfDim;
   DrawVoxel(Mesh, VoxelCenter, Color, Diameter, TransEmiss);
 }
 
+#if 0
 inline void
 DrawVoxel_MinDim( untextured_3d_geometry_buffer *Mesh,
-                  v3 RenderP_VoxelMin, u32 ColorIndex, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+                  v3 RenderP_VoxelMin, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  v3 Color = GetColorData(ColorIndex);
+  /* v3 Color = GetColorData(ColorIndex); */
   DrawVoxel_MinDim(Mesh, RenderP_VoxelMin, Color, Diameter);
 }
+#endif
 
 
 inline void
 DEBUG_DrawLine_Aligned( untextured_3d_geometry_buffer *Mesh,
-                        v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
+                        v3 P1, v3 P2, u16 Color, r32 Thickness )
 {
   v3 Radius = (P2-P1)/2.f;
   v3 Center = P1 + Radius;
 
   v3 DrawDim = Max(Abs(Radius*2.f), V3(Thickness));
-  DrawVoxel(Mesh, Center, ColorIndex, DrawDim, V2(0.f, 13.f));
+  DrawVoxel(Mesh, Center, Color, DrawDim, V2(0.f, 13.f));
 }
 
