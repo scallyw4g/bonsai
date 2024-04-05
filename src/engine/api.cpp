@@ -430,7 +430,6 @@ Bonsai_Render(engine_resources *Resources)
   if (GpuMap->Buffer.At)
   {
     RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Resources->Settings), GpuMap, Graphics);
-    // Comment this out to not cast shadows from immediate geometry
     RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
   }
 

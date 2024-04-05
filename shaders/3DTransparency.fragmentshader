@@ -76,6 +76,11 @@ void main()
   float Alpha    = TransEmiss.x;
   float Emission = TransEmiss.y;
 
+  ColorAccumulation.r = Alpha;
+  Count.r = Emission;
+  return;
+
+
   /* ColorAccumulation = v4(Alpha, Emission, 0.f, 1.f); */
   /* ColorAccumulation = v4(WorldP, 1.f); */
   /* ColorAccumulation = v4(Normal, 1.f); */

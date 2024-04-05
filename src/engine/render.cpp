@@ -128,15 +128,6 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  /* m4 M = IdentityMatrix; */
-
-  /* Info("(%f %f %f %f)", M[0][0],M[0][1],M[0][2],M[0][3]); */
-  /* Info("(%f %f %f %f)", M[1][0],M[1][1],M[1][2],M[1][3]); */
-  /* Info("(%f %f %f %f)", M[2][0],M[2][1],M[2][2],M[2][3]); */
-  /* Info("(%f %f %f %f)", M[3][0],M[3][1],M[3][2],M[3][3]); */
-
-  /* BindUniform(&GBufferRenderGroup->gBufferShader, "ModelMatrix", &M); */
-
   // TODO(Jesse): Hoist this check out of here
   GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
@@ -757,6 +748,7 @@ link_internal void
 RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
   FlushBuffersToCard(&Group->GpuBuffer);
+
   if (Group->GpuBuffer.Buffer.At)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
@@ -816,8 +808,6 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
     // GL stuff
     {
-      /* GL.DisableVertexAttribArray(1); */
-
       GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
       GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
@@ -836,8 +826,6 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
       SetDrawBuffers(&RTTGroup->FBO);
 
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      /* Ensure(CheckAndClearFramebuffer()); */
-
       GL.Enable(GL_DEPTH_TEST);
     }
   }
@@ -849,8 +837,7 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
 {
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_COLOR_INDEX_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_MATERIAL_LAYOUT_LOCATION);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
   GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -867,7 +854,7 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
   CAssert(MtlFloatElements == 4);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  GL.VertexAttribIPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
+  GL.VertexAttribIPointer(VERTEX_MATERIAL_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
@@ -876,8 +863,7 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
 
   GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_COLOR_INDEX_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_MATERIAL_LAYOUT_LOCATION);
 }
 
 link_internal void
