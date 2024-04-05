@@ -802,13 +802,13 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
     Push(&Result->ColorPalette, MAGICAVOXEL_DEFAULT_PALETTE[ColorIndex]/255.f);
   }
 
-  s32 ColorCount = s32(AtElements(&Result->ColorPalette));
-  Assert(ColorCount == 255);
-  {
-    if (Result->ColorPaletteTexture.ID) { DeleteTexture(&Result->ColorPaletteTexture); }
-    Result->ColorPaletteTexture =
-      MakeTexture_RGB( V2i(ColorCount, 1), Result->ColorPalette.Start, CSz("ColorPalette"));
-  }
+  /* s32 ColorCount = s32(AtElements(&Result->ColorPalette)); */
+  /* Assert(ColorCount == 255); */
+  /* { */
+  /*   if (Result->ColorPaletteTexture.ID) { DeleteTexture(&Result->ColorPaletteTexture); } */
+  /*   Result->ColorPaletteTexture = */
+  /*     MakeTexture_RGB( V2i(ColorCount, 1), Result->ColorPalette.Start, CSz("ColorPalette")); */
+  /* } */
 
   gBuffer->gBufferShader =
     CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);

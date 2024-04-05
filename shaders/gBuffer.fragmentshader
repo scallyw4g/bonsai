@@ -79,6 +79,8 @@ void main()
   gNormal = vertexN_worldspace;
 
   vec4 FinalColor = vec4(MaterialColor, 1.f);
+  /* gColor = FinalColor; */
+  /* return; */
 
 #if 1
 

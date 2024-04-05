@@ -406,13 +406,13 @@ Bonsai_Render(engine_resources *Resources)
   /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
   /* DrawEditorChunkPreviewToGBuffer(); */
 
-#if 0
-  s32 ColorCount = s32(AtElements(&Result->ColorPalette));
-  if (ColorCount != Resources->Graphics->ColorPaletteTexture.Dim.x)
+#if 1
+  s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+  if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
   {
-    if (Resources->Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Resources->Graphics->ColorPaletteTexture); }
-    Resources->Graphics->ColorPaletteTexture =
-      MakeTexture_RGB( V2i(ColorCount, 1), Resources->ColorPalette.Start, CSz("ColorPalette"));
+    if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+    Graphics->ColorPaletteTexture =
+      MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
   }
 #endif
 

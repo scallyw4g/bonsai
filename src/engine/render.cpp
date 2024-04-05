@@ -860,14 +860,14 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
   GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_SHORT, GL_FALSE, sizeof(matl), (void*)OffsetOf(ColorIndex, matl));  // Color */
-  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 2, GL_SHORT, GL_FALSE, sizeof(matl), (void*)OffsetOf(ColorIndex, matl));  // Color */
-  GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);  // Color
-  /* GL.VertexAttribPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);  // Color */
 
-  GL.VertexAttribPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)OffsetOf(Transparency, matl)); // Trans/Emiss
-  /* GL.VertexAttribPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12); // Trans/Emiss */
+  // NOTE(Jesse): This is just here to break when the size of these changes,
+  // serving as a reminder to update this code.
+  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
+  CAssert(MtlFloatElements == 4);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GL.VertexAttribIPointer(VERTEX_COLOR_INDEX_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);

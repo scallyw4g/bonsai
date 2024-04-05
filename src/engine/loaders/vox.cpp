@@ -244,17 +244,18 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 B = ReadChar(ModelFile, &bytesRemaining);
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
-            v3 ThisColor = V3(R,G,B);
+            v3 ThisColor = V3(R,G,B)/255.f;
+            /* v3 ThisColor = V3(R,G,B); */
             s32 Found = -1;
             {
               IterateOver(ColorPalette, QueryColor, QueryColorIndex)
               {
-                if (WithinTolerance(1.01f, ThisColor, *QueryColor))
+                if (WithinTolerance(0.01f, ThisColor, *QueryColor))
                 {
                   Found = s32(QueryColorIndex); 
                   v3 PaletteColor = GetPaletteData(u32(Found));
                   Assert(PaletteColor == *QueryColor);
-                  Assert(WithinTolerance(1.01f, ThisColor, PaletteColor));
+                  Assert(WithinTolerance(0.01f, ThisColor, PaletteColor));
                   break;
                 }
               }
@@ -288,7 +289,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
               {
                 Assert(*Index == Found);
                 v3 QueryColor = GetPaletteData(u32(Found));
-                Assert(WithinTolerance(1.01f, ThisColor, QueryColor));
+                Assert(WithinTolerance(0.01f, ThisColor, QueryColor));
               }
             }
 
@@ -440,6 +441,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             {
               /* Voxel->V.Transparency = 0; */
             Assert(Voxel->V.Transparency == 0);
+            Voxel->V.Transparency = 128;
+            /* Voxel->V.Emission = 128; */
             }
             /* Voxel->V.Transparency = 0; */
 

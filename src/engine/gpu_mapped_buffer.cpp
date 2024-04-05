@@ -12,9 +12,6 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
-  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
-  CAssert(MtlFloatElements == 10);
-
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
@@ -80,8 +77,8 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   untextured_3d_geometry_buffer Result = {};
   Result.End = Handles->ElementCount;
 
-  u32 v2Size = sizeof(v2)*Handles->ElementCount;
-  u32 v3Size = sizeof(v3)*Handles->ElementCount;
+  u32 v2Size   = sizeof(v2)*Handles->ElementCount;
+  u32 v3Size   = sizeof(v3)*Handles->ElementCount;
   u32 matlSize = sizeof(matl)*Handles->ElementCount;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
