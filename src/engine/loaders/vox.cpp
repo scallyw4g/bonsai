@@ -250,12 +250,12 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             {
               IterateOver(ColorPalette, QueryColor, QueryColorIndex)
               {
-                if (WithinTolerance(0.01f, ThisColor, *QueryColor))
+                if (WithinTolerance(0.015f, ThisColor, *QueryColor))
                 {
                   Found = s32(QueryColorIndex); 
                   v3 PaletteColor = GetPaletteData(u32(Found));
                   Assert(PaletteColor == *QueryColor);
-                  Assert(WithinTolerance(0.01f, ThisColor, PaletteColor));
+                  Assert(WithinTolerance(0.015f, ThisColor, PaletteColor));
                   break;
                 }
               }
@@ -289,7 +289,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
               {
                 Assert(*Index == Found);
                 v3 QueryColor = GetPaletteData(u32(Found));
-                Assert(WithinTolerance(0.01f, ThisColor, QueryColor));
+                Assert(WithinTolerance(0.015f, ThisColor, QueryColor));
               }
             }
 
