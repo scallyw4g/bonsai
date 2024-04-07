@@ -440,13 +440,10 @@ Bonsai_Render(engine_resources *Resources)
   // why that would be, but here we are.
   if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Resources->Settings), AoGroup); }
 
-  /* FlushBuffersToCard(&Graphics->Transparency.GpuBuffer); */
-  /* if (Graphics->Transparency.GpuBuffer.Buffer.At) */
   {
     RenderTransparencyBuffers(GetApplicationResolution(&Resources->Settings), &Graphics->Settings, &Graphics->Transparency);
     RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
   }
-  /* Clear(&Graphics->Transparency.GpuBuffer); */
 
   /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
   if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }

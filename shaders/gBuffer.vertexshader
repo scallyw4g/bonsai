@@ -1,7 +1,7 @@
-layout(location = VERTEX_POSITION_LAYOUT_LOCATION) in vec3 vertexPosition_modelspace;
-layout(location =   VERTEX_NORMAL_LAYOUT_LOCATION) in vec3 vertexNormal_modelspace;
-layout(location = VERTEX_MATERIAL_LAYOUT_LOCATION) in uint vertexMaterial; // NOTE(Jesse): 16-bits Color, 8 bits transparency, 8 bits emission
-/* layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in vec2 in_TransEmiss; // NOTE(Jesse): 8-bit */
+layout(location = VERTEX_POSITION_LAYOUT_LOCATION)    in vec3 vertexPosition_modelspace;
+layout(location = VERTEX_NORMAL_LAYOUT_LOCATION)      in vec3 vertexNormal_modelspace;
+layout(location = VERTEX_COLOR_LAYOUT_LOCATION)       in uint ColorIndex; // NOTE(Jesse): 16-bits
+layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in ivec2 in_TransEmiss; // NOTE(Jesse): 8-bit
 
 out vec3 vertexP_worldspace;
 out vec3 vertexN_worldspace;
@@ -24,13 +24,16 @@ uniform mat4 NormalMatrix; // Inverted and transposed ModelMatrix.
 
 void main()
 {
-  uint Transparency = uint((vertexMaterial>>16) & 0xFFu);
-  uint Emission     = uint((vertexMaterial>>8)  & 0xFFu);
-  uint ColorIndex   = uint((vertexMaterial)     & 0xFFFFu);
+  /* uint Transparency = uint((vertexMaterial>>16) & 0xFFu); */
+  /* uint Emission     = uint((vertexMaterial>>8)  & 0xFFu); */
+  /* uint ColorIndex   = uint((vertexMaterial)     & 0xFFFFu); */
+  int Transparency = in_TransEmiss.x;
+  int Emission = in_TransEmiss.y;
 
   MaterialColor = texelFetch(ColorPalette, ivec2(ColorIndex, 0), 0).rgb;
-  /* TransEmiss = V2(in_TransEmiss[0], in_TransEmiss[1]); */
-  TransEmiss = V2(0.5f, 0.5f);
+  /* MaterialColor = texelFetch(ColorPalette, ivec2(5, 0), 0).rgb; */
+  TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));
+  /* TransEmiss = V2(0.5f, 0.5f); */
 
   v4 ModelVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 

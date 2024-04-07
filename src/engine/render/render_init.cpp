@@ -541,7 +541,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, memory_arena *Me
 }
 
 link_internal shader
-MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
@@ -565,12 +565,14 @@ MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *Bra
   *Current = GetUniform(Memory, &Shader, ApplicationResolution, "ApplicationResolution");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(Memory, &Shader, ColorPaletteTexture, "ColorPalette");
+  Current = &(*Current)->Next;
 
   return Shader;
 }
 
 link_internal void
-InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
   AllocateGpuElementBuffer(&Group->GpuBuffer, (u32)Megabytes(1));
 
@@ -596,7 +598,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   FramebufferTexture(&Group->FBO, &Group->RevealTex);
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(&Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, Memory);
+  Group->Shader = MakeTransparencyShader(&Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, ColorPaletteTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }
@@ -704,7 +706,7 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 #endif
 
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, &Result->ColorPaletteTexture, GraphicsMemory);
 
   // Initialize the lighting group
   {

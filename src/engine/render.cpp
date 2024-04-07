@@ -131,6 +131,7 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
   // TODO(Jesse): Hoist this check out of here
   GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
+  /* DrawGpuBufferImmediate(GpuMap->Handles); */
   GL.Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
@@ -833,11 +834,12 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 }
 
 link_internal void
-DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 {
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_MATERIAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
   GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -854,7 +856,9 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
   CAssert(MtlFloatElements == 4);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  GL.VertexAttribIPointer(VERTEX_MATERIAL_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
+  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
@@ -863,7 +867,8 @@ DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
 
   GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_MATERIAL_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
 link_internal void
@@ -993,7 +998,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
-    DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
 }
 

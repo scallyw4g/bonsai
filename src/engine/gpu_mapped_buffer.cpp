@@ -1,18 +1,37 @@
 
+// NOTE(Jesse): This hooks up the vertex attribs because in some cases
+// (immediate geo buffer) we flush and draw immediately afterwards.
+// 
+// Should probably move to using VAOs so we don't have to do this.
 inline b32
 FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 {
   TIMED_FUNCTION();
 
+  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
+
+  // NOTE(Jesse): This is just here to break when the size of these changes,
+  // serving as a reminder to update this code.
+  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
+  CAssert(MtlFloatElements == 4);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 

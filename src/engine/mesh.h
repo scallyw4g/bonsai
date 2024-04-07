@@ -432,6 +432,7 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Colo
 
   vertex_material Materials[VERTS_PER_FACE];
   FillArray(VertexMaterial(Color, TransEmiss.E[0], TransEmiss.E[1]), Materials, VERTS_PER_FACE);
+  /* FillArray(VertexMaterial(RED, TransEmiss.E[0], TransEmiss.E[1]), Materials, VERTS_PER_FACE); */
 
   v3 MinP = RenderP_VoxelCenter - (Diameter*0.5f);
 
