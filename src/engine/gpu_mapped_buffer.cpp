@@ -1,43 +1,41 @@
 
+// NOTE(Jesse): This hooks up the vertex attribs because in some cases
+// (immediate geo buffer) we flush and draw immediately afterwards.
+// 
+// Should probably move to using VAOs so we don't have to do this.
 inline b32
 FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 {
   TIMED_FUNCTION();
 
-  GL.EnableVertexAttribArray(0);
+  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
-  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
-  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
 
+  // NOTE(Jesse): This is just here to break when the size of these changes,
+  // serving as a reminder to update this code.
+  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
+  CAssert(MtlFloatElements == 4);
 
-  const u32 MtlFloatElements = sizeof(matl)/sizeof(f32);
-  CAssert(MtlFloatElements == 5);
-
-  GL.EnableVertexAttribArray(2);
-  GL.EnableVertexAttribArray(3);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
-  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
   AssertNoGlErrors;
 
   if (BufferUnmapped == False) { Error("glUnmapBuffer Failed"); }
-
-  // TODO(Jesse): The transparency code doesn't work if I uncomment these.. why??
-  /* GL.BindBuffer(GL_ARRAY_BUFFER, 0); */
-  /* GL.DisableVertexAttribArray(0); */
-  /* GL.DisableVertexAttribArray(1); */
-  /* GL.DisableVertexAttribArray(2); */
-  /* GL.DisableVertexAttribArray(3); */
-
   return BufferUnmapped;
 }
 
@@ -98,32 +96,21 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   untextured_3d_geometry_buffer Result = {};
   Result.End = Handles->ElementCount;
 
-  u32 v2Size = sizeof(v2)*Handles->ElementCount;
-  u32 v3Size = sizeof(v3)*Handles->ElementCount;
+  u32 v2Size   = sizeof(v2)*Handles->ElementCount;
+  u32 v3Size   = sizeof(v3)*Handles->ElementCount;
   u32 matlSize = sizeof(matl)*Handles->ElementCount;
 
-  GL.EnableVertexAttribArray(0);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
   Result.Verts = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
-  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
   Result.Normals = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
-  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
   // Color data
-  GL.EnableVertexAttribArray(2);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
   Result.Mat = (matl*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, matlSize, GL_MAP_WRITE_BIT);
-  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-  AssertNoGlErrors;
-
-  // transparency & emission data
-  GL.EnableVertexAttribArray(3);
-  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
   AssertNoGlErrors;
 
   if (!Result.Verts)   { Error("Allocating gpu_mapped_element_buffer::Verts");   }
@@ -131,12 +118,6 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   if (!Result.Mat)     { Error("Allocating gpu_mapped_element_buffer::Mat");     }
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
-
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-  GL.DisableVertexAttribArray(3);
-
 
   return Result;
 }

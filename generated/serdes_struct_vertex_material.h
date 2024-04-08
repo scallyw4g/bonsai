@@ -34,7 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, vertex_material *BaseElement, umm Count 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vertex_material *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Color);
+    Result &= Serialize(Bytes, &Element->ColorIndex);
 
 
 
@@ -71,7 +71,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_are
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Color, Memory);
+  Result &= Deserialize(Bytes, &Element->ColorIndex, Memory);
 
 
 

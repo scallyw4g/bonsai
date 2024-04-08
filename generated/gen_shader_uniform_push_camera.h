@@ -17,3 +17,17 @@ GetUniform(memory_arena *Mem, shader *Shader, camera *Value, const char *Name)
   return Uniform;
 }
 
+shader_uniform
+ShaderUniform(shader *Shader, camera *Value, const char *Name)
+{
+  shader_uniform Uniform = {};
+
+  Uniform.Type = ShaderUniform_Camera;
+  Uniform.Camera = Value;
+  Uniform.Name = Name;
+
+  Uniform.ID = GetShaderUniform(Shader, Name);
+
+  return Uniform;
+}
+

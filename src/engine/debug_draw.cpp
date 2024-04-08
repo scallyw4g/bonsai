@@ -1,5 +1,5 @@
 inline void
-DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorIndex, r32 Thickness )
+DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u16 Color, r32 Thickness )
 {
   // 2 verts per line, 3 r32s per vert
 
@@ -19,11 +19,11 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
   /* P1.x = P1.x - (Thickness/2.0f); */
   /* P2.x = P2.x - (Thickness/2.0f); */
 
-  v3 Color = GetColorData(ColorIndex);
+  /* v3 Color = GetColorData(Color); */
 
   vertex_material Materials[VERTS_PER_FACE];
   FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
-  /* FillColorArray(ColorIndex, Materials, Global_ColorPalette, VERTS_PER_FACE); */
+  /* FillColorArray(Color, Materials, Global_ColorPalette, VERTS_PER_FACE); */
 
   v2 TransEmiss[VERTS_PER_FACE] = {};
 
@@ -107,30 +107,30 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, u32 ColorInde
 }
 
 inline void
-DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
 
   v3 Offset = GetRenderP(Engine, SimSpaceToCanonical(World, SimP));
-  DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
+  DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, Color, Thickness );
 }
 
 inline void
-DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawVectorAt(untextured_3d_geometry_buffer *Mesh, v3 Offset, v3 Vector, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
-  DEBUG_DrawLine(Mesh, Offset, Vector + Offset, ColorIndex, Thickness );
+  DEBUG_DrawLine(Mesh, Offset, Vector + Offset, Color, Thickness );
 }
 
 inline void
-DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u32 ColorIndex, r32 Thickness )
+DEBUG_DrawLine(untextured_3d_geometry_buffer *Mesh, line Line, u16 Color, r32 Thickness )
 {
-  DEBUG_DrawLine(Mesh, Line.MinP, Line.MaxP, ColorIndex, Thickness);
+  DEBUG_DrawLine(Mesh, Line.MinP, Line.MaxP, Color, Thickness);
 }
 
 void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   TIMED_FUNCTION();
 
@@ -185,28 +185,28 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, u32 ColorI
   // Top
 #define LINES_PER_AABB (12)
 #define VERTS_PER_AABB (VERTS_PER_VOXEL*LINES_PER_AABB)
-  DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFR, TopRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, TopRR, Color, Thickness);
 
   // Right
-  DEBUG_DrawLine_Aligned(Mesh, TopFR, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopRR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, BotFR, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopRR, BotRR, Color, Thickness);
 
   // Left
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, BotFL, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopRL, BotRL, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, BotFL, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, BotRL, Color, Thickness);
 
   // Bottom
-  DEBUG_DrawLine_Aligned(Mesh, BotRL, BotRR, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, ColorIndex, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, ColorIndex, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotRL, BotRR, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, Color, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, Color, Thickness);
 }
 
 link_internal void
-DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -214,106 +214,106 @@ DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorInde
   v3 P1 = GetRenderP(World->ChunkDim, SimSpaceToCanonical(World, MaxP), Camera);
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&Mesh, P0, P1, ColorIndex, Thickness);
+  DEBUG_DrawAABB(&Mesh, P0, P1, Color, Thickness);
 }
 
 void
-DEBUG_DrawSimSpaceAABB(engine_resources *Engine, aabb *AABB, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawSimSpaceAABB(engine_resources *Engine, aabb *AABB, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 P0 = GetMin(AABB);
   v3 P1 = GetMax(AABB);
-  DEBUG_DrawSimSpaceAABB(Engine, P0, P1, ColorIndex, Thickness);
+  DEBUG_DrawSimSpaceAABB(Engine, P0, P1, Color, Thickness);
 }
 
 void
-DEBUG_DrawAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(engine_resources *Engine, v3 MinP, v3 MaxP, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&Mesh, MinP, MaxP, ColorIndex, Thickness);
+  DEBUG_DrawAABB(&Mesh, MinP, MaxP, Color, Thickness);
 }
 
 link_internal void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, aabb Rect, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 MinP = Rect.Min;
   v3 MaxP = Rect.Max;
-  DEBUG_DrawAABB( Mesh, MinP, MaxP, ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, MinP, MaxP, Color, Thickness );
 }
 
 link_internal void
-DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i *Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, rect3i *Rect, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
-  DEBUG_DrawAABB( Mesh, V3(Rect->Min), V3(Rect->Max), ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, V3(Rect->Min), V3(Rect->Max), Color, Thickness );
 }
 
 void
-DEBUG_DrawAABB(engine_resources *Engine, rect3i *Rect, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_DrawAABB(engine_resources *Engine, rect3i *Rect, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&Mesh, Rect, ColorIndex, Thickness);
+  DEBUG_DrawAABB(&Mesh, Rect, Color, Thickness);
 }
 
 
 link_internal void
-DEBUG_HighlightVoxel(untextured_3d_geometry_buffer *Mesh, world *World, camera *Camera, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_HighlightVoxel(untextured_3d_geometry_buffer *Mesh, world *World, camera *Camera, cp P, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   v3 P0 = GetRenderP(World->ChunkDim, P, Camera) - Thickness;
-  DEBUG_DrawAABB( Mesh, P0, P0 + V3(1) + Thickness, ColorIndex, Thickness );
+  DEBUG_DrawAABB( Mesh, P0, P0 + V3(1) + Thickness, Color, Thickness );
 }
 
 link_internal void
-DEBUG_HighlightVoxel(engine_resources *Engine, cp P, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_HighlightVoxel(engine_resources *Engine, cp P, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_HighlightVoxel( &Mesh, World, Camera, P, ColorIndex, Thickness );
+  DEBUG_HighlightVoxel( &Mesh, World, Camera, P, Color, Thickness );
 
 }
 
 link_internal void
-DEBUG_HighlightVoxel(engine_resources *Engine, v3 SimP, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS )
+DEBUG_HighlightVoxel(engine_resources *Engine, v3 SimP, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
   cp P = SimSpaceToCanonical(Engine->World, SimP);
-  DEBUG_HighlightVoxel(Engine, P, ColorIndex, Thickness);
+  DEBUG_HighlightVoxel(Engine, P, Color, Thickness);
 }
 
 link_internal void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_position WorldP,
-                     chunk_dimension WorldChunkDim, u32 ColorIndex , r32 Thickness = DEFAULT_LINE_THICKNESS)
+                     chunk_dimension WorldChunkDim, u16 Color , r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, WorldP), Graphics->Camera);
 
-  DEBUG_DrawAABB(Mesh, MinP, MaxP, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, MinP, MaxP, Color, Thickness);
 }
 
 link_internal void
 DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, world_chunk *Chunk,
-                     chunk_dimension WorldChunkDim, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+                     chunk_dimension WorldChunkDim, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
   v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
 
 
-  DEBUG_DrawAABB(Mesh, MinP, MaxP, ColorIndex, Thickness);
+  DEBUG_DrawAABB(Mesh, MinP, MaxP, Color, Thickness);
 }
 
 link_internal void
-DEBUG_HighlightChunk(world_chunk *Chunk, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+DEBUG_HighlightChunk(world_chunk *Chunk, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   UNPACK_ENGINE_RESOURCES(GetEngineResources());
   auto Buf = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawChunkAABB( &Buf, Graphics, Chunk, World->ChunkDim, ColorIndex, Thickness);
+  DEBUG_DrawChunkAABB( &Buf, Graphics, Chunk, World->ChunkDim, Color, Thickness);
 }
 
 link_internal void
-DEBUG_HighlightRegion(rect3cp Range, u32 ColorIndex, r32 Thickness = DEFAULT_LINE_THICKNESS)
+DEBUG_HighlightRegion(rect3cp Range, u16 Color, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   UNPACK_ENGINE_RESOURCES(GetEngineResources());
   auto SSRegion = GetSimSpaceAABB(World, Range);
-  DEBUG_DrawSimSpaceAABB(GetEngineResources(), &SSRegion, ColorIndex, Thickness );
+  DEBUG_DrawSimSpaceAABB(GetEngineResources(), &SSRegion, Color, Thickness );
 }
 
 

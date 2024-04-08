@@ -1215,8 +1215,8 @@ DrawDebugVoxels( voxel *Voxels,
         voxel *Voxel = Voxels + Index;
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        v3 Color = GetColorData(Voxel->Color);
-        FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
+        /* v3 Color = GetColorData(Voxel->Color); */
+        FillArray(VertexMaterial(Voxel->Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
         {
@@ -1589,9 +1589,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
         f32 Trans = f32(Voxel->Transparency) / 255.f;
 
-        v3 Color = GetColorData(Voxel->Color);
-
-        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
+        /* v3 Color = GetColorData(Voxel->Color); */
+        FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
@@ -1843,10 +1842,10 @@ BuildMipMesh( voxel *Voxels,
 
         voxel_position ActualP = TmpVoxP-1;
 
-        v3 Color = GetColorData(Voxel->Color);
+        /* v3 Color = GetColorData(Voxel->Color); */
         f32 Trans = (f32)Voxel->Transparency / 255.f;
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
-        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         if (Voxel->Flags & Voxel_RightFace)
         {
@@ -1952,13 +1951,13 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         /* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); */
 
 #if VOXEL_DEBUG_COLOR
-        v3 Color = Abs(Voxel->DebugColor);
+        /* v3 Color = Abs(Voxel->DebugColor); */
 #else
-        v3 Color = GetColorData(Voxel->Color);
+        /* v3 Color = GetColorData(Voxel->Color); */
 #endif
 
         f32 Trans = (f32)Voxel->Transparency / 255.f;
-        FillArray(VertexMaterial(Color, Trans, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
@@ -2067,7 +2066,7 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
 
         FillColorArray(Voxel->Color, FaceColors, Global_ColorPalette, VERTS_PER_FACE);
 #if 0
-        for (u32 ColorIndex = 0;
+        for (u16 ColorIndex = 0;
             ColorIndex < VERTS_PER_FACE;
             ++ColorIndex)
         {
@@ -3163,7 +3162,7 @@ ComputeLodMesh( thread_local_state *Thread,
 
 #if 1
       {
-        u32 Color = 0;
+        u16 Color = 0;
         for ( s32 PointIndex = 0;
               PointIndex < EdgeBoundaryVoxels->Count;
               ++PointIndex )
@@ -3709,7 +3708,7 @@ WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bi
 
 #define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
 #if 0
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
@@ -3735,14 +3734,14 @@ DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 Til
 }
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
   v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, CP, Camera);
   DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
 }
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u32 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
   v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, Spot->P, Camera);
   DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
@@ -3763,7 +3762,7 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
   }
 #endif
 #if 0
-        u32 ColorIndex = 0;
+        u16 ColorIndex = 0;
 
         if (Chunk)
         {
@@ -5366,7 +5365,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = GetWorldChunkFromHashtable( World, P );
 
-        u32 ColorIndex = 0;
+        u16 ColorIndex = 0;
 
         if (Chunk)
         {

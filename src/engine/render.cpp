@@ -105,7 +105,7 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
 
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
-  BindUniform(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
+  BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
 
   Draw(GpuMap->Buffer.At);
 
@@ -128,18 +128,10 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  /* m4 M = IdentityMatrix; */
-
-  /* Info("(%f %f %f %f)", M[0][0],M[0][1],M[0][2],M[0][3]); */
-  /* Info("(%f %f %f %f)", M[1][0],M[1][1],M[1][2],M[1][3]); */
-  /* Info("(%f %f %f %f)", M[2][0],M[2][1],M[2][2],M[2][3]); */
-  /* Info("(%f %f %f %f)", M[3][0],M[3][1],M[3][2],M[3][3]); */
-
-  /* BindUniform(&GBufferRenderGroup->gBufferShader, "ModelMatrix", &M); */
-
   // TODO(Jesse): Hoist this check out of here
   GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
+  /* DrawGpuBufferImmediate(GpuMap->Handles); */
   GL.Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
@@ -227,7 +219,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
 
     AssertNoGlErrors;
-    BindUniform(&Group->Shader, "horizontal", horizontal);
+    BindUniformByName(&Group->Shader, "horizontal", horizontal);
 
     texture *Tex;
     if (first_iteration)
@@ -240,7 +232,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
 
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
-    BindUniform(&Group->Shader, "SrcImage", Tex, 0);
+    BindUniformByName(&Group->Shader, "SrcImage", Tex, 0);
 
     AssertNoGlErrors;
     RenderQuad();
@@ -757,6 +749,7 @@ link_internal void
 RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
   FlushBuffersToCard(&Group->GpuBuffer);
+
   if (Group->GpuBuffer.Buffer.At)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
@@ -816,8 +809,6 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
     // GL stuff
     {
-      /* GL.DisableVertexAttribArray(1); */
-
       GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
       GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
@@ -829,15 +820,13 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
         ProjectionMatrix(Camera, V2(Texture->Dim)) *
         ViewMatrix(Engine->World->ChunkDim, Camera) ;
 
-      BindUniform(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
+      BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
       SetDrawBuffers(&RTTGroup->FBO);
 
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      /* Ensure(CheckAndClearFramebuffer()); */
-
       GL.Enable(GL_DEPTH_TEST);
     }
   }
@@ -845,33 +834,41 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 }
 
 link_internal void
-DrawGpuBufferImmediate(graphics *Graphics, gpu_element_buffer_handles *Handles)
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 {
-  GL.EnableVertexAttribArray(0);
+  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(1);
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(2);
-  GL.EnableVertexAttribArray(3);
+
+  // NOTE(Jesse): This is just here to break when the size of these changes,
+  // serving as a reminder to update this code.
+  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
+  CAssert(MtlFloatElements == 4);
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  GL.VertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)0);
-  GL.VertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(matl), (void*)12);
+  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-  GL.DisableVertexAttribArray(3);
+  GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
 link_internal void
@@ -1001,7 +998,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
-    DrawGpuBufferImmediate(Graphics, &Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
   }
 }
 
@@ -1339,8 +1336,8 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
   DrawEditorPreview(Engine, Shader);
 
   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
-    BindUniform(Shader, "DrawMajorGrid", False);
-    BindUniform(Shader, "DrawMinorGrid", False);
+    BindUniformByName(Shader, "DrawMajorGrid", False);
+    BindUniformByName(Shader, "DrawMinorGrid", False);
     r32 dt = Plat->dt;
     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
   }

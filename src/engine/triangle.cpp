@@ -71,7 +71,7 @@ SeedTriangulation(current_triangles* CurrentTriangles, memory_arena* Memory, chu
 }
 
 inline void
-BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Normal, u32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Normal, u16 Color)
 {
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -80,7 +80,7 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Norma
   VertBuffer[1] = V3(Triangle->Points[1]);
   VertBuffer[2] = V3(Triangle->Points[2]);
 
-  v3 Color = GetColorData(ColorIndex);
+  /* v3 Color = GetColorData(ColorIndex); */
   vertex_material Materials[VERTS_PER_FACE];
   FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
@@ -88,7 +88,7 @@ BufferTriangle(untextured_3d_geometry_buffer* Dest, triangle* Triangle, v3 Norma
 }
 
 inline void
-BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 ColorIndex)
+BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u16 Color)
 {
   v3 VertBuffer[3];
   v3 NormalBuffer[3] = {Normal, Normal, Normal};
@@ -96,7 +96,7 @@ BufferTriangle(untextured_3d_geometry_buffer *Mesh, v3 *Verts, v3 Normal, u32 Co
   // TODO(Jesse, id: 139, tags: robustness, speed): Is this necessary to avoid some pointer aliasing bug?
   MemCopy((u8*)Verts, (u8*)VertBuffer, 9 * sizeof(r32) );
 
-  v3 Color = GetColorData(ColorIndex);
+  /* v3 Color = GetColorData(ColorIndex); */
   vertex_material Materials[VERTS_PER_FACE];
   FillArray(VertexMaterial(Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 

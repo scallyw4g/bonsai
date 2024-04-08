@@ -535,10 +535,10 @@ IceBlockCharges(entity *Player)
   return Result;
 }
 
-link_internal u32
+link_internal u16
 GetColorForAction(player_action Action)
 {
-  u32 Result = 0;
+  u16 Result = 0;
 
   switch (Action)
   {
@@ -965,7 +965,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             if (IsWithinRangeForAction(World, Player, ActionCenterP, GameState->ProposedAction))
             {
-              u32 Color = GetColorForAction(GameState->ProposedAction);
+              u16 Color = GetColorForAction(GameState->ProposedAction);
               DrawStandingSpot(&GpuMap->Buffer, Camera, ActionMinP, Color, 0.5f);
 
               if (Input->LMB.Clicked)

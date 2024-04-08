@@ -13,6 +13,9 @@
 #include <engine/entity_id.h>
 
 #include <engine/camera.h>
+
+#include <engine/render/render_init.h>
+#include <engine/bloom.h>
 #include <engine/light.h>
 #include <engine/render.h>
 #include <engine/render_settings.h>

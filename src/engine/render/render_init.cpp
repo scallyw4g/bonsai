@@ -62,7 +62,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      g_buffer_textures *gTextures,
                      texture *ShadowMap,
                      texture *Ssao,
-                     texture *LightingTex,
+                     texture *LuminanceTex,
                      texture *BloomTex,
 
                      texture *TransparencyAccum,
@@ -115,7 +115,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
+  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
   Current = &(*Current)->Next;
 
   /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
@@ -343,7 +343,7 @@ CreateGbuffer(memory_arena *Memory)
 
 
 shader
-CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera)
+CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
@@ -353,6 +353,9 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewPr
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, ColorPaletteTexture, "ColorPalette");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
@@ -538,7 +541,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, memory_arena *Me
 }
 
 link_internal shader
-MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
@@ -562,12 +565,14 @@ MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *Bra
   *Current = GetUniform(Memory, &Shader, ApplicationResolution, "ApplicationResolution");
   Current = &(*Current)->Next;
 
+  *Current = GetUniform(Memory, &Shader, ColorPaletteTexture, "ColorPalette");
+  Current = &(*Current)->Next;
 
   return Shader;
 }
 
 link_internal void
-InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, memory_arena *Memory)
+InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
   AllocateGpuElementBuffer(&Group->GpuBuffer, (u32)Megabytes(1));
 
@@ -593,7 +598,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   FramebufferTexture(&Group->FBO, &Group->RevealTex);
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(&Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, Memory);
+  Group->Shader = MakeTransparencyShader(&Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, ColorPaletteTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
 }
@@ -674,7 +679,6 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, (u32)Megabytes(1));
 
-
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))
   {
@@ -702,7 +706,7 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 #endif
 
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, GraphicsMemory);
+  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, &Result->ColorPaletteTexture, GraphicsMemory);
 
   // Initialize the lighting group
   {
@@ -749,53 +753,76 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.UseLightingBloom
                         );
 
+    Lighting->LuminanceTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Luminance"), TextureStorageFormat_RGB16F);
+    /* Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"),    TextureStorageFormat_RGB16F); */
 
-    // NOTE(Jesse): This is used for bloom
-    Lighting->FBO = GenFramebuffer();
-
-    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"), TextureStorageFormat_RGB16F);
-    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"), TextureStorageFormat_RGB16F);
-
-    /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
-    /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
-
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
-    FramebufferTexture(&Lighting->FBO, &Lighting->LightingTex);
-    FramebufferTexture(&Lighting->FBO, &Lighting->BloomTex);
-
-    SetDrawBuffers(&Lighting->FBO);
-
-    if (CheckAndClearFramebuffer() == False)
+    // Luminance FBO
     {
-      Error("Initializing Lighting Group");
+      Lighting->FBO = GenFramebuffer();
+
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+      FramebufferTexture(&Lighting->FBO, &Lighting->LuminanceTex);
+      /* FramebufferTexture(&Lighting->FBO, &Lighting->Bloom.Tex); */
+      SetDrawBuffers(&Lighting->FBO);
+      if (CheckAndClearFramebuffer() == False) { Error("Initializing Lighting FBO"); }
     }
 
-    Lighting->BloomTextureFBO = GenFramebuffer();
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->BloomTextureFBO.ID);
-    GL.BindTexture(GL_TEXTURE_2D, Lighting->BloomTex.ID);
-    FramebufferTexture(&Lighting->BloomTextureFBO, &Lighting->BloomTex);
-    SetDrawBuffers(&Lighting->BloomTextureFBO);
-
-    if (CheckAndClearFramebuffer() == False)
+#if 0
+    // Bloom mip chain textures
+    v2i MipSize = Result->Settings.iLuminanceMapResolution / 2;
+    RangeIterator(MipIndex, BLOOM_MIP_CHAIN_COUNT)
     {
-      Error("Initializing Lighting Group");
+      cs DebugName = FormatCountedString(GraphicsMemory, CSz("BloomBlurMip(%d)"), MipIndex);
+      u32 Channels = 3;
+      GenTexture(MipSize, DebugName, Channels);
+      GL.TexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, MipSize.x, MipSize.y, 0, GL_RGB, GL_FLOAT, 0);
     }
+
+    // Bloom FBO
+    {
+      Lighting->BloomFBO = GenFramebuffer();
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->BloomFBO.ID);
+      GL.BindTexture(GL_TEXTURE_2D, Lighting->BloomTex.ID);
+      FramebufferTexture(&Lighting->BloomFBO, &Lighting->BloomTex);
+      SetDrawBuffers(&Lighting->BloomFBO);
+      if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
+
+      InitializeBloomDownsampleShader(&Lighting->BloomDownsampleShader);
+      InitializeBloomUpsampleShader(&Lighting->BloomUpsampleShader);
+    }
+#endif
+    InitBloomRenderGroup(&Lighting->Bloom, &Result->Settings, GraphicsMemory);
+
 
   }
+
+  engine_resources *Resources = GetEngineResources();
 
   // TODO(Jesse): Move RTTGroup onto graphics?
-  {
-    engine_resources *Resources = GetEngineResources();
-    InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
-  }
+  InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
 
   Result->Gaussian      = MakeGaussianBlurRenderGroup(&Result->Settings.ApplicationResolution, GraphicsMemory);
 
   AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(Result->Settings.iApplicationResolution, AoGroup, GraphicsMemory);
 
+  // TODO(Jesse): Should this go on a different arena?
+  Result->ColorPalette = V3Cursor(u16_MAX, GraphicsMemory);
+  RangeIterator_t(u32, ColorIndex, u8_MAX)
+  {
+    Push(&Result->ColorPalette, MAGICAVOXEL_DEFAULT_PALETTE[ColorIndex]/255.f);
+  }
+
+  /* s32 ColorCount = s32(AtElements(&Result->ColorPalette)); */
+  /* Assert(ColorCount == 255); */
+  /* { */
+  /*   if (Result->ColorPaletteTexture.ID) { DeleteTexture(&Result->ColorPaletteTexture); } */
+  /*   Result->ColorPaletteTexture = */
+  /*     MakeTexture_RGB( V2i(ColorCount, 1), Result->ColorPalette.Start, CSz("ColorPalette")); */
+  /* } */
+
   gBuffer->gBufferShader =
-    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera);
+    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
 
   AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
                                    &gBuffer->Textures,
@@ -814,8 +841,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                                                         &gBuffer->Textures,
                                                         &SG->ShadowMap,
                                                         &AoGroup->Texture,
-                                                        &Lighting->LightingTex,
-                                                        &Lighting->BloomTex,
+                                                        &Lighting->LuminanceTex,
+                                                        &Lighting->Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
                                                         &SG->MVP,

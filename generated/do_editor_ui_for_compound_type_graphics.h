@@ -162,6 +162,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
+&Element->ColorPaletteTexture,
+        CSz("ColorPaletteTexture"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
 &Element->Transparency,
         CSz("Transparency"),
         Params

@@ -406,6 +406,16 @@ Bonsai_Render(engine_resources *Resources)
   /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
   /* DrawEditorChunkPreviewToGBuffer(); */
 
+#if 1
+  s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+  if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
+  {
+    if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+    Graphics->ColorPaletteTexture =
+      MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
+  }
+#endif
+
   // Editor preview, World, Entities
   DrawStuffToGBufferTextures(Resources, GetApplicationResolution(&Resources->Settings));
 
@@ -420,7 +430,6 @@ Bonsai_Render(engine_resources *Resources)
   if (GpuMap->Buffer.At)
   {
     RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Resources->Settings), GpuMap, Graphics);
-    // Comment this out to not cast shadows from immediate geometry
     RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
   }
 
@@ -431,16 +440,13 @@ Bonsai_Render(engine_resources *Resources)
   // why that would be, but here we are.
   if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Resources->Settings), AoGroup); }
 
-  /* FlushBuffersToCard(&Graphics->Transparency.GpuBuffer); */
-  /* if (Graphics->Transparency.GpuBuffer.Buffer.At) */
   {
     RenderTransparencyBuffers(GetApplicationResolution(&Resources->Settings), &Graphics->Settings, &Graphics->Transparency);
     RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
   }
-  /* Clear(&Graphics->Transparency.GpuBuffer); */
 
-  /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
-  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
+  if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+  /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
   CompositeAndDisplay(Plat, Graphics);
 
@@ -449,6 +455,7 @@ Bonsai_Render(engine_resources *Resources)
   GL.DisableVertexAttribArray(0);
   GL.DisableVertexAttribArray(1);
   GL.DisableVertexAttribArray(2);
+  GL.DisableVertexAttribArray(3);
 
 
   /* DebugVisualize(Ui, &Resources->MeshFreelist); */
@@ -544,7 +551,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       {
         s32 Period = 150;
         s32 Amplititude = 10;
-        s32 StartingZDepth = -25;
+        s32 StartingZDepth = 0;
         u16 Color = GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);

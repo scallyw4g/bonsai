@@ -455,12 +455,6 @@ struct world
   memory_arena* ChunkMemory;         poof(@ui_skip)
   world_flag Flags;                  poof(@ui_skip)
 
-  v3_cursor ColorPalette; // u16_max elements according to the color member stored in `voxel`
-  // NOTE(Jesse): Couldn't quite figure out how to pass this through the
-  // container ui function.  Going to turn the UI off for now
-  // poof(@ui_value_range(0, 255)) 
-  poof(@ui_skip)
-
 };
 
 struct standing_spot

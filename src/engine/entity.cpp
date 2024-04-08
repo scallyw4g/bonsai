@@ -1214,6 +1214,8 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
           /* r32 Transparency = System->ParticleStartingTransparency; */
 
           auto Dest = System->ParticleStartingTransparency > 0.f ? &TranspDest : &SolidDest;
+          /* auto Dest = &TranspDest; */
+          /* auto Dest = &SolidDest; */
           DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, V2(Transparency, System->ParticleLightEmission) );
 
 #if 1

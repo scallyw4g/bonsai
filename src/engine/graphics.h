@@ -22,13 +22,6 @@ struct transparency_render_group
   /* m4                        *ViewProjection; */
 };
 
-struct bloom_render_group
-{
-  // NOTE(Jesse): Draws to the lighting or transparency FBO
-  gpu_mapped_element_buffer GpuBuffer;
-  shader Shader;
-};
-
 struct graphics
 {
   render_settings Settings;
@@ -37,7 +30,7 @@ struct graphics
 
   r32 FogPower;
   v3  FogColor;
-  v3 SkyColor;
+  v3  SkyColor;
 
   // Default cameras, game code can do it's own thing if it wants to.
   camera GameCamera;
@@ -53,8 +46,19 @@ struct graphics
   ao_render_group        *AoGroup;
   shadow_render_group    *SG;
 
+
+  // NOTE(Jesse): This is the CPU-side color palette.  It is the source of truth.
+  //              The matching GPU-side texture is in `graphics`
+  //
+  // NOTE(Jesse): u16_max elements according to the color member stored in `voxel`
+  //
+  // NOTE(Jesse): Couldn't quite figure out how to pass ui_value_range through
+  // the container ui function.  Going to turn the UI off for now
+  // poof(@ui_value_range(0, 255)) 
+  v3_cursor ColorPalette; poof(@ui_skip)
+  texture ColorPaletteTexture;
+
   transparency_render_group Transparency;
-  /* bloom_render_group        Bloom; */
   lighting_render_group     Lighting;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;

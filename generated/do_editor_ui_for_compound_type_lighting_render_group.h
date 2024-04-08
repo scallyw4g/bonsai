@@ -52,32 +52,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       
       DoEditorUi(Ui,
         Window,
-&Element->BloomTextureFBO,
-        CSz("BloomTextureFBO"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->LightingTex,
-        CSz("LightingTex"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->BloomTex,
-        CSz("BloomTex"),
+&Element->LuminanceTex,
+        CSz("LuminanceTex"),
         Params
         );
 
@@ -90,6 +66,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         Window,
 &Element->Shader,
         CSz("Shader"),
+        Params
+        );
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+&Element->Bloom,
+        CSz("Bloom"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

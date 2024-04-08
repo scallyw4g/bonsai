@@ -8,7 +8,7 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 
 uniform sampler2D BloomTex;
-uniform sampler2D LightingTex;
+uniform sampler2D LuminanceTex;
 /* uniform sampler2D shadowMap; */
 /* uniform sampler2D Ssao; */
 
@@ -157,9 +157,9 @@ void main()
   vec4 AccumTex      =          texture(TransparencyAccum, ScreenUV);
   f32  AccumCountTex = max(1.f, texture(TransparencyCount, ScreenUV).r);
   vec3 FragNormal    =          texture(gNormal,           ScreenUV).rgb;
-  vec3 Lighting      =          texture(LightingTex,       ScreenUV).rgb;
+  vec3 Lighting      =          texture(LuminanceTex,       ScreenUV).rgb;
 
-  /* OutColor = v4(Lighting, 1.f);; */
+  /* OutColor = v4(Lighting*5.f, 1.f); */
   /* return; */
 
   v3 Bloom = vec3(0.0f, 0.0f, 0.0f);
@@ -175,14 +175,14 @@ void main()
     vec3 xNextFragNormal = texture(gNormal, ScreenUV+ vec2(gBufferTexelStep.x, 0) ).rgb;
     if ( abs(dot(FragNormal, xNextFragNormal)) < 0.5f )
     {
-      Lighting += texture(LightingTex, ScreenUV + vec2(gBufferTexelStep.x, 0) ).rgb;
+      Lighting += texture(LuminanceTex, ScreenUV + vec2(gBufferTexelStep.x, 0) ).rgb;
       Lighting/=2.f;
     }
 
     vec3 yNextFragNormal = texture(gNormal, ScreenUV+ vec2(0, gBufferTexelStep.y) ).rgb;
     if ( abs(dot(FragNormal, yNextFragNormal)) < 0.5f )
     {
-      Lighting += texture(LightingTex, ScreenUV + vec2(0, gBufferTexelStep.y) ).rgb;
+      Lighting += texture(LuminanceTex, ScreenUV + vec2(0, gBufferTexelStep.y) ).rgb;
       Lighting/=2.f;
     }
   }
