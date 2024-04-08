@@ -577,12 +577,11 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
-link_internal graphics *
-GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
+link_internal b32
+GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
   Init_Global_QuadVertexBuffer();
 
-  graphics *Result = Allocate(graphics, GraphicsMemory, 1);
   Result->Memory = GraphicsMemory;
 
   Result->Settings.ToneMappingType = ToneMappingType_Exposure;
@@ -610,8 +609,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
 
   Result->FogPower = 2.f;
-  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
 
+  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
   {
@@ -783,5 +782,5 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
   Result->AoGroup = AoGroup;
   Result->gBuffer = gBuffer;
 
-  return Result;
+  return True;
 }

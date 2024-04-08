@@ -1,3 +1,54 @@
+#if PLATFORM_WINDOW_IMPLEMENTATIONS
+link_internal void
+RenderLoop()
+{
+}
+
+link_internal THREAD_MAIN_RETURN
+RenderMain(void *vThreadStartupParams)
+{
+  b32 InitResult = True;
+  thread_startup_params *ThreadParams = Cast(thread_startup_params*, vThreadStartupParams);
+
+  Assert(ThreadParams->ThreadIndex > 0);
+  SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
+
+  engine_resources *Engine = GetEngineResources();
+  os *Os = &Engine->Stdlib.Os;
+  platform *Plat = &Engine->Stdlib.Plat;
+
+  s32 VSyncFrames = 0;
+  InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames);
+
+  if (InitResult) { InitResult &= PlatformInitializeGLContext(Os, Plat); }
+
+  if (InitResult) { InitResult &= InitializeOpenglFunctions(); }
+
+  if (InitResult) { InitResult &= GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena()); }
+
+  if (InitResult)
+  {
+    memory_arena *UiMemory = AllocateArena();
+    InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
+
+    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
+    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
+    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
+  }
+
+  FullBarrier;
+
+  Engine->Graphics.Initialized = True;
+
+  if (InitResult)
+  {
+    RenderLoop();
+  }
+
+  return 0;
+}
+#endif
 
 link_internal b32
 InitEngineResources(engine_resources *Engine)
@@ -5,9 +56,6 @@ InitEngineResources(engine_resources *Engine)
   b32 Result = True;
 
   platform *Plat = &Engine->Stdlib.Plat;
-
-  Assert(Global_ShaderHeaderCode.Start == 0);
-  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
 
   memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
   DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
@@ -21,18 +69,12 @@ InitEngineResources(engine_resources *Engine)
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
-  Engine->Graphics = GraphicsInit(&Engine->Settings, AllocateArena());
-  if (!Engine->Graphics) { Error("Initializing Graphics"); Result = False; }
+  Assert(Global_ShaderHeaderCode.Start == 0);
+  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
 
-  {
-    memory_arena *UiMemory = AllocateArena();
-    InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
-
-    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
-    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
-    LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
-    Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
-  }
+#if PLATFORM_WINDOW_IMPLEMENTATIONS
+  /* PlatformCreateThread( RenderMain, Cast(void*, Engine), INVALID_THREAD_LOCAL_THREAD_INDEX ); */
+#endif
 
   Engine->EntityTable = AllocateEntityTable(WorldAndEntityArena, TOTAL_ENTITY_COUNT);
 
@@ -48,11 +90,11 @@ InitEngineDebug(engine_debug *Debug)
 
   Debug->Textures.Memory = Debug->Memory;
 
-  {
-    Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(256), 0, CSz("WorldEditDebugTexture"));
-    StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f);
-    AllocateMesh(&Debug->WorldEditDebugMesh,  u32(Kilobytes(64*16)), Debug->Memory);
-  }
+  /* { */
+  /*   Debug->WorldEditDebugThumb.Texture = MakeTexture_RGB(V2i(256), 0, CSz("WorldEditDebugTexture")); */
+  /*   StandardCamera(&Debug->WorldEditDebugThumb.Camera, 10000.f, 1000.f, 30.f); */
+  /*   AllocateMesh(&Debug->WorldEditDebugMesh,  u32(Kilobytes(64*16)), Debug->Memory); */
+  /* } */
 
   return Result;
 }

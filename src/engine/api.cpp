@@ -16,8 +16,8 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
 
   /* Initialize_Global_UpdateWorldCallbackTable(); */
 
-  b32 Result = InitializeOpenglFunctions();
-  return Result;
+  /* b32 Result = InitializeOpenglFunctions(); */
+  return True;
 }
 
 link_export b32
@@ -49,8 +49,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->FrameIndex += 1;
 
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  Resources->Graphics->GpuBufferWriteIndex = 0;
-  Resources->Graphics->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
+  Resources->Graphics.GpuBufferWriteIndex = 0;
+  Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
@@ -299,9 +299,9 @@ Bonsai_Simulate(engine_resources *Resources)
   m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
   m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
 
-  Resources->Graphics->gBuffer->InverseViewMatrix = Inverse(ViewMat);
-  Resources->Graphics->gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
-  Resources->Graphics->gBuffer->ViewProjection = ProjMat * ViewMat;
+  Resources->Graphics.gBuffer->InverseViewMatrix = Inverse(ViewMat);
+  Resources->Graphics.gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
+  Resources->Graphics.gBuffer->ViewProjection = ProjMat * ViewMat;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);

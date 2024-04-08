@@ -178,12 +178,16 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
+  thread_main_callback_type Procs[1] = { &RenderMain };
+  thread_main_callback_type_buffer CustomWorkerProcs = {};
+  CustomWorkerProcs.Count = 1;
+  CustomWorkerProcs.Start = Procs;
+
+  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
-                                  &BootstrapArena) );
-
-
+                                  &BootstrapArena,
+                                  &CustomWorkerProcs ));
 
   EngineResources->DebugState = Global_DebugStatePointer;
   Global_EngineResources = EngineResources;
@@ -214,6 +218,11 @@ main( s32 ArgCount, const char ** Args )
 
   if (GameApi->GameInit)
   {
+#if PLATFORM_WINDOW_IMPLEMENTATIONS
+    // Block till RenderMain is initialized in case game wants to do rendering things in init..?
+    // TODO(Jesse): Is there any reason to actually do this?
+    while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
+#endif
     EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }

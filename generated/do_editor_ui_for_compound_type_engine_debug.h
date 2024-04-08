@@ -218,30 +218,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("SelectedEntity"),
         Params
         );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->WorldEditDebugMesh,
-        CSz("WorldEditDebugMesh"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->WorldEditDebugThumb,
-        CSz("WorldEditDebugThumb"),
-        Params
-        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

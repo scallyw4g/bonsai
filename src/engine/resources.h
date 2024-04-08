@@ -49,7 +49,7 @@ struct engine_resources
   maybe_ray   MaybeMouseRay;
   world      *World;
   game_state *GameState;
-  graphics   *Graphics;
+  graphics    Graphics;
 
   file_traversal_node      RequestedGameLibReloadNode;
   game_lib_reload_behavior RequestedGameLibReloadBehavior;
@@ -132,7 +132,7 @@ GetLevelEditor()
 link_internal entity *
 GetCameraGhost(engine_resources *Engine)
 {
-  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics->Camera->GhostId);
+  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics.Camera->GhostId);
   return Result;
 }
 
@@ -155,7 +155,7 @@ GetCameraGhost(engine_resources *Engine)
   level_editor              *Editor        = &Res->Editor;            \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
-  graphics                  *Graphics      =  Res->Graphics;              \
+  graphics                  *Graphics      = &Res->Graphics;              \
   lighting_render_group     *Lighting      = &Graphics->Lighting;         \
   renderer_2d               *Ui            = &Res->Ui;                    \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \

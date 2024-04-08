@@ -124,7 +124,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       
       DoEditorUi(Ui,
         Window,
-        Element->Graphics,
+&Element->Graphics,
         CSz("Graphics"),
         Params
         );

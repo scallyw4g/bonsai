@@ -4985,11 +4985,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 #endif
 
 
+
   // DEBUG CODE
-  untextured_3d_geometry_buffer *DebugMesh = &GetEngineDebug()->WorldEditDebugMesh;
+  //
 
 #define DEBUG_VIEW_WORLD_UPDATE 0
 #if DEBUG_VIEW_WORLD_UPDATE
+  untextured_3d_geometry_buffer *DebugMesh = &GetEngineDebug()->WorldEditDebugMesh;
   // TODO(Jesse): Need to copy the voxels because the Greedy thing blows away
   // the face flags as it does the traversal.
   /* NotImplemented; */

@@ -24,6 +24,8 @@ struct transparency_render_group
 
 struct graphics
 {
+  b32 Initialized;
+
   render_settings Settings;
 
   v3 SunBasis;

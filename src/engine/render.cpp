@@ -1183,9 +1183,6 @@ DoWorldChunkStuff()
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
-  // nopush wtf?
-  SetupGBufferShader(GetApplicationResolution(&GetEngineResources()->Settings), Graphics);
-
   for (s32 x = Min.x; x < Max.x; ++ x)
   for (s32 y = Min.y; y < Max.y; ++ y)
   for (s32 z = Min.z; z < Max.z; ++ z)

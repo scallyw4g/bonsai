@@ -512,6 +512,7 @@ DoAssetWindow(engine_resources *Engine)
   }
 }
 
+#if 0
 link_internal void
 DoWorldEditDebugWindow(engine_resources *Engine)
 {
@@ -533,6 +534,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 }
+#endif
 
 link_internal void
 DoEngineDebug(engine_resources *Engine)
