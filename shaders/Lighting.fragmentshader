@@ -1,7 +1,7 @@
 
 in vec2 gBufferUV;
 layout (location = 0) out vec4 out_LightColor;
-layout (location = 1) out vec3 BloomColor;
+/* layout (location = 1) out vec3 BloomColor; */
 
 uniform sampler2D gColor;
 uniform sampler2D gPosition;
@@ -397,7 +397,7 @@ void main()
   /* return; */
 
 
-  if (UseLightingBloom) { BloomColor = TotalLight + TransparencyContrib.rgb; }
+  /* if (UseLightingBloom) { BloomColor = TotalLight + TransparencyContrib.rgb; } */
 
   /* else { BloomColor = vec3(0.0f, 0.0f, 0.0f); } */
 

@@ -62,7 +62,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      g_buffer_textures *gTextures,
                      texture *ShadowMap,
                      texture *Ssao,
-                     texture *LightingTex,
+                     texture *LuminanceTex,
                      texture *BloomTex,
 
                      texture *TransparencyAccum,
@@ -115,7 +115,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, LightingTex, "LightingTex");
+  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
   Current = &(*Current)->Next;
 
   /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
@@ -753,38 +753,47 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                          &Result->Settings.UseLightingBloom
                         );
 
+    Lighting->LuminanceTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Luminance"), TextureStorageFormat_RGB16F);
+    /* Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"),    TextureStorageFormat_RGB16F); */
 
-    // NOTE(Jesse): This is used for bloom
-    Lighting->FBO = GenFramebuffer();
-
-    Lighting->LightingTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Lighting"), TextureStorageFormat_RGB16F);
-    Lighting->BloomTex    = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Bloom"),    TextureStorageFormat_RGB16F);
-
-    /* Lighting->DebugBloomShader    = MakeSimpleTextureShader(&Lighting->BloomTex, GraphicsMemory); */
-    /* Lighting->DebugLightingShader = MakeSimpleTextureShader(&Lighting->LightingTex, GraphicsMemory); */
-
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
-    FramebufferTexture(&Lighting->FBO, &Lighting->LightingTex);
-    FramebufferTexture(&Lighting->FBO, &Lighting->BloomTex);
-
-    SetDrawBuffers(&Lighting->FBO);
-
-    if (CheckAndClearFramebuffer() == False)
+    // Luminance FBO
     {
-      Error("Initializing Lighting Group");
+      Lighting->FBO = GenFramebuffer();
+
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+      FramebufferTexture(&Lighting->FBO, &Lighting->LuminanceTex);
+      /* FramebufferTexture(&Lighting->FBO, &Lighting->Bloom.Tex); */
+      SetDrawBuffers(&Lighting->FBO);
+      if (CheckAndClearFramebuffer() == False) { Error("Initializing Lighting FBO"); }
     }
 
-    Lighting->BloomTextureFBO = GenFramebuffer();
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->BloomTextureFBO.ID);
-    GL.BindTexture(GL_TEXTURE_2D, Lighting->BloomTex.ID);
-    FramebufferTexture(&Lighting->BloomTextureFBO, &Lighting->BloomTex);
-    SetDrawBuffers(&Lighting->BloomTextureFBO);
-
-    if (CheckAndClearFramebuffer() == False)
+#if 0
+    // Bloom mip chain textures
+    v2i MipSize = Result->Settings.iLuminanceMapResolution / 2;
+    RangeIterator(MipIndex, BLOOM_MIP_CHAIN_COUNT)
     {
-      Error("Initializing Lighting Group");
+      cs DebugName = FormatCountedString(GraphicsMemory, CSz("BloomBlurMip(%d)"), MipIndex);
+      u32 Channels = 3;
+      GenTexture(MipSize, DebugName, Channels);
+      GL.TexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, MipSize.x, MipSize.y, 0, GL_RGB, GL_FLOAT, 0);
     }
+
+    // Bloom FBO
+    {
+      Lighting->BloomFBO = GenFramebuffer();
+      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->BloomFBO.ID);
+      GL.BindTexture(GL_TEXTURE_2D, Lighting->BloomTex.ID);
+      FramebufferTexture(&Lighting->BloomFBO, &Lighting->BloomTex);
+      SetDrawBuffers(&Lighting->BloomFBO);
+      if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
+
+      InitializeBloomDownsampleShader(&Lighting->BloomDownsampleShader);
+      InitializeBloomUpsampleShader(&Lighting->BloomUpsampleShader);
+    }
+#endif
+    InitBloomRenderGroup(&Lighting->Bloom, &Result->Settings, GraphicsMemory);
+
 
   }
 
@@ -832,8 +841,8 @@ GraphicsInit(engine_settings *EngineSettings, memory_arena *GraphicsMemory)
                                                         &gBuffer->Textures,
                                                         &SG->ShadowMap,
                                                         &AoGroup->Texture,
-                                                        &Lighting->LightingTex,
-                                                        &Lighting->BloomTex,
+                                                        &Lighting->LuminanceTex,
+                                                        &Lighting->Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
                                                         &SG->MVP,

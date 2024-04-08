@@ -17,3 +17,17 @@ GetUniform(memory_arena *Mem, shader *Shader, texture *Value, const char *Name)
   return Uniform;
 }
 
+shader_uniform
+ShaderUniform(shader *Shader, texture *Value, const char *Name)
+{
+  shader_uniform Uniform = {};
+
+  Uniform.Type = ShaderUniform_Texture;
+  Uniform.Texture = Value;
+  Uniform.Name = Name;
+
+  Uniform.ID = GetShaderUniform(Shader, Name);
+
+  return Uniform;
+}
+

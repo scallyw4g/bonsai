@@ -17,3 +17,17 @@ GetUniform(memory_arena *Mem, shader *Shader, s32 *Value, const char *Name)
   return Uniform;
 }
 
+shader_uniform
+ShaderUniform(shader *Shader, s32 *Value, const char *Name)
+{
+  shader_uniform Uniform = {};
+
+  Uniform.Type = ShaderUniform_S32;
+  Uniform.S32 = Value;
+  Uniform.Name = Name;
+
+  Uniform.ID = GetShaderUniform(Shader, Name);
+
+  return Uniform;
+}
+

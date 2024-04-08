@@ -22,13 +22,6 @@ struct transparency_render_group
   /* m4                        *ViewProjection; */
 };
 
-struct bloom_render_group
-{
-  // NOTE(Jesse): Draws to the lighting or transparency FBO
-  gpu_mapped_element_buffer GpuBuffer;
-  shader Shader;
-};
-
 struct graphics
 {
   render_settings Settings;
@@ -66,7 +59,6 @@ struct graphics
   texture ColorPaletteTexture;
 
   transparency_render_group Transparency;
-  /* bloom_render_group        Bloom; */
   lighting_render_group     Lighting;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;

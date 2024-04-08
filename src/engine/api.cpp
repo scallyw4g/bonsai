@@ -445,8 +445,8 @@ Bonsai_Render(engine_resources *Resources)
     RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
   }
 
-  /* GaussianBlurTexture(&Graphics->Gaussian, AoGroup->Texture); */
-  if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomTextureFBO); }
+  if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+  /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
   CompositeAndDisplay(Plat, Graphics);
 
@@ -551,7 +551,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       {
         s32 Period = 150;
         s32 Amplititude = 10;
-        s32 StartingZDepth = -25;
+        s32 StartingZDepth = 0;
         u16 Color = GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
