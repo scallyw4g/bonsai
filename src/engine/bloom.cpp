@@ -26,17 +26,50 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
     SetDrawBuffers(&Group->BlurFBO);
     if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
 
-    InitializeBloomDownsampleShader(&Group->DownsampleShader);
-    InitializeBloomUpsampleShader(&Group->UpsampleShader);
+    InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution);
+    InitializeBloomUpsampleShader(&Group->UpsampleShader, &Settings->LuminanceMapResolution);
   }
 }
 
 link_internal void
 RunBloomRenderPass(graphics *Graphics)
 {
-  UseShader(&Graphics->Lighting.Bloom.DownsampleShader);
+  bloom_render_group *Group = &Graphics->Lighting.Bloom;
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->BlurFBO.ID);
+
+  UseShader(&Group->DownsampleShader);
+
+  // Activate the 0th texture unit
+  GL.ActiveTexture(GL_TEXTURE0);
+
+  // LuminanceTex is the source for the bloom, start with it as the source tex
+  GL.BindTexture(GL_TEXTURE_2D, Graphics->Lighting.LuminanceTex.ID);
+  v2 SrcDim = V2(Graphics->Lighting.LuminanceTex.Dim);
+
+  // Setup VBO for fullscreen quad
+  Assert(Global_QuadVertexBuffer);
+  GL.EnableVertexAttribArray(0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+  GL.VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
 
   RangeIterator(MipIndex, BLOOM_MIP_CHAIN_COUNT)
   {
+    texture *MipTex = Group->MipChain + MipIndex;
+    SetViewport(MipTex->Dim);
+
+    BindUniformByName(&Group->DownsampleShader.Program, "SrcDim", &SrcDim);
+
+    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, MipTex->ID, 0);
+    Draw(6);
+
+    GL.BindTexture(GL_TEXTURE_2D, MipTex->ID); // Make current mip the source for next iteration
+    SrcDim = V2(MipTex->Dim);
   }
+
+  // Teardown VBO
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  GL.DisableVertexAttribArray(0);
+
 }

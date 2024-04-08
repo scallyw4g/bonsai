@@ -105,7 +105,7 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
 
   GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
 
-  BindUniform(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
+  BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
 
   Draw(GpuMap->Buffer.At);
 
@@ -219,7 +219,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
 
     AssertNoGlErrors;
-    BindUniform(&Group->Shader, "horizontal", horizontal);
+    BindUniformByName(&Group->Shader, "horizontal", horizontal);
 
     texture *Tex;
     if (first_iteration)
@@ -232,7 +232,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     }
 
     /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
-    BindUniform(&Group->Shader, "SrcImage", Tex, 0);
+    BindUniformByName(&Group->Shader, "SrcImage", Tex, 0);
 
     AssertNoGlErrors;
     RenderQuad();
@@ -820,7 +820,7 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
         ProjectionMatrix(Camera, V2(Texture->Dim)) *
         ViewMatrix(Engine->World->ChunkDim, Camera) ;
 
-      BindUniform(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
+      BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
@@ -1336,8 +1336,8 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
   DrawEditorPreview(Engine, Shader);
 
   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
-    BindUniform(Shader, "DrawMajorGrid", False);
-    BindUniform(Shader, "DrawMinorGrid", False);
+    BindUniformByName(Shader, "DrawMajorGrid", False);
+    BindUniformByName(Shader, "DrawMinorGrid", False);
     r32 dt = Plat->dt;
     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
   }

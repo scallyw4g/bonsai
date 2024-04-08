@@ -4,10 +4,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
       @frag_source_file("shaders/bloom_downsample.fragmentshader") )
 {
   shader Program;
-  shader_uniform Uniforms[2];
-
-  texture SrcTex;        poof(@uniform)
-       v2 SrcResolution; poof(@uniform)
+  shader_uniform Uniforms[1];
+  v2 SrcResolution; poof(@uniform)
 };
 
 poof(shader_magic(bloom_downsample_shader))
@@ -18,10 +16,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
       @frag_source_file("shaders/bloom_upsample.fragmentshader") )
 {
   shader Program;
-  shader_uniform Uniforms[2];
+  shader_uniform Uniforms[1];
 
-  texture SrcTex;        poof(@uniform)
-       v2 SrcResolution; poof(@uniform)
+  v2 SrcResolution; poof(@uniform)
 };
 
 poof(shader_magic(bloom_upsample_shader))
