@@ -18,14 +18,14 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
   shader Program;
   shader_uniform Uniforms[1];
 
-  v2 SrcResolution; poof(@uniform)
+  f32 FilterRadius; poof(@uniform)
 };
 
 poof(shader_magic(bloom_upsample_shader))
 #include <generated/shader_magic_bloom_upsample_shader.h>
 
 
-#define BLOOM_MIP_CHAIN_COUNT (5)
+#define BLOOM_MIP_CHAIN_COUNT (3)
 struct bloom_render_group
 {
   framebuffer BlurFBO; // For doing the blur

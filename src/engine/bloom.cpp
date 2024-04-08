@@ -27,7 +27,8 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
     if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
 
     InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution);
-    InitializeBloomUpsampleShader(&Group->UpsampleShader, &Settings->LuminanceMapResolution);
+    f32 FilterRadiusInUVSpace = 0.003f;
+    InitializeBloomUpsampleShader(&Group->UpsampleShader, &FilterRadiusInUVSpace);
   }
 }
 
@@ -38,6 +39,17 @@ RunBloomRenderPass(graphics *Graphics)
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->BlurFBO.ID);
 
+  // Setup VBO for fullscreen quad
+  Assert(Global_QuadVertexBuffer);
+  GL.EnableVertexAttribArray(0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
+  GL.VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
+
+  //
+  // Downsample
+  //
+
   UseShader(&Group->DownsampleShader);
 
   // Activate the 0th texture unit
@@ -46,13 +58,6 @@ RunBloomRenderPass(graphics *Graphics)
   // LuminanceTex is the source for the bloom, start with it as the source tex
   GL.BindTexture(GL_TEXTURE_2D, Graphics->Lighting.LuminanceTex.ID);
   v2 SrcDim = V2(Graphics->Lighting.LuminanceTex.Dim);
-
-  // Setup VBO for fullscreen quad
-  Assert(Global_QuadVertexBuffer);
-  GL.EnableVertexAttribArray(0);
-  GL.BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  GL.VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
 
   RangeIterator(MipIndex, BLOOM_MIP_CHAIN_COUNT)
   {
@@ -67,6 +72,33 @@ RunBloomRenderPass(graphics *Graphics)
     GL.BindTexture(GL_TEXTURE_2D, MipTex->ID); // Make current mip the source for next iteration
     SrcDim = V2(MipTex->Dim);
   }
+
+  //
+  // Upsample
+  //
+
+  UseShader(&Group->UpsampleShader);
+
+  // Last mip is already bound as the current source; start at (BLOOM_MIP_CHAIN_COUNT-1)
+
+  RangeIteratorReverse(MipIndex, (BLOOM_MIP_CHAIN_COUNT-1))
+  {
+    texture *MipTex = Group->MipChain + MipIndex;
+    SetViewport(MipTex->Dim);
+
+    GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, MipTex->ID, 0);
+    Draw(6);
+
+    GL.BindTexture(GL_TEXTURE_2D, MipTex->ID); // Make current mip the source for next iteration
+    SrcDim = V2(MipTex->Dim);
+  }
+
+  // Final upsample into full-res texture
+
+  SetViewport(Group->Tex.Dim);
+  GL.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Group->Tex.ID, 0);
+  Draw(6);
+
 
   // Teardown VBO
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
