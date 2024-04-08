@@ -27,7 +27,7 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
     if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
 
     InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution);
-    f32 FilterRadiusInUVSpace = 0.003f;
+    f32 FilterRadiusInUVSpace = 0.004f;
     InitializeBloomUpsampleShader(&Group->UpsampleShader, &FilterRadiusInUVSpace);
   }
 }
