@@ -18,8 +18,6 @@ InitEngineResources(engine_resources *Engine)
   Engine->Heap                    = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
   Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1));
 
-  Init_Global_QuadVertexBuffer();
-
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
