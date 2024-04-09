@@ -38,3 +38,6 @@ InitializeGameApi(application_api *GameApi, shared_lib GameLib)
   b32 Result = GameApi->GameMain != 0;
   return Result;
 }
+
+link_internal void
+DoDayNightCycle(graphics *Graphics, r32 tDay);

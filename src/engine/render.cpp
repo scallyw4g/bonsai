@@ -910,7 +910,7 @@ link_internal b32
 SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 {
   b32 Result = False;
-  Assert(ThreadLocal_ThreadIndex == 0);
+  Assert(ThreadLocal_ThreadIndex == 1);
 
   RangeIterator(MeshIndex, MeshIndex_Count)
   {

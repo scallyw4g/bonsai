@@ -58,11 +58,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
-  ClearFramebuffers(Graphics, &Resources->RTTGroup);
-
-  MapGpuElementBuffer(GpuMap);
-  MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
-
   if (GetEngineDebug()->DrawWorldAxies)
   {
     untextured_3d_geometry_buffer CopyDest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL*3);
@@ -207,7 +202,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
-  UiFrameEnd(&Resources->Ui);
+  Resources->Graphics.RenderGate = True;
+
+  while (Resources->Graphics.RenderGate == True) { SleepMs(1); }
 
   b32 Result = True;
   return Result;
@@ -376,90 +373,6 @@ Bonsai_Render(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  ao_render_group     *AoGroup = Graphics->AoGroup;
-  shadow_render_group *SG      = Graphics->SG;
-
-  if (Graphics->Settings.Lighting.AutoDayNightCycle)
-  {
-    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
-  }
-  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
-
-#if 0
-  NotImplemented;
-#else
-  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  if (CameraGhost)
-  {
-    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.x = Mod(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.y = Mod(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.z = Mod(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
-  }
-#endif
-
-  EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
-  EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
-
-  /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
-  /* DrawEditorChunkPreviewToGBuffer(); */
-
-#if 1
-  s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
-  if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
-  {
-    if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
-    Graphics->ColorPaletteTexture =
-      MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
-  }
-#endif
-
-  // Editor preview, World, Entities
-  DrawStuffToGBufferTextures(Resources, GetApplicationResolution(&Resources->Settings));
-
-  DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
-
-  // TODO(Jesse): Move into engine debug
-  DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
-
-  Ensure( FlushBuffersToCard(GpuMap) );
-  /* Ensure( FlushBuffersToCard(&Graphics->Transparency.GpuBuffer)); */
-
-  if (GpuMap->Buffer.At)
-  {
-    RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Resources->Settings), GpuMap, Graphics);
-    RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
-  }
-
-  Clear(&GpuMap->Buffer);
-
-  // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
-  // after the transparency/luminance textures.  I have literally 0 ideas as to
-  // why that would be, but here we are.
-  if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Resources->Settings), AoGroup); }
-
-  {
-    RenderTransparencyBuffers(GetApplicationResolution(&Resources->Settings), &Graphics->Settings, &Graphics->Transparency);
-    RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
-  }
-
-  if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
-  /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
-
-  CompositeAndDisplay(Plat, Graphics);
-
-
-  GpuMap->Buffer.At = 0;
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-  GL.DisableVertexAttribArray(3);
-
-
-  /* DebugVisualize(Ui, &Resources->MeshFreelist); */
-  /* DebugVisualize(Ui, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
 
   b32 Result = True;
   return Result;

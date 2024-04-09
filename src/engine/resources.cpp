@@ -1,7 +1,121 @@
 #if PLATFORM_WINDOW_IMPLEMENTATIONS
 link_internal void
-RenderLoop()
+RenderLoop(engine_resources *Engine)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  // Map immediate GPU buffers for first frame
+  MapGpuElementBuffer(GpuMap);
+  MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
+
+  os *Os         = &Engine->Stdlib.Os;
+  /* platform *Plat = &Engine->Stdlib.Plat; */
+  while (true)
+  {
+    v2 LastMouseP = Plat->MouseP;
+    while ( ProcessOsMessages(Os, Plat) );
+    Plat->MouseDP = LastMouseP - Plat->MouseP;
+    Assert(Plat->ScreenDim.x > 0);
+    Assert(Plat->ScreenDim.y > 0);
+
+    while (Graphics->RenderGate == False) { SleepMs(1); }
+
+    ClearFramebuffers(Graphics, &Engine->RTTGroup);
+
+    UiFrameEnd(&Engine->Ui);
+
+    ao_render_group     *AoGroup = Graphics->AoGroup;
+    shadow_render_group *SG      = Graphics->SG;
+
+    if (Graphics->Settings.Lighting.AutoDayNightCycle)
+    {
+      Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
+    }
+    DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
+
+#if 0
+    NotImplemented;
+#else
+    entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    if (CameraGhost)
+    {
+      v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
+      Graphics->Settings.OffsetOfWorldCenterToGrid.x = Mod(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
+      Graphics->Settings.OffsetOfWorldCenterToGrid.y = Mod(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
+      Graphics->Settings.OffsetOfWorldCenterToGrid.z = Mod(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
+    }
+#endif
+
+    EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
+    EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
+
+    /* DrawWorldToGBuffer(Engine, GetApplicationResolution(&Engine->Settings)); */
+    /* DrawEditorChunkPreviewToGBuffer(); */
+
+#if 1
+    s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+    if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
+    {
+      if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+      Graphics->ColorPaletteTexture =
+        MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
+    }
+#endif
+
+    // Editor preview, World, Entities
+    DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings));
+
+    DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine);
+
+    // TODO(Jesse): Move into engine debug
+    DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
+
+    AssertNoGlErrors;
+
+    Ensure( FlushBuffersToCard(GpuMap) );
+    /* Ensure( FlushBuffersToCard(&Graphics->Transparency.GpuBuffer)); */
+
+    if (GpuMap->Buffer.At)
+    {
+      RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
+      RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
+    }
+
+    Clear(&GpuMap->Buffer);
+
+    // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
+    // after the transparency/luminance textures.  I have literally 0 ideas as to
+    // why that would be, but here we are.
+    if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
+
+    {
+      RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency);
+      RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), GpuMap, Lighting, Graphics);
+    }
+
+    if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+    /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
+
+
+    CompositeAndDisplay(Plat, Graphics);
+
+
+    GpuMap->Buffer.At = 0;
+
+    GL.DisableVertexAttribArray(0);
+    GL.DisableVertexAttribArray(1);
+    GL.DisableVertexAttribArray(2);
+    GL.DisableVertexAttribArray(3);
+
+    BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+    // Map immediate GPU buffers for next frame
+    MapGpuElementBuffer(GpuMap);
+    MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
+
+    Graphics->RenderGate = False;
+  }
+
 }
 
 link_internal THREAD_MAIN_RETURN
@@ -19,8 +133,6 @@ RenderMain(void *vThreadStartupParams)
 
   s32 VSyncFrames = 0;
   InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames);
-
-  if (InitResult) { InitResult &= PlatformInitializeGLContext(Os, Plat); }
 
   if (InitResult) { InitResult &= InitializeOpenglFunctions(); }
 
@@ -43,7 +155,7 @@ RenderMain(void *vThreadStartupParams)
 
   if (InitResult)
   {
-    RenderLoop();
+    RenderLoop(Engine);
   }
 
   return 0;

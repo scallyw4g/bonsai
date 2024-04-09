@@ -26,6 +26,8 @@ struct graphics
 {
   b32 Initialized;
 
+  volatile b32 RenderGate;
+
   render_settings Settings;
 
   v3 SunBasis;

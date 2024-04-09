@@ -137,6 +137,7 @@ main( s32 ArgCount, const char ** Args )
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
+  Global_EngineResources = EngineResources;
 
   const char* GameLibName = Global_ProjectSwitcherGameLibName;
   switch (ArgCount)
@@ -190,7 +191,6 @@ main( s32 ArgCount, const char ** Args )
                                   &CustomWorkerProcs ));
 
   EngineResources->DebugState = Global_DebugStatePointer;
-  Global_EngineResources = EngineResources;
 
   Assert(EngineResources->Stdlib.ThreadStates);
   Assert(Global_ThreadStates);
@@ -248,12 +248,6 @@ main( s32 ArgCount, const char ** Args )
       Warn("DT exceeded 100ms, truncating to 33.33ms");
       Plat->dt = 0.03333f;
     }
-
-    v2 LastMouseP = Plat->MouseP;
-    while ( ProcessOsMessages(Os, Plat) );
-    Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Assert(Plat->ScreenDim.x > 0);
-    Assert(Plat->ScreenDim.y > 0);
 
     if (Plat->Input.Escape.Clicked)
     {
@@ -368,8 +362,6 @@ main( s32 ArgCount, const char ** Args )
     // ATM this only draws the UI.
     //
     EngineApi.FrameEnd(EngineResources);
-
-    BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
 
 
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered

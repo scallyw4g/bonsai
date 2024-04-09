@@ -8,13 +8,19 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 {
   TIMED_FUNCTION();
 
+  AssertNoGlErrors;
+
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 
+  AssertNoGlErrors;
+
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  AssertNoGlErrors;
   GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
