@@ -36,6 +36,20 @@ Bonsai_Init(engine_resources *Resources)
   return Result;
 }
 
+link_internal void
+SimulateCameraGhostAndSetOffsetWorldCenterToGrid(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
+  {
+    SimulateEntity(Engine, CameraGhost, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+
+    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
+    Graphics->Settings.OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
+  }
+}
+
 link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
@@ -52,11 +66,20 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // right?
   CollectUnusedChunks(Resources, Resources->World->VisibleRegion);
 
+  // NOTE(Jesse): This is a special-case entity simulation routine such that we
+  // can dispatch the draw commands for world chunks afterwards.  The reason we
+  // need this is because the world grid requires an offset which is computed
+  // from the sim-space position of the camera ghost.
+  //
+  // @early_camera_ghost_simulation
+  //
+  SimulateCameraGhostAndSetOffsetWorldCenterToGrid(Resources);
+
   Resources->FrameIndex += 1;
 
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  Resources->Graphics.GpuBufferWriteIndex = 0;
-  Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
+  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
+  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
 
 
 
@@ -64,6 +87,15 @@ Bonsai_FrameBegin(engine_resources *Resources)
   UNPACK_ENGINE_RESOURCES(Resources);
 
   PushClearAllFramebuffersCommand(&Plat->RenderQ);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->DepthShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
@@ -382,6 +414,12 @@ Bonsai_Render(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
 
+  if (Graphics->Settings.Lighting.AutoDayNightCycle)
+  {
+    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
+  }
+  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
+
   {
     layout DefaultLayout = {};
     DefaultLayout.DrawBounds = InvertedInfinityRectangle();
@@ -389,6 +427,7 @@ Bonsai_Render(engine_resources *Engine)
     SetWindowZDepths(Ui->CommandBuffer);
     FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
   }
+
 
   PushDoStuffCommand(&Plat->RenderQ);
 

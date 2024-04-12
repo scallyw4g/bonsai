@@ -1423,10 +1423,92 @@ EntityCollidedLastFrame(engine_resources *Engine, entity *E)
 // An optional function the game can choose to implement if they want to do a custom entity update.
 link_weak b32 GameEntityUpdate(engine_resources *, entity *);
 
-// NOTE(Jesse): Once we draw entities & chunks in a more real way this should
-// be able to be moved back into the regular entity.cpp
+
+
 link_internal void
-SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleRegion, untextured_3d_geometry_buffer *SolidGeo, untextured_3d_geometry_buffer *TransparentGeo, work_queue *Queue)
+SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleRegion, geo_u3d *SolidGeo, geo_u3d *TransparentGeo, work_queue *Queue)
+{
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+  if (!Spawned(Entity)) return;
+
+  b32 DoDefaultUpdate = True;
+  if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
+
+
+  Entity->P = Canonicalize(Resources->World, Entity->P);
+
+  if (DoDefaultUpdate)
+  {
+    // Update Camera Ghost
+    if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
+    {
+      if (Entity->Id == Graphics->Camera->GhostId)
+      {
+        if (UiCapturedMouseInput(Ui) == False)
+        {
+          f32 CameraSpeed = Camera->DistanceFromTarget * Camera->Blend/100.f;
+          v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
+          Offset.z = 0; // Constrain to XY plane
+
+          if (Input->E.Pressed) { Offset.z += 1.f; }
+          if (Input->Q.Pressed) { Offset.z -= 1.f; }
+
+          Offset = Normalize(Offset);
+          Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+        }
+
+      }
+    }
+
+    if (Entity->Behavior & EntityBehaviorFlags_WorldCenter) { World->Center = Entity->P.WorldP; }
+
+    b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
+    PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
+
+    // NOTE(Jesse): This assert isn't strictly necessary, but we don't support only colliding against entities and not the world at the moment
+    if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
+    if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
+    {
+      collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+      if (C.Count)
+      {
+        /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */
+        Entity->LastResolvedCollision = C;
+      }
+    }
+    else
+    {
+      Entity->P.Offset += Entity->Physics.Delta;
+      Canonicalize(World, &Entity->P);
+    }
+
+    particle_system *System = Entity->Emitter;
+    if (Active(System))
+    {
+      auto EntityDelta = Entity->Physics.Delta;
+
+      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
+
+      /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
+      /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
+      auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
+      PushWorkQueueEntry(Queue, &Job);
+    }
+    else
+    {
+      if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
+    }
+  }
+
+
+  DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+  FinalizeEntityUpdate(Entity);
+  InsertEntityIntoChunks(World, Entity, GetTranArena());
+}
+
+link_internal void
+SimulateEntities(engine_resources *Resources, r32 dt, v3i VisibleRegion, geo_u3d *SolidGeo, geo_u3d *TransparentGeo, work_queue *Queue)
 {
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
@@ -1435,81 +1517,11 @@ SimulateEntities(engine_resources *Resources, r32 dt, chunk_dimension VisibleReg
   {
     entity *Entity = EntityTable[EntityIndex];
 
-    if (!Spawned(Entity)) continue;
+    // NOTE(Jesse): We simulate the camera ghost before the rest of the entities
+    // more info @early_camera_ghost_simulation
+    if (Entity == GetCameraGhost(Resources)) continue;
 
-    b32 DoDefaultUpdate = True;
-    if (GameEntityUpdate) { DoDefaultUpdate = (GameEntityUpdate(Resources, Entity) == False); }
-
-
-    Entity->P = Canonicalize(Resources->World, Entity->P);
-
-    if (DoDefaultUpdate)
-    {
-      // Update Camera Ghost
-      if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
-      {
-        if (Entity->Id == Graphics->Camera->GhostId)
-        {
-          if (UiCapturedMouseInput(Ui) == False)
-          {
-            f32 CameraSpeed = Camera->DistanceFromTarget * Camera->Blend/100.f;
-            v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-            Offset.z = 0; // Constrain to XY plane
-
-            if (Input->E.Pressed) { Offset.z += 1.f; }
-            if (Input->Q.Pressed) { Offset.z -= 1.f; }
-
-            Offset = Normalize(Offset);
-            Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
-          }
-
-        }
-      }
-
-      if (Entity->Behavior & EntityBehaviorFlags_WorldCenter) { World->Center = Entity->P.WorldP; }
-
-      b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
-      PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
-
-      // NOTE(Jesse): This assert isn't strictly necessary, but we don't support only colliding against entities and not the world at the moment
-      if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
-      if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
-      {
-        collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
-        if (C.Count)
-        {
-          /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */
-          Entity->LastResolvedCollision = C;
-        }
-      }
-      else
-      {
-        Entity->P.Offset += Entity->Physics.Delta;
-        Canonicalize(World, &Entity->P);
-      }
-
-      particle_system *System = Entity->Emitter;
-      if (Active(System))
-      {
-        auto EntityDelta = Entity->Physics.Delta;
-
-        v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
-
-        /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
-        /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
-        auto Job = WorkQueueEntry(System, EntityDelta, RenderSpaceP, dt);
-        PushWorkQueueEntry(Queue, &Job);
-      }
-      else
-      {
-        if (Entity->Behavior & EntityBehaviorFlags_UnspawnOnParticleSystemTerminate) { Unspawn(Entity); }
-      }
-    }
-
-
-    DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
-    FinalizeEntityUpdate(Entity);
-    InsertEntityIntoChunks(World, Entity, GetTranArena());
+    SimulateEntity(Resources, Entity, dt, VisibleRegion, SolidGeo, TransparentGeo, Queue);
   }
 }
 

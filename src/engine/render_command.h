@@ -1,3 +1,4 @@
+
 //
 // Renderer commands
 //
@@ -26,6 +27,34 @@ struct bonsai_render_command_clear_all_framebuffers
                // have a struct to go off of..
 };
 
+enum bonsai_render_command_shader_id
+{
+  BonsaiRenderCommand_ShaderId_noop,
+
+  BonsaiRenderCommand_ShaderId_gBuffer,
+  BonsaiRenderCommand_ShaderId_ShadowMap,
+};
+
+struct bonsai_render_command_setup_shader
+{
+  bonsai_render_command_shader_id ShaderId;
+};
+
+struct bonsai_render_command_teardown_shader
+{
+  bonsai_render_command_shader_id ShaderId;
+};
+
+struct bonsai_render_command_draw_all_entities
+{
+};
+
+struct bonsai_render_command_draw_world_chunk_draw_list
+{
+  world_chunk_ptr_paged_list *DrawList;
+  shader *Shader;
+};
+
 // NOTE(Jesse): Temporary
 struct bonsai_render_command_do_stuff
 {
@@ -35,11 +64,19 @@ struct bonsai_render_command_do_stuff
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
+    bonsai_render_command_clear_all_framebuffers
+
     bonsai_render_command_allocate_buffers
     bonsai_render_command_realloc_buffers
     bonsai_render_command_delete_buffers
-    bonsai_render_command_clear_all_framebuffers
+
     bonsai_render_command_do_stuff
+
+    bonsai_render_command_setup_shader
+    bonsai_render_command_teardown_shader
+
+    bonsai_render_command_draw_world_chunk_draw_list
+    bonsai_render_command_draw_all_entities
   }
 )
 #include <generated/d_union_bonsai_render_command.h>
@@ -61,3 +98,9 @@ PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles
 
 link_internal void
 PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh);
+
+link_internal void
+PushClearAllFramebuffersCommand(work_queue *RenderQueue);
+
+link_internal void
+PushDoStuffCommand(work_queue *RenderQueue);

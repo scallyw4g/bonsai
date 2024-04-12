@@ -48,6 +48,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         CSz("FirstUniform"),
         Params
         );
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cs*,&Element->VertexSourceFilename),
+        CSz("VertexSourceFilename"),
+        Params
+        );
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cs*,&Element->FragSourceFilename),
+        CSz("FragSourceFilename"),
+        Params
+        );
+
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

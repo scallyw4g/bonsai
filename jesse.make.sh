@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
@@ -14,7 +14,7 @@
   BuildDebugSystem \
   BuildSingleExample examples/transparency \
   BuildSingleExample examples/turn_based \
-  # BuildSingleExample examples/terrain_gen \
+  BuildSingleExample examples/terrain_gen \
   # BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/graveyard \

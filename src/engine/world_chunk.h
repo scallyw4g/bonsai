@@ -270,9 +270,32 @@ struct threadsafe_geometry_buffer
 };
 
 link_internal b32
-HasGpuMesh(lod_element_buffer *Meshes, world_chunk_mesh_bitfield MeshBit)
+HasGpuMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
-  b32 Result = (Meshes->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  return Result;
+}
+
+
+link_internal b32
+HasGpuMesh(lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
+  }
+  return Result;
+}
+
+link_internal b32
+HasCpuMesh(lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->E[MeshIndex] != 0);
+  }
   return Result;
 }
 

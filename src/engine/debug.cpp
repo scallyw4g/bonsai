@@ -481,7 +481,7 @@ DoAssetWindow(engine_resources *Engine)
                       //
                       // That said .. this is just editor code.. so .. meh
                       //
-                      SetupGBufferShader(GetApplicationResolution(&Engine->Settings), Graphics);
+                      SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
                       v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                       /* v3 Basis = V3(0,0,20); */
                       DrawLod(GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis);

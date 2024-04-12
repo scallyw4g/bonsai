@@ -845,12 +845,16 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 {
+  AssertNoGlErrors;
+
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  AssertNoGlErrors;
   GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
@@ -906,7 +910,7 @@ link_internal b32
 SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
 {
   b32 Result = False;
-  Assert(ThreadLocal_ThreadIndex == 1);
+  Assert(ThreadLocal_ThreadIndex != 1);
 
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
@@ -948,27 +952,34 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
 
       untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
-      if (Mesh && Mesh->At)
+      if (Mesh)
       {
-        // @duplicate_realloc_code
-        if (Handles->VertexHandle)
+        if (Mesh->At)
         {
-          GL.DeleteBuffers(3, &Handles->VertexHandle);
-          Clear(Handles);
+          // @duplicate_realloc_code
+          if (Handles->VertexHandle)
+          {
+            GL.DeleteBuffers(3, &Handles->VertexHandle);
+            Clear(Handles);
+            AssertNoGlErrors;
+          }
+
+          AllocateGpuElementBuffer(Handles, Mesh->At);
+          CopyToGpuBuffer(Mesh, Handles);
+          Result = True;
+        }
+        else
+        {
+          DeallocateGpuElementBuffer(Handles);
+          AssertNoGlErrors;
         }
 
-        AllocateGpuElementBuffer(Handles, Mesh->At);
-        CopyToGpuBuffer(Mesh, Handles);
-        Result = True;
+        DeallocateMesh(Engine, Mesh);
       }
-      else
-      {
-        DeallocateGpuElementBuffer(Handles);
-      }
-
-      DeallocateMesh(Engine, Mesh);
     }
   }
+
+  AssertNoGlErrors;
 
   // TODO(Jesse): Is this actually a thing??
   FullBarrier;
@@ -996,6 +1007,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
 #if 1
@@ -1030,13 +1042,18 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   if (MeshBit != MeshBit_None)
   {
     m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
+    AssertNoGlErrors;
 
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
+    AssertNoGlErrors;
 
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
+    AssertNoGlErrors;
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
+    AssertNoGlErrors;
 
     DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    AssertNoGlErrors;
   }
 }
 
@@ -1135,9 +1152,12 @@ DrawEntity(
         }
 
         SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
+        AssertNoGlErrors;
 
         v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
+        AssertNoGlErrors;
+
         DrawLod(GetEngineResources(), Shader, &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
@@ -1145,7 +1165,7 @@ DrawEntity(
 }
 
 link_internal void
-SetupGBufferShader(v2i ApplicationResolution, graphics *Graphics)
+SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution)
 {
   auto GBufferRenderGroup = Graphics->gBuffer;
 
@@ -1168,6 +1188,41 @@ TeardownGBufferShader(graphics *Graphics)
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
   GL.Enable(GL_CULL_FACE);
 }
+
+
+
+
+link_internal void
+SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution)
+{
+  shadow_render_group *SG = Graphics->SG;
+
+  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GL.UseProgram(SG->DepthShader.ID);
+
+  SetViewport(ShadowMapResolution);
+
+  // TODO(Jesse): Duplicate MVP calculation
+  // @duplicate_shadow_map_MVP_calculation
+  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
+  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+
+  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+
+  GL.Disable(GL_CULL_FACE);
+
+  AssertNoGlErrors;
+}
+
+link_internal void
+TeardownShadowMapShader(graphics *Graphics)
+{
+  GL.Enable(GL_CULL_FACE);
+  AssertNoGlErrors;
+}
+
+
+
 
 link_internal void
 DrawEntities( shader *Shader,
@@ -1200,7 +1255,7 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
   Graphics->Settings.DrawMajorGrid = False;
   Graphics->Settings.DrawMinorGrid = False;
 
-  SetupGBufferShader(ApplicationResolution, Graphics);
+  SetupGBufferShader(Graphics, ApplicationResolution);
 
   DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
 
@@ -1244,10 +1299,18 @@ MaintainWorldChunkHashtables(engine_resources *Engine)
     world_chunk    *Chunk = GetWorldChunkFromHashtable( World, P );
     if (Chunk)
     {
-      Push(ShadowMapDrawList, &Chunk);
-      if (IsInFrustum(World, Camera, Chunk))
+      if (HasCpuMesh(&Chunk->Meshes))
       {
-        Push(MainDrawList, &Chunk);
+        SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
+      }
+
+      if (HasGpuMesh(&Chunk->Meshes))
+      {
+        Push(ShadowMapDrawList, &Chunk);
+        if (IsInFrustum(World, Camera, Chunk))
+        {
+          Push(MainDrawList, &Chunk);
+        }
       }
     }
     else
@@ -1262,7 +1325,7 @@ MaintainWorldChunkHashtables(engine_resources *Engine)
 }
 
 link_internal void
-RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList)
+RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   IterateOver(DrawList, ChunkPtrPtr, ChunkIndex)
@@ -1271,10 +1334,12 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList)
     v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
     v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
 
-    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
+    AssertNoGlErrors;
 
     v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-    DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    AssertNoGlErrors;
   }
 }
 
@@ -1401,9 +1466,9 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
-  SetupGBufferShader(ApplicationResolution, Graphics);
+  SetupGBufferShader(Graphics, ApplicationResolution);
 
-  RenderDrawList(Engine, &Graphics->MainDrawList);
+  /* RenderDrawList(Engine, &Graphics->MainDrawList); */
 
   shader *Shader = &Graphics->gBuffer->gBufferShader;
   DrawEditorPreview(Engine, Shader);
@@ -1431,19 +1496,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   shadow_render_group *SG = Graphics->SG;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  GL.UseProgram(SG->DepthShader.ID);
-
-  SetViewport(ShadowMapResolution);
-
-  // TODO(Jesse): Duplicate MVP calculation
-  // @duplicate_shadow_map_MVP_calculation
-  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
-
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
-
-  GL.Disable(GL_CULL_FACE);
+  SetupShadowMapShader(Graphics, ShadowMapResolution);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */
@@ -1452,22 +1505,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   AssertNoGlErrors;
 
-  /* RenderDrawList(Engine, &Graphics->ShadowMapDrawList); */
+  /* RenderDrawList(Engine, &Graphics->ShadowMapDrawList, &SG->DepthShader); */
 
-#if 1
-  RangeIterator_t(u32, ChunkIndex, World->HashSize)
-  {
-    world_chunk *Chunk = World->ChunkHash[ChunkIndex];
-    if (Chunk)
-    {
-      if (IsInFrustum(World, Camera, Chunk))
-      {
-        v3 Basis = GetRenderP(GetEngineResources(), Chunk->WorldP);
-        DrawLod(Engine, &SG->DepthShader, &Chunk->Meshes, 0.f, Basis);
-      }
-    }
-  }
-#endif
-
-  GL.Enable(GL_CULL_FACE);
+  TeardownShadowMapShader(Graphics);
 }

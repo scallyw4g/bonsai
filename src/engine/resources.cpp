@@ -3,7 +3,7 @@ link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
   // Map immediate GPU buffers for first frame
-  MapGpuElementBuffer(&Engine->Graphics.GpuBuffers[1]);
+  MapGpuElementBuffer(&Engine->Graphics.GpuBuffers[0]);
   MapGpuElementBuffer(&Engine->Graphics.Transparency.GpuBuffer);
 
   os *Os         = &Engine->Stdlib.Os;
@@ -64,12 +64,59 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;
 
-            case type_bonsai_render_command_clear_all_framebuffers:
-            {
+            { tmatch(bonsai_render_command_clear_all_framebuffers, RC, Command)
               ClearFramebuffers(Graphics, &Engine->RTTGroup);
             } break;
 
+
+
+
+            { tmatch(bonsai_render_command_setup_shader, RC, Command)
+              switch (Command->ShaderId)
+              {
+                InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+                case BonsaiRenderCommand_ShaderId_gBuffer:
+                {
+                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+                } break;
+
+                case BonsaiRenderCommand_ShaderId_ShadowMap:
+                {
+                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings));
+                } break;
+              }
+            } break;
+
+            { tmatch(bonsai_render_command_teardown_shader, RC, Command)
+              switch (Command->ShaderId)
+              {
+                InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+                case BonsaiRenderCommand_ShaderId_gBuffer:
+                {
+                  TeardownGBufferShader(Graphics);
+                } break;
+
+                case BonsaiRenderCommand_ShaderId_ShadowMap:
+                {
+                  TeardownShadowMapShader(Graphics);
+                } break;
+              }
+            } break;
+
+            { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RC, Command)
+              RenderDrawList(Engine, Command->DrawList, Command->Shader);
+            } break;
+
+            { tmatch(bonsai_render_command_draw_all_entities, RC, Command)
+            } break;
+
+
+
+
             { tmatch(bonsai_render_command_do_stuff, RC, Command)
+
               //
               // Render begin
               //
@@ -77,32 +124,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               ao_render_group     *AoGroup = Graphics->AoGroup;
               shadow_render_group *SG      = Graphics->SG;
 
-              if (Graphics->Settings.Lighting.AutoDayNightCycle)
-              {
-                Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
-              }
-              DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
-
-#if 0
-              NotImplemented;
-#else
-              entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-              if (CameraGhost)
-              {
-                v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-                Graphics->Settings.OffsetOfWorldCenterToGrid.x = Mod(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-                Graphics->Settings.OffsetOfWorldCenterToGrid.y = Mod(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-                Graphics->Settings.OffsetOfWorldCenterToGrid.z = Mod(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
-              }
-#endif
-
               EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
               EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
-              /* DrawWorldToGBuffer(Engine, GetApplicationResolution(&Engine->Settings)); */
-              /* DrawEditorChunkPreviewToGBuffer(); */
-
-#if 1
+              // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
+              //
+              // Update color texture, if necessary
+              //
               s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
               if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
               {
@@ -110,7 +138,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 Graphics->ColorPaletteTexture =
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
-#endif
 
               // Editor preview, World, Entities
               DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings));
@@ -150,7 +177,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
-              GpuMap = GetNextGpuMap(Graphics);
+              /* GpuMap = GetNextGpuMap(Graphics); */
 
               // Map immediate GPU buffers for next frame
               MapGpuElementBuffer(GpuMap);

@@ -72,17 +72,22 @@ AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, u32 ElementCount)
 
   GL.GenBuffers(3, &Handles->VertexHandle);
   Handles->ElementCount = ElementCount;
+  AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
   GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
+  AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
   GL.BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
+  AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
   GL.BufferData(GL_ARRAY_BUFFER, matlSize, 0, GL_STATIC_DRAW);
+  AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  AssertNoGlErrors;
 }
 
 void

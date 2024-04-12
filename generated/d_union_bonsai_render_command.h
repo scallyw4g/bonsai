@@ -1,13 +1,17 @@
-// src/engine/render_command.h:36:0
+// src/engine/render_command.h:65:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
   type_work_queue_entry__bonsai_render_command_noop,
+  type_bonsai_render_command_clear_all_framebuffers,
   type_bonsai_render_command_allocate_buffers,
   type_bonsai_render_command_realloc_buffers,
   type_bonsai_render_command_delete_buffers,
-  type_bonsai_render_command_clear_all_framebuffers,
   type_bonsai_render_command_do_stuff,
+  type_bonsai_render_command_setup_shader,
+  type_bonsai_render_command_teardown_shader,
+  type_bonsai_render_command_draw_world_chunk_draw_list,
+  type_bonsai_render_command_draw_all_entities,
 };
 
 struct work_queue_entry__bonsai_render_command
@@ -16,11 +20,15 @@ struct work_queue_entry__bonsai_render_command
 
   union
   {
+    struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
     struct bonsai_render_command_allocate_buffers bonsai_render_command_allocate_buffers;
     struct bonsai_render_command_realloc_buffers bonsai_render_command_realloc_buffers;
     struct bonsai_render_command_delete_buffers bonsai_render_command_delete_buffers;
-    struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
     struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
+    struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;
+    struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;
+    struct bonsai_render_command_draw_world_chunk_draw_list bonsai_render_command_draw_world_chunk_draw_list;
+    struct bonsai_render_command_draw_all_entities bonsai_render_command_draw_all_entities;
   };
 };
 
