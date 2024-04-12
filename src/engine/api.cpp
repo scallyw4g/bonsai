@@ -60,24 +60,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  //
-  // Input processing
-  //
-  {
-    ResetInputForFrameStart(&Plat->Input, &Resources->Hotkeys);
-
-    v2 LastMouseP = Plat->MouseP;
-    while ( ProcessOsMessages(&Resources->Stdlib.Os, Plat) );
-    Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Assert(Plat->ScreenDim.x > 0);
-    Assert(Plat->ScreenDim.y > 0);
-
-    BindHotkeysToInput(&Resources->Hotkeys, &Plat->Input);
-
-    /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
-  }
-
-
 
 
   World->ChunkHash = CurrentWorldHashtable(Resources);

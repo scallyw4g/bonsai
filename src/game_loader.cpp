@@ -244,6 +244,23 @@ main( s32 ArgCount, const char ** Args )
 
     TIMED_BLOCK("Frame Preamble");
 
+    //
+    // Input processing
+    //
+    {
+      ResetInputForFrameStart(&Plat->Input, &EngineResources->Hotkeys);
+
+      v2 LastMouseP = Plat->MouseP;
+      while ( ProcessOsMessages(Os, Plat) );
+      Plat->MouseDP = LastMouseP - Plat->MouseP;
+      Assert(Plat->ScreenDim.x > 0);
+      Assert(Plat->ScreenDim.y > 0);
+
+      BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
+
+      /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
+    }
+
     if (Plat->dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating to 33.33ms");
