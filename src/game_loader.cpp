@@ -184,11 +184,13 @@ main( s32 ArgCount, const char ** Args )
   CustomWorkerProcs.Count = 1;
   CustomWorkerProcs.Start = Procs;
 
-  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
+  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
                                   &CustomWorkerProcs ));
+
+  while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
 
   EngineResources->DebugState = Global_DebugStatePointer;
 

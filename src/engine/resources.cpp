@@ -2,16 +2,20 @@
 link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-
   // Map immediate GPU buffers for first frame
-  MapGpuElementBuffer(GpuMap);
-  MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
+  MapGpuElementBuffer(&Engine->Graphics.GpuBuffers[1]);
+  MapGpuElementBuffer(&Engine->Graphics.Transparency.GpuBuffer);
+
+  // TODO(Jesse): Once we have everything ported to message-based architecture
+  // this should be removed
+  while (Engine->Graphics.RenderGate == False) { SleepMs(1); }
 
   os *Os         = &Engine->Stdlib.Os;
   /* platform *Plat = &Engine->Stdlib.Plat; */
   while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
   {
+    UNPACK_ENGINE_RESOURCES(Engine);
+
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
     WorkerThread_BeforeJobStart(ThreadParams);
 
@@ -67,21 +71,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
         } break;
       }
     }
-
-    //
-    // Input processing
-    //
-
-    ResetInputForFrameStart(&Plat->Input, &Engine->Hotkeys);
-
-    v2 LastMouseP = Plat->MouseP;
-    while ( ProcessOsMessages(Os, Plat) );
-    Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Assert(Plat->ScreenDim.x > 0);
-    Assert(Plat->ScreenDim.y > 0);
-
-    BindHotkeysToInput(&Engine->Hotkeys, &Plat->Input);
-
 
     //
     // Render begin
@@ -202,8 +191,10 @@ RenderMain(void *vThreadStartupParams)
   os *Os = &Engine->Stdlib.Os;
   platform *Plat = &Engine->Stdlib.Plat;
 
-  s32 VSyncFrames = 0;
-  InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames);
+  PlatformMakeRenderContextCurrent(Os);
+
+  /* s32 VSyncFrames = 0; */
+  /* InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames); */
 
   if (InitResult) { InitResult &= InitializeOpenglFunctions(); }
 
@@ -228,8 +219,12 @@ RenderMain(void *vThreadStartupParams)
   {
     RenderLoop(ThreadParams, Engine);
   }
+  else
+  {
+    SoftError("Render thread initiailization failed.");
+  }
 
-  return 0;
+  return InitResult;
 }
 #endif
 
@@ -252,8 +247,8 @@ InitEngineResources(engine_resources *Engine)
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
 
-  Assert(Global_ShaderHeaderCode.Start == 0);
-  LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage);
+  /* Assert(Global_ShaderHeaderCode.Start == 0); */
+  /* LoadGlobalShaderHeaderCode(Engine->Settings.Graphics.ShaderLanguage); */
 
 #if PLATFORM_WINDOW_IMPLEMENTATIONS
   /* PlatformCreateThread( RenderMain, Cast(void*, Engine), INVALID_THREAD_LOCAL_THREAD_INDEX ); */
