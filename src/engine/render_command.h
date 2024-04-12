@@ -2,12 +2,6 @@
 // Renderer commands
 //
 
-struct bonsai_render_command_clear_all_framebuffers
-{
-  u32 Ignored; // NOTE(Jesse): Only here because poof only gens functions if we
-               // have a struct to go off of..
-};
-
 struct bonsai_render_command_allocate_buffers
 {
   u32 *Buffers;
@@ -26,6 +20,18 @@ struct bonsai_render_command_realloc_buffers
   untextured_3d_geometry_buffer *Mesh;
 };
 
+struct bonsai_render_command_clear_all_framebuffers
+{
+  u32 Ignored; // NOTE(Jesse): Only here because poof only gens functions if we
+               // have a struct to go off of..
+};
+
+// NOTE(Jesse): Temporary
+struct bonsai_render_command_do_stuff
+{
+  u32 Ignorerd;
+};
+
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
@@ -33,6 +39,7 @@ poof(
     bonsai_render_command_realloc_buffers
     bonsai_render_command_delete_buffers
     bonsai_render_command_clear_all_framebuffers
+    bonsai_render_command_do_stuff
   }
 )
 #include <generated/d_union_bonsai_render_command.h>

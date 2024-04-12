@@ -21,3 +21,10 @@ PushClearAllFramebuffersCommand(work_queue *RenderQueue)
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandClearAllFramebuffers(0)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+
+link_internal void
+PushDoStuffCommand(work_queue *RenderQueue)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDoStuff(0)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
