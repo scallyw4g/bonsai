@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:257:0
+// src/engine/editor.cpp:263:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Flags,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(chunk_flag*,&Element->Flags),
         CSz("Flags"),
         Params
         );
@@ -37,22 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Dim,
-        CSz("Dim"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-        Element->Voxels,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(voxel*, Element->Voxels),
         CSz("Voxels"),
         Params
         );
@@ -61,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-        Element->VoxelLighting,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(voxel_lighting*, Element->VoxelLighting),
         CSz("VoxelLighting"),
         Params
         );

@@ -23,6 +23,8 @@ struct u8_cursor_block_array
   u64 BlockSize;
 };
 
+typedef u8_cursor_block_array u8_cursor_paged_list;
+
 link_internal u8_cursor_block_array_index
 operator++(u8_cursor_block_array_index &I0)
 {

@@ -1,6 +1,6 @@
 #if PLATFORM_WINDOW_IMPLEMENTATIONS
 link_internal void
-RenderLoop(engine_resources *Engine)
+RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -10,15 +10,82 @@ RenderLoop(engine_resources *Engine)
 
   os *Os         = &Engine->Stdlib.Os;
   /* platform *Plat = &Engine->Stdlib.Plat; */
-  while (true)
+  while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
   {
+    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+    WorkerThread_BeforeJobStart(ThreadParams);
+
+    while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
+    {
+      tswitch(Job)
+      {
+        case type_work_queue_entry_noop:
+        case type_work_queue_entry_init_world_chunk:
+        case type_work_queue_entry_copy_buffer_set:
+        case type_work_queue_entry_copy_buffer_ref:
+        case type_work_queue_entry_init_asset:
+        case type_work_queue_entry_update_world_region:
+        case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_sim_particle_system:
+        case type_work_queue_entry__align_to_cache_line_helper:
+        {
+          InvalidCodePath();
+        } break;
+
+        tmatch(work_queue_entry__bonsai_render_command, Job, RC)
+        {
+          tswitch(RC)
+          {
+            InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
+
+            { tmatch(bonsai_render_command_allocate_buffers, RC, Command)
+              NotImplemented;
+            } break;
+
+            { tmatch(bonsai_render_command_realloc_buffers, RC, Command)
+              auto *Handles = Command->Handles;
+              auto *Mesh = Command->Mesh;
+
+              // @duplicate_realloc_code
+              if (Handles->VertexHandle)
+              {
+                GL.DeleteBuffers(3, &Handles->VertexHandle);
+                Clear(Handles);
+              }
+
+              AllocateGpuElementBuffer(Handles, Mesh->At);
+              CopyToGpuBuffer(Mesh, Handles);
+
+              DeallocateMesh(Mesh, &Engine->MeshFreelist);
+            } break;
+
+            { tmatch(bonsai_render_command_delete_buffers, RC, Command)
+              if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
+              RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
+            } break;
+          }
+        } break;
+      }
+    }
+
+    //
+    // Input processing
+    //
+
+    ResetInputForFrameStart(&Plat->Input, &Engine->Hotkeys);
+
     v2 LastMouseP = Plat->MouseP;
     while ( ProcessOsMessages(Os, Plat) );
     Plat->MouseDP = LastMouseP - Plat->MouseP;
     Assert(Plat->ScreenDim.x > 0);
     Assert(Plat->ScreenDim.y > 0);
 
-    while (Graphics->RenderGate == False) { SleepMs(1); }
+    BindHotkeysToInput(&Engine->Hotkeys, &Plat->Input);
+
+
+    //
+    // Render begin
+    //
 
     ClearFramebuffers(Graphics, &Engine->RTTGroup);
 
@@ -72,15 +139,12 @@ RenderLoop(engine_resources *Engine)
 
     AssertNoGlErrors;
 
-    Ensure( FlushBuffersToCard(GpuMap) );
-    /* Ensure( FlushBuffersToCard(&Graphics->Transparency.GpuBuffer)); */
-
+    Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
     if (GpuMap->Buffer.At)
     {
       RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
       RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
     }
-
     Clear(&GpuMap->Buffer);
 
     // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
@@ -99,23 +163,29 @@ RenderLoop(engine_resources *Engine)
 
     CompositeAndDisplay(Plat, Graphics);
 
-
-    GpuMap->Buffer.At = 0;
-
-    GL.DisableVertexAttribArray(0);
-    GL.DisableVertexAttribArray(1);
-    GL.DisableVertexAttribArray(2);
-    GL.DisableVertexAttribArray(3);
-
     BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+    GpuMap = GetNextGpuMap(Graphics);
 
     // Map immediate GPU buffers for next frame
     MapGpuElementBuffer(GpuMap);
     MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
+    Assert(GpuMap->Buffer.At == 0);
 
     Graphics->RenderGate = False;
+    while (Graphics->RenderGate == False)
+    {
+      WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+      SleepMs(1);
+
+      if (FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex)) break;
+
+      if (FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex)) { WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex); }
+    }
   }
 
+  Info("Exiting Render Thread (%d)", ThreadParams->ThreadIndex);
+  WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
 }
 
 link_internal THREAD_MAIN_RETURN
@@ -123,9 +193,10 @@ RenderMain(void *vThreadStartupParams)
 {
   b32 InitResult = True;
   thread_startup_params *ThreadParams = Cast(thread_startup_params*, vThreadStartupParams);
+  WorkerThread_BeforeJobStart(ThreadParams);
 
-  Assert(ThreadParams->ThreadIndex > 0);
-  SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
+  /* Assert(ThreadParams->ThreadIndex > 0); */
+  /* SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex); */
 
   engine_resources *Engine = GetEngineResources();
   os *Os = &Engine->Stdlib.Os;
@@ -155,7 +226,7 @@ RenderMain(void *vThreadStartupParams)
 
   if (InitResult)
   {
-    RenderLoop(Engine);
+    RenderLoop(ThreadParams, Engine);
   }
 
   return 0;
@@ -264,7 +335,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
     if (world_chunk *Chunk = World->ChunkHash[HashIndex])
     {
       Chunk->Flags = Chunk_VoxelsInitialized;
-      FreeWorldChunk(World, Chunk, &Engine->MeshFreelist);
+      FreeWorldChunk(World, &Plat->RenderQ, Chunk, &Engine->MeshFreelist);
       World->ChunkHash[HashIndex] = 0;
       ++ChunksFreed;
     }

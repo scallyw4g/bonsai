@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Id,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(ui_id*,&Element->Id),
         CSz("Id"),
         Params
         );
+
 
 
 

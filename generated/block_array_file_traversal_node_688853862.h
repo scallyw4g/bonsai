@@ -23,6 +23,8 @@ struct file_traversal_node_block_array
   
 };
 
+typedef file_traversal_node_block_array file_traversal_node_paged_list;
+
 link_internal file_traversal_node_block_array_index
 operator++(file_traversal_node_block_array_index &I0)
 {

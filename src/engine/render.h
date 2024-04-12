@@ -17,8 +17,8 @@ struct ao_render_group
   shader Shader;
   shader DebugSsaoShader;
 
-  v3 SsaoKernel[SSAO_KERNEL_SIZE]; // Could just be pushed on the heap
-  s32 SsaoKernelUniform; // FIXME(Jesse): Automate me!
+  v3 SsaoKernel[SSAO_KERNEL_SIZE];
+  s32 SsaoKernelUniform; // TODO(Jesse): Automate me!
 
   texture Texture;
   texture NoiseTexture;
@@ -53,7 +53,6 @@ Untextured3dGeometryBuffer(v3* Verts, v3* Normals, vertex_material *Mat, u32 Cou
   Result.Verts = Verts;
   Result.Normals = Normals;
   Result.Mat = Mat;
-  /* Result.TransEmiss = TransEmiss; */
   Result.At = Count;
 
   return Result;
@@ -149,6 +148,14 @@ ProjectionMatrix(camera *Camera, v2 ScreenDim)
   return Result;
 }
 
+
+
+
+
+
+
+
+
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
@@ -163,3 +170,4 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *
 
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);
+

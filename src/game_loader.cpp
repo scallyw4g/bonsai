@@ -207,6 +207,7 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
   InitQueue(&Plat->LowPriority,  WorkQueueMemory);
+  InitQueue(&Plat->RenderQ,  WorkQueueMemory);
 
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);
@@ -241,8 +242,6 @@ main( s32 ArgCount, const char ** Args )
 
     TIMED_BLOCK("Frame Preamble");
 
-    ResetInputForFrameStart(&Plat->Input, &EngineResources->Hotkeys);
-
     if (Plat->dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating to 33.33ms");
@@ -263,8 +262,6 @@ main( s32 ArgCount, const char ** Args )
         LastGameLibTime = 0;
       }
     }
-
-    BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
     DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 

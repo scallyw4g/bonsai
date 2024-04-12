@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Threshold,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Threshold),
         CSz("Threshold"),
         Params
         );
@@ -37,23 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Period,
-        CSz("Period"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Amplitude,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Amplitude),
         CSz("Amplitude"),
         Params
         );
@@ -62,11 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Squareness,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Squareness),
         CSz("Squareness"),
         Params
         );
@@ -75,14 +68,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->MaskChance,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->MaskChance),
         CSz("MaskChance"),
         Params
         );
+
 
 
 

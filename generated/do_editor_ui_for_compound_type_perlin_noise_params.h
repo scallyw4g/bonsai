@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Threshold,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Threshold),
         CSz("Threshold"),
         Params
         );
+
 
 
 
@@ -41,22 +43,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
       DoEditorUi(Ui,
         Window,
-&Element->Period,
-        CSz("Period"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Amplitude,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Amplitude),
         CSz("Amplitude"),
         Params
         );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.h:485:0
+// src/engine/editor.h:491:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -26,24 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-&Element->Min,
-        CSz("Min"),
-        Params
-        );
-
-
-
-
-
       
-      DoEditorUi(Ui,
-        Window,
-&Element->Max,
-        CSz("Max"),
-        Params
-        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

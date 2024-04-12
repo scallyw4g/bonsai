@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:278:0
+// src/engine/editor.cpp:287:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Type,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(file_traversal_type*,&Element->Type),
         CSz("Type"),
         Params
         );
@@ -37,13 +38,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Dir,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cs*,&Element->Dir),
         CSz("Dir"),
         Params
         );
+
 
 
 
@@ -53,10 +57,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
       DoEditorUi(Ui,
         Window,
-&Element->Name,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cs*,&Element->Name),
         CSz("Name"),
         Params
         );
+
 
 
 

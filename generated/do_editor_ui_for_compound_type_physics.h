@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:203:0
+// src/engine/editor.cpp:209:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,46 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Velocity,
-        CSz("Velocity"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Force,
-        CSz("Force"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Delta,
-        CSz("Delta"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Mass,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Mass),
         CSz("Mass"),
         Params
         );
+
 
 
 
@@ -77,10 +43,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&Element->Speed,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Speed),
         CSz("Speed"),
         Params
         );
+
 
 
 

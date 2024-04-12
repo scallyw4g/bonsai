@@ -1,4 +1,4 @@
-// src/engine/editor.h:518:0
+// src/engine/editor.h:524:0
 
 link_internal ui_toggle_button_group
 RadioButtonGroup_ui_noise_type( renderer_2d *Ui,

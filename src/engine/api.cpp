@@ -41,10 +41,16 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  DoWorldChunkStuff();
+  // Must come before we update the frame index becaues CollectUnusedChunks
+  // picks the hashtable based on the frame index.
+  //
 
-  // Must come before we update the frame index
-  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->VisibleRegion);
+  MaintainWorldChunkHashtables(Resources);
+
+  // TODO(Jesse, nopush): I think this must come before we push chunks onto the draw lists for the
+  // frame because it could free chunks that we push onto the draw lists ..
+  // right?
+  CollectUnusedChunks(Resources, Resources->World->VisibleRegion);
 
   Resources->FrameIndex += 1;
 
@@ -373,7 +379,6 @@ Bonsai_Render(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-
   b32 Result = True;
   return Result;
 }
@@ -389,6 +394,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+
+    // NOTE(Jesse): Render commands should never end up on a general purpose work queue
+    InvalidCase(type_work_queue_entry__bonsai_render_command);
 
     case type_work_queue_entry_init_asset:
     {

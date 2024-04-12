@@ -146,6 +146,12 @@ poof(do_editor_ui_for_container(ui_toggle_hashtable))
 
 
 
+poof(do_editor_ui_for_compound_type(work_queue_entry))
+#include <generated/do_editor_ui_for_compound_type_work_queue_entry.h>
+
+poof(do_editor_ui_for_compound_type(work_queue))
+#include <generated/do_editor_ui_for_compound_type_work_queue.h>
+
 poof(do_editor_ui_for_compound_type(input_event))
 #include <generated/do_editor_ui_for_compound_type_input_event.h>
 
@@ -262,6 +268,9 @@ poof(do_editor_ui_for_compound_type(vox_data))
 
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 #include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
+
+poof(do_editor_ui_for_compound_type(gpu_mapped_element_buffer))
+#include <generated/do_editor_ui_for_compound_type_gpu_mapped_element_buffer.h>
 
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
 #include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
@@ -1006,7 +1015,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     // @editor_chunk_memory_question
     //
     /* DeallocateWorldChunk(Chunk, MeshFreelist); */
-    DeallocateGpuBuffers(Chunk);
+    DeallocateGpuBuffers(RenderQ, Chunk);
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
@@ -1104,7 +1113,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
       } break;
     }
 
-    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
   }
 
   if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
@@ -1720,7 +1729,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
 
-        if (SyncGpuBuffersImmediate(Engine, &Root_LayeredBrushPreview->Meshes))
+        if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
         {
           Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
         }

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:407:0
+// src/engine/editor.cpp:416:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -54,7 +54,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-&Element->Settings,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(render_settings*,&Element->Settings),
         CSz("Settings"),
         Params
         );
@@ -63,22 +64,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->SunBasis,
-        CSz("SunBasis"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-&Element->FogPower,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->FogPower),
         CSz("FogPower"),
         Params
         );
@@ -87,35 +78,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->FogColor,
-        CSz("FogColor"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->SkyColor,
-        CSz("SkyColor"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->GameCamera,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(camera*,&Element->GameCamera),
         CSz("GameCamera"),
         Params
         );
@@ -124,10 +93,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->DebugCamera,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(camera*,&Element->DebugCamera),
         CSz("DebugCamera"),
         Params
         );
@@ -136,13 +107,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Exposure,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Exposure),
         CSz("Exposure"),
         Params
         );
+
 
 
 
@@ -152,7 +126,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-        Element->gBuffer,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_chunk_ptr_paged_list*,&Element->MainDrawList),
+        CSz("MainDrawList"),
+        Params
+        );
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_chunk_ptr_paged_list*,&Element->ShadowMapDrawList),
+        CSz("ShadowMapDrawList"),
+        Params
+        );
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(g_buffer_render_group*, Element->gBuffer),
         CSz("gBuffer"),
         Params
         );
@@ -161,10 +164,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-        Element->AoGroup,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(ao_render_group*, Element->AoGroup),
         CSz("AoGroup"),
         Params
         );
@@ -173,10 +178,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-        Element->SG,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shadow_render_group*, Element->SG),
         CSz("SG"),
         Params
         );
@@ -185,10 +192,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ColorPaletteTexture,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture*,&Element->ColorPaletteTexture),
         CSz("ColorPaletteTexture"),
         Params
         );
@@ -197,10 +206,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Transparency,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(transparency_render_group*,&Element->Transparency),
         CSz("Transparency"),
         Params
         );
@@ -209,10 +220,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Lighting,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(lighting_render_group*,&Element->Lighting),
         CSz("Lighting"),
         Params
         );
@@ -221,10 +234,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Gaussian,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(gaussian_render_group*,&Element->Gaussian),
         CSz("Gaussian"),
         Params
         );
@@ -233,13 +248,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->CompositeGroup,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(composite_render_group*,&Element->CompositeGroup),
         CSz("CompositeGroup"),
         Params
         );
+
 
 
 
@@ -264,10 +282,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       
       DoEditorUi(Ui,
         Window,
-&Element->GpuBufferWriteIndex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->GpuBufferWriteIndex),
         CSz("GpuBufferWriteIndex"),
         Params
         );
+
 
 
 
@@ -277,7 +297,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       DoEditorUi(Ui,
         Window,
-        Element->Memory,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(memory_arena*, Element->Memory),
         CSz("Memory"),
         Params
         );

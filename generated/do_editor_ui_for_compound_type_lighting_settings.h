@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:197:0
+// src/engine/editor.cpp:203:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->AutoDayNightCycle,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->AutoDayNightCycle),
         CSz("AutoDayNightCycle"),
         Params
         );
@@ -37,11 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->tDay,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->tDay),
         CSz("tDay"),
         Params
 ,-PI32, PI32 );
@@ -50,11 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DawnIntensity,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*,&Element->DawnIntensity),
         CSz("DawnIntensity"),
         Params
 ,0.f, 3.f );
@@ -63,23 +68,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DawnColor,
-        CSz("DawnColor"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->SunIntensity,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*,&Element->SunIntensity),
         CSz("SunIntensity"),
         Params
 ,0.f, 3.f );
@@ -88,23 +83,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->SunColor,
-        CSz("SunColor"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->DuskIntensity,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*,&Element->DuskIntensity),
         CSz("DuskIntensity"),
         Params
 ,0.f, 3.f );
@@ -113,23 +98,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DuskColor,
-        CSz("DuskColor"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->MoonIntensity,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*,&Element->MoonIntensity),
         CSz("MoonIntensity"),
         Params
 ,0.f, 3.f );
@@ -138,26 +113,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
-      DoEditorUi(Ui,
-        Window,
-&Element->MoonColor,
-        CSz("MoonColor"),
-        Params
-        );
 
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->CurrentSunColor,
-        CSz("CurrentSunColor"),
-        Params
-        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

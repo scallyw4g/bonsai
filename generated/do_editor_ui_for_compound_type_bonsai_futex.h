@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:227:0
+// src/engine/editor.cpp:233:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->SignalValue,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->SignalValue),
         CSz("SignalValue"),
         Params
         );
+
 
 
 
@@ -41,10 +43,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&Element->ThreadsWaiting,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ThreadsWaiting),
         CSz("ThreadsWaiting"),
         Params
         );
+
 
 
 

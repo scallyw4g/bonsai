@@ -22,6 +22,7 @@
 #include <engine/gpu_mapped_buffer.cpp>
 #include <engine/bloom.cpp>
 #include <engine/render/render_init.cpp>
+#include <engine/render_command.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #include <engine/settings.cpp>
 #include <engine/resources.cpp>

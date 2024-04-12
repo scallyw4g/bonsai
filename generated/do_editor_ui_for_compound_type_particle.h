@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:212:0
+// src/engine/editor.cpp:218:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,31 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Velocity,
-        CSz("Velocity"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Offset,
-        CSz("Offset"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Color,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u8*,&Element->Color),
         CSz("Color"),
         Params
         );
@@ -61,11 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->IsLight,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->IsLight),
         CSz("IsLight"),
         Params
         );
@@ -74,14 +53,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->RemainingLifespan,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->RemainingLifespan),
         CSz("RemainingLifespan"),
         Params
         );
+
 
 
 

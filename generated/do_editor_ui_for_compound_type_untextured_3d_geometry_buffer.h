@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:230:0
+// src/engine/editor.cpp:236:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -32,31 +32,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-        Element->Verts,
-        CSz("Verts"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        Element->Normals,
-        CSz("Normals"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        Element->Mat,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(vertex_material*, Element->Mat),
         CSz("Mat"),
         Params
         );
@@ -65,10 +42,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->End,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->End),
         CSz("End"),
         Params
         );
@@ -77,11 +56,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->At,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->At),
         CSz("At"),
         Params
         );
@@ -90,11 +71,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-        Element->Parent,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(untextured_3d_geometry_buffer*, Element->Parent),
         CSz("Parent"),
         Params
         );
@@ -103,13 +86,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->BufferNeedsToGrow,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->BufferNeedsToGrow),
         CSz("BufferNeedsToGrow"),
         Params
         );
+
 
 
 
@@ -119,10 +105,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
       DoEditorUi(Ui,
         Window,
-&Element->Timestamp,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->Timestamp),
         CSz("Timestamp"),
         Params
         );
+
 
 
 

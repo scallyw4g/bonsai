@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:316:0
+// src/engine/editor.cpp:325:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-        Element->Next,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_chunk*, Element->Next),
         CSz("Next"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Flags,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(chunk_flag*,&Element->Flags),
         CSz("Flags"),
         Params
         );
@@ -49,22 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Dim,
-        CSz("Dim"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-        Element->Voxels,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(voxel*, Element->Voxels),
         CSz("Voxels"),
         Params
         );
@@ -73,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-        Element->VoxelLighting,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(voxel_lighting*, Element->VoxelLighting),
         CSz("VoxelLighting"),
         Params
         );
@@ -85,10 +80,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Meshes,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(lod_element_buffer*,&Element->Meshes),
         CSz("Meshes"),
         Params
         );
@@ -97,10 +94,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->StandingSpots,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(voxel_position_cursor*,&Element->StandingSpots),
         CSz("StandingSpots"),
         Params
         );
@@ -109,25 +108,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->WorldP,
-        CSz("WorldP"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-&Element->FilledCount,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->FilledCount),
         CSz("FilledCount"),
         Params
         );
+
 
 
 
@@ -150,7 +140,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       DoEditorUi(Ui,
         Window,
-&Element->PointsToLeaveRemaining,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->PointsToLeaveRemaining),
         CSz("PointsToLeaveRemaining"),
         Params
         );
@@ -159,11 +150,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TriCount,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->TriCount),
         CSz("TriCount"),
         Params
         );
@@ -172,11 +165,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->EdgeBoundaryVoxelCount,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->EdgeBoundaryVoxelCount),
         CSz("EdgeBoundaryVoxelCount"),
         Params
         );
@@ -185,11 +180,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->_Pad0,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->_Pad0),
         CSz("_Pad0"),
         Params
         );
@@ -198,14 +195,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Entities,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(entity_ptr_block_array*,&Element->Entities),
         CSz("Entities"),
         Params
         );
+
 
 
 

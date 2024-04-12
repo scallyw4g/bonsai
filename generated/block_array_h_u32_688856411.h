@@ -23,6 +23,8 @@ struct u32_block_array
   
 };
 
+typedef u32_block_array u32_paged_list;
+
 link_internal u32_block_array_index
 operator++(u32_block_array_index &I0)
 {

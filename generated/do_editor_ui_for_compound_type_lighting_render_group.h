@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:401:0
+// src/engine/editor.cpp:410:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Lights,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(game_lights*,&Element->Lights),
         CSz("Lights"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->FBO,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(framebuffer*,&Element->FBO),
         CSz("FBO"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->LuminanceTex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture*,&Element->LuminanceTex),
         CSz("LuminanceTex"),
         Params
         );
@@ -61,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Shader,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader*,&Element->Shader),
         CSz("Shader"),
         Params
         );
@@ -73,10 +80,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Bloom,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(bloom_render_group*,&Element->Bloom),
         CSz("Bloom"),
         Params
         );

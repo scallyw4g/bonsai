@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:416:0
+// src/engine/editor.cpp:425:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-        Element->Memory,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(memory_arena*, Element->Memory),
         CSz("Memory"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ViewMode,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(engine_debug_view_mode*,&Element->ViewMode),
         CSz("ViewMode"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->PickedChunks,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(picked_world_chunk_static_buffer*,&Element->PickedChunks),
         CSz("PickedChunks"),
         Params
         );
@@ -61,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Textures,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture_ptr_block_array*,&Element->Textures),
         CSz("Textures"),
         Params
         );
@@ -73,10 +80,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->UiDebug,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(ui_debug*,&Element->UiDebug),
         CSz("UiDebug"),
         Params
         );
@@ -85,10 +94,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Render,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(render_debug*,&Element->Render),
         CSz("Render"),
         Params
         );
@@ -97,10 +108,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->DrawEntityCollisionVolumes,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawEntityCollisionVolumes),
         CSz("DrawEntityCollisionVolumes"),
         Params
         );
@@ -109,11 +122,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DrawWorldAxies,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawWorldAxies),
         CSz("DrawWorldAxies"),
         Params
         );
@@ -122,11 +137,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TriggerRuntimeBreak,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->TriggerRuntimeBreak),
         CSz("TriggerRuntimeBreak"),
         Params
         );
@@ -135,11 +152,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->ResetAssetNodeView,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->ResetAssetNodeView),
         CSz("ResetAssetNodeView"),
         Params
         );
@@ -148,11 +167,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->PickedChunkState,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u8*,&Element->PickedChunkState),
         CSz("PickedChunkState"),
         Params
         );
@@ -161,11 +182,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-        Element->PickedChunk,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_chunk*, Element->PickedChunk),
         CSz("PickedChunk"),
         Params
         );
@@ -174,10 +197,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->AssetWindowViewMode,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(asset_window_view_mode*,&Element->AssetWindowViewMode),
         CSz("AssetWindowViewMode"),
         Params
         );
@@ -186,10 +211,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->SelectedAsset,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(asset_id*,&Element->SelectedAsset),
         CSz("SelectedAsset"),
         Params
         );
@@ -198,13 +225,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ModelIndex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->ModelIndex),
         CSz("ModelIndex"),
         Params
         );
+
 
 
 
@@ -214,7 +244,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
       DoEditorUi(Ui,
         Window,
-&Element->SelectedEntity,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(entity_id*,&Element->SelectedEntity),
         CSz("SelectedEntity"),
         Params
         );

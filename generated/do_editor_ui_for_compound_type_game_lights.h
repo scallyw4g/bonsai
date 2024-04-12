@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:398:0
+// src/engine/editor.cpp:407:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->ColorTex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture*,&Element->ColorTex),
         CSz("ColorTex"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->PositionTex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture*,&Element->PositionTex),
         CSz("PositionTex"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->IndexToUV,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->IndexToUV),
         CSz("IndexToUV"),
         Params
         );
@@ -61,11 +66,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Count,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->Count),
         CSz("Count"),
         Params
         );
@@ -74,11 +81,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-        Element->Lights,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(light*, Element->Lights),
         CSz("Lights"),
         Params
         );

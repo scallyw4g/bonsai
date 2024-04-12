@@ -411,6 +411,9 @@ typedef world_chunk* world_chunk_ptr;
 poof(buffer(world_chunk_ptr))
 #include <generated/buffer_world_chunk_ptr.h>
 
+poof(block_array_h(world_chunk_ptr, {32}, {}))
+#include <generated/block_array_h_world_chunk_ptr_688853862_0.h>
+
 struct octave
 {
   v3 Freq;
@@ -646,8 +649,8 @@ AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Sto
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
 
-link_internal void
-DrawWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
+/* link_internal void */
+/* DrawWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap); */
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);

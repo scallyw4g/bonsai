@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:329:0
+// src/engine/editor.cpp:338:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->ID,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ID),
         CSz("ID"),
         Params
         );
@@ -37,23 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Dim,
-        CSz("Dim"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Slices,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->Slices),
         CSz("Slices"),
         Params
         );
@@ -62,14 +53,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Channels,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->Channels),
         CSz("Channels"),
         Params
         );
+
 
 
 
@@ -92,10 +86,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
       DoEditorUi(Ui,
         Window,
-&Element->DebugName,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cs*,&Element->DebugName),
         CSz("DebugName"),
         Params
         );
+
 
 
 

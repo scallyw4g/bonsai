@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:254:0
+// src/engine/editor.cpp:260:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Emission,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u8*,&Element->Emission),
         CSz("Emission"),
         Params
         );
+
 
 
 

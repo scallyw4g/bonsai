@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:389:0
+// src/engine/editor.cpp:398:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->ID,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ID),
         CSz("ID"),
         Params
         );
+
 
 
 
@@ -41,7 +43,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
       DoEditorUi(Ui,
         Window,
-        Element->FirstUniform,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader_uniform*, Element->FirstUniform),
         CSz("FirstUniform"),
         Params
         );

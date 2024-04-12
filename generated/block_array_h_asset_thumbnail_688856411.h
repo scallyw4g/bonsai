@@ -1,4 +1,4 @@
-// src/engine/editor.h:491:0
+// src/engine/editor.h:497:0
 
 struct asset_thumbnail_block
 {
@@ -22,6 +22,8 @@ struct asset_thumbnail_block_array
   memory_arena *Memory; poof(@no_serialize)
   
 };
+
+typedef asset_thumbnail_block_array asset_thumbnail_paged_list;
 
 link_internal asset_thumbnail_block_array_index
 operator++(asset_thumbnail_block_array_index &I0)

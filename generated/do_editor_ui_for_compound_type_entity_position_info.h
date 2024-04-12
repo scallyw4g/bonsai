@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:294:0
+// src/engine/editor.cpp:303:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->P,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->P),
         CSz("P"),
         Params
         );
@@ -37,22 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->_CollisionVolumeRadius,
-        CSz("_CollisionVolumeRadius"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-&Element->Scale,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Scale),
         CSz("Scale"),
         Params
         );
@@ -61,14 +52,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+
       PushNewRow(Ui);
 
-      DoEditorUi(Ui,
-        Window,
-&Element->EulerAngles,
-        CSz("EulerAngles"),
-        Params
-        );
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

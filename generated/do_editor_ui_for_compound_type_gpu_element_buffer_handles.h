@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:263:0
+// src/engine/editor.cpp:269:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->VertexHandle,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->VertexHandle),
         CSz("VertexHandle"),
         Params
         );
@@ -37,11 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->NormalHandle,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->NormalHandle),
         CSz("NormalHandle"),
         Params
         );
@@ -50,11 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->MatHandle,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->MatHandle),
         CSz("MatHandle"),
         Params
         );
@@ -63,13 +68,29 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->ElementCount,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ElementCount),
         CSz("ElementCount"),
         Params
+        );
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->Mapped),
+        CSz("Mapped"),
+        &DefaultUiRenderParams_Checkbox
         );
 
 

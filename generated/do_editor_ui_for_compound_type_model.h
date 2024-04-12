@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:269:0
+// src/engine/editor.cpp:278:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Vox,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(vox_data*,&Element->Vox),
         CSz("Vox"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Meshes,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(lod_element_buffer*,&Element->Meshes),
         CSz("Meshes"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->TransparentMesh,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(untextured_3d_geometry_buffer*,&Element->TransparentMesh),
         CSz("TransparentMesh"),
         Params
         );
@@ -61,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Animation,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(animation*,&Element->Animation),
         CSz("Animation"),
         Params
         );
@@ -73,13 +80,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
-        Window,
-&Element->Dim,
-        CSz("Dim"),
-        Params
-        );
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

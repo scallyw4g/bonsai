@@ -23,6 +23,8 @@ struct entity_ptr_block_array
   
 };
 
+typedef entity_ptr_block_array entity_ptr_paged_list;
+
 link_internal entity_ptr_block_array_index
 operator++(entity_ptr_block_array_index &I0)
 {

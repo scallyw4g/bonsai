@@ -8,6 +8,9 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 {
   TIMED_FUNCTION();
 
+  Assert(Handles->Mapped == True);
+  Handles->Mapped = False;
+
   AssertNoGlErrors;
 
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
@@ -57,6 +60,8 @@ FlushBuffersToCard(gpu_mapped_element_buffer* Buffer)
 void
 AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, u32 ElementCount)
 {
+  Assert(ElementCount);
+
   u32 v2Size = sizeof(v2)*ElementCount;
   u32 v3Size = sizeof(v3)*ElementCount;
   u32 matlSize = sizeof(matl)*ElementCount;
@@ -88,16 +93,27 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
 }
 
 link_internal void 
+DeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
+{
+  GL.DeleteBuffers(3, &Handles->VertexHandle);
+  Clear(Handles);
+}
+
+link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf)
 {
-  GL.DeleteBuffers(3, &Buf->Handles.VertexHandle);
-  Clear(Buf);
+  DeallocateGpuElementBuffer(&Buf->Handles);
+  Clear(&Buf->Buffer);
 }
 
 link_internal untextured_3d_geometry_buffer
 MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
 {
   TIMED_FUNCTION();
+  AssertNoGlErrors;
+
+  Assert(Handles->Mapped == False);
+  Handles->Mapped = True;
 
   untextured_3d_geometry_buffer Result = {};
   Result.End = Handles->ElementCount;
@@ -107,15 +123,18 @@ MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
   u32 matlSize = sizeof(matl)*Handles->ElementCount;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  AssertNoGlErrors;
   Result.Verts = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  AssertNoGlErrors;
   Result.Normals = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   AssertNoGlErrors;
 
   // Color data
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  AssertNoGlErrors;
   Result.Mat = (matl*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, matlSize, GL_MAP_WRITE_BIT);
   AssertNoGlErrors;
 

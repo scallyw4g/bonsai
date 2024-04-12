@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:469:0
+// src/engine/world_chunk.h:472:0
 
 struct standing_spot_block
 {
@@ -22,6 +22,8 @@ struct standing_spot_block_array
   memory_arena *Memory; poof(@no_serialize)
   
 };
+
+typedef standing_spot_block_array standing_spot_paged_list;
 
 link_internal standing_spot_block_array_index
 operator++(standing_spot_block_array_index &I0)

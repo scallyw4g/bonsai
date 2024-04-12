@@ -1,7 +1,7 @@
-// src/engine/world_chunk.cpp:4050:0
+// src/engine/world_chunk.cpp:4047:0
 
 link_internal voxel_stack_element
-VoxelStackElement( v3i VoxSimP , voxel_rule_direction Dir  )
+VoxelStackElement( v3i  VoxSimP , voxel_rule_direction  Dir  )
 {
   voxel_stack_element Reuslt = {
     .VoxSimP = VoxSimP,

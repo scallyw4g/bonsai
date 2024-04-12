@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:288:0
+// src/engine/editor.cpp:297:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->LoadState,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(asset_load_state*,&Element->LoadState),
         CSz("LoadState"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Id,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(asset_id*,&Element->Id),
         CSz("Id"),
         Params
         );
@@ -49,13 +52,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->LRUFrameIndex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->LRUFrameIndex),
         CSz("LRUFrameIndex"),
         Params
         );
+
 
 
 
@@ -65,7 +71,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
       DoEditorUi(Ui,
         Window,
-&Element->Models,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(model_buffer*,&Element->Models),
         CSz("Models"),
         Params
         );

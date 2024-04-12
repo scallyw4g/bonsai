@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:194:0
+// src/engine/editor.cpp:200:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -26,30 +26,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-&Element->Center,
-        CSz("Center"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->VisibleRegion,
-        CSz("VisibleRegion"),
-        Params
-        );
-
-
-
-
-
-      
       
 
       PushNewRow(Ui);

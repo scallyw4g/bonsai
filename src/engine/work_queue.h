@@ -208,6 +208,12 @@ poof(
     work_queue_entry_rebuild_mesh
     work_queue_entry_sim_particle_system
 
+    // NOTE(Jesse): This is kind of a hack to put render commands onto the work
+    // queue so I don't have to invent a whole generic system for having queues
+    // with seperate work entry types.  I should probably do this sometime in
+    // the future, but for now I'm just going to stuff it on here and call it good.
+    work_queue_entry__bonsai_render_command
+
     work_queue_entry__align_to_cache_line_helper
   }
 )

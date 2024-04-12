@@ -1,4 +1,4 @@
-// src/engine/editor.h:488:0
+// src/engine/editor.h:494:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Min,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->Min),
         CSz("Min"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Max,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->Max),
         CSz("Max"),
         Params
         );

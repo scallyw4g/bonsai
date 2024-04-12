@@ -23,6 +23,8 @@ struct texture_block_array
   
 };
 
+typedef texture_block_array texture_paged_list;
+
 link_internal texture_block_array_index
 operator++(texture_block_array_index &I0)
 {

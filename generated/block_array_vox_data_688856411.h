@@ -23,6 +23,8 @@ struct vox_data_block_array
   
 };
 
+typedef vox_data_block_array vox_data_paged_list;
+
 link_internal vox_data_block_array_index
 operator++(vox_data_block_array_index &I0)
 {

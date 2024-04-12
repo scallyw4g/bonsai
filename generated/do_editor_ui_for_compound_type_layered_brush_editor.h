@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:344:0
+// src/engine/editor.cpp:353:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -45,10 +45,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       DoEditorUi(Ui,
         Window,
-&Element->LayerCount,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->LayerCount),
         CSz("LayerCount"),
         Params
         );
+
 
 
 
@@ -74,7 +76,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
       
       DoEditorUi(Ui,
         Window,
-&Element->SeedBrushWithSelection,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->SeedBrushWithSelection),
         CSz("SeedBrushWithSelection"),
         Params
         );
@@ -83,11 +86,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->BrushFollowsCursor,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->BrushFollowsCursor),
         CSz("BrushFollowsCursor"),
         Params
         );
@@ -96,11 +101,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Preview,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(chunk_thumbnail*,&Element->Preview),
         CSz("Preview"),
         Params
         );

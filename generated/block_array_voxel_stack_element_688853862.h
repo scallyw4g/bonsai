@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4053:0
+// src/engine/world_chunk.cpp:4050:0
 
 struct voxel_stack_element_block
 {
@@ -22,6 +22,8 @@ struct voxel_stack_element_block_array
   memory_arena *Memory; poof(@no_serialize)
   
 };
+
+typedef voxel_stack_element_block_array voxel_stack_element_paged_list;
 
 link_internal voxel_stack_element_block_array_index
 operator++(voxel_stack_element_block_array_index &I0)

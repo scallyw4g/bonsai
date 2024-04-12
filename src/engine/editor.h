@@ -216,12 +216,18 @@ poof(
                                  member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                     }
                     {
-                      DoEditorUi(Ui,
-                                 Window,
-                                 member.is_pointer?{}{&}Element->(member.name),
-                                 CSz("member.name"),
-                                 Params
-                                 member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                      member.is_union?
+                      {
+                      }
+                      {
+                        DoEditorUi(Ui,
+                                   Window,
+                                   // Cast to remove const/volatile keywords if they're there
+                                   Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                   CSz("member.name"),
+                                   Params
+                                   member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                      }
                     }
                   }
                 }

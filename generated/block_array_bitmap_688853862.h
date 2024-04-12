@@ -23,6 +23,8 @@ struct bitmap_block_array
   
 };
 
+typedef bitmap_block_array bitmap_paged_list;
+
 link_internal bitmap_block_array_index
 operator++(bitmap_block_array_index &I0)
 {

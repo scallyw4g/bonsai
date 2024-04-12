@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:200:0
+// src/engine/editor.cpp:206:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -119,7 +119,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&Element->MajorGridDim,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->MajorGridDim),
         CSz("MajorGridDim"),
         Params
 ,0, 32 );
@@ -128,6 +129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 
+
       PushNewRow(Ui);
 
       
@@ -136,7 +138,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       DoEditorUi(Ui,
         Window,
-&Element->ToneMappingType,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(tone_mapping_type*,&Element->ToneMappingType),
         CSz("ToneMappingType"),
         Params
         );
@@ -145,10 +148,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Lighting,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(lighting_settings*,&Element->Lighting),
         CSz("Lighting"),
         Params
         );
@@ -157,73 +162,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->ApplicationResolution,
-        CSz("ApplicationResolution"),
-        Params
-        );
-
-
-
-
 
       
-      DoEditorUi(Ui,
-        Window,
-&Element->ShadowMapResolution,
-        CSz("ShadowMapResolution"),
-        Params
-        );
 
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->LuminanceMapResolution,
-        CSz("LuminanceMapResolution"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->iApplicationResolution,
-        CSz("iApplicationResolution"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->iShadowMapResolution,
-        CSz("iShadowMapResolution"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->iLuminanceMapResolution,
-        CSz("iLuminanceMapResolution"),
-        Params
-        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

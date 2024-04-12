@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:320:0
+// src/engine/editor.cpp:329:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,34 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->P,
-        CSz("P"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Normal,
-        CSz("Normal"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->d,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->d),
         CSz("d"),
         Params
         );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:266:0
+// src/engine/editor.cpp:275:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,10 +28,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->MeshMask,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->MeshMask),
         CSz("MeshMask"),
         Params
         );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:220:0
+// src/engine/work_queue.h:226:0
 
 
 link_internal work_queue_entry
@@ -85,6 +85,19 @@ WorkQueueEntry( work_queue_entry_sim_particle_system A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_sim_particle_system,
     .work_queue_entry_sim_particle_system = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry__bonsai_render_command A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry__bonsai_render_command,
+    .work_queue_entry__bonsai_render_command = A,
 
     
 

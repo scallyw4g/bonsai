@@ -423,7 +423,7 @@ DoAssetWindow(engine_resources *Engine)
             {
               IterateOver(&Asset->Models, Model, ModelIndex)
               {
-                SyncGpuBuffersImmediate(Engine, &Model->Meshes);
+                SyncGpuBuffersAsync(Engine, &Model->Meshes);
 
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))

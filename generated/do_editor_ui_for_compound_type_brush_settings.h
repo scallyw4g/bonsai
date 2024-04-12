@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Type,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(brush_layer_type*,&Element->Type),
         CSz("Type"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Noise,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(noise_layer*,&Element->Noise),
         CSz("Noise"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Shape,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shape_layer*,&Element->Shape),
         CSz("Shape"),
         Params
         );
@@ -61,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Mode,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode*,&Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -73,10 +80,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Modifier,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode_modifier*,&Element->Modifier),
         CSz("Modifier"),
         Params
         );
@@ -85,10 +94,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Iterations,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->Iterations),
         CSz("Iterations"),
         Params
         );
@@ -97,11 +108,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Offset,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(rect3i*,&Element->Offset),
         CSz("Offset"),
         Params
         );
@@ -110,25 +123,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->NoiseBasisOffset,
-        CSz("NoiseBasisOffset"),
-        Params
-        );
-
-
-
-
 
       
       DoEditorUi(Ui,
         Window,
-&Element->Color,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u16*,&Element->Color),
         CSz("Color"),
         Params
         );
+
 
 
 
@@ -138,10 +142,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
       DoEditorUi(Ui,
         Window,
-&Element->Invert,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->Invert),
         CSz("Invert"),
         Params
         );
+
 
 
 

@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Location,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->Location),
         CSz("Location"),
         Params
         );
@@ -37,13 +38,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Radius,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*,&Element->Radius),
         CSz("Radius"),
         Params
         );
+
 
 
 

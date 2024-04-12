@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:431:0
+// src/engine/editor.cpp:440:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Resolution,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(resolution_setting*,&Element->Resolution),
         CSz("Resolution"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ShadowQuality,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shadow_quality_setting*,&Element->ShadowQuality),
         CSz("ShadowQuality"),
         Params
         );
@@ -49,10 +52,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->LightingQuality,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(lighting_quality_setting*,&Element->LightingQuality),
         CSz("LightingQuality"),
         Params
         );
@@ -61,10 +66,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ShaderLanguage,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader_language_setting*,&Element->ShaderLanguage),
         CSz("ShaderLanguage"),
         Params
         );
@@ -73,10 +80,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->WindowStartingSize,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(resolution_setting*,&Element->WindowStartingSize),
         CSz("WindowStartingSize"),
         Params
         );

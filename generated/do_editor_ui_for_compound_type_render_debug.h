@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:410:0
+// src/engine/editor.cpp:419:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->BytesSolidGeoLastFrame,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->BytesSolidGeoLastFrame),
         CSz("BytesSolidGeoLastFrame"),
         Params
         );
@@ -37,11 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->BytesTransGeoLastFrame,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->BytesTransGeoLastFrame),
         CSz("BytesTransGeoLastFrame"),
         Params
         );
@@ -50,14 +53,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DrawCallsLastFrame,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->DrawCallsLastFrame),
         CSz("DrawCallsLastFrame"),
         Params
         );
+
 
 
 

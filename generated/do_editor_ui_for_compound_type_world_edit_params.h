@@ -1,4 +1,4 @@
-// src/engine/editor.h:685:0
+// src/engine/editor.h:691:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Mode,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode*,&Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -37,10 +38,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Modifier,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode_modifier*,&Element->Modifier),
         CSz("Modifier"),
         Params
         );
@@ -49,13 +52,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_params *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Iterations,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->Iterations),
         CSz("Iterations"),
         Params
         );
+
 
 
 

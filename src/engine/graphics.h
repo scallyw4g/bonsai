@@ -45,6 +45,9 @@ struct graphics
 
   r32 Exposure;
 
+  world_chunk_ptr_paged_list MainDrawList;
+  world_chunk_ptr_paged_list ShadowMapDrawList;
+
   // TODO(Jesse): None of these need to be pointers..
   g_buffer_render_group  *gBuffer;
   ao_render_group        *AoGroup;

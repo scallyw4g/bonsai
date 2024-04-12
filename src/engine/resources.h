@@ -161,4 +161,5 @@ GetCameraGhost(engine_resources *Engine)
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;           \
+  work_queue                *RenderQ       = &Plat->RenderQ
 

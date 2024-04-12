@@ -1,3 +1,6 @@
+
+
+
 void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
@@ -152,7 +155,6 @@ CompositeAndDisplay( platform *Plat, graphics *Graphics )
 
   GL.Disable(GL_BLEND);
 
-
   RenderQuad();
 
   AssertNoGlErrors;
@@ -242,6 +244,13 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
   }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+link_internal gpu_mapped_element_buffer *
+GetNextGpuMap(graphics *Graphics)
+{
+  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + ((Graphics->GpuBufferWriteIndex+1)%2);
+  return GpuMap;
 }
 
 link_internal gpu_mapped_element_buffer *
@@ -877,19 +886,6 @@ CopyBufferIntoBuffer(untextured_3d_geometry_buffer *Src, untextured_3d_geometry_
   BufferVertsChecked(Src, Dest, {}, V3(1.0f));
 }
 
-#if 0
-link_internal void
-CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
-{
-  /* Assert(GpuBuffer->Buffer.At == 0); */
-  AllocateGpuElementBuffer(Handles, Mesh->At);
-
-  untextured_3d_geometry_buffer *Dest = MapGpuElementBuffer(GpuBuffer);
-  CopyBufferIntoBuffer(Mesh, Dest);
-  FlushBuffersToCard(GpuBuffer);
-}
-#endif
-
 link_internal void
 CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
 {
@@ -907,6 +903,38 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles 
 }
 
 link_internal b32
+SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
+{
+  b32 Result = False;
+  Assert(ThreadLocal_ThreadIndex == 1);
+
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+    if (HasMesh(Meshes, MeshBit))
+    {
+      gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
+
+      untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
+      if (Mesh && Mesh->At)
+      {
+        PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
+        Result = True;
+      }
+      else
+      {
+        PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
+      }
+    }
+  }
+
+  // TODO(Jesse): Is this actually a thing??
+  FullBarrier;
+
+  return Result;
+}
+
+link_internal b32
 SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
 {
   b32 Result = False;
@@ -918,17 +946,27 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
     if (HasMesh(Meshes, MeshBit))
     {
       gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
-      MaybeDeallocateGpuElementBuffer(Handles);
 
       untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
       if (Mesh && Mesh->At)
       {
+        // @duplicate_realloc_code
+        if (Handles->VertexHandle)
+        {
+          GL.DeleteBuffers(3, &Handles->VertexHandle);
+          Clear(Handles);
+        }
+
         AllocateGpuElementBuffer(Handles, Mesh->At);
         CopyToGpuBuffer(Mesh, Handles);
         Result = True;
       }
+      else
+      {
+        DeallocateGpuElementBuffer(Handles);
+      }
 
-      DeallocateMesh(Mesh, &Engine->MeshFreelist);
+      DeallocateMesh(Engine, Mesh);
     }
   }
 
@@ -1173,24 +1211,44 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 }
 
 link_internal void
-DoWorldChunkStuff()
+MaintainWorldChunkHashtables(engine_resources *Engine)
 {
   TIMED_FUNCTION();
 
-  UNPACK_ENGINE_RESOURCES(GetEngineResources());
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_chunk_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
+  world_chunk_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
+
+  // Reset world_chunk draw lists
+  {
+    Clear(MainDrawList);
+    Clear(ShadowMapDrawList);
+
+    MainDrawList->Memory = GetTranArena();
+    ShadowMapDrawList->Memory = GetTranArena();
+  }
 
   v3i Radius = World->VisibleRegion/2;
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
+  // NOTE(Jesse): Made this z-major iteration as a convienience when
+  // initializing large, flat-ish worlds.  If it's z-major there aren't large
+  // pauses for big underground regions/air regions.
   for (s32 x = Min.x; x < Max.x; ++ x)
   for (s32 y = Min.y; y < Max.y; ++ y)
   for (s32 z = Min.z; z < Max.z; ++ z)
   {
-    world_position P = World_Position(x,y,z);
-    world_chunk *Chunk = GetWorldChunkFromHashtable( World, P );
+    world_position  P     = World_Position(x,y,z);
+    world_chunk    *Chunk = GetWorldChunkFromHashtable( World, P );
     if (Chunk)
     {
+      Push(ShadowMapDrawList, &Chunk);
+      if (IsInFrustum(World, Camera, Chunk))
+      {
+        Push(MainDrawList, &Chunk);
+      }
     }
     else
     {
@@ -1203,7 +1261,24 @@ DoWorldChunkStuff()
   }
 }
 
+link_internal void
+RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  IterateOver(DrawList, ChunkPtrPtr, ChunkIndex)
+  {
+    world_chunk *Chunk = *ChunkPtrPtr;
+    v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
+    v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
 
+    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+
+    v3 Basis = GetRenderP(Engine, Chunk->WorldP);
+    DrawLod(Engine, &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis);
+  }
+}
+
+#if 0
 link_internal void
 DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
 {
@@ -1242,6 +1317,7 @@ DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
     }
   }
 }
+#endif
 
 link_internal void
 DrawEditorPreview(engine_resources *Engine, shader *Shader)
@@ -1327,7 +1403,7 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
 
   SetupGBufferShader(ApplicationResolution, Graphics);
 
-  DrawWorld(Engine, ApplicationResolution);
+  RenderDrawList(Engine, &Graphics->MainDrawList);
 
   shader *Shader = &Graphics->gBuffer->gBufferShader;
   DrawEditorPreview(Engine, Shader);
@@ -1376,6 +1452,9 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   AssertNoGlErrors;
 
+  /* RenderDrawList(Engine, &Graphics->ShadowMapDrawList); */
+
+#if 1
   RangeIterator_t(u32, ChunkIndex, World->HashSize)
   {
     world_chunk *Chunk = World->ChunkHash[ChunkIndex];
@@ -1388,6 +1467,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
       }
     }
   }
+#endif
 
   GL.Enable(GL_CULL_FACE);
 }

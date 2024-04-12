@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->_Reserved,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->_Reserved),
         CSz("_Reserved"),
         Params
         );
@@ -37,11 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->WindowBits,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->WindowBits),
         CSz("WindowBits"),
         Params
         );
@@ -50,11 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->InteractionBits,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->InteractionBits),
         CSz("InteractionBits"),
         Params
         );
@@ -63,14 +68,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->ElementBits,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ElementBits),
         CSz("ElementBits"),
         Params
         );
+
 
 
 
