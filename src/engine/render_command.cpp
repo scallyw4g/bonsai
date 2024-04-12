@@ -14,3 +14,10 @@ PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocBuffers(Handles, Mesh)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+
+link_internal void
+PushClearAllFramebuffersCommand(work_queue *RenderQueue)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandClearAllFramebuffers(0)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}

@@ -2,6 +2,12 @@
 // Renderer commands
 //
 
+struct bonsai_render_command_clear_all_framebuffers
+{
+  u32 Ignored; // NOTE(Jesse): Only here because poof only gens functions if we
+               // have a struct to go off of..
+};
+
 struct bonsai_render_command_allocate_buffers
 {
   u32 *Buffers;
@@ -26,6 +32,7 @@ poof(
     bonsai_render_command_allocate_buffers
     bonsai_render_command_realloc_buffers
     bonsai_render_command_delete_buffers
+    bonsai_render_command_clear_all_framebuffers
   }
 )
 #include <generated/d_union_bonsai_render_command.h>

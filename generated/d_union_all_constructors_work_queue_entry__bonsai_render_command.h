@@ -1,4 +1,4 @@
-// src/engine/render_command.h:33:0
+// src/engine/render_command.h:40:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -40,6 +40,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_delete_buffers A  )
   return Result;
 }
 
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_clear_all_framebuffers,
+    .bonsai_render_command_clear_all_framebuffers = A,
+
+    
+
+  };
+  return Result;
+}
+
 
 link_internal bonsai_render_command_allocate_buffers
 BonsaiRenderCommandAllocateBuffers( u32* Buffers , s32  Count  )
@@ -67,6 +80,15 @@ BonsaiRenderCommandDeleteBuffers( u32* Buffers , s32  Count  )
   bonsai_render_command_delete_buffers Reuslt = {
     .Buffers = Buffers,
     .Count = Count
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_clear_all_framebuffers
+BonsaiRenderCommandClearAllFramebuffers( u32  Ignored  )
+{
+  bonsai_render_command_clear_all_framebuffers Reuslt = {
+    .Ignored = Ignored
   };
   return Reuslt;
 }

@@ -58,9 +58,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->Graphics.GpuBufferWriteIndex = 0;
   Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
 
+
+
+
   UNPACK_ENGINE_RESOURCES(Resources);
 
-
+  PushClearAllFramebuffersCommand(&Plat->RenderQ);
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
 
@@ -80,6 +83,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the UI captures the input
   //
   // @camera-update-ui-update-frame-jank
+  //
+
   if (UiHoveredMouseInput(Ui))
   {
     Resources->MaybeMouseRay   = {};
@@ -371,12 +376,23 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
 }
 
 link_export b32
-Bonsai_Render(engine_resources *Resources)
+Bonsai_Render(engine_resources *Engine)
 {
   TIMED_FUNCTION();
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-  Resources->Graphics.RenderGate = True;
-  while (Resources->Graphics.RenderGate == True) { SleepMs(1); }
+
+  {
+
+    layout DefaultLayout = {};
+    DefaultLayout.DrawBounds = InvertedInfinityRectangle();
+    render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+    SetWindowZDepths(Ui->CommandBuffer);
+    FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
+  }
+
+  Engine->Graphics.RenderGate = True;
+  while (Engine->Graphics.RenderGate == True) { SleepMs(1); }
 
   b32 Result = True;
   return Result;

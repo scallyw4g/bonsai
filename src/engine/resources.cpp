@@ -67,6 +67,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;
+
+            case type_bonsai_render_command_clear_all_framebuffers:
+            {
+              ClearFramebuffers(Graphics, &Engine->RTTGroup);
+            }
           }
         } break;
       }
@@ -75,10 +80,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
     //
     // Render begin
     //
-
-    ClearFramebuffers(Graphics, &Engine->RTTGroup);
-
-    UiFrameEnd(&Engine->Ui);
 
     ao_render_group     *AoGroup = Graphics->AoGroup;
     shadow_render_group *SG      = Graphics->SG;
@@ -151,6 +152,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
     CompositeAndDisplay(Plat, Graphics);
+
+    UiFrameEnd(&Engine->Ui);
 
     BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
