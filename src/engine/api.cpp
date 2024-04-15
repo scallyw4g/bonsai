@@ -37,7 +37,7 @@ Bonsai_Init(engine_resources *Resources)
 }
 
 link_internal void
-SimulateCameraGhostAndSetOffsetWorldCenterToGrid(engine_resources *Engine)
+SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -73,7 +73,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   // @early_camera_ghost_simulation
   //
-  SimulateCameraGhostAndSetOffsetWorldCenterToGrid(Resources);
+  SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
   Resources->FrameIndex += 1;
 
@@ -85,16 +85,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
 
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  PushClearAllFramebuffersCommand(&Plat->RenderQ);
-
-  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
-  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-
-  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->DepthShader);
-  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
 
   World->ChunkHash = CurrentWorldHashtable(Resources);
@@ -343,6 +333,18 @@ Bonsai_Simulate(engine_resources *Resources)
   Debug_DoWorldChunkPicking(Resources);
 #endif
 
+  // Draw terrain
+  PushClearAllFramebuffersCommand(&Plat->RenderQ);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->DepthShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
+
   b32 Result = True;
   return Result;
 }
@@ -412,7 +414,6 @@ Bonsai_Render(engine_resources *Engine)
 {
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
-
 
   if (Graphics->Settings.Lighting.AutoDayNightCycle)
   {

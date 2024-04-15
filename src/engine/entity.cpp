@@ -1438,8 +1438,10 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
 
   Entity->P = Canonicalize(Resources->World, Entity->P);
 
+
   if (DoDefaultUpdate)
   {
+
     // Update Camera Ghost
     if (Entity->Behavior & EntityBehaviorFlags_DefatulCameraGhostBehavior)
     {
@@ -1488,7 +1490,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
     {
       auto EntityDelta = Entity->Physics.Delta;
 
-      v3 RenderSpaceP  = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
+      v3 RenderSpaceP = GetRenderP(Entity->P, Camera, World->ChunkDim) + System->SpawnRegion.Min;
 
       /* auto Dest = System->ParticleStartingTransparency > 0.f ? TransparentGeo : SolidGeo; */
       /* SimulateParticleSystem(&Job.work_queue_entry_sim_particle_system); */
