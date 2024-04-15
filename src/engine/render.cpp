@@ -1473,12 +1473,12 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
   shader *Shader = &Graphics->gBuffer->gBufferShader;
   DrawEditorPreview(Engine, Shader);
 
-  { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated.
-    BindUniformByName(Shader, "DrawMajorGrid", False);
-    BindUniformByName(Shader, "DrawMinorGrid", False);
-    r32 dt = Plat->dt;
-    DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt);
-  }
+/*   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated. */
+/*     BindUniformByName(Shader, "DrawMajorGrid", False); */
+/*     BindUniformByName(Shader, "DrawMinorGrid", False); */
+/*     r32 dt = Plat->dt; */
+/*     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt); */
+/*   } */
 
   TeardownGBufferShader(Graphics);
 }
@@ -1501,7 +1501,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */
 
-  DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt);
+  /* DrawEntities( &SG->DepthShader, EntityTable, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, Graphics, World, Plat->dt); */
 
   AssertNoGlErrors;
 

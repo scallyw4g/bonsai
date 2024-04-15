@@ -47,6 +47,7 @@ struct bonsai_render_command_teardown_shader
 
 struct bonsai_render_command_draw_all_entities
 {
+  shader *Shader;
 };
 
 struct bonsai_render_command_draw_world_chunk_draw_list

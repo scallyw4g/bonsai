@@ -10,7 +10,7 @@ LengthSq( v2 Vec )
 inline r32
 Length( v2 Vec )
 {
-  r32 Result = (r32)sqrt((r64)LengthSq(Vec));
+  r32 Result = (r32)SquareRoot(LengthSq(Vec));
   return Result;
 }
 

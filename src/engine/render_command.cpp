@@ -51,3 +51,10 @@ PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, world_chunk_ptr_paged
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+
+link_internal void
+PushDrawAllEntitiesCommand(work_queue *RenderQueue, shader *Shader)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawAllEntities(Shader)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}

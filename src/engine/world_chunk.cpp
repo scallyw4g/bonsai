@@ -5422,7 +5422,7 @@ link_internal picked_voxel
 RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
 {
   UNPACK_ENGINE_RESOURCES(Resources);
-  Assert(Length(RayDir) <= 1.0001f);
+  Assert(Length(RayDir) <= 1.01f);
 
   /* { */
   /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */

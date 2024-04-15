@@ -110,8 +110,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_draw_all_entities, RC, Command)
+              DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
             } break;
-
 
 
 
@@ -142,7 +142,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               // Editor preview, World, Entities
               DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings));
 
-              DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine);
+              /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
 
               // TODO(Jesse): Move into engine debug
               DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);

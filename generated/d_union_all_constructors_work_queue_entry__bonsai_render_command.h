@@ -1,4 +1,4 @@
-// src/engine/render_command.h:84:0
+// src/engine/render_command.h:85:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -196,10 +196,10 @@ BonsaiRenderCommandDrawWorldChunkDrawList( world_chunk_ptr_paged_list* DrawList 
 }
 
 link_internal bonsai_render_command_draw_all_entities
-BonsaiRenderCommandDrawAllEntities(  )
+BonsaiRenderCommandDrawAllEntities( shader* Shader  )
 {
   bonsai_render_command_draw_all_entities Reuslt = {
-    
+    .Shader = Shader
   };
   return Reuslt;
 }

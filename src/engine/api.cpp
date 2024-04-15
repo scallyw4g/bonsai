@@ -348,7 +348,7 @@ Bonsai_Simulate(engine_resources *Resources)
 }
 
 link_internal void
-DoDayNightCycle(graphics *Graphics, r32 tDay)
+UpdateKeyLightColor(graphics *Graphics, r32 tDay)
 {
   auto SG = Graphics->SG;
   r32 tDaytime = Cos(tDay);
@@ -418,7 +418,16 @@ Bonsai_Render(engine_resources *Engine)
   {
     Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
   }
-  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
+  UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushDrawAllEntitiesCommand(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+  PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushDrawAllEntitiesCommand(&Plat->RenderQ, &Graphics->SG->DepthShader);
+  PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
 
   {
     layout DefaultLayout = {};

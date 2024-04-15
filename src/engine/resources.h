@@ -40,7 +40,7 @@ struct engine_resources
   bonsai_stdlib Stdlib;
 
   // TODO(Jesse): Should this go in stdlib?
-  renderer_2d   Ui;
+  renderer_2d Ui;
 
   application_api GameApi;
 
