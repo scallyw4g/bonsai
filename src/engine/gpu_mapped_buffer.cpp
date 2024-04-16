@@ -3,7 +3,7 @@
 // (immediate geo buffer) we flush and draw immediately afterwards.
 // 
 // Should probably move to using VAOs so we don't have to do this.
-inline b32
+link_inline b32
 FlushBuffersToCard(gpu_element_buffer_handles* Handles)
 {
   TIMED_FUNCTION();
@@ -21,9 +21,7 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  AssertNoGlErrors;
   GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
   u32 BufferUnmapped = GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
@@ -39,8 +37,8 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
   CAssert(MtlFloatElements == 4);
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION,       1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(  ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2,  GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
@@ -48,7 +46,7 @@ FlushBuffersToCard(gpu_element_buffer_handles* Handles)
   return BufferUnmapped;
 }
 
-inline b32
+link_inline b32
 FlushBuffersToCard(gpu_mapped_element_buffer* Buffer)
 {
   TIMED_FUNCTION();
@@ -57,13 +55,13 @@ FlushBuffersToCard(gpu_mapped_element_buffer* Buffer)
   return Result;
 }
 
-void
+link_internal void
 AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, u32 ElementCount)
 {
   Assert(ElementCount);
 
-  u32 v2Size = sizeof(v2)*ElementCount;
-  u32 v3Size = sizeof(v3)*ElementCount;
+  u32 v2Size   = sizeof(v2)*ElementCount;
+  u32 v3Size   = sizeof(v3)*ElementCount;
   u32 matlSize = sizeof(matl)*ElementCount;
 
   Assert(Handles->VertexHandle == 0);
@@ -90,7 +88,7 @@ AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, u32 ElementCount)
   AssertNoGlErrors;
 }
 
-void
+link_internal void
 AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, u32 ElementCount)
 {
   AllocateGpuElementBuffer(&GpuMap->Handles, ElementCount);
@@ -165,7 +163,6 @@ MapGpuElementBuffer(gpu_mapped_element_buffer *GpuMap)
     AllocateGpuElementBuffer(GpuMap, GpuMap->Buffer.End);
     GpuMap->Buffer.BufferNeedsToGrow = 0;
   }
-
 
   GpuMap->Buffer = MapGpuElementBuffer(&GpuMap->Handles);
 }
