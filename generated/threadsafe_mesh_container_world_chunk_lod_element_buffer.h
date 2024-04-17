@@ -1,7 +1,7 @@
-// src/engine/mesh.cpp:185:0
+// src/engine/mesh.cpp:188:0
 
 link_internal untextured_3d_geometry_buffer *
-TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+TakeOwnershipSync( world_chunk_lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
   AcquireFutex(&Buf->Locks[ToIndex(MeshBit)]);
   untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
@@ -9,14 +9,14 @@ TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 }
 
 link_internal void
-ReleaseOwnership( lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
+ReleaseOwnership( world_chunk_lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
 {
   /* if (Buf) { Assert(Src->MeshMask & MeshBit);  } */
   ReleaseFutex(&Src->Locks[ToIndex(MeshBit)]);
 }
 
 link_internal untextured_3d_geometry_buffer *
-ReplaceMesh( lod_element_buffer *Meshes,
+ReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   world_chunk_mesh_bitfield MeshBit,
   untextured_3d_geometry_buffer *Buf,
   u64 BufTimestamp )
@@ -54,7 +54,7 @@ ReplaceMesh( lod_element_buffer *Meshes,
 }
 
 link_internal untextured_3d_geometry_buffer *
-AtomicReplaceMesh( lod_element_buffer *Meshes,
+AtomicReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   world_chunk_mesh_bitfield MeshBit,
   untextured_3d_geometry_buffer *Buf,
   u64 BufTimestamp )
@@ -66,7 +66,7 @@ AtomicReplaceMesh( lod_element_buffer *Meshes,
 }
 
 link_internal void
-DeallocateMeshes(lod_element_buffer *Buf, tiered_mesh_freelist* MeshFreelist)
+DeallocateMeshes(world_chunk_lod_element_buffer *Buf, tiered_mesh_freelist* MeshFreelist)
 {
   if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
   if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }

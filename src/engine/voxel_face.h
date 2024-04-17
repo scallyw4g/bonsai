@@ -32,6 +32,17 @@ global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
 global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
 
 
+global_variable v3 RightFaceNormalData[]  = { {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}} };
+global_variable v3 LeftFaceNormalData[]   = { {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, };
+global_variable v3 BackFaceNormalData[]   = { {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, };
+global_variable v3 FrontFaceNormalData[]  = { {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, };
+global_variable v3 TopFaceNormalData[]    = { {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, };
+global_variable v3 BottomFaceNormalData[] = { {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, };
+
+
+
+
+
 // NOTE(Jesse): This is pretty similar to voxel_rule_direction @duplicate_face_index_enum
 enum face_index
 {
@@ -47,209 +58,156 @@ enum face_index
 
 
 
-inline void
-RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  v3 MaxP = MinP + Diameter;
+poof(
+  func vertex_data_functions(storage_type)
+  {
+    inline void
+    RightFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      storage_type.name MaxP = MinP + Diameter;
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-  //  0    1
-  //
-  //  2    3
+      //  0    1
+      //
+      //  2    3
 
-  v3 P0 = {{ MaxP.x, MinP.y, MaxP.z }};
-  v3 P1 = {{ MaxP.x, MaxP.y, MaxP.z }};
-  v3 P2 = {{ MaxP.x, MinP.y, MinP.z }};
-  v3 P3 = {{ MaxP.x, MaxP.y, MinP.z }};
+      storage_type.name P0 = {{ MaxP.x, MinP.y, MaxP.z }};
+      storage_type.name P1 = {{ MaxP.x, MaxP.y, MaxP.z }};
+      storage_type.name P2 = {{ MaxP.x, MinP.y, MinP.z }};
+      storage_type.name P3 = {{ MaxP.x, MaxP.y, MinP.z }};
 
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+      storage_type.name Temp[] = { P2, P1, P0, P2, P3, P1 };
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
-  return;
-}
+      return;
+    }
 
-global_variable v3 RightFaceNormalData[] =
-{
-  {{1, 0, 0}},
-  {{1, 0, 0}},
-  {{1, 0, 0}},
-  {{1, 0, 0}},
-  {{1, 0, 0}},
-  {{1, 0, 0}}
-};
+    inline void
+    LeftFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      storage_type.name MaxP = MinP + Diameter;
 
-inline void
-LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  v3 MaxP = MinP + Diameter;
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
+      //  0    1
+      //
+      //  2    3
 
-  //  0    1
-  //
-  //  2    3
+      storage_type.name P0 = {{ MinP.x, MaxP.y, MaxP.z }};
+      storage_type.name P1 = {{ MinP.x, MinP.y, MaxP.z }};
+      storage_type.name P2 = {{ MinP.x, MaxP.y, MinP.z }};
+      storage_type.name P3 = {{ MinP.x, MinP.y, MinP.z }};
 
-  v3 P0 = {{ MinP.x, MaxP.y, MaxP.z }};
-  v3 P1 = {{ MinP.x, MinP.y, MaxP.z }};
-  v3 P2 = {{ MinP.x, MaxP.y, MinP.z }};
-  v3 P3 = {{ MinP.x, MinP.y, MinP.z }};
+      storage_type.name Temp[] = { P2, P1, P0, P2, P3, P1 };
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
-  v3 Temp[] = { P2, P1, P0, P2, P3, P1 };
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+      return;
+    }
 
-  return;
-}
+    inline void
+    BackFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      storage_type.name MaxP = MinP + Diameter;
 
-global_variable v3 LeftFaceNormalData[] =
-{
-  {{-1, 0, 0}},
-  {{-1, 0, 0}},
-  {{-1, 0, 0}},
-  {{-1, 0, 0}},
-  {{-1, 0, 0}},
-  {{-1, 0, 0}},
-};
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-inline void
-BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  v3 MaxP = MinP + Diameter;
+      //  0    3
+      //
+      //  1    2
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
+      storage_type.name P0 = {{ MinP.x, MinP.y, MaxP.z }};
+      storage_type.name P1 = {{ MaxP.x, MinP.y, MaxP.z }};
+      storage_type.name P2 = {{ MinP.x, MinP.y, MinP.z }};
+      storage_type.name P3 = {{ MaxP.x, MinP.y, MinP.z }};
 
-  //  0    3
-  //
-  //  1    2
+      storage_type.name Temp[] = { P0, P2, P1, P1, P2, P3 };
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
-  v3 P0 = {{ MinP.x, MinP.y, MaxP.z }};
-  v3 P1 = {{ MaxP.x, MinP.y, MaxP.z }};
-  v3 P2 = {{ MinP.x, MinP.y, MinP.z }};
-  v3 P3 = {{ MaxP.x, MinP.y, MinP.z }};
+      return;
+    }
 
-  v3 Temp[] = { P0, P2, P1, P1, P2, P3 };
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+    inline void
+    FrontFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      storage_type.name MaxP = MinP + Diameter;
 
-  return;
-}
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-global_variable v3 BackFaceNormalData[] =
-{
-  {{0,-1, 0}},
-  {{0,-1, 0}},
-  {{0,-1, 0}},
-  {{0,-1, 0}},
-  {{0,-1, 0}},
-  {{0,-1, 0}},
-};
+      //  7    4
+      //
+      //  6    5
 
-inline void
-FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  v3 MaxP = MinP + Diameter;
+      storage_type.name P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
+      storage_type.name P4 = {{ MinP.x, MaxP.y, MaxP.z }};
+      storage_type.name P6 = {{ MaxP.x, MaxP.y, MinP.z }};
+      storage_type.name P5 = {{ MinP.x, MaxP.y, MinP.z }};
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
-
-  //  7    4
-  //
-  //  6    5
-
-  v3 P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
-  v3 P4 = {{ MinP.x, MaxP.y, MaxP.z }};
-  v3 P6 = {{ MaxP.x, MaxP.y, MinP.z }};
-  v3 P5 = {{ MinP.x, MaxP.y, MinP.z }};
-
-  v3 Temp[] = { P7, P6, P4, P4, P6, P5 };
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+      storage_type.name Temp[] = { P7, P6, P4, P4, P6, P5 };
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
 
-  return;
-}
+      return;
+    }
 
-global_variable v3 FrontFaceNormalData[] =
-{
-  {{0, 1, 0}},
-  {{0, 1, 0}},
-  {{0, 1, 0}},
-  {{0, 1, 0}},
-  {{0, 1, 0}},
-  {{0, 1, 0}},
-};
+    inline void
+    TopFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      storage_type.name MaxP = MinP + Diameter;
 
-inline void
-TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  v3 MaxP = MinP + Diameter;
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
+      //  4    7
+      //
+      //  0    3
 
-  //  4    7
-  //
-  //  0    3
+      storage_type.name P4 = {{ MinP.x, MaxP.y, MaxP.z }};
+      storage_type.name P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
+      storage_type.name P0 = {{ MinP.x, MinP.y, MaxP.z }};
+      storage_type.name P3 = {{ MaxP.x, MinP.y, MaxP.z }};
 
-  v3 P4 = {{ MinP.x, MaxP.y, MaxP.z }};
-  v3 P7 = {{ MaxP.x, MaxP.y, MaxP.z }};
-  v3 P0 = {{ MinP.x, MinP.y, MaxP.z }};
-  v3 P3 = {{ MaxP.x, MinP.y, MaxP.z }};
+      storage_type.name Temp[] = { P4, P0, P7, P7, P0, P3 };
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
-  v3 Temp[] = { P4, P0, P7, P7, P0, P3 };
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+      return;
+    }
 
-  return;
-}
+    inline void
+    BottomFaceVertexData_(storage_type.name)( storage_type.name MinP, storage_type.name Diameter, storage_type.name *Result)
+    {
+      /* TIMED_FUNCTION(); */
+      storage_type.name MaxP = MinP + Diameter;
 
-global_variable v3 TopFaceNormalData[] =
-{
-  {{0, 0, 1}},
-  {{0, 0, 1}},
-  {{0, 0, 1}},
+      /* Round(MaxP); */
+      /* Round(MinP); */
 
-  {{0, 0, 1}},
-  {{0, 0, 1}},
-  {{0, 0, 1}},
-};
+      r32 Temp[] = {
+        MaxP.x , MinP.y , MinP.z ,
+        MinP.x , MinP.y , MinP.z ,
+        MaxP.x , MaxP.y , MinP.z ,
+        MinP.x , MaxP.y , MinP.z ,
+        MaxP.x , MaxP.y , MinP.z ,
+        MinP.x , MinP.y , MinP.z ,
+      };
 
-inline void
-BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
-{
-  /* TIMED_FUNCTION(); */
-  v3 MaxP = MinP + Diameter;
+      MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
-  /* Round(MaxP); */
-  /* Round(MinP); */
+      return;
+    }
 
-  r32 Temp[] = {
-    MaxP.x , MinP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MaxP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
-  };
+  }
+)
 
-  MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
+poof(vertex_data_functions(v3))
+#include <generated/vertex_data_functions_v3.h>
 
-  return;
-}
-
-global_variable v3 BottomFaceNormalData[] =
-{
-  {{0, 0, -1}},
-  {{0, 0, -1}},
-  {{0, 0, -1}},
-
-  {{0, 0, -1}},
-  {{0, 0, -1}},
-  {{0, 0, -1}},
-};
-
-
-
+/* poof(vertex_data_functions(v3_u8)) */
+/* #include <generated/vertex_data_functions_v3_u8.h> */
 
 link_internal v3
 NormalForFace(face_index Face)
@@ -292,5 +250,4 @@ NormalForFace(face_index Face)
 
   return Result;
 }
-
 

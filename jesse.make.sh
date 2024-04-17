@@ -15,7 +15,7 @@
   BuildSingleExample examples/transparency \
   BuildSingleExample examples/turn_based \
   BuildSingleExample examples/terrain_gen \
-  # BuildSingleExample examples/the_wanderer \
+  BuildSingleExample examples/the_wanderer \
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
   # BuildSingleExample examples/graveyard \
   # BuildTests \

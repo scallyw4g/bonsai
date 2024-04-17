@@ -3,7 +3,7 @@ struct work_queue_entry_copy_buffer_ref
 {
   untextured_3d_geometry_buffer *Dest;
 
-  threadsafe_geometry_buffer *Buf;
+  lod_element_buffer *Buf;
   world_chunk_mesh_bitfield MeshBit;
 
   v3 Basis;
@@ -254,11 +254,11 @@ HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, applicat
 /* link_internal untextured_3d_geometry_buffer * */
 /* GetMeshFor(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit); */
 
-link_internal untextured_3d_geometry_buffer *
-TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
+/* link_internal untextured_3d_geometry_buffer * */
+/* TakeOwnershipSync(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit); */
 
-link_internal void
-ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
+/* link_internal void */
+/* ReleaseOwnership(threadsafe_geometry_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf); */
 
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);

@@ -97,9 +97,75 @@ DeallocateMesh(engine_resources *Engine, untextured_3d_geometry_buffer* Mesh)
   DeallocateMesh(Mesh, &Engine->MeshFreelist);
 }
 
+
 poof(
-  func deallocate_meshes(type)
+  func threadsafe_mesh_container(type)
   {
+    link_internal untextured_3d_geometry_buffer *
+    TakeOwnershipSync( (type.name) *Buf, world_chunk_mesh_bitfield MeshBit)
+    {
+      AcquireFutex(&Buf->Locks[ToIndex(MeshBit)]);
+      untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
+      return Result;
+    }
+
+    link_internal void
+    ReleaseOwnership( (type.name) *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
+    {
+      /* if (Buf) { Assert(Src->MeshMask & MeshBit);  } */
+      ReleaseFutex(&Src->Locks[ToIndex(MeshBit)]);
+    }
+
+    link_internal untextured_3d_geometry_buffer *
+    ReplaceMesh( (type.name) *Meshes,
+                 world_chunk_mesh_bitfield MeshBit,
+                 untextured_3d_geometry_buffer *Buf,
+                 u64 BufTimestamp )
+    {
+      Assert( Meshes->Locks[ToIndex(MeshBit)].SignalValue == (u32)ThreadLocal_ThreadIndex );
+      /* if (Buf) { Assert(Buf->At); } */
+
+      untextured_3d_geometry_buffer *Result = {};
+
+      untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
+
+
+      if (CurrentMesh)
+      {
+        if (CurrentMesh->Timestamp < BufTimestamp)
+        {
+          Meshes->E[ToIndex(MeshBit)] = Buf;
+          Result = CurrentMesh;
+        }
+        else
+        {
+          // NOTE(Jesse): If we don't swap this in, we have to return it so it gets freed
+          Result = Buf;
+        }
+      }
+      else
+      {
+        Meshes->E[ToIndex(MeshBit)] = Buf;
+      }
+
+      if (Meshes->E[ToIndex(MeshBit)]) { Meshes->MeshMask |= MeshBit; }
+      else                             { Meshes->MeshMask &= ~MeshBit; }
+
+      return Result;
+    }
+
+    link_internal untextured_3d_geometry_buffer *
+    AtomicReplaceMesh( (type.name) *Meshes,
+                       world_chunk_mesh_bitfield MeshBit,
+                       untextured_3d_geometry_buffer *Buf,
+                       u64 BufTimestamp )
+    {
+      TakeOwnershipSync(Meshes, MeshBit);
+      auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
+      ReleaseOwnership(Meshes, MeshBit, Buf);
+      return Replace;
+    }
+
     link_internal void
     DeallocateMeshes((type.name) *Buf, tiered_mesh_freelist* MeshFreelist)
     {
@@ -116,10 +182,10 @@ poof(
   }
 )
 
-poof(deallocate_meshes(lod_element_buffer))
-#include <generated/deallocate_meshes_lod_element_buffer.h>
+poof(threadsafe_mesh_container(lod_element_buffer))
+#include <generated/take_release_sync_lod_element_buffer.h>
 
-poof(deallocate_meshes(threadsafe_geometry_buffer))
-#include <generated/deallocate_meshes_threadsafe_geometry_buffer.h>
+poof(threadsafe_mesh_container(world_chunk_lod_element_buffer))
+#include <generated/threadsafe_mesh_container_world_chunk_lod_element_buffer.h>
 
 

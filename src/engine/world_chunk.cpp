@@ -1217,32 +1217,32 @@ DrawDebugVoxels( voxel *Voxels,
 
         if (Voxel->Flags & Voxel_RightFace)
         {
-          RightFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          RightFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
-          LeftFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          LeftFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
-          BottomFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          BottomFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
-          TopFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          TopFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
-          FrontFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          FrontFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
-          BackFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
+          BackFaceVertexData_v3( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
         }
       }
@@ -1584,10 +1584,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
         v3i TmpVoxP = V3i(x,y,z);
         voxel *Voxel = TempVoxels + Index;
 
-        f32 Trans = f32(Voxel->Transparency) / 255.f;
-
-        /* v3 Color = GetColorData(Voxel->Color); */
-        FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->Color, Voxel->Transparency, 0), Materials, VERTS_PER_FACE);
 
         untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
@@ -1597,38 +1594,38 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
           if (Voxel->Flags & Voxel_RightFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
-            RightFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            RightFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
-            LeftFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            LeftFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
-            BottomFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            BottomFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
           }
 
           if (Voxel->Flags & Voxel_TopFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
-            TopFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            TopFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
-            FrontFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            FrontFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
-            BackFaceVertexData( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
+            BackFaceVertexData_v3( V3(TmpVoxP)+VertexOffset, Dim, VertexData);
             BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
           }
         }
@@ -1847,13 +1844,13 @@ BuildMipMesh( voxel *Voxels,
         if (Voxel->Flags & Voxel_RightFace)
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
-          RightFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          RightFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           v3 Dim = DoXStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
-          LeftFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          LeftFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
         }
 
@@ -1861,13 +1858,13 @@ BuildMipMesh( voxel *Voxels,
         if (Voxel->Flags & Voxel_BottomFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
-          BottomFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          BottomFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           v3 Dim = DoZStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
-          TopFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          TopFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
         }
 
@@ -1875,13 +1872,13 @@ BuildMipMesh( voxel *Voxels,
         if (Voxel->Flags & Voxel_FrontFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
-          FrontFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          FrontFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           v3 Dim = DoYStepping(FilterVoxels, FilterDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
-          BackFaceVertexData( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
+          BackFaceVertexData_v3( V3(ActualP)*MipLevel, Dim*MipLevel, VertexData);
           BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
         }
       }
@@ -1963,32 +1960,32 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
         {
           if (Voxel->Flags & Voxel_RightFace)
           {
-            RightFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            RightFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
-            LeftFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            LeftFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
-            BottomFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            BottomFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_TopFace)
           {
-            TopFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            TopFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
-            FrontFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            FrontFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
-            BackFaceVertexData( V3(DestP-SrcChunkMin), Diameter, VertexData);
+            BackFaceVertexData_v3( V3(DestP-SrcChunkMin), Diameter, VertexData);
             BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
           }
         }
@@ -3690,7 +3687,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
 }
 
 link_internal work_queue_entry_copy_buffer_ref
-WorkQueueEntryCopyBufferRef(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
+WorkQueueEntryCopyBufferRef(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)
 {
   work_queue_entry_copy_buffer_ref Result = {};
 

@@ -76,31 +76,6 @@ BufferIsMarkedForGrowth(untextured_3d_geometry_buffer *Dest)
   return Result;
 }
 
-#if 0
-inline void
-BufferVertsDirect(
-    untextured_2d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *Positions, v4 *Colors
-  )
-{
-  TIMED_FUNCTION();
-
-  if (BufferHasRoomFor(Dest, NumVerts))
-  {
-    MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
-    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
-    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
-    Dest->At += NumVerts;
-  }
-  else
-  {
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    MarkBufferForGrowth(Dest, NumVerts);
-  }
-}
-#endif
-
 inline void
 BufferFaceData(
     untextured_3d_geometry_buffer *Dest,
@@ -436,22 +411,22 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Colo
 
   v3 MinP = RenderP_VoxelCenter - (Diameter*0.5f);
 
-  RightFaceVertexData( MinP, Diameter, VertexData);
+  RightFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, Materials);
 
-  LeftFaceVertexData( MinP, Diameter, VertexData);
+  LeftFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, Materials);
 
-  BottomFaceVertexData( MinP, Diameter, VertexData);
+  BottomFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, Materials);
 
-  TopFaceVertexData( MinP, Diameter, VertexData);
+  TopFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, Materials);
 
-  FrontFaceVertexData( MinP, Diameter, VertexData);
+  FrontFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, Materials);
 
-  BackFaceVertexData( MinP, Diameter, VertexData);
+  BackFaceVertexData_v3( MinP, Diameter, VertexData);
   BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, Materials);
 }
 
