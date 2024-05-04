@@ -1,7 +1,7 @@
-// src/engine/voxel_face.h:206:0
+// src/engine/voxel_face.h:205:0
 
 inline void
-RightFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   v3 MaxP = MinP + Diameter;
 
@@ -24,7 +24,7 @@ RightFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
 }
 
 inline void
-LeftFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+LeftFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   v3 MaxP = MinP + Diameter;
 
@@ -47,7 +47,7 @@ LeftFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
 }
 
 inline void
-BackFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+BackFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   v3 MaxP = MinP + Diameter;
 
@@ -70,7 +70,7 @@ BackFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
 }
 
 inline void
-FrontFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+FrontFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   v3 MaxP = MinP + Diameter;
 
@@ -94,7 +94,7 @@ FrontFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
 }
 
 inline void
-TopFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+TopFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   v3 MaxP = MinP + Diameter;
 
@@ -117,7 +117,7 @@ TopFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
 }
 
 inline void
-BottomFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
+BottomFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {
   /* TIMED_FUNCTION(); */
   v3 MaxP = MinP + Diameter;
@@ -125,18 +125,17 @@ BottomFaceVertexData_v3( v3 MinP, v3 Diameter, v3 *Result)
   /* Round(MaxP); */
   /* Round(MinP); */
 
-  r32 Temp[] = {
-    MaxP.x , MinP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MaxP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
+  v3 Temp[] = {
+    {{MaxP.x , MinP.y , MinP.z}},
+    {{MinP.x , MinP.y , MinP.z}},
+    {{MaxP.x , MaxP.y , MinP.z}},
+    {{MinP.x , MaxP.y , MinP.z}},
+    {{MaxP.x , MaxP.y , MinP.z}},
+    {{MinP.x , MinP.y , MinP.z}},
   };
 
   MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
-
 

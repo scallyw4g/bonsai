@@ -145,7 +145,7 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   Assert(Remaining(&VertIndicies) == 0 );
   Assert(Remaining(&NormalIndicies) == 0 );
 
-  untextured_3d_geometry_buffer *Mesh = AllocateMesh(Heap, Stats.FaceCount*3);
+  untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, Stats.FaceCount*3);
 
   v3 MinV = V3(f32_MAX);
   v3 MaxV = V3(f32_MIN);

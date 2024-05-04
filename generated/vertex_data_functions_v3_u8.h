@@ -1,7 +1,7 @@
-// src/engine/voxel_face.h:209:0
+// src/engine/voxel_face.h:208:0
 
 inline void
-RightFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+RightFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   v3_u8 MaxP = MinP + Diameter;
 
@@ -24,7 +24,7 @@ RightFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
 }
 
 inline void
-LeftFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+LeftFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   v3_u8 MaxP = MinP + Diameter;
 
@@ -47,7 +47,7 @@ LeftFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
 }
 
 inline void
-BackFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+BackFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   v3_u8 MaxP = MinP + Diameter;
 
@@ -70,7 +70,7 @@ BackFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
 }
 
 inline void
-FrontFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+FrontFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   v3_u8 MaxP = MinP + Diameter;
 
@@ -94,7 +94,7 @@ FrontFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
 }
 
 inline void
-TopFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+TopFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   v3_u8 MaxP = MinP + Diameter;
 
@@ -117,7 +117,7 @@ TopFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
 }
 
 inline void
-BottomFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
+BottomFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 {
   /* TIMED_FUNCTION(); */
   v3_u8 MaxP = MinP + Diameter;
@@ -125,18 +125,17 @@ BottomFaceVertexData_v3_u8( v3_u8 MinP, v3_u8 Diameter, v3_u8 *Result)
   /* Round(MaxP); */
   /* Round(MinP); */
 
-  r32 Temp[] = {
-    MaxP.x , MinP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MaxP.y , MinP.z ,
-    MaxP.x , MaxP.y , MinP.z ,
-    MinP.x , MinP.y , MinP.z ,
+  v3_u8 Temp[] = {
+    {{MaxP.x , MinP.y , MinP.z}},
+    {{MinP.x , MinP.y , MinP.z}},
+    {{MaxP.x , MaxP.y , MinP.z}},
+    {{MinP.x , MaxP.y , MinP.z}},
+    {{MaxP.x , MaxP.y , MinP.z}},
+    {{MinP.x , MinP.y , MinP.z}},
   };
 
   MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
 
   return;
 }
-
 

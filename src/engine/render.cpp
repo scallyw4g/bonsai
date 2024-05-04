@@ -883,108 +883,120 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
   GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
-link_internal void
-CopyBufferIntoBuffer(untextured_3d_geometry_buffer *Src, untextured_3d_geometry_buffer *Dest)
-{
-  BufferVertsChecked(Src, Dest, {}, V3(1.0f));
-}
-
-link_internal void
-CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
-{
-  GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
-  CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
-  FlushBuffersToCard(GpuBuffer);
-}
-
-link_internal void
-CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
-{
-  untextured_3d_geometry_buffer Dest = MapGpuElementBuffer(Handles);
-  CopyBufferIntoBuffer(Mesh, &Dest);
-  FlushBuffersToCard(Handles);
-}
-
-link_internal b32
-SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
-{
-  b32 Result = False;
-  Assert(ThreadLocal_ThreadIndex != 1);
-
-  RangeIterator(MeshIndex, MeshIndex_Count)
+poof(
+  func gpu_buffer(container_t, buffer_t)
   {
-    world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-    if (HasMesh(Meshes, MeshBit))
-    {
-      gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
 
-      untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
-      if (Mesh && Mesh->At)
-      {
-        PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
-        Result = True;
-      }
-      else
-      {
-        PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
-      }
+    link_internal void
+    CopyBufferIntoBuffer( (buffer_t.name) *Src, (buffer_t.name) *Dest)
+    {
+      BufferVertsChecked(Src, Dest, {}, V3(1.0f));
     }
-  }
 
-  // TODO(Jesse): Is this actually a thing??
-  FullBarrier;
-
-  return Result;
-}
-
-link_internal b32
-SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
-{
-  b32 Result = False;
-  Assert(ThreadLocal_ThreadIndex == 1);
-
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
-    if (HasMesh(Meshes, MeshBit))
+    link_internal void
+    CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_mapped_element_buffer *GpuBuffer)
     {
-      gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
+      GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
+      CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
+      FlushBuffersToCard(GpuBuffer);
+    }
 
-      untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
-      if (Mesh)
+    link_internal void
+    CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_element_buffer_handles *Handles)
+    {
+      (buffer_t.name) Dest = MapGpuElementBuffer(Handles);
+      CopyBufferIntoBuffer(Mesh, &Dest);
+      FlushBuffersToCard(Handles);
+    }
+
+    link_internal b32
+    SyncGpuBuffersAsync(engine_resources *Engine, (container_t.name) *Meshes)
+    {
+      b32 Result = False;
+      Assert(ThreadLocal_ThreadIndex != 1);
+
+      RangeIterator(MeshIndex, MeshIndex_Count)
       {
-        if (Mesh->At)
+        world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+        if (HasMesh(Meshes, MeshBit))
         {
-          // @duplicate_realloc_code
-          if (Handles->VertexHandle)
+          gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
+
+          (buffer_t.name) *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
+          if (Mesh && Mesh->At)
           {
-            GL.DeleteBuffers(3, &Handles->VertexHandle);
-            Clear(Handles);
-            AssertNoGlErrors;
+            PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
+            Result = True;
           }
-
-          AllocateGpuElementBuffer(Handles, Mesh->At);
-          CopyToGpuBuffer(Mesh, Handles);
-          Result = True;
+          else
+          {
+            PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
+          }
         }
-        else
-        {
-          DeallocateGpuElementBuffer(Handles);
-          AssertNoGlErrors;
-        }
-
-        DeallocateMesh(Engine, Mesh);
       }
+
+      // TODO(Jesse): Is this actually a thing??
+      FullBarrier;
+
+      return Result;
+    }
+
+    link_internal b32
+    SyncGpuBuffersImmediate(engine_resources *Engine, (container_t.name) *Meshes)
+    {
+      b32 Result = False;
+      Assert(ThreadLocal_ThreadIndex == 1);
+
+      RangeIterator(MeshIndex, MeshIndex_Count)
+      {
+        world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex);
+        if (HasMesh(Meshes, MeshBit))
+        {
+          gpu_element_buffer_handles *Handles = &Meshes->GpuBufferHandles[MeshIndex];
+
+          (buffer_t.name) *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
+          if (Mesh)
+          {
+            if (Mesh->At)
+            {
+              // @duplicate_realloc_code
+              if (Handles->VertexHandle)
+              {
+                GL.DeleteBuffers(3, &Handles->VertexHandle);
+                Clear(Handles);
+                AssertNoGlErrors;
+              }
+
+              AllocateGpuElementBuffer(Handles, Mesh->At);
+              CopyToGpuBuffer(Mesh, Handles);
+              Result = True;
+            }
+            else
+            {
+              DeallocateGpuElementBuffer(Handles);
+              AssertNoGlErrors;
+            }
+
+            DeallocateMesh(Engine, Mesh);
+          }
+        }
+      }
+
+      AssertNoGlErrors;
+
+      // TODO(Jesse): Is this actually a thing??
+      FullBarrier;
+
+      return Result;
     }
   }
+)
 
-  AssertNoGlErrors;
+poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
+#include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
 
-  // TODO(Jesse): Is this actually a thing??
-  FullBarrier;
-
-  return Result;
-}
+poof(gpu_buffer(world_chunk_lod_element_buffer, world_chunk_geometry_buffer))
+#include <generated/gpu_buffer_world_chunk_lod_element_buffer_world_chunk_geometry_buffer.h>
 
 link_internal m4
 GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation)

@@ -12,7 +12,8 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   Result.VoxelElementCount        = Volume(Chunk);
   Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+  NotImplemented;
+  /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
     Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
@@ -65,7 +66,8 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   Result.VoxelElementCount = Volume(Chunk);
   Result.VoxelElementSize  = (u32)sizeof(voxel);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+  NotImplemented;
+  /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
     Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }

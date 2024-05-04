@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:201:0
+// external/bonsai_stdlib/src/vector.h:209:0
 
 link_internal void
 DeepCopy(v2i *Src, v2i *Dest)
@@ -68,30 +68,30 @@ operator>=( v2i P1, v2i P2 )
 inline v2i
 operator+( v2i P1, v2i P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] + P2.E[0],
-    .E[1] = P1.E[1] + P2.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] + P2.E[0]),
+      Cast(s32, P1.E[1] + P2.E[1]),
+    }};
   return Result;
 }
 
 inline v2i
 operator+( v2i P1, s32 Scalar )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] + Scalar,
-    .E[1] = P1.E[1] + Scalar,
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] + Scalar),
+      Cast(s32, P1.E[1] + Scalar),
+    }};
   return Result;
 }
 
 inline v2i
 operator+( s32 Scalar, v2i P1 )
 {
-  v2i Result = {
-    .E[0] = Scalar + P1.E[0],
-    .E[1] = Scalar + P1.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, Scalar + P1.E[0]),
+      Cast(s32, Scalar + P1.E[1]),
+    }};
   return Result;
 }
 
@@ -100,30 +100,30 @@ operator+( s32 Scalar, v2i P1 )
 inline v2i
 operator-( v2i P1, v2i P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] - P2.E[0],
-    .E[1] = P1.E[1] - P2.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] - P2.E[0]),
+      Cast(s32, P1.E[1] - P2.E[1]),
+    }};
   return Result;
 }
 
 inline v2i
 operator-( v2i P1, s32 Scalar )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] - Scalar,
-    .E[1] = P1.E[1] - Scalar,
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] - Scalar),
+      Cast(s32, P1.E[1] - Scalar),
+    }};
   return Result;
 }
 
 inline v2i
 operator-( s32 Scalar, v2i P1 )
 {
-  v2i Result = {
-    .E[0] = Scalar - P1.E[0],
-    .E[1] = Scalar - P1.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, Scalar - P1.E[0]),
+      Cast(s32, Scalar - P1.E[1]),
+    }};
   return Result;
 }
 
@@ -132,30 +132,30 @@ operator-( s32 Scalar, v2i P1 )
 inline v2i
 operator*( v2i P1, v2i P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] * P2.E[0],
-    .E[1] = P1.E[1] * P2.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] * P2.E[0]),
+      Cast(s32, P1.E[1] * P2.E[1]),
+    }};
   return Result;
 }
 
 inline v2i
 operator*( v2i P1, s32 Scalar )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] * Scalar,
-    .E[1] = P1.E[1] * Scalar,
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] * Scalar),
+      Cast(s32, P1.E[1] * Scalar),
+    }};
   return Result;
 }
 
 inline v2i
 operator*( s32 Scalar, v2i P1 )
 {
-  v2i Result = {
-    .E[0] = Scalar * P1.E[0],
-    .E[1] = Scalar * P1.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, Scalar * P1.E[0]),
+      Cast(s32, Scalar * P1.E[1]),
+    }};
   return Result;
 }
 
@@ -164,30 +164,30 @@ operator*( s32 Scalar, v2i P1 )
 inline v2i
 operator/( v2i P1, v2i P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] / P2.E[0],
-    .E[1] = P1.E[1] / P2.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] / P2.E[0]),
+      Cast(s32, P1.E[1] / P2.E[1]),
+    }};
   return Result;
 }
 
 inline v2i
 operator/( v2i P1, s32 Scalar )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] / Scalar,
-    .E[1] = P1.E[1] / Scalar,
-  };
+  v2i Result = {{
+      Cast(s32, P1.E[0] / Scalar),
+      Cast(s32, P1.E[1] / Scalar),
+    }};
   return Result;
 }
 
 inline v2i
 operator/( s32 Scalar, v2i P1 )
 {
-  v2i Result = {
-    .E[0] = Scalar / P1.E[0],
-    .E[1] = Scalar / P1.E[1],
-  };
+  v2i Result = {{
+      Cast(s32, Scalar / P1.E[0]),
+      Cast(s32, Scalar / P1.E[1]),
+    }};
   return Result;
 }
 

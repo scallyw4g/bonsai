@@ -259,8 +259,8 @@ struct world_chunk_lod_element_buffer
   gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
 
   // Src meshes, read-only
-  geo_u3d_ptr       E[MeshIndex_Count];
-  bonsai_futex  Locks[MeshIndex_Count];
+  world_chunk_geometry_buffer *E[MeshIndex_Count];
+  bonsai_futex             Locks[MeshIndex_Count];
 };
 
 struct lod_element_buffer
@@ -275,43 +275,6 @@ struct lod_element_buffer
   bonsai_futex  Locks[MeshIndex_Count];
 };
 
-link_internal b32
-HasGpuMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
-{
-  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
-  return Result;
-}
-
-
-link_internal b32
-HasGpuMesh(lod_element_buffer *Buf)
-{
-  b32 Result = False;
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
-  }
-  return Result;
-}
-
-link_internal b32
-HasCpuMesh(lod_element_buffer *Buf)
-{
-  b32 Result = False;
-  RangeIterator(MeshIndex, MeshIndex_Count)
-  {
-    Result |= (Buf->E[MeshIndex] != 0);
-  }
-  return Result;
-}
-
-
-link_internal b32
-HasMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
-{
-  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
-  return Result;
-}
 
 /* link_internal b32 */
 /* HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit) */
@@ -388,7 +351,7 @@ struct world_chunk
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes
   // smaller, which is probably pretty worth.
-  lod_element_buffer Meshes;
+  world_chunk_lod_element_buffer Meshes;
 
   /* threadsafe_geometry_buffer TransparentMeshes; */
   /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */

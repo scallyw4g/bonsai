@@ -1,0 +1,279 @@
+// src/engine/mesh.h:432:0
+
+//
+// Rotate, Scale and Offset
+//
+
+link_inline void
+BufferVertsDirect(
+  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  u32  NumVerts,
+  v3_u8 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
+  v3  Offset,
+  v3  Scale,
+  Quaternion  Rot )
+{
+  TIMED_FUNCTION();
+
+  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+  Assert(NumVerts % 3 == 0);
+
+  MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
+
+  /* v3 HalfOffset = Offset*0.5f; */
+  for ( u32 VertIndex = 0;
+    VertIndex < NumVerts;
+    VertIndex += 3 )
+  {
+    {
+      v3 N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
+      v3 N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
+      v3 N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
+
+      DestNormals[0] = N0;
+      DestNormals[1] = N1;
+      DestNormals[2] = N2;
+
+      DestNormals += 3;
+    }
+    {
+      v3_u8 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
+      v3_u8 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
+      v3_u8 VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
+
+      f32_reg Vert0;
+      f32_reg Vert1;
+      f32_reg Vert2;
+
+      Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+      Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+      Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+      Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+      Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+      Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+      v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2])}};
+      v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2])}};
+      v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2])}};
+
+      DestVerts[0] = Result0;
+      DestVerts[1] = Result1;
+      DestVerts[2] = Result2;
+
+      DestVerts += 3;
+    }
+
+  }
+}
+
+//
+// Scale and Offset
+//
+
+link_inline void
+BufferVertsDirect(
+  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  u32  NumVerts,
+  v3_u8 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
+  v3  Offset,
+  v3  Scale
+)
+{
+  TIMED_FUNCTION();
+
+  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+  Assert(NumVerts % 3 == 0);
+
+  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
+  MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
+
+  for ( u32 VertIndex = 0;
+    VertIndex < NumVerts;
+    VertIndex += 3 )
+  {
+    v3_u8 VertSrc0 = SrcVerts[VertIndex + 0];
+    v3_u8 VertSrc1 = SrcVerts[VertIndex + 1];
+    v3_u8 VertSrc2 = SrcVerts[VertIndex + 2];
+
+    f32_reg Vert0;
+    f32_reg Vert1;
+    f32_reg Vert2;
+
+    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+    v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2]) }};
+    v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2]) }};
+    v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2]) }};
+
+    DestVerts[0] = Result0;
+    DestVerts[1] = Result1;
+    DestVerts[2] = Result2;
+
+    DestVerts += 3;
+  }
+}
+
+//
+// Untransformed
+//
+
+link_inline void
+BufferVertsDirect(
+  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  u32 NumVerts,
+  v3_u8 *Positions, v3 *Normals, vertex_material *Mats
+)
+{
+  TIMED_FUNCTION();
+  MemCopy((u8*)Positions,  (u8*)DestVerts,      sizeof(*Positions)*NumVerts );
+  MemCopy((u8*)Normals,    (u8*)DestNormals,    sizeof(*Normals)*NumVerts );
+  MemCopy((u8*)Mats,       (u8*)DestMats,       sizeof(*Mats)*NumVerts );
+}
+
+
+
+//
+// Rotate, Scale and Offset
+//
+
+inline void
+BufferVertsChecked(
+  world_chunk_geometry_buffer *Dest,
+  u32 NumVerts,
+  v3_u8 *VertsPositions, v3 *Normals, vertex_material *Mats,
+  v3 Offset,
+  v3 Scale,
+  Quaternion Rot
+)
+{
+  TIMED_FUNCTION();
+  if (BufferHasRoomFor(Dest, NumVerts))
+  {
+    BufferVertsDirect(Dest->Verts + Dest->At,
+      Dest->Normals + Dest->At,
+      Dest->Mat + Dest->At,
+      NumVerts,
+      VertsPositions, Normals, Mats,
+      Offset, Scale, Rot);
+
+    Dest->At += NumVerts;
+  }
+  else
+  {
+    // NOTE(Jesse): Supress spamming errors to the console after the first one.
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, NumVerts);
+  }
+}
+
+//
+// Scale and Offset
+//
+
+inline void
+BufferVertsChecked(
+  world_chunk_geometry_buffer *Dest,
+  u32 NumVerts,
+  v3_u8 *VertsPositions, v3 *Normals, vertex_material *Mats,
+  v3 Offset,
+  v3 Scale
+)
+{
+  TIMED_FUNCTION();
+  if (BufferHasRoomFor(Dest, NumVerts))
+  {
+    BufferVertsDirect(Dest->Verts + Dest->At,
+      Dest->Normals + Dest->At,
+      Dest->Mat + Dest->At,
+      NumVerts,
+      VertsPositions, Normals, Mats,
+      Offset, Scale);
+
+    Dest->At += NumVerts;
+  }
+  else
+  {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, NumVerts);
+  }
+}
+
+//
+// Scale and Offset
+//
+
+inline void
+BufferVertsChecked(
+  world_chunk_geometry_buffer* Src,
+  world_chunk_geometry_buffer* Dest,
+  v3 Offset = V3(0),
+  v3 Scale = V3(1)
+)
+{
+  TIMED_FUNCTION();
+
+  umm NumVerts = Src->End - Src->At;
+  if (Dest->At + Src->At <= Dest->End)
+  {
+
+    BufferVertsDirect(Dest->Verts + Dest->At,
+      Dest->Normals + Dest->At,
+      Dest->Mat + Dest->At,
+      Src->At,
+      Src->Verts, Src->Normals, Src->Mat,
+      Offset, Scale);
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, Src->At);
+  }
+}
+
+
+//
+// Untransformed
+//
+
+inline void
+BufferVertsChecked(
+  world_chunk_geometry_buffer *Dest,
+  u32 NumVerts,
+  v3_u8 *VertsPositions, v3 *Normals, vertex_material *Mats
+)
+{
+  TIMED_FUNCTION();
+  if (BufferHasRoomFor(Dest, NumVerts))
+  {
+    BufferVertsDirect(Dest->Verts + Dest->At,
+      Dest->Normals + Dest->At,
+      Dest->Mat + Dest->At,
+      NumVerts,
+      VertsPositions, Normals, Mats);
+
+    Dest->At += NumVerts;
+  }
+  else
+  {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, NumVerts);
+  }
+}
+
+
+
+
+

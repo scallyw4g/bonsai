@@ -1,32 +1,32 @@
-// src/engine/mesh.cpp:188:0
+// src/engine/mesh.cpp:241:0
 
-link_internal untextured_3d_geometry_buffer *
+link_internal world_chunk_geometry_buffer *
 TakeOwnershipSync( world_chunk_lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
   AcquireFutex(&Buf->Locks[ToIndex(MeshBit)]);
-  untextured_3d_geometry_buffer *Result = (untextured_3d_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
+  world_chunk_geometry_buffer *Result = (world_chunk_geometry_buffer *)Buf->E[ToIndex(MeshBit)];
   return Result;
 }
 
 link_internal void
-ReleaseOwnership( world_chunk_lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf)
+ReleaseOwnership( world_chunk_lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, world_chunk_geometry_buffer *Buf)
 {
   /* if (Buf) { Assert(Src->MeshMask & MeshBit);  } */
   ReleaseFutex(&Src->Locks[ToIndex(MeshBit)]);
 }
 
-link_internal untextured_3d_geometry_buffer *
+link_internal world_chunk_geometry_buffer *
 ReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   world_chunk_mesh_bitfield MeshBit,
-  untextured_3d_geometry_buffer *Buf,
+  world_chunk_geometry_buffer *Buf,
   u64 BufTimestamp )
 {
   Assert( Meshes->Locks[ToIndex(MeshBit)].SignalValue == (u32)ThreadLocal_ThreadIndex );
   /* if (Buf) { Assert(Buf->At); } */
 
-  untextured_3d_geometry_buffer *Result = {};
+  world_chunk_geometry_buffer *Result = {};
 
-  untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
+  world_chunk_geometry_buffer *CurrentMesh = (world_chunk_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
 
 
   if (CurrentMesh)
@@ -53,10 +53,10 @@ ReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   return Result;
 }
 
-link_internal untextured_3d_geometry_buffer *
+link_internal world_chunk_geometry_buffer *
 AtomicReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   world_chunk_mesh_bitfield MeshBit,
-  untextured_3d_geometry_buffer *Buf,
+  world_chunk_geometry_buffer *Buf,
   u64 BufTimestamp )
 {
   TakeOwnershipSync(Meshes, MeshBit);
@@ -77,5 +77,42 @@ DeallocateMeshes(world_chunk_lod_element_buffer *Buf, tiered_mesh_freelist* Mesh
   /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist); } */
 
   Buf->MeshMask = 0;
+}
+
+link_internal b32
+HasGpuMesh(world_chunk_lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  return Result;
+}
+
+
+link_internal b32
+HasGpuMesh(world_chunk_lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
+  }
+  return Result;
+}
+
+link_internal b32
+HasCpuMesh(world_chunk_lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->E[MeshIndex] != 0);
+  }
+  return Result;
+}
+
+link_internal b32
+HasMesh(world_chunk_lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
+  return Result;
 }
 

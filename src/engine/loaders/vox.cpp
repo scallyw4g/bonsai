@@ -552,11 +552,11 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   chunk_data *ChunkData = Vox->ChunkData;
   DestModel->Dim = ChunkData->Dim;
 
-  untextured_3d_geometry_buffer *TempMesh0 = AllocateTempWorldChunkMesh(TempMemory);
-  untextured_3d_geometry_buffer *TempMesh1 = 0;
-  /* untextured_3d_geometry_buffer *TempMesh1 = AllocateTempWorldChunkMesh(TempMemory); */
+  world_chunk_geometry_buffer *TempMesh0 = AllocateTempWorldChunkMesh(TempMemory);
+  world_chunk_geometry_buffer *TempMesh1 = 0;
+  /* world_chunk_geometry_buffer *TempMesh1 = AllocateTempWorldChunkMesh(TempMemory); */
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh0, TempMesh1, TempMemory, V3(DestModel->Dim)/-2.f);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh0, TempMesh1, TempMemory, V3U8(DestModel->Dim/-2));
 
   engine_resources *Engine = GetEngineResources();
 

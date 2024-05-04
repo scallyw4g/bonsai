@@ -47,7 +47,7 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
     counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
     ansi_stream Triangles              = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
 
-    untextured_3d_geometry_buffer *Mesh = AllocateMesh(Heap, TotalTriangleCount*3);
+    untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, TotalTriangleCount*3);
 
     v3 MaxP = V3(f32_MIN);
     v3 MinP = V3(f32_MAX);
