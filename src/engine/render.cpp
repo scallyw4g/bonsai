@@ -894,19 +894,19 @@ poof(
     }
 
     link_internal void
-    CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_mapped_element_buffer *GpuBuffer)
+    CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_mapped_(buffer_t.name) *GpuBuffer)
     {
-      GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
-      CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
-      FlushBuffersToCard(GpuBuffer);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(&GpuBuffer->Handles);
+      CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+      FlushBuffersToCard(&Dest);
     }
 
     link_internal void
     CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_element_buffer_handles *Handles)
     {
-      (buffer_t.name) Dest = MapGpuElementBuffer(Handles);
-      CopyBufferIntoBuffer(Mesh, &Dest);
-      FlushBuffersToCard(Handles);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(Handles);
+      CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+      FlushBuffersToCard(&Dest);
     }
 
     link_internal b32
@@ -1014,6 +1014,13 @@ GetTransformMatrix(entity *Entity)
 }
 
 link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
+{
+  NotImplemented;
+}
+
+
+link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1069,6 +1076,12 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 }
 
 link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
+{
+  NotImplemented;
+}
+
+link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
 {
   if (Camera == 0) { Camera = &Thumb->Camera; }
@@ -1098,7 +1111,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
 
     // Geometry stuff
     {
-      MapGpuElementBuffer(&RTTGroup->GeoBuffer);
+      MapGpuBuffer_untextured_3d_geometry_buffer(&RTTGroup->GeoBuffer);
       untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
       BufferVertsChecked(Src, Dest, Offset, V3(1.0f));

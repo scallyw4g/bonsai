@@ -8,19 +8,19 @@ CopyBufferIntoBuffer( untextured_3d_geometry_buffer *Src, untextured_3d_geometry
 }
 
 link_internal void
-CopyToGpuBuffer( untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
+CopyToGpuBuffer( untextured_3d_geometry_buffer *Mesh, gpu_mapped_untextured_3d_geometry_buffer *GpuBuffer)
 {
-  GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
-  CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
-  FlushBuffersToCard(GpuBuffer);
+  gpu_mapped_untextured_3d_geometry_buffer Dest = MapGpuBuffer_untextured_3d_geometry_buffer(&GpuBuffer->Handles);
+  CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+  FlushBuffersToCard(&Dest);
 }
 
 link_internal void
 CopyToGpuBuffer( untextured_3d_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
 {
-  untextured_3d_geometry_buffer Dest = MapGpuElementBuffer(Handles);
-  CopyBufferIntoBuffer(Mesh, &Dest);
-  FlushBuffersToCard(Handles);
+  gpu_mapped_untextured_3d_geometry_buffer Dest = MapGpuBuffer_untextured_3d_geometry_buffer(Handles);
+  CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+  FlushBuffersToCard(&Dest);
 }
 
 link_internal b32

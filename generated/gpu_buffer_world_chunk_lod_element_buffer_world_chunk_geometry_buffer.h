@@ -8,19 +8,19 @@ CopyBufferIntoBuffer( world_chunk_geometry_buffer *Src, world_chunk_geometry_buf
 }
 
 link_internal void
-CopyToGpuBuffer( world_chunk_geometry_buffer *Mesh, gpu_mapped_element_buffer *GpuBuffer)
+CopyToGpuBuffer( world_chunk_geometry_buffer *Mesh, gpu_mapped_world_chunk_geometry_buffer *GpuBuffer)
 {
-  GpuBuffer->Buffer = MapGpuElementBuffer(&GpuBuffer->Handles);
-  CopyBufferIntoBuffer(Mesh, &GpuBuffer->Buffer);
-  FlushBuffersToCard(GpuBuffer);
+  gpu_mapped_world_chunk_geometry_buffer Dest = MapGpuBuffer_world_chunk_geometry_buffer(&GpuBuffer->Handles);
+  CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+  FlushBuffersToCard(&Dest);
 }
 
 link_internal void
 CopyToGpuBuffer( world_chunk_geometry_buffer *Mesh, gpu_element_buffer_handles *Handles)
 {
-  world_chunk_geometry_buffer Dest = MapGpuElementBuffer(Handles);
-  CopyBufferIntoBuffer(Mesh, &Dest);
-  FlushBuffersToCard(Handles);
+  gpu_mapped_world_chunk_geometry_buffer Dest = MapGpuBuffer_world_chunk_geometry_buffer(Handles);
+  CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
+  FlushBuffersToCard(&Dest);
 }
 
 link_internal b32

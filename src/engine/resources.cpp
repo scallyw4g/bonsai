@@ -3,8 +3,8 @@ link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
   // Map immediate GPU buffers for first frame
-  MapGpuElementBuffer(&Engine->Graphics.GpuBuffers[0]);
-  MapGpuElementBuffer(&Engine->Graphics.Transparency.GpuBuffer);
+  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
+  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
 
   os *Os         = &Engine->Stdlib.Os;
   /* platform *Plat = &Engine->Stdlib.Plat; */
@@ -180,8 +180,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* GpuMap = GetNextGpuMap(Graphics); */
 
               // Map immediate GPU buffers for next frame
-              MapGpuElementBuffer(GpuMap);
-              MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
+              MapGpuBuffer_untextured_3d_geometry_buffer(GpuMap);
+              MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
               Assert(GpuMap->Buffer.At == 0);
             } break;
           }
