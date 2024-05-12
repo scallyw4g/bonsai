@@ -1,4 +1,4 @@
-// src/engine/render_command.h:94:0
+// src/engine/render_command.h:120:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -131,6 +131,58 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_all_entities A  )
   return Result;
 }
 
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_init A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_gl_timer_init,
+    .bonsai_render_command_gl_timer_init = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_start A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_gl_timer_start,
+    .bonsai_render_command_gl_timer_start = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_end A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_gl_timer_end,
+    .bonsai_render_command_gl_timer_end = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and_histogram A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_gl_timer_read_value_and_histogram,
+    .bonsai_render_command_gl_timer_read_value_and_histogram = A,
+
+    
+
+  };
+  return Result;
+}
+
 
 link_internal bonsai_render_command_clear_all_framebuffers
 BonsaiRenderCommandClearAllFramebuffers( u32  Ignored  )
@@ -223,6 +275,42 @@ BonsaiRenderCommandDrawAllEntities( shader* Shader  )
 {
   bonsai_render_command_draw_all_entities Reuslt = {
     .Shader = Shader
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_gl_timer_init
+BonsaiRenderCommandGlTimerInit( u32* GlTimerObject  )
+{
+  bonsai_render_command_gl_timer_init Reuslt = {
+    .GlTimerObject = GlTimerObject
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_gl_timer_start
+BonsaiRenderCommandGlTimerStart( u32  GlTimerObject  )
+{
+  bonsai_render_command_gl_timer_start Reuslt = {
+    .GlTimerObject = GlTimerObject
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_gl_timer_end
+BonsaiRenderCommandGlTimerEnd( u32  GlTimerObject  )
+{
+  bonsai_render_command_gl_timer_end Reuslt = {
+    .GlTimerObject = GlTimerObject
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_gl_timer_read_value_and_histogram
+BonsaiRenderCommandGlTimerReadValueAndHistogram( u32  GlTimerObject  )
+{
+  bonsai_render_command_gl_timer_read_value_and_histogram Reuslt = {
+    .GlTimerObject = GlTimerObject
   };
   return Reuslt;
 }

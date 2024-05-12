@@ -336,6 +336,9 @@ Bonsai_Simulate(engine_resources *Resources)
   // Draw terrain
   PushClearAllFramebuffersCommand(&Plat->RenderQ);
 
+
+  PushGlTimerStartCommand(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+
   PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
   PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
   PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
@@ -343,6 +346,8 @@ Bonsai_Simulate(engine_resources *Resources)
   PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
   PushDrawWorldChunkDrawListCommand(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->DepthShader);
   PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
+  PushGlTimerEndCommand(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
 
   b32 Result = True;
@@ -421,13 +426,16 @@ Bonsai_Render(engine_resources *Engine)
   }
   UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
 
+
   PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
   PushDrawAllEntitiesCommand(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
   PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
+
   PushSetupShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
   PushDrawAllEntitiesCommand(&Plat->RenderQ, &Graphics->SG->DepthShader);
   PushTeardownShaderCommand(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
 
 
   {
@@ -440,6 +448,8 @@ Bonsai_Render(engine_resources *Engine)
 
 
   PushDoStuffCommand(&Plat->RenderQ);
+
+  PushGlTimerReadValueAndHistogram(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
   Engine->Graphics.RenderGate = True;
   while (Engine->Graphics.RenderGate == True) { SleepMs(1); }

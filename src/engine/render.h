@@ -44,6 +44,8 @@ struct g_buffer_render_group
   m4 InverseProjectionMatrix;
 
   m4 ViewProjection;
+
+  u32 GlTimerObject;
 };
 
 untextured_3d_geometry_buffer

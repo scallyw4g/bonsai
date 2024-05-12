@@ -444,6 +444,8 @@ InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 bool
 InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer)
 {
+  GL.GenQueries(1, &gBuffer->GlTimerObject);
+
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"), TextureStorageFormat_RGBA16F);

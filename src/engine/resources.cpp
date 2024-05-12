@@ -201,6 +201,43 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
               Assert(GpuMap->Buffer.At == 0);
             } break;
+
+            { tmatch(bonsai_render_command_gl_timer_init, RC, Command)
+              AssertNoGlErrors;
+              GL.GenQueries(1, Command->GlTimerObject);
+              AssertNoGlErrors;
+            } break;
+
+            { tmatch(bonsai_render_command_gl_timer_start, RC, Command)
+              AssertNoGlErrors;
+              GL.BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
+              AssertNoGlErrors;
+            } break;
+
+            { tmatch(bonsai_render_command_gl_timer_end, RC, Command)
+              AssertNoGlErrors;
+              GL.EndQuery(GL_TIME_ELAPSED);
+              AssertNoGlErrors;
+            } break;
+
+            { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RC, Command)
+              AssertNoGlErrors;
+              u64 TimerNs = 0;
+
+              s32 Available = False;
+              while (!Available)
+              {
+                GL.GetQueryObjectiv(Command->GlTimerObject, GL_QUERY_RESULT_AVAILABLE, &Available);
+                /* if (Available == False) { Info("Waiting for query object to become available"); } */
+              }
+
+
+              GL.GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
+              /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
+              GetDebugState()->PushHistogramDataPoint(TimerNs);
+              AssertNoGlErrors;
+            } break;
+
           }
         } break;
       }

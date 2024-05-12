@@ -65,3 +65,24 @@ PushDrawAllEntitiesCommand(work_queue *RenderQueue, shader *Shader)
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawAllEntities(Shader)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+
+link_internal void
+PushGlTimerStartCommand(work_queue *RenderQueue, u32 GlTimerObject)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerStart(GlTimerObject)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+
+link_internal void
+PushGlTimerEndCommand(work_queue *RenderQueue, u32 GlTimerObject)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerEnd(GlTimerObject)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+
+link_internal void
+PushGlTimerReadValueAndHistogram(work_queue *RenderQueue, u32 GlTimerObject)
+{
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerReadValueAndHistogram(GlTimerObject)));
+  PushWorkQueueEntry(RenderQueue, &Work);
+}

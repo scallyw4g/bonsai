@@ -1,4 +1,4 @@
-// src/engine/render_command.h:73:0
+// src/engine/render_command.h:94:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
@@ -13,6 +13,10 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_teardown_shader,
   type_bonsai_render_command_draw_world_chunk_draw_list,
   type_bonsai_render_command_draw_all_entities,
+  type_bonsai_render_command_gl_timer_init,
+  type_bonsai_render_command_gl_timer_start,
+  type_bonsai_render_command_gl_timer_end,
+  type_bonsai_render_command_gl_timer_read_value_and_histogram,
 };
 
 struct work_queue_entry__bonsai_render_command
@@ -31,6 +35,10 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;
     struct bonsai_render_command_draw_world_chunk_draw_list bonsai_render_command_draw_world_chunk_draw_list;
     struct bonsai_render_command_draw_all_entities bonsai_render_command_draw_all_entities;
+    struct bonsai_render_command_gl_timer_init bonsai_render_command_gl_timer_init;
+    struct bonsai_render_command_gl_timer_start bonsai_render_command_gl_timer_start;
+    struct bonsai_render_command_gl_timer_end bonsai_render_command_gl_timer_end;
+    struct bonsai_render_command_gl_timer_read_value_and_histogram bonsai_render_command_gl_timer_read_value_and_histogram;
   };
 };
 
