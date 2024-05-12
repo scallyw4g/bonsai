@@ -1016,7 +1016,56 @@ GetTransformMatrix(entity *Entity)
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
-  NotImplemented;
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  AssertNoGlErrors;
+  auto MeshBit = MeshBit_None;
+
+#if 1
+  if (DistanceSquared > Square(400*32))
+  {
+    if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
+  }
+  else if (DistanceSquared > Square(250*32))
+  {
+    if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
+  }
+  else if (DistanceSquared > Square(150*32))
+  {
+    if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
+  }
+  else if (DistanceSquared > Square(70*32))
+  {
+    if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
+  }
+  else
+  {
+   if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+  }
+#else
+  /* if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; } */
+  /* if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } */
+  /* if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } */
+  /* if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } */
+  if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
+#endif
+
+  if (MeshBit != MeshBit_None)
+  {
+    m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
+    AssertNoGlErrors;
+
+    m4 NormalMatrix = Transpose(Inverse(LocalTransform));
+    AssertNoGlErrors;
+
+    Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
+    AssertNoGlErrors;
+    TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
+    AssertNoGlErrors;
+
+    DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    AssertNoGlErrors;
+  }
 }
 
 

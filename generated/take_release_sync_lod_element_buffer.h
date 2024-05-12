@@ -1,4 +1,4 @@
-// src/engine/mesh.cpp:238:0
+// src/engine/mesh.cpp:233:0
 
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
@@ -25,9 +25,7 @@ ReplaceMesh( lod_element_buffer *Meshes,
   /* if (Buf) { Assert(Buf->At); } */
 
   untextured_3d_geometry_buffer *Result = {};
-
   untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
-
 
   if (CurrentMesh)
   {

@@ -1,4 +1,4 @@
-// src/engine/mesh.cpp:241:0
+// src/engine/mesh.cpp:236:0
 
 link_internal world_chunk_geometry_buffer *
 TakeOwnershipSync( world_chunk_lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
@@ -25,9 +25,7 @@ ReplaceMesh( world_chunk_lod_element_buffer *Meshes,
   /* if (Buf) { Assert(Buf->At); } */
 
   world_chunk_geometry_buffer *Result = {};
-
   world_chunk_geometry_buffer *CurrentMesh = (world_chunk_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
-
 
   if (CurrentMesh)
   {

@@ -130,7 +130,7 @@ DoLevelWindow(engine_resources *Engine)
         RangeIterator(ChunkIndex, ChunkCount)
         {
           world_chunk *Chunk = GetFreeWorldChunk(World);
-          DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->ChunkMemory);
+          DeserializeChunk(&LevelBytes, Chunk, &Engine->world_chunk_MeshFreelist, World->ChunkMemory);
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {

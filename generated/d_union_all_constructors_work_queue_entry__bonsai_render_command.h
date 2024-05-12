@@ -1,4 +1,4 @@
-// src/engine/render_command.h:85:0
+// src/engine/render_command.h:94:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -46,6 +46,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_delete_buffers A  )
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_delete_buffers,
     .bonsai_render_command_delete_buffers = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_realloc_world_chunk_buffers A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_realloc_world_chunk_buffers,
+    .bonsai_render_command_realloc_world_chunk_buffers = A,
 
     
 
@@ -154,6 +167,16 @@ BonsaiRenderCommandDeleteBuffers( u32* Buffers , s32  Count  )
   bonsai_render_command_delete_buffers Reuslt = {
     .Buffers = Buffers,
     .Count = Count
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_realloc_world_chunk_buffers
+BonsaiRenderCommandReallocWorldChunkBuffers( gpu_element_buffer_handles* Handles , world_chunk_geometry_buffer* Mesh  )
+{
+  bonsai_render_command_realloc_world_chunk_buffers Reuslt = {
+    .Handles = Handles,
+    .Mesh = Mesh
   };
   return Reuslt;
 }

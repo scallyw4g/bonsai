@@ -42,9 +42,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               NotImplemented;
             } break;
 
-            { tmatch(bonsai_render_command_realloc_buffers, RC, Command)
+            { tmatch(bonsai_render_command_realloc_world_chunk_buffers, RC, Command)
               auto *Handles = Command->Handles;
-              auto *Mesh = Command->Mesh;
+              world_chunk_geometry_buffer *Mesh = Command->Mesh;
 
               // @duplicate_realloc_code
               if (Handles->VertexHandle)
@@ -56,7 +56,24 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               AllocateGpuElementBuffer(Handles, Mesh->At);
               CopyToGpuBuffer(Mesh, Handles);
 
-              DeallocateMesh(Mesh, &Engine->MeshFreelist);
+              DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
+            } break;
+
+            { tmatch(bonsai_render_command_realloc_buffers, RC, Command)
+              auto *Handles = Command->Handles;
+              untextured_3d_geometry_buffer *Mesh = Command->Mesh;
+
+              // @duplicate_realloc_code
+              if (Handles->VertexHandle)
+              {
+                GL.DeleteBuffers(3, &Handles->VertexHandle);
+                Clear(Handles);
+              }
+
+              AllocateGpuElementBuffer(Handles, Mesh->At);
+              CopyToGpuBuffer(Mesh, Handles);
+
+              DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
             } break;
 
             { tmatch(bonsai_render_command_delete_buffers, RC, Command)
@@ -355,7 +372,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
     if (world_chunk *Chunk = World->ChunkHash[HashIndex])
     {
       Chunk->Flags = Chunk_VoxelsInitialized;
-      FreeWorldChunk(World, &Plat->RenderQ, Chunk, &Engine->MeshFreelist);
+      FreeWorldChunk(World, &Plat->RenderQ, Chunk, &Engine->world_chunk_MeshFreelist);
       World->ChunkHash[HashIndex] = 0;
       ++ChunksFreed;
     }

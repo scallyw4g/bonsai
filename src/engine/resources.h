@@ -64,7 +64,8 @@ struct engine_resources
 
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
-  tiered_mesh_freelist MeshFreelist;
+  tiered_mesh_freelist geo_u3d_MeshFreelist;
+  tiered_mesh_freelist world_chunk_MeshFreelist;
 
   //
   // NOTE(Jesse): This is kinda-sorta all debug stuff
@@ -150,7 +151,7 @@ GetCameraGhost(engine_resources *Engine)
   entity                   **EntityTable   =  Res->EntityTable;       \
   hotkeys                   *Hotkeys       = &Res->Hotkeys;           \
   engine_debug              *EngineDebug   = &Res->EngineDebug;       \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;      \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist;      \
   input                     *Input         = &Res->Stdlib.Plat.Input; \
   level_editor              *Editor        = &Res->Editor;            \
 

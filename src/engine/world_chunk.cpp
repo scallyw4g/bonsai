@@ -2163,7 +2163,7 @@ GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMem
 }
 
 link_internal untextured_3d_geometry_buffer*
-GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, u32 Elements, memory_arena* PermMemory)
+GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, u32 Elements, memory_arena *PermMemory)
 {
   mesh_freelist *Freelist = TryGetTierForSize(TieredFreelist, Elements);
 
@@ -2184,15 +2184,15 @@ GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, u32 Elements, memory_a
   return Result;
 }
 
-link_internal untextured_3d_geometry_buffer*
-GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, world_chunk_geometry_buffer *TempMesh, memory_arena* PermMemory)
+link_internal world_chunk_geometry_buffer *
+GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, world_chunk_geometry_buffer *TempMesh, memory_arena *PermMemory)
 {
-  NotImplemented;
-  return 0;
+  world_chunk_geometry_buffer *Result = Cast(world_chunk_geometry_buffer*, GetPermMeshForChunk(TieredFreelist, TempMesh->At, PermMemory));
+  return Result;
 }
 
 link_internal untextured_3d_geometry_buffer*
-GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, untextured_3d_geometry_buffer *TempMesh, memory_arena* PermMemory)
+GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, untextured_3d_geometry_buffer *TempMesh, memory_arena *PermMemory)
 {
   untextured_3d_geometry_buffer *Result = GetPermMeshForChunk(TieredFreelist, TempMesh->At, PermMemory);
   return Result;
@@ -3476,13 +3476,12 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
     BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, TempMem );
   }
 
-  untextured_3d_geometry_buffer *FinalMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+  world_chunk_geometry_buffer *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
   if (TempMesh->At) { DeepCopy(TempMesh, FinalMesh); }
 
   {
-    NotImplemented;
-    /* auto *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp); */
-    /* if (Replaced) { DeallocateMesh(Replaced, &EngineResources->MeshFreelist); } */
+    auto *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp);
+    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->world_chunk_MeshFreelist); }
   }
 
   // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times per job

@@ -268,8 +268,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(tiered_mesh_freelist*,&Element->MeshFreelist),
-        CSz("MeshFreelist"),
+        Cast(tiered_mesh_freelist*,&Element->geo_u3d_MeshFreelist),
+        CSz("geo_u3d_MeshFreelist"),
+        Params
+        );
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(tiered_mesh_freelist*,&Element->world_chunk_MeshFreelist),
+        CSz("world_chunk_MeshFreelist"),
         Params
         );
 

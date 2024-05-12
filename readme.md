@@ -148,3 +148,4 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
 
+[ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object

@@ -58,12 +58,7 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 
   Mesh->At = 0;
 
-  // TODO(Jesse): This is some UULLLLLTRRARAAARRR garbage.. kill it.
-  /* free_list_thing *Container = Unlink_TS(&MeshFreelist->Containers); */
-  /* if (!Container) { Container = Allocate(free_mesh, Memory, 1); } */
-  /* Container->Mesh = Mesh; */
-
-  Link_TS(&MeshFreelist->FirstFreeMesh, Cast(free_list_thing*, Mesh));
+  Link_TS(&MeshFreelist->FirstFreeMesh, Cast(freelist_entry*, Mesh));
 
 #if BONSAI_INTERNAL
   ReleaseFutex(&MeshFreelist->DebugFutex);
@@ -71,8 +66,15 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 }
 
 link_internal void
-DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFreelist)
+DeallocateMesh(void *VoidMesh, tiered_mesh_freelist* MeshFreelist)
 {
+  // NOTE(Jesse): The End offsets must be the same for the cast to
+  // untextured_3d_geometry_buffer to work for both buffer types.
+  //
+  // TODO(Jesse): Really don't like relying on this .. should probably find a better way.
+  CAssert(OffsetOf(End, untextured_3d_geometry_buffer) == OffsetOf(End, world_chunk_geometry_buffer));
+
+  untextured_3d_geometry_buffer *Mesh = Cast(untextured_3d_geometry_buffer*, VoidMesh);
   mesh_freelist *Freelist = TryGetTierForSize(MeshFreelist, Mesh->End);
   if (Freelist)
   {
@@ -90,26 +92,21 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFr
 link_internal void
 DeallocateMesh(engine_resources *Engine, untextured_3d_geometry_buffer* Mesh)
 {
-  DeallocateMesh(Mesh, &Engine->MeshFreelist);
+  DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
 }
 
-
-link_internal void
-DeallocateMesh(world_chunk_geometry_buffer* Mesh, tiered_mesh_freelist* MeshFreelist)
-{
-  NotImplemented;
-}
 
 link_internal void
 DeallocateMesh(world_chunk_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 {
   NotImplemented;
+  /* DeallocateMesh(Mesh, MeshFreelist); */
 }
 
 link_internal void
 DeallocateMesh(engine_resources *Engine, world_chunk_geometry_buffer* Mesh)
 {
-  NotImplemented;
+  DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
 }
 
 
@@ -142,9 +139,7 @@ poof(
       /* if (Buf) { Assert(Buf->At); } */
 
       internal_buffer_t.name *Result = {};
-
       internal_buffer_t.name *CurrentMesh = ((internal_buffer_t.name)*)Meshes->E[ToIndex(MeshBit)];
-
 
       if (CurrentMesh)
       {

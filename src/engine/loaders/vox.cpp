@@ -190,7 +190,7 @@ enum vox_loader_clip_behavior
 global_variable random_series TMP = {54235432543};
 
 link_internal vox_data_block_array
-LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
+LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
   vox_data_block_array Result = { {}, {}, TempMemory };
 
@@ -552,15 +552,15 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   chunk_data *ChunkData = Vox->ChunkData;
   DestModel->Dim = ChunkData->Dim;
 
-  world_chunk_geometry_buffer *TempMesh0 = AllocateTempWorldChunkMesh(TempMemory);
-  world_chunk_geometry_buffer *TempMesh1 = 0;
+  geo_u3d *TempMesh0 = AllocateTempMesh(TempMemory);
+  geo_u3d *TempMesh1 = 0;
   /* world_chunk_geometry_buffer *TempMesh1 = AllocateTempWorldChunkMesh(TempMemory); */
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh0, TempMesh1, TempMemory, V3U8(DestModel->Dim/-2));
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh0, TempMesh1, TempMemory, DestModel->Dim/-2.f);
 
   engine_resources *Engine = GetEngineResources();
 
-  untextured_3d_geometry_buffer *FinalMesh0 = GetPermMeshForChunk(&Engine->MeshFreelist, TempMesh0, PermMemory);
+  geo_u3d *FinalMesh0 = GetPermMeshForChunk(&Engine->geo_u3d_MeshFreelist, TempMesh0, PermMemory);
   /* untextured_3d_geometry_buffer *FinalMesh1 = GetPermMeshForChunk(&Engine->MeshFreelist, TempMesh1, PermMemory); */
 
   BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, FinalMesh0, &DestModel->TransparentMesh, TempMemory, V3(DestModel->Dim)/-2.f);
@@ -570,7 +570,7 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
 }
 
 link_internal maybe_model_buffer
-LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory)
+LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 

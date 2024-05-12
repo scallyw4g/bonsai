@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4450:0
+// src/engine/world_chunk.cpp:4449:0
 
 DimIterator(x, y, z, UpdateDim)
 {
