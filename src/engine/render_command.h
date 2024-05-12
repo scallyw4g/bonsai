@@ -62,6 +62,27 @@ struct bonsai_render_command_do_stuff
   u32 Ignorerd;
 };
 
+struct bonsai_render_command_gl_timer_init
+{
+  u32 *GlTimerObject;
+};
+
+struct bonsai_render_command_gl_timer_start
+{
+  u32 GlTimerObject;
+};
+
+struct bonsai_render_command_gl_timer_end
+{
+  u32 GlTimerObject;
+};
+
+struct bonsai_render_command_gl_timer_read_value_and_histogram
+{
+  u32 GlTimerObject;
+};
+
+
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
@@ -78,6 +99,11 @@ poof(
 
     bonsai_render_command_draw_world_chunk_draw_list
     bonsai_render_command_draw_all_entities
+
+    bonsai_render_command_gl_timer_init
+    bonsai_render_command_gl_timer_start
+    bonsai_render_command_gl_timer_end
+    bonsai_render_command_gl_timer_read_value_and_histogram
   }
 )
 #include <generated/d_union_bonsai_render_command.h>

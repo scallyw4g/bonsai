@@ -1,21 +1,11 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:40:0
+// external/bonsai_stdlib/src/binary_parser.cpp:26:0
 
-struct v3_cursor
+
+link_internal u64_cursor
+U64Cursor(umm ElementCount, memory_arena* Memory)
 {
-  v3 *Start;
-  // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
-  v3 *At;
-  v3 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
-};
-
-
-
-link_internal v3_cursor
-V3Cursor(umm ElementCount, memory_arena* Memory)
-{
-  v3 *Start = (v3*)PushStruct(Memory, sizeof(v3)*ElementCount, 1, 0);
-  v3_cursor Result = {
+  u64 *Start = (u64*)PushStruct(Memory, sizeof(u64)*ElementCount, 1, 0);
+  u64_cursor Result = {
     .Start = Start,
     .End = Start+ElementCount,
     .At = Start,
@@ -24,38 +14,38 @@ V3Cursor(umm ElementCount, memory_arena* Memory)
   return Result;
 }
 
-link_internal v3*
-GetPtr(v3_cursor *Cursor, umm ElementIndex)
+link_internal u64*
+GetPtr(u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  v3 *Result = {};
+  u64 *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
-link_internal v3*
-GetPtrUnsafe(v3_cursor *Cursor, umm ElementIndex)
+link_internal u64*
+GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  v3 *Result = {};
+  u64 *Result = {};
   if (ElementIndex < TotalElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
 }
 
-link_internal v3
-Get(v3_cursor *Cursor, umm ElementIndex)
+link_internal u64
+Get(u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert(ElementIndex < CurrentCount(Cursor));
-  v3 Result = Cursor->Start[ElementIndex];
+  u64 Result = Cursor->Start[ElementIndex];
   return Result;
 }
 
 link_internal void
-Set(v3_cursor *Cursor, umm ElementIndex, v3 Element)
+Set(u64_cursor *Cursor, umm ElementIndex, u64 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -69,40 +59,40 @@ Set(v3_cursor *Cursor, umm ElementIndex, v3 Element)
   }
 }
 
-link_internal v3*
-Advance(v3_cursor *Cursor)
+link_internal u64*
+Advance(u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
-  v3 * Result = {};
+  u64 * Result = {};
   if ( Cursor->At < Cursor->End ) { Result = Cursor->At++; }
   return Result;
 }
 
-link_internal v3 *
-Push(v3_cursor *Cursor, v3 Element)
+link_internal u64 *
+Push(u64_cursor *Cursor, u64 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At < Cursor->End );
-  v3 *Result = Cursor->At;
+  u64 *Result = Cursor->At;
   *Cursor->At++ = Element;
   return Result;
 }
 
-link_internal v3
-Pop(v3_cursor *Cursor)
+link_internal u64
+Pop(u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   Assert( Cursor->At > Cursor->Start );
-  v3 Result = Cursor->At[-1];
+  u64 Result = Cursor->At[-1];
   Cursor->At--;
   return Result;
 }
 
 link_internal s32
-LastIndex(v3_cursor *Cursor)
+LastIndex(u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,28 +100,28 @@ LastIndex(v3_cursor *Cursor)
   return Result;
 }
 
-link_internal v3*
-LastElement(v3_cursor *Cursor)
+link_internal u64*
+LastElement(u64_cursor *Cursor)
 {
-  v3 *Result = {};
+  u64 *Result = {};
   s32 I = LastIndex(Cursor);
   if (I > -1) { Result = Cursor->Start + I; }
   return Result;
 }
 
 link_internal b32
-Remove(v3_cursor *Cursor, v3 Query)
+Remove(u64_cursor *Cursor, u64 Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
   b32 Result = False;
   CursorIterator(ElementIndex, Cursor)
   {
-    v3 Element = Get(Cursor, ElementIndex);
+    u64 Element = Get(Cursor, ElementIndex);
     if (AreEqual(Element, Query))
     {
       b32 IsLastIndex = LastIndex(Cursor) == s32(ElementIndex);
-      v3 Tmp = Pop(Cursor);
+      u64 Tmp = Pop(Cursor);
 
       if (IsLastIndex) { Assert(AreEqual(Tmp, Query)); }
       else { Set(Cursor, ElementIndex, Tmp); }
@@ -143,7 +133,7 @@ Remove(v3_cursor *Cursor, v3 Query)
 
 
 link_internal b32
-ResizeCursor(v3_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor(u64_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -152,7 +142,7 @@ ResizeCursor(v3_cursor *Cursor, umm Count, memory_arena *Memory)
   TruncateToElementCount(Cursor, Count);
   umm NewSize = TotalSize(Cursor);
 
-  Assert(NewSize/sizeof(v3) == Count);
+  Assert(NewSize/sizeof(u64) == Count);
 
   /* Info("Attempting to reallocate CurrentSize(%u), NewSize(%u)", CurrentSize, NewSize); */
   Ensure(Reallocate((u8*)Cursor->Start, Memory, CurrentSize, NewSize));
@@ -160,7 +150,7 @@ ResizeCursor(v3_cursor *Cursor, umm Count, memory_arena *Memory)
 }
 
 link_internal void
-Unshift( v3_cursor *Cursor )
+Unshift( u64_cursor *Cursor )
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
   umm Count = AtElements(Cursor);
@@ -178,6 +168,5 @@ Unshift( v3_cursor *Cursor )
     *Cursor->At = {};
   }
 }
-
 
 
