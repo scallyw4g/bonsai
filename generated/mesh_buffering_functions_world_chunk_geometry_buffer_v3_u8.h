@@ -1,4 +1,4 @@
-// src/engine/mesh.h:432:0
+// src/engine/mesh.h:509:0
 
 //
 // Rotate, Scale and Offset
@@ -6,7 +6,7 @@
 
 link_inline void
 BufferVertsDirect(
-  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  v3_u8 *DestVerts, v3_u8 *DestNormals, vertex_material *DestMats,
   u32  NumVerts,
   v3_u8 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
   v3  Offset,
@@ -28,13 +28,17 @@ BufferVertsDirect(
     VertIndex += 3 )
   {
     {
-      v3 N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
-      v3 N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
-      v3 N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
+      auto N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
+      auto N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
+      auto N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
 
-      DestNormals[0] = N0;
-      DestNormals[1] = N1;
-      DestNormals[2] = N2;
+      // NOTE(Jesse): This _hopefully_ gets inlined.  Should figure out a
+      // way of asserting that it does, or forcing it to.  The functions
+      // are overloads, but the compiler _should_ be able to figure out
+      // they can be inlined trivially..
+      PackAndStoreNormal(DestNormals+0, N0);
+      PackAndStoreNormal(DestNormals+1, N1);
+      PackAndStoreNormal(DestNormals+2, N2);
 
       DestNormals += 3;
     }
@@ -75,7 +79,7 @@ BufferVertsDirect(
 
 link_inline void
 BufferVertsDirect(
-  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  v3_u8 *DestVerts, v3_u8 *DestNormals, vertex_material *DestMats,
   u32  NumVerts,
   v3_u8 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
   v3  Offset,
@@ -89,13 +93,23 @@ BufferVertsDirect(
 
   Assert(NumVerts % 3 == 0);
 
-  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
+  /* MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts ); */
   MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
 
   for ( u32 VertIndex = 0;
     VertIndex < NumVerts;
     VertIndex += 3 )
   {
+    {
+      auto N0 = SrcNormals[VertIndex + 0];
+      auto N1 = SrcNormals[VertIndex + 1];
+      auto N2 = SrcNormals[VertIndex + 2];
+      PackAndStoreNormal(DestNormals+0, N0);
+      PackAndStoreNormal(DestNormals+1, N1);
+      PackAndStoreNormal(DestNormals+2, N2);
+      DestNormals += 3;
+    }
+
     v3_u8 VertSrc0 = SrcVerts[VertIndex + 0];
     v3_u8 VertSrc1 = SrcVerts[VertIndex + 1];
     v3_u8 VertSrc2 = SrcVerts[VertIndex + 2];
@@ -124,21 +138,39 @@ BufferVertsDirect(
   }
 }
 
+
 //
 // Untransformed
 //
 
 link_inline void
 BufferVertsDirect(
-  v3_u8 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
+  v3_u8 *DestVerts, v3_u8 *DestNormals, vertex_material *DestMats,
   u32 NumVerts,
   v3_u8 *Positions, v3 *Normals, vertex_material *Mats
 )
 {
   TIMED_FUNCTION();
   MemCopy((u8*)Positions,  (u8*)DestVerts,      sizeof(*Positions)*NumVerts );
-  MemCopy((u8*)Normals,    (u8*)DestNormals,    sizeof(*Normals)*NumVerts );
+  /* MemCopy((u8*)Normals,    (u8*)DestNormals,    sizeof(*Normals)*NumVerts ); */
   MemCopy((u8*)Mats,       (u8*)DestMats,       sizeof(*Mats)*NumVerts );
+
+  // NOTE(Jesse): Hopefully gets vectorized..  Can't do 4x because triangles
+  // are 3 elements.. Could do 12 with a cleanup pass.. but meh
+  for ( u32 VertIndex = 0;
+    VertIndex < NumVerts;
+    VertIndex += 3 )
+  {
+    {
+      auto N0 = Normals[VertIndex + 0];
+      auto N1 = Normals[VertIndex + 1];
+      auto N2 = Normals[VertIndex + 2];
+      PackAndStoreNormal(DestNormals+0, N0);
+      PackAndStoreNormal(DestNormals+1, N1);
+      PackAndStoreNormal(DestNormals+2, N2);
+      DestNormals += 3;
+    }
+  }
 }
 
 

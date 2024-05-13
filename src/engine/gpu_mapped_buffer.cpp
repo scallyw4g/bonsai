@@ -116,7 +116,7 @@ FlushBuffersToCard(gpu_mapped_world_chunk_geometry_buffer *Buffer)
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   BufferUnmapped &= GL.UnmapBuffer(GL_ARRAY_BUFFER);
   AssertNoGlErrors;
 
@@ -273,7 +273,7 @@ MapGpuBuffer_world_chunk_geometry_buffer(gpu_element_buffer_handles *Handles)
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
   AssertNoGlErrors;
-  Buffer.Normals = (v3*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
+  Buffer.Normals = (v3_u8*)GL.MapBufferRange(GL_ARRAY_BUFFER, 0, v3Size, GL_MAP_WRITE_BIT);
   AssertNoGlErrors;
 
   // Color data

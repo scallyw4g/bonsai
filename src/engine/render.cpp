@@ -854,11 +854,11 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribIPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, 0, (void*)0);
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  GL.VertexAttribIPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, 0, (void*)0);
   AssertNoGlErrors;
 
 

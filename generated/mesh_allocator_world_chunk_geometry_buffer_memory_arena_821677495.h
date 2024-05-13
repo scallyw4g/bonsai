@@ -5,7 +5,7 @@ AllocateMesh( world_chunk_geometry_buffer *Mesh, u32 NumVerts, memory_arena *Mem
 {
   Mesh->Verts = AllocateAlignedProtection(v3_u8, Memory, NumVerts, CACHE_LINE_SIZE, False);
 
-  Mesh->Normals = AllocateAlignedProtection(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+  Mesh->Normals = AllocateAlignedProtection(v3_u8, Memory, NumVerts, CACHE_LINE_SIZE, False);
 
   Mesh->Mat = AllocateAlignedProtection(vertex_material, Memory, NumVerts, CACHE_LINE_SIZE, False);
 
