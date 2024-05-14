@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:353:0
+// src/engine/editor.cpp:358:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -56,6 +56,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
 
+
       PushNewRow(Ui);
 
       if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush_editor brush_layer Layers", Element->Layers), Params ))
@@ -87,6 +88,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -96,6 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         CSz("BrushFollowsCursor"),
         Params
         );
+
 
 
 

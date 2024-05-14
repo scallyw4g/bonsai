@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("HighPriority"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("HighPriorityWorkerCount"),
         Params
         );
+
 
 
 
@@ -96,6 +100,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -104,6 +109,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("WorkerThreadsSuspendFutex"),
         Params
         );
+
 
 
 
@@ -124,6 +130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -132,6 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("Threads"),
         Params
         );
+
 
 
 
@@ -152,6 +160,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -160,6 +169,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("GameTime"),
         Params
         );
+
 
 
 
@@ -181,6 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -190,6 +201,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         CSz("Input"),
         Params
         );
+
 
 
 

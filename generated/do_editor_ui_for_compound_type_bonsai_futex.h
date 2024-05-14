@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:233:0
+// src/engine/editor.cpp:238:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
         CSz("ThreadsWaiting"),
         Params
         );
+
 
 
 

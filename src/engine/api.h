@@ -8,6 +8,10 @@ struct engine_api
   bonsai_engine_callback Simulate;
   bonsai_engine_callback FrameEnd;
   bonsai_engine_callback Render;
+
+  // NOTE(Jesse): This gets loaded such that the render thread shares the same
+  // globals as the game lib.
+  thread_main_callback_type RenderThread_Main;
 };
 
 link_internal b32
@@ -21,7 +25,9 @@ InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
   EngineApi->FrameEnd      = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_FrameEnd) );
   EngineApi->Render        = (bonsai_engine_callback)GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
 
-  b32 Result = EngineApi->Simulate && EngineApi->OnLibraryLoad && EngineApi->Init && EngineApi->FrameBegin && EngineApi->FrameEnd && EngineApi->Render;
+  EngineApi->RenderThread_Main = (thread_main_callback_type)GetProcFromLib(GameLib, STRINGIZE(RenderThread_Main) );
+
+  b32 Result = EngineApi->Simulate && EngineApi->OnLibraryLoad && EngineApi->Init && EngineApi->FrameBegin && EngineApi->FrameEnd && EngineApi->Render && EngineApi->RenderThread_Main;
   return Result;
 }
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:344:0
+// src/engine/editor.cpp:349:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -33,6 +33,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
         CSz("Chunk"),
         Params
         );
+
 
 
 

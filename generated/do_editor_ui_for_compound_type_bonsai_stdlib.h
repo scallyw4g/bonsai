@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:164:0
+// src/engine/editor.cpp:169:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         CSz("Plat"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -81,12 +84,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_debug_system*,&Element->DebugSystem),
-        CSz("DebugSystem"),
+        Cast(debug_state*,&Element->DebugState),
+        CSz("DebugState"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

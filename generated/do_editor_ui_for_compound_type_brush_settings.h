@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         CSz("Noise"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         CSz("Mode"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -103,6 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         CSz("Iterations"),
         Params
         );
+
 
 
 
@@ -124,6 +130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -132,6 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         CSz("Color"),
         Params
         );
+
 
 
 
@@ -147,6 +155,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         CSz("Invert"),
         Params
         );
+
 
 
 

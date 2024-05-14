@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:413:0
+// src/engine/editor.cpp:418:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         CSz("Textures"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         CSz("InverseViewMatrix"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -109,6 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -117,6 +123,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         CSz("GlTimerObject"),
         Params
         );
+
 
 
 

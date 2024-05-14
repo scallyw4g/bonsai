@@ -161,6 +161,11 @@ poof(do_editor_ui_for_compound_type(input))
 poof(do_editor_ui_for_compound_type(platform))
 #include <generated/do_editor_ui_for_compound_type_platform.h>
 
+#if BONSAI_DEBUG_SYSTEM_API
+poof(do_editor_ui_for_compound_type(debug_state))
+#include <generated/do_editor_ui_for_compound_type_debug_state.h>
+#endif
+
 poof(do_editor_ui_for_compound_type(bonsai_stdlib))
 #include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h>
 
@@ -442,6 +447,7 @@ poof(do_editor_ui_for_compound_type(graphics_settings))
 
 poof(do_editor_ui_for_compound_type(engine_settings))
 #include <generated/do_editor_ui_for_compound_type_engine_settings.h>
+
 
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>

@@ -1,4 +1,3 @@
-#if PLATFORM_WINDOW_IMPLEMENTATIONS
 link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
@@ -194,6 +193,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
+
+
               /* GpuMap = GetNextGpuMap(Graphics); */
 
               // Map immediate GPU buffers for next frame
@@ -234,7 +235,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               GL.GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
               /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
-              GetDebugState()->PushHistogramDataPoint(TimerNs);
+              /* GetDebugState()->PushHistogramDataPoint(TimerNs); */
               AssertNoGlErrors;
             } break;
 
@@ -256,11 +257,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
   WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
 }
 
-link_internal THREAD_MAIN_RETURN
-RenderMain(void *vThreadStartupParams)
+link_export THREAD_MAIN_RETURN
+RenderThread_Main(void *ThreadStartupParams)
 {
   b32 InitResult = True;
-  thread_startup_params *ThreadParams = Cast(thread_startup_params*, vThreadStartupParams);
+  thread_startup_params *ThreadParams = Cast(thread_startup_params*, ThreadStartupParams);
+
+  Global_EngineResources = (engine_resources*)ThreadParams->EngineResources;
+  Global_ThreadStates = Global_EngineResources->Stdlib.ThreadStates;
+  Assert(Global_EngineResources);
+  Assert(Global_ThreadStates);
+
   WorkerThread_BeforeJobStart(ThreadParams);
 
   /* Assert(ThreadParams->ThreadIndex > 0); */
@@ -305,7 +312,6 @@ RenderMain(void *vThreadStartupParams)
 
   return InitResult;
 }
-#endif
 
 link_internal b32
 InitEngineResources(engine_resources *Engine)

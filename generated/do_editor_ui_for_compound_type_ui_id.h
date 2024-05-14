@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
         CSz("WindowBits"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
         CSz("ElementBits"),
         Params
         );
+
 
 
 

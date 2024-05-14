@@ -7,10 +7,6 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-#if BONSAI_DEBUG_SYSTEM_API
-  Global_DebugStatePointer = Resources->DebugState;
-#endif
-
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
@@ -152,6 +148,13 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   UiFrameBegin(Ui);         // Clear UI interactions
   DoEngineDebug(Resources); // Do Editor/Debug UI
+
+  // We just drew these values, reset for this frame
+#if BONSAI_DEBUG_SYSTEM_API
+  GetDebugState()->DrawCallCountLastFrame = 0;
+  GetDebugState()->VertexCountLastFrame = 0;
+#endif
+
 
 #if 0
   {

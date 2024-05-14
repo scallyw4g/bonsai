@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:440:0
+// src/engine/editor.cpp:445:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         CSz("ShadowQuality"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
         CSz("ShaderLanguage"),
         Params
         );
+
 
 
 

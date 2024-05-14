@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:203:0
+// src/engine/editor.cpp:208:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         CSz("tDay"),
         Params
 ,-PI32, PI32 );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         CSz("SunIntensity"),
         Params
 ,0.f, 3.f );
+
 
 
 
@@ -99,6 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -108,6 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         CSz("MoonIntensity"),
         Params
 ,0.f, 3.f );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:401:0
+// src/engine/editor.cpp:406:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         CSz("SolidUIColorBuffer"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -84,6 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -92,6 +96,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         CSz("TextTextureUniform"),
         Params
         );
+
 
 
 
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -121,6 +127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         CSz("SolidUIShader"),
         Params
         );
+
 
 
 

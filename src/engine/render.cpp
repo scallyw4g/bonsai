@@ -1,6 +1,4 @@
 
-
-
 void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {

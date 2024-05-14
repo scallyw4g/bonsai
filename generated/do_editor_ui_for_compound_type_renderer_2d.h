@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:404:0
+// src/engine/editor.cpp:409:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -53,6 +54,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -61,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("InteractionStackTop"),
         Params
         );
+
 
 
 
@@ -82,6 +85,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -90,6 +94,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("ToggleTable"),
         Params
         );
+
 
 
 
@@ -126,6 +131,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -134,6 +140,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("Hover"),
         Params
         );
+
 
 
 
@@ -154,6 +161,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -162,6 +170,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("Pressed"),
         Params
         );
+
 
 
 
@@ -195,6 +204,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -203,6 +213,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("Geo"),
         Params
         );
+
 
 
 
@@ -223,6 +234,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -231,6 +243,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("CommandBuffer"),
         Params
         );
+
 
 
 
@@ -251,6 +264,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -259,6 +273,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("UiToggleArena"),
         Params
         );
+
 
 
 
@@ -295,6 +310,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -304,6 +320,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         CSz("TextGeoCountLastFrame"),
         Params
         );
+
 
 
 

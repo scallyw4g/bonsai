@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:446:0
+// src/engine/editor.cpp:452:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("Stdlib"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("GameApi"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -103,6 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("MaybeMouseRay"),
         Params
         );
+
 
 
 
@@ -123,6 +129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -131,6 +138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("GameState"),
         Params
         );
+
 
 
 
@@ -151,6 +159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -159,6 +168,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("RequestedGameLibReloadNode"),
         Params
         );
+
 
 
 
@@ -179,6 +189,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -187,6 +198,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("Heap"),
         Params
         );
+
 
 
 
@@ -207,6 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -215,6 +228,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("WorldUpdateMemory"),
         Params
         );
+
 
 
 
@@ -235,6 +249,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -249,6 +264,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -257,6 +273,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("FrameIndex"),
         Params
         );
+
 
 
 
@@ -278,6 +295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -286,6 +304,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("world_chunk_MeshFreelist"),
         Params
         );
+
 
 
 
@@ -306,6 +325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -314,6 +334,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("EngineDebug"),
         Params
         );
+
 
 
 
@@ -334,6 +355,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -342,6 +364,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("MousedOverVoxel"),
         Params
         );
+
 
 
 
@@ -362,6 +385,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -370,6 +394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         CSz("HoverEntity"),
         Params
         );
+
 
 
 

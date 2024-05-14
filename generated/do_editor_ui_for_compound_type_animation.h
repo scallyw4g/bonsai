@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:227:0
+// src/engine/editor.cpp:232:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         CSz("tEnd"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -84,6 +87,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -92,6 +96,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         CSz("yKeyframeCount"),
         Params
         );
+
 
 
 
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -121,6 +127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
         CSz("zKeyframeCount"),
         Params
         );
+
 
 
 

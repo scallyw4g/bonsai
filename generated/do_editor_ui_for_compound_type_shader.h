@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:398:0
+// src/engine/editor.cpp:403:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         CSz("FirstUniform"),
         Params
         );
+
 
 
 
@@ -68,6 +70,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -77,6 +80,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         CSz("FragSourceFilename"),
         Params
         );
+
 
 
 

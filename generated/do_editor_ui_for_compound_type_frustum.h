@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:332:0
+// src/engine/editor.cpp:337:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
         CSz("nearClip"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
         CSz("FOV"),
         Params
         );
+
 
 
 
@@ -99,6 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -121,6 +127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
         CSz("Left"),
         Params
         );
+
 
 
 

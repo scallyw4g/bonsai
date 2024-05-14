@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:425:0
+// src/engine/editor.cpp:430:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("ViewMode"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("Textures"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -109,6 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -117,6 +123,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("DrawEntityCollisionVolumes"),
         Params
         );
+
 
 
 
@@ -138,6 +145,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -147,6 +155,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("TriggerRuntimeBreak"),
         Params
         );
+
 
 
 
@@ -168,6 +177,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -177,6 +187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("PickedChunkState"),
         Params
         );
+
 
 
 
@@ -198,6 +209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -206,6 +218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("AssetWindowViewMode"),
         Params
         );
+
 
 
 
@@ -226,6 +239,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -234,6 +248,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         CSz("ModelIndex"),
         Params
         );
+
 
 
 

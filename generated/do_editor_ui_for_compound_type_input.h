@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Escape"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Ctrl"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -103,6 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Backspace"),
         Params
         );
+
 
 
 
@@ -123,6 +129,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -131,6 +138,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F12"),
         Params
         );
+
 
 
 
@@ -151,6 +159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -159,6 +168,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F10"),
         Params
         );
+
 
 
 
@@ -179,6 +189,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -187,6 +198,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F8"),
         Params
         );
+
 
 
 
@@ -207,6 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -215,6 +228,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F6"),
         Params
         );
+
 
 
 
@@ -235,6 +249,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -243,6 +258,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F4"),
         Params
         );
+
 
 
 
@@ -263,6 +279,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -271,6 +288,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F2"),
         Params
         );
+
 
 
 
@@ -291,6 +309,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -299,6 +318,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Dot"),
         Params
         );
+
 
 
 
@@ -319,6 +339,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -327,6 +348,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("FSlash"),
         Params
         );
+
 
 
 
@@ -347,6 +369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -355,6 +378,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Underscore"),
         Params
         );
+
 
 
 
@@ -375,6 +399,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -383,6 +408,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N1"),
         Params
         );
+
 
 
 
@@ -403,6 +429,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -411,6 +438,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N3"),
         Params
         );
+
 
 
 
@@ -431,6 +459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -439,6 +468,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N5"),
         Params
         );
+
 
 
 
@@ -459,6 +489,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -467,6 +498,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N7"),
         Params
         );
+
 
 
 
@@ -487,6 +519,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -495,6 +528,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N9"),
         Params
         );
+
 
 
 
@@ -515,6 +549,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -523,6 +558,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("B"),
         Params
         );
+
 
 
 
@@ -543,6 +579,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -551,6 +588,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("D"),
         Params
         );
+
 
 
 
@@ -571,6 +609,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -579,6 +618,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("F"),
         Params
         );
+
 
 
 
@@ -599,6 +639,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -607,6 +648,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("H"),
         Params
         );
+
 
 
 
@@ -627,6 +669,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -635,6 +678,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("J"),
         Params
         );
+
 
 
 
@@ -655,6 +699,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -663,6 +708,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("L"),
         Params
         );
+
 
 
 
@@ -683,6 +729,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -691,6 +738,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("N"),
         Params
         );
+
 
 
 
@@ -711,6 +759,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -719,6 +768,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("P"),
         Params
         );
+
 
 
 
@@ -739,6 +789,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -747,6 +798,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("R"),
         Params
         );
+
 
 
 
@@ -767,6 +819,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -775,6 +828,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("T"),
         Params
         );
+
 
 
 
@@ -795,6 +849,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -803,6 +858,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("V"),
         Params
         );
+
 
 
 
@@ -823,6 +879,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -831,6 +888,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("X"),
         Params
         );
+
 
 
 
@@ -851,6 +909,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -859,6 +918,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("Z"),
         Params
         );
+
 
 
 
@@ -879,6 +939,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -887,6 +948,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("LMB"),
         Params
         );
+
 
 
 
@@ -907,6 +969,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -915,6 +978,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
         CSz("MouseWheelDelta"),
         Params
         );
+
 
 
 

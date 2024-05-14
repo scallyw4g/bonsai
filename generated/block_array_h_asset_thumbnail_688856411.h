@@ -1,4 +1,4 @@
-// src/engine/editor.h:497:0
+// src/engine/editor.h:502:0
 
 struct asset_thumbnail_block
 {

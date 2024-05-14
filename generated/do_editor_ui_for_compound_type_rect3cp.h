@@ -1,4 +1,4 @@
-// src/engine/editor.h:494:0
+// src/engine/editor.h:499:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -33,6 +33,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
         CSz("Min"),
         Params
         );
+
 
 
 

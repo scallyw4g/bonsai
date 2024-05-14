@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:269:0
+// src/engine/editor.cpp:274:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
         CSz("NormalHandle"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
         CSz("ElementCount"),
         Params
         );
+
 
 
 

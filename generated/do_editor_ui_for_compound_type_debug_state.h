@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:226:0
+// src/engine/editor.cpp:165:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle_system", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle debug_state", Element), &DefaultUiRenderParams_Generic))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -28,9 +28,115 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
+        Cast(b8*,&Element->Initialized),
+        CSz("Initialized"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(random_series*,&Element->Entropy),
-        CSz("Entropy"),
+        Cast(u32*,&Element->UIType),
+        CSz("UIType"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->BytesBufferedToCard),
+        CSz("BytesBufferedToCard"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->DebugDoScopeProfiling),
+        CSz("DebugDoScopeProfiling"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->NumScopes),
+        CSz("NumScopes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->DrawCallCountLastFrame),
+        CSz("DrawCallCountLastFrame"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->VertexCountLastFrame),
+        CSz("VertexCountLastFrame"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(picked_world_chunk*, Element->PickedChunk),
+        CSz("PickedChunk"),
         Params
         );
 
@@ -44,8 +150,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(particle_spawn_type*,&Element->SpawnType),
-        CSz("SpawnType"),
+        Cast(picked_world_chunk*, Element->HoverChunk),
+        CSz("HoverChunk"),
         Params
         );
 
@@ -59,216 +165,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Drag),
-        CSz("Drag"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Lifetime),
-        CSz("Lifetime"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->EmissionDelay),
-        CSz("EmissionDelay"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->EmissionLifespan),
-        CSz("EmissionLifespan"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ActiveParticles),
-        CSz("ActiveParticles"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->LifespanMod),
-        CSz("LifespanMod"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticleLifespan),
-        CSz("ParticleLifespan"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticlesPerSecond),
-        CSz("ParticlesPerSecond"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticleLightEmission),
-        CSz("ParticleLightEmission"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticleLightEmissionChance),
-        CSz("ParticleLightEmissionChance"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticleStartingTransparency),
-        CSz("ParticleStartingTransparency"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ParticleEndingTransparency),
-        CSz("ParticleEndingTransparency"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*,&Element->ParticleEndingDim),
-        CSz("ParticleEndingDim"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(aabb*,&Element->SpawnRegion),
-        CSz("SpawnRegion"),
+        Cast(debug_thread_state*, Element->ThreadStates),
+        CSz("ThreadStates"),
         Params
         );
 
@@ -282,8 +180,111 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->SystemMovementCoefficient),
-        CSz("SystemMovementCoefficient"),
+        Cast(renderer_2d*, Element->UiGroup),
+        CSz("UiGroup"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(untextured_3d_geometry_buffer*,&Element->LineMesh),
+        CSz("LineMesh"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(selected_arenas*, Element->SelectedArenas),
+        CSz("SelectedArenas"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->DisplayDebugMenu),
+        CSz("DisplayDebugMenu"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(debug_profile_scope*, Element->HotFunction),
+        CSz("HotFunction"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64_cursor*,&Element->HistogramSamples),
+        CSz("HistogramSamples"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(debug_profile_scope*,&Element->FreeScopeSentinel),
+        CSz("FreeScopeSentinel"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(umm*,&Element->MinCycles),
+        CSz("MinCycles"),
         Params
         );
 
@@ -298,8 +299,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->ElapsedSinceLastEmission),
-        CSz("ElapsedSinceLastEmission"),
+        Cast(umm*,&Element->MaxCycles),
+        CSz("MaxCycles"),
         Params
         );
 
@@ -311,14 +312,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Colors[6]"), CSz("> Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), Params ))
+      if (ToggleButton(Ui, CSz("v Frames[(128)]"), CSz("> Frames[(128)]"), UiId(Window, "toggle debug_state frame_stats Frames", Element->Frames), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 6)
+        RangeIterator(ArrayIndex, (128))
         {
-          DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("Colors[%d]", ArrayIndex), Params);
- PushNewRow(Ui); 
+          DoEditorUi(Ui, Window, Element->Frames+ArrayIndex, FSz("Frames[%d]", ArrayIndex), Params);
+          
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
@@ -326,15 +327,62 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
 
 
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->ReadScopeIndex),
+        CSz("ReadScopeIndex"),
+        Params
+        );
+
+
+
+
+
+
+
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Particles[(4096)]"), CSz("> Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), Params ))
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->FreeScopeCount),
+        CSz("FreeScopeCount"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      if (ToggleButton(Ui, CSz("v RegisteredMemoryArenas[(1024)]"), CSz("> RegisteredMemoryArenas[(1024)]"), UiId(Window, "toggle debug_state registered_memory_arena RegisteredMemoryArenas", Element->RegisteredMemoryArenas), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, (1024))
+        {
+          DoEditorUi(Ui, Window, Element->RegisteredMemoryArenas+ArrayIndex, FSz("RegisteredMemoryArenas[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
+      if (ToggleButton(Ui, CSz("v TrackedDrawCalls[(4096)]"), CSz("> TrackedDrawCalls[(4096)]"), UiId(Window, "toggle debug_state debug_draw_call TrackedDrawCalls", Element->TrackedDrawCalls), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, (4096))
         {
-          DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("Particles[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->TrackedDrawCalls+ArrayIndex, FSz("TrackedDrawCalls[%d]", ArrayIndex), Params);
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

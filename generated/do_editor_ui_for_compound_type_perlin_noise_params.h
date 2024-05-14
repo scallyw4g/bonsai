@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
         CSz("Amplitude"),
         Params
         );
+
 
 
 

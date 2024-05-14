@@ -118,8 +118,15 @@ GetWorldChunkDim()
 link_weak bonsai_stdlib *
 GetStdlib()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->Stdlib;
+  /* Assert(Global_EngineResources); */
+  if (Global_EngineResources)
+  {
+    return &Global_EngineResources->Stdlib;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 

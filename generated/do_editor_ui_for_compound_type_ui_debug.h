@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:422:0
+// src/engine/editor.cpp:427:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         CSz("OutlineUiButtons"),
         Params
         );
+
 
 
 
@@ -69,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         CSz("OutlineUiTableColumns"),
         Params
         );
+
 
 
 
@@ -99,6 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -108,6 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
         CSz("DebugBreakUiCommand"),
         Params
         );
+
 
 
 

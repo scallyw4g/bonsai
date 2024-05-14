@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:318:0
+// src/engine/editor.cpp:323:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
 DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
@@ -53,6 +54,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
         CSz("Scale"),
         Params
         );
+
 
 
 
@@ -74,6 +76,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -88,6 +91,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -96,6 +100,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
         CSz("ModelIndex"),
         Params
         );
+
 
 
 
@@ -117,6 +122,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -125,6 +131,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
         CSz("LastResolvedPosInfo"),
         Params
         );
+
 
 
 
@@ -145,6 +152,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -153,6 +161,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
         CSz("State"),
         Params
         );
+
 
 
 
@@ -173,6 +182,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -181,6 +191,7 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
         CSz("Carrying"),
         Params
         );
+
 
 
 

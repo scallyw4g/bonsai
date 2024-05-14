@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:257:0
+// src/engine/editor.cpp:262:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -54,6 +55,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -63,6 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
         CSz("Color"),
         Params
         );
+
 
 
 

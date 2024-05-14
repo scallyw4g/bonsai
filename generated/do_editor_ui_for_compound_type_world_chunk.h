@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:325:0
+// src/engine/editor.cpp:330:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CSz("Flags"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CSz("VoxelLighting"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -109,6 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -117,6 +123,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CSz("FilledCount"),
         Params
         );
+
 
 
 
@@ -151,6 +158,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -160,6 +168,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CSz("TriCount"),
         Params
         );
+
 
 
 
@@ -181,6 +190,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -196,6 +206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -205,6 +216,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CSz("Entities"),
         Params
         );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:416:0
+// src/engine/editor.cpp:421:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -65,6 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -73,6 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("FogPower"),
         Params
         );
+
 
 
 
@@ -94,6 +96,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -108,6 +111,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -116,6 +120,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("Exposure"),
         Params
         );
+
 
 
 
@@ -137,6 +142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -145,6 +151,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("ShadowMapDrawList"),
         Params
         );
+
 
 
 
@@ -165,6 +172,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -173,6 +181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("AoGroup"),
         Params
         );
+
 
 
 
@@ -193,6 +202,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -201,6 +211,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("ColorPaletteTexture"),
         Params
         );
+
 
 
 
@@ -221,6 +232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -229,6 +241,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("Lighting"),
         Params
         );
+
 
 
 
@@ -249,6 +262,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -257,6 +271,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("CompositeGroup"),
         Params
         );
+
 
 
 
@@ -287,6 +302,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         CSz("GpuBufferWriteIndex"),
         Params
         );
+
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:230:0
+// src/engine/editor.cpp:235:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -54,6 +55,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -63,6 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
         CSz("Emission"),
         Params
         );
+
 
 
 

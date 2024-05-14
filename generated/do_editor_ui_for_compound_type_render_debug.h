@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:419:0
+// src/engine/editor.cpp:424:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -54,6 +55,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->VertsDrawnLastFrame),
+        CSz("VertsDrawnLastFrame"),
+        Params
+        );
+
+
+
+
+
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -63,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
         CSz("DrawCallsLastFrame"),
         Params
         );
+
 
 
 

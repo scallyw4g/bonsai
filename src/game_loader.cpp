@@ -179,7 +179,8 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  thread_main_callback_type Procs[1] = { &RenderMain };
+  thread_main_callback_type Procs[1] = { RenderThread_Main };
+  /* thread_main_callback_type Procs[1] = { EngineApi.RenderThread_Main }; */
   thread_main_callback_type_buffer CustomWorkerProcs = {};
   CustomWorkerProcs.Count = 1;
   CustomWorkerProcs.Start = Procs;
@@ -192,7 +193,7 @@ main( s32 ArgCount, const char ** Args )
 
   while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
 
-  EngineResources->DebugState = Global_DebugStatePointer;
+  /* EngineResources->DebugState = Global_DebugStatePointer; */
 
   Assert(EngineResources->Stdlib.ThreadStates);
   Assert(Global_ThreadStates);
@@ -317,36 +318,6 @@ main( s32 ArgCount, const char ** Args )
       Info("Game Reload Success");
     }
 
-#if 0 // BONSAI_DEBUG_SYSTEM_API
-    if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
-    {
-      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-
-      debug_state *Cached = Global_DebugStatePointer;
-      Global_DebugStatePointer = 0;
-
-      auto DebugSystem = &EngineResources->Stdlib.DebugSystem;
-      CloseLibrary(DebugSystem->Lib);
-      DebugSystem->Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
-
-      if (DebugSystem->Lib)
-      {
-        if (InitializeBootstrapDebugApi(DebugSystem->Lib, &DebugSystem->Api))
-        {
-          DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates, BONSAI_INTERNAL);
-          Ensure( EngineApi.OnLibraryLoad(EngineResources) );
-        }
-        else { Error("Initializing DebugLib API"); }
-      }
-      else { Error("Reloading DebugLib"); }
-
-      Global_DebugStatePointer = Cached;
-
-      UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-      Info("Debug lib Reload Success");
-    }
-#endif // BONSAI_DEBUG_SYSTEM_API
-
 #endif // EMCC
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
@@ -372,11 +343,6 @@ main( s32 ArgCount, const char ** Args )
 
       DEBUG_FRAME_END(Plat->dt);
 
-    // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
-    // the alpha-blended text works properly
-    //
-    // ATM this only draws the UI.
-    //
     EngineApi.FrameEnd(EngineResources);
 
 

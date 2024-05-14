@@ -18,6 +18,7 @@ struct render_debug
 {
   u32 BytesSolidGeoLastFrame;
   u32 BytesTransGeoLastFrame;
+  u32 VertsDrawnLastFrame;
 
   u32 DrawCallsLastFrame;
 };

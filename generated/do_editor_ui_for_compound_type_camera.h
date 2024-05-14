@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:335:0
+// src/engine/editor.cpp:340:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -53,6 +54,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -61,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         CSz("Pitch"),
         Params
         );
+
 
 
 
@@ -82,6 +85,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -91,6 +95,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         CSz("Yaw"),
         Params
         );
+
 
 
 
@@ -112,6 +117,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -121,6 +127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         CSz("TargetPitch"),
         Params
         );
+
 
 
 
@@ -142,6 +149,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -151,6 +159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         CSz("TargetYaw"),
         Params
         );
+
 
 
 
@@ -172,6 +181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -181,6 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         CSz("Blend"),
         Params
         );
+
 
 
 

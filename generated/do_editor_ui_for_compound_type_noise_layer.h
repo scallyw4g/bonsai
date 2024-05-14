@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:347:0
+// src/engine/editor.cpp:352:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -53,6 +54,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -61,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
         CSz("Perlin"),
         Params
         );
+
 
 
 

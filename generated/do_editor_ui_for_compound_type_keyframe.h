@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:224:0
+// src/engine/editor.cpp:229:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -48,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
         CSz("Value"),
         Params
         );
+
 
 
 

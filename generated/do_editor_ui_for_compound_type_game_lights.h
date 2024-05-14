@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:407:0
+// src/engine/editor.cpp:412:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         CSz("PositionTex"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -76,6 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
         CSz("Count"),
         Params
         );
+
 
 
 

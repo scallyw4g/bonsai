@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:431:0
+// src/engine/editor.cpp:436:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -39,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -47,6 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("Tool"),
         Params
         );
+
 
 
 
@@ -67,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -75,6 +78,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("BrushType"),
         Params
         );
+
 
 
 
@@ -95,6 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -103,6 +108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("SelectionFollowsCursor"),
         Params
         );
+
 
 
 
@@ -118,6 +124,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("LayeredBrushEditor"),
         Params
         );
+
 
 
 
@@ -151,6 +158,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -159,6 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("NextSelectionRegionMin"),
         Params
         );
+
 
 
 
@@ -179,6 +188,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -187,6 +197,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("EngineDebugViewModeToggleBits"),
         Params
         );
+
 
 
 
@@ -208,6 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -217,6 +229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("HoverColorIndex"),
         Params
         );
+
 
 
 
@@ -251,6 +264,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
@@ -260,6 +274,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("SelectionBase"),
         Params
         );
+
 
 
 
@@ -280,6 +295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -288,6 +304,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("PrevSelectionRegion"),
         Params
         );
+
 
 
 
@@ -308,6 +325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -322,6 +340,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
       DoEditorUi(Ui,
         Window,
@@ -330,6 +349,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CSz("Entity"),
         Params
         );
+
 
 
 
