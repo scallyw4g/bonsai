@@ -327,7 +327,7 @@ InitEngineResources(engine_resources *Engine)
   Engine->WorldUpdateMemory = AllocateArena();
 
   Engine->Heap                    = InitHeap(Gigabytes(2)); // TODO(Jesse): Is this actually used?
-  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1));
+  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1), True); // NOTE(Jesse): Asset system needs to be able to allocate from the render thread.
 
   Engine->World = Allocate(world, WorldAndEntityArena, 1);
   if (!Engine->World) { Error("Allocating World"); Result = False; }
@@ -396,7 +396,7 @@ HardResetAssets(engine_resources *Engine)
   DeinitHeap(&Engine->AssetSystem.AssetMemory);
 
   Engine->AssetSystem = {};
-  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1));
+  Engine->AssetSystem.AssetMemory = InitHeap(Gigabytes(1), True);
 }
 
 // NOTE(Jesse): This function soft-resets the engine to a state similar to that

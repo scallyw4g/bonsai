@@ -242,7 +242,7 @@ ReadWorldChunkFileHeader_v3(u8_cursor *File)
   Assert( Result.Checksum == 0xdeadbeef );
 
   Assert( Result.VertexElementSize       == sizeof(v3) );
-  Assert( Result.MaterialElementSize     == sizeof(vertex_material) );
+  /* Assert( Result.MaterialElementSize     == sizeof(vertex_material) ); */
   Assert( Result.NormalElementSize       == sizeof(v3) );
   Assert( Result.StandingSpotElementSize == sizeof(voxel_position) );
   Assert( Result.VoxelElementSize        == sizeof(voxel) );

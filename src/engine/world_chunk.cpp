@@ -289,6 +289,7 @@ DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
     PushDeallocateBuffersCommand(RenderQueue, &Chunk->Meshes.GpuBufferHandles[MeshIndex]);
+    Chunk->Meshes.GpuBufferHandles[MeshIndex].Mapped = False;
   }
 }
 
