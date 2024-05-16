@@ -51,16 +51,22 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  // Must come before we update the frame index becaues CollectUnusedChunks
-  // picks the hashtable based on the frame index.
-  //
-
   MaintainWorldChunkHashtables(Resources);
 
-  // TODO(Jesse, nopush): I think this must come before we push chunks onto the draw lists for the
-  // frame because it could free chunks that we push onto the draw lists ..
-  // right?
+  // NOTE(Jesse): Must come before we update the frame index becaues
+  // CollectUnusedChunks picks the hashtable based on the frame index.
+  //
+  // TODO(Jesse, nopush): I think this must come before we push chunks onto the
+  // draw lists for the frame because it could free chunks that we push onto
+  // the draw lists ..  right?
   CollectUnusedChunks(Resources, Resources->World->VisibleRegion);
+
+
+  // NOTE(Jesse): Must be updated before we simulate camera ghost because the sim
+  // pulls chunks out of the hashtable.
+
+  Resources->FrameIndex += 1;
+  Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
 
   // NOTE(Jesse): This is a special-case entity simulation routine such that we
   // can dispatch the draw commands for world chunks afterwards.  The reason we
@@ -71,19 +77,13 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
-  Resources->FrameIndex += 1;
-
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
   /* Resources->Graphics.GpuBufferWriteIndex = 0; */
   /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
 
 
-
-
   UNPACK_ENGINE_RESOURCES(Resources);
 
-
-  World->ChunkHash = CurrentWorldHashtable(Resources);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
