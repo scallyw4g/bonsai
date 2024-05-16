@@ -176,13 +176,23 @@ DoLevelWindow(engine_resources *Engine)
           Deserialize(&LevelBytes, Palette, Thread->PermMemory);
           Assert(LevelBytes.At == LevelBytes.End);
 
+          b32 NormalizePalette = False;
           RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
           {
             v3 *C = Palette->Start+ColorIndex;
 
             // If any components are > 1.f we must have loaded a palette with values in the 0-255 range
-            if (C->E[0] > 1.f || C->E[1] > 1.f || C->E[2] > 1.f) { *C /= 255.f; }
-            Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
+            if (C->E[0] > 1.f || C->E[1] > 1.f || C->E[2] > 1.f) { NormalizePalette = True; break; }
+          }
+
+          if (NormalizePalette)
+          {
+            RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
+            {
+              v3 *C = Palette->Start+ColorIndex;
+              *C /= 255.f;
+              Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
+            }
           }
         }
 
