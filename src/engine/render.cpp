@@ -3,7 +3,7 @@ void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
-  SetViewport(ApplicationResolution);
+  SetViewport(ApplicationResolution/2);
 
   GL.UseProgram(AoGroup->Shader.ID);
 
@@ -841,7 +841,7 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 }
 
 link_internal void
-DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
+SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Handles)
 {
   AssertNoGlErrors;
 
@@ -852,11 +852,11 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribIPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
   GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribIPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, 0, (void*)0);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   AssertNoGlErrors;
 
 
@@ -869,6 +869,44 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
   /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
   GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
   GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  AssertNoGlErrors;
+}
+
+link_internal void
+SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
+{
+  AssertNoGlErrors;
+
+  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  AssertNoGlErrors;
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  AssertNoGlErrors;
+
+
+  // NOTE(Jesse): This is just here to break when the size of these changes,
+  // serving as a reminder to update this code.
+  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
+  CAssert(MtlFloatElements == 4);
+
+  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  AssertNoGlErrors;
+}
+
+link_internal void
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
+{
   AssertNoGlErrors;
 
   Draw(Handles->ElementCount);
@@ -1061,7 +1099,10 @@ DrawLod(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
 
-    DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit)];
+
+    SetupVertexAttribsFor_world_chunk_element_buffer(Handles);
+    DrawGpuBufferImmediate(Handles);
     AssertNoGlErrors;
   }
 }
@@ -1117,7 +1158,10 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
 
-    DrawGpuBufferImmediate(&Meshes->GpuBufferHandles[ToIndex(MeshBit)]);
+    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit)];
+
+    SetupVertexAttribsFor_u3d_geo_element_buffer(Handles);
+    DrawGpuBufferImmediate(Handles);
     AssertNoGlErrors;
   }
 }

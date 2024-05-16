@@ -192,6 +192,7 @@ BufferVertsDirect(
 poof(
   func mesh_buffering_functions(mesh_t, vertex_t, element_t)
   {
+
     //
     // Rotate, Scale and Offset
     //
@@ -353,15 +354,13 @@ poof(
             VertIndex < NumVerts;
             VertIndex += 3 )
       {
-        {
-          auto N0 = Normals[VertIndex + 0];
-          auto N1 = Normals[VertIndex + 1];
-          auto N2 = Normals[VertIndex + 2];
-          PackAndStoreNormal(DestNormals+0, N0);
-          PackAndStoreNormal(DestNormals+1, N1);
-          PackAndStoreNormal(DestNormals+2, N2);
-          DestNormals += 3;
-        }
+        auto N0 = Normals[VertIndex + 0];
+        auto N1 = Normals[VertIndex + 1];
+        auto N2 = Normals[VertIndex + 2];
+        PackAndStoreNormal(DestNormals+0, N0);
+        PackAndStoreNormal(DestNormals+1, N1);
+        PackAndStoreNormal(DestNormals+2, N2);
+        DestNormals += 3;
       }
     }
 
@@ -496,9 +495,6 @@ poof(
         MarkBufferForGrowth(Dest, NumVerts);
       }
     }
-
-
-
 
   }
 )

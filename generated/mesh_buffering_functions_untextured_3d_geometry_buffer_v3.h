@@ -1,4 +1,5 @@
-// src/engine/mesh.h:506:0
+// src/engine/mesh.h:502:0
+
 
 //
 // Rotate, Scale and Offset
@@ -161,15 +162,13 @@ BufferVertsDirect(
     VertIndex < NumVerts;
     VertIndex += 3 )
   {
-    {
-      auto N0 = Normals[VertIndex + 0];
-      auto N1 = Normals[VertIndex + 1];
-      auto N2 = Normals[VertIndex + 2];
-      PackAndStoreNormal(DestNormals+0, N0);
-      PackAndStoreNormal(DestNormals+1, N1);
-      PackAndStoreNormal(DestNormals+2, N2);
-      DestNormals += 3;
-    }
+    auto N0 = Normals[VertIndex + 0];
+    auto N1 = Normals[VertIndex + 1];
+    auto N2 = Normals[VertIndex + 2];
+    PackAndStoreNormal(DestNormals+0, N0);
+    PackAndStoreNormal(DestNormals+1, N1);
+    PackAndStoreNormal(DestNormals+2, N2);
+    DestNormals += 3;
   }
 }
 
@@ -304,8 +303,5 @@ BufferVertsChecked(
     MarkBufferForGrowth(Dest, NumVerts);
   }
 }
-
-
-
 
 

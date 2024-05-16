@@ -1,5 +1,6 @@
-layout(location = VERTEX_POSITION_LAYOUT_LOCATION)    in ivec3 vertexPosition_modelspace; // NOTE(Jesse): 8-bit
-layout(location = VERTEX_NORMAL_LAYOUT_LOCATION)      in ivec3 vertexNormal_modelspace;
+
+layout(location = VERTEX_POSITION_LAYOUT_LOCATION)    in vec3 vertexPosition_modelspace; // NOTE(Jesse): 8-bit
+layout(location = VERTEX_NORMAL_LAYOUT_LOCATION)      in vec3 vertexNormal_modelspace;
 layout(location = VERTEX_COLOR_LAYOUT_LOCATION)       in uint ColorIndex; // NOTE(Jesse): 16-bit
 layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in ivec2 in_TransEmiss; // NOTE(Jesse): 8-bit
 
@@ -38,7 +39,7 @@ void main()
   v4 ModelVertex = ModelMatrix*vec4(V3(vertexPosition_modelspace), 1);
 
   vertexP_worldspace = ModelVertex.xyz;
-  vertexN_worldspace = mat3(NormalMatrix) * V3(vertexNormal_modelspace)/127.f;
+  vertexN_worldspace = mat3(NormalMatrix) * V3(vertexNormal_modelspace);
 
   gl_Position =  ViewProjection * ModelVertex;
 }
