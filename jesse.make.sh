@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 
-OPT="-O2"
+# OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
 
-./make.sh $OPT                                                   \
-  BuildExecutables                                               \
-  BuildSingleExample examples/project_and_level_picker           \
-  BuildSingleExample examples/blank_project                      \
-  BuildSingleExample examples/terrain_gen                        \
-  BuildSingleExample examples/turn_based                         \
-  BuildSingleExample examples/transparency                       \
-  BuildSingleExample examples/the_wanderer                       \
-  # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-  # BuildTests                                                   \
-  # BuildDebugSystem                                             \
+# ./make.sh $OPT                                                   \
+#   BuildExecutables                                               \
+#   BuildSingleExample examples/project_and_level_picker           \
+#   BuildSingleExample examples/blank_project                      \
+#   BuildSingleExample examples/terrain_gen                        \
+#   BuildSingleExample examples/turn_based                         \
+#   BuildSingleExample examples/transparency                       \
+#   BuildSingleExample examples/the_wanderer                       \
+#   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
+#   BuildTests                                                   \
+#   BuildDebugSystem                                             \
 
 # ./make.sh BundleRelease
 
