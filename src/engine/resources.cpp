@@ -76,6 +76,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_delete_buffers, RC, Command)
+
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;

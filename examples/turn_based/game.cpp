@@ -118,61 +118,64 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   f32 EnemySightDistance = 60.f;
   standing_spot_buffer SightedSpots = GetStandingSpotsWithinRadius_FilteredByStandable(World, EnemyBaseP, EnemySightDistance, Enemy->_CollisionVolumeRadius, GetTranArena());
 
-  f32 ShortestDistanceToPlayerSq = f32_MAX;
-  umm ClosestSpotIndex = umm_MAX;
-  IterateOver(&SightedSpots, Spot, SpotIndex)
+  if (SightedSpots.Count)
   {
-    DrawStandingSpot(&GpuMap->Buffer, Camera, Spot, StandingSpotColor, StandingSpotRadius);
-
-    v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
-    r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseSimP);
-    if (ThisDist < ShortestDistanceToPlayerSq)
+    f32 ShortestDistanceToPlayerSq = f32_MAX;
+    umm ClosestSpotIndex = umm_MAX;
+    IterateOver(&SightedSpots, Spot, SpotIndex)
     {
-      ShortestDistanceToPlayerSq = ThisDist;
-      ClosestSpotIndex = SpotIndex;
+      DrawStandingSpot(&GpuMap->Buffer, Camera, Spot, StandingSpotColor, StandingSpotRadius);
+
+      v3 SpotSimP = GetSimSpaceCenterP(World, Spot);
+      r32 ThisDist = DistanceSq(SpotSimP, PlayerBaseSimP);
+      if (ThisDist < ShortestDistanceToPlayerSq)
+      {
+        ShortestDistanceToPlayerSq = ThisDist;
+        ClosestSpotIndex = SpotIndex;
+      }
     }
-  }
 
-  memory_arena *Temp = GetTranArena();
-  temp_memory_handle TMH = BeginTemporaryMemory(Temp);
+    memory_arena *Temp = GetTranArena();
+    temp_memory_handle TMH = BeginTemporaryMemory(Temp);
 
-  f32 EnemyMovespeed = 10.f;
-  standing_spot_buffer MoveSpots = GetStandingSpotsWithinRadius(World, &SightedSpots, EnemyBaseP, EnemyMovespeed, Temp, Temp);
+    f32 EnemyMovespeed = 10.f;
+    standing_spot_buffer MoveSpots = GetStandingSpotsWithinRadius(World, &SightedSpots, EnemyBaseP, EnemyMovespeed, Temp, Temp);
 
-  standing_spot *NextSpot =  {};
+    standing_spot *NextSpot =  {};
 
-  if (LengthSq(PlayerBaseSimP-EnemyBaseSimP) < Square(EnemySightDistance))
-  {
-    maybe_standing_spot MaybeSpot = GetClosestToP(World, &MoveSpots, PlayerBaseP);
-    NextSpot = &MaybeSpot.Value;
-  }
-  else
-  {
-    random_series Entropy = {9490653468579 + u64(GameState->TurnIndex) + Enemy->Id.Index};
-    if (MoveSpots.Count)
+    if (LengthSq(PlayerBaseSimP-EnemyBaseSimP) < Square(EnemySightDistance))
     {
-      u32 NextSpotIndex = RandomBetween(0u, &Entropy, u32(MoveSpots.Count));
-      Assert(NextSpotIndex < MoveSpots.Count);
-      NextSpot = MoveSpots.Start + NextSpotIndex;
+      maybe_standing_spot MaybeSpot = GetClosestToP(World, &MoveSpots, PlayerBaseP);
+      NextSpot = &MaybeSpot.Value;
     }
-  }
-
-
-  if (NextSpot)
-  {
-    DrawStandingSpot(&GpuMap->Buffer, Camera, NextSpot, RED, StandingSpotRadius*2.f);
-
-    if (GameState->PlayerActed)
+    else
     {
-      v3 SpotTopSimP = GetSimSpaceBaseP(World, NextSpot) + V3(0, 0, Global_StandingSpotDim.z);
-      v3 UpdateV = SpotTopSimP - EnemySimP + V3(0,0,3) - V3(Enemy->_CollisionVolumeRadius.xy, 0.f);
+      random_series Entropy = {9490653468579 + u64(GameState->TurnIndex) + Enemy->Id.Index};
+      if (MoveSpots.Count)
+      {
+        u32 NextSpotIndex = RandomBetween(0u, &Entropy, u32(MoveSpots.Count));
+        Assert(NextSpotIndex < MoveSpots.Count);
+        NextSpot = MoveSpots.Start + NextSpotIndex;
+      }
+    }
 
-      cp EnemyOriginalP = Enemy->P;
-      UpdateEntityP(World, Enemy, UpdateV);
 
-      // Disallow enemies moving onto other entities
-      collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
-      if (EntityCollision.Count > Global_EntityCanMoveThroughCollisionThresh) { Enemy->P = EnemyOriginalP; }
+    if (NextSpot)
+    {
+      DrawStandingSpot(&GpuMap->Buffer, Camera, NextSpot, RED, StandingSpotRadius*2.f);
+
+      if (GameState->PlayerActed)
+      {
+        v3 SpotTopSimP = GetSimSpaceBaseP(World, NextSpot) + V3(0, 0, Global_StandingSpotDim.z);
+        v3 UpdateV = SpotTopSimP - EnemySimP + V3(0,0,3) - V3(Enemy->_CollisionVolumeRadius.xy, 0.f);
+
+        cp EnemyOriginalP = Enemy->P;
+        UpdateEntityP(World, Enemy, UpdateV);
+
+        // Disallow enemies moving onto other entities
+        collision_event EntityCollision = DoEntityCollisions(World, EntityTable, Enemy).Collision;
+        if (EntityCollision.Count > Global_EntityCanMoveThroughCollisionThresh) { Enemy->P = EnemyOriginalP; }
+      }
     }
   }
 }
