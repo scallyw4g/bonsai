@@ -1,13 +1,15 @@
-// src/engine/render_command.h:94:0
+// src/engine/render_command.h:105:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
   type_work_queue_entry__bonsai_render_command_noop,
   type_bonsai_render_command_clear_all_framebuffers,
+  type_bonsai_render_command_allocate_texture,
+  type_bonsai_render_command_deallocate_texture,
   type_bonsai_render_command_allocate_buffers,
-  type_bonsai_render_command_realloc_buffers,
-  type_bonsai_render_command_delete_buffers,
-  type_bonsai_render_command_realloc_world_chunk_buffers,
+  type_bonsai_render_command_reallocate_buffers,
+  type_bonsai_render_command_deallocate_buffers,
+  type_bonsai_render_command_reallocate_world_chunk_buffers,
   type_bonsai_render_command_do_stuff,
   type_bonsai_render_command_setup_shader,
   type_bonsai_render_command_teardown_shader,
@@ -26,10 +28,12 @@ struct work_queue_entry__bonsai_render_command
   union
   {
     struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
+    struct bonsai_render_command_allocate_texture bonsai_render_command_allocate_texture;
+    struct bonsai_render_command_deallocate_texture bonsai_render_command_deallocate_texture;
     struct bonsai_render_command_allocate_buffers bonsai_render_command_allocate_buffers;
-    struct bonsai_render_command_realloc_buffers bonsai_render_command_realloc_buffers;
-    struct bonsai_render_command_delete_buffers bonsai_render_command_delete_buffers;
-    struct bonsai_render_command_realloc_world_chunk_buffers bonsai_render_command_realloc_world_chunk_buffers;
+    struct bonsai_render_command_reallocate_buffers bonsai_render_command_reallocate_buffers;
+    struct bonsai_render_command_deallocate_buffers bonsai_render_command_deallocate_buffers;
+    struct bonsai_render_command_reallocate_world_chunk_buffers bonsai_render_command_reallocate_world_chunk_buffers;
     struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
     struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;
     struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;

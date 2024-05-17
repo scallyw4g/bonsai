@@ -845,7 +845,7 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
 
   // TODO(Jesse)(leak): How do we deallocate these on hard reset?
   // @hard_reset_texture_memory
-  if (Texture->ID == 0)
+  if (Texture->ID == 0 && Texture->Queued == False)
   {
     *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture"));
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);

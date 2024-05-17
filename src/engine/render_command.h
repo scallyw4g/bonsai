@@ -3,25 +3,36 @@
 // Renderer commands
 //
 
+struct bonsai_render_command_allocate_texture
+{
+  texture *Texture;
+};
+
+struct bonsai_render_command_deallocate_texture
+{
+  u32 *Buffers;
+  s32  Count = 3;
+};
+
 struct bonsai_render_command_allocate_buffers
 {
   u32 *Buffers;
-  s32  Count;
+  s32  Count = 3;
 };
 
-struct bonsai_render_command_delete_buffers
+struct bonsai_render_command_deallocate_buffers
 {
   u32 *Buffers;
-  s32  Count;
+  s32  Count = 3;
 };
 
-struct bonsai_render_command_realloc_buffers
+struct bonsai_render_command_reallocate_buffers
 {
      gpu_element_buffer_handles *Handles;
   untextured_3d_geometry_buffer *Mesh;
 };
 
-struct bonsai_render_command_realloc_world_chunk_buffers
+struct bonsai_render_command_reallocate_world_chunk_buffers
 {
    gpu_element_buffer_handles *Handles;
   world_chunk_geometry_buffer *Mesh;
@@ -30,8 +41,8 @@ struct bonsai_render_command_realloc_world_chunk_buffers
 
 struct bonsai_render_command_clear_all_framebuffers
 {
-  u32 Ignored; // NOTE(Jesse): Only here because poof only gens functions if we
-               // have a struct to go off of..
+  u32 Ignored = 0; // NOTE(Jesse): Only here because poof only gens functions if we
+                   // have a struct to go off of..
 };
 
 enum bonsai_render_command_shader_id
@@ -66,7 +77,7 @@ struct bonsai_render_command_draw_world_chunk_draw_list
 // NOTE(Jesse): Temporary
 struct bonsai_render_command_do_stuff
 {
-  u32 Ignorerd;
+  u32 Ignored = 0;
 };
 
 struct bonsai_render_command_gl_timer_init
@@ -95,11 +106,14 @@ poof(
   {
     bonsai_render_command_clear_all_framebuffers
 
-    bonsai_render_command_allocate_buffers
-    bonsai_render_command_realloc_buffers
-    bonsai_render_command_delete_buffers
+    bonsai_render_command_allocate_texture
+    bonsai_render_command_deallocate_texture
 
-    bonsai_render_command_realloc_world_chunk_buffers
+    bonsai_render_command_allocate_buffers
+    bonsai_render_command_reallocate_buffers
+    bonsai_render_command_deallocate_buffers
+
+    bonsai_render_command_reallocate_world_chunk_buffers
 
     bonsai_render_command_do_stuff
 
@@ -119,6 +133,7 @@ poof(
 
 poof(d_union_all_constructors(work_queue_entry__bonsai_render_command))
 #include <generated/d_union_all_constructors_work_queue_entry__bonsai_render_command.h>
+
 
 
 

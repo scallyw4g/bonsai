@@ -16,6 +16,8 @@ AreEqual(texture *Thing1, texture *Thing2)
 
   Result &= AreEqual(Thing1->DebugName, Thing2->DebugName);
 
+  Result &= AreEqual(Thing1->Queued, Thing2->Queued);
+
   return Result;
 }
 
@@ -34,6 +36,8 @@ AreEqual(texture Thing1, texture Thing2)
   Result &= AreEqual(Thing1.IsDepthTexture, Thing2.IsDepthTexture);
 
   Result &= AreEqual(Thing1.DebugName, Thing2.DebugName);
+
+  Result &= AreEqual(Thing1.Queued, Thing2.Queued);
 
   return Result;
 }

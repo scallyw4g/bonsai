@@ -1,24 +1,50 @@
+
+poof(
+  func push_render_command(render_command_t)
+  {
+    render_command_t.member(1, (union_command_t)
+    {
+      union_command_t.map(command_t) 
+      {
+        link_internal void
+        Push(command_t.name.to_capital_case)(
+            work_queue *RenderQueue
+            command_t.map_members(member) { , member.type(member.is_pointer?{*}) member.name member.value?{ = member.value } }
+            )
+        {
+          work_queue_entry Work = WorkQueueEntry(
+              WorkQueueEntryBonsaiRenderCommand( (command_t.name.to_capital_case)( command_t.map_members(member).sep(,) { member.name } )));
+
+          PushWorkQueueEntry(RenderQueue, &Work);
+        }
+      }
+
+    })
+
+  }
+)
+
+poof(push_render_command(work_queue_entry__bonsai_render_command))
+#include <generated/push_render_command_work_queue_entry__bonsai_render_command.h>
+
 link_internal void
 PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
 {
-  if (Handles->VertexHandle)
-  {
-    work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDeleteBuffers(&Handles->VertexHandle, 3)));
-    PushWorkQueueEntry(RenderQueue, &Work);
-  }
+  // @vertex_handle_primal
+  if (Handles->VertexHandle) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->VertexHandle, 3); }
 }
 
 link_internal void
 PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, world_chunk_geometry_buffer *Mesh)
 {
-  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocWorldChunkBuffers(Handles, Mesh)));
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateWorldChunkBuffers(Handles, Mesh)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 
 link_internal void
 PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
-  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocBuffers(Handles, Mesh)));
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateBuffers(Handles, Mesh)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 
@@ -86,3 +112,5 @@ PushGlTimerReadValueAndHistogram(work_queue *RenderQueue, u32 GlTimerObject)
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandGlTimerReadValueAndHistogram(GlTimerObject)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+#if 0
+#endif

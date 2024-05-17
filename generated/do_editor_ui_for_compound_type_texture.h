@@ -102,6 +102,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->Queued),
+        CSz("Queued"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -37,11 +37,19 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
+            { tmatch(bonsai_render_command_allocate_texture, RC, Command)
+              NotImplemented;
+            } break;
+
+            { tmatch(bonsai_render_command_deallocate_texture, RC, Command)
+              NotImplemented;
+            } break;
+
             { tmatch(bonsai_render_command_allocate_buffers, RC, Command)
               NotImplemented;
             } break;
 
-            { tmatch(bonsai_render_command_realloc_world_chunk_buffers, RC, Command)
+            { tmatch(bonsai_render_command_reallocate_world_chunk_buffers, RC, Command)
               auto *Handles = Command->Handles;
               world_chunk_geometry_buffer *Mesh = Command->Mesh;
 
@@ -58,7 +66,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
             } break;
 
-            { tmatch(bonsai_render_command_realloc_buffers, RC, Command)
+            { tmatch(bonsai_render_command_reallocate_buffers, RC, Command)
               auto *Handles = Command->Handles;
               untextured_3d_geometry_buffer *Mesh = Command->Mesh;
 
@@ -75,7 +83,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
             } break;
 
-            { tmatch(bonsai_render_command_delete_buffers, RC, Command)
+            { tmatch(bonsai_render_command_deallocate_buffers, RC, Command)
 
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
