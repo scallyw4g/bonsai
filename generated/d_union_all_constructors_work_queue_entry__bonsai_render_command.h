@@ -1,4 +1,4 @@
-// src/engine/render_command.h:134:0
+// src/engine/render_command.h:135:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -220,10 +220,11 @@ BonsaiRenderCommandClearAllFramebuffers( u32  Ignored  )
 }
 
 link_internal bonsai_render_command_allocate_texture
-BonsaiRenderCommandAllocateTexture( texture* Texture  )
+BonsaiRenderCommandAllocateTexture( texture* Texture , void * Data  )
 {
   bonsai_render_command_allocate_texture Reuslt = {
-    .Texture = Texture
+    .Texture = Texture,
+    .Data = Data
   };
   return Reuslt;
 }

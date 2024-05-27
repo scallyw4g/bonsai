@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:226:0
+// src/engine/work_queue.h:324:0
 
 
 link_internal work_queue_entry
@@ -98,6 +98,19 @@ WorkQueueEntry( work_queue_entry__bonsai_render_command A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry__bonsai_render_command,
     .work_queue_entry__bonsai_render_command = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_async_function_call A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_async_function_call,
+    .work_queue_entry_async_function_call = A,
 
     
 

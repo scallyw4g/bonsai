@@ -838,7 +838,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 
 #if 1
 link_internal interactable_handle
-RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
+RenderAndInteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
 {
   texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
@@ -847,7 +847,10 @@ RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, co
   // @hard_reset_texture_memory
   if (Texture->ID == 0 && Texture->Queued == False)
   {
-    *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture"));
+    Texture->Queued = True;
+    /* PushBonsaiRenderCommandAllocateTexture(&Engine->Plat->RenderQ, Texture); */
+    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, V2i(256), 0, CSz("NoisePreviewTexture"));
+    /* *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture")); */
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }
 
@@ -1124,7 +1127,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
   if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture(Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f);
+    RenderToTexture_world_chunk_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1246,7 +1249,7 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   }
 
   PushTableStart(Ui);
-    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    RenderAndInteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

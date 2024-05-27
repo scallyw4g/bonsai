@@ -14,6 +14,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
     InvalidCase(type_work_queue_entry__bonsai_render_command);
 
+    case type_work_queue_entry_async_function_call:
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh:
     case type_work_queue_entry_init_asset:

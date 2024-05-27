@@ -31,14 +31,21 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           InvalidCodePath();
         } break;
 
-        tmatch(work_queue_entry__bonsai_render_command, Job, RC)
-        {
+
+        { tmatch(work_queue_entry_async_function_call, Job, RPC)
+          DispatchAsyncFunctionCall(RPC);
+        } break;
+
+        { tmatch(work_queue_entry__bonsai_render_command, Job, RC)
           tswitch(RC)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
             { tmatch(bonsai_render_command_allocate_texture, RC, Command)
-              NotImplemented;
+
+              texture *Texture = Command->Texture;
+              *Texture = MakeTexture_RGB(Texture->Dim, (const v3*)Command->Data, Texture->DebugName, Texture->Format);
+
             } break;
 
             { tmatch(bonsai_render_command_deallocate_texture, RC, Command)

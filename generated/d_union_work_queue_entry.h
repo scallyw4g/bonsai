@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:200:0
+// src/engine/work_queue.h:296:0
 
 enum work_queue_entry_type
 {
@@ -11,6 +11,7 @@ enum work_queue_entry_type
   type_work_queue_entry_rebuild_mesh,
   type_work_queue_entry_sim_particle_system,
   type_work_queue_entry__bonsai_render_command,
+  type_work_queue_entry_async_function_call,
   type_work_queue_entry__align_to_cache_line_helper,
 };
 
@@ -28,6 +29,7 @@ struct work_queue_entry
     struct work_queue_entry_rebuild_mesh work_queue_entry_rebuild_mesh;
     struct work_queue_entry_sim_particle_system work_queue_entry_sim_particle_system;
     struct work_queue_entry__bonsai_render_command work_queue_entry__bonsai_render_command;
+    struct work_queue_entry_async_function_call work_queue_entry_async_function_call;
     struct work_queue_entry__align_to_cache_line_helper work_queue_entry__align_to_cache_line_helper;
   };
 };

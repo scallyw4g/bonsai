@@ -193,6 +193,102 @@ Initialize_Global_UpdateWorldCallbackTable()
 
 
 
+poof(
+  func asyncify_render_function_h(func_t, struct_t) @code_fragment
+  {
+    struct (func_t.name.to_snake_case)_async_params poof(@async_function_params)
+    {
+      func_t.map(arg) 
+      {
+        arg;
+      }
+    };
+  }
+)
+
+link_internal void
+RenderToTexture_world_chunk_Async(work_queue *Queue,engine_resources *Engine ,asset_thumbnail *Thumb ,world_chunk_lod_element_buffer *Meshes ,v3 Offset ,camera *Camera );
+
+poof(
+  func asyncify_render_function_c(func_t, struct_t)
+  {
+    link_internal void
+    (func_t.name)_Async(work_queue *Queue, func_t.map(arg).sep(,) { arg })
+    {
+      (func_t.name.to_snake_case)_async_params Params =
+      {
+        func_t.map(arg) { arg.name, }
+      };
+
+      work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+      PushWorkQueueEntry(Queue, &Entry);
+    }
+
+    link_internal void
+    DoJob((func_t.name.to_snake_case)_async_params *Params)
+    {
+      func_t.name((func_t.map(arg).sep(,) { Params->(arg.name) }));
+    }
+  }
+)
+
+
+poof(asyncify_render_function_h(RenderToTexture_world_chunk, world_chunk))
+#include <generated/asyncify_render_function_RenderToTexture_world_chunk_world_chunk.h>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+enum async_function_call_type
+{
+  poof(
+    for_datatypes(all) @code_fragment
+    func (struct_t)
+    {
+      struct_t.has_tag(async_function_params)?
+      {
+        type_(struct_t.name),
+      }
+    }
+    func (enum_t) {}
+  )
+#include <generated/for_datatypes_kv3WBTai.h>
+};
+
+struct work_queue_entry_async_function_call
+{
+  async_function_call_type Type;
+  union
+  {
+    poof(
+      for_datatypes(all) @code_fragment
+      func (struct_t)
+      {
+        struct_t.has_tag(async_function_params)?
+        {
+          struct_t.name struct_t.name;
+        }
+      }
+      func (enum_t) {}
+    )
+#include <generated/for_datatypes_fkubhsYl.h>
+  };
+};
 
 
 
@@ -214,6 +310,8 @@ poof(
     // the future, but for now I'm just going to stuff it on here and call it good.
     work_queue_entry__bonsai_render_command
 
+    work_queue_entry_async_function_call
+
     work_queue_entry__align_to_cache_line_helper
   }
 )
@@ -225,6 +323,63 @@ CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0);
 
 poof(d_union_constructors(work_queue_entry))
 #include <generated/d_union_constructors_work_queue_entry.h>
+
+
+
+
+
+
+
+
+poof(
+  for_datatypes(all) @code_fragment
+  func (struct_t)
+  {
+    struct_t.has_tag(async_function_params)?
+    {
+      struct struct_t.name;
+      link_internal work_queue_entry
+      WorkQueueEntryAsyncFunction( (struct_t.type) *Params )
+      {
+        work_queue_entry Result = {};
+        Result.Type = type_work_queue_entry_async_function_call;
+        Result.work_queue_entry_async_function_call.Type = type_(struct_t.type);
+        Result.work_queue_entry_async_function_call.(struct_t.type) = *Params;
+        return Result;
+      }
+    }
+  }
+  func (enum_t) {}
+)
+#include <generated/for_datatypes_0XxWqGSZ.h>
+
+link_internal void
+RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera);
+
+poof(asyncify_render_function_c(RenderToTexture_world_chunk, world_chunk))
+#include <generated/asyncify_render_function_c_RenderToTexture_world_chunk_world_chunk.h>
+
+
+link_internal void
+DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Job)
+{
+  tswitch(Job)
+  {
+    {
+      tmatch(render_to_texture_world_chunk_async_params, Job, RenderToTexture);
+      DoJob(RenderToTexture);
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
 
 // TODO(Jesse): Gen this from the constructors generator
 link_internal work_queue_entry

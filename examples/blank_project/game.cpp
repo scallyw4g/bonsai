@@ -32,6 +32,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
 
+    case type_work_queue_entry_async_function_call:
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh:
     case type_work_queue_entry_init_asset:

@@ -17,6 +17,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       Result = True;
     } break;
 
+    case type_work_queue_entry_async_function_call:
     case type_work_queue_entry_update_world_region:
     case type_work_queue_entry_rebuild_mesh:
     case type_work_queue_entry_init_asset:

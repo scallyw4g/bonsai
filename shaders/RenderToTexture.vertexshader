@@ -1,6 +1,7 @@
-layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec3 vertexNormal_modelspace;
-layout(location = 2) in vec4 vertexColor;
+layout(location = VERTEX_POSITION_LAYOUT_LOCATION)    in vec3 vertexPosition_modelspace; // NOTE(Jesse): 8-bit
+layout(location = VERTEX_NORMAL_LAYOUT_LOCATION)      in vec3 vertexNormal_modelspace;
+layout(location = VERTEX_COLOR_LAYOUT_LOCATION)       in uint ColorIndex; // NOTE(Jesse): 16-bit
+layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in ivec2 in_TransEmiss; // NOTE(Jesse): 8-bit
 
 out vec4 Color;
 out vec3 Normal;
@@ -8,9 +9,11 @@ out vec3 Normal;
 uniform mat4 ModelMatrix;
 uniform mat4 ViewProjection;
 
+uniform sampler2D ColorPalette;
+
 void main()
 {
-  Color = vertexColor;
+  Color = texelFetch(ColorPalette, ivec2(1, 0), 0);
   Normal = vertexNormal_modelspace;
   gl_Position =  ViewProjection * ModelMatrix * vec4(vertexPosition_modelspace, 1);
 }

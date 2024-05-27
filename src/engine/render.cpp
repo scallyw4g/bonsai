@@ -819,15 +819,19 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
       GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
       GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
-      GL.UseProgram(RTTGroup->Shader.ID);
-
-      SetViewport(V2(Texture->Dim));
-
       RTTGroup->ViewProjection =
         ProjectionMatrix(Camera, V2(Texture->Dim)) *
         ViewMatrix(Engine->World->ChunkDim, Camera) ;
 
-      BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection);
+      // Must come after RTTGroup->ViewProjection is set
+      UseShader(&RTTGroup->Shader);
+
+      /* GL.UseProgram(ID); */
+
+      SetViewport(V2(Texture->Dim));
+      /* BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection); */
+
+      /* BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection); */
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
@@ -1167,10 +1171,24 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
 }
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
+RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
 {
-  NotImplemented;
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
+  {
+    DrawLod(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
+  }
+  else
+  {
+    Warn("Attempted to render to an unallocated texture.");
+  }
 }
+
+/* link_internal void */
+/* RenderToTexture_Async(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0) */
+/* { */
+/*   NotImplemented; */
+/* } */
 
 link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)

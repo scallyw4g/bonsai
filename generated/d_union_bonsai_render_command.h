@@ -1,4 +1,4 @@
-// src/engine/render_command.h:105:0
+// src/engine/render_command.h:106:0
 
 enum work_queue_entry__bonsai_render_command_type
 {

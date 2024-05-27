@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/texture.h:33:0
+// external/bonsai_stdlib/src/texture.h:39:0
 
 struct texture_block
 {

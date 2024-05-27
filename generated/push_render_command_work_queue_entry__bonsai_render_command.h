@@ -14,11 +14,11 @@ PushBonsaiRenderCommandClearAllFramebuffers(
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(
   work_queue *RenderQueue
- , texture* Texture  
+ , texture* Texture   , void * Data  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateTexture( Texture  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateTexture( Texture , Data  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

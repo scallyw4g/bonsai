@@ -315,7 +315,9 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
 
     u32 Channels = 4;
-    Result.Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), Channels);
+    u32 Slices = 1;
+    texture_storage_format StorageFormat = TextureStorageFormat_RGBA32F;
+    Result.Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), StorageFormat, Channels, Slices);
     GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
 
     FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
@@ -499,7 +501,7 @@ InitializeShadowRenderGroup(shadow_render_group *SG, v2i ShadowMapResolution)
 }
 
 link_internal void
-InitRenderToTextureGroup(render_entity_to_texture_group *Group, memory_arena *Memory)
+InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
 {
   // TODO(Jesse): Can this not re-use the immediate mode GpuMap from the 3D renderer?
   AllocateGpuElementBuffer(&Group->GeoBuffer, (u32)Megabytes(1));
@@ -511,7 +513,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, memory_arena *Me
   texture DepthTexture = MakeDepthTexture( V2i(1024), CSz("RenderToTexture Depth"));
   FramebufferDepthTexture(&DepthTexture);
 
-  Group->Shader = MakeRenderToTextureShader(Memory, 0);
+  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection, ColorPalette);
 
   Ensure(CheckAndClearFramebuffer());
 }
@@ -558,14 +560,18 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   // TODO(Jesse)(make_texture_rgba) : ?
   {
     u32 Channels = 4;
-    Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+    u32 Slices = 1;
+    texture_storage_format StorageFormat = TextureStorageFormat_R16F;
+    Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), StorageFormat, Channels, Slices);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
 
   {
     u32 Channels = 2;
-    Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), Channels);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RG16F, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+    u32 Slices = 1;
+    texture_storage_format StorageFormat = TextureStorageFormat_R16F;
+    Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), StorageFormat, Channels, Slices);
+    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
@@ -728,7 +734,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   engine_resources *Resources = GetEngineResources();
 
   // TODO(Jesse): Move RTTGroup onto graphics?
-  InitRenderToTextureGroup(&Resources->RTTGroup, GraphicsMemory);
+  InitRenderToTextureGroup(&Resources->RTTGroup, &Result->ColorPaletteTexture, GraphicsMemory);
 
   Result->Gaussian      = MakeGaussianBlurRenderGroup(&Result->Settings.ApplicationResolution, GraphicsMemory);
 

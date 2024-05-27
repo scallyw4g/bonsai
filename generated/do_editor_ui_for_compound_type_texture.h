@@ -90,6 +90,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(texture_storage_format*,&Element->Format),
+        CSz("Format"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(cs*,&Element->DebugName),
         CSz("DebugName"),
         Params

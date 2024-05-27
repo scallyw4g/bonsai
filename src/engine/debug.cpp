@@ -471,7 +471,7 @@ DoAssetWindow(engine_resources *Engine)
                   RenderToTexture(Engine, Thumb, Model, {});
                 }
 
-                interactable_handle B = RenderAndInteractWithThumbnailTexture(Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
+                interactable_handle B = RenderAndInteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
                 if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                 PushForceAdvance(Ui, V2(8, 0));
 

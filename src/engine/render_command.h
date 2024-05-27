@@ -6,6 +6,7 @@
 struct bonsai_render_command_allocate_texture
 {
   texture *Texture;
+  void *Data;
 };
 
 struct bonsai_render_command_deallocate_texture
@@ -155,3 +156,7 @@ PushClearAllFramebuffersCommand(work_queue *RenderQueue);
 
 link_internal void
 PushDoStuffCommand(work_queue *RenderQueue);
+
+
+link_internal void
+PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
