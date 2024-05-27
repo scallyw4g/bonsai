@@ -1,5 +1,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:7:0
 
+link_internal b32 AreEqual(ui_toggle_linked_list_node *Node1, ui_toggle_linked_list_node *Node2 );
+
 link_internal ui_toggle_linked_list_node *
 Allocate_ui_toggle_linked_list_node(memory_arena *Memory)
 {
@@ -46,7 +48,11 @@ Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
   ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket) Bucket = &(*Bucket)->Next;
+  while (*Bucket)
+  {
+    /* Assert(!AreEqual(*Bucket, Node)); */
+    Bucket = &(*Bucket)->Next;
+  }
   *Bucket = Node;
   return &Bucket[0]->Element;
 }

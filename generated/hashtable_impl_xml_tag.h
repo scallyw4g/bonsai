@@ -1,4 +1,6 @@
-// external/bonsai_stdlib/src/xml.cpp:4:0
+// external/bonsai_stdlib/src/xml.cpp:10:0
+
+link_internal b32 AreEqual(xml_tag_linked_list_node *Node1, xml_tag_linked_list_node *Node2 );
 
 link_internal xml_tag_linked_list_node *
 Allocate_xml_tag_linked_list_node(memory_arena *Memory)
@@ -46,7 +48,11 @@ Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
   xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket) Bucket = &(*Bucket)->Next;
+  while (*Bucket)
+  {
+    /* Assert(!AreEqual(*Bucket, Node)); */
+    Bucket = &(*Bucket)->Next;
+  }
   *Bucket = Node;
   return &Bucket[0]->Element;
 }

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:27:0
+// external/bonsai_stdlib/src/counted_string.cpp:26:0
 
 struct counted_string_linked_list_node
 {
@@ -12,6 +12,8 @@ struct counted_string_hashtable
   counted_string_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
+link_internal b32 AreEqual(counted_string_linked_list_node *Node1, counted_string_linked_list_node *Node2 );
+
 link_internal counted_string_linked_list_node *
 Allocate_counted_string_linked_list_node(memory_arena *Memory)
 {
@@ -58,7 +60,11 @@ Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
   counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket) Bucket = &(*Bucket)->Next;
+  while (*Bucket)
+  {
+    /* Assert(!AreEqual(*Bucket, Node)); */
+    Bucket = &(*Bucket)->Next;
+  }
   *Bucket = Node;
   return &Bucket[0]->Element;
 }
