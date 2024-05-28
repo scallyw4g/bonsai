@@ -838,7 +838,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 
 #if 1
 link_internal interactable_handle
-RenderAndInteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
+InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
 {
   texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
@@ -1249,7 +1249,7 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   }
 
   PushTableStart(Ui);
-    RenderAndInteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

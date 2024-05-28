@@ -448,11 +448,12 @@ DoAssetWindow(engine_resources *Engine)
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
                   v2i ThumbnailDim = V2i(128);
-                  texture T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, CSz("Thumbnail"));
-                  asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f);
+                  asset_thumbnail BlankThumb = {};
+                  asset_thumbnail *Thumb = Push(&Editor->AssetThumbnails, &BlankThumb);
 
-                  Push(&Editor->AssetThumbnails, &Thumb);
+                  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+                  StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
+
                 }
 
                 asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
@@ -468,16 +469,16 @@ DoAssetWindow(engine_resources *Engine)
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
-                  RenderToTexture(Engine, Thumb, Model, {});
+                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
                 }
 
-                interactable_handle B = RenderAndInteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
+                interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
                 if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                 PushForceAdvance(Ui, V2(8, 0));
 
                 if (Pressed(Ui, &B))
                 {
-                  RenderToTexture(Engine, Thumb, Model, {});
+                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
                   EngineDebug->ModelIndex = ModelIndex;
                 }
 

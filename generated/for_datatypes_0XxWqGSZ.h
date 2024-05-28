@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:335:0
+// src/engine/work_queue.h:337:0
 
 
 
@@ -176,6 +176,17 @@
 
 
 
+
+struct render_to_texture_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_render_to_texture_async_params;
+  Result.work_queue_entry_async_function_call.render_to_texture_async_params = *Params;
+  return Result;
+}
 
 
 

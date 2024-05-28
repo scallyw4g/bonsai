@@ -44,7 +44,18 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_allocate_texture, RC, Command)
 
               texture *Texture = Command->Texture;
-              *Texture = MakeTexture_RGB(Texture->Dim, (const v3*)Command->Data, Texture->DebugName, Texture->Format);
+              switch (Texture->Channels)
+              {
+                case 3:
+                {
+                  *Texture = MakeTexture_RGB(Texture->Dim, (const v3*)Command->Data, Texture->DebugName, Texture->Slices, Texture->Format);
+                } break;
+
+                case 4:
+                {
+                  *Texture = MakeTexture_RGBA(Texture->Dim, Cast(u32*, Command->Data), Texture->DebugName, Texture->Slices, Texture->Format);
+                } break;
+              }
 
             } break;
 

@@ -819,6 +819,10 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
       GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
       GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
+      RTTGroup->FBO.Attachments = 0;
+      FramebufferTexture(&RTTGroup->FBO, Texture);
+      SetDrawBuffers(&RTTGroup->FBO);
+
       RTTGroup->ViewProjection =
         ProjectionMatrix(Camera, V2(Texture->Dim)) *
         ViewMatrix(Engine->World->ChunkDim, Camera) ;
@@ -826,16 +830,7 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
       // Must come after RTTGroup->ViewProjection is set
       UseShader(&RTTGroup->Shader);
 
-      /* GL.UseProgram(ID); */
-
       SetViewport(V2(Texture->Dim));
-      /* BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection); */
-
-      /* BindUniformByName(&RTTGroup->Shader, "ViewProjection", &RTTGroup->ViewProjection); */
-
-      RTTGroup->FBO.Attachments = 0;
-      FramebufferTexture(&RTTGroup->FBO, Texture);
-      SetDrawBuffers(&RTTGroup->FBO);
 
       GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
       GL.Enable(GL_DEPTH_TEST);

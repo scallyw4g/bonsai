@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:260:0
+// src/engine/work_queue.h:262:0
 
 
 
@@ -176,6 +176,8 @@
 
 
 
+
+type_render_to_texture_async_params,
 
 
 

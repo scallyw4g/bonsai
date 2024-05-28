@@ -45,7 +45,7 @@ AllocateAndInitSsaoNoise(v2i ApplicationResolution, ao_render_group *AoGroup, me
     SsaoNoise[NoiseIndex] = Normalize( V3(RandomBilateral(&SsaoEntropy), RandomBilateral(&SsaoEntropy), 0.0f) );
   }
 
-  texture SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, CSz("SsaoNoiseTexture"));
+  texture SsaoNoiseTexture = MakeTexture_RGB(SsaoNoiseDim, SsaoNoise, CSz("SsaoNoiseTexture"), 1);
   return SsaoNoiseTexture;
 }
 
@@ -450,9 +450,8 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
-  gBuffer->Textures.Color = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferColor"), TextureStorageFormat_RGBA16F);
-
-  gBuffer->Textures.Normal   = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), TextureStorageFormat_RGBA16F);
+  gBuffer->Textures.Color  = MakeTexture_RGBA(ApplicationResolution, (v4*)0, CSz("gBufferColor"),  1, TextureStorageFormat_RGBA16F);
+  gBuffer->Textures.Normal = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), 1, TextureStorageFormat_RGBA16F);
 
   // NOTE(Jesse): Depth gets stuffed into A value here.
   /* gBuffer->Textures.Position = MakeTexture_RGBA( ApplicationResolution, (v4*)0, CSz("gBufferPosition"), TextureStorageFormat_RGBA32F); */
@@ -716,7 +715,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     // Luminance FBO
     {
-      Lighting->LuminanceTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Luminance"), TextureStorageFormat_RGB16F);
+      Lighting->LuminanceTex = MakeTexture_RGB( Result->Settings.iLuminanceMapResolution, 0, CSz("Luminance"), 1, TextureStorageFormat_RGB16F);
 
       Lighting->FBO = GenFramebuffer();
 
