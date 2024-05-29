@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:367:0
+// src/engine/work_queue.h:371:0
 
 link_internal void
 RenderToTexture_Async(work_queue *Queue,engine_resources *Engine ,asset_thumbnail *Thumb ,lod_element_buffer *Meshes ,v3 Offset ,camera *Camera )

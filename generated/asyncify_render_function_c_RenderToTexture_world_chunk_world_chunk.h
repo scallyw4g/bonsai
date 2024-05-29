@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:364:0
+// src/engine/work_queue.h:368:0
 
 link_internal void
 RenderToTexture_world_chunk_Async(work_queue *Queue,engine_resources *Engine ,asset_thumbnail *Thumb ,world_chunk_lod_element_buffer *Meshes ,v3 Offset ,camera *Camera )

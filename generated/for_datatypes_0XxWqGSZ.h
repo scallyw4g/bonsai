@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:337:0
+// src/engine/work_queue.h:341:0
 
 
 
@@ -616,6 +616,17 @@ WorkQueueEntryAsyncFunction( render_to_texture_world_chunk_async_params *Params 
 
 
 
+
+struct draw_lod_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( draw_lod_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_draw_lod_async_params;
+  Result.work_queue_entry_async_function_call.draw_lod_async_params = *Params;
+  return Result;
+}
 
 
 

@@ -51,6 +51,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
+  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.RenderQ);
+
   MaintainWorldChunkHashtables(Resources);
 
   // NOTE(Jesse): Must come before we update the frame index becaues
@@ -147,6 +149,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 
   UiFrameBegin(Ui);         // Clear UI interactions
+
   DoEngineDebug(Resources); // Do Editor/Debug UI
 
   // We just drew these values, reset for this frame
@@ -336,10 +339,9 @@ Bonsai_Simulate(engine_resources *Resources)
   Debug_DoWorldChunkPicking(Resources);
 #endif
 
+
+
   // Draw terrain
-  PushBonsaiRenderCommandClearAllFramebuffers(&Plat->RenderQ);
-
-
   PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);

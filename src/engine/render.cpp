@@ -1049,7 +1049,7 @@ GetTransformMatrix(entity *Entity)
 }
 
 link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
+DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1108,7 +1108,7 @@ DrawLod(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer
 
 
 link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
+DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1171,7 +1171,7 @@ RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, wo
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
-    DrawLod(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
+    DrawLod_world_chunk(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
   }
   else
   {
@@ -1466,7 +1466,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
     AssertNoGlErrors;
 
     v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod_world_chunk(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
     AssertNoGlErrors;
   }
 }
@@ -1578,7 +1578,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
   if (Chunk)
   {
     /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod_world_chunk(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
   }
 }
 

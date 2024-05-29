@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:262:0
+// src/engine/work_queue.h:266:0
 
 
 
@@ -597,6 +597,8 @@ type_render_to_texture_world_chunk_async_params,
 
 
 
+
+type_draw_lod_async_params,
 
 
 

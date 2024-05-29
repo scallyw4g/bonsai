@@ -501,11 +501,16 @@ DoAssetWindow(engine_resources *Engine)
                       //
                       // That said .. this is just editor code.. so .. meh
                       //
-                      SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+                      /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
+
+                      PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
                       v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                       /* v3 Basis = V3(0,0,20); */
-                      DrawLod(GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis);
-                      TeardownGBufferShader(Graphics);
+/* DrawLod_Async(work_queue *Queue,engine_resources *Engine ,shader *Shader ,world_chunk_lod_element_buffer *Meshes ,r32 DistanceSquared ,v3 Basis ,Quaternion Rotation ,v3 Scale ) */
+                      DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
+
+                      PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
                     }
 
                   }

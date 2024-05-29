@@ -209,6 +209,9 @@ poof(
 link_internal void
 RenderToTexture_world_chunk_Async(work_queue *Queue,engine_resources *Engine ,asset_thumbnail *Thumb ,world_chunk_lod_element_buffer *Meshes ,v3 Offset ,camera *Camera );
 
+link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
+
 poof(
   func asyncify_render_function_c(func_t)
   {
@@ -239,7 +242,8 @@ poof(asyncify_render_function_h(RenderToTexture_world_chunk))
 poof(asyncify_render_function_h(RenderToTexture))
 #include <generated/asyncify_render_function_h_RenderToTexture.h>
 
-
+poof(asyncify_render_function_h(DrawLod))
+#include <generated/asyncify_render_function_h_DrawLod.h>
 
 
 
@@ -367,6 +371,9 @@ poof(asyncify_render_function_c(RenderToTexture_world_chunk))
 poof(asyncify_render_function_c(RenderToTexture))
 #include <generated/asyncify_render_function_c_RenderToTexture.h>
 
+poof(asyncify_render_function_c(DrawLod))
+#include <generated/asyncify_render_function_c_DrawLod.h>
+
 
 link_internal void
 DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Job)
@@ -381,6 +388,11 @@ DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Job)
     {
       tmatch(render_to_texture_world_chunk_async_params, Job, RenderToTexture);
       DoJob(RenderToTexture);
+    } break;
+
+    {
+      tmatch(draw_lod_async_params, Job, DrawLodParams);
+      DoJob(DrawLodParams);
     } break;
   }
 }
