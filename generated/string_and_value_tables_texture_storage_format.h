@@ -9,6 +9,8 @@ ToStringPrefixless(texture_storage_format Type)
     case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("R16F"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("R32F"); } break;
+    case TextureStorageFormat_RG16F: { Result = CSz("RG16F"); } break;
+    case TextureStorageFormat_RG32F: { Result = CSz("RG32F"); } break;
     case TextureStorageFormat_RGB16F: { Result = CSz("RGB16F"); } break;
     case TextureStorageFormat_RGB32F: { Result = CSz("RGB32F"); } break;
     case TextureStorageFormat_RGBA8: { Result = CSz("RGBA8"); } break;
@@ -31,6 +33,8 @@ ToString(texture_storage_format Type)
     case TextureStorageFormat_Undefined: { Result = CSz("TextureStorageFormat_Undefined"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("TextureStorageFormat_R16F"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("TextureStorageFormat_R32F"); } break;
+    case TextureStorageFormat_RG16F: { Result = CSz("TextureStorageFormat_RG16F"); } break;
+    case TextureStorageFormat_RG32F: { Result = CSz("TextureStorageFormat_RG32F"); } break;
     case TextureStorageFormat_RGB16F: { Result = CSz("TextureStorageFormat_RGB16F"); } break;
     case TextureStorageFormat_RGB32F: { Result = CSz("TextureStorageFormat_RGB32F"); } break;
     case TextureStorageFormat_RGBA8: { Result = CSz("TextureStorageFormat_RGBA8"); } break;
@@ -52,6 +56,8 @@ TextureStorageFormat(counted_string S)
   if (StringsMatch(S, CSz("TextureStorageFormat_Undefined"))) { return TextureStorageFormat_Undefined; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R16F"))) { return TextureStorageFormat_R16F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R32F"))) { return TextureStorageFormat_R32F; }
+  if (StringsMatch(S, CSz("TextureStorageFormat_RG16F"))) { return TextureStorageFormat_RG16F; }
+  if (StringsMatch(S, CSz("TextureStorageFormat_RG32F"))) { return TextureStorageFormat_RG32F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_RGB16F"))) { return TextureStorageFormat_RGB16F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_RGB32F"))) { return TextureStorageFormat_RGB32F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_RGBA8"))) { return TextureStorageFormat_RGBA8; }

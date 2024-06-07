@@ -83,7 +83,7 @@ void main()
   /* ColorAccumulation = v4(Alpha, Emission, 0.f, 1.f); */
   /* ColorAccumulation = v4(WorldP, 1.f); */
   /* ColorAccumulation = v4(Normal, 1.f); */
-  /* ColorAccumulation = v4(MaterialColor, 1.f); */
+  /* ColorAccumulation = v4(*BlurredAOMaterialColor, 1.f); */
   /* Count = V2(Alpha); */
   /* return; */
 

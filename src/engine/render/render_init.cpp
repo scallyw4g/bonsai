@@ -560,7 +560,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   {
     u32 Channels = 4;
     u32 Slices = 1;
-    texture_storage_format StorageFormat = TextureStorageFormat_R16F;
+    texture_storage_format StorageFormat = TextureStorageFormat_RGBA16F;
     Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), StorageFormat, Channels, Slices);
     GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
@@ -568,7 +568,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   {
     u32 Channels = 2;
     u32 Slices = 1;
-    texture_storage_format StorageFormat = TextureStorageFormat_R16F;
+    texture_storage_format StorageFormat = TextureStorageFormat_RG16F;
     Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), StorageFormat, Channels, Slices);
     GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
