@@ -4,9 +4,9 @@ struct loaded_collada_mesh
   v3 Dim;
 };
 
-struct free_list_thing
+struct freelist_entry
 {
-  volatile free_list_thing *Next;
+  volatile freelist_entry *Next;
 };
 
 struct mesh_freelist
@@ -16,7 +16,7 @@ struct mesh_freelist
   u32 MeshSize;
 #endif
 
-  volatile free_list_thing *FirstFreeMesh;
+  volatile freelist_entry *FirstFreeMesh;
 };
 
 #define TIERED_MESH_FREELIST_MAX_ELEMENTS (128)
@@ -56,107 +56,84 @@ MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest, umm Grow)
   NotImplemented;
 }
 
-link_internal void
-MarkBufferForGrowth(untextured_3d_geometry_buffer *Dest, umm Grow)
-{
-  auto ToMark = Dest;
-  if (Dest->Parent) ToMark = Dest->Parent;
 
-  // @single_parent_chain_link_untextured_3d
-  Assert(ToMark->Parent == 0);
-  ToMark->BufferNeedsToGrow += Grow;
+poof(
+  func grow_buffer(buffer_t)
+  {
+    link_internal b32
+    BufferIsMarkedForGrowth((buffer_t.name) *Dest)
+    {
+      auto ToMark = Dest;
+      if (Dest->Parent) ToMark = Dest->Parent;
+      b32 Result = (ToMark->BufferNeedsToGrow > 0);
+      return Result;
+    }
+
+    link_internal void
+    MarkBufferForGrowth((buffer_t.name) *Dest, umm Grow)
+    {
+      auto ToMark = Dest;
+      if (Dest->Parent) ToMark = Dest->Parent;
+
+      // @single_parent_chain_link_untextured_3d
+      Assert(ToMark->Parent == 0);
+      ToMark->BufferNeedsToGrow += Grow;
+    }
+  }
+)
+
+poof(grow_buffer(untextured_3d_geometry_buffer))
+#include <generated/buffer_is_marked_for_growth_untextured_3d_geometry_buffer.h>
+poof(grow_buffer(world_chunk_geometry_buffer))
+#include <generated/buffer_is_marked_for_growth_world_chunk_geometry_buffer.h>
+
+
+
+
+
+
+
+
+
+
+link_inline void
+PackAndStoreNormal(v3_u8 *Dest, v3_u8 Src)
+{
+  *Dest = Src;
 }
 
-link_internal b32
-BufferIsMarkedForGrowth(untextured_3d_geometry_buffer *Dest)
+link_inline void
+PackAndStoreNormal(v3_u8 *Dest, v3 Src)
 {
-  auto ToMark = Dest;
-  if (Dest->Parent) ToMark = Dest->Parent;
-  b32 Result = (ToMark->BufferNeedsToGrow > 0);
-  return Result;
+  Assert(LengthSq(Src) <= 1.f);
+  *Dest = V3U8(Src*127.f);
 }
 
-#if 0
-inline void
+link_inline void
+PackAndStoreNormal(v3 *Dest, v3 Src)
+{
+  *Dest = Src;
+}
+
+
+//
+// Scale and Offset (homogeneous normals)
+//
+
+link_inline void
 BufferVertsDirect(
-    untextured_2d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *Positions, v4 *Colors
-  )
-{
-  TIMED_FUNCTION();
+              v3_u8 *DestVerts,
+              v3_u8 *DestNormals,
+    vertex_material *DestMats,
 
-  if (BufferHasRoomFor(Dest, NumVerts))
-  {
-    MemCopy((u8*)&Dest->Verts[Dest->At],  (u8*)Positions,                sizeof(*Positions)*NumVerts );
-    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
-    MemCopy((u8*)Colors,                  (u8*)&Dest->Colors[Dest->At],  sizeof(*Colors)*NumVerts );
-    Dest->At += NumVerts;
-  }
-  else
-  {
-    SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1);
-    MarkBufferForGrowth(Dest, NumVerts);
-  }
-}
-#endif
+      u32  NumVerts,
 
-inline void
-BufferFaceData(
-    untextured_3d_geometry_buffer *Dest,
-    v3 *Positions, v3 *Normals, vertex_material *Mats
-  )
-{
-  if (BufferHasRoomFor(Dest, 6))
-  {
-    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At],      sizeof(*Positions)*6 );
-    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],    sizeof(*Normals)*6 );
-    MemCopy((u8*)Mats,       (u8*)&Dest->Mat[Dest->At],        sizeof(*Mats)*6 );
-    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
+              v3_u8 *SrcVerts,
+              v3_u8 *SrcNormals,
+    vertex_material *SrcMats,
 
-    Dest->At += 6;
-  }
-  else
-  {
-    // NOTE(Jesse): Supress spamming errors to the console after the first one.
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
-    MarkBufferForGrowth(Dest, 6);
-  }
-}
-
-inline void
-BufferVertsDirect(
-    untextured_3d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *Positions, v3 *Normals, vertex_material *Mats
-  )
-{
-  TIMED_FUNCTION();
-  if (BufferHasRoomFor(Dest, NumVerts))
-  {
-    MemCopy((u8*)Positions,  (u8*)&Dest->Verts[Dest->At],      sizeof(*Positions)*NumVerts );
-    MemCopy((u8*)Normals,    (u8*)&Dest->Normals[Dest->At],    sizeof(*Normals)*NumVerts );
-    MemCopy((u8*)Mats,       (u8*)&Dest->Mat[Dest->At],        sizeof(*Mats)*NumVerts );
-    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
-
-    Dest->At += NumVerts;
-  }
-  else
-  {
-    // NOTE(Jesse): Supress spamming errors to the console after the first one.
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End -1); }
-    MarkBufferForGrowth(Dest, NumVerts);
-  }
-}
-
-inline void
-BufferVertsDirect(
-    v3 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
-    u32 NumVerts,
-    v3 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
-    v3 Offset,
-    v3 Scale,
-    Quaternion Rot
+       v3  Offset,
+       v3  Scale
   )
 {
   TIMED_FUNCTION();
@@ -166,82 +143,26 @@ BufferVertsDirect(
 
   Assert(NumVerts % 3 == 0);
 
-  MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
-
-  /* v3 HalfOffset = Offset*0.5f; */
-  for ( u32 VertIndex = 0;
-            VertIndex < NumVerts;
-            VertIndex += 3 )
-  {
-    {
-      v3 N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
-      v3 N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
-      v3 N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
-
-      DestNormals[0] = N0;
-      DestNormals[1] = N1;
-      DestNormals[2] = N2;
-
-      DestNormals += 3;
-    }
-    {
-      v3 VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
-      v3 VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
-      v3 VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
-
-      f32_reg Vert0;
-      f32_reg Vert1;
-      f32_reg Vert2;
-
-      Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-      Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-      Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
-
-      Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
-      Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
-      Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
-
-      v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
-      v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
-      v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
-
-      DestVerts[0] = Result0;
-      DestVerts[1] = Result1;
-      DestVerts[2] = Result2;
-
-      DestVerts += 3;
-    }
-    /* DestNormals += 3; */
-    /* DestMats += 3; */
-  }
-}
-
-inline void
-BufferVertsDirect(
-    v3 *DestVerts, v3 *DestNormals, vertex_material *DestMats,
-    u32 NumVerts,
-    v3 *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
-    v3 Offset,
-    v3 Scale
-  )
-{
-  TIMED_FUNCTION();
-
-  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
-  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
-
-  Assert(NumVerts % 3 == 0);
-
-  MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts );
+  /* MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts ); */
   MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
 
   for ( u32 VertIndex = 0;
         VertIndex < NumVerts;
         VertIndex += 3 )
   {
-    v3 VertSrc0 = SrcVerts[VertIndex + 0];
-    v3 VertSrc1 = SrcVerts[VertIndex + 1];
-    v3 VertSrc2 = SrcVerts[VertIndex + 2];
+    {
+      auto N0 = SrcNormals[VertIndex + 0];
+      auto N1 = SrcNormals[VertIndex + 1];
+      auto N2 = SrcNormals[VertIndex + 2];
+      PackAndStoreNormal(DestNormals+0, N0);
+      PackAndStoreNormal(DestNormals+1, N1);
+      PackAndStoreNormal(DestNormals+2, N2);
+      DestNormals += 3;
+    }
+
+    v3_u8 VertSrc0 = SrcVerts[VertIndex + 0];
+    v3_u8 VertSrc1 = SrcVerts[VertIndex + 1];
+    v3_u8 VertSrc2 = SrcVerts[VertIndex + 2];
 
     f32_reg Vert0;
     f32_reg Vert1;
@@ -255,170 +176,390 @@ BufferVertsDirect(
     Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
     Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-    v3 Result0 = {{ Vert0.F[0], Vert0.F[1], Vert0.F[2] }};
-    v3 Result1 = {{ Vert1.F[0], Vert1.F[1], Vert1.F[2] }};
-    v3 Result2 = {{ Vert2.F[0], Vert2.F[1], Vert2.F[2] }};
+    v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2]) }};
+    v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2]) }};
+    v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2]) }};
 
     DestVerts[0] = Result0;
     DestVerts[1] = Result1;
     DestVerts[2] = Result2;
 
     DestVerts += 3;
-    /* DestNormals += 3; */
-    /* DestMats += 3; */
-    /* DestColors += 3; */
   }
-
-
-
-  return;
 }
 
-inline void
-BufferVertsChecked(
-    untextured_3d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *VertsPositions, v3 *Normals, vertex_material *Mats,
-    v3 Offset,
-    v3 Scale,
-    Quaternion Rot
+
+poof(
+  func mesh_buffering_functions(mesh_t, vertex_t, element_t)
+  {
+
+    //
+    // Rotate, Scale and Offset
+    //
+
+    link_inline void
+    BufferVertsDirect(
+        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
+                    u32  NumVerts,
+        (vertex_t.name) *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
+                     v3  Offset,
+                     v3  Scale,
+             Quaternion  Rot )
+    {
+      TIMED_FUNCTION();
+
+      __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+      __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+      Assert(NumVerts % 3 == 0);
+
+      MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
+
+      /* v3 HalfOffset = Offset*0.5f; */
+      for ( u32 VertIndex = 0;
+                VertIndex < NumVerts;
+                VertIndex += 3 )
+      {
+        {
+          auto N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
+          auto N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
+          auto N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
+
+          // NOTE(Jesse): This _hopefully_ gets inlined.  Should figure out a
+          // way of asserting that it does, or forcing it to.  The functions
+          // are overloads, but the compiler _should_ be able to figure out
+          // they can be inlined trivially..
+          PackAndStoreNormal(DestNormals+0, N0);
+          PackAndStoreNormal(DestNormals+1, N1);
+          PackAndStoreNormal(DestNormals+2, N2);
+
+          DestNormals += 3;
+        }
+        {
+          vertex_t.name VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
+          vertex_t.name VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
+          vertex_t.name VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
+
+          f32_reg Vert0;
+          f32_reg Vert1;
+          f32_reg Vert2;
+
+          Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+          Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+          Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+          Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+          Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+          Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+          vertex_t.name Result0 = {{ element_t.name(Vert0.F[0]), element_t.name(Vert0.F[1]), element_t.name(Vert0.F[2])}};
+          vertex_t.name Result1 = {{ element_t.name(Vert1.F[0]), element_t.name(Vert1.F[1]), element_t.name(Vert1.F[2])}};
+          vertex_t.name Result2 = {{ element_t.name(Vert2.F[0]), element_t.name(Vert2.F[1]), element_t.name(Vert2.F[2])}};
+
+          DestVerts[0] = Result0;
+          DestVerts[1] = Result1;
+          DestVerts[2] = Result2;
+
+          DestVerts += 3;
+        }
+
+      }
+    }
+
+    //
+    // Scale and Offset
+    //
+
+    link_inline void
+    BufferVertsDirect(
+        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
+                    u32  NumVerts,
+        (vertex_t.name) *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
+                     v3  Offset,
+                     v3  Scale
+      )
+    {
+      TIMED_FUNCTION();
+
+      __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+      __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+      Assert(NumVerts % 3 == 0);
+
+      /* MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts ); */
+      MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
+
+      for ( u32 VertIndex = 0;
+            VertIndex < NumVerts;
+            VertIndex += 3 )
+      {
+        {
+          auto N0 = SrcNormals[VertIndex + 0];
+          auto N1 = SrcNormals[VertIndex + 1];
+          auto N2 = SrcNormals[VertIndex + 2];
+          PackAndStoreNormal(DestNormals+0, N0);
+          PackAndStoreNormal(DestNormals+1, N1);
+          PackAndStoreNormal(DestNormals+2, N2);
+          DestNormals += 3;
+        }
+
+        vertex_t.name VertSrc0 = SrcVerts[VertIndex + 0];
+        vertex_t.name VertSrc1 = SrcVerts[VertIndex + 1];
+        vertex_t.name VertSrc2 = SrcVerts[VertIndex + 2];
+
+        f32_reg Vert0;
+        f32_reg Vert1;
+        f32_reg Vert2;
+
+        Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
+        Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
+        Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+
+        Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+        Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+        Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+        vertex_t.name Result0 = {{ element_t.name(Vert0.F[0]), element_t.name(Vert0.F[1]), element_t.name(Vert0.F[2]) }};
+        vertex_t.name Result1 = {{ element_t.name(Vert1.F[0]), element_t.name(Vert1.F[1]), element_t.name(Vert1.F[2]) }};
+        vertex_t.name Result2 = {{ element_t.name(Vert2.F[0]), element_t.name(Vert2.F[1]), element_t.name(Vert2.F[2]) }};
+
+        DestVerts[0] = Result0;
+        DestVerts[1] = Result1;
+        DestVerts[2] = Result2;
+
+        DestVerts += 3;
+      }
+    }
+
+
+    //
+    // Untransformed
+    //
+
+    link_inline void
+    BufferVertsDirect(
+        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
+        u32 NumVerts,
+        (vertex_t.name) *Positions, v3 *Normals, vertex_material *Mats
+      )
+    {
+      TIMED_FUNCTION();
+      MemCopy((u8*)Positions,  (u8*)DestVerts,      sizeof(*Positions)*NumVerts );
+      /* MemCopy((u8*)Normals,    (u8*)DestNormals,    sizeof(*Normals)*NumVerts ); */
+      MemCopy((u8*)Mats,       (u8*)DestMats,       sizeof(*Mats)*NumVerts );
+
+      // NOTE(Jesse): Hopefully gets vectorized..  Can't do 4x because triangles
+      // are 3 elements.. Could do 12 with a cleanup pass.. but meh
+      for ( u32 VertIndex = 0;
+            VertIndex < NumVerts;
+            VertIndex += 3 )
+      {
+        auto N0 = Normals[VertIndex + 0];
+        auto N1 = Normals[VertIndex + 1];
+        auto N2 = Normals[VertIndex + 2];
+        PackAndStoreNormal(DestNormals+0, N0);
+        PackAndStoreNormal(DestNormals+1, N1);
+        PackAndStoreNormal(DestNormals+2, N2);
+        DestNormals += 3;
+      }
+    }
+
+
+
+    //
+    // Rotate, Scale and Offset
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats,
+        v3 Offset,
+        v3 Scale,
+        Quaternion Rot
+      )
+    {
+      TIMED_FUNCTION();
+      if (BufferHasRoomFor(Dest, NumVerts))
+      {
+        BufferVertsDirect(Dest->Verts + Dest->At,
+                          Dest->Normals + Dest->At,
+                          Dest->Mat + Dest->At,
+                          NumVerts,
+                          VertsPositions, Normals, Mats,
+                          Offset, Scale, Rot);
+
+        Dest->At += NumVerts;
+      }
+      else
+      {
+        // NOTE(Jesse): Supress spamming errors to the console after the first one.
+        if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+        MarkBufferForGrowth(Dest, NumVerts);
+      }
+    }
+
+    //
+    // Scale and Offset
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats,
+        v3 Offset,
+        v3 Scale
+      )
+    {
+      TIMED_FUNCTION();
+      if (BufferHasRoomFor(Dest, NumVerts))
+      {
+        BufferVertsDirect(Dest->Verts + Dest->At,
+                          Dest->Normals + Dest->At,
+                          Dest->Mat + Dest->At,
+                          NumVerts,
+                          VertsPositions, Normals, Mats,
+                          Offset, Scale);
+
+        Dest->At += NumVerts;
+      }
+      else
+      {
+        if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+        MarkBufferForGrowth(Dest, NumVerts);
+      }
+    }
+
+    //
+    // Scale and Offset
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name)* Src,
+        (mesh_t.name)* Dest,
+        v3 Offset = V3(0),
+        v3 Scale = V3(1)
+      )
+    {
+      TIMED_FUNCTION();
+
+      umm NumVerts = Src->End - Src->At;
+      if (Dest->At + Src->At <= Dest->End)
+      {
+
+        BufferVertsDirect(Dest->Verts + Dest->At,
+                          Dest->Normals + Dest->At,
+                          Dest->Mat + Dest->At,
+                          Src->At,
+                          Src->Verts, Src->Normals, Src->Mat,
+                          Offset, Scale);
+
+        Dest->At += Src->At;
+      }
+      else
+      {
+        if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+        MarkBufferForGrowth(Dest, Src->At);
+      }
+    }
+
+
+    //
+    // Untransformed
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats
+      )
+    {
+      TIMED_FUNCTION();
+      if (BufferHasRoomFor(Dest, NumVerts))
+      {
+        BufferVertsDirect(Dest->Verts + Dest->At,
+                          Dest->Normals + Dest->At,
+                          Dest->Mat + Dest->At,
+                          NumVerts,
+                          VertsPositions, Normals, Mats);
+
+        Dest->At += NumVerts;
+      }
+      else
+      {
+        if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
+        MarkBufferForGrowth(Dest, NumVerts);
+      }
+    }
+
+  }
+)
+
+poof(mesh_buffering_functions(untextured_3d_geometry_buffer, v3, f32))
+#include <generated/mesh_buffering_functions_untextured_3d_geometry_buffer_v3.h>
+
+poof(mesh_buffering_functions(world_chunk_geometry_buffer, v3_u8, u8))
+#include <generated/mesh_buffering_functions_world_chunk_geometry_buffer_v3_u8.h>
+
+
+link_internal void
+BufferFaceData(
+    world_chunk_geometry_buffer *Dest,
+    v3_u8 *Positions, v3 *Normals, vertex_material *Mats
   )
 {
-  TIMED_FUNCTION();
-  if (BufferHasRoomFor(Dest, NumVerts))
+  if (BufferHasRoomFor(Dest, 6))
   {
-    BufferVertsDirect(Dest->Verts + Dest->At,
-                      Dest->Normals + Dest->At,
-                      Dest->Mat + Dest->At,
-                      NumVerts,
-                      VertsPositions, Normals, Mats,
-                      Offset, Scale, Rot);
+    BufferVertsDirect(
+      Dest->Verts+Dest->At, Dest->Normals+Dest->At, Dest->Mat+Dest->At,     
+      6,
+      Positions, Normals, Mats);
+    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
 
-    Dest->At += NumVerts;
+    Dest->At += 6;
   }
   else
   {
     // NOTE(Jesse): Supress spamming errors to the console after the first one.
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
-    MarkBufferForGrowth(Dest, NumVerts);
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
+    MarkBufferForGrowth(Dest, 6);
   }
 }
 
-#if 1
-inline void
-BufferVertsDirect(
+link_internal void
+BufferFaceData(
     untextured_3d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *VertsPositions, v3 *Normals, vertex_material *Mats,
-    v3 Offset,
-    v3 Scale
+    v3 *Positions, v3 *Normals, vertex_material *Mats
   )
 {
-  TIMED_FUNCTION();
-  if (BufferHasRoomFor(Dest, NumVerts))
+  if (BufferHasRoomFor(Dest, 6))
   {
-    BufferVertsDirect(Dest->Verts + Dest->At,
-                      Dest->Normals + Dest->At,
-                      Dest->Mat + Dest->At,
-                      NumVerts,
-                      VertsPositions, Normals, Mats,
-                      Offset, Scale);
+    BufferVertsDirect(
+      Dest->Verts+Dest->At, Dest->Normals+Dest->At, Dest->Mat+Dest->At,     
+      6,
+      Positions, Normals, Mats);
+    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
 
-    Dest->At += NumVerts;
+    Dest->At += 6;
   }
   else
   {
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
-    MarkBufferForGrowth(Dest, NumVerts);
-  }
-}
-#endif
-
-inline void
-BufferVertsCounted(
-    umm Count,
-    untextured_3d_geometry_buffer* Src,
-    untextured_3d_geometry_buffer* Dest,
-    v3 Offset = V3(0),
-    v3 Scale = V3(1)
-  )
-{
-  TIMED_FUNCTION();
-
-  if (Dest->At + Count <= Dest->End)
-  {
-
-    BufferVertsDirect(Dest->Verts + Dest->At,
-                      Dest->Normals + Dest->At,
-                      Dest->Mat + Dest->At,
-                      Src->At,
-                      Src->Verts, Src->Normals, Src->Mat,
-                      Offset, Scale);
-
-    Dest->At += Src->At;
-  }
-  else
-  {
-    Assert(False);
-    Error("Ran out of memory on untextured_3d_geometry_buffer");
-    /* PlatformDebugStacktrace(); */
+    // NOTE(Jesse): Supress spamming errors to the console after the first one.
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
+    MarkBufferForGrowth(Dest, 6);
   }
 }
 
-inline void
-BufferVertsChecked(
-    untextured_3d_geometry_buffer* Src,
-    untextured_3d_geometry_buffer* Dest,
-    v3 Offset = V3(0),
-    v3 Scale = V3(1)
-  )
-{
-  TIMED_FUNCTION();
 
-  umm NumVerts = Src->End - Src->At;
-  if (Dest->At + Src->At <= Dest->End)
-  {
 
-    BufferVertsDirect(Dest->Verts + Dest->At,
-                      Dest->Normals + Dest->At,
-                      Dest->Mat + Dest->At,
-                      Src->At,
-                      Src->Verts, Src->Normals, Src->Mat,
-                      Offset, Scale);
 
-    Dest->At += Src->At;
-  }
-  else
-  {
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
-    MarkBufferForGrowth(Dest, Src->At);
-  }
-}
 
-inline void
-BufferVertsChecked(
-    untextured_3d_geometry_buffer *Dest,
-    u32 NumVerts,
-    v3 *Positions, v3 *Normals, vertex_material *Mats,
-    v3 Offset = V3(0),
-    v3 Scale = V3(1)
-  )
-{
-  TIMED_FUNCTION();
 
-  if (BufferHasRoomFor(Dest, NumVerts))
-  {
-    BufferVertsDirect( Dest, NumVerts, Positions, Normals, Mats, Offset, Scale);
-  }
-  else
-  {
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
-    MarkBufferForGrowth(Dest, NumVerts);
-  }
-
-  return;
-}
-
+// TODO(Jesse)(cleanup, immediate, mesh): Move .. somewhere else?  IDK.
 
 inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))

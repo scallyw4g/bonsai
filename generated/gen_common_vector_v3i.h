@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:743:0
+// external/bonsai_stdlib/src/vector.h:788:0
 
 inline s32
 LengthSq( v3i Vec )
@@ -10,7 +10,7 @@ LengthSq( v3i Vec )
 inline r32
 Length( v3i Vec )
 {
-  r32 Result = (r32)sqrt((r64)LengthSq(Vec));
+  r32 Result = (r32)SquareRoot(LengthSq(Vec));
   return Result;
 }
 

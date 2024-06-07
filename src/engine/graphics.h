@@ -24,6 +24,10 @@ struct transparency_render_group
 
 struct graphics
 {
+  b32 Initialized;
+
+  volatile b32 RenderGate;
+
   render_settings Settings;
 
   v3 SunBasis;
@@ -40,6 +44,9 @@ struct graphics
   camera *Camera; poof(@ui_skip)
 
   r32 Exposure;
+
+  world_chunk_ptr_paged_list MainDrawList;
+  world_chunk_ptr_paged_list ShadowMapDrawList;
 
   // TODO(Jesse): None of these need to be pointers..
   g_buffer_render_group  *gBuffer;

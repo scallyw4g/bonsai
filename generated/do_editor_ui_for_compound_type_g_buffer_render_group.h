@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:404:0
+// src/engine/editor.cpp:418:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->FBO,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(framebuffer*,&Element->FBO),
         CSz("FBO"),
         Params
         );
@@ -37,10 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Textures,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(g_buffer_textures*,&Element->Textures),
         CSz("Textures"),
         Params
         );
@@ -49,10 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->gBufferShader,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader*,&Element->gBufferShader),
         CSz("gBufferShader"),
         Params
         );
@@ -61,10 +68,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->InverseViewMatrix,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(m4*,&Element->InverseViewMatrix),
         CSz("InverseViewMatrix"),
         Params
         );
@@ -73,10 +83,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->InverseProjectionMatrix,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(m4*,&Element->InverseProjectionMatrix),
         CSz("InverseProjectionMatrix"),
         Params
         );
@@ -85,13 +98,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->ViewProjection,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(m4*,&Element->ViewProjection),
         CSz("ViewProjection"),
         Params
         );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->GlTimerObject),
+        CSz("GlTimerObject"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

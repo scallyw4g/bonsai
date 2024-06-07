@@ -1,12 +1,11 @@
-// external/bonsai_stdlib/src/vector.h:216:0
+// external/bonsai_stdlib/src/vector.h:228:0
 
 inline v2i
 operator+( v2i P1, v2 P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] + s32( P2.E[0] ),
-    .E[1] = P1.E[1] + s32( P2.E[1] ),
-  };
+  v2i Result;
+  Result.E[0] = Cast(s32, P1.E[0] + Cast(s32, P2.E[0]));
+  Result.E[1] = Cast(s32, P1.E[1] + Cast(s32, P2.E[1]));
   return Result;
 }
 
@@ -15,10 +14,9 @@ operator+( v2i P1, v2 P2 )
 inline v2i
 operator-( v2i P1, v2 P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] - s32( P2.E[0] ),
-    .E[1] = P1.E[1] - s32( P2.E[1] ),
-  };
+  v2i Result;
+  Result.E[0] = Cast(s32, P1.E[0] - Cast(s32, P2.E[0]));
+  Result.E[1] = Cast(s32, P1.E[1] - Cast(s32, P2.E[1]));
   return Result;
 }
 
@@ -27,10 +25,9 @@ operator-( v2i P1, v2 P2 )
 inline v2i
 operator*( v2i P1, v2 P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] * s32( P2.E[0] ),
-    .E[1] = P1.E[1] * s32( P2.E[1] ),
-  };
+  v2i Result;
+  Result.E[0] = Cast(s32, P1.E[0] * Cast(s32, P2.E[0]));
+  Result.E[1] = Cast(s32, P1.E[1] * Cast(s32, P2.E[1]));
   return Result;
 }
 
@@ -39,10 +36,9 @@ operator*( v2i P1, v2 P2 )
 inline v2i
 operator/( v2i P1, v2 P2 )
 {
-  v2i Result = {
-    .E[0] = P1.E[0] / s32( P2.E[0] ),
-    .E[1] = P1.E[1] / s32( P2.E[1] ),
-  };
+  v2i Result;
+  Result.E[0] = Cast(s32, P1.E[0] / Cast(s32, P2.E[0]));
+  Result.E[1] = Cast(s32, P1.E[1] / Cast(s32, P2.E[1]));
   return Result;
 }
 

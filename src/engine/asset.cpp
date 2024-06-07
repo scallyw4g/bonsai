@@ -12,7 +12,8 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   Result.VoxelElementCount        = Volume(Chunk);
   Result.StandingSpotElementCount = (u32)AtElements(&Chunk->StandingSpots);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+  NotImplemented;
+  /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
     Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
@@ -65,7 +66,8 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   Result.VoxelElementCount = Volume(Chunk);
   Result.VoxelElementSize  = (u32)sizeof(voxel);
 
-  if (HasMesh(&Chunk->Meshes, MeshBit_Lod0))
+  NotImplemented;
+  /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
     Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At;
   }
@@ -240,7 +242,7 @@ ReadWorldChunkFileHeader_v3(u8_cursor *File)
   Assert( Result.Checksum == 0xdeadbeef );
 
   Assert( Result.VertexElementSize       == sizeof(v3) );
-  Assert( Result.MaterialElementSize     == sizeof(vertex_material) );
+  /* Assert( Result.MaterialElementSize     == sizeof(vertex_material) ); */
   Assert( Result.NormalElementSize       == sizeof(v3) );
   Assert( Result.StandingSpotElementSize == sizeof(voxel_position) );
   Assert( Result.VoxelElementSize        == sizeof(voxel) );

@@ -17,7 +17,7 @@ DebugVisualize(renderer_2d *Renderer, mesh_freelist *Freelist)
   {
     u32 Count = 0;
     PushTableStart(Renderer);
-    volatile free_list_thing *At = Freelist->FirstFreeMesh;
+    volatile freelist_entry *At = Freelist->FirstFreeMesh;
     while (At)
     {
       At = At->Next;

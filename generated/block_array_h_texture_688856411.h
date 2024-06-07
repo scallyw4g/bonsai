@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/texture.h:35:0
+// external/bonsai_stdlib/src/texture.h:45:0
 
 struct texture_ptr_block
 {
@@ -22,6 +22,8 @@ struct texture_ptr_block_array
   memory_arena *Memory; poof(@no_serialize)
   
 };
+
+typedef texture_ptr_block_array texture_ptr_paged_list;
 
 link_internal texture_ptr_block_array_index
 operator++(texture_ptr_block_array_index &I0)

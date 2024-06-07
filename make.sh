@@ -13,7 +13,6 @@ RunPoof=0
 
 BuildExecutables=0
 BuildExamples=0
-BuildDebugSystem=0
 
 BuildTests=0
 BuildDebugOnlyTests=0
@@ -72,33 +71,6 @@ EXECUTABLES_TO_BUILD="
 DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
-
-
-DEBUG_LIB_RELEASE_DIR="releases/debug_lib"
-function MakeDebugLibRelease
-{
-  [ -d $DEBUG_LIB_RELEASE_DIR ] && rm -Rf $DEBUG_LIB_RELEASE_DIR
-  mkdir -p $DEBUG_LIB_RELEASE_DIR
-
-  # OPTIMIZATION_LEVEL="-O2"
-  BuildDebugSystem
-
-  echo "#pragma once"                         >  $DEBUG_LIB_RELEASE_DIR/api.h
-  cat external/bonsai_debug/src/public.h       >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat external/bonsai_stdlib/src/primitives.h  >> $DEBUG_LIB_RELEASE_DIR/api.h
-  cat external/bonsai_debug/src/api.h          >> $DEBUG_LIB_RELEASE_DIR/api.h
-
-  cp texture_atlas_0.bmp $DEBUG_LIB_RELEASE_DIR
-  cp -R shaders $DEBUG_LIB_RELEASE_DIR
-
-  WaitForTrackedPids
-  sync
-
-  cp "$BIN/lib_debug_system_loadable""$PLATFORM_LIB_EXTENSION" \
-    $DEBUG_LIB_RELEASE_DIR/lib_debug_system"$PLATFORM_LIB_EXTENSION"
-
-  sync
-}
 
 function BuildExecutables
 {
@@ -176,31 +148,6 @@ function BuildTests
   done
 }
 
-function BuildDebugSystem
-{
-  echo ""
-  ColorizeTitle "DebugSystem"
-  DEBUG_SRC_FILE="$INCLUDE/bonsai_debug/debug.cpp"
-  output_basename="$BIN/lib_debug_system"
-  echo -e "$Building $DEBUG_SRC_FILE"
-  clang++                    \
-    $OPTIMIZATION_LEVEL      \
-    $CXX_OPTIONS             \
-    $BONSAI_INTERNAL         \
-    $PLATFORM_CXX_OPTIONS    \
-    $PLATFORM_LINKER_OPTIONS \
-    $PLATFORM_DEFINES        \
-    $PLATFORM_INCLUDE_DIRS   \
-    $SHARED_LIBRARY_FLAGS    \
-    -I "$ROOT"               \
-    -I "$SRC"                \
-    -I "$INCLUDE"            \
-    -o $output_basename      \
-    "$DEBUG_SRC_FILE" &&     \
-    mv "$output_basename" "$output_basename""_loadable""$PLATFORM_LIB_EXTENSION" &
-  TrackPid "$output_basename" $!
-}
-
 function BuildExamples
 {
   echo ""
@@ -241,7 +188,6 @@ function BuildWithClang
   [[ $BuildExecutables == 1     || $BUILD_EVERYTHING == 1 ]] && BuildExecutables
   [[ $BuildDebugOnlyTests == 1  || $BUILD_EVERYTHING == 1 ]] && BuildDebugOnlyTests
   [[ $BuildTests == 1           || $BUILD_EVERYTHING == 1 ]] && BuildTests
-  [[ $BuildDebugSystem == 1     || $BUILD_EVERYTHING == 1 ]] && BuildDebugSystem
   [[ $BuildExamples == 1        || $BUILD_EVERYTHING == 1 ]] && BuildExamples
 
   echo -e ""
@@ -431,7 +377,6 @@ BuildAll() {
 
   BuildExamples=1
   BuildExecutables=1
-  BuildDebugSystem=1
   BuildTests=1
 
   # NOTE(Jesse): These only build on linux.  I'm honestly not sure if it's
@@ -466,7 +411,7 @@ while (( "$#" )); do
     ;;
 
     "BuildDebugSystem")
-      BuildDebugSystem=1
+      echo "BuildDebugSystem has been deprecated and will be removed in a future version."
     ;;
 
     "BuildBundledExamples")

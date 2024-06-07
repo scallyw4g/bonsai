@@ -7,17 +7,13 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-#if BONSAI_DEBUG_SYSTEM_API
-  Global_DebugStatePointer = Resources->DebugState;
-#endif
-
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
   Global_EngineResources = Resources;
 
   /* Initialize_Global_UpdateWorldCallbackTable(); */
 
-  b32 Result = InitializeOpenglFunctions();
-  return Result;
+  /* b32 Result = InitializeOpenglFunctions(); */
+  return True;
 }
 
 link_export b32
@@ -36,32 +32,60 @@ Bonsai_Init(engine_resources *Resources)
   return Result;
 }
 
+link_internal void
+SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
+  {
+    SimulateEntity(Engine, CameraGhost, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+
+    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
+    Graphics->Settings.OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
+  }
+}
+
 link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  DoWorldChunkStuff();
+  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.RenderQ);
 
-  // Must come before we update the frame index
-  CollectUnusedChunks(Resources, &Resources->MeshFreelist, Resources->World->VisibleRegion);
+  MaintainWorldChunkHashtables(Resources);
+
+  // NOTE(Jesse): Must come before we update the frame index becaues
+  // CollectUnusedChunks picks the hashtable based on the frame index.
+  //
+  // TODO(Jesse, nopush): I think this must come before we push chunks onto the
+  // draw lists for the frame because it could free chunks that we push onto
+  // the draw lists ..  right?
+  CollectUnusedChunks(Resources, Resources->World->VisibleRegion);
+
+
+  // NOTE(Jesse): Must be updated before we simulate camera ghost because the sim
+  // pulls chunks out of the hashtable.
 
   Resources->FrameIndex += 1;
+  Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
+
+  // NOTE(Jesse): This is a special-case entity simulation routine such that we
+  // can dispatch the draw commands for world chunks afterwards.  The reason we
+  // need this is because the world grid requires an offset which is computed
+  // from the sim-space position of the camera ghost.
+  //
+  // @early_camera_ghost_simulation
+  //
+  SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
   // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  Resources->Graphics->GpuBufferWriteIndex = 0;
-  Resources->Graphics->GpuBufferWriteIndex = (Resources->FrameIndex) % 2;
+  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
+  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
+
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
-
-  World->ChunkHash = CurrentWorldHashtable(Resources);
-
-  ClearFramebuffers(Graphics, &Resources->RTTGroup);
-
-  MapGpuElementBuffer(GpuMap);
-  MapGpuElementBuffer(&Graphics->Transparency.GpuBuffer);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -79,6 +103,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the UI captures the input
   //
   // @camera-update-ui-update-frame-jank
+  //
+
   if (UiHoveredMouseInput(Ui))
   {
     Resources->MaybeMouseRay   = {};
@@ -123,7 +149,15 @@ Bonsai_FrameBegin(engine_resources *Resources)
   }
 
   UiFrameBegin(Ui);         // Clear UI interactions
+
   DoEngineDebug(Resources); // Do Editor/Debug UI
+
+  // We just drew these values, reset for this frame
+#if BONSAI_DEBUG_SYSTEM_API
+  GetDebugState()->DrawCallCountLastFrame = 0;
+  GetDebugState()->VertexCountLastFrame = 0;
+#endif
+
 
 #if 0
   {
@@ -207,8 +241,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 link_export b32
 Bonsai_FrameEnd(engine_resources *Resources)
 {
-  UiFrameEnd(&Resources->Ui);
-
   b32 Result = True;
   return Result;
 }
@@ -299,20 +331,36 @@ Bonsai_Simulate(engine_resources *Resources)
   m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
   m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
 
-  Resources->Graphics->gBuffer->InverseViewMatrix = Inverse(ViewMat);
-  Resources->Graphics->gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
-  Resources->Graphics->gBuffer->ViewProjection = ProjMat * ViewMat;
+  Resources->Graphics.gBuffer->InverseViewMatrix = Inverse(ViewMat);
+  Resources->Graphics.gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
+  Resources->Graphics.gBuffer->ViewProjection = ProjMat * ViewMat;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif
+
+
+
+  // Draw terrain
+  PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+
+  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->DepthShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+
+  PushBonsaiRenderCommandGlTimerEnd(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+
 
   b32 Result = True;
   return Result;
 }
 
 link_internal void
-DoDayNightCycle(graphics *Graphics, r32 tDay)
+UpdateKeyLightColor(graphics *Graphics, r32 tDay)
 {
   auto SG = Graphics->SG;
   r32 tDaytime = Cos(tDay);
@@ -372,94 +420,44 @@ DoDayNightCycle(graphics *Graphics, r32 tDay)
 }
 
 link_export b32
-Bonsai_Render(engine_resources *Resources)
+Bonsai_Render(engine_resources *Engine)
 {
   TIMED_FUNCTION();
-
-  UNPACK_ENGINE_RESOURCES(Resources);
-
-  ao_render_group     *AoGroup = Graphics->AoGroup;
-  shadow_render_group *SG      = Graphics->SG;
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   if (Graphics->Settings.Lighting.AutoDayNightCycle)
   {
     Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
   }
-  DoDayNightCycle(Graphics, Graphics->Settings.Lighting.tDay);
+  UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
 
-#if 0
-  NotImplemented;
-#else
-  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  if (CameraGhost)
-  {
-    v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.x = Mod(CameraTargetSimP.x, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.y = Mod(CameraTargetSimP.y, Graphics->Settings.MajorGridDim);
-    Graphics->Settings.OffsetOfWorldCenterToGrid.z = Mod(CameraTargetSimP.z, Graphics->Settings.MajorGridDim);
-  }
-#endif
 
-  EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
-  EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
+  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
-  /* DrawWorldToGBuffer(Resources, GetApplicationResolution(&Resources->Settings)); */
-  /* DrawEditorChunkPreviewToGBuffer(); */
 
-#if 1
-  s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
-  if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
-  {
-    if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
-    Graphics->ColorPaletteTexture =
-      MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
-  }
-#endif
+  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->SG->DepthShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
-  // Editor preview, World, Entities
-  DrawStuffToGBufferTextures(Resources, GetApplicationResolution(&Resources->Settings));
 
-  DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Resources->Settings), Resources);
-
-  // TODO(Jesse): Move into engine debug
-  DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
-
-  Ensure( FlushBuffersToCard(GpuMap) );
-  /* Ensure( FlushBuffersToCard(&Graphics->Transparency.GpuBuffer)); */
-
-  if (GpuMap->Buffer.At)
-  {
-    RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Resources->Settings), GpuMap, Graphics);
-    RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
-  }
-
-  Clear(&GpuMap->Buffer);
-
-  // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
-  // after the transparency/luminance textures.  I have literally 0 ideas as to
-  // why that would be, but here we are.
-  if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Resources->Settings), AoGroup); }
 
   {
-    RenderTransparencyBuffers(GetApplicationResolution(&Resources->Settings), &Graphics->Settings, &Graphics->Transparency);
-    RenderLuminanceTexture(GetApplicationResolution(&Resources->Settings), GpuMap, Lighting, Graphics);
+    layout DefaultLayout = {};
+    DefaultLayout.DrawBounds = InvertedInfinityRectangle();
+    render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+    SetWindowZDepths(Ui->CommandBuffer);
+    FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
   }
 
-  if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
-  /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
-  CompositeAndDisplay(Plat, Graphics);
+  PushBonsaiRenderCommandDoStuff(&Plat->RenderQ);
 
+  PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
-  GpuMap->Buffer.At = 0;
-  GL.DisableVertexAttribArray(0);
-  GL.DisableVertexAttribArray(1);
-  GL.DisableVertexAttribArray(2);
-  GL.DisableVertexAttribArray(3);
-
-
-  /* DebugVisualize(Ui, &Resources->MeshFreelist); */
-  /* DebugVisualize(Ui, Resources->World->FreeChunks, (s32)Resources->World->FreeChunkCount); */
+  Engine->Graphics.RenderGate = True;
+  while (Engine->Graphics.RenderGate == True) { SleepMs(1); }
 
   b32 Result = True;
   return Result;
@@ -476,6 +474,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+
+    // NOTE(Jesse): Render commands should never end up on a general purpose work queue
+    InvalidCase(type_work_queue_entry__bonsai_render_command);
+
+    { tmatch(work_queue_entry_async_function_call, Entry, Job)
+      DispatchAsyncFunctionCall(Job);
+    } break;
 
     case type_work_queue_entry_init_asset:
     {
@@ -500,7 +505,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+      world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
 
       RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;
@@ -564,7 +569,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     case type_work_queue_entry_copy_buffer_ref:
     {
       work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &EngineResources->MeshFreelist, Thread->PermMemory);
+      DoCopyJob(CopyJob, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
     } break;
 
     case type_work_queue_entry_copy_buffer_set:
@@ -574,7 +579,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)
       {
         work_queue_entry_copy_buffer_ref *CopyJob = (work_queue_entry_copy_buffer_ref *)CopySet->CopyTargets + CopyIndex;
-        DoCopyJob(CopyJob, &EngineResources->MeshFreelist, Thread->PermMemory);
+        DoCopyJob(CopyJob, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
       }
       END_BLOCK("Copy Set");
     } break;

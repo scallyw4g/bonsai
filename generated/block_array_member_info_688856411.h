@@ -23,6 +23,8 @@ struct member_info_block_array
   
 };
 
+typedef member_info_block_array member_info_paged_list;
+
 link_internal member_info_block_array_index
 operator++(member_info_block_array_index &I0)
 {

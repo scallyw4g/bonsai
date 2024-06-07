@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_game_data *Element, cs
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->FireballChargeLevel,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->FireballChargeLevel),
         CSz("FireballChargeLevel"),
         Params
         );
@@ -37,11 +38,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_game_data *Element, cs
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->FireballCharges,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->FireballCharges),
         CSz("FireballCharges"),
         Params
         );
@@ -50,11 +54,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_game_data *Element, cs
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->IceBlockCharges,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->IceBlockCharges),
         CSz("IceBlockCharges"),
         Params
         );
@@ -63,14 +70,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_game_data *Element, cs
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->HoldingItem,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->HoldingItem),
         CSz("HoldingItem"),
         Params
         );
+
+
 
 
 

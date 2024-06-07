@@ -1,4 +1,4 @@
-// external/bonsai_debug/src/api.h:111:0
+// external/bonsai_debug/src/api.h:115:0
 
 link_internal b32
 AreEqual(debug_profile_scope *Thing1, debug_profile_scope *Thing2)

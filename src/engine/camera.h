@@ -159,7 +159,7 @@ GetFrustumCenter(camera *Camera)
   return Result;
 }
 
-inline v2
+link_inline v2
 GetMouseDelta(platform *Plat);
 
 link_internal void

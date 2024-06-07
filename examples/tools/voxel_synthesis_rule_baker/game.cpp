@@ -560,7 +560,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               if (Chunk)
               {
                 if ( Chunk->Flags & Chunk_Queued ) { continue; }
-                DeallocateWorldChunk(Chunk, MeshFreelist);
+                DeallocateWorldChunk(&Plat->RenderQ, Chunk, MeshFreelist);
                 Chunk->WorldP = P;
                 QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
               }
@@ -802,7 +802,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
           Asset->LoadState = AssetLoadState_Loaded;
 
           model *Model = Allocate(model, Resources->GameMemory, 1);
-          untextured_3d_geometry_buffer *Mesh = AllocateTempWorldChunkMesh(Resources->GameMemory);
+          untextured_3d_geometry_buffer *Mesh = AllocateTempMesh(Resources->GameMemory);
           AtomicReplaceMesh(&Model->Meshes, MeshBit_Lod0, Mesh, __rdtsc());
 
           Asset->Models.Start = Model;

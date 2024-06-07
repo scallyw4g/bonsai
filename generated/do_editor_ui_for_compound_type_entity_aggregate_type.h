@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_aggregate_type *Elemen
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Type,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(entity_type*,&Element->Type),
         CSz("Type"),
         Params
         );
@@ -37,10 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_aggregate_type *Elemen
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Status,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(entity_status*,&Element->Status),
         CSz("Status"),
         Params
         );

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:33:0
+// external/bonsai_stdlib/src/counted_string.cpp:32:0
 
 struct tuple_cs_cs_stream_chunk
 {

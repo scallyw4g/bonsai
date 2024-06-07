@@ -130,7 +130,7 @@ DoLevelWindow(engine_resources *Engine)
         RangeIterator(ChunkIndex, ChunkCount)
         {
           world_chunk *Chunk = GetFreeWorldChunk(World);
-          DeserializeChunk(&LevelBytes, Chunk, &Engine->MeshFreelist, World->ChunkMemory);
+          DeserializeChunk(&LevelBytes, Chunk, &Engine->world_chunk_MeshFreelist, World->ChunkMemory);
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
@@ -175,6 +175,25 @@ DoLevelWindow(engine_resources *Engine)
           Palette->At = Palette->Start;
           Deserialize(&LevelBytes, Palette, Thread->PermMemory);
           Assert(LevelBytes.At == LevelBytes.End);
+
+          b32 NormalizePalette = False;
+          RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
+          {
+            v3 *C = Palette->Start+ColorIndex;
+
+            // If any components are > 1.f we must have loaded a palette with values in the 0-255 range
+            if (C->E[0] > 1.f || C->E[1] > 1.f || C->E[2] > 1.f) { NormalizePalette = True; break; }
+          }
+
+          if (NormalizePalette)
+          {
+            RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
+            {
+              v3 *C = Palette->Start+ColorIndex;
+              *C /= 255.f;
+              Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
+            }
+          }
         }
 
 #endif
@@ -423,17 +442,18 @@ DoAssetWindow(engine_resources *Engine)
             {
               IterateOver(&Asset->Models, Model, ModelIndex)
               {
-                SyncGpuBuffersImmediate(Engine, &Model->Meshes);
+                SyncGpuBuffersAsync(Engine, &Model->Meshes);
 
                 render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
                 if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
                 {
                   v2i ThumbnailDim = V2i(128);
-                  texture T = MakeTexture_RGBA(ThumbnailDim, (u32*)0, CSz("Thumbnail"));
-                  asset_thumbnail Thumb = { T, {} };
-                  StandardCamera(&Thumb.Camera, 10000.0f, 100.0f, 0.f);
+                  asset_thumbnail BlankThumb = {};
+                  asset_thumbnail *Thumb = Push(&Editor->AssetThumbnails, &BlankThumb);
 
-                  Push(&Editor->AssetThumbnails, &Thumb);
+                  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+                  StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
+
                 }
 
                 asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
@@ -449,16 +469,16 @@ DoAssetWindow(engine_resources *Engine)
                   f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
                   ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
                   UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
-                  RenderToTexture(Engine, Thumb, Model, {});
+                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
                 }
 
-                interactable_handle B = RenderAndInteractWithThumbnailTexture(Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
+                interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
                 if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
                 PushForceAdvance(Ui, V2(8, 0));
 
                 if (Pressed(Ui, &B))
                 {
-                  RenderToTexture(Engine, Thumb, Model, {});
+                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
                   EngineDebug->ModelIndex = ModelIndex;
                 }
 
@@ -481,11 +501,16 @@ DoAssetWindow(engine_resources *Engine)
                       //
                       // That said .. this is just editor code.. so .. meh
                       //
-                      SetupGBufferShader(GetApplicationResolution(&Engine->Settings), Graphics);
+                      /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
+
+                      PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
                       v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                       /* v3 Basis = V3(0,0,20); */
-                      DrawLod(GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis);
-                      TeardownGBufferShader(Graphics);
+/* DrawLod_Async(work_queue *Queue,engine_resources *Engine ,shader *Shader ,world_chunk_lod_element_buffer *Meshes ,r32 DistanceSquared ,v3 Basis ,Quaternion Rotation ,v3 Scale ) */
+                      DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
+
+                      PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
                     }
 
                   }
@@ -512,6 +537,7 @@ DoAssetWindow(engine_resources *Engine)
   }
 }
 
+#if 0
 link_internal void
 DoWorldEditDebugWindow(engine_resources *Engine)
 {
@@ -533,6 +559,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
     PushWindowEnd(Ui, &Window);
   }
 }
+#endif
 
 link_internal void
 DoEngineDebug(engine_resources *Engine)

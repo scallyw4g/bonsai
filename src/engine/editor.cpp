@@ -146,6 +146,12 @@ poof(do_editor_ui_for_container(ui_toggle_hashtable))
 
 
 
+poof(do_editor_ui_for_compound_type(work_queue_entry))
+#include <generated/do_editor_ui_for_compound_type_work_queue_entry.h>
+
+poof(do_editor_ui_for_compound_type(work_queue))
+#include <generated/do_editor_ui_for_compound_type_work_queue.h>
+
 poof(do_editor_ui_for_compound_type(input_event))
 #include <generated/do_editor_ui_for_compound_type_input_event.h>
 
@@ -154,6 +160,11 @@ poof(do_editor_ui_for_compound_type(input))
 
 poof(do_editor_ui_for_compound_type(platform))
 #include <generated/do_editor_ui_for_compound_type_platform.h>
+
+#if BONSAI_DEBUG_SYSTEM_API
+poof(do_editor_ui_for_compound_type(debug_state))
+#include <generated/do_editor_ui_for_compound_type_debug_state.h>
+#endif
 
 poof(do_editor_ui_for_compound_type(bonsai_stdlib))
 #include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h>
@@ -262,6 +273,9 @@ poof(do_editor_ui_for_compound_type(vox_data))
 
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 #include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>
+
+poof(do_editor_ui_for_compound_type(gpu_mapped_element_buffer))
+#include <generated/do_editor_ui_for_compound_type_gpu_mapped_element_buffer.h>
 
 poof(do_editor_ui_for_compound_type(lod_element_buffer))
 #include <generated/do_editor_ui_for_compound_type_lod_element_buffer.h>
@@ -433,6 +447,7 @@ poof(do_editor_ui_for_compound_type(graphics_settings))
 
 poof(do_editor_ui_for_compound_type(engine_settings))
 #include <generated/do_editor_ui_for_compound_type_engine_settings.h>
+
 
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>
@@ -823,16 +838,19 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 
 #if 1
 link_internal interactable_handle
-RenderAndInteractWithThumbnailTexture(renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
+InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_layout *Window, const char* InteractionString, asset_thumbnail *Thumb)
 {
   texture *Texture = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
 
   // TODO(Jesse)(leak): How do we deallocate these on hard reset?
   // @hard_reset_texture_memory
-  if (Texture->ID == 0)
+  if (Texture->ID == 0 && Texture->Queued == False)
   {
-    *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture"));
+    Texture->Queued = True;
+    /* PushBonsaiRenderCommandAllocateTexture(&Engine->Plat->RenderQ, Texture); */
+    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, V2i(256), 0, CSz("NoisePreviewTexture"));
+    /* *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture")); */
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }
 
@@ -1006,7 +1024,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     // @editor_chunk_memory_question
     //
     /* DeallocateWorldChunk(Chunk, MeshFreelist); */
-    DeallocateGpuBuffers(Chunk);
+    DeallocateGpuBuffers(RenderQ, Chunk);
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
@@ -1104,12 +1122,12 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
       } break;
     }
 
-    SyncGpuBuffersImmediate(Engine, &Chunk->Meshes);
+    SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
   }
 
   if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture(Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f);
+    RenderToTexture_world_chunk_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1231,7 +1249,7 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   }
 
   PushTableStart(Ui);
-    RenderAndInteractWithThumbnailTexture(Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -1709,7 +1727,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           {
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
-            untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+            world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
@@ -1720,7 +1738,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
 
-        if (SyncGpuBuffersImmediate(Engine, &Root_LayeredBrushPreview->Meshes))
+        if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
         {
           Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
         }

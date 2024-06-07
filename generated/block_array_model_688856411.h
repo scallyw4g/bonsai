@@ -23,6 +23,8 @@ struct model_block_array
   
 };
 
+typedef model_block_array model_paged_list;
+
 link_internal model_block_array_index
 operator++(model_block_array_index &I0)
 {

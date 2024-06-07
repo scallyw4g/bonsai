@@ -2,14 +2,14 @@
 link_internal void
 InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memory_arena *GraphicsMemory)
 {
-  Group->Tex = MakeTexture_RGB( Settings->iLuminanceMapResolution, 0, CSz("Bloom"),    TextureStorageFormat_RGB16F);
+  Group->Tex = MakeTexture_RGB( Settings->iLuminanceMapResolution, 0, CSz("Bloom"), 1, TextureStorageFormat_RGB16F);
 
   // Bloom mip chain textures
   v2i MipSize = Settings->iLuminanceMapResolution / 2;
   RangeIterator(MipIndex, BLOOM_MIP_CHAIN_COUNT)
   {
     cs DebugName = FormatCountedString(GraphicsMemory, CSz("BloomBlurMip(%d)"), MipIndex);
-    Group->MipChain[MipIndex] = MakeTexture_RGB(MipSize, Cast(const v3*, 0), DebugName, TextureStorageFormat_RGB16F);
+    Group->MipChain[MipIndex] = MakeTexture_RGB(MipSize, Cast(const v3*, 0), DebugName, 1, TextureStorageFormat_RGB16F);
 
     MipSize /= 2;
 

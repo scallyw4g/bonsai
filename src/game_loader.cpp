@@ -137,6 +137,7 @@ main( s32 ArgCount, const char ** Args )
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
+  Global_EngineResources = EngineResources;
 
   const char* GameLibName = Global_ProjectSwitcherGameLibName;
   switch (ArgCount)
@@ -178,15 +179,21 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_LaunchThreadPool|BonsaiInit_OpenWindow|BonsaiInit_InitDebugSystem),
+  thread_main_callback_type Procs[1] = { RenderThread_Main };
+  /* thread_main_callback_type Procs[1] = { EngineApi.RenderThread_Main }; */
+  thread_main_callback_type_buffer CustomWorkerProcs = {};
+  CustomWorkerProcs.Count = 1;
+  CustomWorkerProcs.Start = Procs;
+
+  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
-                                  &BootstrapArena) );
+                                  &BootstrapArena,
+                                  &CustomWorkerProcs ));
 
+  while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
 
-
-  EngineResources->DebugState = Global_DebugStatePointer;
-  Global_EngineResources = EngineResources;
+  /* EngineResources->DebugState = Global_DebugStatePointer; */
 
   Assert(EngineResources->Stdlib.ThreadStates);
   Assert(Global_ThreadStates);
@@ -203,6 +210,7 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
   InitQueue(&Plat->LowPriority,  WorkQueueMemory);
+  InitQueue(&Plat->RenderQ,  WorkQueueMemory);
 
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);
@@ -214,6 +222,11 @@ main( s32 ArgCount, const char ** Args )
 
   if (GameApi->GameInit)
   {
+#if PLATFORM_WINDOW_IMPLEMENTATIONS
+    // Block till RenderMain is initialized in case game wants to do rendering things in init..?
+    // TODO(Jesse): Is there any reason to actually do this?
+    while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
+#endif
     EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
@@ -232,19 +245,28 @@ main( s32 ArgCount, const char ** Args )
 
     TIMED_BLOCK("Frame Preamble");
 
-    ResetInputForFrameStart(&Plat->Input, &EngineResources->Hotkeys);
+    //
+    // Input processing
+    //
+    {
+      ResetInputForFrameStart(&Plat->Input, &EngineResources->Hotkeys);
+
+      v2 LastMouseP = Plat->MouseP;
+      while ( ProcessOsMessages(Os, Plat) );
+      Plat->MouseDP = LastMouseP - Plat->MouseP;
+      Assert(Plat->ScreenDim.x > 0);
+      Assert(Plat->ScreenDim.y > 0);
+
+      BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
+
+      /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
+    }
 
     if (Plat->dt > 0.1f)
     {
       Warn("DT exceeded 100ms, truncating to 33.33ms");
       Plat->dt = 0.03333f;
     }
-
-    v2 LastMouseP = Plat->MouseP;
-    while ( ProcessOsMessages(Os, Plat) );
-    Plat->MouseDP = LastMouseP - Plat->MouseP;
-    Assert(Plat->ScreenDim.x > 0);
-    Assert(Plat->ScreenDim.y > 0);
 
     if (Plat->Input.Escape.Clicked)
     {
@@ -260,8 +282,6 @@ main( s32 ArgCount, const char ** Args )
         LastGameLibTime = 0;
       }
     }
-
-    BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
     DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 
@@ -298,36 +318,6 @@ main( s32 ArgCount, const char ** Args )
       Info("Game Reload Success");
     }
 
-#if 0 // BONSAI_DEBUG_SYSTEM_API
-    if ( LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime) )
-    {
-      SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-
-      debug_state *Cached = Global_DebugStatePointer;
-      Global_DebugStatePointer = 0;
-
-      auto DebugSystem = &EngineResources->Stdlib.DebugSystem;
-      CloseLibrary(DebugSystem->Lib);
-      DebugSystem->Lib = OpenLibrary(DEFAULT_DEBUG_LIB);
-
-      if (DebugSystem->Lib)
-      {
-        if (InitializeBootstrapDebugApi(DebugSystem->Lib, &DebugSystem->Api))
-        {
-          DebugSystem->Api.BonsaiDebug_OnLoad(Cached, Global_ThreadStates, BONSAI_INTERNAL);
-          Ensure( EngineApi.OnLibraryLoad(EngineResources) );
-        }
-        else { Error("Initializing DebugLib API"); }
-      }
-      else { Error("Reloading DebugLib"); }
-
-      Global_DebugStatePointer = Cached;
-
-      UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-      Info("Debug lib Reload Success");
-    }
-#endif // BONSAI_DEBUG_SYSTEM_API
-
 #endif // EMCC
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */
@@ -353,14 +343,7 @@ main( s32 ArgCount, const char ** Args )
 
       DEBUG_FRAME_END(Plat->dt);
 
-    // NOTE(Jesse): FrameEnd must come after the game geometry has rendered so
-    // the alpha-blended text works properly
-    //
-    // ATM this only draws the UI.
-    //
     EngineApi.FrameEnd(EngineResources);
-
-    BonsaiSwapBuffers(&EngineResources->Stdlib.Os);
 
 
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered

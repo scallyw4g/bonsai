@@ -18,6 +18,7 @@ struct render_debug
 {
   u32 BytesSolidGeoLastFrame;
   u32 BytesTransGeoLastFrame;
+  u32 VertsDrawnLastFrame;
 
   u32 DrawCallsLastFrame;
 };
@@ -71,8 +72,8 @@ struct engine_debug
 
   // World Edit debug
   //
-  untextured_3d_geometry_buffer WorldEditDebugMesh;
-  asset_thumbnail WorldEditDebugThumb;
+  /* untextured_3d_geometry_buffer WorldEditDebugMesh; */
+  /* asset_thumbnail WorldEditDebugThumb; */
 };
 
 link_internal engine_debug * GetEngineDebug();

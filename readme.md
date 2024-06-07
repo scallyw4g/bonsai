@@ -96,6 +96,8 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
 
+[ ] Lumen-style GI screen-space radiance caching : https://www.youtube.com/watch?v=2GYXuM10riw
+
 -------------------------------------------------------------------------------
 ## Terrain
 
@@ -146,3 +148,4 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
 
+[ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object

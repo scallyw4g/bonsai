@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:326:0
+// src/engine/editor.cpp:340:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Frust,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(frustum*,&Element->Frust),
         CSz("Frust"),
         Params
         );
@@ -37,10 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->CurrentP,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->CurrentP),
         CSz("CurrentP"),
         Params
         );
@@ -49,22 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->RenderSpacePosition,
-        CSz("RenderSpacePosition"),
-        Params
-        );
-
-
-
 
 
       
       DoEditorUi(Ui,
         Window,
-&Element->Pitch,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Pitch),
         CSz("Pitch"),
         Params
         );
@@ -73,11 +68,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Roll,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Roll),
         CSz("Roll"),
         Params
         );
@@ -86,11 +84,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Yaw,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Yaw),
         CSz("Yaw"),
         Params
         );
@@ -99,11 +100,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->DistanceFromTarget,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->DistanceFromTarget),
         CSz("DistanceFromTarget"),
         Params
         );
@@ -112,11 +116,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TargetPitch,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->TargetPitch),
         CSz("TargetPitch"),
         Params
         );
@@ -125,11 +132,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TargetRoll,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->TargetRoll),
         CSz("TargetRoll"),
         Params
         );
@@ -138,11 +148,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TargetYaw,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->TargetYaw),
         CSz("TargetYaw"),
         Params
         );
@@ -151,11 +164,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->TargetDistanceFromTarget,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->TargetDistanceFromTarget),
         CSz("TargetDistanceFromTarget"),
         Params
         );
@@ -164,11 +180,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Blend,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->Blend),
         CSz("Blend"),
         Params
         );
@@ -177,47 +196,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Front,
-        CSz("Front"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Right,
-        CSz("Right"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->Up,
-        CSz("Up"),
-        Params
-        );
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-&Element->GhostId,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(entity_id*,&Element->GhostId),
         CSz("GhostId"),
         Params
         );

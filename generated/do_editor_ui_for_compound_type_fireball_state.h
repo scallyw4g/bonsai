@@ -28,10 +28,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs N
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->ChargeLevel,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->ChargeLevel),
         CSz("ChargeLevel"),
         Params
         );
+
+
 
 
 
@@ -41,7 +44,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs N
 
       DoEditorUi(Ui,
         Window,
-&Element->TargetP,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->TargetP),
         CSz("TargetP"),
         Params
         );

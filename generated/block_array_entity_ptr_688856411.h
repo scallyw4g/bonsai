@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:326:0
+// src/engine/world_chunk.h:318:0
 
 struct entity_ptr_block
 {
@@ -22,6 +22,8 @@ struct entity_ptr_block_array
   memory_arena *Memory; poof(@no_serialize)
   
 };
+
+typedef entity_ptr_block_array entity_ptr_paged_list;
 
 link_internal entity_ptr_block_array_index
 operator++(entity_ptr_block_array_index &I0)

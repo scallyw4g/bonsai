@@ -12,6 +12,8 @@ struct bonsai_type_info_hashtable
   bonsai_type_info_linked_list_node **Elements;
   /* OWNED_BY_THREAD_MEMBER() */
 };
+link_internal b32 AreEqual(bonsai_type_info_linked_list_node *Node1, bonsai_type_info_linked_list_node *Node2 );
+
 link_internal bonsai_type_info_linked_list_node *
 Allocate_bonsai_type_info_linked_list_node(memory_arena *Memory)
 {
@@ -58,7 +60,11 @@ Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Tabl
   Assert(Table->Size);
   umm HashValue = Hash(&Node->Element) % Table->Size;
   bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
-  while (*Bucket) Bucket = &(*Bucket)->Next;
+  while (*Bucket)
+  {
+    /* Assert(!AreEqual(*Bucket, Node)); */
+    Bucket = &(*Bucket)->Next;
+  }
   *Bucket = Node;
   return &Bucket[0]->Element;
 }

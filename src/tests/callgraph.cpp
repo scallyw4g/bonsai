@@ -29,7 +29,7 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("callgraph", ArgCount, Args);
 
-  bonsai_debug_system DebugSystem = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, 0);
+  /* bonsai_debug_system DebugSystem = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, 0); */
 
   TIMED_FUNCTION();
 

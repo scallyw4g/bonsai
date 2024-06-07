@@ -250,6 +250,19 @@ ToIndex(world_chunk_mesh_bitfield Bit)
   return MeshIndex_Count;
 }
 
+// TODO(Jesse): Probably consolodate with lod_element_buffer ?
+struct world_chunk_lod_element_buffer
+{
+  // TODO(Jesse): Remove this
+  volatile u32 MeshMask;
+
+  gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
+
+  // Src meshes, read-only
+  world_chunk_geometry_buffer *E[MeshIndex_Count];
+  bonsai_futex             Locks[MeshIndex_Count];
+};
+
 struct lod_element_buffer
 {
   // TODO(Jesse): Remove this
@@ -258,38 +271,17 @@ struct lod_element_buffer
   gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
 
   // Src meshes, read-only
-  geo_u3d_ptr   E[MeshIndex_Count];
+  geo_u3d_ptr       E[MeshIndex_Count];
   bonsai_futex  Locks[MeshIndex_Count];
 };
 
-struct threadsafe_geometry_buffer
-{
-  volatile u32 MeshMask;
-  volatile untextured_3d_geometry_buffer *E[MeshIndex_Count];
-  bonsai_futex  Locks[MeshIndex_Count];
-};
 
-link_internal b32
-HasGpuMesh(lod_element_buffer *Meshes, world_chunk_mesh_bitfield MeshBit)
-{
-  b32 Result = (Meshes->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
-  return Result;
-}
-
-
-link_internal b32
-HasMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
-{
-  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
-  return Result;
-}
-
-link_internal b32
-HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
-{
-  b32 Result = (Buf->MeshMask & MeshBit) != 0;
-  return Result;
-}
+/* link_internal b32 */
+/* HasMesh(threadsafe_geometry_buffer *Buf, world_chunk_mesh_bitfield MeshBit) */
+/* { */
+/*   b32 Result = (Buf->MeshMask & MeshBit) != 0; */
+/*   return Result; */
+/* } */
 
 enum chunk_init_flags
 {
@@ -359,7 +351,7 @@ struct world_chunk
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes
   // smaller, which is probably pretty worth.
-  lod_element_buffer Meshes;
+  world_chunk_lod_element_buffer Meshes;
 
   /* threadsafe_geometry_buffer TransparentMeshes; */
   /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
@@ -389,9 +381,9 @@ struct world_chunk
 #if VOXEL_DEBUG_COLOR
   f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
   v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
-  u8 _Pad1[16]; poof(@no_serialize)
+  u8 _Pad1[16];      poof(@no_serialize)
 #else
-  u8 _Pad1[32]; poof(@no_serialize)
+  u8 _Pad1[32];      poof(@no_serialize)
 #endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
@@ -401,7 +393,7 @@ struct world_chunk
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
 CAssert(sizeof(chunk_data) == 32);
-CAssert(sizeof(threadsafe_geometry_buffer) == 112);
+/* CAssert(sizeof(threadsafe_geometry_buffer) == 112); */
 CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
@@ -410,6 +402,9 @@ typedef world_chunk* world_chunk_ptr;
 
 poof(buffer(world_chunk_ptr))
 #include <generated/buffer_world_chunk_ptr.h>
+
+poof(block_array_h(world_chunk_ptr, {32}, {}))
+#include <generated/block_array_h_world_chunk_ptr_688853862_0.h>
 
 struct octave
 {
@@ -646,8 +641,8 @@ AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Sto
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
 
-link_internal void
-DrawWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
+/* link_internal void */
+/* DrawWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap); */
 
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);
@@ -655,14 +650,14 @@ GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);
 link_internal untextured_3d_geometry_buffer *
 ReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
 
-link_internal untextured_3d_geometry_buffer *
-ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+/* link_internal untextured_3d_geometry_buffer * */
+/* ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */
 
 link_internal untextured_3d_geometry_buffer *
 AtomicReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
 
-link_internal untextured_3d_geometry_buffer *
-AtomicReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+/* link_internal untextured_3d_geometry_buffer * */
+/* AtomicReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */
 
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(mesh_freelist*, u32, memory_arena*);

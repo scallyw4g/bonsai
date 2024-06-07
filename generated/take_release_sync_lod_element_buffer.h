@@ -1,4 +1,4 @@
-// src/engine/work_queue.cpp:114:0
+// src/engine/mesh.cpp:233:0
 
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
@@ -16,18 +16,6 @@ ReleaseOwnership( lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, un
 }
 
 link_internal untextured_3d_geometry_buffer *
-AtomicReplaceMesh( lod_element_buffer *Meshes,
-  world_chunk_mesh_bitfield MeshBit,
-  untextured_3d_geometry_buffer *Buf,
-  u64 BufTimestamp )
-{
-  TakeOwnershipSync(Meshes, MeshBit);
-  auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
-  ReleaseOwnership(Meshes, MeshBit, Buf);
-  return Replace;
-}
-
-link_internal untextured_3d_geometry_buffer *
 ReplaceMesh( lod_element_buffer *Meshes,
   world_chunk_mesh_bitfield MeshBit,
   untextured_3d_geometry_buffer *Buf,
@@ -37,9 +25,7 @@ ReplaceMesh( lod_element_buffer *Meshes,
   /* if (Buf) { Assert(Buf->At); } */
 
   untextured_3d_geometry_buffer *Result = {};
-
   untextured_3d_geometry_buffer *CurrentMesh = (untextured_3d_geometry_buffer*)Meshes->E[ToIndex(MeshBit)];
-
 
   if (CurrentMesh)
   {
@@ -65,4 +51,66 @@ ReplaceMesh( lod_element_buffer *Meshes,
   return Result;
 }
 
+link_internal untextured_3d_geometry_buffer *
+AtomicReplaceMesh( lod_element_buffer *Meshes,
+  world_chunk_mesh_bitfield MeshBit,
+  untextured_3d_geometry_buffer *Buf,
+  u64 BufTimestamp )
+{
+  TakeOwnershipSync(Meshes, MeshBit);
+  auto Replace = ReplaceMesh(Meshes, MeshBit, Buf, BufTimestamp);
+  ReleaseOwnership(Meshes, MeshBit, Buf);
+  return Replace;
+}
+
+link_internal void
+DeallocateMeshes(lod_element_buffer *Buf, tiered_mesh_freelist* MeshFreelist)
+{
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+  if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+  /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); } */
+  /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist); } */
+
+  Buf->MeshMask = 0;
+}
+
+link_internal b32
+HasGpuMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  return Result;
+}
+
+
+link_internal b32
+HasGpuMesh(lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
+  }
+  return Result;
+}
+
+link_internal b32
+HasCpuMesh(lod_element_buffer *Buf)
+{
+  b32 Result = False;
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    Result |= (Buf->E[MeshIndex] != 0);
+  }
+  return Result;
+}
+
+link_internal b32
+HasMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
+{
+  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
+  return Result;
+}
 

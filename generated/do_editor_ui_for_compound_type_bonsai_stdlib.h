@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:158:0
+// src/engine/editor.cpp:169:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->Os,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(os*,&Element->Os),
         CSz("Os"),
         Params
         );
@@ -37,10 +38,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->Plat,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(platform*,&Element->Plat),
         CSz("Plat"),
         Params
         );
@@ -49,10 +53,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-        Element->ThreadStates,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(thread_local_state*, Element->ThreadStates),
         CSz("ThreadStates"),
         Params
         );
@@ -61,10 +68,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->AllTextures,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture_block_array*,&Element->AllTextures),
         CSz("AllTextures"),
         Params
         );
@@ -73,11 +83,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->DebugSystem,
-        CSz("DebugSystem"),
+        // Cast to remove const/volatile keywords if they're there
+        Cast(debug_state*,&Element->DebugState),
+        CSz("DebugState"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -40,7 +40,7 @@ struct engine_resources
   bonsai_stdlib Stdlib;
 
   // TODO(Jesse): Should this go in stdlib?
-  renderer_2d   Ui;
+  renderer_2d Ui;
 
   application_api GameApi;
 
@@ -49,7 +49,7 @@ struct engine_resources
   maybe_ray   MaybeMouseRay;
   world      *World;
   game_state *GameState;
-  graphics   *Graphics;
+  graphics    Graphics;
 
   file_traversal_node      RequestedGameLibReloadNode;
   game_lib_reload_behavior RequestedGameLibReloadBehavior;
@@ -64,7 +64,8 @@ struct engine_resources
 
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
-  tiered_mesh_freelist MeshFreelist;
+  tiered_mesh_freelist geo_u3d_MeshFreelist;
+  tiered_mesh_freelist world_chunk_MeshFreelist;
 
   //
   // NOTE(Jesse): This is kinda-sorta all debug stuff
@@ -117,8 +118,15 @@ GetWorldChunkDim()
 link_weak bonsai_stdlib *
 GetStdlib()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->Stdlib;
+  /* Assert(Global_EngineResources); */
+  if (Global_EngineResources)
+  {
+    return &Global_EngineResources->Stdlib;
+  }
+  else
+  {
+    return 0;
+  }
 }
 
 
@@ -132,7 +140,7 @@ GetLevelEditor()
 link_internal entity *
 GetCameraGhost(engine_resources *Engine)
 {
-  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics->Camera->GhostId);
+  entity *Result = GetEntity(Engine->EntityTable, Engine->Graphics.Camera->GhostId);
   return Result;
 }
 
@@ -150,15 +158,16 @@ GetCameraGhost(engine_resources *Engine)
   entity                   **EntityTable   =  Res->EntityTable;       \
   hotkeys                   *Hotkeys       = &Res->Hotkeys;           \
   engine_debug              *EngineDebug   = &Res->EngineDebug;       \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->MeshFreelist;      \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist;      \
   input                     *Input         = &Res->Stdlib.Plat.Input; \
   level_editor              *Editor        = &Res->Editor;            \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
-  graphics                  *Graphics      =  Res->Graphics;              \
+  graphics                  *Graphics      = &Res->Graphics;              \
   lighting_render_group     *Lighting      = &Graphics->Lighting;         \
   renderer_2d               *Ui            = &Res->Ui;                    \
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;           \
+  work_queue                *RenderQ       = &Plat->RenderQ
 

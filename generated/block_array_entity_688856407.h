@@ -23,6 +23,8 @@ struct entity_block_array
   
 };
 
+typedef entity_block_array entity_paged_list;
+
 link_internal entity_block_array_index
 operator++(entity_block_array_index &I0)
 {

@@ -94,6 +94,7 @@ void main()
 
     /* vec3 CorrectedPos =  gPosition.xyz + (v3(8.f) - mod(CameraToWorld, 8.f)); */
     /* vec3 CorrectedPos =  mod(gPosition.xyz, 8.f) - mod(CameraToWorld, 8.f); */
+
     vec3 CorrectedPos =  mod(gPosition.xyz + OffsetOfWorldCenterToGrid, MajorGridDim);
 
     /* FinalColor.rgb = CorrectedPos / v3(8.f); */

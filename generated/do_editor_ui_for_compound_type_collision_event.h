@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:291:0
+// src/engine/editor.cpp:305:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -28,7 +28,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
       DoEditorUi(Ui,
         Window,
-&Element->FrameIndex,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->FrameIndex),
         CSz("FrameIndex"),
         Params
         );
@@ -37,11 +38,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->Count,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->Count),
         CSz("Count"),
         Params
         );
@@ -50,11 +54,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui,
         Window,
-&Element->MinP,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->MinP),
         CSz("MinP"),
         Params
         );
@@ -63,10 +70,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
+
       
       DoEditorUi(Ui,
         Window,
-&Element->MaxP,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(cp*,&Element->MaxP),
         CSz("MaxP"),
         Params
         );
