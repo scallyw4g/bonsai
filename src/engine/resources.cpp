@@ -337,7 +337,10 @@ RenderThread_Main(void *ThreadStartupParams)
     SoftError("Render thread initiailization failed.");
   }
 
-  return InitResult;
+  //  Make sure this works
+  NotImplemented;
+  THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, InitResult);
+  return Result;
 }
 
 link_internal b32

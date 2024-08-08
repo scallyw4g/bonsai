@@ -141,6 +141,7 @@ link_internal void
 AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, u32 ElementCount)
 {
   Assert(ElementCount);
+  Assert(Handles->Mapped == False);
 
   u32 v2Size   = sizeof(v2)*ElementCount;
   u32 v3Size   = sizeof(v3)*ElementCount;

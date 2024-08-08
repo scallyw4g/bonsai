@@ -1527,10 +1527,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox);
           PushNewRow(Ui);
 
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox);
           PushNewRow(Ui);
           PushNewRow(Ui);
         }
@@ -1543,7 +1543,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
   if (SelectionComplete(Editor->SelectionClicks))
   {
-    b32 AnyChanges = True;
+    b32 AnyChanges = False;
     RangeIterator(LayerIndex, LayeredBrush->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
@@ -1675,7 +1675,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
         //
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
-        if ( Editor->RootChunkNeedsNewMesh && (Root_LayeredBrushPreview->Flags&Chunk_Queued) == 0)
+        if ( Editor->RootChunkNeedsNewMesh && (Root_LayeredBrushPreview->Flags&Chunk_Queued) == 0 )
         {
           // First find the largest total dimension of all the layers, and the
           // largest negative minimum offset.  We need this min offset such
@@ -1698,15 +1698,17 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
+#if 1
           if (LayeredBrush->SeedBrushWithSelection)
           {
             if (SelectionComplete(Editor->SelectionClicks))
             {
-              world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
+              /* world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory); */
               world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
               CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
             }
           }
+#endif
 
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
@@ -1714,15 +1716,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
           }
 
-          /* DeallocateGpuBuffers(Root_LayeredBrushPreview); */
-
-          FinalizeChunkInitialization(Root_LayeredBrushPreview);
+          FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init
 
           Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
-
-          /* QueueChunkForMeshRebuild(&Plat->LowPriority, Root_LayeredBrushPreview); */
-
-          /* MarkBoundaryVoxels_MakeExteriorFaces( Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim); */
 
           {
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
@@ -1731,7 +1727,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
-          FinalizeChunkInitialization(Root_LayeredBrushPreview);
+          FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init
 
           Editor->RootChunkNeedsNewMesh = False;
           Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;

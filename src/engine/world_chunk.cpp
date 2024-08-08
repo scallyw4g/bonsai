@@ -522,6 +522,8 @@ CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest,
   Assert(Src->Dim == SrcChunkDim);
   Assert(Dest->Dim == DestChunkDim);
 
+  Assert(SrcChunkDim >= DestChunkDim);
+
   // This happens when we blit an asset into the world
   /* Assert(Dest->FilledCount == 0); */
 
