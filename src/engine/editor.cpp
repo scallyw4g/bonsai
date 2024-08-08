@@ -1857,25 +1857,22 @@ EditWorldSelection(engine_resources *Engine)
       layered_brush_editor *Brush = &Editor->LayeredBrushEditor;
       if (Brush->BrushFollowsCursor)
       {
-        /* v3 SelectionDim = (SelectionMaxP - SelectionMinP); */
-        /* v3 SelectionRad = (SelectionMaxP - SelectionMinP)/2.f; */
-
         if (Engine->MousedOverVoxel.Tag)
         {
           cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty);
 
-          /* Editor->SelectionRegion.Min = MouseP - SelectionRad; */
-          /* Editor->SelectionRegion.Max = MouseP + SelectionRad; */
           v3 SelectionDim = GetDim(GetSimSpaceRect(World, Editor->SelectionRegion));
+          v3 SelectionRad = SelectionDim / 2.f;
 
-          Editor->SelectionRegion.Min = MouseP;
-          Editor->SelectionRegion.Max = MouseP + SelectionDim;
+          Editor->SelectionRegion.Min = MouseP - SelectionRad;
+          Editor->SelectionRegion.Max = MouseP + SelectionRad;
+
+          Canonicalize(World, &Editor->SelectionRegion.Min);
+          Canonicalize(World, &Editor->SelectionRegion.Max);
 
           Truncate(&Editor->SelectionRegion.Min.Offset);
           Truncate(&Editor->SelectionRegion.Max.Offset);
 
-          Canonicalize(World, &Editor->SelectionRegion.Min);
-          Canonicalize(World, &Editor->SelectionRegion.Max);
         }
       }
     }
