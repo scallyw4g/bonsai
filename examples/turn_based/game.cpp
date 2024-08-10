@@ -1098,7 +1098,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
           v2 SpriteSize = V2(96);
 
-          PushButtonStart(Ui, ButtonId);
+          ui_style SpriteStyle = {};
+          SpriteStyle.HoverColor = UI_HOVER_HIGHLIGHT_DISABLED;
+
+          PushButtonStart(Ui, ButtonId, &SpriteStyle);
             s32 SpriteIndex = Global_SpriteIndexFromActionIndex[ActionIndex];
             Assert(SpriteIndex > 0);
             PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray,           0, SpriteSize, zDepth_TitleBar, BackgroundTint, UiElementLayoutFlag_NoAdvance);
