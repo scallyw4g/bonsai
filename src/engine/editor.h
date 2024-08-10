@@ -154,17 +154,17 @@ poof(
   func do_editor_ui_for_compound_type(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
     {
       if (Element)
       {
-        // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
-        // support not drawing the toggl-y thing if we just want to dump the members.
+        // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+        // not drawing the toggl-y thing if we just want to dump the members.
         b32 DrawChildren = True;
         b32 DidToggle = False;
         if (Name.Count)
         {
-          if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), &DefaultUiRenderParams_Generic))
+          if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), Params))
           {
             DidToggle = True;
             PushNewRow(Ui);
@@ -432,7 +432,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
-  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), Style);
+  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), BStyle);
 
     PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
 
@@ -440,7 +440,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
     {
       if (*Value)
       {
-        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->Style->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, UiElementLayoutFlag_NoAdvance );
+        PushUntexturedQuad(Ui, V2(2.f, 2.f), V2(Params->FStyle->Font.Size.y)-4.f, zDepth_Border, &Global_DefaultCheckboxForeground, DefaultCheckboxPadding, UiElementLayoutFlag_NoAdvance );
       }
     }
     else
@@ -448,7 +448,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
       PushColumn(Ui, CSz("(null)"), Params);
     }
 
-    PushUntexturedQuad(Ui, {}, V2(Params->Style->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, UiElementLayoutFlag_Default );
+    PushUntexturedQuad(Ui, {}, V2(Params->FStyle->Font.Size.y), zDepth_Text, &Global_DefaultCheckboxBackground, DefaultCheckboxPadding, UiElementLayoutFlag_Default );
 
 
 
