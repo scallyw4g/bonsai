@@ -21,14 +21,21 @@ ToStringPrefixless(engine_debug_view_mode Type)
     {
       u32 CurrentFlags = u32(Type);
 
-      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
-      Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
-
-      while (CurrentFlags)
+      if (CountBitsSet_Kernighan(CurrentFlags) == 1)
       {
-        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
-        cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
-        Result = FSz("%S | %S", Result, Next);
+        Result = FSz("(invalid value for engine_debug_view_mode (%d))", CurrentFlags);
+      }
+      else
+      {
+        u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+        Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
+
+        while (CurrentFlags)
+        {
+          u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+          cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
+          Result = FSz("%S | %S", Result, Next);
+        }
       }
     } break;
 
