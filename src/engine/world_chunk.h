@@ -718,3 +718,15 @@ GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
   voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }
+
+inline voxel*
+TryGetVoxel(world *World, cp P)
+{
+  voxel *Result = {};
+  world_chunk *Chunk = GetWorldChunkFromHashtable(World, P.WorldP);
+  if (Chunk)
+  {
+    Result = TryGetVoxel(Chunk, V3i(P.Offset));
+  }
+  return Result;
+}

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4080:0
+// src/engine/world_chunk.cpp:4082:0
 
 struct voxel_stack_element_cursor
 {

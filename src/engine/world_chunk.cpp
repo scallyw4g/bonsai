@@ -3706,7 +3706,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
       *Shape,
       Mode,
       Modifier,
-      SimFloodOrigin,
+      /* SimFloodOrigin, */
     },
     ColorIndex,
     {},
@@ -3892,12 +3892,12 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 }
 
 link_internal void
-QueueWorldUpdateForRegion(engine_resources *Engine,
-                          world_edit_mode Mode,
-                          world_edit_mode_modifier Modifier,
-                          world_edit_shape *Shape,
-                          u16 ColorIndex,
-                          memory_arena *Memory)
+QueueWorldUpdateForRegion( engine_resources *Engine,
+                            world_edit_mode  Mode,
+                   world_edit_mode_modifier  Modifier,
+                           world_edit_shape *Shape,
+                                        u16  ColorIndex,
+                               memory_arena *Memory )
 {
   TIMED_FUNCTION();
 
@@ -4106,6 +4106,8 @@ DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceUpdateB
 #endif
 }
 
+//
+// NOTE(Jesse): UserCode gets called when the first
 poof(
   func flood_fill_iteration_pattern(type_poof_symbol FloodPredicate, type_poof_symbol UserCode, type_poof_symbol UserCode2) @code_fragment
   {
@@ -4117,7 +4119,7 @@ poof(
 
     // Unfortunately, can't #if this out in a poof function.  Should probably
     // put it on a #define switch to make sure it gets compiled out.
-    /* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels); */
+    DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels);
 
     Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
     while (AtElements(&Stack))
@@ -4394,12 +4396,12 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
       if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0)
     },
     {
-      if ( LengthSq(CenterToVoxP) < RadiusSquared-1.f && V->Flags & Voxel_Filled )
+      if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) )
          { V->Flags = Voxel_Empty; }
     },
     {
       v3i CenterToVoxP = SimVoxP - EditCenterP;
-      if (LengthSq(CenterToVoxP) < RadiusSquared-1.f)
+      if (Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f)
       {
         if (V->Flags & Voxel_Filled)
         {
@@ -4702,10 +4704,10 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   v3i UpdateDim = GetDim(SimSpaceUpdateBounds);
   s32 TotalVoxels = Volume(UpdateDim);
 
-  world_edit_mode              Mode = Job->Brush.Mode;
-  world_edit_mode_modifier Modifier = Job->Brush.Modifier;
-  world_edit_shape            Shape = Job->Brush.Shape;
-  v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
+  world_edit_mode              Mode =     Job->Brush.Mode;
+  world_edit_mode_modifier Modifier =     Job->Brush.Modifier;
+  world_edit_shape            Shape =     Job->Brush.Shape;
+  /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
   u16 NewColor                = Job->ColorIndex;
   u8  NewTransparency         = Job->Transparency;
@@ -4734,6 +4736,10 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       v3i EditCenterP = V3i(Floor(GetSimSpaceP(World, Sphere->Location)));
       r32 RadiusSquared = Square(Sphere->Radius);
       rect3i SSRect = SimSpaceUpdateBounds;
+
+      Assert(EditCenterP > SimSpaceUpdateBounds.Min);
+      Assert(EditCenterP < SimSpaceUpdateBounds.Max);
+
       /* rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius)); */
       apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
 
@@ -4751,6 +4757,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
         case WorldEdit_Modifier_Flood:
         {
+          v3i FloodOrigin = EditCenterP;
           WorldEdit_shape_sphere_Flood(&Params, Thread, RadiusSquared, EditCenterP, FloodOrigin, NewVoxelValue);
         } break;
       }
@@ -4778,6 +4785,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
         case WorldEdit_Modifier_Flood:
         {
+          v3i FloodOrigin = EditCenterP;
           WorldEdit_shape_rect_Flood(&Params, Thread, FloodOrigin, NewVoxelValue);
         } break;
 
@@ -4829,6 +4837,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
           case WorldEdit_Modifier_Flood:
           {
+            v3i FloodOrigin = EditCenterP;
             WorldEdit_shape_chunk_data_Flood(&Params, SimOrigin, Data, Thread, FloodOrigin);
           } break;
 
@@ -4853,7 +4862,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_edit_mode              Mode = Job->Brush.Mode;
   world_edit_mode_modifier Modifier = Job->Brush.Modifier;
   world_edit_shape            Shape = Job->Brush.Shape;
-  v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin);
+  /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
   u16 NewColor                  = Job->ColorIndex;
   u8  NewTransparency           = Job->Transparency;
@@ -4862,13 +4871,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_chunk **DestChunkBuffer = Job->DestChunkBuffer;
   u32 ChunkCount                = Job->ChunkCount;
 
-  auto _P0 = GetSimSpaceP(World, MinP);
-  auto _P1 = GetSimSpaceP(World, MaxP);
+  v3 _P0 = GetSimSpaceP(World, MinP);
+  v3 _P1 = GetSimSpaceP(World, MaxP);
 
   // TODO(Jesse): Should these not just be assertions?  Pretty sure the calling
   // code makes sure these are already in 'sorted' order.
-  auto P0 = Min(_P0, _P1);
-  auto P1 = Max(_P0, _P1);
+  v3 P0 = Min(_P0, _P1);
+  v3 P1 = Max(_P0, _P1);
 
   // NOTE(Jesse): These are meant to truncate instead of floor
   rect3i SimSpaceUpdateBounds = Rect3iMinMax( V3i(P0), V3i(P1) );

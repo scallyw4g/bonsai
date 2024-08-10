@@ -134,7 +134,7 @@ Global_SpriteIndexFromActionIndex[PlayerAction_Count] =
   LastBackgroundSprite + 44,  // grab
   LastBackgroundSprite + 273, // fireball
   LastBackgroundSprite + 307, // ice
-  LastBackgroundSprite + 256, // thrwo
+  LastBackgroundSprite + 256, // throw
 };
 
 

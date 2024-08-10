@@ -291,6 +291,7 @@ EffectProjectileImpact(engine_resources *Engine, entity *Entity)
       Assert (Entity->LastResolvedCollision.Count);
       fireball_state *State = (fireball_state*)Entity->UserData;
       r32 Radius = 2.f + r32(State->ChargeLevel)*2.f;
+
       DoSplotion(Engine, Entity->P, Radius, &Global_GameEntropy, GetTranArena());
 
       v3 ESimP = GetSimSpaceP(World, Entity->P);
@@ -701,7 +702,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   UNPACK_ENGINE_RESOURCES(Resources);
 
   memory_arena *GameMemory = &GameState->Memory;
-  entity *Player           = GetEntity(EntityTable, GameState->PlayerId);
+  entity       *Player     =  GetEntity(EntityTable, GameState->PlayerId);
   if (Player == 0) { return; }
 
   // NOTE(Jesse): Crutch for loading savefiles that didn't have this
@@ -1099,6 +1100,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
           PushButtonStart(Ui, ButtonId);
             s32 SpriteIndex = Global_SpriteIndexFromActionIndex[ActionIndex];
+            Assert(SpriteIndex > 0);
             PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray,           0, SpriteSize, zDepth_TitleBar, BackgroundTint, UiElementLayoutFlag_NoAdvance);
             PushTexturedQuad(Ui, &Resources->Ui.SpriteTextureArray, SpriteIndex, SpriteSize,     zDepth_Text,           Tint, UiElementLayoutFlag_Default);
           PushButtonEnd(Ui);
@@ -1115,6 +1117,18 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
   PushWindowEnd(Ui, &ActionsWindow);
+
+#if 0
+  if (Input->LMB.Clicked)
+  {
+    random_series E = {654367547654};
+    if (Resources->MousedOverVoxel.Tag)
+    {
+      cp PickCP = Canonical_Position(&Resources->MousedOverVoxel.Value);
+      DoSplotion( Resources, PickCP, 8.f, &E, GetTranArena());
+    }
+  }
+#endif
 }
 
 poof(serdes_struct(entity_game_data))

@@ -768,7 +768,14 @@ struct world_edit_brush
   world_edit_mode_modifier Modifier;
 
   // NOTE(Jesse): If Modifier is Flood, this is set to where the flood should start
-  v3 SimFloodOrigin;
+  //
+  // NOTE(Jesse): This was causing problems; it was getting cold-set to the
+  // position of the voxel hovered by the cursor, which made fireballs not work
+  // correctly.  Since it's not actually used in any meaningful way I took it
+  // off the brush struct and stuffed the value of the flood origin to the
+  // center P of whatever the flood shape is.
+  //
+  /* v3 SimFloodOrigin; */
 };
 
 poof(do_editor_ui_for_compound_type(world_edit_brush))

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4390:0
+// src/engine/world_chunk.cpp:4394:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -8,7 +8,7 @@ voxel_stack_element_cursor Stack = VoxelStackElementCursor(umm(TotalVoxels*6), T
 
 // Unfortunately, can't #if this out in a poof function.  Should probably
 // put it on a #define switch to make sure it gets compiled out.
-/* DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels); */
+DEBUG_AssertVoxelFloodStartsInEmptyVoxel(FloodOrigin, &SimSpaceUpdateBounds, CopiedChunk->Voxels);
 
 Push(&Stack, VoxelStackElement(FloodOrigin, VoxelRuleDir_Count));
 while (AtElements(&Stack))
@@ -42,7 +42,7 @@ while (AtElements(&Stack))
     }
 
     
-      if ( LengthSq(CenterToVoxP) < RadiusSquared-1.f && V->Flags & Voxel_Filled )
+      if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) )
          { V->Flags = Voxel_Empty; }
     
 
@@ -80,7 +80,7 @@ while (AtElements(&Stack))
 
       
       v3i CenterToVoxP = SimVoxP - EditCenterP;
-      if (LengthSq(CenterToVoxP) < RadiusSquared-1.f)
+      if (Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f)
       {
         if (V->Flags & Voxel_Filled)
         {
