@@ -141,7 +141,7 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 }
 
 link_internal void
-CompositeAndDisplay( platform *Plat, graphics *Graphics )
+CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 {
   GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(Plat->ScreenDim);

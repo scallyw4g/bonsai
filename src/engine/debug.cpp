@@ -453,7 +453,6 @@ DoAssetWindow(engine_resources *Engine)
 
                   MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
                   StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
-
                 }
 
                 asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
@@ -473,7 +472,17 @@ DoAssetWindow(engine_resources *Engine)
                 }
 
                 interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
-                if (ModelIndex == EngineDebug->ModelIndex) { PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f)); }
+
+                if (Hover(Ui, &B))
+                {
+                  PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
+                }
+
+                if (ModelIndex == EngineDebug->ModelIndex)
+                {
+                  PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
+                }
+
                 PushForceAdvance(Ui, V2(8, 0));
 
                 if (Pressed(Ui, &B))
@@ -506,8 +515,6 @@ DoAssetWindow(engine_resources *Engine)
                       PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
                       v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-                      /* v3 Basis = V3(0,0,20); */
-/* DrawLod_Async(work_queue *Queue,engine_resources *Engine ,shader *Shader ,world_chunk_lod_element_buffer *Meshes ,r32 DistanceSquared ,v3 Basis ,Quaternion Rotation ,v3 Scale ) */
                       DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
 
                       PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);

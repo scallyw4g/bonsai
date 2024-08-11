@@ -847,16 +847,17 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
   // @hard_reset_texture_memory
   if (Texture->ID == 0 && Texture->Queued == False)
   {
+    Assert(Texture->Dim > V2i(0));
     Texture->Queued = True;
     /* PushBonsaiRenderCommandAllocateTexture(&Engine->Plat->RenderQ, Texture); */
-    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, V2i(256), 0, CSz("NoisePreviewTexture"));
+    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, Texture->Dim, 0, CSz("NoisePreviewTexture"));
     /* *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture")); */
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }
 
-  interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)) );
-    u32 Index = StartColumn(Ui);
-      PushTexturedQuad(Ui, Texture, V2(Texture->Dim)*1.5f, zDepth_Text);
+  interactable_handle B = PushButtonStart(Ui, UiId(Window, InteractionString, Cast(void*, Thumb)));
+    u32 Index = StartColumn(Ui, &DefaultUiRenderParams_Blank);
+      PushTexturedQuad(Ui, Texture, V2(Texture->Dim), zDepth_Text);
     EndColumn(Ui, Index);
   PushButtonEnd(Ui);
 

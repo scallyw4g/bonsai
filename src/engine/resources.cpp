@@ -248,7 +248,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
 
-              CompositeAndDisplay(Plat, Graphics);
+              CompositeGameTexturesAndDisplay(Plat, Graphics);
 
               UiFrameEnd(&Engine->Ui);
 
