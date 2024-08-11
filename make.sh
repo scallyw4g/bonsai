@@ -24,7 +24,6 @@ MakeDebugLibRelease=0
 stdlib_build_scripts='external/bonsai_stdlib/scripts'
 source $stdlib_build_scripts/preamble.sh
 source $stdlib_build_scripts/setup_for_cxx.sh
-source external/bonsai_debug/make.sh
 
 
 OPTIMIZATION_LEVEL=""
@@ -231,7 +230,6 @@ function BuildWithEMCC {
     -DWASM=1                 \
     $BONSAI_INTERNAL         \
     -I src                   \
-    -I src/bonsai_debug      \
     -I examples              \
     src/game_loader.cpp      \
     -o bin/wasm/platform.html
@@ -331,9 +329,6 @@ function RunPoof
 
   RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   TrackPid "" $!
-
-  # RunPoofHelper external/bonsai_debug/debug.cpp && echo -e "$Success poofed src/external/bonsai_debug/debug.cpp" &
-  # TrackPid "" $!
 
   # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!

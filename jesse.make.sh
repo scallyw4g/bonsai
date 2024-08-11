@@ -5,11 +5,11 @@
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
 
-./make.sh $OPT                                                 \
-  BuildSingleExample examples/blank_project                    \
-  BuildExecutables                                             \
+# ./make.sh $OPT                                                 \
+#   BuildSingleExample examples/blank_project                    \
+#   BuildExecutables                                             \
   # BuildSingleExample examples/turn_based                       \
 #   BuildSingleExample examples/project_and_level_picker         \
 #   BuildSingleExample examples/terrain_gen                      \
