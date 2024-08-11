@@ -1,4 +1,4 @@
-// src/engine/render_command.h:106:0
+// src/engine/render_command.h:113:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
@@ -13,6 +13,7 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_do_stuff,
   type_bonsai_render_command_setup_shader,
   type_bonsai_render_command_teardown_shader,
+  type_bonsai_render_command_set_shader_uniform,
   type_bonsai_render_command_draw_world_chunk_draw_list,
   type_bonsai_render_command_draw_all_entities,
   type_bonsai_render_command_gl_timer_init,
@@ -37,6 +38,7 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
     struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;
     struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;
+    struct bonsai_render_command_set_shader_uniform bonsai_render_command_set_shader_uniform;
     struct bonsai_render_command_draw_world_chunk_draw_list bonsai_render_command_draw_world_chunk_draw_list;
     struct bonsai_render_command_draw_all_entities bonsai_render_command_draw_all_entities;
     struct bonsai_render_command_gl_timer_init bonsai_render_command_gl_timer_init;

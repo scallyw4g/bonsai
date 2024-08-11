@@ -148,6 +148,19 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
             } break;
 
+            { tmatch(bonsai_render_command_set_shader_uniform, RC, Command)
+              shader *Shader = Command->Shader;
+              shader_uniform *Uniform = &Command->Uniform;
+              if (Uniform->ID >= 0)
+              {
+                BindUnifromById(Uniform, &Command->TextureUnit);
+              }
+              else
+              {
+                BindUniformByName(Shader, Uniform, &Command->TextureUnit);
+              }
+            } break;
+
             { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RC, Command)
               RenderDrawList(Engine, Command->DrawList, Command->Shader);
             } break;
@@ -182,8 +195,29 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
 
-              // Editor preview, World, Entities
-              DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings));
+              // Editor preview
+              /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
+              {
+                v3i Radius = World->VisibleRegion/2;
+                v3i Min = World->Center - Radius;
+                v3i Max = World->Center + Radius;
+
+                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+
+                /* RenderDrawList(Engine, &Graphics->MainDrawList); */
+
+                shader *Shader = &Graphics->gBuffer->gBufferShader;
+                DrawEditorPreview(Engine, Shader);
+
+              /*   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated. */
+              /*     BindUniformByName(Shader, "DrawMajorGrid", False); */
+              /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
+              /*     r32 dt = Plat->dt; */
+              /*     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt); */
+              /*   } */
+
+                TeardownGBufferShader(Graphics);
+              }
 
               /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
 

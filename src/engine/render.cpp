@@ -1233,11 +1233,14 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
 }
 
 link_internal void
-DrawEntity(
-    shader *Shader,
-    untextured_3d_geometry_buffer* Dest,
-    untextured_3d_geometry_buffer* TransparentDest,
-    entity *Entity, animation *Animation, graphics *Graphics, chunk_dimension WorldChunkDim, r32 dt)
+DrawEntity(              shader *Shader,
+  untextured_3d_geometry_buffer *Dest,
+  untextured_3d_geometry_buffer *TransparentDest,
+                         entity *Entity,
+                      animation *Animation,
+                       graphics *Graphics, 
+                chunk_dimension  WorldChunkDim,
+                r32 dt )
 {
   TIMED_FUNCTION();
 
@@ -1590,25 +1593,6 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
   UNPACK_ENGINE_RESOURCES(Engine);
 
 
-  v3i Radius = World->VisibleRegion/2;
-  v3i Min = World->Center - Radius;
-  v3i Max = World->Center + Radius;
-
-  SetupGBufferShader(Graphics, ApplicationResolution);
-
-  /* RenderDrawList(Engine, &Graphics->MainDrawList); */
-
-  shader *Shader = &Graphics->gBuffer->gBufferShader;
-  DrawEditorPreview(Engine, Shader);
-
-/*   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated. */
-/*     BindUniformByName(Shader, "DrawMajorGrid", False); */
-/*     BindUniformByName(Shader, "DrawMinorGrid", False); */
-/*     r32 dt = Plat->dt; */
-/*     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt); */
-/*   } */
-
-  TeardownGBufferShader(Graphics);
 }
 
 link_internal void

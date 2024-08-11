@@ -64,6 +64,13 @@ struct bonsai_render_command_teardown_shader
   bonsai_render_command_shader_id ShaderId;
 };
 
+struct bonsai_render_command_set_shader_uniform
+{
+  shader_uniform Uniform;
+  shader *Shader;
+  s32 TextureUnit;
+};
+
 struct bonsai_render_command_draw_all_entities
 {
   shader *Shader;
@@ -120,6 +127,7 @@ poof(
 
     bonsai_render_command_setup_shader
     bonsai_render_command_teardown_shader
+    bonsai_render_command_set_shader_uniform
 
     bonsai_render_command_draw_world_chunk_draw_list
     bonsai_render_command_draw_all_entities

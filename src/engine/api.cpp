@@ -432,7 +432,27 @@ Bonsai_Render(engine_resources *Engine)
   UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
 
 
+  /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
+  shader_uniform MinorGridUniform =
+  {
+    .Type = ShaderUniform_U32,
+    .U32 = &Global_False,
+    .ID = INVALID_SHADER_UNIFORM,
+    .Name = "DrawMinorGrid"
+  };
+
+  shader_uniform MajorGridUniform =
+  {
+    .Type = ShaderUniform_U32,
+    .U32 = &Global_False,
+    .ID = INVALID_SHADER_UNIFORM,
+    .Name = "DrawMajorGrid"
+  };
+
+
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
   PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
   PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 

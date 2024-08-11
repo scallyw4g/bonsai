@@ -111,6 +111,17 @@ PushBonsaiRenderCommandTeardownShader(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
+PushBonsaiRenderCommandSetShaderUniform(
+  work_queue *RenderQueue
+ , shader_uniform Uniform   , shader* Shader   , s32 TextureUnit  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandSetShaderUniform( Uniform , Shader , TextureUnit  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandDrawWorldChunkDrawList(
   work_queue *RenderQueue
  , world_chunk_ptr_paged_list* DrawList   , shader* Shader  

@@ -1,4 +1,4 @@
-// src/engine/render_command.h:135:0
+// src/engine/render_command.h:143:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -124,6 +124,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_teardown_shader A  )
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_teardown_shader,
     .bonsai_render_command_teardown_shader = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_set_shader_uniform A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_set_shader_uniform,
+    .bonsai_render_command_set_shader_uniform = A,
 
     
 
@@ -302,6 +315,17 @@ BonsaiRenderCommandTeardownShader( bonsai_render_command_shader_id  ShaderId  )
 {
   bonsai_render_command_teardown_shader Reuslt = {
     .ShaderId = ShaderId
+  };
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_set_shader_uniform
+BonsaiRenderCommandSetShaderUniform( shader_uniform  Uniform , shader* Shader , s32  TextureUnit  )
+{
+  bonsai_render_command_set_shader_uniform Reuslt = {
+    .Uniform = Uniform,
+    .Shader = Shader,
+    .TextureUnit = TextureUnit
   };
   return Reuslt;
 }
