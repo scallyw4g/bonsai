@@ -498,7 +498,6 @@ if [ $BundleRelease -eq 1 ]; then
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
     bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
-    bin/lib_debug_system_loadable$PLATFORM_LIB_EXTENSION                   \
     \
     shaders/*                                                              \
     external/bonsai_stdlib/shaders/*                                       \
