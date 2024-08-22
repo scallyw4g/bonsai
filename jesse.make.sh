@@ -5,14 +5,14 @@
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
 
-# ./make.sh $OPT BuildAll
+./make.sh $OPT BuildAll
 
-./make.sh $OPT                                                 \
-  BuildExecutables                                             \
-  BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-  BuildSingleExample examples/blank_project                    \
-  BuildSingleExample examples/turn_based                       \
-  BuildSingleExample examples/project_and_level_picker         \
+# ./make.sh $OPT                                                 \
+#   BuildExecutables                                             \
+#   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
+#   BuildSingleExample examples/blank_project                    \
+#   BuildSingleExample examples/turn_based                       \
+#   BuildSingleExample examples/project_and_level_picker         \
 #   BuildSingleExample examples/terrain_gen                      \
 #   BuildSingleExample examples/transparency                     \
 #   BuildSingleExample examples/the_wanderer                     \

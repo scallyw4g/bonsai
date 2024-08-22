@@ -46,6 +46,22 @@ SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
   }
 }
 
+// NOTE(Jesse): This function was useful for sanity checking the hashtable state at
+// known-empty points.  It's not valid to have it in there all the time (because
+// at startup entities can queue pieces of the world, and as such the first frame
+// can have stuff in the hashtable before these checks run.  Keeping the function
+// around in case I ever want it again.
+link_internal void
+DEBUG_AssertWorldChunkHashtableIsEmpty(engine_resources *Engine, world_chunk **Table)
+{
+#if 0
+  RangeIterator_t(u32, HashIndex, Engine->World->HashSize)
+  {
+    Assert(Table[HashIndex] == 0);
+  }
+#endif
+}
+
 link_export b32
 Bonsai_FrameBegin(engine_resources *Resources)
 {
@@ -57,27 +73,14 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // the thing that is populating the next hashtable
   Resources->World->HashSlotsUsed = 0;
 
-  { // DEBUG
-    world_chunk **Table = NextWorldHashtable(Resources);
-    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
-    {
-      Assert(Table[HashIndex] == 0);
-    }
-  }
-
+  /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
   // NOTE(Jesse): Must come before we update the frame index becaues
   // CollectUnusedChunks picks the hashtable based on the frame index.
   //
   CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion);
 
-  { // DEBUG
-    world_chunk **Table = CurrentWorldHashtable(Resources);
-    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
-    {
-      Assert(Table[HashIndex] == 0);
-    }
-  }
+  /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, CurrentWorldHashtable(Resources)); */
 
   // NOTE(Jesse): Must be updated before we simulate camera ghost because the
   // sim pulls chunks out of the hashtable.
@@ -85,24 +88,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
   Resources->FrameIndex += 1;
   Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
 
-  { // DEBUG
-    world_chunk **Table = NextWorldHashtable(Resources);
-    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
-    {
-      Assert(Table[HashIndex] == 0);
-    }
-  }
+  /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
   ComputeDrawListsAndQueueUnallocatedChunks(Resources);
 
-  { // DEBUG
-    world_chunk **Table = NextWorldHashtable(Resources);
-    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
-    {
-      Assert(Table[HashIndex] == 0);
-    }
-  }
-
+  /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
   // NOTE(Jesse): This is a special-case entity simulation routine such that we
   // can dispatch the draw commands for world chunks afterwards.  The reason we
