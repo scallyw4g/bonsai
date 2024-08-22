@@ -180,6 +180,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(memory_arena*, Element->MetaTableNameStringsArena),
+        CSz("MetaTableNameStringsArena"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(renderer_2d*, Element->UiGroup),
         CSz("UiGroup"),
         Params

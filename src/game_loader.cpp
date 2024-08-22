@@ -218,7 +218,7 @@ main( s32 ArgCount, const char ** Args )
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
 
-  thread_local_state MainThread = DefaultThreadLocalState(0);
+  thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
   if (GameApi->GameInit)
   {
@@ -227,7 +227,7 @@ main( s32 ArgCount, const char ** Args )
     // TODO(Jesse): Is there any reason to actually do this?
     while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
 #endif
-    EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
+    EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
@@ -292,6 +292,8 @@ main( s32 ArgCount, const char ** Args )
 
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
+      DuplicateMetaTableNameStrings(EngineResources);
+
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
@@ -307,12 +309,12 @@ main( s32 ArgCount, const char ** Args )
 
         HardResetEngine(EngineResources);
 
-        EngineResources->GameState = GameApi->GameInit(EngineResources, &MainThread);
+        EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
         if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
       }
 
       // Do game-specific reload code
-      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, &MainThread); }
+      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, MainThread); }
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
@@ -331,12 +333,12 @@ main( s32 ArgCount, const char ** Args )
     EngineApi.FrameBegin(EngineResources);
 
       TIMED_BLOCK("GameMain");
-        GameApi->GameMain(EngineResources, &MainThread);
+        GameApi->GameMain(EngineResources, MainThread);
       END_BLOCK("GameMain");
 
       EngineApi.Simulate(EngineResources);
 
-      DrainQueue(&Plat->HighPriority, &MainThread, GameApi);
+      DrainQueue(&Plat->HighPriority, MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
       EngineApi.Render(EngineResources);
