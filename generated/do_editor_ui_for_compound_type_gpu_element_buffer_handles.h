@@ -92,10 +92,45 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
       DoEditorUi(Ui,
         Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(b8*,&Element->Mapped),
         CSz("Mapped"),
-        &DefaultUiRenderParams_Checkbox
+        Params
         );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->Pad),
+        CSz("Pad"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u16*,&Element->Flags),
+        CSz("Flags"),
+        Params
+        );
+
+
 
 
 

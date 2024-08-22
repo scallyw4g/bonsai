@@ -1,4 +1,5 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
+
 #include <bonsai_types.h>
 
 #include "game_constants.h"
@@ -24,11 +25,14 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
+      Assert(Chunk->DEBUG_OwnedByThread == 0);
+      Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
+
       if (GameState->GenInfo.TileSuperpositions == 0) break;
 
       if (ChunkIsGarbage(Chunk))
       {
-        Chunk->Flags = Chunk_Uninitialized;
+        Chunk->Flags = Chunk_Deallocate;
       }
       else
       {
@@ -181,7 +185,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           }
 
           // TODO(Jesse): Redundant, remove
-          Chunk->Flags = chunk_flag(Chunk->Flags | Chunk_VoxelsInitialized);
+          /* Chunk->Flags = chunk_flag(Chunk->Flags | Chunk_VoxelsInitialized); */
 
           MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, World->ChunkDim, {}, World->ChunkDim);
 
@@ -194,9 +198,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
 
       FinalizeChunkInitialization(Chunk);
-
       QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
 
+      Chunk->DEBUG_OwnedByThread = 0;
     } break;
 
   }
@@ -553,16 +557,39 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           for (s32 x = Min.x; x < Max.x; ++ x)
           {
             world_position P = World_Position(x,y,z);
-            world_chunk *Chunk = 0;
             {
-              TIMED_NAMED_BLOCK("GetWorldChunk");
-              Chunk = GetWorldChunkFromHashtable( World, P );
-              if (Chunk)
+              TIMED_NAMED_BLOCK(GetWorldChunk);
+
+              if (world_chunk *Chunk = GetWorldChunkFromHashtable( World, P ))
               {
                 if ( Chunk->Flags & Chunk_Queued ) { continue; }
-                DeallocateWorldChunk(&Plat->RenderQ, Chunk, MeshFreelist);
-                Chunk->WorldP = P;
-                QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
+                Assert(Chunk->Flags & Chunk_VoxelsInitialized);
+
+                /* DeallocateWorldChunk(&Plat->RenderQ, Chunk, MeshFreelist); */
+                /* FreeWorldChunk(World, &Plat->RenderQ, Chunk, MeshFreelist); */
+
+                s16 AnyHandlesQueued = {};
+                RangeIterator(MeshIndex, MeshIndex_Count)
+                {
+                  AnyHandlesQueued |= Chunk->Meshes.GpuBufferHandles[MeshIndex].Flags;
+                }
+
+                if (AnyHandlesQueued) { continue; }
+
+                local_persist random_series RNG = {654376587568};
+
+                if (RandomBetween(0, &RNG, 100) > 90)
+                {
+                  DeallocateAndClearWorldChunk(Resources, Chunk);
+                  Chunk->WorldP = P;
+                  QueueChunkForInit(&Plat->HighPriority, Chunk, MeshBit_Lod0);
+                }
+
+/*                 Chunk->Flags = Chunk_Deallocate; */
+/*                 world_chunk *NewChunk         = GetFreeWorldChunk(World); */
+/*                              NewChunk->WorldP = P; */
+/*                 QueueChunkForInit(&Plat->HighPriority, NewChunk, MeshBit_Lod0); */
+
               }
             }
           }

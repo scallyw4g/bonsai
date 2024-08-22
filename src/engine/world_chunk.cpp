@@ -54,7 +54,7 @@ FinalizeChunkInitialization(world_chunk *Chunk)
   FullBarrier;
 
   /* UnSetFlag(Chunk, Chunk_Garbage); */
-  UnSetFlag(&Chunk->Flags, Chunk_Queued);
+  /* UnSetFlag(&Chunk->Flags, Chunk_Queued); */
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
 }
 
@@ -118,6 +118,14 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
 {
   /* TIMED_FUNCTION(); */
 
+  GetWorld()->HashSlotsUsed += 1;
+
+  Assert(
+      Chunk->Flags == Chunk_Uninitialized ||
+      Chunk->Flags & Chunk_Queued         ||
+      Chunk->Flags & Chunk_VoxelsInitialized
+    );
+
   b32 Result = True;
   u32 HashIndex = GetWorldChunkHash(Chunk->WorldP, VisibleRegion, WorldHashSize);
   u32 StartingHashIndex = HashIndex;
@@ -129,6 +137,14 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
   world_chunk **Current = WorldChunkHash + HashIndex;
   while (*Current)
   {
+    // Catch inserting duplicate chunks
+    // Duplicates are allowed if the duplicate is marked for Deallocation
+    if ( ((*Current)->Flags & (Chunk_Deallocate|Chunk_Freelist)) == 0 )
+    {
+      Assert((*Current) != Chunk);
+      Assert((*Current)->WorldP != Chunk->WorldP);
+    }
+
     HashIndex = (HashIndex + 1) % WorldHashSize;
     Current = WorldChunkHash + HashIndex;
 
@@ -206,19 +222,26 @@ GetFreeWorldChunk(world *World)
   world_chunk *Result = {};
   if (World->ChunkFreelistSentinal.Next)
   {
+    AcquireFutex(&World->ChunkFreelistFutex);
     world_chunk *Next = World->ChunkFreelistSentinal.Next;
     World->ChunkFreelistSentinal.Next = Next->Next;
     Next->Next = 0;
+    World->FreeChunkCount -= 1;
 
     Result = (world_chunk*)Next;
+    Assert(Result->Flags == Chunk_Freelist);
+    Result->Flags = {};
+    ReleaseFutex(&World->ChunkFreelistFutex);
   }
   else
   {
+    /* Info("Allocated World Chunk"); */
     Result = AllocateWorldChunk({}, World->ChunkDim, World->ChunkMemory);
     Assert(Result->Flags == Chunk_Uninitialized);
   }
 
   Assert(Result->Meshes.MeshMask == 0);
+  Result->WorldP = INVALID_WORLD_CHUNK_POSITION;
 
   return Result;
 }
@@ -289,40 +312,53 @@ DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
     PushDeallocateBuffersCommand(RenderQueue, &Chunk->Meshes.GpuBufferHandles[MeshIndex]);
-    Chunk->Meshes.GpuBufferHandles[MeshIndex].Mapped = False;
+    Assert(Chunk->Meshes.GpuBufferHandles[MeshIndex].Mapped == False);
+    Assert(Chunk->Meshes.GpuBufferHandles[MeshIndex].ElementCount == 0);
   }
 }
 
+#if 0
 link_internal void
 DeallocateWorldChunk(work_queue *RenderQueue, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
 {
-  Assert ( ThreadLocal_ThreadIndex == 0 );
-  Assert ( NotSet(Chunk, Chunk_Queued) );
-
-  /* if (Chunk->Entities.Memory) { VaporizeArena(Chunk->Entities.Memory); } */
-
-  DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
-  DeallocateGpuBuffers(RenderQueue, Chunk);
-
-  ClearWorldChunk(Chunk);
+  PushBonsaiRenderCommandDeallocateWorldChunk( &Plat->RenderQ, Chunk);
 }
+#endif
+
+link_internal void PushBonsaiRenderCommandDeallocateWorldChunk( work_queue *RenderQueue, world_chunk* Chunk);
 
 link_internal void
-FreeWorldChunk(world *World, work_queue *RenderQueue, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
+FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 {
   TIMED_FUNCTION();
-  Assert ( ThreadLocal_ThreadIndex == 0 );
-  Assert ( NotSet(Chunk, Chunk_Queued) );
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-  DeallocateWorldChunk(RenderQueue, Chunk, MeshFreelist);
-  Assert(Chunk->Flags == Chunk_Uninitialized);
-  /* World->FreeChunks[World->FreeChunkCount++] = Chunk; */
+  Assert(Chunk->Next == 0);
+  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
 
+  /* Assert(NotSet(Chunk->Flags, Chunk_Queued)); */
+
+  // NOTE(Jesse): Have to mark this chunk so the thing that collects unused
+  // chunks doesn't free this multiple times.
+  //
+  // NOTE(Jesse): That's bullshit.  This flag should never be seen by anything
+  // but the routine that frees the chunk.
+  /* Chunk->Flags = Chunk_Deallocate; */
+
+  /* PushBonsaiRenderCommandDeallocateWorldChunk(RenderQueue, Chunk); */
+  DeallocateAndClearWorldChunk(Engine, Chunk);
+
+  AcquireFutex(&World->ChunkFreelistFutex);
   world_chunk *Next = World->ChunkFreelistSentinal.Next;
+
+  Chunk->Flags = Chunk_Freelist;
+  if (Next) { Assert(Next->Flags == Chunk_Freelist); }
+
   World->ChunkFreelistSentinal.Next = Chunk;
   World->ChunkFreelistSentinal.Next->Next = Next;
 
-  /* ZeroMemory( Chunk->Voxels, sizeof(voxel)*umm(Volume(Chunk->Dim)) ); */
+  World->FreeChunkCount += 1;
+  ReleaseFutex(&World->ChunkFreelistFutex);
 }
 
 link_internal world_chunk*
@@ -339,13 +375,15 @@ GetWorldChunkFromHashtable(world *World, world_position P)
 
   for (;;)
   {
-#if 1
     if (!Result) break;
-#else
-    if (Result)
-#endif
+
+    if (Result->WorldP == P)
     {
-      if (Result->WorldP == P)
+      if (Result->Flags & (Chunk_Deallocate|Chunk_Freelist))
+      {
+        // Don't break out for chunks marked for deallocation or those that are already deallocated
+      }
+      else
       {
         break;
       }
@@ -381,7 +419,7 @@ NextWorldHashtable(engine_resources *Engine)
 }
 
 link_internal void
-CollectUnusedChunks(engine_resources *Engine, chunk_dimension VisibleRegion)
+CollectUnusedChunksAndClearCurrentTable(engine_resources *Engine, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
 
@@ -408,34 +446,64 @@ CollectUnusedChunks(engine_resources *Engine, chunk_dimension VisibleRegion)
   {
     world_chunk **ChunkBucket = CurrentWorldHash + ChunkIndex;
     world_chunk *Chunk = *ChunkBucket;
-    *ChunkBucket = 0;
+
+    *ChunkBucket = 0; // Clear out the table as we go
 
 
     if (Chunk)
     {
-      if (Chunk->Flags == Chunk_Uninitialized)
+      if (Chunk->Flags & Chunk_Queued)
       {
-        FreeWorldChunk(World, &Plat->RenderQ, Chunk, MeshFreelist);
+        // NOTE(Jesse): A chunk can be Queued and VoxelsInitialized when it's getting its mesh rebuilt.
+        /* Assert( (Chunk->Flags & Chunk_VoxelsInitialized) == 0); */
+
+        // Chunks queued inside the visible region get no special treatment
+        if (IsInside(Chunk->WorldP, VRRect)) {  }
+        //
+        // Chunks queued and outside the visible region get marked as garbage so the initializer knows to skip them
+        else                                 { SetFlag(&Chunk->Flags, Chunk_Garbage); }
+
+        // All queued chunks get retained.  Those outside the visible region
+        // eventually get free'd by the VoxelsInitialized path when they complete
+        Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
+
+        continue;
       }
-      else
+
+      if (Chunk->Flags & Chunk_VoxelsInitialized)
       {
         if (IsInside(Chunk->WorldP, VRRect))
         {
+          // Chunk is initialized and inside the visible region.  Retain it.
           Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
         }
         else
         {
-          if (Chunk->Flags & Chunk_Queued)
-          {
-            SetFlag(&Chunk->Flags, Chunk_Garbage);
-            Ensure( InsertChunkIntoWorld(NextWorldHash, Chunk, World->VisibleRegion, World->HashSize) );
-          }
-          else
-          {
-            FreeWorldChunk(World, &Plat->RenderQ, Chunk, MeshFreelist);
-          }
+          // Chunk is initialized and outside the visible region.  Discard it.
+          FreeWorldChunk(Engine, Chunk);
         }
+
+        continue;
       }
+
+      // Someone on the outside world decided this chunk should be deallocated
+      if (Chunk->Flags & Chunk_Deallocate)
+      {
+        FreeWorldChunk(Engine, Chunk);
+        continue;
+      }
+
+      // Chunk was submitted for deallocation and already made it onto the freelist
+      if (Chunk->Flags & Chunk_Freelist)
+      {
+        Assert(Chunk->Flags == Chunk_Freelist);
+        continue;
+      }
+
+      // TODO(Jesse): Do we actually want this behavior anymore since we have
+      // an explicit deallocate flag now?
+      Assert(Chunk->Flags == Chunk_Uninitialized);
+      FreeWorldChunk(Engine, Chunk);
     }
   }
 
@@ -2149,6 +2217,7 @@ AllocateTempMesh(memory_arena* TempMemory)
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMemory)
 {
+  Assert(Elements);
 #if BONSAI_INTERNAL
   AcquireFutex(&Freelist->DebugFutex);
 #endif
@@ -2168,6 +2237,7 @@ GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMem
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, u32 Elements, memory_arena *PermMemory)
 {
+  Assert(Elements);
   mesh_freelist *Freelist = TryGetTierForSize(TieredFreelist, Elements);
 
   untextured_3d_geometry_buffer *Result = {};
@@ -3402,6 +3472,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 #endif
 
   FinalizeChunkInitialization(DestChunk);
+  UnSetFlag(&DestChunk->Flags, Chunk_Queued);
 
   return;
 }
@@ -3464,6 +3535,9 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 {
   engine_resources *EngineResources = GetEngineResources();
 
+  Assert(Chunk->DEBUG_OwnedByThread == 0);
+  Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
+
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
 
   if (MeshBit == MeshBit_Lod0)
@@ -3479,14 +3553,20 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
     BuildMipMesh( Chunk->Voxels, Chunk->Dim, {}, Chunk->Dim, MeshBit, TempMesh, TempMem );
   }
 
-  world_chunk_geometry_buffer *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
-  if (TempMesh->At) { DeepCopy(TempMesh, FinalMesh); }
-
+  if (TempMesh->At)
   {
+    world_chunk_geometry_buffer *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
+    DeepCopy(TempMesh, FinalMesh);
+
     auto *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp);
     if (Replaced) { DeallocateMesh(Replaced, &EngineResources->world_chunk_MeshFreelist); }
   }
+  else
+  {
+    // TODO(Jesse): Deallocate GPU buffers here.
+  }
 
+  Chunk->DEBUG_OwnedByThread = 0;
   // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times per job
 }
 
@@ -3876,7 +3956,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
     world_chunk *DestChunk = GetWorldChunkFromHashtable(World, DestWorldP);
     if (DestChunk)
     {
-      Assert(DestChunk->Flags == Chunk_VoxelsInitialized);
+      Assert(DestChunk->Flags & Chunk_VoxelsInitialized);
 
       v3i SrcVoxelsOffset = (SrcWorldP*World->ChunkDim) - V3i(Origin.Offset);
 

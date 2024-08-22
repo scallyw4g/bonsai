@@ -46,6 +46,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Deallocate"), UiId(Window, "enum Chunk_Deallocate", Element), Params))
+    {
+      *Element = Chunk_Deallocate;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Freelist"), UiId(Window, "enum Chunk_Freelist", Element), Params))
+    {
+      *Element = Chunk_Freelist;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
   }
   else
   {

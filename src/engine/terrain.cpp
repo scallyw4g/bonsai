@@ -1594,7 +1594,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 
   s32 xNoiseBlockCount = NoiseDim.x / 8;
   {
-    TIMED_NAMED_BLOCK("Octaves");
+    TIMED_NAMED_BLOCK(Octaves);
     for ( s32 z = 0; z < NoiseDim.z; ++ z)
     {
       f32 zCoord = (-1 + z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z));
@@ -1684,7 +1684,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 
 #if 0
   {
-    TIMED_NAMED_BLOCK("OctavesLeftovers");
+    TIMED_NAMED_BLOCK(OctavesLeftovers);
     s32 xFixupBase = (xNoiseBlockCount * 8);
     for ( s32 z = 0; z < NoiseDim.z; ++ z)
     {
@@ -1727,7 +1727,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 
   s32 xShapingBlockCount = NormalDim.x/8;
   {
-    TIMED_NAMED_BLOCK("Shaping");
+    TIMED_NAMED_BLOCK(Shaping);
     for ( s32 z = 0; z < NormalDim.z; ++ z)
     {
       s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
@@ -1813,7 +1813,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 
 #if 0
   {
-    TIMED_NAMED_BLOCK("ShapingLeftovers");
+    TIMED_NAMED_BLOCK(ShapingLeftovers);
     s32 xFixupBase = (xShapingBlockCount * 8);
     for ( s32 z = 0; z < NormalDim.z; ++ z)
     {

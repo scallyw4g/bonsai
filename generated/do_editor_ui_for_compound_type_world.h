@@ -26,7 +26,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->HashSlotsUsed),
+        CSz("HashSlotsUsed"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->HashSize),
+        CSz("HashSize"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->FreeChunkCount),
+        CSz("FreeChunkCount"),
+        Params
+        );
+
+
+
+
+
+
 
       PushNewRow(Ui);
 

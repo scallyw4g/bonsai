@@ -360,6 +360,7 @@ main( s32 ArgCount, const char ** Args )
     }
 
 
+    Assert(ThreadLocal_ThreadIndex == 0);
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
     Ensure( RewindArena(TLS->TempMemory) );
 

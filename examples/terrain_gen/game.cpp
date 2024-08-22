@@ -690,6 +690,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       }
 
       FinalizeChunkInitialization(Chunk);
+      UnSetFlag(&Chunk->Flags, Chunk_Queued);
     } break;
   }
 

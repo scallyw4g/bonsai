@@ -1,4 +1,4 @@
-// src/engine/render_command.h:113:0
+// src/engine/render_command.h:128:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
@@ -9,6 +9,7 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_allocate_buffers,
   type_bonsai_render_command_reallocate_buffers,
   type_bonsai_render_command_deallocate_buffers,
+  type_bonsai_render_command_deallocate_world_chunk,
   type_bonsai_render_command_reallocate_world_chunk_buffers,
   type_bonsai_render_command_do_stuff,
   type_bonsai_render_command_setup_shader,
@@ -34,6 +35,7 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_allocate_buffers bonsai_render_command_allocate_buffers;
     struct bonsai_render_command_reallocate_buffers bonsai_render_command_reallocate_buffers;
     struct bonsai_render_command_deallocate_buffers bonsai_render_command_deallocate_buffers;
+    struct bonsai_render_command_deallocate_world_chunk bonsai_render_command_deallocate_world_chunk;
     struct bonsai_render_command_reallocate_world_chunk_buffers bonsai_render_command_reallocate_world_chunk_buffers;
     struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
     struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;

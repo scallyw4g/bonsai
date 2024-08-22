@@ -6,7 +6,7 @@
 #include <game_types.h>
 
 
-#define SHORT_SKIPS 1
+#define SHORT_SKIPS 0
 
 link_internal float Interval = 3.f;
 
@@ -108,6 +108,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Models = AllocateGameModels(GameState, Resources->GameMemory, Heap);
 
   GameState->Player = TryGetFreeEntityPtr(EntityTable);
+  GameState->Player->Behavior = entity_behavior_flags(GameState->Player->Behavior|EntityBehaviorFlags_WorldCenter);
 
   asset_id Asset = GetOrAllocateAssetId(Resources, {FileTraversalType_File, CSz("models"), CSz("players/chr_rain.vox")});
   SpawnPlayerLikeEntity( Plat,

@@ -58,11 +58,22 @@ PushBonsaiRenderCommandReallocateBuffers(
 link_internal void
 PushBonsaiRenderCommandDeallocateBuffers(
   work_queue *RenderQueue
- , u32* Buffers   , s32 Count = 3  
+ , u32* Buffers   , s32 Count  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
     WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateBuffers( Buffers , Count  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandDeallocateWorldChunk(
+  work_queue *RenderQueue
+ , world_chunk* Chunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateWorldChunk( Chunk  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

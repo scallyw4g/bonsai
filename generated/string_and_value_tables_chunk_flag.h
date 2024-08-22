@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:78:0
+// src/engine/world_chunk.h:85:0
 
 link_internal counted_string
 ToStringPrefixless(chunk_flag Type)
@@ -10,6 +10,8 @@ ToStringPrefixless(chunk_flag Type)
     case Chunk_Queued: { Result = CSz("Queued"); } break;
     case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
     case Chunk_Garbage: { Result = CSz("Garbage"); } break;
+    case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
+    case Chunk_Freelist: { Result = CSz("Freelist"); } break;
 
     
   }
@@ -27,6 +29,8 @@ ToString(chunk_flag Type)
     case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
     case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
     case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
+    case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
+    case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
 
     
   }
@@ -43,6 +47,8 @@ ChunkFlag(counted_string S)
   if (StringsMatch(S, CSz("Chunk_Queued"))) { return Chunk_Queued; }
   if (StringsMatch(S, CSz("Chunk_VoxelsInitialized"))) { return Chunk_VoxelsInitialized; }
   if (StringsMatch(S, CSz("Chunk_Garbage"))) { return Chunk_Garbage; }
+  if (StringsMatch(S, CSz("Chunk_Deallocate"))) { return Chunk_Deallocate; }
+  if (StringsMatch(S, CSz("Chunk_Freelist"))) { return Chunk_Freelist; }
 
   return Result;
 }

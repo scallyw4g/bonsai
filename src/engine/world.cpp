@@ -7,8 +7,8 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   World->ChunkMemory = WorldChunkMemory;
   DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
 
-  World->HashSize = (u32)(Volume(VisibleRegion)*4); //WorldHashSize;
-  /* World->HashSize = (u32)(Volume(VisibleRegion)*4); //WorldHashSize; */
+  World->HashSize = (u32)(Volume(VisibleRegion)*4);
+  /* World->HashSize = WorldHashSize; */
   World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize );
   World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize );
 

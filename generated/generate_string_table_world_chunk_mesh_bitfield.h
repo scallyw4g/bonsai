@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:227:0
+// src/engine/world_chunk.h:234:0
 
 link_internal counted_string
 ToStringPrefixless(world_chunk_mesh_bitfield Type)

@@ -535,14 +535,13 @@ UnspawnParticleSystem(particle_system *System)
 
 link_internal void
 SpawnPlayerLikeEntity( platform *Plat,
-                       world *World,
+                          world *World,
                        asset_id *AssetId,
-                       u64 ModelIndex,
-                       entity *Player,
-                       canonical_position InitialP,
-                       random_series* Entropy,
-
-                       r32 Scale = 1.0f )
+                            u64  ModelIndex,
+                         entity *Player,
+                             cp  InitialP,
+                  random_series *Entropy,
+                            r32  Scale = 1.0f )
 {
   physics Physics = {};
   Physics.Speed = 60.f;

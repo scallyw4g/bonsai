@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:510:0
+// src/engine/world_chunk.h:522:0
 
 struct standing_spot_stream_chunk
 {

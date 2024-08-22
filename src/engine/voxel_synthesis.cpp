@@ -288,7 +288,7 @@ PropagateChangesTo( voxel_synthesis_change_propagation_info_stack *ChangePropaga
 
   while (ChangePropagationInfoStack->At)
   {
-    TIMED_NAMED_BLOCK("InnerLoop");
+    TIMED_NAMED_BLOCK(InnerLoop);
 
     voxel_synthesis_change_propagation_info Info = Pop(ChangePropagationInfoStack);
 
@@ -440,7 +440,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
   do
   {
     {
-      TIMED_NAMED_BLOCK("EntropyListDeepCopy");
+      TIMED_NAMED_BLOCK(EntropyListDeepCopy);
       DeepCopy(EntropyListsStorage, &LocalEntropyLists);
     }
 
@@ -449,7 +449,7 @@ InitializeWorld_VoxelSynthesis_Partial( voxel_synthesis_result *BakeResult,
     //
     // @memcopy_tile_superpositions
     {
-      TIMED_NAMED_BLOCK("MemCopy TileSuperpositionsStorage");
+      TIMED_NAMED_BLOCK(MemCopy_TileSuperpositionsStorage);
       MemCopy((u8*)TileSuperpositionsStorage, (u8*)LocalTileSuperpositions, (umm)((umm)TileSuperpositionsCount*sizeof(tile_rule)));
     }
 

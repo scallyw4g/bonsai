@@ -1,4 +1,34 @@
 link_internal void
+DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Chunk->DEBUG_OwnedByThread == 0);
+  Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
+
+  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
+
+  DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
+
+  /* DeallocateGpuBuffers(RenderQueue, Chunk); */
+  RangeIterator(MeshIndex, MeshIndex_Count)
+  {
+    auto Handles = Chunk->Meshes.GpuBufferHandles+MeshIndex;
+    // @vertex_handle_primal
+    //
+    /* if (Handles->VertexHandle) { GL.DeleteBuffers(3, &Handles->VertexHandle); } */
+    PushDeallocateBuffersCommand(RenderQ, Handles);
+  }
+
+  ClearWorldChunk(Chunk);
+
+  Assert(Chunk->DEBUG_OwnedByThread == 0);
+  Assert(Chunk->Flags == 0);
+  Assert(Chunk->Next == 0);
+
+  FullBarrier;
+}
+
+link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
   // Map immediate GPU buffers for first frame
@@ -16,6 +46,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
     while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
     {
+      /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
       tswitch(Job)
       {
         case type_work_queue_entry_noop:
@@ -59,13 +90,16 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
             } break;
 
+
             { tmatch(bonsai_render_command_deallocate_texture, RC, Command)
               NotImplemented;
             } break;
 
+
             { tmatch(bonsai_render_command_allocate_buffers, RC, Command)
               NotImplemented;
             } break;
+
 
             { tmatch(bonsai_render_command_reallocate_world_chunk_buffers, RC, Command)
               auto *Handles = Command->Handles;
@@ -82,7 +116,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               CopyToGpuBuffer(Mesh, Handles);
 
               DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
+              UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
             } break;
+
 
             { tmatch(bonsai_render_command_reallocate_buffers, RC, Command)
               auto *Handles = Command->Handles;
@@ -99,13 +135,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               CopyToGpuBuffer(Mesh, Handles);
 
               DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
+              UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
             } break;
 
-            { tmatch(bonsai_render_command_deallocate_buffers, RC, Command)
 
+            { tmatch(bonsai_render_command_deallocate_buffers, RC, Command)
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;
+
+
+            { tmatch(bonsai_render_command_deallocate_world_chunk, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_world_chunk);
+              world_chunk *Chunk = Command->Chunk;
+              FreeWorldChunk(Engine, Chunk);
+            } break;
+
 
             { tmatch(bonsai_render_command_clear_all_framebuffers, RC, Command)
               ClearFramebuffers(Graphics, &Engine->RTTGroup);
@@ -303,6 +348,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           }
         } break;
       }
+
+      RewindArena(GetTranArena());
     }
 
     Graphics->RenderGate = False;
@@ -477,7 +524,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
     if (world_chunk *Chunk = World->ChunkHash[HashIndex])
     {
       Chunk->Flags = Chunk_VoxelsInitialized;
-      FreeWorldChunk(World, &Plat->RenderQ, Chunk, &Engine->world_chunk_MeshFreelist);
+      FreeWorldChunk(Engine, Chunk);
       World->ChunkHash[HashIndex] = 0;
       ++ChunksFreed;
     }

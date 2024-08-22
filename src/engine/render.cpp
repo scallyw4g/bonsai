@@ -1397,7 +1397,7 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 }
 
 link_internal void
-MaintainWorldChunkHashtables(engine_resources *Engine)
+ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 {
   TIMED_FUNCTION();
 

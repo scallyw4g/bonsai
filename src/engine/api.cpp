@@ -53,22 +53,56 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.RenderQ);
 
-  MaintainWorldChunkHashtables(Resources);
+  // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
+  // the thing that is populating the next hashtable
+  Resources->World->HashSlotsUsed = 0;
+
+  { // DEBUG
+    world_chunk **Table = NextWorldHashtable(Resources);
+    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
+    {
+      Assert(Table[HashIndex] == 0);
+    }
+  }
+
 
   // NOTE(Jesse): Must come before we update the frame index becaues
   // CollectUnusedChunks picks the hashtable based on the frame index.
   //
-  // TODO(Jesse, nopush): I think this must come before we push chunks onto the
-  // draw lists for the frame because it could free chunks that we push onto
-  // the draw lists ..  right?
-  CollectUnusedChunks(Resources, Resources->World->VisibleRegion);
+  CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion);
 
+  { // DEBUG
+    world_chunk **Table = CurrentWorldHashtable(Resources);
+    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
+    {
+      Assert(Table[HashIndex] == 0);
+    }
+  }
 
-  // NOTE(Jesse): Must be updated before we simulate camera ghost because the sim
-  // pulls chunks out of the hashtable.
-
+  // NOTE(Jesse): Must be updated before we simulate camera ghost because the
+  // sim pulls chunks out of the hashtable.
+  //
   Resources->FrameIndex += 1;
   Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
+
+  { // DEBUG
+    world_chunk **Table = NextWorldHashtable(Resources);
+    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
+    {
+      Assert(Table[HashIndex] == 0);
+    }
+  }
+
+  ComputeDrawListsAndQueueUnallocatedChunks(Resources);
+
+  { // DEBUG
+    world_chunk **Table = NextWorldHashtable(Resources);
+    RangeIterator_t(u32, HashIndex, Resources->World->HashSize)
+    {
+      Assert(Table[HashIndex] == 0);
+    }
+  }
+
 
   // NOTE(Jesse): This is a special-case entity simulation routine such that we
   // can dispatch the draw commands for world chunks afterwards.  The reason we

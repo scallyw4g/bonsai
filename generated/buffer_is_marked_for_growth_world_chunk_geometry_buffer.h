@@ -1,4 +1,4 @@
-// src/engine/mesh.h:87:0
+// src/engine/mesh.h:89:0
 
 link_internal b32
 BufferIsMarkedForGrowth(world_chunk_geometry_buffer *Dest)

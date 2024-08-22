@@ -31,9 +31,11 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
 {
   mesh_freelist *Result = {};
 
+  Assert(Size);
+
   // NOTE(Jesse): This is a pretty major hack so that we just use a 0th bucket
   // element for meshes that need to get deallocated on the GPU
-  if (Size==0) { Size = 1; }
+  /* if (Size==0) { Size = 1; } */
 
   // NOTE(Jesse): So we include the 1*minsize in the 0th bucket, 2*minsize in 1th bucket, etc
   if (Size % WORLD_CHUNK_MESH_MIN_SIZE == 0) { Size = Size-1; }

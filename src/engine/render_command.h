@@ -23,8 +23,23 @@ struct bonsai_render_command_allocate_buffers
 
 struct bonsai_render_command_deallocate_buffers
 {
-  u32 *Buffers;
-  s32  Count = 3;
+  u32 Buffers[16]; poof(@array_length(Count))
+  s32 Count;
+};
+
+// NOTE(Jesse): This is kind of a fucky workaround for the following situation:
+//
+// 1. world_chunk gets free'd on the main thread
+// 2. gpu_buffer_handles need to be async free'd on the render thread
+// 3. main thread has no idea when the handle free has completed, so it can get
+//    erroniously allocated again before the handle free has finished.
+//
+// Async freeing the chunk on the render thread fixes this by not appending the
+// chunk to the chunk freelist until the whole free/clear has happened.
+//
+struct bonsai_render_command_deallocate_world_chunk
+{
+  world_chunk *Chunk;
 };
 
 struct bonsai_render_command_reallocate_buffers
@@ -120,6 +135,8 @@ poof(
     bonsai_render_command_allocate_buffers
     bonsai_render_command_reallocate_buffers
     bonsai_render_command_deallocate_buffers
+
+    bonsai_render_command_deallocate_world_chunk
 
     bonsai_render_command_reallocate_world_chunk_buffers
 

@@ -1,3 +1,4 @@
+#define INVALID_WORLD_CHUNK_POSITION (V3i(s32_MAX, s32_MAX, s32_MAX))
 
 struct world;
 struct world_chunk;
@@ -73,6 +74,12 @@ enum chunk_flag
   // This is an optimization to tell the thread queue to not initialize chunks
   // we've already moved away from.
   Chunk_Garbage           = 1 << 3,
+
+  // Threads can set this to mark a chunk as ready to deallocate
+  Chunk_Deallocate        = 1 << 4,
+
+  // TODO(Jesse): Remove this .. probably .. nocheckin
+  Chunk_Freelist          = 1 << 5,
 };
 
 poof(string_and_value_tables(chunk_flag))
@@ -378,12 +385,15 @@ struct world_chunk
   // considered for collision detection.
   entity_ptr_block_array Entities;
 
+  // TODO(Jesse): Probably take this out?
+  s32 DEBUG_OwnedByThread;
+
 #if VOXEL_DEBUG_COLOR
   f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
   v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
   u8 _Pad1[16];      poof(@no_serialize)
 #else
-  u8 _Pad1[32];      poof(@no_serialize)
+  u8 _Pad1[28];      poof(@no_serialize)
 #endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
@@ -439,17 +449,19 @@ struct world
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
-  u32 HashSize;                      poof(@ui_skip)
+  u32 HashSlotsUsed;
+  u32 HashSize;
   world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
   world_chunk **ChunkHash;           poof(@ui_skip)
 
+
+  bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
   world_chunk ChunkFreelistSentinal; poof(@ui_skip)
+  s32 FreeChunkCount;
 
   v3i ChunkDim;                      poof(@ui_skip)
-  //memory_arena* Memory;              poof(@ui_skip)
-  memory_arena* ChunkMemory;         poof(@ui_skip)
+  memory_arena *ChunkMemory;         poof(@ui_skip)
   world_flag Flags;                  poof(@ui_skip)
-
 };
 
 struct standing_spot
@@ -730,3 +742,6 @@ TryGetVoxel(world *World, cp P)
   }
   return Result;
 }
+
+link_internal void
+DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);

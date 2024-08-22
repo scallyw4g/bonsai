@@ -422,8 +422,7 @@ ZeroMesh( untextured_3d_geometry_buffer *Mesh )
 link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
-  Chunk->Flags = {};
-  Chunk->WorldP = {};
+  Chunk->WorldP = INVALID_WORLD_CHUNK_POSITION;
   Chunk->FilledCount = {};
   Chunk->DrawBoundingVoxels = {};
   Chunk->PointsToLeaveRemaining = {};
@@ -431,6 +430,13 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->EdgeBoundaryVoxelCount = {};
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
   Chunk->Entities = {};
+  Chunk->Next = {};
+
+  Chunk->DEBUG_OwnedByThread = {};
+
+  Clear(&Chunk->Meshes);
+
+  Chunk->Flags = {};
 }
 
 inline b32
