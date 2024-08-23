@@ -19,8 +19,6 @@ BuildDebugOnlyTests=0
 
 RunTests=0
 
-MakeDebugLibRelease=0
-
 stdlib_build_scripts='external/bonsai_stdlib/scripts'
 source $stdlib_build_scripts/preamble.sh
 source $stdlib_build_scripts/setup_for_cxx.sh
@@ -261,10 +259,6 @@ fi
 
 function RunEntireBuild {
 
-  if [ $MakeDebugLibRelease == 1 ]; then
-    MakeDebugLibRelease
-  fi
-
   if [ $RunPoof == 1 ]; then
     RunPoof
   fi
@@ -422,10 +416,6 @@ while (( "$#" )); do
 
     "BuildDebugOnlyTests")
       BuildDebugOnlyTests=1
-    ;;
-
-    "MakeDebugLibRelease")
-      MakeDebugLibRelease=1
     ;;
 
     "RunTests")
