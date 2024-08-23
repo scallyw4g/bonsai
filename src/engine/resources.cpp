@@ -494,6 +494,7 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+  CancelAllWorkQueueJobs(Plat, &Plat->RenderQ);
 }
 
 link_internal void
