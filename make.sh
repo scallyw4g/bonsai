@@ -39,7 +39,7 @@ BIN="$ROOT/bin"
 BIN_TEST="$BIN/tests"
 BIN_GAME_LIBS="$BIN/game_libs"
 
-BONSAI_INTERNAL='-D BONSAI_INTERNAL'
+BONSAI_INTERNAL='-D BONSAI_INTERNAL=1'
 
 # $EXAMPLES/tile_gen
 
@@ -439,6 +439,7 @@ while (( "$#" )); do
     "BundleRelease")
       BundleRelease=1
       OPTIMIZATION_LEVEL="-O2"
+      BONSAI_INTERNAL="-D BONSAI_INTERNAL=0"
       # BuildAll
     ;;
 
