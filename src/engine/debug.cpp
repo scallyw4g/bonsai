@@ -348,6 +348,15 @@ FilterFilenamesByVoxExtension(file_traversal_node *Node)
 }
 
 link_internal void
+FilenameModal(void *VoidEngine)
+{
+  engine_resources *Engine = Cast(engine_resources*, VoidEngine);
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Text(Ui, CSz("Callback"));
+}
+
+link_internal void
 DoAssetWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -356,6 +365,15 @@ DoAssetWindow(engine_resources *Engine)
     local_persist window_layout Window = WindowLayout("Assets");
 
     PushWindowStart(Ui, &Window);
+
+    if (SelectionComplete(Editor->SelectionClicks))
+    {
+      if (Button(Ui, CSz("New From Selection"), UiId(&Window, "New From Selection", 0u)))
+      {
+        ModalWindow(Ui, FilenameModal, Cast(void*, Engine));
+      }
+      PushNewRow(Ui);
+    }
 
     DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
 
