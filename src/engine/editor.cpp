@@ -54,8 +54,10 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
-  /* Editor->Shape.Settings.Type = BrushLayerType_Shape; */
-  /* Editor->Noise.Settings.Type = BrushLayerType_Noise; */
+  RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
+  {
+    Editor->LayeredBrushEditor.Layers[LayerIndex].Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  }
 
   return Result;
 }
