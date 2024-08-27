@@ -1,4 +1,4 @@
-// src/engine/asset.h:226:0
+// src/engine/asset.h:197:0
 
 struct maybe_asset_ptr
 {

@@ -486,7 +486,7 @@ Bonsai_Render(engine_resources *Engine)
   PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
 
-  DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim));
+  /* DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim)); */
 
 
   {

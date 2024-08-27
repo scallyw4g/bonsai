@@ -102,21 +102,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(window_layout_hashtable*,&Element->WindowTable),
-        CSz("WindowTable"),
-        Params
-        );
-
-
-
-
-
-
-
-      
       if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
@@ -221,22 +206,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(void *, Element->ActiveModalUserData),
-        CSz("ActiveModalUserData"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
