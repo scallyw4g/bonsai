@@ -960,6 +960,7 @@ struct brush_layer
 #define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
+#define BRUSH_PREVIEW_TEXTURE_DIM 256
 struct layered_brush_editor poof(@version(2))
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
@@ -1060,6 +1061,9 @@ struct level_editor
   selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
+
+  b32 NewAssetFromSelection;
+  char NewAssetFromSelectionFilename[512];
 };
 
 

@@ -1,3 +1,8 @@
+* 1.6.1
+
+- Fix layered brush previews crashing the program
+
+
 * 1.6.0
 
 - Renderer now lives on its own thread.

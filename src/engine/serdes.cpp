@@ -46,6 +46,9 @@ poof(serdes_struct(voxel_lighting))
 /* poof(serdes_array(voxel_lighting)) */
 /* #include <generated/serdes_array_voxel_lighting.h> */
 
+poof(serdes_struct(world_chunk))
+#include <generated/serdes_struct_world_chunk.h>
+
 /* poof(serdes_array(v3)) */
 /* #include <generated/serdes_array_v3.h> */
 

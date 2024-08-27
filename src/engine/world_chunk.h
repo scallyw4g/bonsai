@@ -329,64 +329,43 @@ struct world_chunk
 {
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
-  world_chunk *Next;
-  /* void *Next; // NOTE(Jesse): This gets cast to a "free_list_thing", so this just */
-              // takes up the space where the pointer value gets saved ..
+  world_chunk *Next;                  poof(@no_serialize)
 
-  /* poof( use_struct(chunk_data) ) */
-
-/*   union */
-/*   { */
-/*     chunk_data ChunkData; */
-    /* struct */
-    /* { */
-    /*   chunk_flag Flags; */
-    /*   v3i Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32 */
-    /*   voxel *Voxels; */
-    /*   voxel_lighting *VoxelLighting; */
-    /* }; */
-
-/*   }; */
-
-
-      chunk_flag Flags;
-      v3i Dim; // TODO(Jesse): can be 3x u8 instead of 3x s32
-      voxel *Voxels;
-      voxel_lighting *VoxelLighting;
+  // chunk_data {
+          chunk_flag  Flags;          poof(@no_serialize)
+                 v3i  Dim; // could be compressed?
+               voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
+      voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
+  // }
 
 
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes
   // smaller, which is probably pretty worth.
-  world_chunk_lod_element_buffer Meshes;
+  world_chunk_lod_element_buffer Meshes; poof(@no_serialize)
 
   /* threadsafe_geometry_buffer TransparentMeshes; */
   /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
 
-
-  voxel_position_cursor StandingSpots;
+  voxel_position_cursor StandingSpots;   poof(@no_serialize)
 
   v3i WorldP;
 
-  s32 FilledCount;
-  b32 DrawBoundingVoxels;
+  s32 FilledCount;            poof(@no_serialize)
+  b32 DrawBoundingVoxels;     poof(@no_serialize)
 
-  s32 PointsToLeaveRemaining;
-  u32 TriCount;
-  s32 EdgeBoundaryVoxelCount;
+  s32 PointsToLeaveRemaining; poof(@no_serialize)
+  u32 TriCount;               poof(@no_serialize)
+  s32 EdgeBoundaryVoxelCount; poof(@no_serialize)
 
-  u32 _Pad0;
-  /* u8 DimX; */
-  /* u8 DimY; */
-  /* u8 DimZ; */
-  /* u8 _Pad0; */
+  u32 _Pad0; poof(@no_serialize)
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
-  entity_ptr_block_array Entities;
+  entity_ptr_block_array Entities; poof(@no_serialize)
 
   // TODO(Jesse): Probably take this out?
-  s32 DEBUG_OwnedByThread;
+  s32 DEBUG_OwnedByThread; poof(@no_serialize)
 
 #if VOXEL_DEBUG_COLOR
   f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
@@ -745,3 +724,15 @@ TryGetVoxel(world *World, cp P)
 
 link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
+
+link_internal s32
+MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
+
+link_internal world_chunk_geometry_buffer*
+AllocateTempWorldChunkMesh(memory_arena* TempMemory);
+
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, world_chunk_geometry_buffer *TempMesh, memory_arena *TempMem);
+
+link_internal void
+FinalizeChunkInitialization(world_chunk *Chunk);

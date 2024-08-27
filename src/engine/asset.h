@@ -122,6 +122,7 @@ struct world_chunk_file_header_v3
   u8 VoxelElementSize;
   u8 pad[3];
 };
+
 #pragma pack(pop)
 
 typedef world_chunk_file_header_v3 world_chunk_file_header;
@@ -160,6 +161,14 @@ poof(
 )
 #endif
 
+enum asset_type
+{
+  AssetType_Undefined,
+
+  AssetType_Models,
+  AssetType_WorldChunk,
+};
+
 struct asset
 {
   volatile asset_load_state LoadState;
@@ -169,7 +178,12 @@ struct asset
   // TODO(Jesse)(frame-index): Change to u32? At 120fps we get 9k hours (385 days) in a u32
   u64 LRUFrameIndex;
 
-  model_buffer Models;
+  asset_type Type;
+  union
+  {
+    model_buffer Models;
+     world_chunk Chunk;
+  };
 };
 
 typedef asset* asset_ptr;

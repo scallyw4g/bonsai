@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:302:0
+// src/engine/editor.cpp:304:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -75,10 +75,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(model_buffer*,&Element->Models),
-        CSz("Models"),
+        Cast(asset_type*,&Element->Type),
+        CSz("Type"),
         Params
         );
+
+
+
+
+
+
+
+      
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }
