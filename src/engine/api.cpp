@@ -515,8 +515,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   engine_resources *EngineResources = GetEngineResources();
   world *World = EngineResources->World;
 
-  work_queue_entry_type Type = Entry->Type;
-  switch (Type)
+  work_queue_entry_type WorkType = Entry->Type;
+  switch (WorkType)
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
@@ -551,7 +551,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+      data_type DataType = DataType_Undefinded;
+      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType);
+      NotImplemented;
 
       RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;

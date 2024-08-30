@@ -26,7 +26,54 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(data_type*,&Element->Type),
+        CSz("Type"),
+        Params
+        );
+
+
+
+
+
+
+
       
+      
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(void *, Element->Verts),
+        CSz("Verts"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(void *, Element->Normals),
+        CSz("Normals"),
+        Params
+        );
+
+
+
+
+
+
 
       PushNewRow(Ui);
 

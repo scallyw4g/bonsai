@@ -1,5 +1,4 @@
-// src/engine/work_queue.h:285:0
-
+// src/engine/work_queue.h:279:0
 
 
 
@@ -604,9 +603,6 @@ render_to_texture_async_params render_to_texture_async_params;
 
 
 
-
-
-render_to_texture_world_chunk_async_params render_to_texture_world_chunk_async_params;
 
 
 

@@ -32,12 +32,19 @@ global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
 global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
 
 
-global_variable v3 RightFaceNormalData[]  = { {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}}, {{1, 0, 0}} };
-global_variable v3 LeftFaceNormalData[]   = { {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, {{-1, 0, 0}}, };
-global_variable v3 BackFaceNormalData[]   = { {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, {{0,-1, 0}}, };
-global_variable v3 FrontFaceNormalData[]  = { {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, {{0, 1, 0}}, };
-global_variable v3 TopFaceNormalData[]    = { {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, {{0, 0, 1}}, };
-global_variable v3 BottomFaceNormalData[] = { {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, {{0, 0, -1}}, };
+global_variable v3 v3_RightFaceNormalData[]  = { {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}} };
+global_variable v3 v3_LeftFaceNormalData[]   = { {{ -1,  0,  0}}, {{ -1,  0,  0}}, {{ -1,  0,  0}}, {{ -1,  0,  0}}, {{ -1,  0,  0}}, {{ -1,  0,  0}}, };
+global_variable v3 v3_BackFaceNormalData[]   = { {{  0, -1,  0}}, {{  0, -1,  0}}, {{  0, -1,  0}}, {{  0, -1,  0}}, {{  0, -1,  0}}, {{  0, -1,  0}}, };
+global_variable v3 v3_FrontFaceNormalData[]  = { {{  0,  1,  0}}, {{  0,  1,  0}}, {{  0,  1,  0}}, {{  0,  1,  0}}, {{  0,  1,  0}}, {{  0,  1,  0}}, };
+global_variable v3 v3_TopFaceNormalData[]    = { {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, };
+global_variable v3 v3_BottomFaceNormalData[] = { {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, };
+
+global_variable v3_u8 v3_u8_RightFaceNormalData[]  = { {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}} };
+global_variable v3_u8 v3_u8_LeftFaceNormalData[]   = { {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, };
+global_variable v3_u8 v3_u8_BackFaceNormalData[]   = { {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, };
+global_variable v3_u8 v3_u8_FrontFaceNormalData[]  = { {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, };
+global_variable v3_u8 v3_u8_TopFaceNormalData[]    = { {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, };
+global_variable v3_u8 v3_u8_BottomFaceNormalData[] = { {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, };
 
 
 

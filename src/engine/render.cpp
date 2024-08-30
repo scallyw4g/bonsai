@@ -875,20 +875,38 @@ link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
 {
   AssertNoGlErrors;
-
   GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
   GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
+  switch(Handles->ElementType)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3:
+    {
+      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      AssertNoGlErrors;
+
+      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      AssertNoGlErrors;
+    } break;
+
+    case DataType_v3_u8:
+    {
+      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+      AssertNoGlErrors;
+
+      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+      AssertNoGlErrors;
+    } break;
+  }
 
 
   // NOTE(Jesse): This is just here to break when the size of these changes,
@@ -1002,7 +1020,7 @@ poof(
                 AssertNoGlErrors;
               }
 
-              AllocateGpuElementBuffer(Handles, Mesh->At);
+              AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
               CopyToGpuBuffer(Mesh, Handles);
               Result = True;
             }
@@ -1030,8 +1048,8 @@ poof(
 poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
 
-poof(gpu_buffer(world_chunk_lod_element_buffer, world_chunk_geometry_buffer))
-#include <generated/gpu_buffer_world_chunk_lod_element_buffer_world_chunk_geometry_buffer.h>
+/* poof(gpu_buffer(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
+/* #include <generated/gpu_buffer_world_chunk_lod_element_buffer_world_chunk_geometry_buffer.h> */
 
 link_internal m4
 GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation)
@@ -1048,6 +1066,7 @@ GetTransformMatrix(entity *Entity)
   return Result;
 }
 
+#if 0
 link_internal void
 DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f))
 {
@@ -1105,6 +1124,7 @@ DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_el
     AssertNoGlErrors;
   }
 }
+#endif
 
 
 link_internal void
@@ -1165,6 +1185,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   }
 }
 
+#if 0
 link_internal void
 RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
 {
@@ -1178,6 +1199,7 @@ RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, wo
     Warn("Attempted to render to an unallocated texture.");
   }
 }
+#endif
 
 /* link_internal void */
 /* RenderToTexture_Async(engine_resources *Engine, asset_thumbnail *Thumb, world_chunk_lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0) */
@@ -1469,7 +1491,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
     AssertNoGlErrors;
 
     v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-    DrawLod_world_chunk(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
     AssertNoGlErrors;
   }
 }
@@ -1581,7 +1603,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
   if (Chunk)
   {
     /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-    DrawLod_world_chunk(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
   }
 }
 

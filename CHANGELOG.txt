@@ -1,6 +1,12 @@
 * 1.6.1
 
+- Add ability to create new assets from a world selection
+	The selection region is saved out as a world_chunk.  Also added the ability
+	to load these chunks, and render them in the asset preview window.
+
 - Fix layered brush previews crashing the program
+
+- Fix crash in AreEqual if null pointers were passed
 
 
 * 1.6.0

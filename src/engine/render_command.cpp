@@ -38,6 +38,7 @@ PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles
   if (Handles->VertexHandle) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->VertexHandle, 3); }
 }
 
+#if 0
 link_internal void
 PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, world_chunk_geometry_buffer *Mesh)
 {
@@ -46,10 +47,12 @@ PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateWorldChunkBuffers(Handles, Mesh)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+#endif
 
 link_internal void
 PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
+  Assert(Mesh->Type);
   Assert(Mesh->At);
   Handles->Flags = GpuHandles_UpdatePending;
   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateBuffers(Handles, Mesh)));

@@ -552,21 +552,18 @@ AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, 
   chunk_data *ChunkData = Vox->ChunkData;
   DestModel->Dim = ChunkData->Dim;
 
-  geo_u3d *TempMesh0 = AllocateTempMesh(TempMemory);
-  geo_u3d *TempMesh1 = 0;
-  /* world_chunk_geometry_buffer *TempMesh1 = AllocateTempWorldChunkMesh(TempMemory); */
+  data_type Type = GetMeshDatatypeForDimension(ChunkData->Dim);
+  geo_u3d *TempMesh = AllocateTempMesh(TempMemory, Type);
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh0, TempMesh1, TempMemory, DestModel->Dim/-2.f);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh, 0, TempMemory, DestModel->Dim/-2.f);
 
   engine_resources *Engine = GetEngineResources();
 
-  geo_u3d *FinalMesh0 = GetPermMeshForChunk(&Engine->geo_u3d_MeshFreelist, TempMesh0, PermMemory);
-  /* untextured_3d_geometry_buffer *FinalMesh1 = GetPermMeshForChunk(&Engine->MeshFreelist, TempMesh1, PermMemory); */
+  geo_u3d *FinalMesh = GetPermMeshForChunk(&Engine->geo_u3d_MeshFreelist, TempMesh, PermMemory);
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, FinalMesh0, &DestModel->TransparentMesh, TempMemory, V3(DestModel->Dim)/-2.f);
+  DeepCopy(TempMesh, FinalMesh);
 
-  AtomicReplaceMesh(&DestModel->Meshes, MeshBit_Lod0, FinalMesh0, __rdtsc());
-  /* AtomicReplaceMesh(&DestModel->TransMeshes, MeshBit_0, FinalMesh1, PermMemory); */
+  AtomicReplaceMesh(&DestModel->Meshes, MeshBit_Lod0, FinalMesh, __rdtsc());
 }
 
 link_internal maybe_model_buffer

@@ -829,7 +829,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
           Asset->LoadState = AssetLoadState_Loaded;
 
           model *Model = Allocate(model, Resources->GameMemory, 1);
-          untextured_3d_geometry_buffer *Mesh = AllocateTempMesh(Resources->GameMemory);
+          untextured_3d_geometry_buffer *Mesh = AllocateTempMesh(Resources->GameMemory, DataType_v3);
           AtomicReplaceMesh(&Model->Meshes, MeshBit_Lod0, Mesh, __rdtsc());
 
           Asset->Models.Start = Model;
@@ -849,12 +849,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
           /*                                             TempMemory, */
           /*                                             VoxData->Palette ); */
 
-          BuildWorldChunkMeshFromMarkedVoxels_Greedy( ChunkData->Voxels,
-                                                      ChunkData->Dim,
-                                                      VoxOffset, VoxOffset+Global_TileDim,
-                                                      Model->Meshes.E[0],
-                                                      0,
-                                                      GetTranArena() );
+          BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3( ChunkData->Voxels,
+                                                         ChunkData->Dim,
+                                                         VoxOffset, VoxOffset+Global_TileDim,
+                                                         Model->Meshes.E[0],
+                                                         0,
+                                                         GetTranArena() );
 
 
           /* BuildWorldChunkMesh_DebugVoxels( ChunkData->Voxels, */

@@ -1130,7 +1130,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
   if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture_world_chunk_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1726,7 +1726,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           {
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
-            world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+
+            data_type Type = DataType_Undefinded;;
+            auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+            NotImplemented;
+
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 

@@ -542,6 +542,7 @@ AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
   return Result;
 }
 
+
 link_internal void
 InitAsset(asset *Asset, thread_local_state *Thread)
 {
@@ -590,7 +591,10 @@ InitAsset(asset *Asset, thread_local_state *Thread)
 
     FinalizeChunkInitialization(Chunk);
 
-    world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    data_type Type = DataType_Undefinded;;
+    auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+    NotImplemented;
+
     RebuildWorldChunkMesh(Thread, Chunk, V3i(0), Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
 
     Asset->Type = AssetType_WorldChunk;

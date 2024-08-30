@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1030:0
+// src/engine/render.cpp:1048:0
 
 
 link_internal void
@@ -81,7 +81,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
             AssertNoGlErrors;
           }
 
-          AllocateGpuElementBuffer(Handles, Mesh->At);
+          AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
           CopyToGpuBuffer(Mesh, Handles);
           Result = True;
         }

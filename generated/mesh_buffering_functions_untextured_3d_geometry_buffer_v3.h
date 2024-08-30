@@ -191,7 +191,8 @@ BufferVertsChecked(
   TIMED_FUNCTION();
   if (BufferHasRoomFor(Dest, NumVerts))
   {
-    BufferVertsDirect(Dest->Verts + Dest->At,
+    BufferVertsDirect(
+      Dest->Verts + Dest->At,
       Dest->Normals + Dest->At,
       Dest->Mat + Dest->At,
       NumVerts,
@@ -249,7 +250,8 @@ BufferVertsChecked(
   untextured_3d_geometry_buffer* Src,
   untextured_3d_geometry_buffer* Dest,
   v3 Offset = V3(0),
-  v3 Scale = V3(1)
+  v3 Scale = V3(1),
+  Quaternion Rot = Quaternion()
 )
 {
   TIMED_FUNCTION();
@@ -257,13 +259,12 @@ BufferVertsChecked(
   umm NumVerts = Src->End - Src->At;
   if (Dest->At + Src->At <= Dest->End)
   {
-
     BufferVertsDirect(Dest->Verts + Dest->At,
       Dest->Normals + Dest->At,
       Dest->Mat + Dest->At,
       Src->At,
       Src->Verts, Src->Normals, Src->Mat,
-      Offset, Scale);
+      Offset, Scale, Rot);
 
     Dest->At += Src->At;
   }
@@ -289,6 +290,7 @@ BufferVertsChecked(
   TIMED_FUNCTION();
   if (BufferHasRoomFor(Dest, NumVerts))
   {
+    Assert(Dest->Type == DataType_v3);
     BufferVertsDirect(Dest->Verts + Dest->At,
       Dest->Normals + Dest->At,
       Dest->Mat + Dest->At,

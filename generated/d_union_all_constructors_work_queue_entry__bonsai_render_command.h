@@ -93,19 +93,6 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_world_chunk 
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_reallocate_world_chunk_buffers A  )
-{
-  work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_reallocate_world_chunk_buffers,
-    .bonsai_render_command_reallocate_world_chunk_buffers = A,
-
-    
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A  )
 {
   work_queue_entry__bonsai_render_command Result = {
@@ -320,19 +307,6 @@ BonsaiRenderCommandDeallocateWorldChunk( world_chunk*  Chunk  )
 {
   bonsai_render_command_deallocate_world_chunk Reuslt = {
     .Chunk = Chunk
-  };
-
-  
-  return Reuslt;
-}
-
-link_internal bonsai_render_command_reallocate_world_chunk_buffers
-BonsaiRenderCommandReallocateWorldChunkBuffers( gpu_element_buffer_handles*  Handles , world_chunk_geometry_buffer*  Mesh  )
-{
-  bonsai_render_command_reallocate_world_chunk_buffers Reuslt = {
-    .Handles = Handles
-,
-    .Mesh = Mesh
   };
 
   

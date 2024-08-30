@@ -257,18 +257,18 @@ ToIndex(world_chunk_mesh_bitfield Bit)
   return MeshIndex_Count;
 }
 
-// TODO(Jesse): Probably consolodate with lod_element_buffer ?
-struct world_chunk_lod_element_buffer
-{
-  // TODO(Jesse): Remove this
-  volatile u32 MeshMask;
+/* // TODO(Jesse): Probably consolodate with lod_element_buffer ? */
+/* struct world_chunk_lod_element_buffer */
+/* { */
+/*   // TODO(Jesse): Remove this */
+/*   volatile u32 MeshMask; */
 
-  gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count];
+/*   gpu_element_buffer_handles GpuBufferHandles[MeshIndex_Count]; */
 
-  // Src meshes, read-only
-  world_chunk_geometry_buffer *E[MeshIndex_Count];
-  bonsai_futex             Locks[MeshIndex_Count];
-};
+/*   // Src meshes, read-only */
+/*   world_chunk_geometry_buffer *E[MeshIndex_Count]; */
+/*   bonsai_futex             Locks[MeshIndex_Count]; */
+/* }; */
 
 struct lod_element_buffer
 {
@@ -342,7 +342,7 @@ struct world_chunk
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes
   // smaller, which is probably pretty worth.
-  world_chunk_lod_element_buffer Meshes; poof(@no_serialize)
+  lod_element_buffer Meshes; poof(@no_serialize)
 
   /* threadsafe_geometry_buffer TransparentMeshes; */
   /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
@@ -728,11 +728,14 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 link_internal s32
 MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
 
-link_internal world_chunk_geometry_buffer*
-AllocateTempWorldChunkMesh(memory_arena* TempMemory);
+/* link_internal world_chunk_geometry_buffer* */
+/* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */
 
 link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, world_chunk_geometry_buffer *TempMesh, memory_arena *TempMem);
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem);
 
 link_internal void
 FinalizeChunkInitialization(world_chunk *Chunk);
+
+link_internal untextured_3d_geometry_buffer*
+AllocateTempMesh(memory_arena* TempMemory, data_type Type);

@@ -1248,6 +1248,8 @@ DrawDebugVoxels( voxel *Voxels,
 {
   TIMED_FUNCTION();
 
+  Assert(DestGeometry->Type == DataType_v3);
+
   /* Assert(IsSet(SrcChunk, Chunk_VoxelsInitialized)); */
   /* Assert(IsSet(DestChunk, Chunk_VoxelsInitialized)); */
 
@@ -1289,32 +1291,32 @@ DrawDebugVoxels( voxel *Voxels,
         if (Voxel->Flags & Voxel_RightFace)
         {
           RightFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, RightFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_RightFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_LeftFace)
         {
           LeftFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, LeftFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_LeftFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BottomFace)
         {
           BottomFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, BottomFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_BottomFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_TopFace)
         {
           TopFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, TopFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_TopFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_FrontFace)
         {
           FrontFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, FrontFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_FrontFaceNormalData, Materials);
         }
         if (Voxel->Flags & Voxel_BackFace)
         {
           BackFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
-          BufferFaceData(DestGeometry, VertexData, BackFaceNormalData, Materials);
+          BufferFaceData(DestGeometry, VertexData, v3_BackFaceNormalData, Materials);
         }
       }
     }
@@ -1590,7 +1592,7 @@ poof(
   func world_chunk_mesh_functions(buffer_t, vert_t)
   {
     link_internal void
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)( voxel *Voxels,
                                                 v3i SrcChunkDim,
 
                                                 v3i SrcChunkMin,
@@ -1608,6 +1610,7 @@ poof(
       /* HISTOGRAM_FUNCTION(); */
       TIMED_FUNCTION();
 
+      Assert(DestGeometry->Type == DataType_(vert_t.name));
 
       vert_t.name VertexData[VERTS_PER_FACE];
       matl Materials[VERTS_PER_FACE];
@@ -1670,38 +1673,38 @@ poof(
               {
                 v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
                 RightFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
               }
               if (Voxel->Flags & Voxel_LeftFace)
               {
                 v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
                 LeftFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
               }
               if (Voxel->Flags & Voxel_BottomFace)
               {
                 v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
                 BottomFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
               }
 
               if (Voxel->Flags & Voxel_TopFace)
               {
                 v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
                 TopFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
               }
               if (Voxel->Flags & Voxel_FrontFace)
               {
                 v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
                 FrontFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
               }
               if (Voxel->Flags & Voxel_BackFace)
               {
                 v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
                 BackFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
+                BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
               }
             }
 
@@ -1715,26 +1718,26 @@ poof(
     }
 
     link_internal void
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
-                                                (buffer_t.name) *DestGeometry,
-                                                (buffer_t.name) *DestTransparentGeometry,
-                                                memory_arena *TempMemory,
-                                                vert_t.name VertexOffset = {})
+    BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)( vox_data *Vox,
+                                                         (buffer_t.name) *DestGeometry,
+                                                         (buffer_t.name) *DestTransparentGeometry,
+                                                            memory_arena *TempMemory,
+                                                             vert_t.name  VertexOffset = {})
     {
-      BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
+      BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
     }
 
     link_internal void
-    BuildMipMesh( voxel *Voxels,
-                    v3i  VoxDim,
+    BuildMipMesh_(vert_t.name)( voxel *Voxels,
+                                    v3i  VoxDim,
 
-                    v3i  InnerMin,
-                    v3i  InnerMax,
+                                    v3i  InnerMin,
+                                    v3i  InnerMax,
 
- world_chunk_mesh_bitfield  MeshBit,
+                 world_chunk_mesh_bitfield  MeshBit,
 
-           (buffer_t.name) *DestGeometry,
-              memory_arena *TempMemory )
+                           (buffer_t.name) *DestGeometry,
+                              memory_arena *TempMemory )
     {
       /* TIMED_FUNCTION(); */
 
@@ -1964,7 +1967,7 @@ poof(
     }
 
     link_internal void
-    BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve_(vert_t.name)( voxel *Voxels,
                                                 chunk_dimension VoxDim,
 
                                                 chunk_dimension SrcChunkMin,
@@ -2076,10 +2079,10 @@ poof(
 )
 
 poof(world_chunk_mesh_functions(untextured_3d_geometry_buffer, v3))
-#include <generated/world_chunk_mesh_functions_untextured_3d_geometry_buffer.h>
+#include <generated/world_chunk_mesh_functions_untextured_3d_geometry_buffer_v3.h>
 
-poof(world_chunk_mesh_functions(world_chunk_geometry_buffer, v3_u8))
-#include <generated/world_chunk_mesh_functions_world_chunk_geometry_buffer.h>
+poof(world_chunk_mesh_functions(untextured_3d_geometry_buffer, v3_u8))
+#include <generated/world_chunk_mesh_functions_untextured_3d_geometry_buffer_v3_u8.h>
 
 #if 0
 link_internal void
@@ -2198,24 +2201,24 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
 }
 #endif
 
-#if 1
+#if 0
 link_internal world_chunk_geometry_buffer*
 AllocateTempWorldChunkMesh(memory_arena* TempMemory)
 {
   world_chunk_geometry_buffer* Result = Allocate_world_chunk_geometry_buffer(TempMemory, ELEMENTS_PER_TEMP_MESH);
   return Result;
 }
-
-link_internal untextured_3d_geometry_buffer*
-AllocateTempMesh(memory_arena* TempMemory)
-{
-  untextured_3d_geometry_buffer* Result = Allocate_untextured_3d_geometry_buffer(TempMemory, ELEMENTS_PER_TEMP_MESH);
-  return Result;
-}
 #endif
 
 link_internal untextured_3d_geometry_buffer*
-GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMemory)
+AllocateTempMesh(memory_arena* TempMemory, data_type Type)
+{
+  untextured_3d_geometry_buffer* Result = Allocate_untextured_3d_geometry_buffer(TempMemory, Type, ELEMENTS_PER_TEMP_MESH);
+  return Result;
+}
+
+link_internal untextured_3d_geometry_buffer*
+GetPermMeshForChunk(mesh_freelist* Freelist, data_type Type, u32 Elements, memory_arena* PermMemory)
 {
   Assert(Elements);
 #if BONSAI_INTERNAL
@@ -2225,7 +2228,7 @@ GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMem
   untextured_3d_geometry_buffer* Result = Cast(untextured_3d_geometry_buffer*, Unlink_TS(&Freelist->FirstFreeMesh));
   if (Result == 0)
   {
-    Result = Allocate_untextured_3d_geometry_buffer(PermMemory, Elements);
+    Result = Allocate_untextured_3d_geometry_buffer(PermMemory, Type, Elements);
   }
 
 #if BONSAI_INTERNAL
@@ -2235,7 +2238,7 @@ GetPermMeshForChunk(mesh_freelist* Freelist, u32 Elements, memory_arena* PermMem
 }
 
 link_internal untextured_3d_geometry_buffer*
-GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, u32 Elements, memory_arena *PermMemory)
+GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, data_type Type, u32 Elements, memory_arena *PermMemory)
 {
   Assert(Elements);
   mesh_freelist *Freelist = TryGetTierForSize(TieredFreelist, Elements);
@@ -2245,35 +2248,38 @@ GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, u32 Elements, memory_a
   {
     u32 Tier = 1+ (Elements/WORLD_CHUNK_MESH_MIN_SIZE);
     u32 Size = Tier*WORLD_CHUNK_MESH_MIN_SIZE;
-    Result = GetPermMeshForChunk(Freelist, Size, PermMemory);
+    Result = GetPermMeshForChunk(Freelist, Type, Size, PermMemory);
     Assert(Result->End >= Elements);
   }
   else
   {
-    Result = Allocate_untextured_3d_geometry_buffer(PermMemory, Elements);
+    Result = Allocate_untextured_3d_geometry_buffer(PermMemory, Type, Elements);
     Assert(Result->End >= Elements);
   }
 
   return Result;
 }
 
+#if 0
 link_internal world_chunk_geometry_buffer *
 GetPermMeshForChunk(tiered_mesh_freelist *TieredFreelist, world_chunk_geometry_buffer *TempMesh, memory_arena *PermMemory)
 {
   world_chunk_geometry_buffer *Result = Cast(world_chunk_geometry_buffer*, GetPermMeshForChunk(TieredFreelist, TempMesh->At, PermMemory));
   return Result;
 }
+#endif
 
 link_internal untextured_3d_geometry_buffer*
 GetPermMeshForChunk(tiered_mesh_freelist* TieredFreelist, untextured_3d_geometry_buffer *TempMesh, memory_arena *PermMemory)
 {
-  untextured_3d_geometry_buffer *Result = GetPermMeshForChunk(TieredFreelist, TempMesh->At, PermMemory);
+  untextured_3d_geometry_buffer *Result = GetPermMeshForChunk(TieredFreelist, TempMesh->Type, TempMesh->At, PermMemory);
   return Result;
 }
 
 link_internal void
 ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
 {
+#if 0
   v3 Max = Min+Dim;
   for (u32 VertIndex = 0;
       VertIndex < Buffer->At;
@@ -2298,6 +2304,8 @@ ClipAndDisplaceToMinDim(untextured_3d_geometry_buffer* Buffer, v3 Min, v3 Dim)
       }
     }
   }
+#endif
+  NotImplemented;
 }
 
 link_internal void
@@ -3531,7 +3539,41 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags
 }
 
 link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, world_chunk_geometry_buffer *TempMesh, memory_arena *TempMem)
+BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels, v3i SrcChunkDim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, memory_arena *TempMemory, v3 VertexOffset = {})
+{
+  switch(DestGeometry->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3: BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3(Voxels, SrcChunkDim, SrcChunkMin, SrcChunkMax, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset); break;
+    case DataType_v3_u8: BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3_u8(Voxels, SrcChunkDim, SrcChunkMin, SrcChunkMax, DestGeometry, DestTransparentGeometry, TempMemory, V3U8(VertexOffset)); break;
+  }
+}
+
+link_internal void
+BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, memory_arena *TempMemory, v3  VertexOffset = {})
+{
+  switch(DestGeometry->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3: BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3(Vox, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset); break;
+    case DataType_v3_u8: BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3_u8(Vox, DestGeometry, DestTransparentGeometry, TempMemory, V3U8(VertexOffset)); break;
+  }
+}
+
+
+link_internal void
+BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_chunk_mesh_bitfield  MeshBit, untextured_3d_geometry_buffer *DestGeometry, memory_arena *TempMemory )
+{
+  switch(DestGeometry->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3: BuildMipMesh_v3(Voxels, VoxDim, InnerMin, InnerMax, MeshBit, DestGeometry, TempMemory); break;
+    case DataType_v3_u8: BuildMipMesh_v3_u8(Voxels, VoxDim, InnerMin, InnerMax, MeshBit, DestGeometry, TempMemory); break;
+  }
+}
+
+link_internal void
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem)
 {
   engine_resources *EngineResources = GetEngineResources();
 
@@ -3555,7 +3597,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   if (TempMesh->At)
   {
-    world_chunk_geometry_buffer *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
+    geo_u3d *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
     DeepCopy(TempMesh, FinalMesh);
 
     auto *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp);
@@ -3691,7 +3733,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
   if (SyntheticChunkSum)
   {
-    world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+    geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
 
     RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
     TempMesh->At = 0;
@@ -5744,15 +5786,13 @@ BufferChunkMesh( graphics *Graphics,
   auto CopyBuffer = ReserveBufferSpace( Dest, Src->At);
   if (Length(Rot.xyz) == 0.f)
   {
-    BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Mat,
+    BufferVertsChecked(&CopyBuffer, Src,
                        ModelBasisP, V3(Scale));
   }
   else
   {
 
-    BufferVertsChecked(&CopyBuffer, Src->At,
-                       Src->Verts, Src->Normals, Src->Mat,
+    BufferVertsChecked(&CopyBuffer, Src,
                        ModelBasisP, V3(Scale), Rot);
   }
 }

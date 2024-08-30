@@ -48,11 +48,11 @@ struct bonsai_render_command_reallocate_buffers
   untextured_3d_geometry_buffer *Mesh;
 };
 
-struct bonsai_render_command_reallocate_world_chunk_buffers
-{
-   gpu_element_buffer_handles *Handles;
-  world_chunk_geometry_buffer *Mesh;
-};
+/* struct bonsai_render_command_reallocate_world_chunk_buffers */
+/* { */
+/*    gpu_element_buffer_handles *Handles; */
+/*   world_chunk_geometry_buffer *Mesh; */
+/* }; */
 
 
 struct bonsai_render_command_clear_all_framebuffers
@@ -138,7 +138,7 @@ poof(
 
     bonsai_render_command_deallocate_world_chunk
 
-    bonsai_render_command_reallocate_world_chunk_buffers
+    /* bonsai_render_command_reallocate_world_chunk_buffers */
 
     bonsai_render_command_do_stuff
 

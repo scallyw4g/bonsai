@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:499:0
+// src/engine/serdes.cpp:501:0
 
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)

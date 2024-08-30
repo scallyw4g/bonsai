@@ -537,7 +537,7 @@ DoAssetWindow(engine_resources *Engine)
                   interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
 
                   SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
-                  RenderToTexture_world_chunk_Async(&Plat->RenderQ, Engine, Thumb, &Chunk->Meshes, V3(Chunk->Dim/-2.f), 0);
+                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Chunk->Meshes, V3(Chunk->Dim/-2.f), 0);
 
                 } break;
 
