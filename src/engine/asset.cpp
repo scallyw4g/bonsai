@@ -431,7 +431,20 @@ FreeAsset(engine_resources *Engine, asset *Asset)
   Assert(Asset->LoadState == AssetLoadState_Loaded ||
          Asset->LoadState == AssetLoadState_Error  );
 
-  FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
+  switch (Asset->Type)
+  {
+    InvalidCase(AssetType_Undefined);
+
+    case AssetType_Models:
+    {
+      FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
+    } break;
+
+    case AssetType_WorldChunk:
+    {
+      NotImplemented;
+    } break;
+  }
 
   HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Dir.Start));
   HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Name.Start));
@@ -584,8 +597,15 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   else if ( AreEqual(Ext, CSz("chunk")) )
   {
     u8_stream Bytes = U8_StreamFromFile(AssetFilepath, Thread->TempMemory);
-    world_chunk *Chunk = Allocate(world_chunk, Thread->TempMemory, 1);
-    Deserialize(&Bytes, Chunk, Thread->TempMemory, 1);
+
+    world_chunk _Chunk = {};
+    world_chunk *Chunk = &_Chunk;
+
+    // TODO(Jesse)(memory, leak): This leaks the chunk memory; we do not have a
+    // way of reclaiming it when it's loaded from disk.  The chunk buffers for
+    // world chunks are just never freed, but the chunks are recycled.  This
+    // chunk is a weird one as the buffers can be of arbitrary size.
+    Deserialize(&Bytes, Chunk, Thread->PermMemory, 1);
 
     MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
 
@@ -762,6 +782,7 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIn
 link_internal model *
 GetModel(asset *Asset, asset_id *AID, u64 ModelIndex)
 {
+  Assert(Asset->Type == AssetType_Models);
   Assert(ModelIndex < Asset->Models.Count);
   Assert(AID->Index == Asset->Id.Index);
   Assert(AreEqual(&AID->FileNode, &Asset->Id.FileNode));

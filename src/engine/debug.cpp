@@ -371,7 +371,7 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
 }
 
 link_internal interactable_handle
-RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, b32 Selected)
+RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -396,6 +396,18 @@ RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *W
 
   if (Pressed(Ui, &B))
   {
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+  }
+
+  if (EngineDebug->ResetAssetNodeView)
+  {
+    Window->Scroll = {};
+    Window->CachedScroll = {};
+
+    v3 CenterpointOffset = Dim/-2.f;
+    f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
+    Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+    UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
     RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
   }
 
@@ -524,19 +536,6 @@ DoAssetWindow(engine_resources *Engine)
       WindowLayout("Asset View", window_layout_flags(WindowLayoutFlag_Align_Right));
     PushWindowStart(Ui, &AssetViewWindow);
 
-    if (EngineDebug->ResetAssetNodeView)
-    {
-      AssetViewWindow.Scroll = {};
-      AssetViewWindow.CachedScroll = {};
-
-      v3 ModelCenterpointOffset = Model->Dim/-2.f;
-      f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-      Thumb->Camera.DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-      UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
-      RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
-    }
-
-
     PushTableStart(Ui);
       if (EngineDebug->SelectedAsset.FileNode.Type)
       {
@@ -574,7 +573,7 @@ DoAssetWindow(engine_resources *Engine)
                   if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                   b32 Selected = False;
-                  interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, Selected);
+                  interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
 
                   if ( Engine->MousedOverVoxel.Tag )
                   {
@@ -620,7 +619,7 @@ DoAssetWindow(engine_resources *Engine)
                     if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
-                    interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, Selected);
+                    interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
 
                     if (Pressed(Ui, &B))
                     {

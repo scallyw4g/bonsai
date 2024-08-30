@@ -198,6 +198,9 @@ struct chunk_data
   voxel_lighting *VoxelLighting;
 };
 
+poof(maybe(chunk_data))
+#include <generated/maybe_chunk_data.h>
+
 // NOTE(Jesse): These are literal indices and as such must start at 0
 // TODO(Jesse): Rename this to something like mesh_lod_index
 enum world_chunk_mesh_index

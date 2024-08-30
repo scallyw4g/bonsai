@@ -8,8 +8,8 @@
 ./make.sh $OPT BuildAll
 
 # ./make.sh $OPT                                                 \
-#   BuildExecutables                                             \
 #   BuildSingleExample examples/blank_project                    \
+  # BuildExecutables                                             \
 #   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 #   BuildSingleExample examples/turn_based                       \
 #   BuildSingleExample examples/project_and_level_picker         \

@@ -56,6 +56,7 @@ poof(string_and_value_tables(model_index))
 #include <generated/string_and_value_tables_model_index.h>
 
 
+// TODO(Jesse): Remove
 // Used when loading .vox files
 struct vox_data
 {

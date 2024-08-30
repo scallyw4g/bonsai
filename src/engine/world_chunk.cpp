@@ -3974,16 +3974,33 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
 
   Assert(Asset->LoadState == AssetLoadState_Loaded);
 
-  Assert(Asset->Models.Count > 0);
-  chunk_data *VoxData = Asset->Models.Start[0].Vox.ChunkData;
+  world_chunk SrcChunk = {};
+  chunk_dimension ModelDim = {};
+  switch (Asset->Type)
+  {
+    InvalidCase(AssetType_Undefined);
 
-  chunk_dimension ModelDim = Asset->Models.Start[0].Dim;
+    case AssetType_Models:
+    {
+      Assert(Asset->Models.Count > 0);
+      chunk_data *VoxData = Asset->Models.Start[0].Vox.ChunkData;
 
-  world_chunk SrcChunk = {
-    .Flags = VoxData->Flags,
-    .Dim = VoxData->Dim,
-    .Voxels = VoxData->Voxels,
-  };
+      ModelDim = Asset->Models.Start[0].Dim;
+
+      SrcChunk = {
+        .Flags = VoxData->Flags,
+        .Dim = VoxData->Dim,
+        .Voxels = VoxData->Voxels,
+      };
+
+    } break;
+
+    case AssetType_WorldChunk:
+    {
+      SrcChunk = Asset->Chunk;
+      ModelDim = Asset->Chunk.Dim;
+    } break;
+  }
 
   // TODO(Jesse): Need to account for model offset in its chunk here.
   chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim + Origin.Offset, World->ChunkDim);
@@ -4011,6 +4028,7 @@ BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
       QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
     }
   }
+
 }
 
 link_internal void
@@ -4092,8 +4110,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
       v3 MinSimP = GetSimSpaceP(World, ShapeAsset->Origin);
 
       asset *Asset = GetAndLockAssetSync(GetEngineResources(), &ShapeAsset->AssetId);
-      model *Model = GetModel(Asset, &ShapeAsset->AssetId, ShapeAsset->ModelIndex);
-      v3 MaxSimP = MinSimP + Model->Dim;
+      v3 MaxSimP = MinSimP + GetDimForAssetModel(Asset, u32(ShapeAsset->ModelIndex)).Value;
 
       UnlockAsset(Engine, Asset);
 
@@ -4923,7 +4940,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       case type_world_update_op_shape_params_chunk_data:
       {
              asset *Asset     = 0;
-        chunk_data *Data      = 0;
+        chunk_data  Data      = {};
                 v3  SimOrigin = {};
 
         if (Shape.Type == type_world_update_op_shape_params_asset)
@@ -4931,14 +4948,13 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           world_update_op_shape_params_asset *Casted = SafeCast(world_update_op_shape_params_asset, &Shape);
           asset_id *AID = &Casted->AssetId;
           Asset = GetAndLockAssetSync(GetEngineResources(), AID);
-          model *Model = GetModel(Asset, AID, Casted->ModelIndex);
-          Data = Model->Vox.ChunkData;
+          Data = GetChunkDataForAssetModel(Asset, u32(Casted->ModelIndex)).Value;
           SimOrigin = GetSimSpaceP(World, Casted->Origin);
         }
         else if (Shape.Type == type_world_update_op_shape_params_chunk_data)
         {
           auto *Casted = SafeCast(world_update_op_shape_params_chunk_data, &Shape);
-          Data = &Casted->Data;
+          Data = Casted->Data;
           SimOrigin = Casted->SimSpaceOrigin;
         }
         else
@@ -4946,26 +4962,26 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           InvalidCodePath();
         }
 
-        rect3i SSRect = RectMinDim(V3i(SimOrigin), Data->Dim);
-        v3i EditCenterP = V3i(SimOrigin) + V3i(Data->Dim/2.f);
+        rect3i SSRect = RectMinDim(V3i(SimOrigin), Data.Dim);
+        v3i EditCenterP = V3i(SimOrigin) + V3i(Data.Dim/2.f);
 
         apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
         switch (Modifier)
         {
           case WorldEdit_Modifier_Surface:
           {
-            WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, Data);
+            WorldEdit_shape_chunk_data_Surface(&Params, SimOrigin, &Data);
           } break;
 
           case WorldEdit_Modifier_Flood:
           {
             v3i FloodOrigin = EditCenterP;
-            WorldEdit_shape_chunk_data_Flood(&Params, SimOrigin, Data, Thread, FloodOrigin);
+            WorldEdit_shape_chunk_data_Flood(&Params, SimOrigin, &Data, Thread, FloodOrigin);
           } break;
 
           case WorldEdit_Modifier_Default:
           {
-            WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, Data);
+            WorldEdit_shape_chunk_data_Default(&Params, SimOrigin, &Data);
           } break;
         }
 
