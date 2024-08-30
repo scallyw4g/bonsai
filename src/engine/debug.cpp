@@ -539,6 +539,38 @@ DoAssetWindow(engine_resources *Engine)
                   SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
                   RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Chunk->Meshes, V3(Chunk->Dim/-2.f), 0);
 
+                  if ( Engine->MousedOverVoxel.Tag )
+                  {
+                    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+                    EntityOrigin.Offset = Round(EntityOrigin.Offset);
+
+                    if ( !UiHoveredMouseInput(Ui) )
+                    {
+                      v3 AssetHalfDim = {}; //V3(Chunk->Dim)/2.f;
+
+                      // Draw model marking where the asset will go
+                      //
+                      {
+                        // TODO(Jesse): Setting up and tearing down the shader here
+                        // is highly questionable.  We should probably keep a list
+                        // of these guys that need this shader, then when we go
+                        // to use it when drawing entities just draw them then..
+                        //
+                        // That said .. this is just editor code.. so .. meh
+                        //
+                        /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
+
+                        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+                        v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
+                        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(1));
+
+                        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+                      }
+
+                    }
+                  }
+
                 } break;
 
                 case AssetType_Models:
