@@ -23,6 +23,8 @@
 
 - Fix crash in AreEqual if null pointers were passed
 
+- Fixed failing tests, added test runs to CI/CD
+
 
 
 
