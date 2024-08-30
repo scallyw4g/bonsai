@@ -19,6 +19,8 @@ jobs:
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
     - name: Build
       run: ./make.sh
+    - name: Test
+      run: ./make.sh RunTests
 
   build-and-release-ubuntu-20:
     runs-on: ubuntu-20.04
@@ -30,6 +32,8 @@ jobs:
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang
     - name: Build
       run: ./make.sh
+    - name: Test
+      run: ./make.sh RunTests
     - name: Tar
       if: startsWith(github.ref, 'refs/tags/')
       run:  ./make.sh BundleRelease
@@ -57,6 +61,9 @@ jobs:
     - name: Build
       shell: bash
       run: ./make.sh
+    - name: Test
+      shell: bash
+      run: ./make.sh RunTests
     - name: Tar
       if: startsWith(github.ref, 'refs/tags/')
       shell: bash
