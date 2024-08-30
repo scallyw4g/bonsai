@@ -448,6 +448,15 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Collada Loader", ArgCount, Args);
 
+  memory_arena BootstrapArena = {};
+  engine_resources Engine = {};
+  Global_EngineResources = &Engine;
+  Ensure( InitializeBonsaiStdlib( BonsaiInit_Default,
+                                  {},
+                                  &Engine.Stdlib,
+                                  &BootstrapArena ) );
+
+
   XmlTests();
 
   TokenizingTest();

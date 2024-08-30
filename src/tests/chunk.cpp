@@ -8,11 +8,11 @@ TestChunkCopy(memory_arena *Memory)
 {
   thread_local_state MainThread = DefaultThreadLocalState(0);
 
-  chunk_dimension DestChunkDim = Chunk_Dimension(8);
-  world_position  DestChunkP = World_Position(0);
+  v3i DestChunkDim = Chunk_Dimension(8);
+  v3i   DestChunkP = World_Position(0);
 
-  chunk_dimension SynChunkDim = DestChunkDim+2;
-  world_position  SynChunkP = World_Position(0);
+  v3i SynChunkDim = DestChunkDim+2;
+  v3i   SynChunkP = World_Position(0);
 
 
   { // Ensure the flat noise initialization works correctly
@@ -46,8 +46,8 @@ TestChunkCopy(memory_arena *Memory)
         }
       }
     }
-
   }
+
   // Not related to the chunk tests, but checks the temp_memory_handle is working
   // @ensure_temp_memory_handle_is_working
   TestThat(Memory->At == Memory->Start);
@@ -85,8 +85,8 @@ TestChunkCopy(memory_arena *Memory)
         }
       }
     }
-
   }
+
   // @ensure_temp_memory_handle_is_working
   TestThat(Memory->At == Memory->Start);
 }
@@ -96,7 +96,19 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Chunk", ArgCount, Args);
 
+  memory_arena BootstrapArena = {};
+  engine_resources Engine = {};
+  Global_EngineResources = &Engine;
+  Ensure( InitializeBonsaiStdlib( BonsaiInit_Default,
+                                  {},
+                                  &Engine.Stdlib,
+                                  &BootstrapArena ) );
+
+
   memory_arena *Memory = AllocateArena(Megabytes(32));
+
+  Engine.World = Allocate(world, &BootstrapArena, 1);
+  AllocateWorld(Engine.World, {}, V3i(8), V3i(8));
 
   TestChunkCopy(Memory);
 
