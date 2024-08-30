@@ -143,6 +143,19 @@ GetPtr(voxel_stack_element_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal voxel_stack_element *
+TryGetPtr(voxel_stack_element_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  voxel_stack_element *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(voxel_stack_element_block *Block)
 {

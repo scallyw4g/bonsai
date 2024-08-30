@@ -143,6 +143,19 @@ GetPtr(entity_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal entity *
+TryGetPtr(entity_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  entity *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(entity_block *Block)
 {

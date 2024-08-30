@@ -143,6 +143,19 @@ GetPtr(world_chunk_ptr_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal world_chunk_ptr *
+TryGetPtr(world_chunk_ptr_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 32;
+  umm ElementIndex = Index % 32;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  world_chunk_ptr *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(world_chunk_ptr_block *Block)
 {

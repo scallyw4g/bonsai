@@ -357,7 +357,7 @@ FilenameModal(void *VoidEngine)
   Text(Ui, CSz("Callback"));
 }
 
-link_internal void
+link_internal asset_thumbnail*
 AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbnails)
 {
   v2i ThumbnailDim = V2i(256);
@@ -366,6 +366,40 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
 
   MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
   StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
+
+  return Thumb;
+}
+
+link_internal interactable_handle
+RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, b32 Selected)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  SyncGpuBuffersAsync(Engine, Meshes);
+
+  texture *Texture      = &Thumb->Texture;
+  camera  *ThumbCamera  = &Thumb->Camera;
+
+  interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, Window, "asset_texture_viewport", Thumb);
+
+  if (Hover(Ui, &B))
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
+  }
+
+  if (Selected)
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
+  }
+
+  PushForceAdvance(Ui, V2(8, 0));
+
+  if (Pressed(Ui, &B))
+  {
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+  }
+
+  return B;
 }
 
 link_internal void
@@ -490,6 +524,18 @@ DoAssetWindow(engine_resources *Engine)
       WindowLayout("Asset View", window_layout_flags(WindowLayoutFlag_Align_Right));
     PushWindowStart(Ui, &AssetViewWindow);
 
+    if (EngineDebug->ResetAssetNodeView)
+    {
+      AssetViewWindow.Scroll = {};
+      AssetViewWindow.CachedScroll = {};
+
+      v3 ModelCenterpointOffset = Model->Dim/-2.f;
+      f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
+      Thumb->Camera.DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+      UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
+      RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
+    }
+
 
     PushTableStart(Ui);
       if (EngineDebug->SelectedAsset.FileNode.Type)
@@ -524,20 +570,11 @@ DoAssetWindow(engine_resources *Engine)
 
                   world_chunk *Chunk = &Asset->Chunk;
 
-                  if (TotalElements(&Editor->AssetThumbnails) == 0)
-                  {
-                    AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails);
-                  }
+                  asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, 0);
+                  if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
-                  asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, 0);
-
-                  texture *Texture      = &Thumb->Texture;
-                  camera  *ThumbCamera  = &Thumb->Camera;
-
-                  interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
-
-                  SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
-                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Chunk->Meshes, V3(Chunk->Dim/-2.f), 0);
+                  b32 Selected = False;
+                  interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, Selected);
 
                   if ( Engine->MousedOverVoxel.Tag )
                   {
@@ -579,45 +616,14 @@ DoAssetWindow(engine_resources *Engine)
                   {
                     SyncGpuBuffersAsync(Engine, &Model->Meshes);
 
-                    render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
-                    if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
-                    {
-                      AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails);
-                    }
+                    asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
+                    if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
-                    asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
-                    texture *Texture      = &Thumb->Texture;
-                    camera  *ThumbCamera  = &Thumb->Camera;
-
-                    if (EngineDebug->ResetAssetNodeView)
-                    {
-                      AssetViewWindow.Scroll = {};
-                      AssetViewWindow.CachedScroll = {};
-
-                      v3 ModelCenterpointOffset = Model->Dim/-2.f;
-                      f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-                      ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                      UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
-                      RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
-                    }
-
-                    interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
-
-                    if (Hover(Ui, &B))
-                    {
-                      PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
-                    }
-
-                    if (ModelIndex == EngineDebug->ModelIndex)
-                    {
-                      PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
-                    }
-
-                    PushForceAdvance(Ui, V2(8, 0));
+                    b32 Selected = ModelIndex == EngineDebug->ModelIndex;
+                    interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, Selected);
 
                     if (Pressed(Ui, &B))
                     {
-                      RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
                       EngineDebug->ModelIndex = ModelIndex;
                     }
 
