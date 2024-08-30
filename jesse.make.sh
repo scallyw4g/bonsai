@@ -5,9 +5,10 @@
 # ./make.sh RunPoof
 # [ $? -ne 0 ] && exit 1
 
-./make.sh $OPT BuildAll
+# ./make.sh $OPT BuildAll
 
 ./make.sh RunTests
+# exit $?
 
 # ./make.sh $OPT                                                 \
 #   BuildSingleExample examples/blank_project                    \
