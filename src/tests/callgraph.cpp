@@ -29,9 +29,16 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("callgraph", ArgCount, Args);
 
-  /* bonsai_debug_system DebugSystem = InitializeBonsaiDebug("./bin/lib_debug_system_loadable" PLATFORM_RUNTIME_LIB_EXTENSION, 0); */
+  memory_arena BootstrapArena = {};
+  engine_resources Engine = {};
+  Global_EngineResources = &Engine;
+  Ensure( InitializeBonsaiStdlib( BonsaiInit_InitDebugSystem,
+                                  {},
+                                  &Engine.Stdlib,
+                                  &BootstrapArena ) );
 
   TIMED_FUNCTION();
+
 
   FunctionOne();
 
