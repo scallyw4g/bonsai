@@ -591,9 +591,8 @@ InitAsset(asset *Asset, thread_local_state *Thread)
 
     FinalizeChunkInitialization(Chunk);
 
-    data_type Type = DataType_Undefinded;;
+    data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
     auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
-    NotImplemented;
 
     RebuildWorldChunkMesh(Thread, Chunk, V3i(0), Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
 

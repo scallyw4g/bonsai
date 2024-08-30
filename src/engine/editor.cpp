@@ -109,6 +109,7 @@ GetUiDebug()
   return &Global_EngineResources->EngineDebug.UiDebug;
 }
 
+
 poof(do_editor_ui_for_compound_type(perlin_noise_params))
 #include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
 
@@ -300,6 +301,12 @@ poof(do_editor_ui_for_compound_type(file_traversal_node))
 
 poof(do_editor_ui_for_compound_type(asset_id))
 #include <generated/do_editor_ui_for_compound_type_asset_id.h>
+
+poof(string_and_value_tables(asset_type))
+#include <generated/string_and_value_tables_asset_type.h>
+poof(do_editor_ui_for_enum(asset_type))
+#include <generated/do_editor_ui_for_enum_asset_type.h>
+
 
 poof(do_editor_ui_for_compound_type(asset))
 #include <generated/do_editor_ui_for_compound_type_asset.h>
@@ -1727,9 +1734,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
 
-            data_type Type = DataType_Undefinded;;
+            data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
             auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
-            NotImplemented;
 
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }

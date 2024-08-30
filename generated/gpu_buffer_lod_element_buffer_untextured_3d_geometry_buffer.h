@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1048:0
+// src/engine/render.cpp:1043:0
 
 
 link_internal void
@@ -73,16 +73,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         if (Mesh->At)
         {
-          // @duplicate_realloc_code
-          if (Handles->VertexHandle)
-          {
-            GL.DeleteBuffers(3, &Handles->VertexHandle);
-            Clear(Handles);
-            AssertNoGlErrors;
-          }
-
-          AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
-          CopyToGpuBuffer(Mesh, Handles);
+          ReallocateAndSyncGpuBuffers(Handles, Mesh);
           Result = True;
         }
         else

@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:448:0
+// src/engine/editor.h:494:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, data_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
@@ -11,27 +11,27 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, 
   {
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("4096x2160"), UiId(Window, "enum ResolutionSetting_4096x2160", Element), Params))
+    if (Button(Ui, CSz("Undefinded"), UiId(Window, "enum DataType_Undefinded", Element), Params))
     {
-      *Element = ResolutionSetting_4096x2160;
+      *Element = DataType_Undefinded;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("1920x1080"), UiId(Window, "enum ResolutionSetting_1920x1080", Element), Params))
+    if (Button(Ui, CSz("v3"), UiId(Window, "enum DataType_v3", Element), Params))
     {
-      *Element = ResolutionSetting_1920x1080;
+      *Element = DataType_v3;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("1280x720"), UiId(Window, "enum ResolutionSetting_1280x720", Element), Params))
+    if (Button(Ui, CSz("u8"), UiId(Window, "enum DataType_v3_u8", Element), Params))
     {
-      *Element = ResolutionSetting_1280x720;
+      *Element = DataType_v3_u8;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

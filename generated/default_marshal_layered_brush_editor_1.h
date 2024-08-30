@@ -1,4 +1,4 @@
-// src/engine/editor.h:1004:0
+// src/engine/editor.h:1008:0
 
 RangeIterator(Index, (256))
 {

@@ -921,6 +921,7 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
   AssertNoGlErrors;
 }
 
+
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 {
@@ -1012,16 +1013,7 @@ poof(
           {
             if (Mesh->At)
             {
-              // @duplicate_realloc_code
-              if (Handles->VertexHandle)
-              {
-                GL.DeleteBuffers(3, &Handles->VertexHandle);
-                Clear(Handles);
-                AssertNoGlErrors;
-              }
-
-              AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
-              CopyToGpuBuffer(Mesh, Handles);
+              ReallocateAndSyncGpuBuffers(Handles, Mesh);
               Result = True;
             }
             else
@@ -1045,8 +1037,27 @@ poof(
   }
 )
 
+link_internal void
+ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh);
+
 poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
+
+link_internal void
+ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
+{
+  Assert(Handles->Flags & GpuHandles_UpdatePending);
+
+  if (Handles->VertexHandle)
+  {
+    GL.DeleteBuffers(3, &Handles->VertexHandle);
+  }
+  UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
+  Clear(Handles);
+
+  AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
+  CopyToGpuBuffer(Mesh, Handles);
+}
 
 /* poof(gpu_buffer(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
 /* #include <generated/gpu_buffer_world_chunk_lod_element_buffer_world_chunk_geometry_buffer.h> */

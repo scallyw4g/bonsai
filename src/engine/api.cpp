@@ -551,9 +551,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      data_type DataType = DataType_Undefinded;
-      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType);
-      NotImplemented;
+      data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
+      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
       RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;
