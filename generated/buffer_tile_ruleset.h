@@ -1,4 +1,4 @@
-// src/engine/voxel_synthesis.h:82:0
+// src/engine/voxel_synthesis.h:65:0
 
 struct tile_ruleset_buffer
 {

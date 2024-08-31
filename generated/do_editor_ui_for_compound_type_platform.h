@@ -74,6 +74,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(work_queue*,&Element->WorldUpdateQ),
+        CSz("WorldUpdateQ"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u32*,&Element->HighPriorityWorkerCount),
         CSz("HighPriorityWorkerCount"),
         Params
