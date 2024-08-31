@@ -582,8 +582,6 @@ DoAssetWindow(engine_resources *Engine)
 
                     if ( !UiHoveredMouseInput(Ui) )
                     {
-                      v3 AssetHalfDim = {}; //V3(Chunk->Dim)/2.f;
-
                       // Draw model marking where the asset will go
                       //
                       {
@@ -598,6 +596,7 @@ DoAssetWindow(engine_resources *Engine)
 
                         PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
+                        v3 AssetHalfDim = V3(Chunk->Dim)/2.f;
                         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                         DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(1));
 
@@ -633,8 +632,6 @@ DoAssetWindow(engine_resources *Engine)
 
                       if ( !UiHoveredMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
                       {
-                        v3 AssetHalfDim = V3(Model->Dim)/2.f;
-
                         // Draw model marking where the asset will go
                         //
                         {
@@ -649,6 +646,7 @@ DoAssetWindow(engine_resources *Engine)
 
                           PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
+                          v3 AssetHalfDim = V3(Model->Dim)/2.f;
                           v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
                           DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
 

@@ -735,7 +735,7 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels, chunk_dimension SrcChunkDim
 /* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */
 
 link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem);
+RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem, v3 VertexOffset);
 
 link_internal void
 FinalizeChunkInitialization(world_chunk *Chunk);
