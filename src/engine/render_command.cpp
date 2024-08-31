@@ -30,12 +30,13 @@ poof(push_render_command(work_queue_entry__bonsai_render_command))
 link_internal void
 PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
 {
-  Handles->ElementCount = 0;
-  Handles->Mapped = 0;
+  /* Handles->ElementCount = 0; */
+  /* Handles->Mapped = 0; */
   /* Handles->Flags = GpuHandles_UpdatePending; */
 
   // @vertex_handle_primal
   if (Handles->VertexHandle) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->VertexHandle, 3); }
+  Clear(Handles);
 }
 
 #if 0

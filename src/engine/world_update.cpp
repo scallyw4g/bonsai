@@ -20,9 +20,10 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
     WorkerThread_BeforeJobStart(ThreadParams);
 
+    world_chunk_ptr_block_array UpdatedChunks = {0, 0, Thread->TempMemory};
+
     while (work_queue_entry *Entry = PopWorkQueueEntry(WorldUpdateQ))
     {
-      /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
       tswitch(Entry)
       {
         case type_work_queue_entry_noop:
@@ -43,12 +44,35 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
         {
           work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
           DoWorldUpdate(&Engine->Stdlib.Plat.LowPriority, World, Thread, Job);
+
+          RangeIterator_t(u32, ChunkIndex, Job->ChunkCount)
+          {
+            world_chunk *Chunk = Job->DestChunkBuffer[ChunkIndex];
+            // Only push each chunk to have it's mesh rebuilt once, even if it
+            // was updated multiple times.
+            if (Chunk->Flags & Chunk_Queued)
+            {
+              UnSetFlag(&Chunk->Flags, Chunk_Queued);
+              Push(&UpdatedChunks, &Chunk);
+            }
+          }
+
+
         } break;
 
       }
 
-      RewindArena(GetTranArena());
     }
+
+    IterateOver(&UpdatedChunks, Chunk, ChunkIndex)
+    {
+      QueueChunkForMeshRebuild(&Plat->LowPriority, *Chunk);
+    }
+
+    // NOTE(Jesse): This is intentionally after all the updates have completed
+    // such that the UpdatedChunks block array persists between jobs and we
+    // clear it at the end.
+    RewindArena(GetTranArena());
 
     SleepMs(1);
 
@@ -262,6 +286,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
           Assert(Chunk->Flags != Chunk_Uninitialized);
           Assert(ChunkIndex < TotalChunkCount);
           Buffer[ChunkIndex++] = Chunk;
+          SetFlag(Chunk, Chunk_Queued);
         }
       }
     }
@@ -1364,13 +1389,6 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         }
       }
     }
-
-    /* DebugLine("End StandingSpotCount(%d)", AtElements(&Chunk->StandingSpots)); */
-
-    UnSetFlag(&Chunk->Flags, Chunk_Queued);
-    /* QueueChunkForInit(Queue, Chunk); */
-    /* QueueChunkForMeshRebuild(Queue, Chunk); */
-    QueueChunkForMeshRebuild(Queue, Chunk);
   }
 }
 

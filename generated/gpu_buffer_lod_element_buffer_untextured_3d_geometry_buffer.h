@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1044:0
+// src/engine/render.cpp:1040:0
 
 
 link_internal void
@@ -41,10 +41,6 @@ SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
         Result = True;
-      }
-      else
-      {
-        PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
       }
     }
   }

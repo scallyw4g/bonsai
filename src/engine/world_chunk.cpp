@@ -290,23 +290,6 @@ GetAndInsertFreeWorldChunk(world *World, world_position P)
 }
 
 link_internal void
-FreeGpuBuffers(world_chunk *Chunk)
-{
-  NotImplemented;
-  /* Assert(Chunk->Flags & Chunk_MeshUploadedToGpu); */
-  /* { */
-  /*   RangeIterator(MeshIndex, MeshIndex_Count) */
-  /*   { */
-  /*     world_chunk_mesh_bitfield MeshBit = world_chunk_mesh_bitfield(1 << MeshIndex); */
-  /*     if (HasMesh(&Chunk->Meshes, MeshBit)) */
-  /*     { */
-  /*       DeallocateGpuElementBuffer(&Chunk->GpuBuffers[MeshIndex]); */
-  /*     } */
-  /*   } */
-  /* } */
-}
-
-link_internal void
 DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
 {
   RangeIterator(MeshIndex, MeshIndex_Count)
@@ -316,14 +299,6 @@ DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
     Assert(Chunk->Meshes.GpuBufferHandles[MeshIndex].ElementCount == 0);
   }
 }
-
-#if 0
-link_internal void
-DeallocateWorldChunk(work_queue *RenderQueue, world_chunk *Chunk, tiered_mesh_freelist *MeshFreelist)
-{
-  PushBonsaiRenderCommandDeallocateWorldChunk( &Plat->RenderQ, Chunk);
-}
-#endif
 
 link_internal void PushBonsaiRenderCommandDeallocateWorldChunk( work_queue *RenderQueue, world_chunk* Chunk);
 
@@ -3575,7 +3550,7 @@ BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_ch
 link_internal void
 RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem, v3 VertexOffset = {})
 {
-  engine_resources *EngineResources = GetEngineResources();
+  engine_resources *Engine = GetEngineResources();
 
   Assert(Chunk->DEBUG_OwnedByThread == 0);
   Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
@@ -3597,15 +3572,16 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   if (TempMesh->At)
   {
-    geo_u3d *FinalMesh = GetPermMeshForChunk(&EngineResources->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
+    geo_u3d *FinalMesh = GetPermMeshForChunk(&Engine->world_chunk_MeshFreelist, TempMesh, Thread->PermMemory);
     DeepCopy(TempMesh, FinalMesh);
 
     auto *Replaced = AtomicReplaceMesh(&Chunk->Meshes, MeshBit, FinalMesh, FinalMesh->Timestamp);
-    if (Replaced) { DeallocateMesh(Replaced, &EngineResources->world_chunk_MeshFreelist); }
+    if (Replaced) { DeallocateMesh(Replaced, &Engine->world_chunk_MeshFreelist); }
   }
   else
   {
-    // TODO(Jesse): Deallocate GPU buffers here.
+    PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, &Chunk->Meshes.GpuBufferHandles[ToIndex(MeshBit)]);
+    /* DeallocateGpuBuffers(&Engine->Stdlib.Plat.RenderQ, Chunk); */
   }
 
   Chunk->DEBUG_OwnedByThread = 0;
@@ -3705,10 +3681,11 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
   /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
 
-  FullBarrier;
+  /* FullBarrier; */
 
-  SetFlag(DestChunk, Chunk_VoxelsInitialized);
-  SetFlag(SyntheticChunk, Chunk_VoxelsInitialized);
+  // NOTE(Jesse): The DestChunk is finalized at the end of the routine
+  /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
+  FinalizeChunkInitialization(SyntheticChunk);
 
   if (Flags & ChunkInitFlag_ComputeStandingSpots)
   {

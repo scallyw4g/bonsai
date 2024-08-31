@@ -391,12 +391,14 @@ CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 
 typedef world_chunk* world_chunk_ptr;
+typedef world_chunk** world_chunk_ptr_ptr;
 
 poof(buffer(world_chunk_ptr))
 #include <generated/buffer_world_chunk_ptr.h>
 
 poof(block_array_h(world_chunk_ptr, {32}, {}))
 #include <generated/block_array_h_world_chunk_ptr_688853862_0.h>
+
 
 struct octave
 {

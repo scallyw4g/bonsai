@@ -982,10 +982,6 @@ poof(
             PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
             Result = True;
           }
-          else
-          {
-            PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
-          }
         }
       }
 
@@ -1496,15 +1492,20 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
   IterateOver(DrawList, ChunkPtrPtr, ChunkIndex)
   {
     world_chunk *Chunk = *ChunkPtrPtr;
-    v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-    v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
 
-    /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-    AssertNoGlErrors;
+    // In case gpu meshes got deallocated after the chunk was added to the draw list
+    if (HasGpuMesh(&Chunk->Meshes))
+    {
+      v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
+      v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
 
-    v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
-    AssertNoGlErrors;
+      /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
+      AssertNoGlErrors;
+
+      v3 Basis = GetRenderP(Engine, Chunk->WorldP);
+      DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+      AssertNoGlErrors;
+    }
   }
 }
 
