@@ -1739,7 +1739,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
-          FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init
+          //NOTE(Jesse): Not sure what this was for..
+          /* FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init */
 
           Editor->RootChunkNeedsNewMesh = False;
           Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;

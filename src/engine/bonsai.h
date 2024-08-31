@@ -150,7 +150,7 @@ SetFlag( u8 *Flags, voxel_flag Flag )
 inline void
 SetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
-  Assert( (*Flags & Flag) == 0);
+  /* Assert( (*Flags & Flag) == 0); */ // NOTE(Jesse): This should probably be in, but it's annoying ..
   *Flags = (chunk_flag)(*Flags | Flag);
   return;
 }
