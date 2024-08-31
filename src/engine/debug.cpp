@@ -371,7 +371,7 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
 }
 
 link_internal interactable_handle
-RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -412,6 +412,43 @@ RenderMeshPreviewAndInteractWithThumb(engine_resources *Engine, window_layout *W
   }
 
   return B;
+}
+
+link_internal void
+RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if ( Engine->MousedOverVoxel.Tag )
+  {
+    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+    EntityOrigin.Offset = Round(EntityOrigin.Offset);
+
+    if ( !UiHoveredMouseInput(Ui) && Selected )
+    {
+      // Draw model marking where the asset will go
+      //
+      {
+        // TODO(Jesse): Setting up and tearing down the shader here
+        // is highly questionable.  We should probably keep a list
+        // of these guys that need this shader, then when we go
+        // to use it when drawing entities just draw them then..
+        //
+        // That said .. this is just editor code.. so .. meh
+        //
+        /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
+
+        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+        v3 AssetHalfDim = Dim/2.f;
+        v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
+        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Meshes, 0.f, Basis, Quaternion(), V3(1));
+
+        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+      }
+
+    }
+  }
 }
 
 link_internal void
@@ -572,39 +609,10 @@ DoAssetWindow(engine_resources *Engine)
                   asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, 0);
                   if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
-                  b32 Selected = False;
-                  interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+                  b32 Selected = True;
+                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Meshes, V3(Chunk->Dim), Selected);
 
-                  if ( Engine->MousedOverVoxel.Tag )
-                  {
-                    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                    EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-                    if ( !UiHoveredMouseInput(Ui) )
-                    {
-                      // Draw model marking where the asset will go
-                      //
-                      {
-                        // TODO(Jesse): Setting up and tearing down the shader here
-                        // is highly questionable.  We should probably keep a list
-                        // of these guys that need this shader, then when we go
-                        // to use it when drawing entities just draw them then..
-                        //
-                        // That said .. this is just editor code.. so .. meh
-                        //
-                        /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
-
-                        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-
-                        v3 AssetHalfDim = V3(Chunk->Dim)/2.f;
-                        v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-                        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(1));
-
-                        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-                      }
-
-                    }
-                  }
 
                 } break;
 
@@ -618,43 +626,14 @@ DoAssetWindow(engine_resources *Engine)
                     if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
-                    interactable_handle B = RenderMeshPreviewAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
 
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
                     if (Pressed(Ui, &B))
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }
 
-                    if ( Engine->MousedOverVoxel.Tag )
-                    {
-                      cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                      EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-                      if ( !UiHoveredMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
-                      {
-                        // Draw model marking where the asset will go
-                        //
-                        {
-                          // TODO(Jesse): Setting up and tearing down the shader here
-                          // is highly questionable.  We should probably keep a list
-                          // of these guys that need this shader, then when we go
-                          // to use it when drawing entities just draw them then..
-                          //
-                          // That said .. this is just editor code.. so .. meh
-                          //
-                          /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
-
-                          PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-
-                          v3 AssetHalfDim = V3(Model->Dim)/2.f;
-                          v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-                          DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
-
-                          PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-                        }
-
-                      }
-                    }
+                    RenderMeshPreviewIntoWorld(Engine, &Model->Meshes, V3(Model->Dim), Selected);
 
                     if ( (ModelIndex+1) % 4 == 0)
                     {

@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1043:0
+// src/engine/render.cpp:1044:0
 
 
 link_internal void
@@ -73,6 +73,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         if (Mesh->At)
         {
+          Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
           ReallocateAndSyncGpuBuffers(Handles, Mesh);
           Result = True;
         }

@@ -1013,6 +1013,7 @@ poof(
           {
             if (Mesh->At)
             {
+              Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
               ReallocateAndSyncGpuBuffers(Handles, Mesh);
               Result = True;
             }
