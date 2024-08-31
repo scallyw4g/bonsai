@@ -143,6 +143,19 @@ GetPtr(u8_cursor_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal u8_cursor *
+TryGetPtr(u8_cursor_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  u8_cursor *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(u8_cursor_block *Block)
 {

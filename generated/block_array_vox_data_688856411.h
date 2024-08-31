@@ -1,4 +1,4 @@
-// src/engine/model.h:84:0
+// src/engine/model.h:85:0
 
 struct vox_data_block
 {
@@ -140,6 +140,19 @@ GetPtr(vox_data_block_array *Arr, umm Index)
   }
 
   vox_data *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal vox_data *
+TryGetPtr(vox_data_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  vox_data *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

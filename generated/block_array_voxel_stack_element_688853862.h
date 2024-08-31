@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:4159:0
+// src/engine/world_update.h:35:0
 
 struct voxel_stack_element_block
 {
@@ -140,6 +140,19 @@ GetPtr(voxel_stack_element_block_array *Arr, umm Index)
   }
 
   voxel_stack_element *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal voxel_stack_element *
+TryGetPtr(voxel_stack_element_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  voxel_stack_element *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

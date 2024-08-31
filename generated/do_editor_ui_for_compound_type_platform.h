@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:161:0
+// src/engine/editor.cpp:164:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -61,6 +61,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         // Cast to remove const/volatile keywords if they're there
         Cast(work_queue*,&Element->RenderQ),
         CSz("RenderQ"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(work_queue*,&Element->WorldUpdateQ),
+        CSz("WorldUpdateQ"),
         Params
         );
 

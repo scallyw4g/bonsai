@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:490:0
+// src/engine/serdes.cpp:495:0
 
 link_internal bonsai_type_info
 TypeInfo(voronoi_noise_params *Ignored)

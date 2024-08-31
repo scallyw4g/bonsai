@@ -10,7 +10,7 @@ TestTable(renderer_2d* Group)
       Index < 2;
       ++Index)
   {
-    interactable_handle Interaction = PushButtonStart(Group, UiId(0, "TestButtonInteraction", Index));
+    interactable_handle Interaction = PushButtonStart(Group, UiId(0, "TestButtonInteraction0", Index));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
@@ -29,7 +29,7 @@ TestTable(renderer_2d* Group)
   PushTableEnd(Group);
 
   PushTableStart(Group);
-    PushButtonStart(Group, UiId(0,Cast(void*,0),Cast(void*,0)));
+    PushButtonStart(Group, UiId(0, "TestButtonInteraction1", 0u));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
@@ -39,7 +39,7 @@ TestTable(renderer_2d* Group)
   PushTableEnd(Group);
 
   PushTableStart(Group);
-    PushButtonStart(Group, UiId(0,Cast(void*,0),Cast(void*,0)));
+    PushButtonStart(Group, UiId(0, "TestButtonInteraction2", 0u));
       PushColumn(Group, CS("String1"));
       PushColumn(Group, CS("String2"));
       PushColumn(Group, CS("String3"));
@@ -53,6 +53,8 @@ s32
 main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("ui_command_buffer", ArgCount, Args);
+
+  SetThreadLocal_ThreadIndex(0);
 
   // NOTE(Jesse): Sorry for this...
   engine_resources Engine = {};

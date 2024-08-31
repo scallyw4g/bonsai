@@ -1,3 +1,45 @@
+* 1.6.1
+
+- Change untextured_3d_geometry_buffer to have a `data_type Type`
+	This is a pretty major internal change.  untextured_3d_geometry_buffers can 
+	now switch between 32-bit float and 8-bit int.  When loading a model from
+	disk, the size of the model is taken into account and the appropriate type
+	is chosen dynamically.
+
+	This required a fair rewrite of the low-level vertex buffering routines to
+	be able to handle the permutations.  This is still somewhat of a WIP; I
+	didn't finish all of them and the ones not done fall-back to the most
+	general routine, which is the slowest.  I expect I'll rewrite/delete this
+	code again before performance in that code is the biggest problem I have.
+
+- Change world updates to happen in serial on a dedicated thread
+	Previous to this, multiple world updates could be in-flight at any given
+	time, which if overlapping would stomp on each other.  Serializing updates
+	onto a single thread ensures that:
+	a) Updates are correct
+	b) Updates happen in the order they were issued
+	c) Chunks affected by multiple updates on a single frame only have their
+	mesh rebuilt once
+
+	(c) is accomplished by completing all queued update jobs and then issuing
+	the chunk mesh rebuild jobs, one per unique chunk updated.
+
+- Add ability to create new assets from a world selection and serialize `.chunk` assets to disk
+	The selection region is saved out as a world_chunk
+
+- Add ability to load asset `.chunk`s from disk
+
+- Add abiltiy to render AssetType_WorldChunk
+
+- Fix layered brush previews crashing the program
+
+- Fix crash in AreEqual if null pointers were passed
+
+- Fixed failing tests, added test runs to CI/CD
+
+
+
+
 * 1.6.0
 
 - Renderer now lives on its own thread.

@@ -145,15 +145,17 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   Assert(Remaining(&VertIndicies) == 0 );
   Assert(Remaining(&NormalIndicies) == 0 );
 
-  untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, Stats.FaceCount*3);
+  untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, DataType_v3, Stats.FaceCount*3);
 
   v3 MinV = V3(f32_MAX);
   v3 MaxV = V3(f32_MIN);
 
+  geometry_buffer_stub_v3 Stub = GetBufferStub_v3(Mesh);
+
   u32 VertCount = (u32)AtElements(&VertIndicies);
   for( u32 Index = 0;
-       Index < VertCount;
-       ++Index )
+           Index < VertCount;
+         ++Index )
   {
     u32 vIndex = VertIndicies.Start[Index];
     u32 nIndex = NormalIndicies.Start[Index];
@@ -164,8 +166,8 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
     MinV = Min(Vertex, MinV);
     MaxV = Max(Vertex, MaxV);
 
-    Mesh->Verts[Mesh->At] = Vertex;
-    Mesh->Normals[Mesh->At] = Normal;
+    Stub.Verts[Mesh->At] = Vertex;
+    Stub.Normals[Mesh->At] = Normal;
     Mesh->At++;
 
     Assert(Mesh->At <= Mesh->End);

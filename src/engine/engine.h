@@ -42,6 +42,7 @@ link_internal engine_resources *GetEngineResources();
 
 #include <engine/debug.h>
 #include <engine/editor.h>
+#include <engine/world_update.h>
 #include <engine/settings.h>
 #include <engine/graphics.h>
 #include <engine/resources.h>

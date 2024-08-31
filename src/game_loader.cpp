@@ -179,11 +179,10 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  thread_main_callback_type Procs[1] = { RenderThread_Main };
-  /* thread_main_callback_type Procs[1] = { EngineApi.RenderThread_Main }; */
+  thread_main_callback_type Procs[2] = { RenderThread_Main, WorldUpdateThread_Main };
   thread_main_callback_type_buffer CustomWorkerProcs = {};
-  CustomWorkerProcs.Count = 1;
   CustomWorkerProcs.Start = Procs;
+  CustomWorkerProcs.Count = 2;
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
                                   GameApi,
@@ -210,7 +209,8 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
   InitQueue(&Plat->LowPriority,  WorkQueueMemory);
-  InitQueue(&Plat->RenderQ,  WorkQueueMemory);
+  InitQueue(&Plat->RenderQ,      WorkQueueMemory);
+  InitQueue(&Plat->WorldUpdateQ, WorkQueueMemory);
 
 
   DEBUG_REGISTER_ARENA(GameMemory, 0);

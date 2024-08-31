@@ -1,4 +1,4 @@
-// src/engine/voxel_synthesis.h:175:0
+// src/engine/voxel_synthesis.h:158:0
 
 struct voxel_synth_tile_linked_list_node
 {

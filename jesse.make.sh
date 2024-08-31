@@ -7,10 +7,12 @@
 
 ./make.sh $OPT BuildAll
 
+# ./make.sh RunTests
+
 # ./make.sh $OPT                                                 \
-#   BuildExecutables                                             \
+  # BuildSingleExample examples/blank_project                    \
+  # BuildExecutables                                             \
 #   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
-#   BuildSingleExample examples/blank_project                    \
 #   BuildSingleExample examples/turn_based                       \
 #   BuildSingleExample examples/project_and_level_picker         \
 #   BuildSingleExample examples/terrain_gen                      \
@@ -20,23 +22,3 @@
 
 # ./make.sh BundleRelease
 
-# exit 0
-
-# ./make.sh -O2 BuildSingleExample examples/blank_project
-# ./make.sh -O2 BuildSingleExample examples/the_wanderer
-# ./make.sh     BuildSingleExample examples/the_wanderer
-
-# ./make.sh BuildTests
-
-
-
-# ./make.sh MakeDebugLibRelease
-
-# ./make.sh BuildTests
-# ./make.sh BuildExecutables
-# ./make.sh BuildBundledExamples
-
-# ./make.sh BuildAll -O0
-# ./make.sh BuildAll -O2
-
-# ./make.sh BuildTests

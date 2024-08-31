@@ -1,26 +1,27 @@
-// src/engine/world_chunk.cpp:2081:0
+// src/engine/world_chunk.cpp:2058:0
 
 link_internal void
-BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
+BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3( voxel *Voxels,
   v3i SrcChunkDim,
 
   v3i SrcChunkMin,
   v3i SrcChunkMax,
 
   // TODO(Jesse)(immediate, poof): removing the braces here causes poof to bail .. why?
-  world_chunk_geometry_buffer *DestGeometry,
-  world_chunk_geometry_buffer *DestTransparentGeometry,
+  untextured_3d_geometry_buffer *DestGeometry,
+  untextured_3d_geometry_buffer *DestTransparentGeometry,
   memory_arena *TempMemory,
 
   // NOTE(Jesse): This is so we can offset vertices such that we center
   // entity models about 0 and rotation works properly.
-  v3_u8 VertexOffset = {})
+  v3 VertexOffset = {})
 {
   /* HISTOGRAM_FUNCTION(); */
   TIMED_FUNCTION();
 
+  Assert(DestGeometry->Type == DataType_v3);
 
-  v3_u8 VertexData[VERTS_PER_FACE];
+  v3 VertexData[VERTS_PER_FACE];
   matl Materials[VERTS_PER_FACE];
 
   auto SrcMinP = SrcChunkMin;
@@ -72,7 +73,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 
         FillArray(VertexMaterial(Voxel->Color, Voxel->Transparency, 0), Materials, VERTS_PER_FACE);
 
-        world_chunk_geometry_buffer *Dest = {};
+        untextured_3d_geometry_buffer *Dest = {};
         if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
 
         if (Dest)
@@ -81,38 +82,38 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
             RightFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, RightFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_RightFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_LeftFace)
           {
             v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
             LeftFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, LeftFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_LeftFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BottomFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
             BottomFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, BottomFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_BottomFaceNormalData, Materials);
           }
 
           if (Voxel->Flags & Voxel_TopFace)
           {
             v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
             TopFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, TopFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_TopFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_FrontFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
             FrontFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, FrontFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_FrontFaceNormalData, Materials);
           }
           if (Voxel->Flags & Voxel_BackFace)
           {
             v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
             BackFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-            BufferFaceData(Dest, VertexData, BackFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, v3_BackFaceNormalData, Materials);
           }
         }
 
@@ -126,25 +127,25 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels,
 }
 
 link_internal void
-BuildWorldChunkMeshFromMarkedVoxels_Greedy( vox_data *Vox,
-  world_chunk_geometry_buffer *DestGeometry,
-  world_chunk_geometry_buffer *DestTransparentGeometry,
+BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3( vox_data *Vox,
+  untextured_3d_geometry_buffer *DestGeometry,
+  untextured_3d_geometry_buffer *DestTransparentGeometry,
   memory_arena *TempMemory,
-  v3_u8 VertexOffset = {})
+  v3  VertexOffset = {})
 {
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
+  BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
 }
 
 link_internal void
-BuildMipMesh( voxel *Voxels,
+BuildMipMesh_v3( voxel *Voxels,
   v3i  VoxDim,
 
   v3i  InnerMin,
   v3i  InnerMax,
 
- world_chunk_mesh_bitfield  MeshBit,
+  world_chunk_mesh_bitfield  MeshBit,
 
-  world_chunk_geometry_buffer *DestGeometry,
+  untextured_3d_geometry_buffer *DestGeometry,
   memory_arena *TempMemory )
 {
   /* TIMED_FUNCTION(); */
@@ -375,14 +376,14 @@ BuildMipMesh( voxel *Voxels,
 }
 
 link_internal void
-BuildWorldChunkMeshFromMarkedVoxels_Naieve( voxel *Voxels,
+BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( voxel *Voxels,
   chunk_dimension VoxDim,
 
   chunk_dimension SrcChunkMin,
   chunk_dimension SrcChunkMax,
 
-  world_chunk_geometry_buffer *DestGeometry,
-  world_chunk_geometry_buffer *DestTransparentGeometry )
+  untextured_3d_geometry_buffer *DestGeometry,
+  untextured_3d_geometry_buffer *DestTransparentGeometry )
 {
   /* TIMED_FUNCTION(); */
 

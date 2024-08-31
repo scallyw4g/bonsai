@@ -143,6 +143,19 @@ GetPtr(member_info_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal member_info *
+TryGetPtr(member_info_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  member_info *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(member_info_block *Block)
 {

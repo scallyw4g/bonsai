@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:325:0
+// src/engine/world_chunk.h:328:0
 
 struct entity_ptr_block
 {
@@ -140,6 +140,19 @@ GetPtr(entity_ptr_block_array *Arr, umm Index)
   }
 
   entity_ptr *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal entity_ptr *
+TryGetPtr(entity_ptr_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  entity_ptr *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

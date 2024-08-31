@@ -78,17 +78,6 @@ PushBonsaiRenderCommandDeallocateWorldChunk(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
-PushBonsaiRenderCommandReallocateWorldChunkBuffers(
-  work_queue *RenderQueue
- , gpu_element_buffer_handles* Handles   , world_chunk_geometry_buffer* Mesh  
-)
-{
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandReallocateWorldChunkBuffers( Handles , Mesh  )));
-
-  PushWorkQueueEntry(RenderQueue, &Work);
-}
-link_internal void
 PushBonsaiRenderCommandDoStuff(
   work_queue *RenderQueue
  , u32 Ignored = 0  

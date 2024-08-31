@@ -1,17 +1,17 @@
 // examples/turn_based/game_types.h:84:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_aggregate_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_aggregate_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to
-    // support not drawing the toggl-y thing if we just want to dump the members.
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
     b32 DrawChildren = True;
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_aggregate_type", Element), &DefaultUiRenderParams_Generic))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_aggregate_type", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);

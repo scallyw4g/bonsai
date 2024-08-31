@@ -47,7 +47,8 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
     counted_string VertexCountSelector = FormatCountedString(TempMemory, CSz("geometry%.*s polylist vcount"), GeometryId->Count, GeometryId->Start);
     ansi_stream Triangles              = AnsiStream(GetFirstMatchingTag(XmlTokens, &VertexCountSelector)->Value);
 
-    untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, TotalTriangleCount*3);
+    untextured_3d_geometry_buffer *Mesh = Allocate_untextured_3d_geometry_buffer(Heap, DataType_v3, TotalTriangleCount*3);
+          geometry_buffer_stub_v3  Stub = GetBufferStub_v3(Mesh);
 
     v3 MaxP = V3(f32_MIN);
     v3 MinP = V3(f32_MAX);
@@ -71,11 +72,11 @@ LoadMeshData(xml_token_stream* XmlTokens, counted_string* GeometryId, memory_are
         Assert(NormalIndex < TotalElements(&Normals));
 
         v3 P = Positions.Start[PositionIndex];
-        Mesh->Verts[Mesh->At] = P;
+        Stub.Verts[Mesh->At] = P;
         MaxP = Max(P, MaxP);
         MinP = Min(P, MinP);
 
-        Mesh->Normals[Mesh->At] = Normalize(Normals.Start[NormalIndex]);
+        Stub.Normals[Mesh->At] = Normalize(Normals.Start[NormalIndex]);
 
         Mesh->At++;
       }

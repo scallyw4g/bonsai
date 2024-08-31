@@ -150,17 +150,18 @@ GetCameraGhost(engine_resources *Engine)
 
  // TODO(Jesse): make this unpack DT
  // r32                        dt            = Plat->dt;
-#define UNPACK_DATA_RESOURCES(Res)                                    \
-  platform                  *Plat          = &(Res)->Stdlib.Plat;     \
-  world                     *World         =  Res->World;             \
-  game_state                *GameState     =  Res->GameState;         \
-  heap_allocator            *Heap          = &Res->Heap;              \
-  entity                   **EntityTable   =  Res->EntityTable;       \
-  hotkeys                   *Hotkeys       = &Res->Hotkeys;           \
-  engine_debug              *EngineDebug   = &Res->EngineDebug;       \
-  tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist;      \
-  input                     *Input         = &Res->Stdlib.Plat.Input; \
-  level_editor              *Editor        = &Res->Editor;            \
+#define UNPACK_DATA_RESOURCES(Res)                                       \
+  platform                  *Plat          = &(Res)->Stdlib.Plat;        \
+  world                     *World         =  Res->World;                \
+  game_state                *GameState     =  Res->GameState;            \
+  heap_allocator            *Heap          = &Res->Heap;                 \
+  entity                   **EntityTable   =  Res->EntityTable;          \
+  hotkeys                   *Hotkeys       = &Res->Hotkeys;              \
+  engine_debug              *EngineDebug   = &Res->EngineDebug;          \
+  tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist; \
+  input                     *Input         = &Res->Stdlib.Plat.Input;    \
+  level_editor              *Editor        = &Res->Editor;               \
+  work_queue                *WorldUpdateQ  = &Plat->WorldUpdateQ;        \
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
   graphics                  *Graphics      = &Res->Graphics;              \

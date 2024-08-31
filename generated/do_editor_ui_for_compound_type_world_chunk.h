@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:330:0
+// src/engine/editor.cpp:317:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk_lod_element_buffer*,&Element->Meshes),
+        Cast(lod_element_buffer*,&Element->Meshes),
         CSz("Meshes"),
         Params
         );

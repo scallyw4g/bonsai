@@ -100,39 +100,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               NotImplemented;
             } break;
 
-
-            { tmatch(bonsai_render_command_reallocate_world_chunk_buffers, RC, Command)
-              auto *Handles = Command->Handles;
-              world_chunk_geometry_buffer *Mesh = Command->Mesh;
-              Assert(Handles->Flags&GpuHandles_UpdatePending);
-
-              // @duplicate_realloc_code
-              if (Handles->VertexHandle) { GL.DeleteBuffers(3, &Handles->VertexHandle); }
-              Clear(Handles);
-
-              AllocateGpuElementBuffer(Handles, Mesh->At);
-              CopyToGpuBuffer(Mesh, Handles);
-
-              DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
-            } break;
-
-
             { tmatch(bonsai_render_command_reallocate_buffers, RC, Command)
               auto *Handles = Command->Handles;
-              untextured_3d_geometry_buffer *Mesh = Command->Mesh;
+              auto *Mesh    = Command->Mesh;
 
-              // @duplicate_realloc_code
-              if (Handles->VertexHandle)
-              {
-                GL.DeleteBuffers(3, &Handles->VertexHandle);
-                Clear(Handles);
-              }
-
-              AllocateGpuElementBuffer(Handles, Mesh->At);
-              CopyToGpuBuffer(Mesh, Handles);
-
+              ReallocateAndSyncGpuBuffers(Handles, Mesh);
               DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
-              UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
             } break;
 
 

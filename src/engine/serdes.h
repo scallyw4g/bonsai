@@ -477,3 +477,7 @@ Deserialize(u8_cursor *Bytes, cs *Element, memory_arena *Memory)
 
 poof(serdes_primitive({u8 s8 u16 s16 u32 s32 u64 s64 b8 r32 r64}))
 #include <generated/serdes_primitive_592771169.h>
+
+struct world_chunk;
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count);

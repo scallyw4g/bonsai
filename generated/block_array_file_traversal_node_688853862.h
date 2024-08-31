@@ -143,6 +143,19 @@ GetPtr(file_traversal_node_block_array *Arr, umm Index)
   return Result;
 }
 
+link_internal file_traversal_node *
+TryGetPtr(file_traversal_node_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  file_traversal_node *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  return Result;
+}
+
 link_internal u32
 AtElements(file_traversal_node_block *Block)
 {

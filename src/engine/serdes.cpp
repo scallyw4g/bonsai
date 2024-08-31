@@ -46,6 +46,9 @@ poof(serdes_struct(voxel_lighting))
 /* poof(serdes_array(voxel_lighting)) */
 /* #include <generated/serdes_array_voxel_lighting.h> */
 
+poof(serdes_struct(world_chunk))
+#include <generated/serdes_struct_world_chunk.h>
+
 /* poof(serdes_array(v3)) */
 /* #include <generated/serdes_array_v3.h> */
 
@@ -192,9 +195,10 @@ Serialize(u8_cursor_block_array *Bytes, untextured_3d_geometry_buffer *Data)
   umm ElementCount = umm(Data->At);
   if (ElementCount)
   {
-    Result &= Serialize(Bytes, Data->Verts,   ElementCount);
-    Result &= Serialize(Bytes, Data->Normals, ElementCount);
-    Result &= Serialize(Bytes, Data->Mat,     ElementCount);
+    u32 ElementSize = DataTypeToElementSize[Data->Type];
+    Result &= Serialize(Bytes, Cast(u8*, Data->Verts),   ElementSize*ElementCount);
+    Result &= Serialize(Bytes, Cast(u8*, Data->Normals), ElementSize*ElementCount);
+    Result &= Serialize(Bytes,           Data->Mat,                  ElementCount);
   }
 #endif
 
@@ -216,9 +220,10 @@ Deserialize(u8_stream *Bytes, untextured_3d_geometry_buffer *Data, memory_arena 
 
   if (ElementCount)
   {
-    Result &= Deserialize(Bytes, Data->Verts,   Memory, ElementCount);
-    Result &= Deserialize(Bytes, Data->Normals, Memory, ElementCount);
-    Result &= Deserialize(Bytes, Data->Mat,     Memory, ElementCount);
+    u32 ElementSize = DataTypeToElementSize[Data->Type];
+    Result &= Deserialize(Bytes, Cast(u8*, Data->Verts),   Memory, ElementSize*ElementCount);
+    Result &= Deserialize(Bytes, Cast(u8*, Data->Normals), Memory, ElementSize*ElementCount);
+    Result &= Deserialize(Bytes,           Data->Mat,      Memory,             ElementCount);
   }
 #endif
 
