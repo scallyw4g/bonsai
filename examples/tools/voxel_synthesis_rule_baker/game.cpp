@@ -801,6 +801,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
       asset *Asset = MaybeAsset.Value;
       Asset->LoadState = AssetLoadState_Loaded;
+      Asset->Type = AssetType_Models;
       Asset->Models.Start = Model;
       Asset->Models.Count = 1;
 
@@ -827,6 +828,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
         {
           asset *Asset = MaybeAsset.Value;
           Asset->LoadState = AssetLoadState_Loaded;
+          Asset->Type = AssetType_Models;
 
           model *Model = Allocate(model, Resources->GameMemory, 1);
           untextured_3d_geometry_buffer *Mesh = AllocateTempMesh(Resources->GameMemory, DataType_v3);
