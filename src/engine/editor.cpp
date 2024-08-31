@@ -684,7 +684,7 @@ DoSelectonModification( engine_resources *Engine,
   if (Intersect(PlaneN, SelectionState->ClickedP[0], MouseRay->Origin, MouseRay->Dir, &tRay))
   {
     v3 PlaneIntersect = MouseRay->Origin + (MouseRay->Dir*tRay);
-    DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED);
+    /* DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED); */
     if (Input->LMB.Pressed)
     {
       SelectionState->ClickedP[1] = PlaneIntersect;
@@ -698,8 +698,8 @@ DoSelectonModification( engine_resources *Engine,
           Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
 
   {
-    DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED);
-    DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE);
+    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED); */
+    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE); */
     DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, GREEN);
   }
 
@@ -1037,7 +1037,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
-  if (UpdateVoxels)
+  if (LengthSq(Chunk->Dim) > 0 && UpdateVoxels)
   {
     /* Info("Detected changes to settings, updating voxels. ReallocChunk(%b) SettingsChanged(%b)", ReallocChunk, SettingsChanged); */
 

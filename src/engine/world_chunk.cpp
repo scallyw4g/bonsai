@@ -3492,6 +3492,7 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags
   TIMED_FUNCTION();
 
   Assert(Chunk->Flags & Chunk_VoxelsInitialized);
+  Assert(LengthSq(Chunk->Dim) > 0);
 
   // TODO(Jesse): Which of these is true?!
   /* Assert((Chunk->Flags & Chunk_Queued) == 0); */

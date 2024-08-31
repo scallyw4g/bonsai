@@ -979,6 +979,7 @@ poof(
           (buffer_t.name) *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
           if (Mesh && Mesh->At)
           {
+            Handles->Flags |= GpuHandles_UpdatePending;
             PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
             Result = True;
           }
