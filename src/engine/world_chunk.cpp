@@ -54,7 +54,7 @@ FinalizeChunkInitialization(world_chunk *Chunk)
   FullBarrier;
 
   /* UnSetFlag(Chunk, Chunk_Garbage); */
-  /* UnSetFlag(&Chunk->Flags, Chunk_Queued); */
+  UnSetFlag(&Chunk->Flags, Chunk_Queued);
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
 }
 
@@ -3455,7 +3455,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 #endif
 
   FinalizeChunkInitialization(DestChunk);
-  UnSetFlag(&DestChunk->Flags, Chunk_Queued);
+  /* UnSetFlag(&DestChunk->Flags, Chunk_Queued); */
 
   return;
 }

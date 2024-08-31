@@ -13,7 +13,30 @@ ToStringPrefixless(chunk_flag Type)
     case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Freelist"); } break;
 
-    
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      if (CountBitsSet_Kernighan(CurrentFlags) == 1)
+      {
+        Result = FSz("(invalid value for chunk_flag (%d))", CurrentFlags);
+      }
+      else
+      {
+        u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+        Result = ToStringPrefixless(chunk_flag(FirstValue));
+
+        while (CurrentFlags)
+        {
+          u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+          cs Next = ToStringPrefixless(chunk_flag(Value));
+          Result = FSz("%S | %S", Result, Next);
+        }
+      }
+    } break;
+
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;
@@ -32,7 +55,23 @@ ToString(chunk_flag Type)
     case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
 
-    
+    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+    // but the metaprogram might have to be a bit fancier..
+    default:
+    {
+      u32 CurrentFlags = u32(Type);
+
+      u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+      Result = ToString(chunk_flag(FirstValue));
+
+      while (CurrentFlags)
+      {
+        u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+        cs Next = ToString(chunk_flag(Value));
+        Result = FSz("%S | %S", Result, Next);
+      }
+    } break;
+
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
   return Result;

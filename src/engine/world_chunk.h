@@ -62,7 +62,7 @@ enum pick_chunk_state
   PickedChunkState_Hover,
 };
 
-enum chunk_flag
+enum chunk_flag poof(@bitfield)
 {
   Chunk_Uninitialized     = 0 << 0,
 
@@ -436,7 +436,7 @@ struct world
   u32 HashSlotsUsed;
   u32 HashSize;
   world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
-  world_chunk **ChunkHash;           poof(@ui_skip)
+  world_chunk **ChunkHash;           poof(@array_length(Element->HashSize))
 
 
   bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
