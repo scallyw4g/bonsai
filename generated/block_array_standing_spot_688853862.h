@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:476:0
+// src/engine/world_chunk.h:462:0
 
 struct standing_spot_block
 {
@@ -140,6 +140,19 @@ GetPtr(standing_spot_block_array *Arr, umm Index)
   }
 
   standing_spot *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal standing_spot *
+TryGetPtr(standing_spot_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  standing_spot *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

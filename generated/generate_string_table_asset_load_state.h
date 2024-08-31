@@ -1,4 +1,4 @@
-// src/engine/asset.h:140:0
+// src/engine/asset.h:141:0
 
 link_internal counted_string
 ToStringPrefixless(asset_load_state Type)

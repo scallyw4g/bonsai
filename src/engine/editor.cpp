@@ -54,8 +54,10 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
-  /* Editor->Shape.Settings.Type = BrushLayerType_Shape; */
-  /* Editor->Noise.Settings.Type = BrushLayerType_Noise; */
+  RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
+  {
+    Editor->LayeredBrushEditor.Layers[LayerIndex].Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  }
 
   return Result;
 }
@@ -106,6 +108,7 @@ GetUiDebug()
   Assert(Global_EngineResources);
   return &Global_EngineResources->EngineDebug.UiDebug;
 }
+
 
 poof(do_editor_ui_for_compound_type(perlin_noise_params))
 #include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
@@ -292,22 +295,6 @@ poof(do_editor_ui_for_enum(file_traversal_type))
 poof(do_editor_ui_for_compound_type(file_traversal_node))
 #include <generated/do_editor_ui_for_compound_type_file_traversal_node.h>
 
-// NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
-/* poof(do_editor_ui_for_enum(asset_load_state)) */
-#include <generated/do_editor_ui_for_enum_asset_load_state.h>
-
-poof(do_editor_ui_for_compound_type(asset_id))
-#include <generated/do_editor_ui_for_compound_type_asset_id.h>
-
-poof(do_editor_ui_for_compound_type(asset))
-#include <generated/do_editor_ui_for_compound_type_asset.h>
-
-poof(do_editor_ui_for_compound_type(collision_event))
-#include <generated/do_editor_ui_for_compound_type_collision_event.h>
-
-poof(do_editor_ui_for_compound_type(entity_position_info))
-#include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
-
 // @dirty_entity_P_format_hack
 //
 link_internal void
@@ -329,6 +316,27 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+// NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
+/* poof(do_editor_ui_for_enum(asset_load_state)) */
+#include <generated/do_editor_ui_for_enum_asset_load_state.h>
+
+poof(do_editor_ui_for_compound_type(asset_id))
+#include <generated/do_editor_ui_for_compound_type_asset_id.h>
+
+poof(string_and_value_tables(asset_type))
+#include <generated/string_and_value_tables_asset_type.h>
+poof(do_editor_ui_for_enum(asset_type))
+#include <generated/do_editor_ui_for_enum_asset_type.h>
+
+poof(do_editor_ui_for_compound_type(asset))
+#include <generated/do_editor_ui_for_compound_type_asset.h>
+
+poof(do_editor_ui_for_compound_type(collision_event))
+#include <generated/do_editor_ui_for_compound_type_collision_event.h>
+
+poof(do_editor_ui_for_compound_type(entity_position_info))
+#include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
 
 
 poof(do_editor_ui_for_compound_type(plane))
@@ -1128,7 +1136,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
   if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture_world_chunk_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1724,7 +1732,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           {
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
-            world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+
+            data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
+            auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
@@ -2176,39 +2187,55 @@ DoWorldEditor(engine_resources *Engine)
                 if (MaybeAsset.Tag)
                 {
                   asset *Asset = MaybeAsset.Value;
-                  model *Model = GetPtr(&Asset->Models, EngineDebug->ModelIndex);
-                  if (Model)
-                  {
-                    v3 AssetHalfDim = V3(Model->Dim)/2.f;
-                    world_update_op_shape_params_asset AssetUpdateShape =
-                    {
-                      EngineDebug->SelectedAsset,
-                      EngineDebug->ModelIndex,
-                      Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-                    };
 
-                    if (Editor->BrushType == WorldEdit_BrushType_Asset)
+                  switch (Asset->Type)
+                  {
+                    InvalidCase(AssetType_Undefined);
+
+                    case AssetType_WorldChunk:
+                    case AssetType_Models:
                     {
-                      world_edit_shape Shape =
+                      maybe_v3i MaybeDim = GetDimForAssetModel(Asset, u32(EngineDebug->ModelIndex));
+                      if (MaybeDim.Tag)
                       {
-                        type_world_update_op_shape_params_asset,
-                        .world_update_op_shape_params_asset = AssetUpdateShape,
-                      };
-                      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
-                    }
-                    else if (Editor->BrushType == WorldEdit_BrushType_Entity)
-                    {
-                      entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
-                      if (E)
-                      {
-                        SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, Model->Dim/2.f);
+                        v3 AssetHalfDim = MaybeDim.Value / 2.f;
+                        world_update_op_shape_params_asset AssetUpdateShape =
+                        {
+                          EngineDebug->SelectedAsset,
+                          EngineDebug->ModelIndex,
+                          Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
+                        };
+
+                        if (Editor->BrushType == WorldEdit_BrushType_Asset)
+                        {
+                          world_edit_shape Shape =
+                          {
+                            type_world_update_op_shape_params_asset,
+                            .world_update_op_shape_params_asset = AssetUpdateShape,
+                          };
+                          QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+                        }
+                        else if (Editor->BrushType == WorldEdit_BrushType_Entity)
+                        {
+                          entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
+                          if (E)
+                          {
+                            SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, AssetHalfDim);
+                          }
+                        }
+                        else
+                        {
+                          InvalidCodePath();
+                        }
                       }
-                    }
-                    else
-                    {
-                      InvalidCodePath();
-                    }
+                      else
+                      {
+                        BUG("Somehow requested a ModelIndex from an Asset that did not have one!");
+                      }
+                    } break;
+
                   }
+
                 }
               }
             }

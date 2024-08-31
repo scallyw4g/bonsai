@@ -3,25 +3,37 @@ poof(
   func mesh_allocator(mesh_t, allocator_t, type_poof_symbol allocate_proc)
   {
     link_internal void
-    AllocateMesh( mesh_t.name *Mesh, u32 NumVerts, allocator_t.name *Memory)
+    AllocateMesh( mesh_t.name *Mesh, data_type Type, u32 NumVerts, allocator_t.name *Memory)
     {
-      mesh_t.map(member)
+      switch (Type)
       {
-        member.has_tag(mesh_allocate)?
+        InvalidCase(DataType_Undefinded); 
+
+        case DataType_v3:
         {
-          Mesh->(member.name) = allocate_proc((member.type), Memory, NumVerts, CACHE_LINE_SIZE, False);
-        }
+          Mesh->Verts   = allocate_proc(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+          Mesh->Normals = allocate_proc(v3, Memory, NumVerts, CACHE_LINE_SIZE, False);
+          Mesh->Mat     = allocate_proc(matl, Memory, NumVerts, CACHE_LINE_SIZE, False);
+        } break;
+
+        case DataType_v3_u8:
+        {
+          Mesh->Verts   = allocate_proc(v3_u8, Memory, NumVerts, CACHE_LINE_SIZE, False);
+          Mesh->Normals = allocate_proc(v3_u8, Memory, NumVerts, CACHE_LINE_SIZE, False);
+          Mesh->Mat     = allocate_proc(matl, Memory, NumVerts, CACHE_LINE_SIZE, False);
+        } break;
       }
 
       Mesh->End = NumVerts;
       Mesh->At = 0;
+      Mesh->Type = Type;
     }
 
     link_internal mesh_t.name*
-    Allocate_(mesh_t.name)( (allocator_t.name)* Allocator, u32 NumVerts)
+    Allocate_(mesh_t.name)( (allocator_t.name)* Allocator, data_type Type, u32 NumVerts)
     {
       mesh_t.name *Result = allocate_proc((mesh_t.name), Allocator, 1, CACHE_LINE_SIZE, False);
-      AllocateMesh(Result, NumVerts, Allocator);
+      AllocateMesh(Result, Type, NumVerts, Allocator);
       return Result;
     }
 
@@ -35,8 +47,8 @@ poof(mesh_allocator(untextured_3d_geometry_buffer, memory_arena, {AllocateAligne
 poof(mesh_allocator(untextured_3d_geometry_buffer, heap_allocator, {HeapAlloc}))
 #include <generated/mesh_allocator_untextured_3d_geometry_buffer_heap_allocator_190647831.h>
 
-poof(mesh_allocator(world_chunk_geometry_buffer, memory_arena, {AllocateAlignedProtection}))
-#include <generated/mesh_allocator_world_chunk_geometry_buffer_memory_arena_821677495.h>
+/* poof(mesh_allocator(world_chunk_geometry_buffer, memory_arena, {AllocateAlignedProtection})) */
+/* #include <generated/mesh_allocator_world_chunk_geometry_buffer_memory_arena_821677495.h> */
 
 link_internal void
 DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
@@ -72,7 +84,7 @@ DeallocateMesh(void *VoidMesh, tiered_mesh_freelist* MeshFreelist)
   // untextured_3d_geometry_buffer to work for both buffer types.
   //
   // TODO(Jesse): Really don't like relying on this .. should probably find a better way.
-  CAssert(OffsetOf(End, untextured_3d_geometry_buffer) == OffsetOf(End, world_chunk_geometry_buffer));
+  /* CAssert(OffsetOf(End, untextured_3d_geometry_buffer) == OffsetOf(End, world_chunk_geometry_buffer)); */
 
   untextured_3d_geometry_buffer *Mesh = Cast(untextured_3d_geometry_buffer*, VoidMesh);
   mesh_freelist *Freelist = TryGetTierForSize(MeshFreelist, Mesh->End);
@@ -96,6 +108,7 @@ DeallocateMesh(engine_resources *Engine, untextured_3d_geometry_buffer* Mesh)
 }
 
 
+#if 0
 link_internal void
 DeallocateMesh(world_chunk_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 {
@@ -108,6 +121,7 @@ DeallocateMesh(engine_resources *Engine, world_chunk_geometry_buffer* Mesh)
 {
   DeallocateMesh(Mesh, &Engine->world_chunk_MeshFreelist);
 }
+#endif
 
 
 
@@ -233,7 +247,7 @@ poof(
 poof(threadsafe_mesh_container(lod_element_buffer, untextured_3d_geometry_buffer))
 #include <generated/take_release_sync_lod_element_buffer.h>
 
-poof(threadsafe_mesh_container(world_chunk_lod_element_buffer, world_chunk_geometry_buffer))
-#include <generated/threadsafe_mesh_container_world_chunk_lod_element_buffer.h>
+/* poof(threadsafe_mesh_container(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
+/* #include <generated/threadsafe_mesh_container_world_chunk_lod_element_buffer.h> */
 
 

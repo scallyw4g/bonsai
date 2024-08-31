@@ -130,7 +130,7 @@ DoLevelWindow(engine_resources *Engine)
         RangeIterator(ChunkIndex, ChunkCount)
         {
           world_chunk *Chunk = GetFreeWorldChunk(World);
-          DeserializeChunk(&LevelBytes, Chunk, &Engine->world_chunk_MeshFreelist, World->ChunkMemory);
+          DeserializeChunk(&LevelBytes, Chunk, World->ChunkMemory);
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
@@ -341,10 +341,114 @@ DoGraphicsDebugWindow(engine_resources *Engine)
 }
 
 link_internal b32
-FilterFilenamesByVoxExtension(file_traversal_node *Node)
+FilterFilenamesByLoadableAssetExtensions(file_traversal_node *Node)
 {
-  b32 Result = EndsWith(Node->Name, CSz(".vox"));
+  b32 Result  = EndsWith(Node->Name, CSz(".vox"));
+      Result |= EndsWith(Node->Name, CSz(".chunk"));
   return Result;
+}
+
+link_internal void
+FilenameModal(void *VoidEngine)
+{
+  engine_resources *Engine = Cast(engine_resources*, VoidEngine);
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Text(Ui, CSz("Callback"));
+}
+
+link_internal asset_thumbnail*
+AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbnails)
+{
+  v2i ThumbnailDim = V2i(256);
+  asset_thumbnail BlankThumb = {};
+  asset_thumbnail *Thumb = Push(AssetThumbnails, &BlankThumb);
+
+  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+  StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
+
+  return Thumb;
+}
+
+link_internal interactable_handle
+RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  SyncGpuBuffersAsync(Engine, Meshes);
+
+  texture *Texture      = &Thumb->Texture;
+  camera  *ThumbCamera  = &Thumb->Camera;
+
+  interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, Window, "asset_texture_viewport", Thumb);
+
+  if (Hover(Ui, &B))
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
+  }
+
+  if (Selected)
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
+  }
+
+  PushForceAdvance(Ui, V2(8, 0));
+
+  if (Pressed(Ui, &B))
+  {
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+  }
+
+  if (EngineDebug->ResetAssetNodeView)
+  {
+    Window->Scroll = {};
+    Window->CachedScroll = {};
+
+    v3 CenterpointOffset = Dim/-2.f;
+    f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
+    Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+    UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+  }
+
+  return B;
+}
+
+link_internal void
+RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if ( Engine->MousedOverVoxel.Tag )
+  {
+    cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
+    EntityOrigin.Offset = Round(EntityOrigin.Offset);
+
+    if ( !UiHoveredMouseInput(Ui) && Selected )
+    {
+      // Draw model marking where the asset will go
+      //
+      {
+        // TODO(Jesse): Setting up and tearing down the shader here
+        // is highly questionable.  We should probably keep a list
+        // of these guys that need this shader, then when we go
+        // to use it when drawing entities just draw them then..
+        //
+        // That said .. this is just editor code.. so .. meh
+        //
+        /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
+
+        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+        v3 AssetHalfDim = Dim/2.f;
+        v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
+        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Meshes, 0.f, Basis, Quaternion(), V3(1));
+
+        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+      }
+
+    }
+  }
 }
 
 link_internal void
@@ -357,6 +461,59 @@ DoAssetWindow(engine_resources *Engine)
 
     PushWindowStart(Ui, &Window);
 
+#if 0
+    if (SelectionComplete(Editor->SelectionClicks))
+    {
+      if (Button(Ui, CSz("New From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+      {
+        if (window_layout *Modal = ModalWindowStart(Ui, "New Asset", UiId(&Window, "NewAssetModal", 0u)))
+        {
+          char Buf[512];
+          TextBox(Ui, CSz("Asset Name"), CS(Buf, 512), 512, UiId(Modal, "AssetNameButton", 0u));
+          PushWindowEnd(Ui, Modal);
+        }
+      }
+      PushNewRow(Ui);
+    }
+#endif
+    if (Button(Ui, CSz("New Asset From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+    {
+      Engine->Editor.NewAssetFromSelection = True;
+    }
+
+    PushNewRow(Ui);
+    
+    if (Engine->Editor.NewAssetFromSelection)
+    {
+      TextBox(Ui, CSz("Asset Name"), CS(Engine->Editor.NewAssetFromSelectionFilename, 512), 512, UiId(&Window, "AssetNameButton", 0u));
+      PushNewRow(Ui);
+
+      if (Button(Ui, CSz("Save"), UiId(&Window, "Save Button", 0u)))
+      {
+        cs NewAssetFromSelectionFilename = CS(Engine->Editor.NewAssetFromSelectionFilename);
+        Engine->Editor.NewAssetFromSelection = False;
+
+        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+
+        cs SaveName = {};
+        if (EndsWith(NewAssetFromSelectionFilename, CSz(".chunk")))
+        {
+          SaveName = NewAssetFromSelectionFilename;
+        }
+        else
+        {
+          SaveName = Concat(NewAssetFromSelectionFilename, CSz(".chunk"), GetTranArena());
+        }
+
+        u8_cursor_block_array Bytes = {};
+
+        Serialize(&Bytes, &SaveChunk);
+        WriteToFile(Concat(CSz("models/"), SaveName, GetTranArena()), &Bytes);
+        /* SerializeChunk(&SaveChunk, Concat(CSz("models/"), SaveName, GetTranArena())); */
+      }
+    }
+    PushNewRow(Ui);
+
     DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
 
     switch (Engine->EngineDebug.AssetWindowViewMode)
@@ -364,7 +521,7 @@ DoAssetWindow(engine_resources *Engine)
       case AssetWindowViewMode_AssetFiles:
       {
         render_settings *Settings = &Graphics->Settings;
-        filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByVoxExtension};
+        filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByLoadableAssetExtensions};
         maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
 
         if (ClickedFileNode.Tag)
@@ -416,7 +573,6 @@ DoAssetWindow(engine_resources *Engine)
       WindowLayout("Asset View", window_layout_flags(WindowLayoutFlag_Align_Right));
     PushWindowStart(Ui, &AssetViewWindow);
 
-
     PushTableStart(Ui);
       if (EngineDebug->SelectedAsset.FileNode.Type)
       {
@@ -440,94 +596,52 @@ DoAssetWindow(engine_resources *Engine)
 
             case AssetLoadState_Loaded:
             {
-              IterateOver(&Asset->Models, Model, ModelIndex)
+              switch (Asset->Type)
               {
-                SyncGpuBuffersAsync(Engine, &Model->Meshes);
+                InvalidCase(AssetType_Undefined);
 
-                render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
-                if (ModelIndex >= TotalElements(&Editor->AssetThumbnails))
+                case AssetType_WorldChunk:
                 {
-                  v2i ThumbnailDim = V2i(128);
-                  asset_thumbnail BlankThumb = {};
-                  asset_thumbnail *Thumb = Push(&Editor->AssetThumbnails, &BlankThumb);
+                  render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
 
-                  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
-                  StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
-                }
+                  world_chunk *Chunk = &Asset->Chunk;
 
-                asset_thumbnail *Thumb = GetPtr(&Editor->AssetThumbnails, ModelIndex);
-                texture *Texture      = &Thumb->Texture;
-                camera  *ThumbCamera  = &Thumb->Camera;
+                  asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, 0);
+                  if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
-                if (EngineDebug->ResetAssetNodeView)
+                  b32 Selected = True;
+                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+
+
+                } break;
+
+                case AssetType_Models:
                 {
-                  AssetViewWindow.Scroll = {};
-                  AssetViewWindow.CachedScroll = {};
-
-                  v3 ModelCenterpointOffset = Model->Dim/-2.f;
-                  f32 SmallObjectCorrectionFactor = 350.f/Length(ModelCenterpointOffset);
-                  ThumbCamera->DistanceFromTarget = LengthSq(ModelCenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-                  UpdateGameCamera(World, {}, 0.f, {}, ThumbCamera, 0.f);
-                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
-                }
-
-                interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, &AssetViewWindow, "asset_texture_viewport", Thumb);
-
-                if (Hover(Ui, &B))
-                {
-                  PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
-                }
-
-                if (ModelIndex == EngineDebug->ModelIndex)
-                {
-                  PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
-                }
-
-                PushForceAdvance(Ui, V2(8, 0));
-
-                if (Pressed(Ui, &B))
-                {
-                  RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, &Model->Meshes, {}, 0);
-                  EngineDebug->ModelIndex = ModelIndex;
-                }
-
-                if ( Engine->MousedOverVoxel.Tag )
-                {
-                  cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                  EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-                  if ( !UiHoveredMouseInput(Ui) && ModelIndex == EngineDebug->ModelIndex )
+                  IterateOver(&Asset->Models, Model, ModelIndex)
                   {
-                    v3 AssetHalfDim = V3(Model->Dim)/2.f;
+                    SyncGpuBuffersAsync(Engine, &Model->Meshes);
 
-                    // Draw model marking where the asset will go
-                    //
+                    asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
+                    if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
+
+                    b32 Selected = ModelIndex == EngineDebug->ModelIndex;
+
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
+                    if (Pressed(Ui, &B))
                     {
-                      // TODO(Jesse): Setting up and tearing down the shader here
-                      // is highly questionable.  We should probably keep a list
-                      // of these guys that need this shader, then when we go
-                      // to use it when drawing entities just draw them then..
-                      //
-                      // That said .. this is just editor code.. so .. meh
-                      //
-                      /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
-
-                      PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-
-                      v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-                      DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, &Model->Meshes, 0.f, Basis, Quaternion(), V3(1));
-
-                      PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+                      EngineDebug->ModelIndex = ModelIndex;
                     }
 
-                  }
-                }
+                    RenderMeshPreviewIntoWorld(Engine, &Model->Meshes, V3(Model->Dim), Selected);
 
-                if ( (ModelIndex+1) % 4 == 0)
-                {
-                  PushNewRow(Ui);
-                  PushForceAdvance(Ui, V2(0, 8));
-                }
+                    if ( (ModelIndex+1) % 4 == 0)
+                    {
+                      PushNewRow(Ui);
+                      PushForceAdvance(Ui, V2(0, 8));
+                    }
+                  }
+                } break;
               }
 
               if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }

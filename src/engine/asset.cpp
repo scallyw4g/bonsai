@@ -231,6 +231,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
 global_variable counted_string
 Global_AssetPrefixPath = CSz("");
 
+
 link_internal world_chunk_file_header_v3
 ReadWorldChunkFileHeader_v3(u8_cursor *File)
 {
@@ -242,11 +243,9 @@ ReadWorldChunkFileHeader_v3(u8_cursor *File)
   Assert( Result.Checksum == 0xdeadbeef );
 
   Assert( Result.VertexElementSize       == sizeof(v3) );
-  /* Assert( Result.MaterialElementSize     == sizeof(vertex_material) ); */
   Assert( Result.NormalElementSize       == sizeof(v3) );
   Assert( Result.StandingSpotElementSize == sizeof(voxel_position) );
   Assert( Result.VoxelElementSize        == sizeof(voxel) );
-
 
   return Result;
 }
@@ -297,7 +296,7 @@ ReadWorldChunkFileHeader(u8_stream *File)
 }
 
 link_internal u32
-ReadWorldChunkVersion(u8_stream *Cursor )
+ReadWorldChunkVersion(u8_stream *Cursor)
 {
   u32 WHNK = Read_u32(Cursor);
   Assert(WHNK == WorldChunkFileTag_WHNK);
@@ -313,7 +312,7 @@ ReadWorldChunkVersion(u8_stream *Cursor )
 }
 
 link_internal void
-DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, tiered_mesh_freelist *MeshFreelist, memory_arena *PermMemory)
+DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, memory_arena *PermMemory)
 {
   TIMED_FUNCTION();
 
@@ -405,10 +404,10 @@ SerializeChunk(world_chunk *Chunk, u8_cursor_block_array *Bytes)
 }
 
 link_internal b32
-SerializeChunk(world_chunk *Chunk, counted_string AssetPath)
+SerializeChunk(world_chunk *Chunk, counted_string Filename)
 {
   auto WorldP = Chunk->WorldP;
-  counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena());
+  /* counted_string Filename = GetAssetFilenameFor(AssetPath, WorldP, GetTranArena()); */
 
   u8_cursor_block_array Bytes = {};
   b32 Result = SerializeChunk(Chunk, &Bytes);
@@ -432,7 +431,20 @@ FreeAsset(engine_resources *Engine, asset *Asset)
   Assert(Asset->LoadState == AssetLoadState_Loaded ||
          Asset->LoadState == AssetLoadState_Error  );
 
-  FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
+  switch (Asset->Type)
+  {
+    InvalidCase(AssetType_Undefined);
+
+    case AssetType_Models:
+    {
+      FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
+    } break;
+
+    case AssetType_WorldChunk:
+    {
+      NotImplemented;
+    } break;
+  }
 
   HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Dir.Start));
   HeapDeallocate(&Engine->AssetSystem.AssetMemory, Cast(void*, Asset->Id.FileNode.Name.Start));
@@ -543,6 +555,7 @@ AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
   return Result;
 }
 
+
 link_internal void
 InitAsset(asset *Asset, thread_local_state *Thread)
 {
@@ -567,6 +580,7 @@ InitAsset(asset *Asset, thread_local_state *Thread)
 
     if (Maybe.Tag == Maybe_Yes)
     {
+      Asset->Type = AssetType_Models;
       Asset->Models = Maybe.Value;
       FullBarrier;
       Asset->LoadState = AssetLoadState_Loaded;
@@ -579,6 +593,33 @@ InitAsset(asset *Asset, thread_local_state *Thread)
   else if ( AreEqual(Ext, CSz("obj")) )
   {
     Asset->LoadState = AssetLoadState_Error;
+  }
+  else if ( AreEqual(Ext, CSz("chunk")) )
+  {
+    u8_stream Bytes = U8_StreamFromFile(AssetFilepath, Thread->TempMemory);
+
+    world_chunk _Chunk = {};
+    world_chunk *Chunk = &_Chunk;
+
+    // TODO(Jesse)(memory, leak): This leaks the chunk memory; we do not have a
+    // way of reclaiming it when it's loaded from disk.  The chunk buffers for
+    // world chunks are just never freed, but the chunks are recycled.  This
+    // chunk is a weird one as the buffers can be of arbitrary size.
+    Deserialize(&Bytes, Chunk, Thread->PermMemory, 1);
+
+    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
+
+    FinalizeChunkInitialization(Chunk);
+
+    data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
+    auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+
+    RebuildWorldChunkMesh(Thread, Chunk, V3i(0), Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory, Chunk->Dim/-2.f);
+
+    Asset->Type = AssetType_WorldChunk;
+    Asset->Chunk = *Chunk;
+
+    Asset->LoadState = AssetLoadState_Loaded;
   }
   else
   {
@@ -741,6 +782,7 @@ GetAssetPtr(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIn
 link_internal model *
 GetModel(asset *Asset, asset_id *AID, u64 ModelIndex)
 {
+  Assert(Asset->Type == AssetType_Models);
   Assert(ModelIndex < Asset->Models.Count);
   Assert(AID->Index == Asset->Id.Index);
   Assert(AreEqual(&AID->FileNode, &Asset->Id.FileNode));

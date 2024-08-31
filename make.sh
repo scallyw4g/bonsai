@@ -261,16 +261,20 @@ function RunEntireBuild {
 
   if [ $RunPoof == 1 ]; then
     RunPoof
+    [ $? -ne 0 ] && exit 1
   fi
 
   if [ $EMCC == 1 ]; then
     BuildWithEMCC
+    [ $? -ne 0 ] && exit 1
   else
     BuildWithClang
+    [ $? -ne 0 ] && exit 1
   fi
 
   if [ $RunTests == 1 ]; then
     $stdlib_build_scripts/run_tests.sh
+    [ $? -ne 0 ] && exit 1
   fi
 
 }

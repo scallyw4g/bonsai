@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1030:0
+// src/engine/render.cpp:1040:0
 
 
 link_internal void
@@ -42,10 +42,6 @@ SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
         PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
         Result = True;
       }
-      else
-      {
-        PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles);
-      }
     }
   }
 
@@ -73,16 +69,8 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         if (Mesh->At)
         {
-          // @duplicate_realloc_code
-          if (Handles->VertexHandle)
-          {
-            GL.DeleteBuffers(3, &Handles->VertexHandle);
-            Clear(Handles);
-            AssertNoGlErrors;
-          }
-
-          AllocateGpuElementBuffer(Handles, Mesh->At);
-          CopyToGpuBuffer(Mesh, Handles);
+          Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
+          ReallocateAndSyncGpuBuffers(Handles, Mesh);
           Result = True;
         }
         else

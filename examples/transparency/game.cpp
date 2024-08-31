@@ -69,14 +69,14 @@ SpawnFireEmitters(entity_block_array *Entities, b32 Colorful = False)
 }
 
 link_internal void
-SpawnLineOfEntities(entity **EntityTable, entity_block_array *Storage, v3 BaseP, v3 Offset, s32 Count)
+SpawnLineOfEntities(entity **EntityTable, entity_block_array *Storage, v3 BaseP, v3 Stride, s32 Count)
 {
   RangeIterator(Index, Count)
   {
     entity *E = TryGetFreeEntityPtr(EntityTable);
     Assert(E);
 
-    E->P.Offset = BaseP + (Offset*r32(Index));
+    E->P.Offset = BaseP + (Stride*r32(Index));
     SpawnEntity(E);
     Push(Storage, E);
   }
@@ -101,7 +101,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState = Allocate(game_state, Resources->GameMemory, 1);
 
   s32 EmitterCount = 6;
-  v3 xStride = V3(24, 0, 0);
+  v3 xStride = V3(32, 0, 0);
 
 
   {
@@ -124,7 +124,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   {
     s32 yAt = 16;
-    SpawnLineOfEntities(EntityTable, &GameState->SplosionEmitters, V3(-32, yAt, 4), xStride, EmitterCount);
+    SpawnLineOfEntities(EntityTable, &GameState->SplosionEmitters, V3(-32, yAt, 6), xStride, EmitterCount);
     SpawnSplosionEmitters(&GameState->SplosionEmitters);
   }
 

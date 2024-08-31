@@ -486,6 +486,8 @@ Bonsai_Render(engine_resources *Engine)
   PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
 
+  /* DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim)); */
+
 
   {
     layout DefaultLayout = {};
@@ -513,11 +515,12 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   engine_resources *EngineResources = GetEngineResources();
   world *World = EngineResources->World;
 
-  work_queue_entry_type Type = Entry->Type;
-  switch (Type)
+  work_queue_entry_type WorkType = Entry->Type;
+  switch (WorkType)
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
+    InvalidCase(type_work_queue_entry_update_world_region);
 
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
@@ -532,12 +535,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       InitAsset(Job->Asset, Thread);
     } break;
 
-    case type_work_queue_entry_update_world_region:
-    {
-      work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
-      DoWorldUpdate(&EngineResources->Stdlib.Plat.LowPriority, World, Thread, Job);
-    } break;
-
     case type_work_queue_entry_sim_particle_system:
     {
       work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
@@ -549,7 +546,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
 
-      world_chunk_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+      data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
+      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
       RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;

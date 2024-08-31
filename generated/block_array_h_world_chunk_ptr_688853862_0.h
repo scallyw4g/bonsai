@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:416:0
+// src/engine/world_chunk.h:399:0
 
 struct world_chunk_ptr_block
 {
@@ -140,6 +140,19 @@ GetPtr(world_chunk_ptr_block_array *Arr, umm Index)
   }
 
   world_chunk_ptr *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal world_chunk_ptr *
+TryGetPtr(world_chunk_ptr_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 32;
+  umm ElementIndex = Index % 32;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  world_chunk_ptr *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

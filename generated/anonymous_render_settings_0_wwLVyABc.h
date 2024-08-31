@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:387:0
+// src/engine/serdes.cpp:392:0
 
 E1->UseSsao = E0->UseSsao;
 E1->UseShadowMapping = E0->UseShadowMapping;

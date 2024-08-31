@@ -1,4 +1,4 @@
-// src/engine/voxel_synthesis.h:59:0
+// src/engine/voxel_synthesis.h:42:0
 
 struct entropy_lists
 {

@@ -86,8 +86,8 @@ poof(
 
 poof(grow_buffer(untextured_3d_geometry_buffer))
 #include <generated/buffer_is_marked_for_growth_untextured_3d_geometry_buffer.h>
-poof(grow_buffer(world_chunk_geometry_buffer))
-#include <generated/buffer_is_marked_for_growth_world_chunk_geometry_buffer.h>
+/* poof(grow_buffer(world_chunk_geometry_buffer)) */
+/* #include <generated/buffer_is_marked_for_growth_world_chunk_geometry_buffer.h> */
 
 
 
@@ -117,11 +117,19 @@ PackAndStoreNormal(v3 *Dest, v3 Src)
   *Dest = Src;
 }
 
+link_inline void
+PackAndStoreNormal(v3 *Dest, v3_u8 Src)
+{
+  *Dest = V3(Src)/127.f;
+}
+
+
 
 //
 // Scale and Offset (homogeneous normals)
 //
 
+#if 0
 link_inline void
 BufferVertsDirect(
               v3_u8 *DestVerts,
@@ -130,244 +138,272 @@ BufferVertsDirect(
 
       u32  NumVerts,
 
-              v3_u8 *SrcVerts,
-              v3_u8 *SrcNormals,
+                 v3 *SrcVerts,
+                 v3 *SrcNormals,
     vertex_material *SrcMats,
 
        v3  Offset,
-       v3  Scale
+       v3  Scale,
+       Quaternion Rot
   )
 {
-  TIMED_FUNCTION();
-
-  __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
-  __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
-
-  Assert(NumVerts % 3 == 0);
-
-  /* MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts ); */
-  MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
-
-  for ( u32 VertIndex = 0;
-        VertIndex < NumVerts;
-        VertIndex += 3 )
-  {
-    {
-      auto N0 = SrcNormals[VertIndex + 0];
-      auto N1 = SrcNormals[VertIndex + 1];
-      auto N2 = SrcNormals[VertIndex + 2];
-      PackAndStoreNormal(DestNormals+0, N0);
-      PackAndStoreNormal(DestNormals+1, N1);
-      PackAndStoreNormal(DestNormals+2, N2);
-      DestNormals += 3;
-    }
-
-    v3_u8 VertSrc0 = SrcVerts[VertIndex + 0];
-    v3_u8 VertSrc1 = SrcVerts[VertIndex + 1];
-    v3_u8 VertSrc2 = SrcVerts[VertIndex + 2];
-
-    f32_reg Vert0;
-    f32_reg Vert1;
-    f32_reg Vert2;
-
-    Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-    Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-    Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
-
-    Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
-    Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
-    Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
-
-    v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2]) }};
-    v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2]) }};
-    v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2]) }};
-
-    DestVerts[0] = Result0;
-    DestVerts[1] = Result1;
-    DestVerts[2] = Result2;
-
-    DestVerts += 3;
-  }
+  NotImplemented;
 }
-
+#endif
 
 poof(
-  func mesh_buffering_functions(mesh_t, vertex_t, element_t)
+  func copy_vertex_buffer(dest_t, src_t, result_primitive_t)
   {
-
     //
-    // Rotate, Scale and Offset
+    // Offset, Scale, Rotate
     //
-
+    // TODO(Jesse): Do we actually have to upscale to 32-bit float here for 8 bit types?
     link_inline void
-    BufferVertsDirect(
-        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
-                    u32  NumVerts,
-        (vertex_t.name) *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
-                     v3  Offset,
-                     v3  Scale,
-             Quaternion  Rot )
+    CopyVertexBuffer( dest_t.name *Dest, src_t.name *Src, u32 NumVerts, v3 Offset, v3 Scale, Quaternion Rot)
     {
-      TIMED_FUNCTION();
+      Assert(NumVerts % 3 == 0);
 
       __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
       __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
 
-      Assert(NumVerts % 3 == 0);
-
-      MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
-
-      /* v3 HalfOffset = Offset*0.5f; */
       for ( u32 VertIndex = 0;
                 VertIndex < NumVerts;
                 VertIndex += 3 )
       {
-        {
-          auto N0 = Rotate(SrcNormals[VertIndex + 0], Rot);
-          auto N1 = Rotate(SrcNormals[VertIndex + 1], Rot);
-          auto N2 = Rotate(SrcNormals[VertIndex + 2], Rot);
-
-          // NOTE(Jesse): This _hopefully_ gets inlined.  Should figure out a
-          // way of asserting that it does, or forcing it to.  The functions
-          // are overloads, but the compiler _should_ be able to figure out
-          // they can be inlined trivially..
-          PackAndStoreNormal(DestNormals+0, N0);
-          PackAndStoreNormal(DestNormals+1, N1);
-          PackAndStoreNormal(DestNormals+2, N2);
-
-          DestNormals += 3;
-        }
-        {
-          vertex_t.name VertSrc0 = Rotate(SrcVerts[VertIndex + 0], Rot);
-          vertex_t.name VertSrc1 = Rotate(SrcVerts[VertIndex + 1], Rot);
-          vertex_t.name VertSrc2 = Rotate(SrcVerts[VertIndex + 2], Rot);
-
-          f32_reg Vert0;
-          f32_reg Vert1;
-          f32_reg Vert2;
-
-          Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-          Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-          Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
-
-          Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
-          Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
-          Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
-
-          vertex_t.name Result0 = {{ element_t.name(Vert0.F[0]), element_t.name(Vert0.F[1]), element_t.name(Vert0.F[2])}};
-          vertex_t.name Result1 = {{ element_t.name(Vert1.F[0]), element_t.name(Vert1.F[1]), element_t.name(Vert1.F[2])}};
-          vertex_t.name Result2 = {{ element_t.name(Vert2.F[0]), element_t.name(Vert2.F[1]), element_t.name(Vert2.F[2])}};
-
-          DestVerts[0] = Result0;
-          DestVerts[1] = Result1;
-          DestVerts[2] = Result2;
-
-          DestVerts += 3;
-        }
-
-      }
-    }
-
-    //
-    // Scale and Offset
-    //
-
-    link_inline void
-    BufferVertsDirect(
-        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
-                    u32  NumVerts,
-        (vertex_t.name) *SrcVerts, v3 *SrcNormals, vertex_material *SrcMats,
-                     v3  Offset,
-                     v3  Scale
-      )
-    {
-      TIMED_FUNCTION();
-
-      __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
-      __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
-
-      Assert(NumVerts % 3 == 0);
-
-      /* MemCopy((u8*)SrcNormals,     (u8*)DestNormals,  sizeof(*SrcNormals)*NumVerts ); */
-      MemCopy((u8*)SrcMats,        (u8*)DestMats,     sizeof(*SrcMats)*NumVerts );
-
-      for ( u32 VertIndex = 0;
-            VertIndex < NumVerts;
-            VertIndex += 3 )
-      {
-        {
-          auto N0 = SrcNormals[VertIndex + 0];
-          auto N1 = SrcNormals[VertIndex + 1];
-          auto N2 = SrcNormals[VertIndex + 2];
-          PackAndStoreNormal(DestNormals+0, N0);
-          PackAndStoreNormal(DestNormals+1, N1);
-          PackAndStoreNormal(DestNormals+2, N2);
-          DestNormals += 3;
-        }
-
-        vertex_t.name VertSrc0 = SrcVerts[VertIndex + 0];
-        vertex_t.name VertSrc1 = SrcVerts[VertIndex + 1];
-        vertex_t.name VertSrc2 = SrcVerts[VertIndex + 2];
+        auto Src0 = Rotate(Src[VertIndex + 0], Rot);
+        auto Src1 = Rotate(Src[VertIndex + 1], Rot);
+        auto Src2 = Rotate(Src[VertIndex + 2], Rot);
 
         f32_reg Vert0;
         f32_reg Vert1;
         f32_reg Vert2;
 
-        Vert0.Sse = _mm_set_ps(0, VertSrc0.z, VertSrc0.y, VertSrc0.x);
-        Vert1.Sse = _mm_set_ps(0, VertSrc1.z, VertSrc1.y, VertSrc1.x);
-        Vert2.Sse = _mm_set_ps(0, VertSrc2.z, VertSrc2.y, VertSrc2.x);
+        Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
+        Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
+        Vert2.Sse = _mm_set_ps(0, Src2.z, Src2.y, Src2.x);
 
         Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
         Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
         Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-        vertex_t.name Result0 = {{ element_t.name(Vert0.F[0]), element_t.name(Vert0.F[1]), element_t.name(Vert0.F[2]) }};
-        vertex_t.name Result1 = {{ element_t.name(Vert1.F[0]), element_t.name(Vert1.F[1]), element_t.name(Vert1.F[2]) }};
-        vertex_t.name Result2 = {{ element_t.name(Vert2.F[0]), element_t.name(Vert2.F[1]), element_t.name(Vert2.F[2]) }};
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
 
-        DestVerts[0] = Result0;
-        DestVerts[1] = Result1;
-        DestVerts[2] = Result2;
+        Dest[0] = Result0;
+        Dest[1] = Result1;
+        Dest[2] = Result2;
 
-        DestVerts += 3;
+        Dest += 3;
       }
     }
 
+    //
+    // Offset, Scale
+    //
+    link_inline void
+    CopyVertexBuffer( dest_t.name *Dest, src_t.name *Src, u32 NumVerts, v3 Offset, v3 Scale )
+    {
+      Assert(NumVerts % 3 == 0);
 
-    //
-    // Untransformed
-    //
+      __m128 mmScale = _mm_set_ps(0, Scale.z, Scale.y, Scale.x);
+      __m128 mmOffset = _mm_set_ps(0, Offset.z, Offset.y, Offset.x);
+
+      for ( u32 VertIndex = 0;
+                VertIndex < NumVerts;
+                VertIndex += 3 )
+      {
+        auto Src0 = Src[VertIndex + 0];
+        auto Src1 = Src[VertIndex + 1];
+        auto Src2 = Src[VertIndex + 2];
+
+        f32_reg Vert0;
+        f32_reg Vert1;
+        f32_reg Vert2;
+
+        Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
+        Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
+        Vert2.Sse = _mm_set_ps(0, Src2.z, Src2.y, Src2.x);
+
+        Vert0.Sse = _mm_add_ps( _mm_mul_ps(Vert0.Sse, mmScale), mmOffset);
+        Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
+        Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
+
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
+
+        Dest[0] = Result0;
+        Dest[1] = Result1;
+        Dest[2] = Result2;
+
+        Dest += 3;
+      }
+    }
 
     link_inline void
-    BufferVertsDirect(
-        (vertex_t.name) *DestVerts, (vertex_t.name) *DestNormals, vertex_material *DestMats,
-        u32 NumVerts,
-        (vertex_t.name) *Positions, v3 *Normals, vertex_material *Mats
-      )
+    CopyVertexBuffer( dest_t.name *Dest, src_t.name *Src, u32 NumVerts )
     {
-      TIMED_FUNCTION();
-      MemCopy((u8*)Positions,  (u8*)DestVerts,      sizeof(*Positions)*NumVerts );
-      /* MemCopy((u8*)Normals,    (u8*)DestNormals,    sizeof(*Normals)*NumVerts ); */
-      MemCopy((u8*)Mats,       (u8*)DestMats,       sizeof(*Mats)*NumVerts );
-
-      // NOTE(Jesse): Hopefully gets vectorized..  Can't do 4x because triangles
-      // are 3 elements.. Could do 12 with a cleanup pass.. but meh
-      for ( u32 VertIndex = 0;
-            VertIndex < NumVerts;
-            VertIndex += 3 )
+      // TODO(Jesse): This conditional isn't working ..?
+      /* @are_equal(src_t, dest_t)? */
       {
-        auto N0 = Normals[VertIndex + 0];
-        auto N1 = Normals[VertIndex + 1];
-        auto N2 = Normals[VertIndex + 2];
-        PackAndStoreNormal(DestNormals+0, N0);
-        PackAndStoreNormal(DestNormals+1, N1);
-        PackAndStoreNormal(DestNormals+2, N2);
-        DestNormals += 3;
+        /* MemCopy((u8*)Src, (u8*)Dest, sizeof(*Src)*NumVerts ); */
+      }
+      {
+        for ( u32 VertIndex = 0;
+                  VertIndex < NumVerts;
+                  VertIndex += 3 )
+        {
+          auto Src0 = Src[VertIndex + 0];
+          auto Src1 = Src[VertIndex + 1];
+          auto Src2 = Src[VertIndex + 2];
+
+          Dest[VertIndex + 0] = dest_t.name.to_capital_case(Src0);
+          Dest[VertIndex + 1] = dest_t.name.to_capital_case(Src1);
+          Dest[VertIndex + 2] = dest_t.name.to_capital_case(Src2);
+        }
+      }
+    }
+  }
+)
+
+poof(
+  func copy_normal_buffer(dest_t, src_t)
+  {
+    link_inline void
+    CopyNormalBuffer( (dest_t.name) *Dest, (src_t.name) *Src, u32 NumVerts, Quaternion Rot)
+    {
+      Assert(NumVerts % 3 == 0);
+      for ( u32 VertIndex = 0;
+                VertIndex < NumVerts;
+                VertIndex += 3 )
+      {
+        {
+          auto N0 = Rotate(Src[VertIndex + 0], Rot);
+          auto N1 = Rotate(Src[VertIndex + 1], Rot);
+          auto N2 = Rotate(Src[VertIndex + 2], Rot);
+          PackAndStoreNormal(Dest+0, N0);
+          PackAndStoreNormal(Dest+1, N1);
+          PackAndStoreNormal(Dest+2, N2);
+          Dest += 3;
+        }
       }
     }
 
+    link_inline void
+    CopyNormalBuffer( (dest_t.name) *Dest, (src_t.name) *Src, u32 NumVerts)
+    {
+      Assert(NumVerts % 3 == 0);
+      for ( u32 VertIndex = 0;
+                VertIndex < NumVerts;
+                VertIndex += 3 )
+      {
+        {
+          auto N0 = Src[VertIndex + 0];
+          auto N1 = Src[VertIndex + 1];
+          auto N2 = Src[VertIndex + 2];
+          PackAndStoreNormal(Dest+0, N0);
+          PackAndStoreNormal(Dest+1, N1);
+          PackAndStoreNormal(Dest+2, N2);
+          Dest += 3;
+        }
+      }
+    }
+  }
+)
+
+poof(copy_vertex_buffer(v3_u8, v3_u8, u8))
+#include <generated/copy_vertex_buffer_v3_u8_v3_u8.h>
+poof(copy_vertex_buffer(v3_u8, v3, u8))
+#include <generated/copy_vertex_buffer_v3_u8_v3.h>
+poof(copy_vertex_buffer(v3, v3, f32))
+#include <generated/copy_vertex_buffer_v3_v3.h>
+poof(copy_vertex_buffer(v3, v3_u8, f32))
+#include <generated/copy_vertex_buffer_v3_v3_u8_f32.h>
+
+poof(copy_normal_buffer(v3_u8, v3_u8))
+#include <generated/copy_normal_buffer_v3_u8_v3_u8.h>
+poof(copy_normal_buffer(v3_u8, v3))
+#include <generated/copy_normal_buffer_v3_u8_v3.h>
+poof(copy_normal_buffer(v3, v3))
+#include <generated/copy_normal_buffer_v3_v3.h>
+poof(copy_normal_buffer(v3, v3_u8))
+#include <generated/copy_normal_buffer_v3_v3_u8.h>
 
 
+link_inline void
+CopyMaterialBuffer(vertex_material *Dest, vertex_material *Src, u32 NumVerts)
+{
+  CAssert(sizeof(*Src) == sizeof(*Dest));
+  Assert(NumVerts % 3 == 0);
+
+  MemCopy((u8*)Src, (u8*)Dest, sizeof(*Src)*NumVerts );
+}
+
+link_inline data_type
+GetMeshDatatypeForDimension(v3i MeshDim)
+{
+  Assert(LengthSq(MeshDim) > 0.f); // A negative dimension is nonsense..
+
+  data_type Result = DataType_v3;
+
+  if (Abs(MeshDim.x) < 127 && Abs(MeshDim.y) < 127 && Abs(MeshDim.z) < 127)
+  {
+    Result = DataType_v3_u8;
+  }
+
+  return Result;
+}
+
+link_inline void *
+GetVertexPointer(untextured_3d_geometry_buffer *Buffer, s32 Offset)
+{
+  Assert(Offset > 0);
+
+  void *Result = 0;
+  switch (Buffer->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3_u8:
+    {
+      Result = Cast(v3_u8*, Buffer->Verts) + Offset;
+    } break;
+
+    case DataType_v3:
+    {
+      Result = Cast(v3*, Buffer->Verts) + Offset;
+    } break;
+  }
+
+  return Result;
+}
+
+link_inline void *
+GetNormalPointer(untextured_3d_geometry_buffer *Buffer, s32 Offset)
+{
+  Assert(Offset > 0);
+
+  void *Result = 0;
+  switch (Buffer->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3_u8:
+    {
+      Result = Cast(v3_u8*, Buffer->Normals) + Offset;
+    } break;
+
+    case DataType_v3:
+    {
+      Result = Cast(v3*, Buffer->Normals) + Offset;
+    } break;
+  }
+
+  return Result;
+}
+
+poof(
+  func checked_vertex_buffering_functions(mesh_t, vertex_t)
+  {
     //
     // Rotate, Scale and Offset
     //
@@ -376,7 +412,7 @@ poof(
     BufferVertsChecked(
         (mesh_t.name) *Dest,
         u32 NumVerts,
-        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats,
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats,
         v3 Offset,
         v3 Scale,
         Quaternion Rot
@@ -385,13 +421,31 @@ poof(
       TIMED_FUNCTION();
       if (BufferHasRoomFor(Dest, NumVerts))
       {
-        BufferVertsDirect(Dest->Verts + Dest->At,
-                          Dest->Normals + Dest->At,
-                          Dest->Mat + Dest->At,
-                          NumVerts,
-                          VertsPositions, Normals, Mats,
-                          Offset, Scale, Rot);
+        switch (Dest->Type)
+        {
+          InvalidCase(DataType_Undefinded);
+          case DataType_v3_u8:
+          {
+                      v3_u8 *DestVerts   = Cast(v3_u8*, Dest->Verts)   + Dest->At;
+                      v3_u8 *DestNormals = Cast(v3_u8*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =              Dest->Mat      + Dest->At;
 
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts, Offset, Scale, Rot);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts, Rot);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+
+          case DataType_v3:
+          {
+                         v3 *DestVerts   = Cast(v3*, Dest->Verts)   + Dest->At;
+                         v3 *DestNormals = Cast(v3*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =           Dest->Mat      + Dest->At;
+
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts, Offset, Scale, Rot);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts, Rot);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+        }
         Dest->At += NumVerts;
       }
       else
@@ -410,7 +464,7 @@ poof(
     BufferVertsChecked(
         (mesh_t.name) *Dest,
         u32 NumVerts,
-        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats,
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats,
         v3 Offset,
         v3 Scale
       )
@@ -418,53 +472,37 @@ poof(
       TIMED_FUNCTION();
       if (BufferHasRoomFor(Dest, NumVerts))
       {
-        BufferVertsDirect(Dest->Verts + Dest->At,
-                          Dest->Normals + Dest->At,
-                          Dest->Mat + Dest->At,
-                          NumVerts,
-                          VertsPositions, Normals, Mats,
-                          Offset, Scale);
+        switch (Dest->Type)
+        {
+          InvalidCase(DataType_Undefinded);
+          case DataType_v3_u8:
+          {
+                      v3_u8 *DestVerts   = Cast(v3_u8*, Dest->Verts)   + Dest->At;
+                      v3_u8 *DestNormals = Cast(v3_u8*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =              Dest->Mat      + Dest->At;
 
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts, Offset, Scale);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+
+          case DataType_v3:
+          {
+                         v3 *DestVerts   = Cast(v3*, Dest->Verts)   + Dest->At;
+                         v3 *DestNormals = Cast(v3*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =           Dest->Mat      + Dest->At;
+
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts, Offset, Scale);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+        }
         Dest->At += NumVerts;
       }
       else
       {
         if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
         MarkBufferForGrowth(Dest, NumVerts);
-      }
-    }
-
-    //
-    // Scale and Offset
-    //
-
-    inline void
-    BufferVertsChecked(
-        (mesh_t.name)* Src,
-        (mesh_t.name)* Dest,
-        v3 Offset = V3(0),
-        v3 Scale = V3(1)
-      )
-    {
-      TIMED_FUNCTION();
-
-      umm NumVerts = Src->End - Src->At;
-      if (Dest->At + Src->At <= Dest->End)
-      {
-
-        BufferVertsDirect(Dest->Verts + Dest->At,
-                          Dest->Normals + Dest->At,
-                          Dest->Mat + Dest->At,
-                          Src->At,
-                          Src->Verts, Src->Normals, Src->Mat,
-                          Offset, Scale);
-
-        Dest->At += Src->At;
-      }
-      else
-      {
-        if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", NumVerts, Dest->At, Dest->End-1); }
-        MarkBufferForGrowth(Dest, Src->At);
       }
     }
 
@@ -477,18 +515,37 @@ poof(
     BufferVertsChecked(
         (mesh_t.name) *Dest,
         u32 NumVerts,
-        (vertex_t.name) *VertsPositions, v3 *Normals, vertex_material *Mats
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats
       )
     {
       TIMED_FUNCTION();
       if (BufferHasRoomFor(Dest, NumVerts))
-      {
-        BufferVertsDirect(Dest->Verts + Dest->At,
-                          Dest->Normals + Dest->At,
-                          Dest->Mat + Dest->At,
-                          NumVerts,
-                          VertsPositions, Normals, Mats);
+     {
+        switch (Dest->Type)
+        {
+          InvalidCase(DataType_Undefinded);
+          case DataType_v3_u8:
+          {
+                      v3_u8 *DestVerts   = Cast(v3_u8*, Dest->Verts)   + Dest->At;
+                      v3_u8 *DestNormals = Cast(v3_u8*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =              Dest->Mat      + Dest->At;
 
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+
+          case DataType_v3:
+          {
+                         v3 *DestVerts   = Cast(v3*, Dest->Verts)   + Dest->At;
+                         v3 *DestNormals = Cast(v3*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats    =              Dest->Mat   + Dest->At;
+
+            CopyVertexBuffer(DestVerts,   SrcVerts,   NumVerts);
+            CopyNormalBuffer(DestNormals, SrcNormals, NumVerts);
+            CopyMaterialBuffer(DestMats,  SrcMats,    NumVerts);
+          } break;
+        }
         Dest->At += NumVerts;
       }
       else
@@ -501,35 +558,134 @@ poof(
   }
 )
 
-poof(mesh_buffering_functions(untextured_3d_geometry_buffer, v3, f32))
-#include <generated/mesh_buffering_functions_untextured_3d_geometry_buffer_v3.h>
+poof(
+  func checked_vertex_buffering_functions_h(mesh_t, vertex_t)
+  {
+    //
+    // Rotate, Scale and Offset
+    //
 
-poof(mesh_buffering_functions(world_chunk_geometry_buffer, v3_u8, u8))
-#include <generated/mesh_buffering_functions_world_chunk_geometry_buffer_v3_u8.h>
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats,
+        v3 Offset,
+        v3 Scale,
+        Quaternion Rot
+      );
+
+    //
+    // Scale and Offset
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats,
+        v3 Offset,
+        v3 Scale
+      );
+
+    //
+    // Untransformed
+    //
+
+    inline void
+    BufferVertsChecked(
+        (mesh_t.name) *Dest,
+        u32 NumVerts,
+        (vertex_t.name) *SrcVerts, (vertex_t.name) *SrcNormals, vertex_material *SrcMats
+      );
+
+  }
+)
+
+/* poof(direct_vertex_buffering_functions(untextured_3d_geometry_buffer, v3)) */
+/* #include <generated/direct_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_f32.h> */
+
+/* poof(direct_vertex_buffering_functions(untextured_3d_geometry_buffer, v3_u8)) */
+/* #include <generated/direct_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_u8_u8.h> */
+
+poof(checked_vertex_buffering_functions_h(untextured_3d_geometry_buffer, v3))
+#include <generated/checked_vertex_buffering_functions_h_untextured_3d_geometry_buffer_v3.h>
+poof(checked_vertex_buffering_functions_h(untextured_3d_geometry_buffer, v3_u8))
+#include <generated/checked_vertex_buffering_functions_h_untextured_3d_geometry_buffer_v3_u8.h>
+
+inline void
+BufferVertsChecked(
+    untextured_3d_geometry_buffer* Src,
+    untextured_3d_geometry_buffer* Dest,
+    v3 Offset = V3(0), // TODO(Jesse): Remove these defaults and make overloads?
+    v3 Scale = V3(1),
+    Quaternion Rot = Quaternion()
+  );
+
+poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3))
+#include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_f32.h>
+poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3_u8))
+#include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_u8.h>
+
+//
+// Generic Scale and Offset
+//
+
+inline void
+BufferVertsChecked(
+    untextured_3d_geometry_buffer* Src,
+    untextured_3d_geometry_buffer* Dest,
+    v3 Offset, // = V3(0), // TODO(Jesse): Remove these defaults and make overloads?
+    v3 Scale, // = V3(1),
+    Quaternion Rot // = Quaternion()
+  )
+{
+  TIMED_FUNCTION();
+
+  if (BufferHasRoomFor(Dest, Src->At))
+  {
+    switch (Src->Type)
+    {
+      InvalidCase(DataType_Undefinded);
+      case DataType_v3_u8:
+      {
+                  v3_u8 *SrcVerts   = Cast(v3_u8*, Src->Verts);
+                  v3_u8 *SrcNormals = Cast(v3_u8*, Src->Normals);
+        vertex_material *SrcMats    =              Src->Mat;
+        BufferVertsChecked(Dest, Src->At, SrcVerts, SrcNormals, SrcMats, Offset, Scale, Rot);
+      } break;
+
+      case DataType_v3:
+      {
+                     v3 *SrcVerts   = Cast(v3*, Src->Verts);
+                     v3 *SrcNormals = Cast(v3*, Src->Normals);
+        vertex_material *SrcMats    =           Src->Mat;
+
+        BufferVertsChecked(Dest, Src->At, SrcVerts, SrcNormals, SrcMats, Offset, Scale, Rot);
+      } break;
+    }
+
+    Dest->At += Src->At;
+  }
+  else
+  {
+    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", Src->At, Dest->At, Dest->End-1); }
+    MarkBufferForGrowth(Dest, Src->At);
+  }
+}
+
+
+/* poof(mesh_buffering_functions(world_chunk_geometry_buffer, v3_u8, u8)) */
+/* #include <generated/mesh_buffering_functions_world_chunk_geometry_buffer_v3_u8.h> */
 
 
 link_internal void
 BufferFaceData(
-    world_chunk_geometry_buffer *Dest,
-    v3_u8 *Positions, v3 *Normals, vertex_material *Mats
+    untextured_3d_geometry_buffer *Dest,
+    v3_u8 *Positions, v3_u8 *Normals, vertex_material *Mats
   )
 {
-  if (BufferHasRoomFor(Dest, 6))
-  {
-    BufferVertsDirect(
-      Dest->Verts+Dest->At, Dest->Normals+Dest->At, Dest->Mat+Dest->At,     
-      6,
-      Positions, Normals, Mats);
-    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
-
-    Dest->At += 6;
-  }
-  else
-  {
-    // NOTE(Jesse): Supress spamming errors to the console after the first one.
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
-    MarkBufferForGrowth(Dest, 6);
-  }
+  BufferVertsChecked(Dest, 6, Positions, Normals, Mats);
 }
 
 link_internal void
@@ -538,22 +694,7 @@ BufferFaceData(
     v3 *Positions, v3 *Normals, vertex_material *Mats
   )
 {
-  if (BufferHasRoomFor(Dest, 6))
-  {
-    BufferVertsDirect(
-      Dest->Verts+Dest->At, Dest->Normals+Dest->At, Dest->Mat+Dest->At,     
-      6,
-      Positions, Normals, Mats);
-    /* MemCopy((u8*)TransEmiss, (u8*)&Dest->TransEmiss[Dest->At], sizeof(*TransEmiss)*NumVerts ); */
-
-    Dest->At += 6;
-  }
-  else
-  {
-    // NOTE(Jesse): Supress spamming errors to the console after the first one.
-    if (BufferIsMarkedForGrowth(Dest) == False) { SoftError("Ran out of memory pushing %d Verts onto Mesh with %d/%d used", 6, Dest->At, Dest->End -1); }
-    MarkBufferForGrowth(Dest, 6);
-  }
+  BufferVertsChecked(Dest, 6, Positions, Normals, Mats);
 }
 
 
@@ -567,6 +708,7 @@ inline void
 DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Color, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
   /* TIMED_FUNCTION(); */
+  Assert(Mesh->Type == DataType_v3);
 
   v3 VertexData[6];
 
@@ -580,22 +722,22 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Colo
   v3 MinP = RenderP_VoxelCenter - (Diameter*0.5f);
 
   RightFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, RightFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_RightFaceNormalData, Materials);
 
   LeftFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, LeftFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_LeftFaceNormalData, Materials);
 
   BottomFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BottomFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_BottomFaceNormalData, Materials);
 
   TopFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, TopFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_TopFaceNormalData, Materials);
 
   FrontFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, FrontFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_FrontFaceNormalData, Materials);
 
   BackFaceVertexData( MinP, Diameter, VertexData);
-  BufferVertsChecked(Mesh, 6, VertexData, BackFaceNormalData, Materials);
+  BufferVertsChecked(Mesh, 6, VertexData, v3_BackFaceNormalData, Materials);
 }
 
 inline void

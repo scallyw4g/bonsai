@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:409:0
+// src/engine/editor.cpp:417:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -271,6 +271,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*,&Element->UiToggleArena),
         CSz("UiToggleArena"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(memory_arena*,&Element->WindowTableArena),
+        CSz("WindowTableArena"),
         Params
         );
 

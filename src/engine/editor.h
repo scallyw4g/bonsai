@@ -489,6 +489,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
   DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
+poof(string_and_value_tables(data_type))
+#include <generated/string_and_value_tables_data_type.h>
+poof(do_editor_ui_for_enum(data_type))
+#include <generated/do_editor_ui_for_enum_data_type.h>
 
 poof(do_editor_ui_for_compound_type(rect3))
 #include <generated/do_editor_ui_for_compound_type_rect3.h>
@@ -960,6 +964,7 @@ struct brush_layer
 #define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
+#define BRUSH_PREVIEW_TEXTURE_DIM 256
 struct layered_brush_editor poof(@version(2))
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
@@ -1060,6 +1065,9 @@ struct level_editor
   selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
+
+  b32 NewAssetFromSelection;
+  char NewAssetFromSelectionFilename[512];
 };
 
 

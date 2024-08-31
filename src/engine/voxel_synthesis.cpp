@@ -55,9 +55,6 @@ BakeVoxelSynthesisRules(const char* InputVox)
   DEBUG_REGISTER_NAMED_ARENA(Memory, ThreadLocal_ThreadIndex, "VoxelSynthesisArena");
   heap_allocator Heap = InitHeap(Gigabytes(2));
 
-  /* Global_ThreadStates = Initialize_ThreadLocal_ThreadStates((s32)GetTotalThreadCount(), 0, Memory); */
-  /* SetThreadLocal_ThreadIndex(0); */
-
   Info("Synthesizing rules for (%s)", InputVox);
 
   /* vox_data Vox = LoadVoxData(Memory, &Heap, InputVox, Global_TileDim*2, Global_TileDim*2); */

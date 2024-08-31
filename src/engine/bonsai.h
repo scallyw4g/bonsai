@@ -150,6 +150,7 @@ SetFlag( u8 *Flags, voxel_flag Flag )
 inline void
 SetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
+  Assert( (*Flags & Flag) == 0);
   *Flags = (chunk_flag)(*Flags | Flag);
   return;
 }
@@ -308,116 +309,7 @@ Unspawned(entity *Entity)
   return Result;
 }
 
-#if 0
-typedef umm packed_voxel;
-typedef umm unpacked_voxel;
 
-inline u8
-GetVoxelColor(packed_voxel *V)
-{
-  u8 Color = (V->Data >> (FINAL_POSITION_BIT) ) & ~( 0xFFFFFFFF << (COLOR_BIT_WIDTH));
-
-  Assert(Color < PALETTE_SIZE);
-  return Color;
-}
-
-inline void
-SetVoxelColor(packed_voxel *Voxel, int w)
-{
-  u32 flagMask = (0xFFFFFFFF << FINAL_COLOR_BIT);
-  u32 colorMask = ( flagMask | ~(0xFFFFFFFF << (FINAL_POSITION_BIT)) );
-
-  u32 currentFlags = Voxel->Data & colorMask;
-
-  Voxel->Data = currentFlags;
-  Voxel->Data |= (w << (FINAL_POSITION_BIT));
-
-  u8 color = GetVoxelColor(Voxel);
-  Assert(color == w);
-}
-
-inline voxel_position
-GetVoxelP(packed_voxel *V)
-{
-  voxel_position P = Voxel_Position(
-    V->Data >> (POSITION_BIT_WIDTH * 0) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V->Data >> (POSITION_BIT_WIDTH * 1) & 0x000000FF >> (8 - POSITION_BIT_WIDTH),
-    V->Data >> (POSITION_BIT_WIDTH * 2) & 0x000000FF >> (8 - POSITION_BIT_WIDTH)
-  );
-
-  return P;
-}
-
-inline void
-SetVoxelP(packed_voxel *Voxel, voxel_position P)
-{
-  Assert( P.x < Pow2(POSITION_BIT_WIDTH) );
-  Assert( P.y < Pow2(POSITION_BIT_WIDTH) );
-  Assert( P.z < Pow2(POSITION_BIT_WIDTH) );
-
-  int currentFlags = ( Voxel->Data & (0xFFFFFFFF << FINAL_POSITION_BIT));
-  Voxel->Data = currentFlags;
-
-  Voxel->Data |= P.x << (POSITION_BIT_WIDTH * 0);
-  Voxel->Data |= P.y << (POSITION_BIT_WIDTH * 1);
-  Voxel->Data |= P.z << (POSITION_BIT_WIDTH * 2);
-
-  voxel_position SetP = GetVoxelP(Voxel);
-  Assert(SetP == P);
-
-  return;
-}
-
-inline packed_voxel
-PackVoxel(unpacked_voxel *V)
-{
-  packed_voxel Result = {};
-
-  Result.Data = V->Flags; // Must come first
-
-  SetVoxelP(&Result, V->Offset);
-  SetVoxelColor(&Result, V->ColorIndex);
-
-  Result.Data = SetFlag(Result.Data, Voxel_Filled);
-
-  return Result;
-}
-
-inline unpacked_voxel
-GetUnpackedVoxel(int x, int y, int z, int w)
-{
-  unpacked_voxel V;
-
-  V.Offset = Voxel_Position(x,y,z);
-  V.ColorIndex = w;
-  V.Flags = (voxel_flag)0;
-
-  return V;
-}
-
-inline packed_voxel
-GetPackedVoxel(int x, int y, int z, int w)
-{
-  packed_voxel Result = {};
-  voxel_position P = Voxel_Position(x,y,z);
-
-  SetVoxelP(&Result, P );
-  SetVoxelColor(&Result, w);
-
-  Assert(GetVoxelP(&Result) == P);
-  Assert(GetVoxelColor(&Result) == w);
-
-  return Result;
-}
-
-#endif
-
-// TODO(Jesse): Delete this
-link_internal void
-ZeroMesh( untextured_3d_geometry_buffer *Mesh )
-{
-  Mesh->At = 0;
-}
 
 link_internal void
 ClearWorldChunk( world_chunk *Chunk )

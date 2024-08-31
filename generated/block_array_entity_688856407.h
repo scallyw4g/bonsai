@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:339:0
+// src/engine/serdes.cpp:344:0
 
 struct entity_block
 {
@@ -140,6 +140,19 @@ GetPtr(entity_block_array *Arr, umm Index)
   }
 
   entity *Result = Block->Elements+ElementIndex;
+  return Result;
+}
+
+link_internal entity *
+TryGetPtr(entity_block_array *Arr, umm Index)
+{
+  umm BlockIndex = Index / 8;
+  umm ElementIndex = Index % 8;
+
+  auto AtE = AtElements(Arr);
+  umm Total = GetIndex(&AtE);
+  entity *Result = {};
+  if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 

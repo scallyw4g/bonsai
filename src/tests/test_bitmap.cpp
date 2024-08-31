@@ -40,6 +40,8 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Bitmap", ArgCount, Args);
 
+  SetThreadLocal_ThreadIndex(0);
+
   memory_arena Arena = {};
 
   v4 Red   = V4(1,0,0,0);
