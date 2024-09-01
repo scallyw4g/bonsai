@@ -1128,4 +1128,5 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 link_internal v3i
 GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
 
-
+link_internal void
+DrawEditorPreview(engine_resources *Engine, shader *Shader);

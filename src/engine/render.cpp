@@ -979,7 +979,6 @@ poof(
           (buffer_t.name) *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
           if (Mesh && Mesh->At)
           {
-            Handles->Flags |= GpuHandles_UpdatePending;
             PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
             Result = True;
           }
@@ -1010,7 +1009,6 @@ poof(
           {
             if (Mesh->At)
             {
-              Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
               ReallocateAndSyncGpuBuffers(Handles, Mesh);
               Result = True;
             }
@@ -1044,13 +1042,10 @@ poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
-  Assert(Handles->Flags & GpuHandles_UpdatePending);
-
   if (Handles->VertexHandle)
   {
     GL.DeleteBuffers(3, &Handles->VertexHandle);
   }
-  UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
   Clear(Handles);
 
   AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
@@ -1144,7 +1139,6 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
-#if 1
   if (DistanceSquared > Square(400*32))
   {
     if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
@@ -1165,13 +1159,6 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   {
    if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
   }
-#else
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } */
-  if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-#endif
 
   if (MeshBit != MeshBit_None)
   {
@@ -1550,76 +1537,6 @@ DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
   }
 }
 #endif
-
-link_internal void
-DrawEditorPreview(engine_resources *Engine, shader *Shader)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  world_chunk *Chunk = {};
-  v3 Basis = {};
-
-  switch (Editor->Tool)
-  {
-    case WorldEdit_Tool_Brush:
-    {
-      switch (Editor->BrushType)
-      {
-#if 0
-        case WorldEdit_BrushType_Noise:
-        {
-          Chunk = &Editor->Noise.Preview.Chunk;
-          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
-        } break;
-
-        case WorldEdit_BrushType_Shape:
-        {
-          Chunk = &Editor->Shape.Preview.Chunk;
-          switch (Editor->Shape.Settings.Shape.Type)
-          {
-            case ShapeType_None: {} break;
-
-            case ShapeType_Rect:
-            {
-              Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
-            } break;
-
-            case ShapeType_Sphere:
-            {
-              world_update_op_shape_params_sphere *Sphere = &Editor->Shape.Settings.Shape.Sphere;
-              cp Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f) - V3(Sphere->Radius));
-              Location.Offset = Floor(Location.Offset);
-              Basis = GetRenderP(Engine, Location);
-            } break;
-          }
-        } break;
-#endif
-
-        case WorldEdit_BrushType_Layered:
-        {
-          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
-          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
-          Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin);
-          /* Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min); */
-          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min); */
-          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->EditorPreviewRegionMin); */
-          /* Basis = {}; */
-        } break;
-
-        default: {} break;
-      }
-    } break;
-
-    default: {} break;
-  }
-
-  if (Chunk)
-  {
-    /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
-  }
-}
 
 link_internal void
 DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)

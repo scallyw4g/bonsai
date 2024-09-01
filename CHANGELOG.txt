@@ -6,6 +6,8 @@
 
 * Fix v3_u8 normal data being incorrectly encoded on negative edge
 
+* Fix a frame of lag when changing the selection region with a brush active
+
 * 1.6.1
 
 - Change untextured_3d_geometry_buffer to have a `data_type Type`

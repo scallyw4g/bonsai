@@ -1074,19 +1074,14 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             Region.Min += V3(Settings->Offset.Min);
             Region.Max += V3(Settings->Offset.Max);
 
-            // NOTE(Jesse): Took these out because they screw up a rect that's
-            // negatively dialated (min(1) max(-1)) .. you end up with a dim of 1
-            // which is clearly wrong..
+            Sanitize(&Region);
+
             Shape->Rect.Region.Min = Min(Region.Min, Region.Max);
             Shape->Rect.Region.Max = Max(Region.Min, Region.Max);
-            /* Shape->Rect.Region = Region; */
 
-            /* Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim)); */
+            Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim));
             Assert(Chunk->Dim == RequiredLayerDim);
 
-            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
-            FinalizeChunkInitialization(Chunk);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
           } break;
 
           case ShapeType_Sphere:
@@ -1096,11 +1091,16 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             Shape->Sphere.Radius = MaxSphereRadius;
             Shape->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
 
+          } break;
+        }
+
+        if (LengthSq(GetShapeDim(Shape)) > 0)
+        {
             ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
             FinalizeChunkInitialization(Chunk);
             QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
-          } break;
         }
+
       } break;
 
       case BrushLayerType_Noise:
@@ -1706,10 +1706,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       {
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
+        Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
 
         //
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
-        if ( Editor->RootChunkNeedsNewMesh && (Root_LayeredBrushPreview->Flags&Chunk_Queued) == 0 )
+        if ( Editor->RootChunkNeedsNewMesh )
         {
           // First find the largest total dimension of all the layers, and the
           // largest negative minimum offset.  We need this min offset such
@@ -1750,9 +1751,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
           }
 
-          FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init
-
-          Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
+          FinalizeChunkInitialization(Root_LayeredBrushPreview);
 
           {
             auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
@@ -1764,18 +1763,16 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
-          //NOTE(Jesse): Not sure what this was for..
-          /* FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init */
-
           Editor->RootChunkNeedsNewMesh = False;
           Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;
+
+          if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
+          {
+            Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
+          }
         }
 
 
-        if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
-        {
-          Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
-        }
 
       }
     }
@@ -2070,28 +2067,6 @@ DoWorldEditor(engine_resources *Engine)
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
-      /* if (Editor->Tool == WorldEdit_Tool_Select) */
-      /* { */
-      /*   PushTableStart(Ui, Position_RightOf, CurrentRef); */
-      /*     DoEditorUi(Ui, &Window, &Editor->SelectionFollowsCursor, CSz("SelectionFollowsCursor"), &Params); */
-      /*   PushTableEnd(Ui); */
-      /*   PushNewRow(Ui); */
-      /* } */
-
-      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
-      /* { */
-      /*   Params.RelativePosition.Position   = Position_RightOf; */
-      /*   Params.RelativePosition.RelativeTo = CurrentRef; */
-      /*   WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical); */
-      /*   CurrentRef = WorldEditModeButtonGroup.UiRef; */
-      /* } */
-
-      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
-      /* { */
-      /*   Params = DefaultUiRenderParams_Generic; */
-      /*   WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical); */
-      /* } */
-
     PushTableEnd(Ui);
 
 
@@ -2176,8 +2151,6 @@ DoWorldEditor(engine_resources *Engine)
       } break;
     }
   }
-
-  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
 
   //
   //
@@ -2310,62 +2283,19 @@ DoWorldEditor(engine_resources *Engine)
             }
           } break;
 
-          /* case WorldEdit_BrushType_Shape: */
-          /* case WorldEdit_BrushType_Noise: */
           case WorldEdit_BrushType_Layered:
           {
             if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
             {
-              world_chunk *Chunk = 0;
               v3i Offset = V3i(s32_MAX);
-              switch (Editor->BrushType)
+              world_chunk *Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+
+              // TODO(Jesse): Call GetSmallestMinOffset here
+              RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
               {
-                InvalidCase(WorldEdit_BrushType_Disabled);
-                InvalidCase(WorldEdit_BrushType_Selection);
-                InvalidCase(WorldEdit_BrushType_Single);
-                InvalidCase(WorldEdit_BrushType_Asset);
-                InvalidCase(WorldEdit_BrushType_Entity);
-
-                case WorldEdit_BrushType_Layered:
-                {
-                  Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-                  RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
-                  {
-                    brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
-                    Offset = Min(Layer->Settings.Offset.Min, Offset);
-                  }
-
-                } break;
-
-#if 0
-                case WorldEdit_BrushType_Noise:
-                {
-                  Chunk = &Editor->Noise.Preview.Chunk;
-                  Offset = Editor->Noise.Settings.Offset.Min;
-                } break;
-
-                case WorldEdit_BrushType_Shape:
-                {
-                  Chunk = &Editor->Shape.Preview.Chunk;
-
-                  switch (Editor->Shape.Settings.Shape.Type)
-                  {
-                    case ShapeType_None: { InvalidCodePath(); } break;
-
-                    case ShapeType_Sphere:
-                    {
-                      Offset = V3i(V3(GetSelectionDim(World, Editor))/2.f - V3(Editor->Shape.Settings.Shape.Sphere.Radius));
-                    } break;
-
-                    case ShapeType_Rect:
-                    {
-                      Offset = {};
-                    } break;
-                  }
-                } break;
-#endif
+                brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
+                Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
-
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
@@ -2500,6 +2430,15 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
+  // NOTE(Jesse): This has to come after the tool interactions because of a trivial
+  // but important interaction.  If there's a previous tool to pop back to, we
+  // need to do that pop back before the brush settings get updated and the
+  // brush preview gets drawn or else when we pop back the settings window thinks
+  // the Select tool is active, doesn't update any of the brush stuff, then
+  // the preview gets drawn because we pop back to the Layered brush tool and
+  // there's a frame of lag.
+  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
+
 
 
   //
@@ -2571,3 +2510,39 @@ DoWorldEditor(engine_resources *Engine)
     DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
   }
 }
+
+link_internal void
+DrawEditorPreview(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_chunk *Chunk = {};
+  v3 Basis = {};
+
+  switch (Editor->Tool)
+  {
+    case WorldEdit_Tool_Brush:
+    {
+      switch (Editor->BrushType)
+      {
+        case WorldEdit_BrushType_Layered:
+        {
+          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
+          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
+          Chunk = &LayeredBrushEditor->Preview.Chunk;
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin);
+        } break;
+
+        default: {} break;
+      }
+    } break;
+
+    default: {} break;
+  }
+
+  if (Chunk)
+  {
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+  }
+}
+

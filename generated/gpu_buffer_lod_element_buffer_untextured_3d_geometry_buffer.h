@@ -1,4 +1,4 @@
-// src/engine/render.cpp:1041:0
+// src/engine/render.cpp:1039:0
 
 
 link_internal void
@@ -39,7 +39,6 @@ SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes)
       untextured_3d_geometry_buffer *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
       if (Mesh && Mesh->At)
       {
-        Handles->Flags |= GpuHandles_UpdatePending;
         PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
         Result = True;
       }
@@ -70,7 +69,6 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
       {
         if (Mesh->At)
         {
-          Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
           ReallocateAndSyncGpuBuffers(Handles, Mesh);
           Result = True;
         }
