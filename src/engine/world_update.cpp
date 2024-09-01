@@ -158,6 +158,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
                    world_edit_mode_modifier  Modifier,
                            world_edit_shape *Shape,
                                         u16  ColorIndex,
+                                        b32  PersistWhitespace,
                                memory_arena *Memory )
 {
   TIMED_FUNCTION();
@@ -299,7 +300,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
 
     work_queue_entry Entry = {
       .Type = type_work_queue_entry_update_world_region,
-      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, ColorIndex, MinP, MaxP, Buffer, ChunkIndex),
+      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, ColorIndex, PersistWhitespace, MinP, MaxP, Buffer, ChunkIndex),
     };
     PushWorkQueueEntry(&Plat->WorldUpdateQ, &Entry);
   }
@@ -902,7 +903,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
         voxel *NewVoxelValue = &InvertV;
-        if (AssetV && (AssetV->Flags&Voxel_Filled))
+        if ( (AssetV && (AssetV->Flags&Voxel_Filled)) || Params->PersistWhitespace )
         {
           NewVoxelValue  = AssetV;
           OverwriteVoxel = True;
@@ -917,7 +918,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
 
 link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert /* = False */)
+ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert /* = False */, b32 PersistWhitespace /* = False */ )
 {
   world *World = GetWorld();
 
@@ -963,7 +964,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       Assert(EditCenterP < SimSpaceUpdateBounds.Max);
 
       /* rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius)); */
-      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
+      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, PersistWhitespace, NewColor, NewTransparency};
 
       switch(Modifier)
       {
@@ -997,7 +998,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       rect3i SSRect = {V3i(Rect->Region.Min), V3i(Rect->Region.Max)};
       v3i EditCenterP = V3i(Floor(Rect->Region.Min+(GetDim(SSRect)/2.f)));
 
-      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
+      apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, PersistWhitespace, NewColor, NewTransparency};
       switch (Modifier)
       {
         case WorldEdit_Modifier_Surface:
@@ -1048,7 +1049,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
         rect3i SSRect = RectMinDim(V3i(SimOrigin), Data.Dim);
         v3i EditCenterP = V3i(SimOrigin) + V3i(Data.Dim/2.f);
 
-        apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, NewColor, NewTransparency};
+        apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, PersistWhitespace, NewColor, NewTransparency};
         switch (Modifier)
         {
           case WorldEdit_Modifier_Surface:
@@ -1171,7 +1172,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   }
 #endif
 
-  ApplyUpdateToRegion(Thread, Job, SimSpaceUpdateBounds, &CopiedChunk);
+  b32 Invert = False;
+  ApplyUpdateToRegion(Thread, Job, SimSpaceUpdateBounds, &CopiedChunk, Invert, Job->PersistWhitespace);
 
 
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably

@@ -1,7 +1,7 @@
-// src/engine/editor.h:793:0
+// src/engine/editor.cpp:113:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle white_noise_params", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -29,8 +29,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_shape*,&Element->Shape),
-        CSz("Shape"),
+        Cast(r32*,&Element->Threshold),
+        CSz("Threshold"),
         Params
         );
 
@@ -40,29 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode*,&Element->Mode),
-        CSz("Mode"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode_modifier*,&Element->Modifier),
-        CSz("Modifier"),
-        Params
-        );
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

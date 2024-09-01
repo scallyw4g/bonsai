@@ -80,6 +80,7 @@ struct work_queue_entry_update_world_region
   // TODO(Jesse): These feel like part of the brush?
   u16 ColorIndex;
   u8  Transparency;
+  b32 PersistWhitespace;
 
   cp MinP;
   cp MaxP;

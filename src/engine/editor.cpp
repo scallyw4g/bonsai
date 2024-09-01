@@ -539,14 +539,14 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, PersistWhitespace, Engine->WorldUpdateMemory);
 }
 
 
@@ -1354,7 +1354,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -1738,7 +1738,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           {
             if (SelectionComplete(Editor->SelectionClicks))
             {
-              /* world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory); */
               world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
               CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
             }
@@ -2212,7 +2211,7 @@ DoWorldEditor(engine_resources *Engine)
                             type_world_update_op_shape_params_asset,
                             .world_update_op_shape_params_asset = AssetUpdateShape,
                           };
-                          QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+                          QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
                         }
                         else if (Editor->BrushType == WorldEdit_BrushType_Entity)
                         {
@@ -2277,7 +2276,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   v3 P0 = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex,  Editor->Params.Mode, Editor->Params.Modifier);
+                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex, {}, Editor->Params.Mode, Editor->Params.Modifier);
                 }
               }
             }
@@ -2305,7 +2304,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2403,7 +2402,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -2458,7 +2457,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
@@ -2484,7 +2483,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, Engine->WorldUpdateMemory);
+      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
     }
   }
 

@@ -743,19 +743,15 @@ struct world_update_op_shape_params_rect
 struct asset;
 struct world_update_op_shape_params_asset
 {
-  /* asset *Asset; */
-  /* model *Model; */
-
   asset_id AssetId;
-  u64      ModelIndex;
-  cp Origin;
+       u64 ModelIndex;
+        cp Origin;
 };
 
 struct world_update_op_shape_params_chunk_data
 {
   chunk_data Data;
-  v3 SimSpaceOrigin;
-  /* cp Origin; */
+          v3 SimSpaceOrigin;
 };
 
 struct world_update_op_shape_params_sphere
