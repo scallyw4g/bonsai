@@ -251,6 +251,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->ParticleStartingDim),
+        CSz("ParticleStartingDim"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(f32*,&Element->ParticleEndingDim),
         CSz("ParticleEndingDim"),
         Params
@@ -264,6 +279,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->ParticleTurbMin),
+        CSz("ParticleTurbMin"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->ParticleTurbMax),
+        CSz("ParticleTurbMax"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

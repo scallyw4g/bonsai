@@ -29,6 +29,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->P),
+        CSz("P"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Normal),
+        CSz("Normal"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(r32*,&Element->d),
         CSz("d"),
         Params

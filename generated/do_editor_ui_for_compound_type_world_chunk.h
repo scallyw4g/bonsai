@@ -59,6 +59,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->Dim),
+        CSz("Dim"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(voxel*, Element->Voxels),
         CSz("Voxels"),
         Params
@@ -106,6 +121,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel_position_cursor*,&Element->StandingSpots),
         CSz("StandingSpots"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->WorldP),
+        CSz("WorldP"),
         Params
         );
 

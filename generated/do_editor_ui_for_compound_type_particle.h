@@ -29,6 +29,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Velocity),
+        CSz("Velocity"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Offset),
+        CSz("Offset"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u8*,&Element->Color),
         CSz("Color"),
         Params

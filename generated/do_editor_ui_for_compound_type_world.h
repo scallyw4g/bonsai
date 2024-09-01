@@ -29,6 +29,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->Center),
+        CSz("Center"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->VisibleRegion),
+        CSz("VisibleRegion"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u32*,&Element->HashSlotsUsed),
         CSz("HashSlotsUsed"),
         Params

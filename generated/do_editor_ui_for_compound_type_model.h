@@ -86,7 +86,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
       
-
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->Dim),
+        CSz("Dim"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

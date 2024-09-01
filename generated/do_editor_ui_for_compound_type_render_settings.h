@@ -167,7 +167,88 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->ApplicationResolution),
+        CSz("ApplicationResolution"),
+        Params
+        );
 
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->ShadowMapResolution),
+        CSz("ShadowMapResolution"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->LuminanceMapResolution),
+        CSz("LuminanceMapResolution"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2i*,&Element->iApplicationResolution),
+        CSz("iApplicationResolution"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2i*,&Element->iShadowMapResolution),
+        CSz("iShadowMapResolution"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2i*,&Element->iLuminanceMapResolution),
+        CSz("iLuminanceMapResolution"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

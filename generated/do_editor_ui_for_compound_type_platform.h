@@ -165,6 +165,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->MouseP),
+        CSz("MouseP"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->MouseDP),
+        CSz("MouseDP"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->Memory),
         CSz("Memory"),
         Params
@@ -209,6 +239,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v2*,&Element->ScreenDim),
+        CSz("ScreenDim"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

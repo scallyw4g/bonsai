@@ -32,7 +32,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
         Cast(r32*,&Element->Threshold),
         CSz("Threshold"),
         Params
-        );
+,0.1f, 20.f );
 
 
 
@@ -45,10 +45,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Period),
+        CSz("Period"),
+        Params
+,0.1f, 20.f );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(r32*,&Element->Amplitude),
         CSz("Amplitude"),
         Params
-        );
+,0.1f, 20.f );
 
 
 

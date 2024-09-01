@@ -50,6 +50,21 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->EulerAngles),
+        CSz("EulerAngles"),
+        Params
+,-PI32, PI32 );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(r32*,&Element->Scale),
         CSz("Scale"),
         Params
@@ -63,6 +78,21 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->_CollisionVolumeRadius),
+        CSz("_CollisionVolumeRadius"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

@@ -45,6 +45,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v2i*,&Element->Dim),
+        CSz("Dim"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u32*,&Element->Slices),
         CSz("Slices"),
         Params

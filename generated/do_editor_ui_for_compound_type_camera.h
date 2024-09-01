@@ -59,6 +59,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->RenderSpacePosition),
+        CSz("RenderSpacePosition"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(r32*,&Element->Pitch),
         CSz("Pitch"),
         Params
@@ -200,6 +215,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Front),
+        CSz("Front"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Right),
+        CSz("Right"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->Up),
+        CSz("Up"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

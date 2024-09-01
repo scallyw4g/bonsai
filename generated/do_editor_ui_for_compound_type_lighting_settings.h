@@ -77,6 +77,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->DawnColor),
+        CSz("DawnColor"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(f32*,&Element->SunIntensity),
         CSz("SunIntensity"),
         Params
@@ -90,6 +105,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->SunColor),
+        CSz("SunColor"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
@@ -109,6 +139,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->DuskColor),
+        CSz("DuskColor"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(f32*,&Element->MoonIntensity),
         CSz("MoonIntensity"),
         Params
@@ -122,7 +167,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MoonColor),
+        CSz("MoonColor"),
+        Params
+        );
 
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->CurrentSunColor),
+        CSz("CurrentSunColor"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

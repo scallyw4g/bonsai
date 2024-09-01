@@ -218,6 +218,18 @@ poof(
                     {
                       member.is_union?
                       {
+                        member.name?
+                        {
+                          DoEditorUi(Ui,
+                                     Window,
+                                     // Cast to remove const/volatile keywords if they're there
+                                     Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                     CSz("member.name"),
+                                     Params
+                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                        }
+                        {
+                        }
                       }
                       {
                         member.is_function?
@@ -624,8 +636,8 @@ struct world_edit_params
 struct generic_noise_params
 {
   r32 Threshold = 3.0f;
-  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_range(0, 100))
-  r32 Amplitude = 8.f;               poof(@ui_range(0, 100))
+  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
+  r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
   u16 Color     = 1; // White
 };
 
@@ -649,9 +661,9 @@ struct white_noise_params
 
 struct perlin_noise_params
 {
-  r32 Threshold = 3.0f;
-  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_range(0, 100))
-  r32 Amplitude = 8.f;               poof(@ui_range(0, 100))
+  r32 Threshold = 3.f;               poof(@ui_value_range(0.1f, 20.f))
+  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
+  r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
 };
 
 poof(are_equal(perlin_noise_params))
@@ -659,9 +671,9 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 1.5f;
-  v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_range(0, 100))
-  r32 Amplitude = 8.f;                  poof(@ui_range(0, 100))
+  r32 Threshold = 1.5f;                 poof(@ui_value_range(0.1f, 20.f))
+  v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
+  r32 Amplitude = 8.f;                  poof(@ui_value_range(0.1f, 20.f))
 
   r32 Squareness;
   r32 MaskChance;
@@ -725,7 +737,7 @@ poof(string_and_value_tables(world_update_op_shape_type))
 struct world_update_op_shape_params_rect
 {
   // Sim-space positions
-  rect3 Region;
+  rect3 Region; poof(@ui_disable)
 };
 
 struct asset;
@@ -748,8 +760,8 @@ struct world_update_op_shape_params_chunk_data
 
 struct world_update_op_shape_params_sphere
 {
-  cp  Location;
-  f32 Radius = 10.f;
+  cp  Location;      poof(@ui_disable)
+  f32 Radius = 10.f; poof(@ui_disable)
 };
 
 struct world_edit_shape

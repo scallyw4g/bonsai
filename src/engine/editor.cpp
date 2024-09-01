@@ -975,7 +975,21 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 
     case BrushLayerType_Shape:
     {
-      Request += GetShapeDim(&Layer->Settings.Shape);
+
+      shape_layer *Shape = &Layer->Settings.Shape;
+      switch (Shape->Type)
+      {
+        case ShapeType_None: { } break;
+        case ShapeType_Sphere:
+        {
+          Request += V3i(Shape->Sphere.Radius*2.f);
+        } break;
+
+        case ShapeType_Rect:
+        {
+          Request += SelectionDim;
+        } break;
+      }
     } break;
   }
 
@@ -1037,7 +1051,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
   }
 
-  if (LengthSq(Chunk->Dim) > 0 && UpdateVoxels)
+  if (UpdateVoxels)
   {
     /* Info("Detected changes to settings, updating voxels. ReallocChunk(%b) SettingsChanged(%b)", ReallocChunk, SettingsChanged); */
 
@@ -1057,8 +1071,15 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             Region.Min += V3(Settings->Offset.Min);
             Region.Max += V3(Settings->Offset.Max);
 
+            // NOTE(Jesse): Took these out because they screw up a rect that's
+            // negatively dialated (min(1) max(-1)) .. you end up with a dim of 1
+            // which is clearly wrong..
             Shape->Rect.Region.Min = Min(Region.Min, Region.Max);
             Shape->Rect.Region.Max = Max(Region.Min, Region.Max);
+            /* Shape->Rect.Region = Region; */
+
+            /* Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim)); */
+            Assert(Chunk->Dim == RequiredLayerDim);
 
             ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
             FinalizeChunkInitialization(Chunk);
@@ -1269,70 +1290,73 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  brush_settings *Settings = &Layer->Settings;
-
-  world_edit_mode              Mode = Settings->Mode;
-  world_edit_mode_modifier Modifier = Settings->Modifier;
-
-
-  rect3i UpdateBounds = {{}, DestChunk->Dim};
-
-  world_edit_shape Shape = {};
-  switch (Settings->Type)
+  if (LengthSq(DestChunk->Dim) > 0)
   {
-    case BrushLayerType_Shape:
-    {
-      Shape.Type = world_update_op_shape_type(Settings->Shape.Type);
+    brush_settings *Settings = &Layer->Settings;
 
-      switch (Settings->Shape.Type)
+    world_edit_mode              Mode = Settings->Mode;
+    world_edit_mode_modifier Modifier = Settings->Modifier;
+
+
+    rect3i UpdateBounds = {{}, DestChunk->Dim};
+
+    world_edit_shape Shape = {};
+    switch (Settings->Type)
+    {
+      case BrushLayerType_Shape:
       {
-        case ShapeType_None: { } break;
+        Shape.Type = world_update_op_shape_type(Settings->Shape.Type);
 
-        case ShapeType_Sphere:
+        switch (Settings->Shape.Type)
         {
-          Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
-          Shape.world_update_op_shape_params_sphere.Location.Offset = ((DestChunk->Dim/2.f) - V3(SmallestMinOffset));
-        } break;
+          case ShapeType_None: { } break;
 
-        case ShapeType_Rect:
-        {
-          Shape.world_update_op_shape_params_rect = Settings->Shape.Rect;
+          case ShapeType_Sphere:
+          {
+            Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
+            Shape.world_update_op_shape_params_sphere.Location.Offset = ((DestChunk->Dim/2.f) - V3(SmallestMinOffset));
+          } break;
 
-          Shape.world_update_op_shape_params_rect.Region.Min -= V3(SmallestMinOffset);
-          Shape.world_update_op_shape_params_rect.Region.Max -= V3(SmallestMinOffset);
-        } break;
-      }
+          case ShapeType_Rect:
+          {
+            Shape.world_update_op_shape_params_rect = Settings->Shape.Rect;
 
-    } break;
+            Shape.world_update_op_shape_params_rect.Region.Min -= V3(SmallestMinOffset);
+            Shape.world_update_op_shape_params_rect.Region.Max -= V3(SmallestMinOffset);
+          } break;
+        }
 
-    case BrushLayerType_Noise:
+      } break;
+
+      case BrushLayerType_Noise:
+      {
+        noise_layer     *Noise = &Settings->Noise;
+        world_chunk  *SrcChunk = &Layer->Preview.Chunk;
+        v3i       SrcOffsetMin = Settings->Offset.Min;
+
+        v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
+
+        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
+        world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
+
+        Assert(SrcChunk->Dim <= DestChunk->Dim);
+
+        Shape.Type = type_world_update_op_shape_params_chunk_data;
+        Shape.world_update_op_shape_params_chunk_data = ChunkDataShape;
+      } break;
+    }
+
+    v3 SimFloodOrigin = V3(0);
+    u16 ColorIndex = Layer->Settings.Color;
+
+    s32 Iterations = Settings->Iterations;
+    if (Iterations > 1) { Info("%d", Iterations); }
+    RangeIterator(IterIndex, Iterations)
     {
-      noise_layer     *Noise = &Settings->Noise;
-      world_chunk  *SrcChunk = &Layer->Preview.Chunk;
-      v3i       SrcOffsetMin = Settings->Offset.Min;
-
-      v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
-
-      chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
-      world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
-
-      Assert(SrcChunk->Dim <= DestChunk->Dim);
-
-      Shape.Type = type_world_update_op_shape_params_chunk_data;
-      Shape.world_update_op_shape_params_chunk_data = ChunkDataShape;
-    } break;
-  }
-
-  v3 SimFloodOrigin = V3(0);
-  u16 ColorIndex = Layer->Settings.Color;
-
-  s32 Iterations = Settings->Iterations;
-  if (Iterations > 1) { Info("%d", Iterations); }
-  RangeIterator(IterIndex, Iterations)
-  {
-    work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
-    ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
-    DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
+      ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
+      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+    }
   }
 
 }
