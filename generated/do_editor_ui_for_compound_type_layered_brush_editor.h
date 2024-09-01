@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:366:0
+// src/engine/editor.cpp:369:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)

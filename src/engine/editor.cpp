@@ -110,6 +110,9 @@ GetUiDebug()
 }
 
 
+poof(do_editor_ui_for_compound_type(white_noise_params))
+#include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
+
 poof(do_editor_ui_for_compound_type(perlin_noise_params))
 #include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
 
@@ -1114,9 +1117,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
           case NoiseType_White:
           {
             NoiseFunc             = Terrain_WhiteNoise;
-            NoiseParams.Threshold = Noise->Perlin.Threshold;
-            NoiseParams.Period    = Noise->Perlin.Period;
-            NoiseParams.Amplitude = Noise->Perlin.Amplitude;
+            NoiseParams.Threshold = Noise->White.Threshold;
           } break;
 
           case NoiseType_Perlin:

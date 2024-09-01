@@ -839,7 +839,7 @@ Terrain_WhiteNoise( world_chunk *Chunk,
 
         r32 NoiseValue = RandomUnilateral(&Entropy);
 
-        s32 NoiseChoice = NoiseValue*Amplitude > Thresh;
+        s32 NoiseChoice = NoiseValue > Thresh;
         Assert(NoiseChoice == 0 || NoiseChoice == 1);
 
         SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
