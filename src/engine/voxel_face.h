@@ -39,12 +39,15 @@ global_variable v3 v3_FrontFaceNormalData[]  = { {{  0,  1,  0}}, {{  0,  1,  0}
 global_variable v3 v3_TopFaceNormalData[]    = { {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, {{  0,  0,  1}}, };
 global_variable v3 v3_BottomFaceNormalData[] = { {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, {{  0,  0, -1}}, };
 
+
+CAssert((u8)128 == (u8)(-128));
+
 global_variable v3_u8 v3_u8_RightFaceNormalData[]  = { {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}}, {{  127,    0,    0}} };
-global_variable v3_u8 v3_u8_LeftFaceNormalData[]   = { {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, {{  255,    0,    0}}, };
-global_variable v3_u8 v3_u8_BackFaceNormalData[]   = { {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, {{    0,  255,    0}}, };
+global_variable v3_u8 v3_u8_LeftFaceNormalData[]   = { {{  128,    0,    0}}, {{  128,    0,    0}}, {{  128,    0,    0}}, {{  128,    0,    0}}, {{  128,    0,    0}}, {{  128,    0,    0}}, };
+global_variable v3_u8 v3_u8_BackFaceNormalData[]   = { {{    0,  128,    0}}, {{    0,  128,    0}}, {{    0,  128,    0}}, {{    0,  128,    0}}, {{    0,  128,    0}}, {{    0,  128,    0}}, };
 global_variable v3_u8 v3_u8_FrontFaceNormalData[]  = { {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, {{    0,  127,    0}}, };
 global_variable v3_u8 v3_u8_TopFaceNormalData[]    = { {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, {{    0,    0,  127}}, };
-global_variable v3_u8 v3_u8_BottomFaceNormalData[] = { {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, {{    0,    0,  255}}, };
+global_variable v3_u8 v3_u8_BottomFaceNormalData[] = { {{    0,    0,  128}}, {{    0,    0,  128}}, {{    0,    0,  128}}, {{    0,    0,  128}}, {{    0,    0,  128}}, {{    0,    0,  128}}, };
 
 
 
