@@ -1,3 +1,11 @@
+* 1.6.2
+
+* Fix a race condition sometimes causing the main thread to unlock before the render thread had completed
+
+* Fix some edge cases with negatively offset brushes and small selection regions
+
+* Fix v3_u8 normal data being incorrectly encoded on negative edge
+
 * 1.6.1
 
 - Change untextured_3d_geometry_buffer to have a `data_type Type`
