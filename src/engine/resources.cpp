@@ -277,6 +277,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               MapGpuBuffer_untextured_3d_geometry_buffer(GpuMap);
               MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
               Assert(GpuMap->Buffer.At == 0);
+
+              Graphics->RenderGate = False;
+
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_init, RC, Command)
@@ -321,8 +324,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
       RewindArena(GetTranArena());
     }
-
-    Graphics->RenderGate = False;
 
     SleepMs(1);
 
