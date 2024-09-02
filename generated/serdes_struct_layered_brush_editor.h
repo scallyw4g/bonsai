@@ -6,7 +6,7 @@ TypeInfo(layered_brush_editor *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("layered_brush_editor");
-  Result.Version =2 ;
+  Result.Version =3 ;
 
   /* type.map(member) */
   /* { */
@@ -30,7 +30,7 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
   b32 Result = True;
 
   Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =2;
+  u64 VersionNumber =3;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -66,6 +66,16 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_editor *BaseElement, umm C
 
 
 
+    Result &= Serialize(Bytes, (u32*)&Element->Mode);
+
+
+
+
+    Result &= Serialize(Bytes, (u32*)&Element->Modifier);
+
+
+
+
 
 
     
@@ -86,7 +96,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, layered_brush_editor *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=2);
+  Assert(TypeInfo->Version <=3);
 
   b32 Result = True;
 
@@ -102,9 +112,15 @@ DeserializeVersioned(u8_cursor *Bytes, layered_brush_editor *Element, bonsai_typ
     Result &= Deserialize(Bytes, &T1, Memory);
     Marshal(&T1, Element);
   }
+  if (TypeInfo->Version == 2)
+  {
+    layered_brush_editor_2 T2 = {};
+    Result &= Deserialize(Bytes, &T2, Memory);
+    Marshal(&T2, Element);
+  }
 
 
-  if (TypeInfo->Version ==2)
+  if (TypeInfo->Version ==3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -148,6 +164,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_editor *Element, memor
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->BrushFollowsCursor, Memory);
 
+
+
+
+
+  Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
+
+
+
+
+  Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
 
 
 

@@ -1178,12 +1178,12 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 
     case ShapeType_Rect:
     {
-      DoEditorUi(Ui, Window, &Layer->Rect, CSz("Settings"));
+      DoEditorUi(Ui, Window, &Layer->Rect, CSz(""));
     } break;
 
     case ShapeType_Sphere:
     {
-      DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
+      DoEditorUi(Ui, Window, &Layer->Sphere, CSz(""));
     } break;
   }
 
@@ -1203,17 +1203,17 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
         {
           case NoiseType_White:
           {
-            DoEditorUi(Ui, Window, &Layer->White, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->White, CSz(""));
           } break;
 
           case NoiseType_Perlin:
           {
-            DoEditorUi(Ui, Window, &Layer->Perlin, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Perlin, CSz(""));
           } break;
 
           case NoiseType_Voronoi:
           {
-            DoEditorUi(Ui, Window, &Layer->Voronoi, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Voronoi, CSz(""));
           } break;
         }
       PushTableEnd(Ui);
@@ -1227,7 +1227,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 }
 
 link_internal void
-DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
+DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1555,8 +1555,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
           PushNewRow(Ui);
         }
 
@@ -1638,7 +1638,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               EditLayerIndex = LayerIndex;
             }
 
-            DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
+            DoSettingsForBrushLayer(Engine, Layer, BrushSettingsWindow);
           }
 
           if (IsNewBrush && LayerIndex == 0)
@@ -1801,36 +1801,10 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
       switch (WorldEditBrushType)
       {
         case WorldEdit_BrushType_Disabled:  {} break;
-        case WorldEdit_BrushType_Selection: {} break;
         case WorldEdit_BrushType_Single:    {} break;
         case WorldEdit_BrushType_Entity:    {} break;
+        case WorldEdit_BrushType_Asset:     {} break;
 
-        case WorldEdit_BrushType_Asset:
-        {
-          PushWindowStart(Ui, &Window);
-            DoEditorUi(Ui, &Window, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-            DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-          PushWindowEnd(Ui, &Window);
-        } break;
-
-
-#if 0
-        case WorldEdit_BrushType_Noise:
-        {
-          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Noise);
-          PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Noise, &Window);
-          PushWindowEnd(Ui, &Window);
-        } break;
-
-        case WorldEdit_BrushType_Shape:
-        {
-          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Shape);
-          PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Shape, &Window);
-          PushWindowEnd(Ui, &Window);
-        } break;
-#endif
 
         case WorldEdit_BrushType_Layered:
         {
@@ -2029,6 +2003,36 @@ InputStateIsValidToApplyEdit(input *Input)
   return Result;
 }
 
+link_internal world_edit_mode
+GetEditModeForSelectedTool(level_editor *Editor)
+{
+  // Default is attach for tools/brushes that don't have a mode in their settings
+  world_edit_mode Result = WorldEdit_Mode_Attach;
+
+  switch(Editor->Tool)
+  {
+    case WorldEdit_Tool_Disabled:   {} break;
+    case WorldEdit_Tool_Select:     {} break;
+    case WorldEdit_Tool_Eyedropper: {} break;
+    case WorldEdit_Tool_BlitEntity: {} break;
+
+    case WorldEdit_Tool_Brush:
+    {
+      switch(Editor->BrushType)
+      {
+        case WorldEdit_BrushType_Disabled: {} break;
+        case WorldEdit_BrushType_Entity:   {} break;
+        case WorldEdit_BrushType_Single:   { Result = Editor->SingleBrush.Mode; } break;
+        case WorldEdit_BrushType_Asset:    { Result = Editor->AssetBrush.Mode;  } break;
+        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrushEditor.Mode;} break;
+      }
+    } break;
+  }
+
+  return Result;
+}
+
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -2193,6 +2197,7 @@ DoWorldEditor(engine_resources *Engine)
                     case AssetType_WorldChunk:
                     case AssetType_Models:
                     {
+                      // TODO(Jesse): There should be an unsafe version of this function, and rename this one to TryGetDimForAssetModel ..?
                       maybe_v3i MaybeDim = GetDimForAssetModel(Asset, u32(EngineDebug->ModelIndex));
                       if (MaybeDim.Tag)
                       {
@@ -2211,7 +2216,7 @@ DoWorldEditor(engine_resources *Engine)
                             type_world_update_op_shape_params_asset,
                             .world_update_op_shape_params_asset = AssetUpdateShape,
                           };
-                          QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
+                          QueueWorldUpdateForRegion(Engine, Editor->AssetBrush.Mode, Editor->AssetBrush.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
                         }
                         else if (Editor->BrushType == WorldEdit_BrushType_Entity)
                         {
@@ -2223,7 +2228,8 @@ DoWorldEditor(engine_resources *Engine)
                         }
                         else
                         {
-                          InvalidCodePath();
+                          InvalidCodePath(); // NOTE(Jesse): This is redundant because we already checked it's one of these,
+                                             // but I'm going to keep it here in case we ever move this code.. or the checks.
                         }
                       }
                       else
@@ -2249,6 +2255,7 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
+#if 0
             if (Editor->Params.Mode == WorldEdit_Mode_Paint)
             {
 
@@ -2280,6 +2287,7 @@ DoWorldEditor(engine_resources *Engine)
                 }
               }
             }
+#endif
           } break;
 
           case WorldEdit_BrushType_Layered:
@@ -2304,16 +2312,8 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
-          } break;
-
-          case WorldEdit_BrushType_Selection:
-          {
-            /* if (AABBTest.Face && InputStateIsValidToApplyEdit(Input)) */
-            /* { */
-            /*   ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, Editor->Params.Mode, Editor->Params.Modifier); */
-            /* } */
           } break;
 
         }
@@ -2402,7 +2402,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -2505,7 +2505,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) );
     DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
   }
 }

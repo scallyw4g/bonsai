@@ -110,6 +110,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode*,&Element->Mode),
+        CSz("Mode"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode_modifier*,&Element->Modifier),
+        CSz("Modifier"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(chunk_thumbnail*,&Element->Preview),
         CSz("Preview"),
         Params

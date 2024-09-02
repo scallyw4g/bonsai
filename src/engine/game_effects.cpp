@@ -280,7 +280,7 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, ICE_BLUE, {}, Resources->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, {}, {}, Resources->WorldUpdateMemory);
 }
 
 link_internal void
