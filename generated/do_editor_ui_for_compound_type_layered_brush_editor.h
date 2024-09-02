@@ -75,6 +75,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
       
+      if (ToggleButton(Ui, CSz("v LayerPreviews[16]"), CSz("> LayerPreviews[16]"), UiId(Window, "toggle layered_brush_editor chunk_thumbnail LayerPreviews", Element->LayerPreviews), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 16)
+        {
+          DoEditorUi(Ui, Window, Element->LayerPreviews+ArrayIndex, FSz("LayerPreviews[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

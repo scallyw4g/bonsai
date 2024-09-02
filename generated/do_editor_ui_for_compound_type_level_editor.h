@@ -133,6 +133,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       
       DoEditorUi(Ui,
         Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->SelectionFollowsCursor),
+        CSz("SelectionFollowsCursor"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
         Cast(b8*,&Element->RootChunkNeedsNewMesh),
         CSz("RootChunkNeedsNewMesh"),
         &DefaultUiRenderParams_Checkbox

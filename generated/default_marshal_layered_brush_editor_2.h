@@ -1,10 +1,4 @@
-// src/engine/editor.h:1031:0
-
-RangeIterator(Index, (256))
-{
-  Live->NameBuf[Index] = Stored->NameBuf[Index];
-}
-
+// src/engine/editor.h:1024:0
 
 Live->LayerCount = Stored->LayerCount;
 

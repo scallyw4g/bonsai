@@ -56,7 +56,7 @@ InitEditor(level_editor *Editor)
 
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
-    Editor->LayeredBrushEditor.Layers[LayerIndex].Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+    Editor->LayeredBrushEditor.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
   }
 
   return Result;
@@ -1015,14 +1015,14 @@ GetLayerDim(brush_layer *Layer)
 
     case BrushLayerType_Noise:
     {
-      Result += Layer->Preview.Chunk.Dim;
+      Result += GetSelectionDim(GetWorld(), GetLevelEditor()); //Preview->Chunk.Dim;
     } break;
   }
   return Result;
 }
 
 link_internal b32
-CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer)
+CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1032,7 +1032,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
   v3i SelectionDim     = GetSelectionDim(World, Editor);
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
 
-  b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
+  b32 ReallocChunk     = Editor->SelectionChanged || Preview->Chunk.Dim != RequiredLayerDim;
   b32 SettingsChanged  = !AreEqual(Settings, PrevSettings);
   b32 UpdateVoxels     = ReallocChunk || SettingsChanged;
 
@@ -1040,7 +1040,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
 
 
-  world_chunk *Chunk = &Layer->Preview.Chunk;
+  world_chunk *Chunk = &Preview->Chunk;
   if (ReallocChunk)
   {
     // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
@@ -1096,9 +1096,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
         if (LengthSq(GetShapeDim(Shape)) > 0)
         {
-            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
-            FinalizeChunkInitialization(Chunk);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
+          ApplyBrushLayer(Engine, Layer, Preview, Chunk, Settings->Offset.Min);
+          FinalizeChunkInitialization(Chunk);
+          QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
         }
 
       } break;
@@ -1156,9 +1156,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
   }
 
-  if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
+  if (Preview->Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, &Preview->Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1227,7 +1227,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 }
 
 link_internal void
-DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
+DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, window_layout *Window)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1243,7 +1243,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_lay
   {
     case BrushLayerType_Noise:
     {
-      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, &Layer->Preview);
+      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, Preview);
     } break;
 
     case BrushLayerType_Shape:
@@ -1280,14 +1280,14 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_lay
   }
 
   PushTableStart(Ui);
-    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Preview->Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
 }
 
 link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset)
+ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1332,7 +1332,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
       case BrushLayerType_Noise:
       {
         noise_layer     *Noise = &Settings->Noise;
-        world_chunk  *SrcChunk = &Layer->Preview.Chunk;
+        world_chunk  *SrcChunk = &Preview->Chunk;
         v3i       SrcOffsetMin = Settings->Offset.Min;
 
         v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
@@ -1446,6 +1446,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
   layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
   brush_layer          *Layers             =  LayeredBrush->Layers;
+  chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
 
   cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
 
@@ -1581,7 +1582,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     RangeIterator(LayerIndex, LayeredBrush->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
-      AnyChanges |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
+      chunk_thumbnail *Preview = Previews + LayerIndex;
+      AnyChanges |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer, Preview);
     }
 
     if (AnyChanges)
@@ -1610,6 +1612,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
         {
           brush_layer *Layer = Layers + LayerIndex;
+          chunk_thumbnail *Preview = Previews + LayerIndex;
 
           ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
           if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
@@ -1638,7 +1641,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               EditLayerIndex = LayerIndex;
             }
 
-            DoSettingsForBrushLayer(Engine, Layer, BrushSettingsWindow);
+            DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
           }
 
           if (IsNewBrush && LayerIndex == 0)
@@ -1747,7 +1750,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
             brush_layer *Layer = Layers + LayerIndex;
-            ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
+            chunk_thumbnail *Preview = Previews + LayerIndex;
+            ApplyBrushLayer(Engine, Layer, Preview, Root_LayeredBrushPreview, SmallestMinOffset);
           }
 
           FinalizeChunkInitialization(Root_LayeredBrushPreview);

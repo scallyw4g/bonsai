@@ -949,8 +949,6 @@ struct brush_layer
 {
   brush_settings Settings;
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
-
-  chunk_thumbnail Preview; poof(@no_serialize)
 };
 
 
@@ -958,14 +956,19 @@ struct brush_layer
 #define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
+#define BRUSH_PREVIEW_TEXTURE_DIM 256
 struct layered_brush_editor poof(@version(3))
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
   char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
-  s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+  // NOTE(Jesse): The layer previews have to be seperate from the brush_layer
+  // because the deserialization code isn't smart enough to not stomp on the
+  // texture handles when it marshals old types to the current one.
+              s32 LayerCount;
+      brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+  chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
 
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
@@ -984,7 +987,7 @@ struct layered_brush_editor_2
   char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
   s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+  brush_layer Layers[MAX_BRUSH_LAYERS];  poof(@array_length(LayerCount))
 
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
@@ -1053,13 +1056,6 @@ struct asset_brush_settings
   world_edit_mode_modifier Modifier;
 };
 
-/* struct entity_brush_settings */
-/* { */
-/*   world_edit_mode Mode; */
-/*   world_edit_mode_modifier Modifier; */
-/* }; */
-
-
 
 
 
@@ -1078,8 +1074,9 @@ struct level_editor
 
   single_brush_settings SingleBrush;
   asset_brush_settings  AssetBrush;
-  /* entity_brush_settings EntityBrush; */
   layered_brush_editor  LayeredBrushEditor;
+
+  b8 SelectionFollowsCursor;
 
   b32 RootChunkNeedsNewMesh;
 
@@ -1152,7 +1149,7 @@ link_internal v3
 GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);
 
 link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset);
+ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);
 
 link_internal v3i
 GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
