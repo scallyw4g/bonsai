@@ -86,6 +86,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 {
                   *Texture = MakeTexture_RGBA(Texture->Dim, Cast(u32*, Command->Data), Texture->DebugName, Texture->Slices, Texture->Format);
                 } break;
+
+                InvalidDefaultCase;
               }
 
             } break;
@@ -136,7 +138,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 case BonsaiRenderCommand_ShaderId_gBuffer:
                 {
-                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), True);
                 } break;
 
                 case BonsaiRenderCommand_ShaderId_ShadowMap:
@@ -217,7 +219,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 v3i Min = World->Center - Radius;
                 v3i Max = World->Center + Radius;
 
-                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
 
                 /* RenderDrawList(Engine, &Graphics->MainDrawList); */
 

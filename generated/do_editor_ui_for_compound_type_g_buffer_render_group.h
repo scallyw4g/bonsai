@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:429:0
+// src/engine/editor.cpp:405:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -61,6 +61,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
         // Cast to remove const/volatile keywords if they're there
         Cast(shader*,&Element->gBufferShader),
         CSz("gBufferShader"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MinClipP_worldspace),
+        CSz("MinClipP_worldspace"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MaxClipP_worldspace),
+        CSz("MaxClipP_worldspace"),
         Params
         );
 

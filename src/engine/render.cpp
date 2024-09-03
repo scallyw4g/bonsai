@@ -1314,9 +1314,25 @@ DrawEntity(              shader *Shader,
 }
 
 link_internal void
-SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution)
+SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectionMasking)
 {
-  auto GBufferRenderGroup = Graphics->gBuffer;
+  g_buffer_render_group *GBufferRenderGroup = Graphics->gBuffer;
+
+  if (DoSelectionMasking)
+  {
+
+    GBufferRenderGroup->MinClipP_worldspace = GetRenderP(GetEngineResources(), GetLevelEditor()->SelectionRegion.Min);
+    GBufferRenderGroup->MaxClipP_worldspace = GetRenderP(GetEngineResources(), GetLevelEditor()->SelectionRegion.Max);
+
+    /* rect3 SimSelection = GetSelectionRect(GetWorld(), GetLevelEditor()); */
+    /* GBufferRenderGroup->MinClipP_worldspace = SimSelection.Min; */
+    /* GBufferRenderGroup->MaxClipP_worldspace = SimSelection.Max; */
+  }
+  else
+  {
+    GBufferRenderGroup->MinClipP_worldspace = {};
+    GBufferRenderGroup->MaxClipP_worldspace = {};
+  }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
   GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
@@ -1404,7 +1420,7 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
   Graphics->Settings.DrawMajorGrid = False;
   Graphics->Settings.DrawMinorGrid = False;
 
-  SetupGBufferShader(Graphics, ApplicationResolution);
+  SetupGBufferShader(Graphics, ApplicationResolution, False);
 
   DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
 

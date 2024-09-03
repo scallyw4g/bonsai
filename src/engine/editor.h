@@ -1139,6 +1139,26 @@ ResetSelectionIfIncomplete(level_editor *Editor)
   if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
 }
 
+link_internal rect3
+GetSelectionRect(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
+  return Result;
+}
+
+link_internal v3i
+GetSelectionDim(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  v3i Result = V3i(SelectionMaxP - SelectionMinP);
+  return Result;
+}
+
 
 link_internal b32 HardResetEditor(level_editor *Editor);
 

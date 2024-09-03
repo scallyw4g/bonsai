@@ -339,11 +339,17 @@ CreateGbuffer(memory_arena *Memory)
 
 
 shader
-CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
+CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, MinClipP_worldspace, "MinClipP_worldspace");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, MaxClipP_worldspace, "MaxClipP_worldspace");
+  Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
@@ -747,7 +753,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   gBuffer->gBufferShader =
-    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
+    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->MinClipP_worldspace, &gBuffer->MaxClipP_worldspace, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
 
   AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
                                    &gBuffer->Textures,
