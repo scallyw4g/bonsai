@@ -220,20 +220,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 v3i Max = World->Center + Radius;
 
                 SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
-
-                /* RenderDrawList(Engine, &Graphics->MainDrawList); */
-
                 shader *Shader = &Graphics->gBuffer->gBufferShader;
                 DrawEditorPreview(Engine, Shader);
-
-              /*   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated. */
-              /*     BindUniformByName(Shader, "DrawMajorGrid", False); */
-              /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
-              /*     r32 dt = Plat->dt; */
-              /*     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt); */
-              /*   } */
-
                 TeardownGBufferShader(Graphics);
+
+                SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+                Shader = &Graphics->SG->Shader.Program;
+                DrawEditorPreview(Engine, Shader);
+                TeardownShadowMapShader(Graphics);
               }
 
               /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
