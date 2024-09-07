@@ -96,17 +96,18 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
   shadow_render_group *SG = Graphics->SG;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  GL.UseProgram(SG->DepthShader.ID);
-
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
+
 
   // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
 
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
-  BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
+  UseShader(&SG->Shader);
+
+  /* BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix); */
 
   Draw(GpuMap->Buffer.At);
 
@@ -169,7 +170,7 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
-  Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
+  Graphics->SG->Shader.MVP = NdcToScreenSpace * Graphics->SG->Shader.MVP;
 
   /* GL.Enable(GL_BLEND); */
   /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
@@ -979,7 +980,6 @@ poof(
           (buffer_t.name) *Mesh = AtomicReplaceMesh( Meshes, MeshBit, 0, u64_MAX );
           if (Mesh && Mesh->At)
           {
-            Handles->Flags |= GpuHandles_UpdatePending;
             PushReallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, Handles, Mesh);
             Result = True;
           }
@@ -1010,7 +1010,6 @@ poof(
           {
             if (Mesh->At)
             {
-              Handles->Flags |= GpuHandles_UpdatePending; // NOTE(Jesse): Kinda dumb, but this has to be set at the moment..
               ReallocateAndSyncGpuBuffers(Handles, Mesh);
               Result = True;
             }
@@ -1044,13 +1043,10 @@ poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
-  Assert(Handles->Flags & GpuHandles_UpdatePending);
-
   if (Handles->VertexHandle)
   {
     GL.DeleteBuffers(3, &Handles->VertexHandle);
   }
-  UnsetBitfield(u16, Handles->Flags, GpuHandles_UpdatePending);
   Clear(Handles);
 
   AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
@@ -1063,7 +1059,7 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
 link_internal m4
 GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation)
 {
-  m4 Result = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation) * IdentityMatrix;
+  m4 Result = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation) * IdentityMatrix; // TODO(Jesse): wtf are we multiplying by IdentityMatrix for?
   return Result;
 }
 
@@ -1144,7 +1140,6 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
-#if 1
   if (DistanceSquared > Square(400*32))
   {
     if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
@@ -1165,13 +1160,6 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   {
    if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
   }
-#else
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; } */
-  /* if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; } */
-  if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-#endif
 
   if (MeshBit != MeshBit_None)
   {
@@ -1181,6 +1169,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
     AssertNoGlErrors;
 
+    // @janky_model_matrix_bs
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     AssertNoGlErrors;
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
@@ -1327,9 +1316,23 @@ DrawEntity(              shader *Shader,
 }
 
 link_internal void
-SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution)
+SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectionMasking)
 {
-  auto GBufferRenderGroup = Graphics->gBuffer;
+  g_buffer_render_group *GBufferRenderGroup = Graphics->gBuffer;
+
+  if (DoSelectionMasking)
+  {
+    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    SelectionRegion.Min.Offset += V3(0.0001f);
+    SelectionRegion.Max.Offset -= V3(0.0001f);
+    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
+  }
+  else
+  {
+    Graphics->MinClipP_worldspace = {};
+    Graphics->MaxClipP_worldspace = {};
+  }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
   GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
@@ -1355,21 +1358,36 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 link_internal void
-SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution)
+SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
   shadow_render_group *SG = Graphics->SG;
 
+  if (DoSelectionMasking)
+  {
+    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    SelectionRegion.Min.Offset += V3(0.0001f);
+    SelectionRegion.Max.Offset -= V3(0.0001f);
+    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
+  }
+  else
+  {
+    Graphics->MinClipP_worldspace = {};
+    Graphics->MaxClipP_worldspace = {};
+  }
+
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  GL.UseProgram(SG->DepthShader.ID);
 
   SetViewport(ShadowMapResolution);
 
   // TODO(Jesse): Duplicate MVP calculation
   // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
 
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+  UseShader(&SG->Shader);
+
+  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
   GL.Disable(GL_CULL_FACE);
 
@@ -1411,13 +1429,15 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 {
   TIMED_FUNCTION();
 
+  NotImplemented; // NOTE: Unused
+
   b32 OldMajorGrid = Graphics->Settings.DrawMajorGrid;
   b32 OldMinorGrid = Graphics->Settings.DrawMinorGrid;
 
   Graphics->Settings.DrawMajorGrid = False;
   Graphics->Settings.DrawMinorGrid = False;
 
-  SetupGBufferShader(Graphics, ApplicationResolution);
+  SetupGBufferShader(Graphics, ApplicationResolution, False);
 
   DrawEntities(&Graphics->gBuffer->gBufferShader, EntityTable, Dest, TransparencyDest, Graphics, World, dt);
 
@@ -1552,76 +1572,6 @@ DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
 #endif
 
 link_internal void
-DrawEditorPreview(engine_resources *Engine, shader *Shader)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  world_chunk *Chunk = {};
-  v3 Basis = {};
-
-  switch (Editor->Tool)
-  {
-    case WorldEdit_Tool_Brush:
-    {
-      switch (Editor->BrushType)
-      {
-#if 0
-        case WorldEdit_BrushType_Noise:
-        {
-          Chunk = &Editor->Noise.Preview.Chunk;
-          Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
-        } break;
-
-        case WorldEdit_BrushType_Shape:
-        {
-          Chunk = &Editor->Shape.Preview.Chunk;
-          switch (Editor->Shape.Settings.Shape.Type)
-          {
-            case ShapeType_None: {} break;
-
-            case ShapeType_Rect:
-            {
-              Basis = GetRenderP(Engine, Editor->SelectionRegion.Min);
-            } break;
-
-            case ShapeType_Sphere:
-            {
-              world_update_op_shape_params_sphere *Sphere = &Editor->Shape.Settings.Shape.Sphere;
-              cp Location = Canonicalize(World, Editor->SelectionRegion.Min + (GetDim(World, Editor->SelectionRegion)/2.f) - V3(Sphere->Radius));
-              Location.Offset = Floor(Location.Offset);
-              Basis = GetRenderP(Engine, Location);
-            } break;
-          }
-        } break;
-#endif
-
-        case WorldEdit_BrushType_Layered:
-        {
-          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
-          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
-          Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin);
-          /* Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->SelectionRegion.Min); */
-          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->SelectionRegion.Min); */
-          /* Basis = V3(SmallestMinOffset) + GetSimSpaceP(World, Editor->EditorPreviewRegionMin); */
-          /* Basis = {}; */
-        } break;
-
-        default: {} break;
-      }
-    } break;
-
-    default: {} break;
-  }
-
-  if (Chunk)
-  {
-    /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
-  }
-}
-
-link_internal void
 DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
 {
   TIMED_FUNCTION();
@@ -1644,7 +1594,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   shadow_render_group *SG = Graphics->SG;
 
-  SetupShadowMapShader(Graphics, ShadowMapResolution);
+  SetupShadowMapShader(Graphics, ShadowMapResolution, Editor->LayeredBrushEditor.SeedBrushWithSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */

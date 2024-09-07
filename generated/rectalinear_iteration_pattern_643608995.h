@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:679:0
+// src/engine/world_update.cpp:680:0
 
 DimIterator(x, y, z, UpdateDim)
 {

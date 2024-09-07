@@ -558,7 +558,7 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
 }
 
 link_internal void
-CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position SrcOffset)
+CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestChunkDim, v3i SrcOffset)
 {
   TIMED_FUNCTION();
 
@@ -3795,6 +3795,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
                                 v3 SimFloodOrigin,
                                 world_edit_shape *Shape,
                                 u16 ColorIndex,
+                                b32 PersistWhitespace,
                                 cp MinP,
                                 cp MaxP,
                                 world_chunk** DestChunkBuffer,
@@ -3810,6 +3811,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
     },
     ColorIndex,
     {},
+    PersistWhitespace,
     MinP,
     MaxP,
     DestChunkBuffer,

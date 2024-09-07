@@ -1,10 +1,14 @@
 * 1.6.2
 
+* Change "SeedBrushWithSelection" to work with destructive brushes
+
 * Fix a race condition sometimes causing the main thread to unlock before the render thread had completed
 
 * Fix some edge cases with negatively offset brushes and small selection regions
 
 * Fix v3_u8 normal data being incorrectly encoded on negative edge
+
+* Fix a frame of lag when changing the selection region with a brush active
 
 * 1.6.1
 

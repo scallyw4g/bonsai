@@ -86,6 +86,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 {
                   *Texture = MakeTexture_RGBA(Texture->Dim, Cast(u32*, Command->Data), Texture->DebugName, Texture->Slices, Texture->Format);
                 } break;
+
+                InvalidDefaultCase;
               }
 
             } break;
@@ -136,12 +138,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 case BonsaiRenderCommand_ShaderId_gBuffer:
                 {
-                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
+                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), Editor->LayeredBrushEditor.SeedBrushWithSelection);
                 } break;
 
                 case BonsaiRenderCommand_ShaderId_ShadowMap:
                 {
-                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings));
+                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), Editor->LayeredBrushEditor.SeedBrushWithSelection);
                 } break;
               }
             } break;
@@ -217,21 +219,15 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 v3i Min = World->Center - Radius;
                 v3i Max = World->Center + Radius;
 
-                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings));
-
-                /* RenderDrawList(Engine, &Graphics->MainDrawList); */
-
+                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
                 shader *Shader = &Graphics->gBuffer->gBufferShader;
                 DrawEditorPreview(Engine, Shader);
-
-              /*   { // NOTE(Jesse): Don't draw the grid on entities; it looks fucky if they're rotated. */
-              /*     BindUniformByName(Shader, "DrawMajorGrid", False); */
-              /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
-              /*     r32 dt = Plat->dt; */
-              /*     DrawEntities(Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, dt); */
-              /*   } */
-
                 TeardownGBufferShader(Graphics);
+
+                SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+                Shader = &Graphics->SG->Shader.Program;
+                DrawEditorPreview(Engine, Shader);
+                TeardownShadowMapShader(Graphics);
               }
 
               /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */

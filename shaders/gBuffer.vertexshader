@@ -9,6 +9,9 @@ out vec3 vertexN_worldspace;
 out vec3 MaterialColor;
 out vec2 TransEmiss;
 
+uniform vec3 MinClipP_worldspace;
+uniform vec3 MaxClipP_worldspace;
+
 uniform vec3 OffsetOfWorldCenterToGrid;
 uniform vec3 CameraToWorld;
 uniform mat4 ModelMatrix;
@@ -37,11 +40,11 @@ void main()
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));
   /* TransEmiss = V2(0.5f, 0.5f); */
 
-  v4 ModelVertex = ModelMatrix*vec4(V3(vertexPosition_modelspace), 1);
+  v4 WorldVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 
-  vertexP_worldspace = ModelVertex.xyz;
+  vertexP_worldspace = WorldVertex.xyz;
   vertexN_worldspace = mat3(NormalMatrix) * V3(vertexNormal_modelspace);
 
-  gl_Position =  ViewProjection * ModelVertex;
+  gl_Position =  ViewProjection * WorldVertex;
 }
 

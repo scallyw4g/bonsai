@@ -590,12 +590,9 @@ enum world_edit_tool
 enum world_edit_brush_type
 {
   WorldEdit_BrushType_Disabled,   // poof(@ui_skip)
-  WorldEdit_BrushType_Selection,
   WorldEdit_BrushType_Single,
   WorldEdit_BrushType_Asset,
   WorldEdit_BrushType_Entity,
-  /* WorldEdit_BrushType_Shape, */
-  /* WorldEdit_BrushType_Noise, */
   WorldEdit_BrushType_Layered,
 };
 
@@ -615,15 +612,6 @@ enum world_edit_mode_modifier
   WorldEdit_Modifier_Flood    = (1<<0),
   WorldEdit_Modifier_Surface  = (1<<1),
 };
-
-struct world_edit_params
-{
-  world_edit_mode Mode;
-  world_edit_mode_modifier Modifier;
-
-  s32 Iterations = 1; // NOTE(Jesse): Set this to do the filter multiple times.
-};
-
 
 
 
@@ -709,8 +697,6 @@ poof(do_editor_ui_for_radio_enum(world_edit_tool))
 poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_brush_type.h>
 
-poof(do_editor_ui_for_compound_type(world_edit_params))
-#include <generated/do_editor_ui_for_compound_type_world_edit_params.h>
 
 
 
@@ -743,19 +729,15 @@ struct world_update_op_shape_params_rect
 struct asset;
 struct world_update_op_shape_params_asset
 {
-  /* asset *Asset; */
-  /* model *Model; */
-
   asset_id AssetId;
-  u64      ModelIndex;
-  cp Origin;
+       u64 ModelIndex;
+        cp Origin;
 };
 
 struct world_update_op_shape_params_chunk_data
 {
   chunk_data Data;
-  v3 SimSpaceOrigin;
-  /* cp Origin; */
+          v3 SimSpaceOrigin;
 };
 
 struct world_update_op_shape_params_sphere
@@ -967,8 +949,6 @@ struct brush_layer
 {
   brush_settings Settings;
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
-
-  chunk_thumbnail Preview; poof(@no_serialize)
 };
 
 
@@ -977,20 +957,47 @@ struct brush_layer
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
 #define BRUSH_PREVIEW_TEXTURE_DIM 256
-struct layered_brush_editor poof(@version(2))
+struct layered_brush_editor poof(@version(3))
+{
+  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
+  // not fuck around with allocating a single string when we load these in.
+  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
+
+  // NOTE(Jesse): The layer previews have to be seperate from the brush_layer
+  // because the deserialization code isn't smart enough to not stomp on the
+  // texture handles when it marshals old types to the current one.
+              s32 LayerCount;
+      brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+  chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
+
+  chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value
+
+  b8 SeedBrushWithSelection;
+  b8 BrushFollowsCursor;
+
+  // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+
+  // NOTE(Jesse): This is actually just using the chunk .. should probably change it
+  chunk_thumbnail Preview; poof(@no_serialize)
+};
+
+struct layered_brush_editor_2
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
   char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
   s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+  brush_layer Layers[MAX_BRUSH_LAYERS];  poof(@array_length(LayerCount))
 
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
 
   chunk_thumbnail Preview; poof(@no_serialize)
 };
+
 
 struct layered_brush_editor_1
 {
@@ -1015,6 +1022,13 @@ struct layered_brush_editor_0
 };
 
 link_internal void
+Marshal(layered_brush_editor_2 *Stored, layered_brush_editor *Live)
+{
+  poof(default_marshal(layered_brush_editor_2))
+#include <generated/default_marshal_layered_brush_editor_2.h>
+}
+
+link_internal void
 Marshal(layered_brush_editor_1 *Stored, layered_brush_editor *Live)
 {
   poof(default_marshal(layered_brush_editor_1))
@@ -1033,6 +1047,22 @@ Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
 
 
 
+struct single_brush_settings
+{
+  world_edit_mode Mode;
+};
+
+
+struct asset_brush_settings
+{
+  world_edit_mode Mode;
+  world_edit_mode_modifier Modifier;
+};
+
+
+
+
+
 
 
 
@@ -1044,13 +1074,12 @@ struct level_editor
   world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
 
   world_edit_brush_type BrushType;
-  world_edit_params     Params;
+
+  single_brush_settings SingleBrush;
+  asset_brush_settings  AssetBrush;
+  layered_brush_editor  LayeredBrushEditor;
 
   b8 SelectionFollowsCursor;
-
-  /* brush_layer Noise; */
-  /* brush_layer Shape; */
-  layered_brush_editor LayeredBrushEditor;
 
   b32 RootChunkNeedsNewMesh;
 
@@ -1113,6 +1142,26 @@ ResetSelectionIfIncomplete(level_editor *Editor)
   if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
 }
 
+link_internal rect3
+GetSelectionRect(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
+  return Result;
+}
+
+link_internal v3i
+GetSelectionDim(world *World, level_editor *Editor)
+{
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+
+  v3i Result = V3i(SelectionMaxP - SelectionMinP);
+  return Result;
+}
+
 
 link_internal b32 HardResetEditor(level_editor *Editor);
 
@@ -1123,9 +1172,10 @@ link_internal v3
 GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);
 
 link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset);
+ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);
 
 link_internal v3i
 GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
 
-
+link_internal void
+DrawEditorPreview(engine_resources *Engine, shader *Shader);

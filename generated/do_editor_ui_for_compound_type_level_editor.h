@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:447:0
+// src/engine/editor.cpp:425:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -89,8 +89,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_params*,&Element->Params),
-        CSz("Params"),
+        Cast(single_brush_settings*,&Element->SingleBrush),
+        CSz("SingleBrush"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(asset_brush_settings*,&Element->AssetBrush),
+        CSz("AssetBrush"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(layered_brush_editor*,&Element->LayeredBrushEditor),
+        CSz("LayeredBrushEditor"),
         Params
         );
 
@@ -117,21 +147,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
       PushNewRow(Ui);
 
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(layered_brush_editor*,&Element->LayeredBrushEditor),
-        CSz("LayeredBrushEditor"),
-        Params
-        );
-
-
-
-
-
-
-
-      
       DoEditorUi(Ui,
         Window,
         Cast(b8*,&Element->RootChunkNeedsNewMesh),

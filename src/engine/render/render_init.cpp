@@ -339,15 +339,22 @@ CreateGbuffer(memory_arena *Memory)
 
 
 shader
-CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
+CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
   shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
+  *Current = GetUniform(GraphicsMemory, &Shader, MinClipP_worldspace, "MinClipP_worldspace");
+  Current = &(*Current)->Next;
+
+  *Current = GetUniform(GraphicsMemory, &Shader, MaxClipP_worldspace, "MaxClipP_worldspace");
+  Current = &(*Current)->Next;
+
   *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
+  // @janky_model_matrix_bs
   *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
   Current = &(*Current)->Next;
 
@@ -468,37 +475,6 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
   return Result;
 }
 
-link_internal b32
-InitializeShadowRenderGroup(shadow_render_group *SG, v2i ShadowMapResolution)
-{
-  // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-  GL.GenFramebuffers(1, &SG->FramebufferName);
-  Assert(SG->FramebufferName);
-
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-
-  SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, CSz("ShadowDepth"));
-  FramebufferDepthTexture(&SG->ShadowMap);
-
-  // TODO(Jesse, id: 119, tags: opengl, es2): Not present on ES2 .. should we use them?
-  // No color output in the bound framebuffer, only depth.
-  /* glDrawBuffer(GL_NONE); */
-  /* glReadBuffer(GL_NONE); */
-
-  SG->DepthShader = LoadShaders( CSz(BONSAI_SHADER_PATH "DepthRTT.vertexshader"), CSz(BONSAI_SHADER_PATH "DepthRTT.fragmentshader") );
-  SG->MVP_ID = GetShaderUniform(&SG->DepthShader, "depthMVP");
-
-  AssertNoGlErrors;
-
-  if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    return false;
-
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  return true;
-}
-
 link_internal void
 InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
 {
@@ -527,6 +503,7 @@ MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *Bra
   *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
   Current = &(*Current)->Next;
 
+  // @janky_model_matrix_bs
   *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "ModelMatrix");
   Current = &(*Current)->Next;
 
@@ -653,7 +630,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowRenderGroup(SG, Result->Settings.iShadowMapResolution))
+  if (!InitializeShadowRenderGroup(Result, SG, Result->Settings.iShadowMapResolution))
   {
     SoftError("Initializing Shadow Buffer");// return False;
   }
@@ -698,7 +675,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
                          &gBuffer->InverseViewMatrix,
                          &gBuffer->InverseProjectionMatrix,
-                         &SG->MVP,
+                         &SG->Shader.MVP,
 
                          &Lighting->Lights,
                          Result->Camera,
@@ -747,7 +724,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   gBuffer->gBufferShader =
-    CreateGbufferShader(Result, GraphicsMemory, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
+    CreateGbufferShader(Result, GraphicsMemory, &Result->MinClipP_worldspace, &Result->MaxClipP_worldspace, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
 
   AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
                                    &gBuffer->Textures,
@@ -770,7 +747,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Lighting.Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
-                                                        &SG->MVP,
+                                                        &SG->Shader.MVP,
                                                          Result->Camera,
                                                         &Result->Exposure,
                                                         &Result->Settings.UseLightingBloom,

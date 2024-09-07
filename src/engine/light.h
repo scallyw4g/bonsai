@@ -17,18 +17,6 @@ struct game_lights
   light *Lights;
 };
 
-struct shadow_render_group
-{
-  u32 FramebufferName;
-  s32 MVP_ID;
-
-  shader DepthShader;
-
-  m4 MVP;
-
-  texture ShadowMap;
-};
-
 
 
 struct lighting_render_group

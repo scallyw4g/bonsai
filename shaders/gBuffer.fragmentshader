@@ -8,6 +8,9 @@ layout (location = 0) out vec4 gColor;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gPosition;
 
+uniform vec3 MinClipP_worldspace;
+uniform vec3 MaxClipP_worldspace;
+
 uniform vec3 OffsetOfWorldCenterToGrid;
 uniform vec3 CameraToWorld;
 uniform float FarClip;
@@ -74,6 +77,18 @@ ModThresh(vec3 In, float Thresh, float ModVal)
 
 void main()
 {
+
+  if (vertexP_worldspace.x >= MinClipP_worldspace.x &&
+      vertexP_worldspace.y >= MinClipP_worldspace.y &&
+      vertexP_worldspace.z >= MinClipP_worldspace.z &&
+
+      vertexP_worldspace.x < MaxClipP_worldspace.x &&
+      vertexP_worldspace.y < MaxClipP_worldspace.y &&
+      vertexP_worldspace.z < MaxClipP_worldspace.z)
+  {
+    discard;
+  }
+
   gPosition.xyz = vertexP_worldspace;
   gPosition.w = Linearize(gl_FragCoord.z); // Depth
   gNormal = vertexN_worldspace;

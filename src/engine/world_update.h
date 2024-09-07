@@ -46,6 +46,7 @@ struct apply_world_edit_params
   rect3i SimSpaceUpdateBounds;
   world_chunk *CopiedChunk;
   b32 Invert;
+  b32 PersistWhitespace;
   u16 Color;
   u8 Transparency;
 };
@@ -77,10 +78,10 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 struct work_queue_entry_update_world_region;
 
 link_internal void
-QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_mode  Mode, world_edit_mode_modifier  Modifier, world_edit_shape *Shape, u16  ColorIndex, memory_arena *Memory );
+QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_mode  Mode, world_edit_mode_modifier  Modifier, world_edit_shape *Shape, u16 ColorIndex, b32 PersistWhitespace, memory_arena *Memory );
 
 link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False);
+ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False);
 
 link_internal void
 DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job);

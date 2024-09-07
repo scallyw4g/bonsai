@@ -1,3 +1,4 @@
+// TODO(Jesse): Move to engine/render/bloom.cpp
 
 link_internal void
 InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memory_arena *GraphicsMemory)
@@ -27,6 +28,8 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
     if (CheckAndClearFramebuffer() == False) { Error("Initializing Bloom FBO"); }
 
     InitializeBloomDownsampleShader(&Group->DownsampleShader, &Settings->LuminanceMapResolution);
+
+    // TODO(Jesse): drive this from a runtime variable for artistic control?
     f32 FilterRadiusInUVSpace = 0.004f;
     InitializeBloomUpsampleShader(&Group->UpsampleShader, &FilterRadiusInUVSpace);
   }

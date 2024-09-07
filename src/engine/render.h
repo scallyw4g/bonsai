@@ -40,6 +40,9 @@ struct g_buffer_render_group
   g_buffer_textures Textures;
   shader gBufferShader;
 
+  /* v3 MinClipP_worldspace; */
+  /* v3 MaxClipP_worldspace; */
+
   m4 InverseViewMatrix;
   m4 InverseProjectionMatrix;
 

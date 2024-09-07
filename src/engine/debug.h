@@ -1,4 +1,3 @@
-
 // TODO(Jesse): rename this to just thumbnail and move to renderer.. ?
 struct asset_thumbnail
 {
@@ -9,7 +8,7 @@ struct asset_thumbnail
 // TODO(Jesse): Move to renderer?
 struct chunk_thumbnail
 {
-  world_chunk Chunk;
+      world_chunk Chunk;
   asset_thumbnail Thumbnail;
 };
 
@@ -31,7 +30,6 @@ enum asset_window_view_mode
 
 enum engine_debug_view_mode poof(@bitfield)
 {
-  // TODO(Jesse): Make these values bitfields?
   EngineDebugViewMode_Level          = (1 << 0),
   EngineDebugViewMode_WorldEdit      = (1 << 1),
   EngineDebugViewMode_Entities       = (1 << 2),

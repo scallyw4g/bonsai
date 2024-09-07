@@ -1,27 +1,3 @@
-//
-// TODO(Jeses): Move to header
-link_internal rect3
-GetSelectionRect(world *World, level_editor *Editor)
-{
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
-
-  rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
-  return Result;
-}
-
-//
-// TODO(Jeses): Move to header
-link_internal v3i
-GetSelectionDim(world *World, level_editor *Editor)
-{
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
-
-  v3i Result = V3i(SelectionMaxP - SelectionMinP);
-  return Result;
-}
-
 // TODO(Jesse): Should these live somewhere else?  @engine_draw_file_nodes_helpers
 link_internal maybe_file_traversal_node
 EngineDrawFileNodesFilteredHelper(file_traversal_node Node, u64 Params)
@@ -56,8 +32,10 @@ InitEditor(level_editor *Editor)
 
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
-    Editor->LayeredBrushEditor.Layers[LayerIndex].Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+    Editor->LayeredBrushEditor.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
   }
+  Editor->LayeredBrushEditor.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  Editor->LayeredBrushEditor.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
 
   return Result;
 }
@@ -539,14 +517,14 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, PersistWhitespace, Engine->WorldUpdateMemory);
 }
 
 
@@ -1015,14 +993,14 @@ GetLayerDim(brush_layer *Layer)
 
     case BrushLayerType_Noise:
     {
-      Result += Layer->Preview.Chunk.Dim;
+      Result += GetSelectionDim(GetWorld(), GetLevelEditor()); //Preview->Chunk.Dim;
     } break;
   }
   return Result;
 }
 
 link_internal b32
-CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer)
+CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1032,7 +1010,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
   v3i SelectionDim     = GetSelectionDim(World, Editor);
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
 
-  b32 ReallocChunk     = Editor->SelectionChanged || Layer->Preview.Chunk.Dim != RequiredLayerDim;
+  b32 ReallocChunk     = Editor->SelectionChanged || Preview->Chunk.Dim != RequiredLayerDim;
   b32 SettingsChanged  = !AreEqual(Settings, PrevSettings);
   b32 UpdateVoxels     = ReallocChunk || SettingsChanged;
 
@@ -1040,7 +1018,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
 
 
-  world_chunk *Chunk = &Layer->Preview.Chunk;
+  world_chunk *Chunk = &Preview->Chunk;
   if (ReallocChunk)
   {
     // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
@@ -1074,19 +1052,14 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             Region.Min += V3(Settings->Offset.Min);
             Region.Max += V3(Settings->Offset.Max);
 
-            // NOTE(Jesse): Took these out because they screw up a rect that's
-            // negatively dialated (min(1) max(-1)) .. you end up with a dim of 1
-            // which is clearly wrong..
+            Sanitize(&Region);
+
             Shape->Rect.Region.Min = Min(Region.Min, Region.Max);
             Shape->Rect.Region.Max = Max(Region.Min, Region.Max);
-            /* Shape->Rect.Region = Region; */
 
-            /* Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim)); */
+            Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim));
             Assert(Chunk->Dim == RequiredLayerDim);
 
-            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
-            FinalizeChunkInitialization(Chunk);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
           } break;
 
           case ShapeType_Sphere:
@@ -1096,11 +1069,16 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
             Shape->Sphere.Radius = MaxSphereRadius;
             Shape->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
 
-            ApplyBrushLayer(Engine, Layer, Chunk, Settings->Offset.Min);
-            FinalizeChunkInitialization(Chunk);
-            QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
           } break;
         }
+
+        if (LengthSq(GetShapeDim(Shape)) > 0)
+        {
+          ApplyBrushLayer(Engine, Layer, Preview, Chunk, Settings->Offset.Min);
+          FinalizeChunkInitialization(Chunk);
+          QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
+        }
+
       } break;
 
       case BrushLayerType_Noise:
@@ -1156,9 +1134,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
   }
 
-  if (Layer->Preview.Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
+  if (Preview->Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, &Layer->Preview.Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, &Preview->Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1178,12 +1156,12 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 
     case ShapeType_Rect:
     {
-      DoEditorUi(Ui, Window, &Layer->Rect, CSz("Settings"));
+      DoEditorUi(Ui, Window, &Layer->Rect, CSz(""));
     } break;
 
     case ShapeType_Sphere:
     {
-      DoEditorUi(Ui, Window, &Layer->Sphere, CSz("Settings"));
+      DoEditorUi(Ui, Window, &Layer->Sphere, CSz(""));
     } break;
   }
 
@@ -1203,17 +1181,17 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
         {
           case NoiseType_White:
           {
-            DoEditorUi(Ui, Window, &Layer->White, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->White, CSz(""));
           } break;
 
           case NoiseType_Perlin:
           {
-            DoEditorUi(Ui, Window, &Layer->Perlin, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Perlin, CSz(""));
           } break;
 
           case NoiseType_Voronoi:
           {
-            DoEditorUi(Ui, Window, &Layer->Voronoi, CSz("Settings"));
+            DoEditorUi(Ui, Window, &Layer->Voronoi, CSz(""));
           } break;
         }
       PushTableEnd(Ui);
@@ -1227,7 +1205,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 }
 
 link_internal void
-DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
+DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, window_layout *Window)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1243,7 +1221,7 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   {
     case BrushLayerType_Noise:
     {
-      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, &Layer->Preview);
+      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, Preview);
     } break;
 
     case BrushLayerType_Shape:
@@ -1280,14 +1258,14 @@ DoSettingsForBrush(engine_resources *Engine, brush_layer *Layer, window_layout *
   }
 
   PushTableStart(Ui);
-    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Layer->Preview.Thumbnail);
+    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Preview->Thumbnail);
     PushNewRow(Ui);
   PushTableEnd(Ui);
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
 }
 
 link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestChunk, v3i SmallestMinOffset)
+ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1332,7 +1310,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
       case BrushLayerType_Noise:
       {
         noise_layer     *Noise = &Settings->Noise;
-        world_chunk  *SrcChunk = &Layer->Preview.Chunk;
+        world_chunk  *SrcChunk = &Preview->Chunk;
         v3i       SrcOffsetMin = Settings->Offset.Min;
 
         v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
@@ -1354,7 +1332,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, world_chunk *DestC
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -1446,6 +1424,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
   layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
   brush_layer          *Layers             =  LayeredBrush->Layers;
+  chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
 
   cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
 
@@ -1555,8 +1534,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
 
         {
-          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-          DoEditorUi(Ui, BrushSettingsWindow, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
           PushNewRow(Ui);
         }
 
@@ -1581,7 +1560,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     RangeIterator(LayerIndex, LayeredBrush->LayerCount)
     {
       brush_layer *Layer = Layers + LayerIndex;
-      AnyChanges |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer);
+      chunk_thumbnail *Preview = Previews + LayerIndex;
+      AnyChanges |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer, Preview);
     }
 
     if (AnyChanges)
@@ -1598,6 +1578,24 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &LayersWindow);
 
+    if (LayeredBrush->SeedBrushWithSelection)
+    {
+      PushTableStart(Ui);
+          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
+          chunk_thumbnail *SeedPreview = &LayeredBrush->SeedLayer;
+        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &SeedPreview->Thumbnail, &SeedChunk->Meshes, V3(SeedChunk->Dim)/-2.f, 0); }
+        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
+        PushNewRow(Ui);
+      PushTableEnd(Ui);
+
+      PushTableStart(Ui);
+        world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
+        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, V3(Root_LayeredBrushPreview->Dim)/-2.f, 0); }
+        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
+        PushNewRow(Ui);
+      PushTableEnd(Ui);
+    }
+
     {
 
       {
@@ -1610,6 +1608,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
         {
           brush_layer *Layer = Layers + LayerIndex;
+          chunk_thumbnail *Preview = Previews + LayerIndex;
 
           ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
           if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
@@ -1638,7 +1637,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               EditLayerIndex = LayerIndex;
             }
 
-            DoSettingsForBrush(Engine, Layer, BrushSettingsWindow);
+            DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
           }
 
           if (IsNewBrush && LayerIndex == 0)
@@ -1706,19 +1705,17 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       {
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
+        Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
 
         //
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
-        if ( Editor->RootChunkNeedsNewMesh && (Root_LayeredBrushPreview->Flags&Chunk_Queued) == 0 )
+        if ( Editor->RootChunkNeedsNewMesh )
         {
-          // First find the largest total dimension of all the layers, and the
-          // largest negative minimum offset.  We need this min offset such
-          // that we can position layers relative to it.  By doing this, we
-          // implicitly take into account the size of the selection, but the
-          // computation is simpler than if we used the selection box directly
-          // .. I claim ..
-          v3i LargestLayerDim = GetSelectionDim(World, Editor);
+          // TODO(Jesse): Shouldn't the LargestLayerDim take into account the largest Offset too..?
+          v3i LargestLayerDim = GetSelectionDim(World, Editor) + 2;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush, &LargestLayerDim);
+          /* if (SmallestMinOffset == V3i(0)) */
+          /* {SmallestMinOffset = V3i(1);} */
 
           // Clear the voxels if the size didn't change, otherwise realloc
           if (Root_LayeredBrushPreview->Dim == LargestLayerDim)
@@ -1732,14 +1729,59 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
+          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
+          if (SeedChunk->Dim == LargestLayerDim)
+          {
+            ClearChunkVoxels(SeedChunk->Voxels, SeedChunk->Dim);
+          }
+          else
+          {
+            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, Editor->Memory);
+          }
+
+
+
+
 #if 1
+          auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
           if (LayeredBrush->SeedBrushWithSelection)
           {
             if (SelectionComplete(Editor->SelectionClicks))
             {
-              /* world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory); */
-              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
-              CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+              rect3cp GatherRegion = Editor->SelectionRegion;
+              GatherRegion.Min.Offset -= V3(1);
+              GatherRegion.Max.Offset += V3(1);
+              Canonicalize(World, &GatherRegion.Min);
+              Canonicalize(World, &GatherRegion.Max);
+
+              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, GatherRegion, GetTranArena());
+              /* CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset); */
+              CopyChunkOffset(&Seed, Seed.Dim, SeedChunk, SeedChunk->Dim, {});
+
+              /* // NOTE(Jesse): Zero out everything on the exterior edge */
+              /* RangeIterator (z, SeedChunk->Dim.z) */
+              /* RangeIterator (y, SeedChunk->Dim.y) */
+              /* RangeIterator (x, SeedChunk->Dim.x) */
+              /* { */
+              /*   if (z == 0 || y == 0 || x == 0 || */
+              /*       z == (SeedChunk->Dim.z-1) || y == (SeedChunk->Dim.y-1) || x == (SeedChunk->Dim.x-1)) */
+              /*   /1* if (z == 0 || y == 0 || x == 0) *1/ */
+              /*   { */
+              /*     s32 Index = GetIndex(x,y,z, SeedChunk->Dim); */
+              /*     SeedChunk->Voxels[Index] = {}; */
+              /*   } */
+              /* } */
+
+              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
+
+              FinalizeChunkInitialization(SeedChunk);
+
+              data_type Type = GetMeshDatatypeForDimension(SeedChunk->Dim);
+              auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+              RebuildWorldChunkMesh(Thread, SeedChunk, {}, SeedChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+              SyncGpuBuffersAsync(Engine, &SeedChunk->Meshes);
+
+              CopyChunkOffset(SeedChunk, SeedChunk->Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, {});
             }
           }
 #endif
@@ -1747,35 +1789,33 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
             brush_layer *Layer = Layers + LayerIndex;
-            ApplyBrushLayer(Engine, Layer, Root_LayeredBrushPreview, SmallestMinOffset);
+            chunk_thumbnail *Preview = Previews + LayerIndex;
+            ApplyBrushLayer(Engine, Layer, Preview, Root_LayeredBrushPreview, SmallestMinOffset+V3i(-1));
           }
 
-          FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init
-
-          Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
+          FinalizeChunkInitialization(Root_LayeredBrushPreview);
 
           {
-            auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
 
             data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
             auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
+            MarkBoundaryVoxels_MakeExteriorFaces(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim-V3i(2));
+
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
 
-          //NOTE(Jesse): Not sure what this was for..
-          /* FinalizeChunkInitialization(Root_LayeredBrushPreview); // TODO(Jesse): @duplicate_finalize_chunk_init */
-
           Editor->RootChunkNeedsNewMesh = False;
           Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;
+
+          if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
+          {
+            Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
+          }
         }
 
 
-        if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
-        {
-          Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
-        }
 
       }
     }
@@ -1805,36 +1845,10 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
       switch (WorldEditBrushType)
       {
         case WorldEdit_BrushType_Disabled:  {} break;
-        case WorldEdit_BrushType_Selection: {} break;
         case WorldEdit_BrushType_Single:    {} break;
         case WorldEdit_BrushType_Entity:    {} break;
+        case WorldEdit_BrushType_Asset:     {} break;
 
-        case WorldEdit_BrushType_Asset:
-        {
-          PushWindowStart(Ui, &Window);
-            DoEditorUi(Ui, &Window, &Editor->Params.Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-            DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-          PushWindowEnd(Ui, &Window);
-        } break;
-
-
-#if 0
-        case WorldEdit_BrushType_Noise:
-        {
-          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Noise);
-          PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Noise, &Window);
-          PushWindowEnd(Ui, &Window);
-        } break;
-
-        case WorldEdit_BrushType_Shape:
-        {
-          CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, &Editor->Shape);
-          PushWindowStart(Ui, &Window);
-            DoSettingsForBrush(Engine, &Editor->Shape, &Window);
-          PushWindowEnd(Ui, &Window);
-        } break;
-#endif
 
         case WorldEdit_BrushType_Layered:
         {
@@ -2033,6 +2047,36 @@ InputStateIsValidToApplyEdit(input *Input)
   return Result;
 }
 
+link_internal world_edit_mode
+GetEditModeForSelectedTool(level_editor *Editor)
+{
+  // Default is attach for tools/brushes that don't have a mode in their settings
+  world_edit_mode Result = WorldEdit_Mode_Attach;
+
+  switch(Editor->Tool)
+  {
+    case WorldEdit_Tool_Disabled:   {} break;
+    case WorldEdit_Tool_Select:     {} break;
+    case WorldEdit_Tool_Eyedropper: {} break;
+    case WorldEdit_Tool_BlitEntity: {} break;
+
+    case WorldEdit_Tool_Brush:
+    {
+      switch(Editor->BrushType)
+      {
+        case WorldEdit_BrushType_Disabled: {} break;
+        case WorldEdit_BrushType_Entity:   {} break;
+        case WorldEdit_BrushType_Single:   { Result = Editor->SingleBrush.Mode; } break;
+        case WorldEdit_BrushType_Asset:    { Result = Editor->AssetBrush.Mode;  } break;
+        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrushEditor.Mode;} break;
+      }
+    } break;
+  }
+
+  return Result;
+}
+
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -2069,28 +2113,6 @@ DoWorldEditor(engine_resources *Engine)
         WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->BrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
-
-      /* if (Editor->Tool == WorldEdit_Tool_Select) */
-      /* { */
-      /*   PushTableStart(Ui, Position_RightOf, CurrentRef); */
-      /*     DoEditorUi(Ui, &Window, &Editor->SelectionFollowsCursor, CSz("SelectionFollowsCursor"), &Params); */
-      /*   PushTableEnd(Ui); */
-      /*   PushNewRow(Ui); */
-      /* } */
-
-      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
-      /* { */
-      /*   Params.RelativePosition.Position   = Position_RightOf; */
-      /*   Params.RelativePosition.RelativeTo = CurrentRef; */
-      /*   WorldEditModeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Mode, CSz("Mode"), &Params, ToggleButtonGroupFlags_DrawVertical); */
-      /*   CurrentRef = WorldEditModeButtonGroup.UiRef; */
-      /* } */
-
-      /* if (Editor->Tool == WorldEdit_Tool_Brush) */
-      /* { */
-      /*   Params = DefaultUiRenderParams_Generic; */
-      /*   WorldEditModifierButtonGroup = DoEditorUi(Ui, &Window, &Editor->Params.Modifier, CSz(""), &Params, ToggleButtonGroupFlags_DrawVertical); */
-      /* } */
 
     PushTableEnd(Ui);
 
@@ -2177,8 +2199,6 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
-
   //
   //
   // Edit tool interactions in the world
@@ -2221,6 +2241,7 @@ DoWorldEditor(engine_resources *Engine)
                     case AssetType_WorldChunk:
                     case AssetType_Models:
                     {
+                      // TODO(Jesse): There should be an unsafe version of this function, and rename this one to TryGetDimForAssetModel ..?
                       maybe_v3i MaybeDim = GetDimForAssetModel(Asset, u32(EngineDebug->ModelIndex));
                       if (MaybeDim.Tag)
                       {
@@ -2239,7 +2260,7 @@ DoWorldEditor(engine_resources *Engine)
                             type_world_update_op_shape_params_asset,
                             .world_update_op_shape_params_asset = AssetUpdateShape,
                           };
-                          QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+                          QueueWorldUpdateForRegion(Engine, Editor->AssetBrush.Mode, Editor->AssetBrush.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
                         }
                         else if (Editor->BrushType == WorldEdit_BrushType_Entity)
                         {
@@ -2251,7 +2272,8 @@ DoWorldEditor(engine_resources *Engine)
                         }
                         else
                         {
-                          InvalidCodePath();
+                          InvalidCodePath(); // NOTE(Jesse): This is redundant because we already checked it's one of these,
+                                             // but I'm going to keep it here in case we ever move this code.. or the checks.
                         }
                       }
                       else
@@ -2277,6 +2299,8 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
+            NotImplemented;
+#if 0
             if (Editor->Params.Mode == WorldEdit_Mode_Paint)
             {
 
@@ -2304,87 +2328,37 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   v3 P0 = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
                   rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex,  Editor->Params.Mode, Editor->Params.Modifier);
+                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex, {}, Editor->Params.Mode, Editor->Params.Modifier);
                 }
               }
             }
+#endif
           } break;
 
-          /* case WorldEdit_BrushType_Shape: */
-          /* case WorldEdit_BrushType_Noise: */
           case WorldEdit_BrushType_Layered:
           {
             if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
             {
-              world_chunk *Chunk = 0;
               v3i Offset = V3i(s32_MAX);
-              switch (Editor->BrushType)
+              world_chunk *Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+
+              // TODO(Jesse): Call GetSmallestMinOffset here
+              RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
               {
-                InvalidCase(WorldEdit_BrushType_Disabled);
-                InvalidCase(WorldEdit_BrushType_Selection);
-                InvalidCase(WorldEdit_BrushType_Single);
-                InvalidCase(WorldEdit_BrushType_Asset);
-                InvalidCase(WorldEdit_BrushType_Entity);
-
-                case WorldEdit_BrushType_Layered:
-                {
-                  Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-                  RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
-                  {
-                    brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
-                    Offset = Min(Layer->Settings.Offset.Min, Offset);
-                  }
-
-                } break;
-
-#if 0
-                case WorldEdit_BrushType_Noise:
-                {
-                  Chunk = &Editor->Noise.Preview.Chunk;
-                  Offset = Editor->Noise.Settings.Offset.Min;
-                } break;
-
-                case WorldEdit_BrushType_Shape:
-                {
-                  Chunk = &Editor->Shape.Preview.Chunk;
-
-                  switch (Editor->Shape.Settings.Shape.Type)
-                  {
-                    case ShapeType_None: { InvalidCodePath(); } break;
-
-                    case ShapeType_Sphere:
-                    {
-                      Offset = V3i(V3(GetSelectionDim(World, Editor))/2.f - V3(Editor->Shape.Settings.Shape.Sphere.Radius));
-                    } break;
-
-                    case ShapeType_Rect:
-                    {
-                      Offset = {};
-                    } break;
-                  }
-                } break;
-#endif
+                brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
+                Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
-
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
 
               world_edit_shape Shape =
               {
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->Params.Mode, Editor->Params.Modifier, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
-          } break;
-
-          case WorldEdit_BrushType_Selection:
-          {
-            /* if (AABBTest.Face && InputStateIsValidToApplyEdit(Input)) */
-            /* { */
-            /*   ApplyEditToRegion(Engine, &SelectionAABB, Engine->Editor.SelectedColorIndex, Editor->Params.Mode, Editor->Params.Modifier); */
-            /* } */
           } break;
 
         }
@@ -2473,7 +2447,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, Editor->Params.Modifier, &Shape, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -2500,6 +2474,15 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
+  // NOTE(Jesse): This has to come after the tool interactions because of a trivial
+  // but important interaction.  If there's a previous tool to pop back to, we
+  // need to do that pop back before the brush settings get updated and the
+  // brush preview gets drawn or else when we pop back the settings window thinks
+  // the Select tool is active, doesn't update any of the brush stuff, then
+  // the preview gets drawn because we pop back to the Layered brush tool and
+  // there's a frame of lag.
+  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
+
 
 
   //
@@ -2519,7 +2502,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->SelectionClicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
 
@@ -2545,7 +2528,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, Engine->WorldUpdateMemory);
+      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
     }
   }
 
@@ -2567,7 +2550,43 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) );
     DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
   }
 }
+
+link_internal void
+DrawEditorPreview(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_chunk *Chunk = {};
+  v3 Basis = {};
+
+  switch (Editor->Tool)
+  {
+    case WorldEdit_Tool_Brush:
+    {
+      switch (Editor->BrushType)
+      {
+        case WorldEdit_BrushType_Layered:
+        {
+          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
+          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
+          Chunk = &LayeredBrushEditor->Preview.Chunk;
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin) - V3i(1);
+        } break;
+
+        default: {} break;
+      }
+    } break;
+
+    default: {} break;
+  }
+
+  if (Chunk)
+  {
+    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+  }
+}
+

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/rect.h:106:0
+// external/bonsai_stdlib/src/rect.h:129:0
 
 link_internal rect2
 RectMinMax(v2 Min, v2 Max)
@@ -52,4 +52,5 @@ IsInside(v2 P, rect2 Rect)
   b32 Result = (P >= Rect.Min && P < Rect.Max);
   return Result;
 }
+
 

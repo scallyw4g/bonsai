@@ -1,7 +1,23 @@
 /* out vec4 color; */
 
+uniform vec3 MinClipP_worldspace;
+uniform vec3 MaxClipP_worldspace;
+
+in vec3 vertexP_worldspace;
+
 void main()
 {
+  if (vertexP_worldspace.x >= MinClipP_worldspace.x &&
+      vertexP_worldspace.y >= MinClipP_worldspace.y &&
+      vertexP_worldspace.z >= MinClipP_worldspace.z &&
+
+      vertexP_worldspace.x < MaxClipP_worldspace.x &&
+      vertexP_worldspace.y < MaxClipP_worldspace.y &&
+      vertexP_worldspace.z < MaxClipP_worldspace.z)
+  {
+    discard;
+  }
+
   /* Depth is written linearized to the texture; our projection is orthographic */
   /* color = vec4(1,0,0,1); */
   /* gl_FragDepth = gl_FragCoord.z; */

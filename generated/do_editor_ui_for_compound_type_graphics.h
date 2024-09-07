@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:432:0
+// src/engine/editor.cpp:410:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -194,6 +194,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         // Cast to remove const/volatile keywords if they're there
         Cast(world_chunk_ptr_paged_list*,&Element->ShadowMapDrawList),
         CSz("ShadowMapDrawList"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MinClipP_worldspace),
+        CSz("MinClipP_worldspace"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MaxClipP_worldspace),
+        CSz("MaxClipP_worldspace"),
         Params
         );
 

@@ -22,6 +22,8 @@ struct transparency_render_group
   /* m4                        *ViewProjection; */
 };
 
+struct shadow_render_group;
+
 struct graphics
 {
   b32 Initialized;
@@ -47,6 +49,12 @@ struct graphics
 
   world_chunk_ptr_paged_list MainDrawList;
   world_chunk_ptr_paged_list ShadowMapDrawList;
+
+  // NOTE(Jesse): This is a stencil region for cutting out the selection region
+  // such that we can reneder an appropriate temporary mesh in the case that
+  // our selected brush removes world geometry.
+  v3 MinClipP_worldspace;
+  v3 MaxClipP_worldspace;
 
   // TODO(Jesse): None of these need to be pointers..
   g_buffer_render_group  *gBuffer;

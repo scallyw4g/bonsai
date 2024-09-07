@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:369:0
+// src/engine/editor.cpp:347:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -75,6 +75,37 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
 
       
+      if (ToggleButton(Ui, CSz("v LayerPreviews[16]"), CSz("> LayerPreviews[16]"), UiId(Window, "toggle layered_brush_editor chunk_thumbnail LayerPreviews", Element->LayerPreviews), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 16)
+        {
+          DoEditorUi(Ui, Window, Element->LayerPreviews+ArrayIndex, FSz("LayerPreviews[%d]", ArrayIndex), Params);
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(chunk_thumbnail*,&Element->SeedLayer),
+        CSz("SeedLayer"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
@@ -107,6 +138,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode*,&Element->Mode),
+        CSz("Mode"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_mode_modifier*,&Element->Modifier),
+        CSz("Modifier"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
