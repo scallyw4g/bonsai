@@ -1320,13 +1320,11 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
 
   if (DoSelectionMasking)
   {
-
-    GBufferRenderGroup->MinClipP_worldspace = GetRenderP(GetEngineResources(), GetLevelEditor()->SelectionRegion.Min);
-    GBufferRenderGroup->MaxClipP_worldspace = GetRenderP(GetEngineResources(), GetLevelEditor()->SelectionRegion.Max);
-
-    /* rect3 SimSelection = GetSelectionRect(GetWorld(), GetLevelEditor()); */
-    /* GBufferRenderGroup->MinClipP_worldspace = SimSelection.Min; */
-    /* GBufferRenderGroup->MaxClipP_worldspace = SimSelection.Max; */
+    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    SelectionRegion.Min.Offset += V3(0.0001f);
+    SelectionRegion.Max.Offset -= V3(0.0001f);
+    GBufferRenderGroup->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    GBufferRenderGroup->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
   }
   else
   {

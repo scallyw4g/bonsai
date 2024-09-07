@@ -558,7 +558,7 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
 }
 
 link_internal void
-CopyChunkOffset(world_chunk *Src, voxel_position SrcChunkDim, world_chunk *Dest, voxel_position DestChunkDim, voxel_position SrcOffset)
+CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestChunkDim, v3i SrcOffset)
 {
   TIMED_FUNCTION();
 

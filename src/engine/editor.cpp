@@ -34,6 +34,8 @@ InitEditor(level_editor *Editor)
   {
     Editor->LayeredBrushEditor.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
   }
+  Editor->LayeredBrushEditor.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  Editor->LayeredBrushEditor.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
 
   return Result;
 }
@@ -1576,6 +1578,24 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &LayersWindow);
 
+    if (LayeredBrush->SeedBrushWithSelection)
+    {
+      PushTableStart(Ui);
+          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
+          chunk_thumbnail *SeedPreview = &LayeredBrush->SeedLayer;
+        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &SeedPreview->Thumbnail, &SeedChunk->Meshes, V3(SeedChunk->Dim)/-2.f, 0); }
+        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
+        PushNewRow(Ui);
+      PushTableEnd(Ui);
+
+      PushTableStart(Ui);
+        world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
+        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, V3(Root_LayeredBrushPreview->Dim)/-2.f, 0); }
+        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
+        PushNewRow(Ui);
+      PushTableEnd(Ui);
+    }
+
     {
 
       {
@@ -1691,14 +1711,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
         if ( Editor->RootChunkNeedsNewMesh )
         {
-          // First find the largest total dimension of all the layers, and the
-          // largest negative minimum offset.  We need this min offset such
-          // that we can position layers relative to it.  By doing this, we
-          // implicitly take into account the size of the selection, but the
-          // computation is simpler than if we used the selection box directly
-          // .. I claim ..
-          v3i LargestLayerDim = GetSelectionDim(World, Editor);
+          // TODO(Jesse): Shouldn't the LargestLayerDim take into account the largest Offset too..?
+          v3i LargestLayerDim = GetSelectionDim(World, Editor) + 2;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush, &LargestLayerDim);
+          /* if (SmallestMinOffset == V3i(0)) */
+          /* {SmallestMinOffset = V3i(1);} */
 
           // Clear the voxels if the size didn't change, otherwise realloc
           if (Root_LayeredBrushPreview->Dim == LargestLayerDim)
@@ -1712,13 +1729,59 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
           }
 
+          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
+          if (SeedChunk->Dim == LargestLayerDim)
+          {
+            ClearChunkVoxels(SeedChunk->Voxels, SeedChunk->Dim);
+          }
+          else
+          {
+            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, Editor->Memory);
+          }
+
+
+
+
 #if 1
+          auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
           if (LayeredBrush->SeedBrushWithSelection)
           {
             if (SelectionComplete(Editor->SelectionClicks))
             {
-              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
-              CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset);
+              rect3cp GatherRegion = Editor->SelectionRegion;
+              GatherRegion.Min.Offset -= V3(1);
+              GatherRegion.Max.Offset += V3(1);
+              Canonicalize(World, &GatherRegion.Min);
+              Canonicalize(World, &GatherRegion.Max);
+
+              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, GatherRegion, GetTranArena());
+              /* CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset); */
+              CopyChunkOffset(&Seed, Seed.Dim, SeedChunk, SeedChunk->Dim, {});
+
+              /* // NOTE(Jesse): Zero out everything on the exterior edge */
+              /* RangeIterator (z, SeedChunk->Dim.z) */
+              /* RangeIterator (y, SeedChunk->Dim.y) */
+              /* RangeIterator (x, SeedChunk->Dim.x) */
+              /* { */
+              /*   if (z == 0 || y == 0 || x == 0 || */
+              /*       z == (SeedChunk->Dim.z-1) || y == (SeedChunk->Dim.y-1) || x == (SeedChunk->Dim.x-1)) */
+              /*   /1* if (z == 0 || y == 0 || x == 0) *1/ */
+              /*   { */
+              /*     s32 Index = GetIndex(x,y,z, SeedChunk->Dim); */
+              /*     SeedChunk->Voxels[Index] = {}; */
+              /*   } */
+              /* } */
+
+              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
+
+              FinalizeChunkInitialization(SeedChunk);
+
+              data_type Type = GetMeshDatatypeForDimension(SeedChunk->Dim);
+              auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+              RebuildWorldChunkMesh(Thread, SeedChunk, {}, SeedChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+              SyncGpuBuffersAsync(Engine, &SeedChunk->Meshes);
+
+              CopyChunkOffset(SeedChunk, SeedChunk->Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, {});
             }
           }
 #endif
@@ -1727,17 +1790,18 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           {
             brush_layer *Layer = Layers + LayerIndex;
             chunk_thumbnail *Preview = Previews + LayerIndex;
-            ApplyBrushLayer(Engine, Layer, Preview, Root_LayeredBrushPreview, SmallestMinOffset);
+            ApplyBrushLayer(Engine, Layer, Preview, Root_LayeredBrushPreview, SmallestMinOffset+V3i(-1));
           }
 
           FinalizeChunkInitialization(Root_LayeredBrushPreview);
 
           {
-            auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
             auto Chunk = Root_LayeredBrushPreview;
 
             data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
             auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+
+            MarkBoundaryVoxels_MakeExteriorFaces(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim-V3i(2));
 
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
@@ -2235,6 +2299,7 @@ DoWorldEditor(engine_resources *Engine)
             // and we can just collapse world edits automatically in the edit thread.
             //
             // When my laptop is unplugged running on battery power, this is _much_ faster.
+            NotImplemented;
 #if 0
             if (Editor->Params.Mode == WorldEdit_Mode_Paint)
             {
@@ -2285,7 +2350,7 @@ DoWorldEditor(engine_resources *Engine)
               }
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
 
               world_edit_shape Shape =
               {
@@ -2509,7 +2574,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
           layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
           Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin);
+          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin) - V3i(1);
         } break;
 
         default: {} break;

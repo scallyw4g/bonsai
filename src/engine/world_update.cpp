@@ -960,8 +960,10 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
       r32 RadiusSquared = Square(Sphere->Radius);
       rect3i SSRect = SimSpaceUpdateBounds;
 
-      Assert(EditCenterP > SimSpaceUpdateBounds.Min);
-      Assert(EditCenterP < SimSpaceUpdateBounds.Max);
+      // NOTE(Jesse): In the case of a 1-wide update region, the EditCenterP
+      // ends up on the min edge
+      Assert(EditCenterP >= SimSpaceUpdateBounds.Min);
+      Assert(EditCenterP <= SimSpaceUpdateBounds.Max);
 
       /* rect3i SSRect = RectCenterRad(EditCenterP, V3i(Sphere->Radius)); */
       apply_world_edit_params Params = {Mode, SSRect, SimSpaceUpdateBounds, CopiedChunk, Invert, PersistWhitespace, NewColor, NewTransparency};
@@ -984,8 +986,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           WorldEdit_shape_sphere_Flood(&Params, Thread, RadiusSquared, EditCenterP, FloodOrigin, NewVoxelValue);
         } break;
       }
-
-    } break;
+} break;
 
     case type_world_update_op_shape_params_rect:
     {

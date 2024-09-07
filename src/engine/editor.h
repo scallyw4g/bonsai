@@ -970,6 +970,8 @@ struct layered_brush_editor poof(@version(3))
       brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
   chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
 
+  chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value
+
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
 
@@ -977,6 +979,7 @@ struct layered_brush_editor poof(@version(3))
   world_edit_mode          Mode;
   world_edit_mode_modifier Modifier;
 
+  // NOTE(Jesse): This is actually just using the chunk .. should probably change it
   chunk_thumbnail Preview; poof(@no_serialize)
 };
 

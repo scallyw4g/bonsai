@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:345:0
+// src/engine/editor.cpp:347:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -87,6 +87,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(chunk_thumbnail*,&Element->SeedLayer),
+        CSz("SeedLayer"),
+        Params
+        );
+
+
+
+
 
 
 
