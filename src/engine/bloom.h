@@ -5,7 +5,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
   shader Program;
   shader_uniform Uniforms[1];
-  v2 SrcResolution; poof(@uniform)
+  v2 *SrcResolution; poof(@uniform)
 };
 
 poof(shader_magic(bloom_downsample_shader))
@@ -18,8 +18,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
   shader Program;
   shader_uniform Uniforms[1];
 
-  f32 FilterRadius; poof(@uniform)
+  f32 *FilterRadius; poof(@uniform)
 };
+
 
 poof(shader_magic(bloom_upsample_shader))
 #include <generated/shader_magic_bloom_upsample_shader.h>

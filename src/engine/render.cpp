@@ -96,17 +96,18 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
   shadow_render_group *SG = Graphics->SG;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  GL.UseProgram(SG->DepthShader.ID);
-
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
+
 
   // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
 
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
-  BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix);
+  UseShader(&SG->Shader);
+
+  /* BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix); */
 
   Draw(GpuMap->Buffer.At);
 
@@ -169,7 +170,7 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
-  Graphics->SG->MVP = NdcToScreenSpace * Graphics->SG->MVP;
+  Graphics->SG->Shader.MVP = NdcToScreenSpace * Graphics->SG->Shader.MVP;
 
   /* GL.Enable(GL_BLEND); */
   /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
@@ -1058,7 +1059,7 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
 link_internal m4
 GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation)
 {
-  m4 Result = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation) * IdentityMatrix;
+  m4 Result = Translate(Basis) * ScaleTransform(Scale) * RotateTransform(Rotation) * IdentityMatrix; // TODO(Jesse): wtf are we multiplying by IdentityMatrix for?
   return Result;
 }
 
@@ -1168,6 +1169,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
     AssertNoGlErrors;
 
+    // @janky_model_matrix_bs
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
     AssertNoGlErrors;
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
@@ -1323,13 +1325,13 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
     auto SelectionRegion = GetLevelEditor()->SelectionRegion;
     SelectionRegion.Min.Offset += V3(0.0001f);
     SelectionRegion.Max.Offset -= V3(0.0001f);
-    GBufferRenderGroup->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
-    GBufferRenderGroup->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
+    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
   }
   else
   {
-    GBufferRenderGroup->MinClipP_worldspace = {};
-    GBufferRenderGroup->MaxClipP_worldspace = {};
+    Graphics->MinClipP_worldspace = {};
+    Graphics->MaxClipP_worldspace = {};
   }
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
@@ -1356,21 +1358,36 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 link_internal void
-SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution)
+SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
   shadow_render_group *SG = Graphics->SG;
 
+  if (DoSelectionMasking)
+  {
+    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    SelectionRegion.Min.Offset += V3(0.0001f);
+    SelectionRegion.Max.Offset -= V3(0.0001f);
+    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
+  }
+  else
+  {
+    Graphics->MinClipP_worldspace = {};
+    Graphics->MaxClipP_worldspace = {};
+  }
+
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-  GL.UseProgram(SG->DepthShader.ID);
 
   SetViewport(ShadowMapResolution);
 
   // TODO(Jesse): Duplicate MVP calculation
   // @duplicate_shadow_map_MVP_calculation
   v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
 
-  GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]);
+  UseShader(&SG->Shader);
+
+  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
   GL.Disable(GL_CULL_FACE);
 
@@ -1411,6 +1428,8 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
                        graphics *Graphics, world *World, r32 dt)
 {
   TIMED_FUNCTION();
+
+  NotImplemented; // NOTE: Unused
 
   b32 OldMajorGrid = Graphics->Settings.DrawMajorGrid;
   b32 OldMinorGrid = Graphics->Settings.DrawMinorGrid;
@@ -1575,7 +1594,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   shadow_render_group *SG = Graphics->SG;
 
-  SetupShadowMapShader(Graphics, ShadowMapResolution);
+  SetupShadowMapShader(Graphics, ShadowMapResolution, Editor->LayeredBrushEditor.SeedBrushWithSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */

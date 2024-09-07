@@ -207,6 +207,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MinClipP_worldspace),
+        CSz("MinClipP_worldspace"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->MaxClipP_worldspace),
+        CSz("MaxClipP_worldspace"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(g_buffer_render_group*, Element->gBuffer),
         CSz("gBuffer"),
         Params
