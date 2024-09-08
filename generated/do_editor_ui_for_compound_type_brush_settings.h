@@ -150,8 +150,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u16*,&Element->Color),
-        CSz("Color"),
+        Cast(v3*,&Element->HSVColor),
+        CSz("HSVColor"),
         Params
         );
 
@@ -161,8 +161,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

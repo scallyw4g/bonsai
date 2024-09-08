@@ -28,7 +28,13 @@ poof(
           }
         }
         {
-          Live->member.name = Stored->member.name;
+          member.has_tag(custom_marshal)?
+          {
+            member.tag_value(custom_marshal)
+          }
+          {
+            Live->member.name = Stored->member.name;
+          }
         }
       }
     }

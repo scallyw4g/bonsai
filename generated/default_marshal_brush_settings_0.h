@@ -1,25 +1,32 @@
-// src/engine/editor.h:943:0
+// src/engine/editor.h:975:0
 
 Live->Type = Stored->Type;
+
 
 
 Live->Noise = Stored->Noise;
 
 
+
 Live->Shape = Stored->Shape;
+
 
 
 Live->Mode = Stored->Mode;
 
 
+
 Live->Modifier = Stored->Modifier;
+
 
 
 Live->Iterations = Stored->Iterations;
 
 
+
 Live->Offset = Stored->Offset;
 
 
-Live->Color = Stored->Color;
+
+Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);
 

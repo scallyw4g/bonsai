@@ -1,4 +1,5 @@
 #define INVALID_COLOR_INDEX (0xffff)
+#define DEFAULT_HSV_COLOR (V3(0.5f, 0.5f, 1.f))
 
 #if 1
 static v3 MAGICAVOXEL_DEFAULT_PALETTE[u8_MAX+1] = {
@@ -262,44 +263,21 @@ static v3 MAGICAVOXEL_DEFAULT_PALETTE[u8_MAX+1] = {
 #endif
 
 link_internal v3_cursor * GetColorPalette();
-link_internal v3          GetColorData(u32 ColorIndex);
+link_internal v3          GetMagicaVoxelRGBColor(u32 ColorIndex);
 
 
 
-
-//
-// https://github.com/Inseckto/HSV-to-RGB/blob/master/HSV2RGB.c
-//
 link_internal v3
-HSVtoRGB(f32 H, f32 S, f32 V)
+MagicaVoxelDefaultPaletteToRGB(u16 MagicaVoxelIndex)
 {
-  f32 r = 0, g = 0, b = 0;
-
-  f32 h = H;
-  f32 s = S;
-  f32 v = V;
-
-  int i = s32(Floorf(h * 6));
-  f32 f = h * 6 - i;
-  f32 p = v * (1 - s);
-  f32 q = v * (1 - f * s);
-  f32 t = v * (1 - (1 - f) * s);
-
-  switch (i % 6) {
-    case 0: r = v; g = t; b = p; break;
-    case 1: r = q; g = v; b = p; break;
-    case 2: r = p; g = v; b = t; break;
-    case 3: r = p; g = q; b = v; break;
-    case 4: r = t; g = p; b = v; break;
-    case 5: r = v; g = p; b = q; break;
-  }
-
-  v3 Result = V3(r,g,b);
+  v3 Result = GetMagicaVoxelRGBColor(MagicaVoxelIndex);
   return Result;
 }
 
 link_internal v3
-HSVtoRGB(v3 HSV)
+MagicaVoxelDefaultPaletteToHSV(u16 MagicaVoxelIndex)
 {
-  return HSVtoRGB(HSV.h, HSV.s, HSV.v);
+  v3 RGB = GetMagicaVoxelRGBColor(MagicaVoxelIndex);
+  v3 Result = RGBtoHSV(RGB);
+  return Result;
 }

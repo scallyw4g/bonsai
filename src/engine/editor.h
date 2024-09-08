@@ -624,22 +624,21 @@ enum world_edit_mode_modifier
 struct generic_noise_params
 {
   r32 Threshold = 3.0f;
-  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
+   v3 Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
-  u16 Color     = 1; // White
+   v3 HSVColor  = DEFAULT_HSV_COLOR;
 };
 
 // TODO(Jesse): Get rid of zMin
-#define UNPACK_NOISE_PARAMS(P) \
-  v3i WorldChunkDim = GetWorldChunkDim(); \
-  v3i Dim = Chunk->Dim; \
-  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold; \
-  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold); \
-  v3  Period     = Cast(generic_noise_params*, (P))->Period; \
+#define UNPACK_NOISE_PARAMS(P)                                       \
+  v3i WorldChunkDim = GetWorldChunkDim();                            \
+  v3i Dim = Chunk->Dim;                                              \
+  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold;         \
+  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
+  v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
   s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  u16 Color      = Cast(generic_noise_params*, (P))->Color; \
-  v3i SrcToDest  = {-1*Global_ChunkApronMinDim}; \
-  u16 ColorIndex = Cast(generic_noise_params*, (P))->Color
+  v3  HSVColor      = Cast(generic_noise_params*, (P))->HSVColor;    \
+  v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
 
 
 struct white_noise_params
@@ -856,8 +855,7 @@ enum brush_layer_type
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
-// TODO(Jesse): Rename to `brush` ..?
-struct brush_settings poof(@version(2))
+struct brush_settings poof(@version(3))
 {
   brush_layer_type Type;
 
@@ -879,7 +877,34 @@ struct brush_settings poof(@version(2))
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; // Default to white
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  b8 Invert;
+};
+
+// TODO(Jesse): Rename to `brush` ..?
+struct brush_settings_2
+{
+  brush_layer_type Type;
+
+  noise_layer Noise;
+  shape_layer Shape;
+
+  //
+  // Common across brush types
+  //
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+  // NOTE(Jesse): This is the relative offset from the base selection.
+  // Used to inflate or contract the area affected by the brush.
+  //
+  // TODO(Jesse): Rename to dilation
+  rect3i Offset;
+
+  v3i NoiseBasisOffset;
+
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
   b8 Invert;
 };
 poof(are_equal(brush_settings))
@@ -906,7 +931,7 @@ struct brush_settings_1
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
 
 struct brush_settings_0
@@ -927,8 +952,15 @@ struct brush_settings_0
   // Used to inflate or contract the area affected by the brush.
   rect3i Offset;
 
-  u16 Color = 1; // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
+
+link_internal void
+Marshal(brush_settings_2 *Stored, brush_settings *Live)
+{
+  poof(default_marshal(brush_settings_2))
+#include <generated/default_marshal_brush_settings_2.h>
+}
 
 link_internal void
 Marshal(brush_settings_1 *Stored, brush_settings *Live)
@@ -1089,7 +1121,7 @@ struct level_editor
 
   u64 EngineDebugViewModeToggleBits;
 
-  u16 SelectedColorIndex;
+  /* u16 SelectedColorIndex; */
   u16 HoverColorIndex;
 
   b32 SelectionChanged;

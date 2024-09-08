@@ -157,7 +157,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
                             world_edit_mode  Mode,
                    world_edit_mode_modifier  Modifier,
                            world_edit_shape *Shape,
-                                        u16  ColorIndex,
+                                         v3  HSVColor,
                                         b32  PersistWhitespace,
                                memory_arena *Memory )
 {
@@ -300,7 +300,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
 
     work_queue_entry Entry = {
       .Type = type_work_queue_entry_update_world_region,
-      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, ColorIndex, PersistWhitespace, MinP, MaxP, Buffer, ChunkIndex),
+      .work_queue_entry_update_world_region = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, Shape, HSVColor, PersistWhitespace, MinP, MaxP, Buffer, ChunkIndex),
     };
     PushWorkQueueEntry(&Plat->WorldUpdateQ, &Entry);
   }
@@ -932,8 +932,8 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   world_edit_shape            Shape =     Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
-  u16 NewColor                = Job->ColorIndex;
-  u8  NewTransparency         = Job->Transparency;
+  u16 NewColor               = PackHSVColor(Job->HSVColor);
+  u8 NewTransparency         = Job->Transparency;
 
   voxel _NewVoxelValue = {};
   voxel *NewVoxelValue = &_NewVoxelValue;
@@ -1087,7 +1087,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_edit_shape            Shape = Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
-  u16 NewColor                  = Job->ColorIndex;
+  u16 NewColor                  = PackHSVColor(Job->HSVColor);
   u8  NewTransparency           = Job->Transparency;
   cp  MaxP                      = Job->MaxP;
   cp  MinP                      = Job->MinP;

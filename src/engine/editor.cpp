@@ -517,14 +517,14 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, PersistWhitespace, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, HSVColor, PersistWhitespace, Engine->WorldUpdateMemory);
 }
 
 
@@ -1089,7 +1089,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         generic_noise_params NoiseParams = {};
         void *UserData = {};
 
-        NoiseParams.Color     = Settings->Color;
+        NoiseParams.HSVColor     = Settings->HSVColor;
         switch (Noise->Type)
         {
           case NoiseType_White:
@@ -1251,9 +1251,9 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
 
   {
-    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+    ui_style Style = UiStyleFromLightestColor(HSVtoRGB(Settings->HSVColor));
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->HSVColor = Engine->Editor.HSVColorSelection; }
     PushNewRow(Ui);
   }
 
@@ -1326,13 +1326,12 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     }
 
     v3 SimFloodOrigin = V3(0);
-    u16 ColorIndex = Layer->Settings.Color;
 
     s32 Iterations = Settings->Iterations;
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.HSVColor, {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -2215,6 +2214,10 @@ DoWorldEditor(engine_resources *Engine)
 
     PushTableEnd(Ui);
 
+    DoColorPicker(Engine, &Window);
+
+    DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") );
+
     PushWindowEnd(Ui, &Window);
   }
 
@@ -2407,7 +2410,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->HSVColorSelection, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2457,7 +2460,7 @@ DoWorldEditor(engine_resources *Engine)
           if (Input->LMB.Clicked)
           {
             /* Info("Selecting Color (%S)", CS(V->Color)); */
-            Engine->Editor.SelectedColorIndex = V->Color;
+            Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color);
 
             if (Editor->PreviousTool)
             {

@@ -599,7 +599,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         s32 Period = 150;
         s32 Amplititude = 10;
         s32 StartingZDepth = 0;
-        u16 Color = GRASS_GREEN;
+        v3 Color = HSV_GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
         u32 Octaves = 1;

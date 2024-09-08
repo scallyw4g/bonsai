@@ -15,10 +15,10 @@ GetPaletteData(u32 ColorIndex)
 }
 
 link_internal v3
-GetColorData(u32 ColorIndex)
+GetMagicaVoxelRGBColor(u32 ColorIndex)
 {
   v3_cursor *Palette = GetColorPalette();
-  v3 Result = GetColorData(Palette, ColorIndex);
+  v3 Result = GetMagicaVoxelRGBColor(Palette, ColorIndex);
   return Result;
 }
 

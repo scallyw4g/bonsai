@@ -610,7 +610,7 @@ Terrain_Flat( world_chunk *Chunk,
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Chunk->Dim);
           Chunk->Voxels[Index].Flags = Voxel_Filled;
-          Chunk->Voxels[Index].Color = Color;
+          Chunk->Voxels[Index].Color = PackHSVColor(HSVColor);
           ++Result;
         }
       }
@@ -644,7 +644,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     for ( s32 VoxIndex = 0; VoxIndex < MaxIndex; ++VoxIndex)
     {
       Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-      Chunk->Voxels[VoxIndex].Color = ColorIndex;
+      Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor);
     }
     return (u32)MaxIndex;
   }
@@ -721,7 +721,8 @@ Terrain_FBM2D( world_chunk *Chunk,
           BreakHere ++;
         }
 
-        u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(ColorIndex), &GenColorEntropy, u32(ColorIndex)+2));;
+        /* u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(Color), &GenColorEntropy, u32(Color)+2));; */
+        u16 ThisColor = PackHSVColor(HSVColor);
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
@@ -793,7 +794,7 @@ Terrain_Perlin3D( world_chunk *Chunk,
 
         if (NoiseChoice)
         {
-          Chunk->Voxels[i].Color = Color;
+          Chunk->Voxels[i].Color = PackHSVColor(HSVColor);
           Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
           ++Result;
         }
@@ -846,7 +847,7 @@ Terrain_WhiteNoise( world_chunk *Chunk,
 
         if (NoiseChoice)
         {
-          Chunk->Voxels[i].Color = Color;
+          Chunk->Voxels[i].Color = PackHSVColor(HSVColor);
           Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
           ++Result;
         }
@@ -3764,10 +3765,10 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
                                          void *OldAssetFilePoitner,
 
-                                         v3 Period,
+                                          v3 Period,
                                          s32 Amp,
                                          s32 Thresh,
-                                         u16 Color,
+                                          v3 HSVColor,
 
                     world_chunk_mesh_bitfield  MeshBit,
                              chunk_init_flags  Flags,
@@ -3776,7 +3777,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           b32  MakeExteriorFaces = False,
                                           v3i  NoiseBasisOffset  = {} )
 {
-  generic_noise_params Params = {r32(Thresh), Period, r32(Amp), Color};
+  generic_noise_params Params = {r32(Thresh), Period, r32(Amp), HSVColor};
   InitializeChunkWithNoise(NoiseCallback, Thread, DestChunk, &Params, Flags, UserData, MakeExteriorFaces, NoiseBasisOffset);
 }
 
@@ -3794,7 +3795,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
                                 world_edit_mode_modifier Modifier,
                                 v3 SimFloodOrigin,
                                 world_edit_shape *Shape,
-                                u16 ColorIndex,
+                                v3  HSVColor,
                                 b32 PersistWhitespace,
                                 cp MinP,
                                 cp MaxP,
@@ -3809,7 +3810,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
       Modifier,
       /* SimFloodOrigin, */
     },
-    ColorIndex,
+    HSVColor,
     {},
     PersistWhitespace,
     MinP,
