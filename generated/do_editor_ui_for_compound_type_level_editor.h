@@ -416,6 +416,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*,&Element->HSVColorSelection),
+        CSz("HSVColorSelection"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -263,3 +263,43 @@ static v3 MAGICAVOXEL_DEFAULT_PALETTE[u8_MAX+1] = {
 
 link_internal v3_cursor * GetColorPalette();
 link_internal v3          GetColorData(u32 ColorIndex);
+
+
+
+
+//
+// https://github.com/Inseckto/HSV-to-RGB/blob/master/HSV2RGB.c
+//
+link_internal v3
+HSVtoRGB(f32 H, f32 S, f32 V)
+{
+  f32 r = 0, g = 0, b = 0;
+
+  f32 h = H;
+  f32 s = S;
+  f32 v = V;
+
+  int i = s32(Floorf(h * 6));
+  f32 f = h * 6 - i;
+  f32 p = v * (1 - s);
+  f32 q = v * (1 - f * s);
+  f32 t = v * (1 - (1 - f) * s);
+
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+
+  v3 Result = V3(r,g,b);
+  return Result;
+}
+
+link_internal v3
+HSVtoRGB(v3 HSV)
+{
+  return HSVtoRGB(HSV.h, HSV.s, HSV.v);
+}

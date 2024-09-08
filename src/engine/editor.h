@@ -419,7 +419,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
   if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
@@ -1109,6 +1109,8 @@ struct level_editor
 
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
+
+  v3 HSVColorSelection;
 };
 
 
