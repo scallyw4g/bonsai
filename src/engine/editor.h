@@ -1110,7 +1110,7 @@ struct level_editor
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
 
-  v3 HSVColorSelection;
+  v3 HSVColorSelection = {{0.f, 0.8f, 0.5f}};
 };
 
 

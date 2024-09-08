@@ -2171,6 +2171,8 @@ DoColorPicker(engine_resources *Engine, window_layout *Window)
     ui_style Style = FlatUiStyle(Color);
     PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
   }
+
+  return {};
 }
 
 
