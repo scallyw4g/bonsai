@@ -134,8 +134,6 @@ DoLevelWindow(engine_resources *Engine)
 
           if (IsInsideVisibleRegion(World, Chunk->WorldP))
           {
-            chunk_init_flags Flags = ChunkInitFlag_Noop;
-
 #if 0
             if (Editor->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad)
             {
@@ -145,8 +143,6 @@ DoLevelWindow(engine_resources *Engine)
 #endif
 
             InsertChunkIntoWorld(World, Chunk);
-
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
 
@@ -193,6 +189,21 @@ DoLevelWindow(engine_resources *Engine)
               *C /= 255.f;
               Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
             }
+          }
+        }
+
+
+        RangeIterator_t(u32, ChunkIndex, World->HashSize)
+        {
+          if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
+          {
+            if (MaybeLevelHeaderTypeInfo.Value.Version < 4)
+            {
+              MarshalMagicaVoxelEncodedColors(Chunk->Voxels, Chunk->Voxels, Chunk->Dim);
+            }
+
+            chunk_init_flags Flags = ChunkInitFlag_Noop;
+            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
 
@@ -482,7 +493,7 @@ DoAssetWindow(engine_resources *Engine)
     }
 
     PushNewRow(Ui);
-    
+
     if (Engine->Editor.NewAssetFromSelection)
     {
       TextBox(Ui, CSz("Asset Name"), CS(Engine->Editor.NewAssetFromSelectionFilename, 512), 512, UiId(&Window, "AssetNameButton", 0u));

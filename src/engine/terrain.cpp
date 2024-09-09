@@ -745,18 +745,18 @@ HoodooTerrain( world_chunk *Chunk,
         /* b32 IsFilled = NoiseValue > r32(Amplitude); //0.5f;; */
         b32 IsFilled = r64(NoiseValue) > r64(WorldZSubZMin);
 
-        u16 ThisColor = ColorIndex;
+        u16 ThisColor = PackHSVColor(HSVColor);
 
         s32 SnowThreshold = 100;
         if (IsFilled == True && WorldZ > SnowThreshold)
         {
-          ThisColor = WHITE;
+          ThisColor = PackHSVColor(HSV_WHITE);
         }
 
         s32 SandThreshold = 3;
         if (IsFilled == True && WorldZ < SandThreshold)
         {
-          ThisColor = YELLOW;
+          ThisColor = PackHSVColor(HSV_YELLOW);
         }
 
         /* s32 WaterThreshold = 0; */
@@ -2328,7 +2328,7 @@ Terrain_Voronoi3D( world_chunk *Chunk,
         b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor)*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }
@@ -2378,7 +2378,7 @@ Terrain_Voronoi2D( world_chunk *Chunk,
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ColorIndex*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor)*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }

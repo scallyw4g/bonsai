@@ -328,7 +328,7 @@ typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
 #include <generated/block_array_entity_ptr_688856411.h>
 
-struct world_chunk
+struct world_chunk poof(@version(1))
 {
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist
@@ -390,7 +390,70 @@ CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 
-typedef world_chunk* world_chunk_ptr;
+
+
+
+
+struct world_chunk_0
+{
+  // NOTE(Jesse): Since we waste so much space with padding this thing out we
+  // can afford to have a next pointer to keep the freelist
+  world_chunk *Next;                  poof(@no_serialize)
+
+  // chunk_data {
+          chunk_flag  Flags;          poof(@no_serialize)
+                 v3i  Dim; // could be compressed?
+               voxel *Voxels;         poof(@custom_marshal(MarshalMagicaVoxelEncodedColors(Stored->Voxels, Live->Voxels, Stored->Dim);)
+                                           @array_length( Cast(umm, Volume(Element->Dim))))
+
+      voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
+  // }
+
+
+  // TODO(Jesse): This stores pointers that are completely ephemeral and as
+  // such are wasted space.  We could remove those to make this struct 24 bytes
+  // smaller, which is probably pretty worth.
+  lod_element_buffer Meshes; poof(@no_serialize)
+
+  /* threadsafe_geometry_buffer TransparentMeshes; */
+  /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
+
+  voxel_position_cursor StandingSpots;   poof(@no_serialize)
+
+  v3i WorldP;
+
+  s32 FilledCount;            poof(@no_serialize)
+  b32 DrawBoundingVoxels;     poof(@no_serialize)
+
+  s32 PointsToLeaveRemaining; poof(@no_serialize)
+  u32 TriCount;               poof(@no_serialize)
+  s32 EdgeBoundaryVoxelCount; poof(@no_serialize)
+
+  u32 _Pad0; poof(@no_serialize)
+
+  // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
+  // considered for collision detection.
+  entity_ptr_block_array Entities; poof(@no_serialize)
+
+  // TODO(Jesse): Probably take this out?
+  s32 DEBUG_OwnedByThread; poof(@no_serialize)
+
+#if VOXEL_DEBUG_COLOR
+  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
+  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
+  u8 _Pad1[16];      poof(@no_serialize)
+#else
+  u8 _Pad1[28];      poof(@no_serialize)
+#endif
+};
+
+
+
+
+
+
+
+typedef world_chunk*  world_chunk_ptr;
 typedef world_chunk** world_chunk_ptr_ptr;
 
 poof(buffer(world_chunk_ptr))
@@ -725,6 +788,17 @@ TryGetVoxel(world *World, cp P)
     Result = TryGetVoxel(Chunk, V3i(P.Offset));
   }
   return Result;
+}
+
+link_internal void
+MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
+{
+  s32 Max = Volume(Dim);
+  RangeIterator(Index, Max)
+  {
+    Dest[Index] = Src[Index];
+    Dest[Index].Color = PackHSVColor(MagicaVoxelDefaultPaletteToHSV(Src[Index].Color));
+  }
 }
 
 link_internal void

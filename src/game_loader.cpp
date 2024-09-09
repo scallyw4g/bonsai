@@ -131,7 +131,6 @@ main( s32 ArgCount, const char ** Args )
   Session.start({pmc0, pmc1});
 #endif
 
-
   if (!SearchForProjectRoot()) { Error("Couldn't find root dir, exiting."); return 1; }
   Info("Found Bonsai Root : %s", GetCwd() );
 

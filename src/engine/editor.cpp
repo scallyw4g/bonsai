@@ -517,14 +517,14 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, u16 ColorIndex, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = *SelectionAABB
   };
 
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, ColorIndex, PersistWhitespace, Engine->WorldUpdateMemory);
+  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, HSVColor, PersistWhitespace, Engine->WorldUpdateMemory);
 }
 
 
@@ -1089,7 +1089,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         generic_noise_params NoiseParams = {};
         void *UserData = {};
 
-        NoiseParams.Color     = Settings->Color;
+        NoiseParams.HSVColor     = Settings->HSVColor;
         switch (Noise->Type)
         {
           case NoiseType_White:
@@ -1251,9 +1251,20 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
 
   {
-    ui_style Style = UiStyleFromLightestColor(GetColorData(Settings->Color));
+    ui_style Style = UiStyleFromLightestColor(HSVtoRGB(Settings->HSVColor));
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->Color = Engine->Editor.SelectedColorIndex; }
+
+
+    ui_id ColorPickerModalId = UiId(Window, "color modal interaction", Cast(void*, Settings));
+
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings))))
+    {
+      ToggleModal(Ui, "Color Picker", ColorPickerModalId);
+    }
+    PushNewRow(Ui);
+
+    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor, False);
+
     PushNewRow(Ui);
   }
 
@@ -1326,13 +1337,12 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     }
 
     v3 SimFloodOrigin = V3(0);
-    u16 ColorIndex = Layer->Settings.Color;
 
     s32 Iterations = Settings->Iterations;
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, ColorIndex, {}, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.HSVColor, {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -1550,7 +1560,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       }
     }
-    PushWindowEnd(Ui, BrushSettingsWindow);
   }
 
 
@@ -1575,26 +1584,29 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
 
   {
-    local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right);
-    PushWindowStart(Ui, &LayersWindow);
+    /* local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right); */
+    /* PushWindowStart(Ui, BrushSettingsWindow); */
 
+    // NOTE(Jesse): Debug
+#if 0
     if (LayeredBrush->SeedBrushWithSelection)
     {
       PushTableStart(Ui);
           world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
           chunk_thumbnail *SeedPreview = &LayeredBrush->SeedLayer;
         if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &SeedPreview->Thumbnail, &SeedChunk->Meshes, V3(SeedChunk->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
+        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
         PushNewRow(Ui);
       PushTableEnd(Ui);
 
       PushTableStart(Ui);
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
         if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, V3(Root_LayeredBrushPreview->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, &LayersWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
+        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
         PushNewRow(Ui);
       PushTableEnd(Ui);
     }
+#endif
 
     {
 
@@ -1820,7 +1832,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       }
     }
 
-    PushWindowEnd(Ui, &LayersWindow);
+    PushWindowEnd(Ui, BrushSettingsWindow);
   }
 }
 
@@ -1829,14 +1841,13 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Bottom);
+  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
   switch (WorldEditTool)
   {
     case  WorldEdit_Tool_Disabled:
     case  WorldEdit_Tool_Select:
     case  WorldEdit_Tool_Eyedropper:
     case  WorldEdit_Tool_BlitEntity:
-    /* case  WorldEdit_Tool_StandingSpots: */
     {
     } break;
 
@@ -1848,7 +1859,6 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
         case WorldEdit_BrushType_Single:    {} break;
         case WorldEdit_BrushType_Entity:    {} break;
         case WorldEdit_BrushType_Asset:     {} break;
-
 
         case WorldEdit_BrushType_Layered:
         {
@@ -2076,6 +2086,132 @@ GetEditModeForSelectedTool(level_editor *Editor)
   return Result;
 }
 
+link_internal v3 
+ColorIndexToV3(u16 ColorIndex)
+{
+  u32 FiveBits = 0b0000000000011111;
+  u32 SixBits  = 0b0000000000111111;
+
+  f32 R = f32((ColorIndex >> 11) & FiveBits) / f32(FiveBits);
+  f32 G = f32((ColorIndex >> 6)  & FiveBits) / f32(FiveBits);
+  f32 B = f32((ColorIndex >> 0)  & SixBits) / f32(SixBits);
+
+  v3 Result = V3(R,G,B);
+  return Result;
+}
+
+
+link_internal void
+DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim, r32 CurrentValue)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  ui_element_reference SaturationTable = PushTableStart(Ui);
+  RangeIterator_t(u8, ColorIndex, Slices)
+  {
+    /* v3 Color = GetColorData(u32(ColorIndex)); */
+
+    v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
+    v4 Padding = V4(0);
+    v3 BorderColor = V3(1.0f);
+
+    r32 Value = r32(ColorIndex)/r32(Slices);
+
+    v3 Color = *HSVDest;
+    Color.E[ElementIndex] = Value;
+    Color = HSVtoRGB(Color);
+
+    b32 Selected = Value == CurrentValue;
+    ui_style Style = FlatUiStyle(Color);
+    interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(Window, "ColorPicker value button", Cast(void*, u64(ColorIndex) | u64(ElementIndex<<16))) );
+      PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
+    PushButtonEnd(Ui);
+
+    b32 ButtonHover = Hover(Ui, &ColorPickerButton);
+    if (Selected || ButtonHover)
+    {
+      f32 BorderDim = 1.f;
+      PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
+    }
+
+    if (ButtonHover)
+    {
+      PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
+    }
+
+    if (ButtonHover && Input->LMB.Pressed)
+    {
+      HSVDest->E[ElementIndex] = Value;
+    }
+  }
+  PushTableEnd(Ui);
+  PushNewRow(Ui);
+}
+
+link_internal void
+DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  /* u8 FourBits   = 0b1111; */
+  u8 FiveBits   = 0b11111;
+  u8 SixBits    = 0b111111;
+  /* u8 EightBits  = 0b11111111; */
+
+  u16 HueSlices        = SixBits;
+  u16 SaturationSlices = FiveBits;
+  u16 ValueSlices      = FiveBits;
+
+  v2 ColorPickerSectionDim = V2(256, 30);
+
+  DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim, HSVDest->h);
+  DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, HSVDest->s);
+  DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, HSVDest->v);
+
+  PushNewRow(Ui);
+
+  v3 RGB = HSVtoRGB(*HSVDest);
+
+  if (ShowColorSwatch)
+  {
+    v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
+    ui_style Style = FlatUiStyle(RGB);
+    PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
+    PushNewRow(Ui);
+  }
+
+  cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
+  cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
+
+  PushColumn(Ui, HSVColorString );
+  PushNewRow(Ui);
+
+  PushColumn(Ui, RGBColorString );
+  PushNewRow(Ui);
+
+  /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
+}
+
+link_internal void
+ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if (window_layout *Window = ModalIsActive(Ui, ModalId))
+  {
+    DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
+
+    PushNewRow(Ui);
+
+    if (Button(Ui, CSz("Close"), UiId(Window, "modal close button", 0u)))
+    {
+      CompleteModal(Ui, ModalId);
+    }
+
+    PushNewRow(Ui);
+  }
+}
+
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -2116,55 +2252,8 @@ DoWorldEditor(engine_resources *Engine)
 
     PushTableEnd(Ui);
 
+    /* DoColorPicker(Engine, &Window, &Editor->HSVColorSelection); */
 
-    v3_cursor *Palette = GetColorPalette();
-    s32 PaletteColors = s32(AtElements(Palette));
-    /* Info("Global_ColorPaletteAt %d", Global_ColorPaletteAt); */
-    ui_element_reference ColorTable = PushTableStart(Ui);
-      RangeIterator_t(u16, ColorIndex, PaletteColors)
-      {
-        v3 Color = GetColorData(u32(ColorIndex));
-        ui_style Style = FlatUiStyle(Color);
-
-        v2 QuadDim = V2(22);
-        v4 Padding = V4(1);
-        v3 BorderColor = V3(1.0f);
-
-        if (Engine->Editor.SelectedColorIndex == ColorIndex)
-        {
-          f32 BorderDim = 2.f;
-          PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
-        }
-
-        if (Engine->Editor.HoverColorIndex == ColorIndex)
-        {
-          f32 BorderDim = 1.f;
-          PushRelativeBorder(Ui, QuadDim, BorderColor, V4(BorderDim));
-        }
-
-
-        interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(&Window, "ColorPicker", Cast(void*, u64(ColorIndex))) );
-          PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
-        PushButtonEnd(Ui);
-
-
-        if (Hover(Ui, &ColorPickerButton))
-        {
-          f32 BorderDim = 1.f;
-          PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
-
-          PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
-        }
-
-        if (Clicked(Ui, &ColorPickerButton))
-        {
-          Engine->Editor.SelectedColorIndex  = ColorIndex;
-        }
-
-
-        if ( (ColorIndex+1) % 16 == 0 ) { PushNewRow(Ui); }
-      }
-    PushTableEnd(Ui);
     PushWindowEnd(Ui, &Window);
   }
 
@@ -2357,7 +2446,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->SelectedColorIndex, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2407,7 +2496,7 @@ DoWorldEditor(engine_resources *Engine)
           if (Input->LMB.Clicked)
           {
             /* Info("Selecting Color (%S)", CS(V->Color)); */
-            Engine->Editor.SelectedColorIndex = V->Color;
+            /* Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color); */
 
             if (Editor->PreviousTool)
             {

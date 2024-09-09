@@ -2,6 +2,7 @@
 
 struct voxel_synth_tile_linked_list_node
 {
+  b32 Tombstoned;
   voxel_synth_tile Element;
   voxel_synth_tile_linked_list_node *Next;
 };
@@ -52,6 +53,19 @@ GetFirstAtBucket(umm HashValue, voxel_synth_tile_hashtable *Table)
   return Result;
 }
 
+link_internal voxel_synth_tile_linked_list_node**
+GetMatchingBucket(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal voxel_synth_tile *
 Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Table)
 {
@@ -91,7 +105,7 @@ Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -102,6 +116,7 @@ Upsert(voxel_synth_tile Element, voxel_synth_tile_hashtable *Table, memory_arena
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

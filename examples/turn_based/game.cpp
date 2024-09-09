@@ -505,7 +505,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
         /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots); */
         /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, V3(Period), Amplititude, StartingZDepth, GRASS_GREEN, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, V3(Period), Amplititude, StartingZDepth, HSV_GRASS_GREEN, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
       }
     }
   }

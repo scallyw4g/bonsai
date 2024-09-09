@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:512:0
+// src/engine/serdes.cpp:535:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(brush_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("brush_settings");
-  Result.Version =2 ;
+  Result.Version =3 ;
 
   /* type.map(member) */
   /* { */
@@ -30,7 +30,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
   b32 Result = True;
 
   Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =2;
+  u64 VersionNumber =3;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -82,7 +82,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
-    Result &= Serialize(Bytes, &Element->Color);
+    Result &= Serialize(Bytes, &Element->HSVColor);
 
 
 
@@ -108,7 +108,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=2);
+  Assert(TypeInfo->Version <=3);
 
   b32 Result = True;
 
@@ -124,9 +124,15 @@ DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info
     Result &= Deserialize(Bytes, &T1, Memory);
     Marshal(&T1, Element);
   }
+  if (TypeInfo->Version == 2)
+  {
+    brush_settings_2 T2 = {};
+    Result &= Deserialize(Bytes, &T2, Memory);
+    Marshal(&T2, Element);
+  }
 
 
-  if (TypeInfo->Version ==2)
+  if (TypeInfo->Version ==3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -196,7 +202,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Color, Memory);
+  Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
 
 

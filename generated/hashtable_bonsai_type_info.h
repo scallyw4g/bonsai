@@ -2,6 +2,7 @@
 
 struct bonsai_type_info_linked_list_node
 {
+  b32 Tombstoned;
   bonsai_type_info Element;
   bonsai_type_info_linked_list_node *Next;
 };
@@ -52,6 +53,19 @@ GetFirstAtBucket(umm HashValue, bonsai_type_info_hashtable *Table)
   return Result;
 }
 
+link_internal bonsai_type_info_linked_list_node**
+GetMatchingBucket(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal bonsai_type_info *
 Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Table)
 {
@@ -91,7 +105,7 @@ Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -102,6 +116,7 @@ Upsert(bonsai_type_info Element, bonsai_type_info_hashtable *Table, memory_arena
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

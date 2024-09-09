@@ -1,4 +1,4 @@
-// src/engine/editor.h:1034:0
+// src/engine/editor.h:1066:0
 
 RangeIterator(Index, (256))
 {
@@ -7,6 +7,7 @@ RangeIterator(Index, (256))
 
 
 Live->LayerCount = Stored->LayerCount;
+
 
 
 RangeIterator(Index, 16)
@@ -18,7 +19,9 @@ RangeIterator(Index, 16)
 Live->SeedBrushWithSelection = Stored->SeedBrushWithSelection;
 
 
+
 Live->BrushFollowsCursor = Stored->BrushFollowsCursor;
+
 
 
 

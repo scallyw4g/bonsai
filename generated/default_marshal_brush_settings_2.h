@@ -1,4 +1,4 @@
-// src/engine/editor.h:975:0
+// src/engine/editor.h:961:0
 
 Live->Type = Stored->Type;
 
@@ -28,5 +28,13 @@ Live->Offset = Stored->Offset;
 
 
 
+Live->NoiseBasisOffset = Stored->NoiseBasisOffset;
+
+
+
 Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);
+
+
+
+Live->Invert = Stored->Invert;
 

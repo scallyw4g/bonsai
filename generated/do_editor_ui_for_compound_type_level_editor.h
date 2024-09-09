@@ -224,22 +224,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u16*,&Element->SelectedColorIndex),
-        CSz("SelectedColorIndex"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
         Cast(u16*,&Element->HoverColorIndex),
         CSz("HoverColorIndex"),
         Params

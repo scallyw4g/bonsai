@@ -78,7 +78,7 @@ struct work_queue_entry_update_world_region
   world_edit_brush Brush;
 
   // TODO(Jesse): These feel like part of the brush?
-  u16 ColorIndex;
+  v3  HSVColor;
   u8  Transparency;
   b32 PersistWhitespace;
 

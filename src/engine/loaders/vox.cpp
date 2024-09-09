@@ -195,7 +195,11 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
   vox_data_block_array Result = { {}, {}, TempMemory };
 
   v3i ReportedDim = {};
-  b32 HadPaletteData = False;
+
+
+  b32 HadPaletteData      = False;
+  v3 TempHSVPalette[256] = {};
+
 
 
   native_file _ModelFile = OpenFile(filepath, FilePermission_Read);
@@ -214,7 +218,6 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
     s32 bytesRemaining = totalChunkBytes;
 
     s32 TotalChunkCount = 1; // Sometimes overwritten if theres a 'PACK' chunk
-    // s32 TotalChunksRead = 0;
 
     b32 Error = False;
     while (Error == False && bytesRemaining > 0)
@@ -225,6 +228,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
       {
         case ID_RGBA:
         {
+          Assert(HadPaletteData == False); // Should only ever get one of these chunks.
           HadPaletteData = True;
           s32 ChunkContentBytes = ReadInt(ModelFile, &bytesRemaining);
           s32 ChildChunkCount   = ReadInt(ModelFile, &bytesRemaining);
@@ -244,8 +248,11 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 B = ReadChar(ModelFile, &bytesRemaining);
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
-            v3 ThisColor = V3(R,G,B)/255.f;
+            v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f);
+            TempHSVPalette[PaletteIndex] = ThisColor;
             /* v3 ThisColor = V3(R,G,B); */
+#if 1
+#else
             s32 Found = -1;
             {
               IterateOver(ColorPalette, QueryColor, QueryColorIndex)
@@ -292,6 +299,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
                 Assert(WithinTolerance(0.015f, ThisColor, QueryColor));
               }
             }
+#endif
 
             /* Global_ColorPalette[PaletteIndex].r = R; */
             /* Global_ColorPalette[PaletteIndex].g = G; */
@@ -366,7 +374,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             //
             if (Color > 0) { Color -= 1; }
 
-            voxel_position TestP = Voxel_Position(X,Y,Z);
+            v3i TestP = V3i(X,Y,Z);
             if (IsInsideDim(ReportedDim, TestP))
             {
               ++ActualVoxelCount;
@@ -440,9 +448,9 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             else
             {
               /* Voxel->V.Transparency = 0; */
-            Assert(Voxel->V.Transparency == 0);
-            Voxel->V.Transparency = 128;
-            /* Voxel->V.Emission = 128; */
+              Assert(Voxel->V.Transparency == 0);
+              Voxel->V.Transparency = 128;
+              /* Voxel->V.Emission = 128; */
             }
             /* Voxel->V.Transparency = 0; */
 
@@ -509,6 +517,19 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
     if (Error == False)
     {
       Assert(bytesRemaining == 0);
+      IterateOver(&Result, VoxData, VoxDataIndex)
+      {
+        chunk_data *Chunk = VoxData->ChunkData;
+        DimIterator(x, y, z, Chunk->Dim)
+        {
+          s32 Index = GetIndex(x, y, z, Chunk->Dim);
+          u16 PaletteIndex = Chunk->Voxels[Index].Color;
+          if   (HadPaletteData)
+            { Chunk->Voxels[Index].Color = PackHSVColor(TempHSVPalette[PaletteIndex]); }
+          else
+            { Chunk->Voxels[Index].Color = PackHSVColor(MagicaVoxelDefaultPaletteToHSV(PaletteIndex)); }
+        }
+      }
     }
     else
     {
@@ -523,6 +544,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
     Error("Couldn't read model file '%s' .", filepath);
   }
 
+#if 1
+#else
   if (HadPaletteData)
   {
     /* s32 PaletteBase = s32(AtElements(ColorPalette))-256; */
@@ -542,6 +565,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
       }
     }
   }
+#endif
 
   return Result;
 }
