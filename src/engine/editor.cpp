@@ -1259,11 +1259,11 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
 
     if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings))))
     {
-      ActivateModal(Ui, "Color Picker", ColorPickerModalId);
+      ToggleModal(Ui, "Color Picker", ColorPickerModalId);
     }
     PushNewRow(Ui);
 
-    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor);
+    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor, False);
 
     PushNewRow(Ui);
   }
@@ -2199,17 +2199,16 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
 
   if (window_layout *Window = ModalIsActive(Ui, ModalId))
   {
-    /* window_layout *Window = GetModalWindow(Ui, ModalId); */
-
     DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
 
-    PushNewRow(Ui);
     PushNewRow(Ui);
 
     if (Button(Ui, CSz("Close"), UiId(Window, "modal close button", 0u)))
     {
       CompleteModal(Ui, ModalId);
     }
+
+    PushNewRow(Ui);
   }
 }
 

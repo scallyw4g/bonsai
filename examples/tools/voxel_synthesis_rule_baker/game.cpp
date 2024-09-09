@@ -198,9 +198,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
 
       FinalizeChunkInitialization(Chunk);
-      QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
-
       Chunk->DEBUG_OwnedByThread = 0;
+      QueueChunkForMeshRebuild(&EngineResources->Stdlib.Plat.HighPriority, Chunk);
     } break;
 
   }
