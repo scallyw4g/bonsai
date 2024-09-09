@@ -1142,7 +1142,7 @@ struct level_editor
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
 
-  v3 HSVColorSelection = {{0.f, 0.8f, 0.5f}};
+  /* v3 HSVColorSelection = {{0.f, 0.8f, 0.5f}}; */
 };
 
 
@@ -1213,3 +1213,6 @@ GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 
 
 link_internal void
 DrawEditorPreview(engine_resources *Engine, shader *Shader);
+
+link_internal void
+ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);

@@ -2,6 +2,7 @@
 
 struct parser_linked_list_node
 {
+  b32 Tombstoned;
   parser Element;
   parser_linked_list_node *Next;
 };
@@ -52,6 +53,19 @@ GetFirstAtBucket(umm HashValue, parser_hashtable *Table)
   return Result;
 }
 
+link_internal parser_linked_list_node**
+GetMatchingBucket(parser Element, parser_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  parser_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal parser *
 Insert(parser_linked_list_node *Node, parser_hashtable *Table)
 {
@@ -91,7 +105,7 @@ Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -102,6 +116,7 @@ Upsert(parser Element, parser_hashtable *Table, memory_arena *Memory)
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

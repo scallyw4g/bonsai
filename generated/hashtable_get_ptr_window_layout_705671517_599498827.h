@@ -12,7 +12,7 @@ GetPtrByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
   {
     auto E = &Bucket->Element;
 
-    if (AreEqual(E->HashtableKey, HashtableKey))
+    if (Bucket->Tombstoned == False && AreEqual(E->HashtableKey, HashtableKey))
     {
       Result.Tag = Maybe_Yes;
       Result.Value = E;

@@ -40,6 +40,19 @@ GetFirstAtBucket(umm HashValue, ui_toggle_hashtable *Table)
   return Result;
 }
 
+link_internal ui_toggle_linked_list_node**
+GetMatchingBucket(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal ui_toggle *
 Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
 {
@@ -79,7 +92,7 @@ Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -90,6 +103,7 @@ Upsert(ui_toggle Element, ui_toggle_hashtable *Table, memory_arena *Memory)
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

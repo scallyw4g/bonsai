@@ -40,6 +40,19 @@ GetFirstAtBucket(umm HashValue, xml_tag_hashtable *Table)
   return Result;
 }
 
+link_internal xml_tag_linked_list_node**
+GetMatchingBucket(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal xml_tag *
 Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
 {
@@ -79,7 +92,7 @@ Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -90,6 +103,7 @@ Upsert(xml_tag Element, xml_tag_hashtable *Table, memory_arena *Memory)
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

@@ -12,7 +12,7 @@ GetPtrById( ui_toggle_hashtable *Table, ui_id Id )
   {
     auto E = &Bucket->Element;
 
-    if (AreEqual(E->Id, Id))
+    if (Bucket->Tombstoned == False && AreEqual(E->Id, Id))
     {
       Result.Tag = Maybe_Yes;
       Result.Value = E;

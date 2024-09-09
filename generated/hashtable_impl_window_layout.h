@@ -40,6 +40,19 @@ GetFirstAtBucket(umm HashValue, window_layout_hashtable *Table)
   return Result;
 }
 
+link_internal window_layout_linked_list_node**
+GetMatchingBucket(window_layout Element, window_layout_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  window_layout_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal window_layout *
 Insert(window_layout_linked_list_node *Node, window_layout_hashtable *Table)
 {
@@ -79,7 +92,7 @@ Upsert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memo
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -90,6 +103,7 @@ Upsert(window_layout Element, window_layout_hashtable *Table, memory_arena *Memo
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.

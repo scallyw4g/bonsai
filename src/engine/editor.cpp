@@ -1253,7 +1253,18 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   {
     ui_style Style = UiStyleFromLightestColor(HSVtoRGB(Settings->HSVColor));
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings)))) { Settings->HSVColor = Engine->Editor.HSVColorSelection; }
+
+
+    ui_id ColorPickerModalId = UiId(Window, "color modal interaction", Cast(void*, Settings));
+
+    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings))))
+    {
+      ActivateModal(Ui, "Color Picker", ColorPickerModalId);
+    }
+    PushNewRow(Ui);
+
+    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor);
+
     PushNewRow(Ui);
   }
 
@@ -2091,7 +2102,7 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(engine_resources *Engine, window_layout *Window, u32 ElementIndex, u32 Slices, v2 WidgetDim)
+DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim, r32 CurrentValue)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -2104,46 +2115,41 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, u32 Elemen
     v4 Padding = V4(0);
     v3 BorderColor = V3(1.0f);
 
-    /* v3 Color = ColorIndexToV3(ColorIndex); */
-
     r32 Value = r32(ColorIndex)/r32(Slices);
-    v3 Color = {};
-    switch (ElementIndex)
-    {
-      case 0:
-      {
-        Color = HSVtoRGB( Value, Editor->HSVColorSelection.s, Editor->HSVColorSelection.v);
-      } break;
-      case 1:
-      {
-        Color = HSVtoRGB( Editor->HSVColorSelection.h, Value, Editor->HSVColorSelection.v);
-      } break;
-      case 2:
-      {
-        Color = HSVtoRGB( Editor->HSVColorSelection.h, Editor->HSVColorSelection.s, Value);
-      } break;
-    }
 
+    v3 Color = *HSVDest;
+    Color.E[ElementIndex] = Value;
+    Color = HSVtoRGB(Color);
+
+    b32 Selected = Value == CurrentValue;
     ui_style Style = FlatUiStyle(Color);
     interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(Window, "ColorPicker value button", Cast(void*, u64(ColorIndex) | u64(ElementIndex<<16))) );
       PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
     PushButtonEnd(Ui);
 
-    if (Hover(Ui, &ColorPickerButton))
+    b32 ButtonHover = Hover(Ui, &ColorPickerButton);
+    if (Selected || ButtonHover)
     {
       f32 BorderDim = 1.f;
       PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
-      PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
+    }
 
-      if (Input->LMB.Pressed) { Engine->Editor.HSVColorSelection.E[ElementIndex] = Value; }
+    if (ButtonHover)
+    {
+      PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
+    }
+
+    if (ButtonHover && Input->LMB.Pressed)
+    {
+      HSVDest->E[ElementIndex] = Value;
     }
   }
   PushTableEnd(Ui);
   PushNewRow(Ui);
 }
 
-link_internal ui_element_reference
-DoColorPicker(engine_resources *Engine, window_layout *Window)
+link_internal void
+DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -2158,24 +2164,24 @@ DoColorPicker(engine_resources *Engine, window_layout *Window)
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Engine, Window, 0, HueSlices,        ColorPickerSectionDim);
-  DoColorPickerSection(Engine, Window, 1, SaturationSlices, ColorPickerSectionDim);
-  DoColorPickerSection(Engine, Window, 2, ValueSlices,      ColorPickerSectionDim);
+  DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim, HSVDest->h);
+  DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, HSVDest->s);
+  DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, HSVDest->v);
 
   PushNewRow(Ui);
 
+  v3 RGB = HSVtoRGB(*HSVDest);
+
+  if (ShowColorSwatch)
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
-    v3 Color = HSVtoRGB(Editor->HSVColorSelection);
-    ui_style Style = FlatUiStyle(Color);
+    ui_style Style = FlatUiStyle(RGB);
     PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
     PushNewRow(Ui);
   }
 
-  v3 HSV = Editor->HSVColorSelection;
-  v3 RGB = HSVtoRGB(Editor->HSVColorSelection);
-  cs HSVColorString = FSz("HSV (%.1V3)", &HSV);
-  cs RGBColorString = FSz("RGB (%.1V3)", &RGB);
+  cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
+  cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
 
   PushColumn(Ui, HSVColorString );
   PushNewRow(Ui);
@@ -2184,8 +2190,27 @@ DoColorPicker(engine_resources *Engine, window_layout *Window)
   PushNewRow(Ui);
 
   /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
+}
 
-  return {};
+link_internal void
+ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  if (window_layout *Window = ModalIsActive(Ui, ModalId))
+  {
+    /* window_layout *Window = GetModalWindow(Ui, ModalId); */
+
+    DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
+
+    PushNewRow(Ui);
+    PushNewRow(Ui);
+
+    if (Button(Ui, CSz("Close"), UiId(Window, "modal close button", 0u)))
+    {
+      CompleteModal(Ui, ModalId);
+    }
+  }
 }
 
 
@@ -2228,7 +2253,7 @@ DoWorldEditor(engine_resources *Engine)
 
     PushTableEnd(Ui);
 
-    DoColorPicker(Engine, &Window);
+    /* DoColorPicker(Engine, &Window, &Editor->HSVColorSelection); */
 
     PushWindowEnd(Ui, &Window);
   }
@@ -2422,7 +2447,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, Editor->HSVColorSelection, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2472,7 +2497,7 @@ DoWorldEditor(engine_resources *Engine)
           if (Input->LMB.Clicked)
           {
             /* Info("Selecting Color (%S)", CS(V->Color)); */
-            Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color);
+            /* Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color); */
 
             if (Editor->PreviousTool)
             {

@@ -2,6 +2,7 @@
 
 struct counted_string_linked_list_node
 {
+  b32 Tombstoned;
   counted_string Element;
   counted_string_linked_list_node *Next;
 };
@@ -52,6 +53,19 @@ GetFirstAtBucket(umm HashValue, counted_string_hashtable *Table)
   return Result;
 }
 
+link_internal counted_string_linked_list_node**
+GetMatchingBucket(counted_string Element, counted_string_hashtable *Table, memory_arena *Memory)
+{
+  umm HashValue = Hash(&Element) % Table->Size;
+  counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
+  while (*Bucket)
+  {
+    if (AreEqual(&Bucket[0]->Element, &Element)) { break; }
+    Bucket = &(*Bucket)->Next;
+  }
+  return Bucket;
+}
+
 link_internal counted_string *
 Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
 {
@@ -91,7 +105,7 @@ Upsert(counted_string Element, counted_string_hashtable *Table, memory_arena *Me
     Bucket = &(*Bucket)->Next;
   }
 
-  if (*Bucket)
+  if (*Bucket && Bucket[0]->Tombstoned == False)
   {
     Bucket[0]->Element = Element;
   }
@@ -102,6 +116,7 @@ Upsert(counted_string Element, counted_string_hashtable *Table, memory_arena *Me
 
   return &Bucket[0]->Element;
 }
+
 
 //
 // Iterator impl.
