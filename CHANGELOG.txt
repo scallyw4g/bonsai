@@ -1,6 +1,19 @@
+* 1.6.3
+
+- Change color from a 16-bit palette index (which had many problems) to 16-bit HSV encoded color
+	Handling color in the same way MagicaVoxel does (by using a fixed 255 element palette)
+	turned out to be a bad idea for several reasons.  Firstly, if you import
+	multiple models from different sources, and those sources have more than 255
+	combined colors, what do you do?  I opted to go for a 16-bit palette, but at
+	that point you might as well just do 16-bit color and be done with it.  So,
+	that's what I did here.
+
+- Implement HSV color picker
+
+
 * 1.6.2
 
-* Change "SeedBrushWithSelection" to work with destructive brushes
+* Change "SeedBrushWithSelection" to work with destructive brush previews
 
 * Fix a race condition sometimes causing the main thread to unlock before the render thread had completed
 
