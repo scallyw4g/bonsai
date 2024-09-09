@@ -46,8 +46,20 @@ poof(serdes_struct(voxel_lighting))
 /* poof(serdes_array(voxel_lighting)) */
 /* #include <generated/serdes_array_voxel_lighting.h> */
 
+poof(serdes_struct(world_chunk_0))
+#include <generated/serdes_struct_world_chunk_0.h>
+
+link_internal void
+Marshal(world_chunk_0 *Stored, world_chunk *Live)
+{
+poof(default_marshal(world_chunk_0))
+#include <generated/default_marshal_world_chunk_0.h>
+}
+
+
 poof(serdes_struct(world_chunk))
 #include <generated/serdes_struct_world_chunk.h>
+
 
 /* poof(serdes_array(v3)) */
 /* #include <generated/serdes_array_v3.h> */
@@ -456,6 +468,12 @@ Marshal(level_header_2 *E0, level_header *E1)
   E1->Camera = E0->Camera;
 }
 
+link_internal void
+Marshal(level_header_3 *Stored, level_header *Live)
+{
+  poof(default_marshal(level_header_3))
+#include <generated/default_marshal_level_header_3.h>
+}
 
 
 poof(deserialize_struct(level_header_0))
@@ -466,6 +484,9 @@ poof(deserialize_struct(level_header_1))
 
 poof(deserialize_struct(level_header_2))
 #include <generated/deserialize_struct_level_header_2.h>
+
+poof(deserialize_struct(level_header_3))
+#include <generated/deserialize_struct_level_header_3.h>
 
 poof(deserialize_struct(level_header))
 #include <generated/deserialize_struct_level_header.h>

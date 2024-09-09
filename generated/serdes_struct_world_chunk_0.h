@@ -1,12 +1,12 @@
-// src/engine/serdes.cpp:60:0
+// src/engine/serdes.cpp:49:0
 
 link_internal bonsai_type_info
-TypeInfo(world_chunk *Ignored)
+TypeInfo(world_chunk_0 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_chunk");
-  Result.Version =1 ;
+  Result.Name = CSz("world_chunk_0");
+  Result.Version = 0 ;
 
   /* type.map(member) */
   /* { */
@@ -20,7 +20,7 @@ TypeInfo(world_chunk *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -29,14 +29,11 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
   b32 Result = True;
 
-  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
-  Serialize(Bytes, &VersionNumber);
-
+  
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_chunk *Element = BaseElement + ElementIndex;
+    world_chunk_0 *Element = BaseElement + ElementIndex;
     Result &= Serialize(Bytes, &Element->Dim);
 
 
@@ -78,38 +75,16 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory);
 
 
-link_internal b32
-DeserializeVersioned(u8_cursor *Bytes, world_chunk *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
-{
-  Assert(TypeInfo->Version <=1);
-
-  b32 Result = True;
-
-  if (TypeInfo->Version == 0)
-  {
-    world_chunk_0 T0 = {};
-    Result &= Deserialize(Bytes, &T0, Memory);
-    Marshal(&T0, Element);
-  }
-
-
-  if (TypeInfo->Version ==1)
-  {
-    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
-  }
-
-  return Result;
-}
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -175,29 +150,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("world_chunk"));
-
-    if (MaybeSerializedType.Tag)
-    {
-      u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
-      {
-        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
-      }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
-    }
-    else
-    {
-      bonsai_type_info T0TypeInfo = {};
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
-    }
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

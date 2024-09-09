@@ -1,6 +1,22 @@
 #define LEVEL_FILE_FORMAT_VERSION_NUMBER (1)
 
-struct level_header poof(@version(3))
+struct level_header poof(@version(4))
+{
+  u32 ChunkCount;
+  u32 EntityCount;
+
+  // World Params
+  u32 WorldFlags; // world_flag
+  v3i WorldCenter;
+  v3i VisibleRegion;
+
+  camera Camera;
+
+  render_settings RenderSettings;
+};
+
+// NOTE(Jesse): This version and previous versions had chunks with magicavoxel encoded colors.
+struct level_header_3
 {
   u32 ChunkCount;
   u32 EntityCount;

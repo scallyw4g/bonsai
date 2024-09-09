@@ -2169,7 +2169,21 @@ DoColorPicker(engine_resources *Engine, window_layout *Window)
     v3 Color = HSVtoRGB(Editor->HSVColorSelection);
     ui_style Style = FlatUiStyle(Color);
     PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
+    PushNewRow(Ui);
   }
+
+  v3 HSV = Editor->HSVColorSelection;
+  v3 RGB = HSVtoRGB(Editor->HSVColorSelection);
+  cs HSVColorString = FSz("HSV (%.1V3)", &HSV);
+  cs RGBColorString = FSz("RGB (%.1V3)", &RGB);
+
+  PushColumn(Ui, HSVColorString );
+  PushNewRow(Ui);
+
+  PushColumn(Ui, RGBColorString );
+  PushNewRow(Ui);
+
+  /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
 
   return {};
 }
@@ -2215,8 +2229,6 @@ DoWorldEditor(engine_resources *Engine)
     PushTableEnd(Ui);
 
     DoColorPicker(Engine, &Window);
-
-    DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") );
 
     PushWindowEnd(Ui, &Window);
   }

@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:529:0
+// src/engine/serdes.cpp:533:0
 
 link_internal bonsai_type_info
-TypeInfo(brush_settings_0 *Ignored)
+TypeInfo(brush_settings_2 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("brush_settings_0");
+  Result.Name = CSz("brush_settings_2");
   Result.Version = 0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(brush_settings_0 *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, brush_settings_2 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,7 +33,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    brush_settings_0 *Element = BaseElement + ElementIndex;
+    brush_settings_2 *Element = BaseElement + ElementIndex;
     Result &= Serialize(Bytes, (u32*)&Element->Type);
 
 
@@ -73,7 +73,19 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
 
 
+    Result &= Serialize(Bytes, &Element->NoiseBasisOffset);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->Color);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Invert);
 
     
 
@@ -84,16 +96,16 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, brush_settings_2 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_2 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_2 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
@@ -145,7 +157,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->NoiseBasisOffset, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Color, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Invert, Memory);
 
   
 
@@ -154,7 +182,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, brush_settings_2 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

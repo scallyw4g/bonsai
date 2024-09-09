@@ -17,7 +17,7 @@ Terrain_Checkerboard( world_chunk *Chunk,
 
   auto AbsX = Abs(Chunk->WorldP.x);
   auto AbsY = Abs(Chunk->WorldP.y);
-  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { ColorIndex = RED; }
+  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { ColorIndex = RED;  }
   if ( AbsX % 2 == 1 && AbsY % 2 == 0) { ColorIndex = BLUE; }
 
   for ( s32 z = 0; z < Dim.z; ++ z)

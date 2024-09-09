@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:470:0
+// src/engine/serdes.cpp:491:0
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm Count = 1);
@@ -10,7 +10,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=3);
+  Assert(TypeInfo->Version <=4);
 
   b32 Result = True;
 
@@ -32,9 +32,15 @@ DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *
     Result &= Deserialize(Bytes, &T2, Memory);
     Marshal(&T2, Element);
   }
+  if (TypeInfo->Version == 3)
+  {
+    level_header_3 T3 = {};
+    Result &= Deserialize(Bytes, &T3, Memory);
+    Marshal(&T3, Element);
+  }
 
 
-  if (TypeInfo->Version ==3)
+  if (TypeInfo->Version ==4)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
