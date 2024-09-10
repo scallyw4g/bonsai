@@ -878,8 +878,9 @@ struct brush_settings poof(@version(3))
 
   v3i NoiseBasisOffset;
 
-  /* v3 HSVColor = DEFAULT_HSV_COLOR; */
-  v3 RGBColor = DEFAULT_RGB_COLOR;
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  /* v3 RGBColor = DEFAULT_RGB_COLOR; */
   b8 Invert;
 };
 
@@ -906,7 +907,7 @@ struct brush_settings_2
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
   b8 Invert;
 };
 poof(are_equal(brush_settings))
@@ -933,7 +934,7 @@ struct brush_settings_1
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
 
 struct brush_settings_0
@@ -954,7 +955,7 @@ struct brush_settings_0
   // Used to inflate or contract the area affected by the brush.
   rect3i Offset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
 
 link_internal void

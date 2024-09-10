@@ -1089,7 +1089,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         generic_noise_params NoiseParams = {};
         void *UserData = {};
 
-        NoiseParams.RGBColor     = Settings->RGBColor;
+        NoiseParams.RGBColor     = HSVtoRGB(Settings->HSVColor);
         switch (Noise->Type)
         {
           case NoiseType_White:
@@ -1251,7 +1251,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
 
   {
-    ui_style Style = UiStyleFromLightestColor(Settings->RGBColor);
+    ui_style Style = UiStyleFromLightestColor(HSVtoRGB(Settings->HSVColor));
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
 
 
@@ -1263,7 +1263,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
     }
     PushNewRow(Ui);
 
-    ColorPickerModal(Engine, ColorPickerModalId, &Settings->RGBColor, False);
+    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor, False);
 
     PushNewRow(Ui);
   }
@@ -1342,7 +1342,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.RGBColor, {}, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, HSVtoRGB(Layer->Settings.HSVColor), {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -2102,22 +2102,21 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim, r32 CurrentValue)
+DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
+  v4 Padding = V4(0);
+  v3 HSV = *HSVDest;
+
+  r32 CurrentValue = HSVDest->E[ElementIndex];
 
   ui_element_reference SaturationTable = PushTableStart(Ui);
   RangeIterator_t(u8, ColorIndex, Slices)
   {
-    /* v3 Color = GetColorData(u32(ColorIndex)); */
-
-    v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
-    v4 Padding = V4(0);
-    v3 BorderColor = V3(1.0f);
-
     r32 Value = r32(ColorIndex)/r32(Slices);
 
-    v3 HSV = *HSVDest;
     HSV.E[ElementIndex] = Value;
     v3 RGB = HSVtoRGB(HSV);
 
@@ -2131,6 +2130,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
     if (Selected || ButtonHover)
     {
       f32 BorderDim = 1.f;
+       v3 BorderColor = V3(1.0f);
       PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
     }
 
@@ -2149,7 +2149,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 }
 
 link_internal void
-DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 ShowColorSwatch)
+DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -2164,26 +2164,25 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  v3 HSV = RGBtoHSV(*RGBDest);
+  /* v3 HSV = *HSVDest; // NOTE(Jesse): Must copy so we don't stomp on the dest value */
 
-  DoColorPickerSection(Engine, Window, &HSV, 0, HueSlices,        ColorPickerSectionDim, RGBDest->h);
-  DoColorPickerSection(Engine, Window, &HSV, 1, SaturationSlices, ColorPickerSectionDim, RGBDest->s);
-  DoColorPickerSection(Engine, Window, &HSV, 2, ValueSlices,      ColorPickerSectionDim, RGBDest->v);
+  DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
+  DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
+  DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
 
   PushNewRow(Ui);
 
-  *RGBDest = HSVtoRGB(HSV);
-
+  v3 RGB = HSVtoRGB(*HSVDest);
   if (ShowColorSwatch)
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
-    ui_style Style = FlatUiStyle(*RGBDest);
+    ui_style Style = FlatUiStyle(RGB);
     PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
     PushNewRow(Ui);
   }
 
-  cs HSVColorString = FSz("HSV (%.2V3)", &HSV);
-  cs RGBColorString = FSz("RGB (%.2V3)", RGBDest);
+  cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
+  cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
 
   PushColumn(Ui, HSVColorString );
   PushNewRow(Ui);
@@ -2195,13 +2194,13 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 
 }
 
 link_internal void
-ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *RGBDest, b32 ShowColorSwatch /* = True */)
+ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   if (window_layout *Window = ModalIsActive(Ui, ModalId))
   {
-    DoColorPicker(Engine, Window, RGBDest, ShowColorSwatch);
+    DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
 
     PushNewRow(Ui);
 

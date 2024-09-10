@@ -150,8 +150,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->RGBColor),
-        CSz("RGBColor"),
+        Cast(v3*,&Element->HSVColor),
+        CSz("HSVColor"),
         Params
         );
 

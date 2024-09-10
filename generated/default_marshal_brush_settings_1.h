@@ -1,4 +1,4 @@
-// src/engine/editor.h:970:0
+// src/engine/editor.h:971:0
 
 Live->Type = Stored->Type;
 
@@ -32,5 +32,5 @@ Live->NoiseBasisOffset = Stored->NoiseBasisOffset;
 
 
 
-Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);
+Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);
 
