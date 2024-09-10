@@ -1,5 +1,5 @@
 link_internal void
-GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor, b32 *IsFilled )
+GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, v3 *ThisColor, b32 *IsFilled )
 {
   s32 x = P.x;
   s32 y = P.y;
@@ -32,11 +32,11 @@ GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i S
 
   r32 GrassyAreaValue = MaskValue * PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
   /* r32 GrassyAreaValue = MaskValue * (VoronoiNoise3D(V3(GrassAreaX, GrassAreaY, GrassAreaZ)/5.f)*2.f); */
-  if (*ThisColor == GRASS_GREEN)
+  if (*ThisColor == RGB_GRASS_GREEN)
   {
     if (GrassyAreaValue > 0.4f)
     {
-      *ThisColor = GRASS_GREEN-1;
+      *ThisColor = RGBLighten(RGB_GRASS_GREEN);
 
       if (GrassyAreaValue > 0.6f)
       {
@@ -57,19 +57,19 @@ GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i S
 
             r32 GrassColor = RandomUnilateral(&S1);
             if (GrassColor > 0.8f)
-              *ThisColor = LONG_GREEN_GRASS0;
+              *ThisColor = RGB_LONG_GREEN_GRASS0;
 
             if (GrassColor > 0.88f)
-              *ThisColor = LONG_GREEN_GRASS1;
+              *ThisColor = RGB_LONG_GREEN_GRASS1;
 
             if (GrassColor > 0.993f)
-              *ThisColor = LONG_YELLOW_GRASS0;
+              *ThisColor = RGB_LONG_YELLOW_GRASS0;
 
             if (GrassColor > 0.995f)
-              *ThisColor = LONG_YELLOW_GRASS1;
+              *ThisColor = RGB_LONG_YELLOW_GRASS1;
 
             if (GrassColor > 0.998f)
-              *ThisColor = PINK;
+              *ThisColor = RGB_PINK;
           }
         }
       }
@@ -78,7 +78,7 @@ GrowGrassPerlin( world_chunk *Chunk, v3i P, r32 NoiseValue, r32 MaskValue, v3i S
 }
 
 link_internal void
-GrowGrassPerlin_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normal, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor )
+GrowGrassPerlin_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normal, r32 MaskValue, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, v3 *ThisColor )
 {
   RangeIterator(Index, 8)
   {
@@ -113,11 +113,11 @@ GrowGrassPerlin_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normal, r32 
 
     r32 GrassyAreaValue = MaskValue * PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
     /* r32 GrassyAreaValue = MaskValue * (VoronoiNoise3D(V3(GrassAreaX, GrassAreaY, GrassAreaZ)/5.f)*2.f); */
-    if (ThisColor[Index] == GRASS_GREEN)
+    if (ThisColor[Index] == RGB_GRASS_GREEN)
     {
       if (GrassyAreaValue > 0.4f)
       {
-        ThisColor[Index] = GRASS_GREEN-1;
+        ThisColor[Index] = RGB_GRASS_GREEN-1;
 
         if (GrassyAreaValue > 0.6f)
         {
@@ -138,19 +138,19 @@ GrowGrassPerlin_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normal, r32 
 
               r32 GrassColor = RandomUnilateral(&S1);
               if (GrassColor > 0.8f)
-                ThisColor[Index] = LONG_GREEN_GRASS0;
+                ThisColor[Index] = RGB_LONG_GREEN_GRASS0;
 
               if (GrassColor > 0.88f)
-                ThisColor[Index] = LONG_GREEN_GRASS1;
+                ThisColor[Index] = RGB_LONG_GREEN_GRASS1;
 
               if (GrassColor > 0.993f)
-                ThisColor[Index] = LONG_YELLOW_GRASS0;
+                ThisColor[Index] = RGB_LONG_YELLOW_GRASS0;
 
               if (GrassColor > 0.995f)
-                ThisColor[Index] = LONG_YELLOW_GRASS1;
+                ThisColor[Index] = RGB_LONG_YELLOW_GRASS1;
 
               if (GrassColor > 0.998f)
-                ThisColor[Index] = PINK;
+                ThisColor[Index] = RGB_PINK;
             }
           }
         }
@@ -160,7 +160,7 @@ GrowGrassPerlin_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normal, r32 
 }
 
 link_internal void
-RandomVoronoiRocks_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor )
+RandomVoronoiRocks_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, v3 *ThisColor )
 {
   /* s32 GrassMaskCount = 0; */
   r32 GrassMasks[8];
@@ -193,7 +193,7 @@ RandomVoronoiRocks_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, 
       /* f32 GrassAreaPower = 6.f; */
       f32 GrassAreaPower = 1.f;
       r32 MaskedVoronoi = GrassAreaPower * GrassMask * VoronoiResults[Index];
-      if (ThisColor[Index] == GRASS_GREEN)
+      if (ThisColor[Index] == RGB_GRASS_GREEN)
       {
         /* NoiseValue[Index] += 5.f; */
         if (MaskedVoronoi > 0.1f)
@@ -205,7 +205,7 @@ RandomVoronoiRocks_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, 
             f32 GrassHeightPower = 50.f;
             if ((NoiseValue[Index]+(MaskedVoronoi*GrassHeightPower)) > WorldZSubZMin)
             {
-              ThisColor[Index] = STONE;
+              ThisColor[Index] = RGB_STONE;
               /* NoiseValue[Index] = WorldZSubZMin + 10.f; */
               NoiseValue[Index] += 10.f;
             }
@@ -216,7 +216,7 @@ RandomVoronoiRocks_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, 
   }
 }
 link_internal void
-GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor )
+GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, v3 *ThisColor )
 {
   s32 GrassMaskCount = 0;
 
@@ -253,7 +253,7 @@ GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i S
     random_series Entropy = RandomSeriesFromV3i(Basis);
 
     r32 MaskedVoronoi = GrassMask * VoronoiResults[Index];
-    if (ThisColor[Index] == GRASS_GREEN)
+    if (ThisColor[Index] == RGB_GRASS_GREEN)
     {
       /* NoiseValue[Index] += 5.f; */
       if (MaskedVoronoi > 0.1f)
@@ -267,26 +267,26 @@ GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i S
           {
             if (RandomUnilateral(&Entropy) > 0.7f)
             {
-              ThisColor[Index] = GRASS_GREEN-1;
+              ThisColor[Index] = RGB_GRASS_GREEN;
               if (MaskedVoronoi+RandomUnilateral(&Entropy) > 0.8f)
               {
                 NoiseValue[Index] += MaskedVoronoi * 10.f;
 
                 r32 GrassColor = RandomUnilateral(&Entropy);
                 if (GrassColor > 0.8f)
-                  ThisColor[Index] = LONG_GREEN_GRASS0;
+                  ThisColor[Index] = RGB_LONG_GREEN_GRASS0;
 
                 if (GrassColor > 0.88f)
-                  ThisColor[Index] = LONG_GREEN_GRASS1;
+                  ThisColor[Index] = RGB_LONG_GREEN_GRASS1;
 
                 if (GrassColor > 0.993f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS0;
+                  ThisColor[Index] = RGB_LONG_YELLOW_GRASS0;
 
                 if (GrassColor > 0.995f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS1;
+                  ThisColor[Index] = RGB_LONG_YELLOW_GRASS1;
 
                 if (GrassColor > 0.998f)
-                  ThisColor[Index] = PINK;
+                  ThisColor[Index] = RGB_PINK;
               }
             }
           }
@@ -296,7 +296,7 @@ GrowGrassVoronoi( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i S
   }
 }
 link_internal void
-GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, u16 *ThisColor )
+GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3i SrcToDest, v3i WorldChunkDim, r32 WorldZSubZMin, v3 *ThisColor )
 {
   s32 GrassMaskCount = 0;
 
@@ -334,7 +334,7 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
     random_series Entropy = RandomSeriesFromV3i(Basis);
 
     r32 MaskedVoronoi = GrassMask * VoronoiResults[Index];
-    if (ThisColor[Index] == GRASS_GREEN)
+    if (ThisColor[Index] == RGB_GRASS_GREEN)
     {
       /* NoiseValue[Index] += 5.f; */
       if (MaskedVoronoi > 0.1f)
@@ -348,26 +348,26 @@ GrowGrassVoronoi_8x( world_chunk *Chunk, v3i P, r32 *NoiseValue, v3 *Normals, v3
           {
             if (RandomUnilateral(&Entropy) > 0.7f)
             {
-              ThisColor[Index] = GRASS_GREEN-1;
+              ThisColor[Index] = RGBDesaturate(RGB_GRASS_GREEN);
               if (MaskedVoronoi+RandomUnilateral(&Entropy) > 0.8f)
               {
                 NoiseValue[Index] += MaskedVoronoi * 10.f;
 
                 r32 GrassColor = RandomUnilateral(&Entropy);
                 if (GrassColor > 0.8f)
-                  ThisColor[Index] = LONG_GREEN_GRASS0;
+                  ThisColor[Index] = RGB_LONG_GREEN_GRASS0;
 
                 if (GrassColor > 0.88f)
-                  ThisColor[Index] = LONG_GREEN_GRASS1;
+                  ThisColor[Index] = RGB_LONG_GREEN_GRASS1;
 
                 if (GrassColor > 0.993f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS0;
+                  ThisColor[Index] = RGB_LONG_YELLOW_GRASS0;
 
                 if (GrassColor > 0.995f)
-                  ThisColor[Index] = LONG_YELLOW_GRASS1;
+                  ThisColor[Index] = RGB_LONG_YELLOW_GRASS1;
 
                 if (GrassColor > 0.998f)
-                  ThisColor[Index] = PINK;
+                  ThisColor[Index] = RGB_PINK;
               }
             }
           }
@@ -745,18 +745,18 @@ HoodooTerrain( world_chunk *Chunk,
         /* b32 IsFilled = NoiseValue > r32(Amplitude); //0.5f;; */
         b32 IsFilled = r64(NoiseValue) > r64(WorldZSubZMin);
 
-        u16 ThisColor = PackHSVColor(HSVColor);
+        v3 ThisColor = RGBColor;
 
         s32 SnowThreshold = 100;
         if (IsFilled == True && WorldZ > SnowThreshold)
         {
-          ThisColor = PackHSVColor(HSV_WHITE);
+          ThisColor = RGB_WHITE;
         }
 
         s32 SandThreshold = 3;
         if (IsFilled == True && WorldZ < SandThreshold)
         {
-          ThisColor = PackHSVColor(HSV_YELLOW);
+          ThisColor = RGB_YELLOW;
         }
 
         /* s32 WaterThreshold = 0; */
@@ -767,7 +767,7 @@ HoodooTerrain( world_chunk *Chunk,
         /* } */
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         ChunkSum += IsFilled;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -933,8 +933,8 @@ TerracedTerrain( world_chunk *Chunk,
         /* u16 StartColorMin = GREY_4; */
         /* u16 StartColorMax = GREY_6; */
         /* u16 STONE = GREY_5; */
-        /* u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
-        u16 ThisColor = DIRT;
+        /* v3 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
+        v3 ThisColor = RGB_DIRT;
 
         u8 ThisTransparency = 0;
 
@@ -947,7 +947,7 @@ TerracedTerrain( world_chunk *Chunk,
 
         if (IsFilled)
         {
-          ThisColor = GRASS_GREEN;
+          ThisColor = RGB_GRASS_GREEN;
 
           /* if (NoiseValue > DirtThresh) */
           /* { */
@@ -956,7 +956,7 @@ TerracedTerrain( world_chunk *Chunk,
 
           if (NoiseValue > StoneThresh)
           {
-            ThisColor = DIRT;
+            ThisColor = RGB_DIRT;
           }
 
 
@@ -991,7 +991,7 @@ TerracedTerrain( world_chunk *Chunk,
 #endif
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
@@ -1121,7 +1121,7 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
         NoiseValue = BaseNoiseValue / TerraceMask;
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
-        u16 ThisColor = DIRT;
+        v3 ThisColor = RGB_DIRT;
 
         u8 ThisTransparency = 0;
 
@@ -1134,11 +1134,11 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
 
         /* if (IsFilled) */
         {
-          ThisColor = GRASS_GREEN;
+          ThisColor = RGB_GRASS_GREEN;
 
           if (NoiseValue > StoneThresh)
           {
-            ThisColor = DIRT;
+            ThisColor = RGB_DIRT;
           }
         }
 
@@ -1149,7 +1149,7 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
           f32 GrassAreaZ = (z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z)) / 32.f;
 
           r32 GrassyAreaValue = PerlinNoise(GrassAreaX, GrassAreaY, GrassAreaZ);
-          if (ThisColor == GRASS_GREEN)
+          if (ThisColor == RGB_GRASS_GREEN)
           {
             if (GrassyAreaValue > 0.5f && NoiseValue+(GrassyAreaValue*5.f) > WorldZSubZMin)
             {
@@ -1170,7 +1170,7 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
@@ -1303,11 +1303,11 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
         /* NoiseValue = BaseNoiseValue / TerraceMask; */
         NoiseValue = BaseNoiseValue;
 
-        u16 ThisColor = MapNoiseValueToMaterial(BaseNoiseValue/MaxValue);
+        v3 ThisColor = MapNoiseValueToMaterial(BaseNoiseValue/MaxValue);
 
         u8 ThisTransparency = 0;
 
-        if (ThisColor == STONE)
+        if (ThisColor == RGB_STONE)
         {
           r32 Voronoi = VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f) * 25.f;
           if (Voronoi < 2.f)
@@ -1317,7 +1317,7 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
 
           if (Voronoi < 5.f)
           {
-            ThisColor = DARK_STONE;
+            ThisColor = RGB_DARK_STONE;
           }
         }
 
@@ -1326,7 +1326,7 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
@@ -1378,7 +1378,7 @@ UnilateralToThesholdIndex(f32 Value, s32 ClipPoints)
 }
 
 link_internal void
-MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ, r32 *NoiseValue, v3 *Normal, u16 *ThisColor)
+MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ, r32 *NoiseValue, v3 *Normal, v3 *ThisColor)
 {
   random_series ColorEntropy = RandomSeriesFromV3i(V3i(WorldX, WorldY, WorldZ));
   s32 Index = 0;
@@ -1430,7 +1430,7 @@ MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ,
           if (RandomUnilateral(&ColorEntropy)-0.75f < CliffBlend)
           {
             NoiseValue[Index] -= 2.f*(CliffBlend);
-            ThisColor[Index] = DARK_STONE;
+            ThisColor[Index] = RGB_DARK_STONE;
           }
         }
         else
@@ -1438,28 +1438,28 @@ MakeCliffs(world_chunk *Chunk, s32 VoxIndex, s32 WorldX, s32 WorldY, s32 WorldZ,
           f32 ColorPick = RandomUnilateral(&ColorEntropy);
           if (ColorPick > 0.94f)
           {
-            ThisColor[Index] = DARK_GRASS_GREEN;
+            ThisColor[Index] = RGB_DARK_GRASS_GREEN;
           }
           else if (ColorPick > 0.88f)
           {
-            ThisColor[Index] = MOSS_GREEN;
+            ThisColor[Index] = RGB_MOSS_GREEN;
           }
           else if (ColorPick > 0.80f)
           {
-            ThisColor[Index] = LIGHT_MOSS_GREEN;
+            ThisColor[Index] = RGB_LIGHT_MOSS_GREEN;
           }
         }
       }
       else
       {
-        ThisColor[Index] = STONE;
+        ThisColor[Index] = RGB_STONE;
       }
     }
   }
 }
 
 link_internal void
-MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 WorldZ, r32 *NoiseValue, v3 *Normal, u16 *ThisColor)
+MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 WorldZ, r32 *NoiseValue, v3 *Normal, v3 *ThisColor)
 {
 #if 0
   RangeIterator(Index, 8)
@@ -1517,7 +1517,7 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
           if (RandomUnilateral(&ColorEntropy)-0.75f < CliffBlend)
           {
             NoiseValue[Index] -= 2.f*(CliffBlend);
-            ThisColor[Index] = DARK_STONE;
+            ThisColor[Index] = RGB_DARK_STONE;
           }
         }
         else
@@ -1525,21 +1525,21 @@ MakeCliffs_8x(world_chunk *Chunk, s32 NormalsIndex, s32 WorldX, s32 WorldY, s32 
           f32 ColorPick = RandomUnilateral(&ColorEntropy);
           if (ColorPick > 0.94f)
           {
-            ThisColor[Index] = DARK_GRASS_GREEN;
+            ThisColor[Index] = RGB_DARK_GRASS_GREEN;
           }
           else if (ColorPick > 0.88f)
           {
-            ThisColor[Index] = MOSS_GREEN;
+            ThisColor[Index] = RGB_MOSS_GREEN;
           }
           else if (ColorPick > 0.80f)
           {
-            ThisColor[Index] = LIGHT_MOSS_GREEN;
+            ThisColor[Index] = RGB_LIGHT_MOSS_GREEN;
           }
         }
       }
       else
       {
-        ThisColor[Index] = STONE;
+        ThisColor[Index] = RGB_STONE;
       }
     }
   }
@@ -1748,7 +1748,15 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
           r32 *NoiseValue = NoiseValues + NoiseIndex;
           v3  *Normal     = Normals + NormalIndex;
 
-          u16 ThisColor[8] = { GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN, GRASS_GREEN };
+          v3 ThisColor[8];// = { {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN}, {RGB_GRASS_GREEN} };
+          ThisColor[0] = RGB_GRASS_GREEN;
+          ThisColor[1] = RGB_GRASS_GREEN;
+          ThisColor[2] = RGB_GRASS_GREEN;
+          ThisColor[3] = RGB_GRASS_GREEN;
+          ThisColor[4] = RGB_GRASS_GREEN;
+          ThisColor[5] = RGB_GRASS_GREEN;
+          ThisColor[6] = RGB_GRASS_GREEN;
+          ThisColor[7] = RGB_GRASS_GREEN;
 
 #if 1
           /* Chunk->Voxels[NormalIndex].DebugColor.x = *NoiseValue; */
@@ -1765,7 +1773,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 
             b32 IsFilled = NoiseValues[NoiseIndex+Index] > r32(z+ChunkWorldZThresh);
             SetFlag(&Chunk->Voxels[NormalIndex+Index], (voxel_flag)(Voxel_Filled*IsFilled));
-            Chunk->Voxels[NormalIndex+Index].Color = ThisColor[Index]*u8(IsFilled);
+            Chunk->Voxels[NormalIndex+Index].Color = RGBtoPackedHSV(ThisColor[Index])*u16(IsFilled);
             /* Chunk->Voxels[NormalIndex].Transparency = ThisTransparency; */
             ChunkSum += IsFilled;
           }
@@ -1797,13 +1805,13 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
           r32 *NoiseValue = NoiseValues + NoiseIndex;
           v3  *Normal = Normals + NormalIndex;
 
-          u16 ThisColor = GRASS_GREEN;
+          v3 ThisColor = RGB_GRASS_GREEN;
           MakeCliffs(Chunk, NormalIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor);
           GrowGrassVoronoi( Chunk, V3i(x,y,z), NoiseValue, Normal, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor);
 
           b32 IsFilled = NoiseValues[NoiseIndex] > r32(z+ChunkWorldZThresh);
           SetFlag(&Chunk->Voxels[NormalIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-          Chunk->Voxels[NormalIndex].Color = ThisColor*u8(IsFilled);
+          Chunk->Voxels[NormalIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
           /* Chunk->Voxels[NormalIndex].Transparency = ThisTransparency; */
           ChunkSum += IsFilled;
         }
@@ -1832,7 +1840,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
           NormalsHit[NormalIndex] = 1;
           s32 NoiseIndex = GetIndex(V3i(x+1,y+1,z+1), NoiseDim);
 
-          u16 ThisColor = GRASS_GREEN;
+          v3 ThisColor = GRASS_GREEN;
           MakeCliffs_8x(Chunk, NormalIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, ThisColor);
 
           b32 IsFilled = NoiseValues[NoiseIndex] > r32(z+ChunkWorldZThresh);
@@ -1990,8 +1998,8 @@ GrassyTerracedTerrain( world_chunk *Chunk,
         /* u16 StartColorMin = GREY_4; */
         /* u16 StartColorMax = GREY_6; */
         /* u16 STONE = GREY_5; */
-        /* u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
-        u16 ThisColor = DIRT;
+        /* v3 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
+        v3 ThisColor = RGB_DIRT;
 
         u8 ThisTransparency = 0;
 
@@ -2004,18 +2012,18 @@ GrassyTerracedTerrain( world_chunk *Chunk,
 
         /* if (IsFilled) */
         {
-          ThisColor = GRASS_GREEN;
+          ThisColor = RGB_GRASS_GREEN;
 
           if (NoiseValue > StoneThresh)
           {
-            ThisColor = DIRT;
+            ThisColor = RGB_DIRT;
           }
         }
 
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
@@ -2146,7 +2154,7 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
 
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
-        u16 ThisColor = DIRT;
+        v3 ThisColor = RGB_DIRT;
 
         u8 ThisTransparency = 0;
 
@@ -2159,11 +2167,11 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
 
         /* if (IsFilled) */
         {
-          ThisColor = GRASS_GREEN;
+          ThisColor = RGB_GRASS_GREEN;
 
           if (NoiseValue > StoneThresh)
           {
-            ThisColor = DIRT;
+            ThisColor = RGB_DIRT;
           }
         }
 
@@ -2174,7 +2182,7 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
         /* GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
@@ -2274,13 +2282,13 @@ Terrain_SinCos( world_chunk *Chunk,
         r32 *NoiseValue = NoiseValues+VoxIndex;
         v3  *Normal     = Normals+VoxIndex;
 
-        u16 ThisColor = GRASS_GREEN;
+        v3 ThisColor = RGB_GRASS_GREEN;
         /* MakeCliffs(Chunk, VoxIndex, s32(WorldX), s32(WorldY), s32(WorldZ), NoiseValue, Normal, &ThisColor); */
 
         b32 IsFilled = r32(*NoiseValue) > r32(WorldZSubZMin);
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = ThisColor;
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor);
         ChunkSum += IsFilled;
       }
     }
@@ -2328,7 +2336,7 @@ Terrain_Voronoi3D( world_chunk *Chunk,
         b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor)*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = PackHSVColor(RGBColor)*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }
@@ -2378,7 +2386,7 @@ Terrain_Voronoi2D( world_chunk *Chunk,
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
-        Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor)*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(RGBColor)*u16(IsFilled);
         ChunkSum += IsFilled;
       }
     }

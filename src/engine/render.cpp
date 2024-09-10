@@ -715,20 +715,20 @@ TraverseSurfaceToBoundary( world *World, world_chunk *Chunk, voxel_position Star
 }
 
 void
-DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u8 ColorIndex)
+DrawParticle(untextured_3d_geometry_buffer *Source, untextured_3d_geometry_buffer *Dest, u16 MCV_ColorIndex)
 {
   v3 FaceColors[VERTS_PER_FACE];
-  FillColorArray(GetColorPalette(), ColorIndex, FaceColors, VERTS_PER_FACE);
+  FillColorArray(GetColorPalette(), MCV_ColorIndex, FaceColors, VERTS_PER_FACE);
   BufferVertsChecked( Source, Dest );
   return;
 }
 
 link_internal void
-DrawEntityCollisionVolume(entity *Entity, untextured_3d_geometry_buffer *Dest, graphics *Graphics, v3i WorldChunkDim, u8 ColorIndex = PINK, f32 Thickness = DEFAULT_LINE_THICKNESS)
+DrawEntityCollisionVolume(entity *Entity, untextured_3d_geometry_buffer *Dest, graphics *Graphics, v3i WorldChunkDim, v3 RGBColor = RGB_PINK, f32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   aabb AABB = GetRenderSpaceAABB(WorldChunkDim, Entity, Graphics->Camera);
   auto CopyDest = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&CopyDest, AABB, ColorIndex, Thickness);
+  DEBUG_DrawAABB(&CopyDest, AABB, RGBColor, Thickness);
 }
 
 link_internal void
@@ -736,7 +736,7 @@ HighlightEntity(engine_resources *Engine, entity *Entity)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+  DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_YELLOW);
 }
 
 
@@ -747,10 +747,10 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
   auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
 
   v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP);
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f), RED, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), BLUE, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), GREEN, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), YELLOW, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f), RGB_RED, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), RGB_BLUE, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), RGB_GREEN, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), RGB_YELLOW, 0.2f );
 }
 
 link_internal void

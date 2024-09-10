@@ -106,12 +106,12 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
   if (GetCollision(World, Enemy).Count > Global_EntityCanMoveThroughCollisionThresh) { return; }
 
 
-  u16 StandingSpotColor = YELLOW;
+  v3 StandingSpotColor = RGB_YELLOW;
   r32 StandingSpotRadius = DEFAULT_STANDING_SPOT_THICKNESS;
 
   if (Enemy == Engine->HoverEntity.Value)
   {
-    StandingSpotColor = ORANGE;
+    StandingSpotColor = RGB_ORANGE;
     StandingSpotRadius *= 2.f;
   }
 
@@ -162,7 +162,7 @@ EnemyUpdate(engine_resources *Engine, entity *Enemy)
 
     if (NextSpot)
     {
-      DrawStandingSpot(&GpuMap->Buffer, Camera, NextSpot, RED, StandingSpotRadius*2.f);
+      DrawStandingSpot(&GpuMap->Buffer, Camera, NextSpot, RGB_RED, StandingSpotRadius*2.f);
 
       if (GameState->PlayerActed)
       {
@@ -539,10 +539,10 @@ IceBlockCharges(entity *Player)
   return Result;
 }
 
-link_internal u16
+link_internal v3
 GetColorForAction(player_action Action)
 {
-  u16 Result = 0;
+  v3 Result = {};
 
   switch (Action)
   {
@@ -552,32 +552,32 @@ GetColorForAction(player_action Action)
 
     case PlayerAction_Move:
     {
-      Result = GREEN;
+      Result = RGB_GREEN;
     } break;
 
     case PlayerAction_ChargeFireball:
     {
-      Result = GREEN;
+      Result = RGB_GREEN;
     } break;
 
     case PlayerAction_Throw:
     {
-      Result = ORANGE;
+      Result = RGB_ORANGE;
     } break;
 
     case PlayerAction_IceBlock:
     {
-      Result = ICE_BLUE;
+      Result = RGB_ICE_BLUE;
     } break;
 
     case PlayerAction_Shovel:
     {
-      Result = LIGHT_DIRT;
+      Result = RGB_LIGHT_DIRT;
     } break;
 
     case PlayerAction_Grab:
     {
-      Result = GREEN;
+      Result = RGB_GREEN;
     } break;
 
   }
@@ -849,7 +849,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
               {
                 v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-                DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
+                DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RGB_GREEN, DEFAULT_STANDING_SPOT_THICKNESS*3.f);
               }
             }
 
@@ -858,7 +858,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
               standing_spot *Spot = PlayerSpots.Start + LowestIndex;
               v3 SpotSimP = GetSimSpaceP(World, Spot->P);
               v3 RenderP = GetRenderP(World->ChunkDim, Spot, Camera);
-              DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
+              DrawStandingSpot(&GpuMap->Buffer, RenderP, V3(Global_StandingSpotDim), RGB_TEAL, DEFAULT_STANDING_SPOT_THICKNESS*4.f);
 
               if (Input->LMB.Clicked)
               {
@@ -969,7 +969,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
             if (IsWithinRangeForAction(World, Player, ActionCenterP, GameState->ProposedAction))
             {
-              u16 Color = GetColorForAction(GameState->ProposedAction);
+              v3 Color = GetColorForAction(GameState->ProposedAction);
               DrawStandingSpot(&GpuMap->Buffer, Camera, ActionMinP, Color, 0.5f);
 
               if (Input->LMB.Clicked)

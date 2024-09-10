@@ -66,7 +66,7 @@ struct particle_system
 
   r32 ElapsedSinceLastEmission;
 
-  u8 Colors[PARTICLE_SYSTEM_COLOR_COUNT];
+  u16 PackedHSVColors[PARTICLE_SYSTEM_COLOR_COUNT];
 
   particle Particles[PARTICLES_PER_SYSTEM]; poof(@no_serialize)
 

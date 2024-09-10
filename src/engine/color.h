@@ -1,5 +1,7 @@
 #define INVALID_COLOR_INDEX (0xffff)
+
 #define DEFAULT_HSV_COLOR (V3(0.5f, 0.5f, 1.f))
+#define DEFAULT_RGB_COLOR (HSVtoRGB(DEFAULT_HSV_COLOR))
 
 #if 1
 static v3 MAGICAVOXEL_DEFAULT_PALETTE[u8_MAX+1] = {
@@ -279,5 +281,13 @@ MagicaVoxelDefaultPaletteToHSV(u16 MagicaVoxelIndex)
 {
   v3 RGB = GetMagicaVoxelRGBColor(MagicaVoxelIndex);
   v3 Result = RGBtoHSV(RGB);
+  return Result;
+}
+
+link_internal u16
+MagicaVoxelDefaultPaletteToPackedHSV(u16 MagicaVoxelIndex)
+{
+  v3 HSV = MagicaVoxelDefaultPaletteToHSV(MagicaVoxelIndex);
+  u16 Result = PackHSVColor(HSV);
   return Result;
 }

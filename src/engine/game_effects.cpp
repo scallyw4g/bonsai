@@ -1,6 +1,7 @@
 void
 SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorful = False)
 {
+#if 1
   particle_system *System = Entity->Emitter;
 
   System->SpawnType = ParticleSpawnType_Random;
@@ -21,24 +22,24 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
 
   if (Colorful)
   {
-    System->Colors[0] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
-    System->Colors[1] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
-    System->Colors[2] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
-    System->Colors[3] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
-    System->Colors[4] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
-    System->Colors[5] = (u8)Clamp(0u, RandomU32(Entropy), 254u);
+    System->PackedHSVColors[0] = (u16)RandomU32(Entropy) % u16_MAX;
+    System->PackedHSVColors[1] = (u16)RandomU32(Entropy) % u16_MAX;
+    System->PackedHSVColors[2] = (u16)RandomU32(Entropy) % u16_MAX;
+    System->PackedHSVColors[3] = (u16)RandomU32(Entropy) % u16_MAX;
+    System->PackedHSVColors[4] = (u16)RandomU32(Entropy) % u16_MAX;
+    System->PackedHSVColors[5] = (u16)RandomU32(Entropy) % u16_MAX;
   }
   else
   {
-    /* System->Colors[0] = BLACK; */
-    System->Colors[0] = GREY_7;
-    /* System->Colors[0] = DARK_DARK_RED; */
-    System->Colors[1] = DARK_DARK_RED;
-    System->Colors[2] = DARK_RED;
-    System->Colors[3] = DARK_ORANGE;
-    System->Colors[4] = YELLOW;
-    System->Colors[5] = LIGHT_LIGHT_YELLOW;
-    /* System->Colors[5] = WHITE; */
+    /* System->Colors[0] = RGBtoPackedHSV(RGB_BLACK); */
+    System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_7);
+    /* System->Colors[0] = RGBtoPackedHSV(RGB_DARK_DARK_RED); */
+    System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_DARK_DARK_RED);
+    System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_DARK_RED);
+    System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_DARK_ORANGE);
+    System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_YELLOW);
+    System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_LIGHT_LIGHT_YELLOW);
+    /* System->Colors[5] = RGBtoPackedHSV(RGB_WHITE); */
   }
 
 
@@ -70,29 +71,32 @@ SpawnFire(entity *Entity, random_series *Entropy, v3 Offset, r32 Dim, b32 Colorf
   System->SystemMovementCoefficient = 0.25f;
 
   if (Inactive(System)) { SpawnParticleSystem(System); }
+#endif
 }
 
 void
 SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
   particle_system *System = Entity->Emitter;
+#if 1
 
   System->SpawnType = ParticleSpawnType_Expanding;
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = BLACK;
-  System->Colors[1] = DARK_DARK_RED;
-  System->Colors[2] = DARK_RED;
-  System->Colors[3] = DARK_ORANGE;
-  System->Colors[4] = LIGHT_ORANGE;
-  System->Colors[5] = WHITE;
+  System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_7);
+  System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_DARK_DARK_RED);
+  System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_DARK_RED);
+  System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_DARK_ORANGE);
+  System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_YELLOW);
+  System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_LIGHT_LIGHT_YELLOW);
 
-  /* System->Colors[1] = (u8)RandomU32(Entropy); */
-  /* System->Colors[2] = (u8)RandomU32(Entropy); */
-  /* System->Colors[3] = (u8)RandomU32(Entropy); */
-  /* System->Colors[4] = (u8)RandomU32(Entropy); */
-  /* System->Colors[5] = (u8)RandomU32(Entropy); */
+  /* System->Colors[0] = RandomV3(Entropy); */
+  /* System->Colors[1] = RandomV3(Entropy); */
+  /* System->Colors[2] = RandomV3(Entropy); */
+  /* System->Colors[3] = RandomV3(Entropy); */
+  /* System->Colors[4] = RandomV3(Entropy); */
+  /* System->Colors[5] = RandomV3(Entropy); */
 
   System->ParticleStartingTransparency = 0.4f;
   System->ParticleEndingTransparency = 0.4f;
@@ -133,23 +137,33 @@ SpawnExplosion(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, un
   /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
+#endif
 }
 
 void
 SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
+#if 1
   particle_system *System = Entity->Emitter;
 
   System->SpawnType = ParticleSpawnType_Expanding;
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = GREY_0;
-  System->Colors[1] = GREY_0;
-  System->Colors[2] = GREY_0;
-  System->Colors[3] = GREY_0;
-  System->Colors[4] = GREY_0;
-  System->Colors[5] = GREY_0;
+
+  System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_GREY_1);
+  System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_GREY_2);
+  System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_GREY_3);
+  System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_GREY_4);
+  System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_GREY_5);
+
+  /* System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_0); */
+  /* System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_GREY_0); */
+  /* System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_GREY_0); */
+  /* System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_GREY_0); */
+  /* System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_GREY_0); */
+  /* System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_GREY_0); */
 
   System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f) * 0.75f);
 
@@ -180,23 +194,25 @@ SpawnSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untext
   System->Drag = 2.f;
 
   SpawnParticleSystem(Entity->Emitter);
+#endif
 }
 
 link_internal void
 SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius)
 {
+#if 1
   particle_system *System = Entity->Emitter;
 
   System->SpawnType = ParticleSpawnType_Expanding;
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = GREY_0;
-  System->Colors[1] = GREY_0;
-  System->Colors[2] = GREY_0;
-  System->Colors[3] = GREY_0;
-  System->Colors[4] = GREY_0;
-  System->Colors[5] = GREY_0;
+  System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_GREY_0);
 
   System->SpawnRegion = RectCenterRad(Offset, V3(Radius, Radius, Radius*0.5f)*0.75f);
 
@@ -222,23 +238,25 @@ SpawnPersistantSmoke(entity *Entity, random_series *Entropy, v3 Offset, r32 Radi
   System->Drag = 2.f;
 
   SpawnParticleSystem(Entity->Emitter);
+#endif
 }
 
 link_internal void
 SplosionBittyParticleSystem(entity *Entity, random_series *Entropy, v3 Offset, r32 Radius, untextured_3d_geometry_buffer *Dest)
 {
+#if 1
   particle_system *System = Entity->Emitter;
 
   System->SpawnType = ParticleSpawnType_Expanding;
 
   System->Entropy.Seed = RandomU32(Entropy);
 
-  System->Colors[0] = GREY_0;
-  System->Colors[1] = GREY_1;
-  System->Colors[2] = GREY_2;
-  System->Colors[3] = GREY_3;
-  System->Colors[4] = GREY_4;
-  System->Colors[5] = GREY_5;
+  System->PackedHSVColors[0] = RGBtoPackedHSV(RGB_GREY_0);
+  System->PackedHSVColors[1] = RGBtoPackedHSV(RGB_GREY_1);
+  System->PackedHSVColors[2] = RGBtoPackedHSV(RGB_GREY_2);
+  System->PackedHSVColors[3] = RGBtoPackedHSV(RGB_GREY_3);
+  System->PackedHSVColors[4] = RGBtoPackedHSV(RGB_GREY_4);
+  System->PackedHSVColors[5] = RGBtoPackedHSV(RGB_GREY_5);
 
   System->SpawnRegion = RectCenterRad(Offset, V3(Radius) );
 
@@ -266,6 +284,7 @@ SplosionBittyParticleSystem(entity *Entity, random_series *Entropy, v3 Offset, r
   /* System->Dest = Dest; */
 
   SpawnParticleSystem(Entity->Emitter);
+#endif
 }
 
 link_internal void

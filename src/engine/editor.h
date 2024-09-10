@@ -626,7 +626,8 @@ struct generic_noise_params
   r32 Threshold = 3.0f;
    v3 Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
-   v3 HSVColor  = DEFAULT_HSV_COLOR;
+   /* v3 HSVColor  = DEFAULT_HSV_COLOR; */
+   v3 RGBColor  = DEFAULT_RGB_COLOR;
 };
 
 // TODO(Jesse): Get rid of zMin
@@ -637,7 +638,7 @@ struct generic_noise_params
   s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
   v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
   s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  v3  HSVColor      = Cast(generic_noise_params*, (P))->HSVColor;    \
+  v3  RGBColor      = Cast(generic_noise_params*, (P))->RGBColor;    \
   v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
 
 
@@ -877,7 +878,8 @@ struct brush_settings poof(@version(3))
 
   v3i NoiseBasisOffset;
 
-  v3 HSVColor = DEFAULT_HSV_COLOR;
+  /* v3 HSVColor = DEFAULT_HSV_COLOR; */
+  v3 RGBColor = DEFAULT_RGB_COLOR;
   b8 Invert;
 };
 
@@ -904,7 +906,7 @@ struct brush_settings_2
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
   b8 Invert;
 };
 poof(are_equal(brush_settings))
@@ -931,7 +933,7 @@ struct brush_settings_1
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
 };
 
 struct brush_settings_0
@@ -952,7 +954,7 @@ struct brush_settings_0
   // Used to inflate or contract the area affected by the brush.
   rect3i Offset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
 };
 
 link_internal void

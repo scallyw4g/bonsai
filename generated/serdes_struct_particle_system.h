@@ -162,7 +162,7 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
     {
       umm ThisCount = 6;
 
-      Result &= Serialize(Bytes, Element->Colors, ThisCount);
+      Result &= Serialize(Bytes, Element->PackedHSVColors, ThisCount);
     }
 
 
@@ -360,7 +360,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
   {
     umm Count = 6;
 
-    Result &= Deserialize(Bytes, Element->Colors, Memory, Count);
+    Result &= Deserialize(Bytes, Element->PackedHSVColors, Memory, Count);
   }
 
 

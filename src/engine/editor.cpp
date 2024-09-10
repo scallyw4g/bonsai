@@ -570,7 +570,7 @@ ConstrainUpdateVector(v3 UpdateVector, face_index Face, world_edit_selection_mod
 }
 
 link_internal void
-HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32 InsetWidth, u8 HiColor, r32 HiThickness)
+HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32 InsetWidth, v3 RGBHighlightColor, r32 HiThickness)
 {
   v3 SelectionAABBRadius = GetRadius(&SelectionAABB);
   switch (Face)
@@ -582,7 +582,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
       v3 MinHiP = SelectionAABB.Min + (SelectionAABBRadius*V3(0.f, 0.f, 2.f)) + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
 
     case FaceIndex_Bot:
@@ -590,7 +590,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(InsetWidth, InsetWidth, 0.f);
       v3 MinHiP = SelectionAABB.Min + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - (SelectionAABBRadius*V3(0.f, 0.f, 2.f)) - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
 
     case FaceIndex_Left:
@@ -598,7 +598,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
       v3 MinHiP = SelectionAABB.Min + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - (SelectionAABBRadius*V3(2.f, 0.f, 0.f)) - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
 
     case FaceIndex_Right:
@@ -606,7 +606,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(0.f, InsetWidth, InsetWidth);
       v3 MinHiP = SelectionAABB.Min + (SelectionAABBRadius*V3(2.f, 0.f, 0.f)) + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
 
     case FaceIndex_Back:
@@ -614,7 +614,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
       v3 MinHiP = SelectionAABB.Min + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - (SelectionAABBRadius*V3(0.f, 2.f, 0.f)) - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
 
     case FaceIndex_Front:
@@ -622,7 +622,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
       v3 HighlightInset = V3(InsetWidth, 0.f, InsetWidth);
       v3 MinHiP = SelectionAABB.Min + (SelectionAABBRadius*V3(0.f, 2.f, 0.f)) + HighlightInset;
       v3 MaxHiP = SelectionAABB.Max - HighlightInset;
-      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, HiColor, HiThickness );
+      DEBUG_DrawSimSpaceAABB(Engine, MinHiP, MaxHiP, RGBHighlightColor, HiThickness );
     } break;
   }
 }
@@ -681,13 +681,13 @@ DoSelectonModification( engine_resources *Engine,
   {
     /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED); */
     /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE); */
-    DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, GREEN);
+    DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, RGB_GREEN);
   }
 
   // Draw selection modification region
   //
   rect3 Draw = Rect3(&Result);
-  DEBUG_DrawSimSpaceAABB(Engine, &Draw, GREEN, 0.1f);
+  DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, 0.1f);
 
   Assert(Result.Min <= Result.Max);
 
@@ -1089,7 +1089,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         generic_noise_params NoiseParams = {};
         void *UserData = {};
 
-        NoiseParams.HSVColor     = Settings->HSVColor;
+        NoiseParams.RGBColor     = Settings->RGBColor;
         switch (Noise->Type)
         {
           case NoiseType_White:
@@ -1251,7 +1251,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
 
   {
-    ui_style Style = UiStyleFromLightestColor(HSVtoRGB(Settings->HSVColor));
+    ui_style Style = UiStyleFromLightestColor(Settings->RGBColor);
     PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
 
 
@@ -1263,7 +1263,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
     }
     PushNewRow(Ui);
 
-    ColorPickerModal(Engine, ColorPickerModalId, &Settings->HSVColor, False);
+    ColorPickerModal(Engine, ColorPickerModalId, &Settings->RGBColor, False);
 
     PushNewRow(Ui);
   }
@@ -1342,7 +1342,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.HSVColor, {}, {}, {}, {}, 0);
+      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.RGBColor, {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
@@ -1956,7 +1956,7 @@ EditWorldSelection(engine_resources *Engine)
         {
           /* r32 InsetWidth = 0.25f; */
           r32 InsetWidth  = 0.f;
-          u8  HiColor     = GREEN;
+          v3  HiColor     = RGB_GREEN;
           r32 HiThickness = Thickness*1.2f;
 
           HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
@@ -2020,7 +2020,7 @@ EditWorldSelection(engine_resources *Engine)
     // Draw selection box
     //
 
-    u8 BaseColor = WHITE;
+    v3 BaseColor = RGB_WHITE;
     DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
   }
 
@@ -2117,12 +2117,12 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 
     r32 Value = r32(ColorIndex)/r32(Slices);
 
-    v3 Color = *HSVDest;
-    Color.E[ElementIndex] = Value;
-    Color = HSVtoRGB(Color);
+    v3 HSV = *HSVDest;
+    HSV.E[ElementIndex] = Value;
+    v3 RGB = HSVtoRGB(HSV);
 
     b32 Selected = Value == CurrentValue;
-    ui_style Style = FlatUiStyle(Color);
+    ui_style Style = FlatUiStyle(RGB);
     interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(Window, "ColorPicker value button", Cast(void*, u64(ColorIndex) | u64(ElementIndex<<16))) );
       PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
     PushButtonEnd(Ui);
@@ -2136,7 +2136,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 
     if (ButtonHover)
     {
-      PushTooltip(Ui, FSz("%d (%.2f, %.2f, %.2f)", ColorIndex, r64(Color.x), r64(Color.y), r64(Color.z)) );
+      PushTooltip(Ui, FSz("%d %.2V3", ColorIndex, &RGB));
     }
 
     if (ButtonHover && Input->LMB.Pressed)
@@ -2149,7 +2149,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 }
 
 link_internal void
-DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 ShowColorSwatch)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -2164,24 +2164,26 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim, HSVDest->h);
-  DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, HSVDest->s);
-  DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, HSVDest->v);
+  v3 HSV = RGBtoHSV(*RGBDest);
+
+  DoColorPickerSection(Engine, Window, &HSV, 0, HueSlices,        ColorPickerSectionDim, RGBDest->h);
+  DoColorPickerSection(Engine, Window, &HSV, 1, SaturationSlices, ColorPickerSectionDim, RGBDest->s);
+  DoColorPickerSection(Engine, Window, &HSV, 2, ValueSlices,      ColorPickerSectionDim, RGBDest->v);
 
   PushNewRow(Ui);
 
-  v3 RGB = HSVtoRGB(*HSVDest);
+  *RGBDest = HSVtoRGB(HSV);
 
   if (ShowColorSwatch)
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
-    ui_style Style = FlatUiStyle(RGB);
+    ui_style Style = FlatUiStyle(*RGBDest);
     PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
     PushNewRow(Ui);
   }
 
-  cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
-  cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
+  cs HSVColorString = FSz("HSV (%.2V3)", &HSV);
+  cs RGBColorString = FSz("RGB (%.2V3)", RGBDest);
 
   PushColumn(Ui, HSVColorString );
   PushNewRow(Ui);
@@ -2193,13 +2195,13 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 }
 
 link_internal void
-ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
+ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *RGBDest, b32 ShowColorSwatch /* = True */)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   if (window_layout *Window = ModalIsActive(Ui, ModalId))
   {
-    DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
+    DoColorPicker(Engine, Window, RGBDest, ShowColorSwatch);
 
     PushNewRow(Ui);
 
@@ -2640,7 +2642,7 @@ DoWorldEditor(engine_resources *Engine)
   if (Engine->MousedOverVoxel.Tag)
   {
     v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) );
-    DEBUG_HighlightVoxel( Engine, HotVoxel, RED, 0.075f);
+    DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
   }
 }
 

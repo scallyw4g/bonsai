@@ -2,25 +2,25 @@
 struct noise_value_to_material_index
 {
   f32 NoiseValue;
-  u16 MaterialIndex;
+  v3 Color;
 };
 
-link_internal u16
+link_internal v3
 MapNoiseValueToMaterial(f32 Value)
 {
   noise_value_to_material_index Points[] =
   {
-    {1.0f,  SNOW },
-    {0.5f,  STONE },
-    {0.35f, GRASS_GREEN },
-    {0.3f,  GRASS_GREEN },
-    {0.2f,  GRASS_GREEN },
-    {0.0f,  GRASS_GREEN },
+    {1.0f,  RGB_SNOW },
+    {0.5f,  RGB_STONE },
+    {0.35f, RGB_GRASS_GREEN },
+    {0.3f,  RGB_GRASS_GREEN },
+    {0.2f,  RGB_GRASS_GREEN },
+    {0.0f,  RGB_GRASS_GREEN },
   };
 
 
-  b32 Hit = False;;
-  r32 Result = Value;
+  b32 Hit = False;
+  v3 Result = {};
   s32 PointCount = s32(ArrayCount(Points));
   RangeIterator(PointIndex, PointCount)
   {
@@ -28,14 +28,14 @@ MapNoiseValueToMaterial(f32 Value)
 
     // This is sort of a hack to fix the degenerate case when the value is 0 or 1.
     // TODO(Jesse): Make this branchless
-    if (Value == P->NoiseValue) return P->MaterialIndex;
+    if (Value == P->NoiseValue) return P->Color;
 
     if (Value > P->NoiseValue)
     {
-      return P->MaterialIndex;
+      return P->Color;
     }
   }
-  return 0;
+  return {};
 }
 
 link_internal f32

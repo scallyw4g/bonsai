@@ -631,13 +631,13 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
       {
         if (V->Flags & Voxel_Filled)
         {
-          V->Color = SafeTruncateU8(RandomBetween((u32)GREY_5, &ColorEntropy, (u32)GREY_8+1));
+          V->Color = MagicaVoxelDefaultPaletteToPackedHSV(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1)));
         }
 
       }
       else if (LengthSq(CenterToVoxP) < RadiusSquared)
       {
-        V->Color = GREY_8;
+        V->Color = MagicaVoxelDefaultPaletteToPackedHSV(MCV_GREY_8);
       }
     }
     ))

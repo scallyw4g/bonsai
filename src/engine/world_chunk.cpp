@@ -610,7 +610,7 @@ Terrain_Flat( world_chunk *Chunk,
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Chunk->Dim);
           Chunk->Voxels[Index].Flags = Voxel_Filled;
-          Chunk->Voxels[Index].Color = PackHSVColor(HSVColor);
+          Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
           ++Result;
         }
       }
@@ -644,7 +644,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     for ( s32 VoxIndex = 0; VoxIndex < MaxIndex; ++VoxIndex)
     {
       Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-      Chunk->Voxels[VoxIndex].Color = PackHSVColor(HSVColor);
+      Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(RGBColor);
     }
     return (u32)MaxIndex;
   }
@@ -722,7 +722,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         }
 
         /* u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(Color), &GenColorEntropy, u32(Color)+2));; */
-        u16 ThisColor = PackHSVColor(HSVColor);
+        u16 ThisColor = RGBtoPackedHSV(RGBColor);
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
@@ -794,7 +794,7 @@ Terrain_Perlin3D( world_chunk *Chunk,
 
         if (NoiseChoice)
         {
-          Chunk->Voxels[i].Color = PackHSVColor(HSVColor);
+          Chunk->Voxels[i].Color = RGBtoPackedHSV(RGBColor);
           Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
           ++Result;
         }
@@ -847,7 +847,7 @@ Terrain_WhiteNoise( world_chunk *Chunk,
 
         if (NoiseChoice)
         {
-          Chunk->Voxels[i].Color = PackHSVColor(HSVColor);
+          Chunk->Voxels[i].Color = RGBtoPackedHSV(RGBColor);
           Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
           ++Result;
         }
@@ -1331,7 +1331,7 @@ TransparencyIsSimilar(u8 T0, u8 T1)
 }
 
 link_internal b32
-Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag FaceFlag, u16 ColorIndex, u8 Transparency)
+Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag FaceFlag, u16 PackedHSV, u8 Transparency)
 {
   b32 Result = True;
   for ( s32 z = 0; z <= StepShape.z; ++z )
@@ -1345,7 +1345,7 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
         {
           s32 VoxI = GetIndex(Next, SrcDim);
           voxel *V = Voxels + VoxI;
-          if ( (V->Flags&FaceFlag) && V->Color == ColorIndex && TransparencyIsSimilar(V->Transparency, Transparency))
+          if ( (V->Flags&FaceFlag) && V->Color == PackedHSV && TransparencyIsSimilar(V->Transparency, Transparency))
           {
             /* UnSetFlag((voxel_flag*)&V->Flags, FaceFlag); */
           }
@@ -2123,7 +2123,7 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
 
         FillColorArray(Voxel->Color, FaceColors, Global_ColorPalette, VERTS_PER_FACE);
 #if 0
-        for (u16 ColorIndex = 0;
+        for (v3 RGBColor = 0;
             ColorIndex < VERTS_PER_FACE;
             ++ColorIndex)
         {
@@ -3151,6 +3151,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
   ComputeStandingSpots( SrcChunkDim, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /* PermMemory, */ TempMemory );
 }
 
+#if 0
 link_internal void
 ComputeLodMesh( thread_local_state *Thread,
                 world_chunk *DestChunk, chunk_dimension WorldChunkDim,
@@ -3202,7 +3203,7 @@ ComputeLodMesh( thread_local_state *Thread,
 
         if (DestChunk->DrawBoundingVoxels)
         {
-          DrawVoxel(LodMesh, V3(*TestP), RED, V3(0.25f));
+          DrawVoxel(LodMesh, V3(*TestP), HSV_RED, V3(0.25f));
         }
 
         r32 TestLength = Length(V3(*TestP) - BoundingVoxelMidpoint);
@@ -3382,7 +3383,7 @@ ComputeLodMesh( thread_local_state *Thread,
             TriIndex < TriangleCount;
             ++TriIndex)
         {
-          BufferTriangle(LodMesh, Triangles[TriIndex], V3(0,0,1), GREEN); // , Color++);
+          BufferTriangle(LodMesh, Triangles[TriIndex], V3(0,0,1), MCV_GREEN); // , Color++);
         }
 
         DestChunk->TriCount = TriangleCount;
@@ -3422,6 +3423,7 @@ ComputeLodMesh( thread_local_state *Thread,
     }
 #endif
 }
+#endif
 
 #if 1
 #endif
@@ -3768,7 +3770,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           v3 Period,
                                          s32 Amp,
                                          s32 Thresh,
-                                          v3 HSVColor,
+                                          v3 RGBColor,
 
                     world_chunk_mesh_bitfield  MeshBit,
                              chunk_init_flags  Flags,
@@ -3777,7 +3779,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           b32  MakeExteriorFaces = False,
                                           v3i  NoiseBasisOffset  = {} )
 {
-  generic_noise_params Params = {r32(Thresh), Period, r32(Amp), HSVColor};
+  generic_noise_params Params = {r32(Thresh), Period, r32(Amp), RGBColor};
   InitializeChunkWithNoise(NoiseCallback, Thread, DestChunk, &Params, Flags, UserData, MakeExteriorFaces, NoiseBasisOffset);
 }
 
@@ -3795,7 +3797,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
                                 world_edit_mode_modifier Modifier,
                                 v3 SimFloodOrigin,
                                 world_edit_shape *Shape,
-                                v3  HSVColor,
+                                v3  RGBColor,
                                 b32 PersistWhitespace,
                                 cp MinP,
                                 cp MaxP,
@@ -3810,7 +3812,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
       Modifier,
       /* SimFloodOrigin, */
     },
-    HSVColor,
+    RGBColor,
     {},
     PersistWhitespace,
     MinP,
@@ -3837,43 +3839,29 @@ WorkQueueEntryCopyBufferRef(lod_element_buffer *Buf, world_chunk_mesh_bitfield M
 
 #define DEFAULT_STANDING_SPOT_THICKNESS (0.1f)
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, v3 RenderSpot_MinP, v3 TileDim, v3 RGBColor = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
-#if 0
-  untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
-  auto MinP = RenderSpot_MinP - Thickness;
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDim + (Thickness*2.f));
-#else
-
   v3 TileDrawDim = TileDim/8.f;
   v3 TileDrawPad = (TileDim-TileDrawDim)/2.f;
-
-  /* v3 HalfTileDim = TileDim/2.f; */
-  /* v3 QuarterTileDim = HalfTileDim/2.f; */
 
   untextured_3d_geometry_buffer AABBDest = ReserveBufferSpace(Mesh, VERTS_PER_VOXEL);
 
   auto MinP = RenderSpot_MinP-Thickness+V3(TileDrawPad.xy,0.f)+V3(0.f, 0.f, TileDim.z + 0.5f);
-  DrawVoxel_MinDim(&AABBDest, MinP, ColorIndex, TileDrawDim + Thickness*2.f);
-
-  /* DEBUG_DrawAABB( &AABBDest, */
-  /*                 AABBMinDim( , TileDrawDim), */
-  /*                 ColorIndex, Thickness); */
-#endif
+  DrawVoxel_MinDim(&AABBDest, MinP, RGBColor, TileDrawDim + Thickness*2.f);
 }
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, cp CP, v3 RGBColor = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
   v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, CP, Camera);
-  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), RGBColor, Thickness);
 }
 
 link_internal void
-DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, u16 ColorIndex = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
+DrawStandingSpot(untextured_3d_geometry_buffer *Mesh, camera *Camera, standing_spot *Spot, v3 RGBColor = STANDING_SPOT_DEFAULT_COLOR, r32 Thickness = DEFAULT_STANDING_SPOT_THICKNESS)
 {
   v3 StandingSpotP = GetRenderP(GetWorld()->ChunkDim, Spot->P, Camera);
-  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), ColorIndex, Thickness);
+  DrawStandingSpot(Mesh, StandingSpotP, V3(Global_StandingSpotDim), RGBColor, Thickness);
 }
 
 link_internal void
@@ -3884,14 +3872,14 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
   if (Chunk)
   {
     Assert (Chunk == EngineDebug->PickedChunk);
-    u16 Color = EngineDebug->PickedChunkState == PickedChunkState_None ? GREEN : YELLOW;
+    v3 RGBColor = EngineDebug->PickedChunkState == PickedChunkState_None ? RGB_GREEN : RGB_YELLOW;
 
     untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-    DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedChunk, EngineDebug->PickedChunk->Dim, Color );
+    DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedChunk, EngineDebug->PickedChunk->Dim, RGBColor );
   }
 #endif
 #if 0
-        u16 ColorIndex = 0;
+        v3 RGBColor = 0;
 
         if (Chunk)
         {
@@ -4165,8 +4153,6 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
       {
         world_position P = World_Position(x,y,z);
         world_chunk *Chunk = GetWorldChunkFromHashtable( World, P );
-
-        u16 ColorIndex = 0;
 
         if (Chunk)
         {

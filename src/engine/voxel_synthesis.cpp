@@ -72,7 +72,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
   {
     s32 VIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
     Vox.ChunkData->Voxels[VIndex].Flags = Voxel_Filled;
-    Vox.ChunkData->Voxels[VIndex].Color = GRASS_GREEN;
+    Vox.ChunkData->Voxels[VIndex].Color = RGBtoPackedHSV(RGB_GRASS_GREEN);
   }
 
   MarkBoundaryVoxels_NoExteriorFaces(Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);

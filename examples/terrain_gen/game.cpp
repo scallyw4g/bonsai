@@ -17,8 +17,10 @@ Terrain_Checkerboard( world_chunk *Chunk,
 
   auto AbsX = Abs(Chunk->WorldP.x);
   auto AbsY = Abs(Chunk->WorldP.y);
-  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { ColorIndex = RED;  }
-  if ( AbsX % 2 == 1 && AbsY % 2 == 0) { ColorIndex = BLUE; }
+
+
+  if ( AbsX % 2 == 0 && AbsY % 2 == 1) { RGBColor = MagicaVoxelDefaultPaletteToRGB(MCV_RED);  }
+  if ( AbsX % 2 == 1 && AbsY % 2 == 0) { RGBColor = MagicaVoxelDefaultPaletteToRGB(MCV_BLUE); }
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
@@ -31,7 +33,7 @@ Terrain_Checkerboard( world_chunk *Chunk,
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
           Chunk->Voxels[Index].Flags = Voxel_Filled;
-          Chunk->Voxels[Index].Color = ColorIndex;
+          Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
           ++Result;
         }
       }
@@ -100,33 +102,33 @@ GrassyIslandTerrain( world_chunk *Chunk,
         /* u16 StartColorMin = GREY_4; */
         /* u16 StartColorMax = GREY_6; */
         /* u16 ThisColor = SafeTruncateToU16(umm(RandomBetween(StartColorMin, &GenColorEntropy, StartColorMax))); */
-        u16 ThisColor = GRASS_GREEN;
+        v3 ThisColor = RGB_GRASS_GREEN;
 
         u8 ThisTransparency = 0;
 
         s32 SnowThreshold = 100;
         if (NoiseChoice == True && WorldZ > SnowThreshold)
         {
-          ThisColor = WHITE;
+          ThisColor = RGB_WHITE;
         }
 
         s32 SandThreshold = 3;
         if (NoiseChoice == True && WorldZ < SandThreshold)
         {
-          ThisColor = SAND;
+          ThisColor = RGB_SAND;
         }
 
         s32 GravelThreshold = 1;
         if (NoiseChoice == True && WorldZ < GravelThreshold)
         {
-          ThisColor = GRAVEL;
+          ThisColor = RGB_GRAVEL;
         }
 
         s32 WaterThreshold = 0;
         if (NoiseChoice == False && WorldZ < WaterThreshold)
         {
           NoiseChoice = True;
-          ThisColor = BLUE;
+          ThisColor = RGB_BLUE;
           ThisTransparency = 255;
         }
 
@@ -165,23 +167,23 @@ GrassyIslandTerrain( world_chunk *Chunk,
               f32 InY = SafeDivide0((y + SrcToDest.y + ( WorldChunkDim.y*Chunk->WorldP.y)), 10.f);
               f32 InZ = SafeDivide0((z + SrcToDest.z + ( WorldChunkDim.z*Chunk->WorldP.z)), 10.f);
 
-              u16 GrassColorMin = GRASS_GREEN;
-              u16 GrassColorMax = GRASS_GREEN+2;
+              u16 GrassColorMin = RGB_GRASS_GREEN;
+              u16 GrassColorMax = RGB_GRASS_GREEN+2;
               ThisColor = SafeTruncateToU16(umm(RandomBetween(GrassColorMin, &GenColorEntropy, GrassColorMax)));
               NoiseChoice = True;
 
               r32 GrassChance = PerlinNoise(InX, InY, InZ);
-              if (GrassChance > 0.45f) { ThisColor = GRASS_GREEN-1; }
+              if (GrassChance > 0.45f) { ThisColor = RGB_GRASS_GREEN-1; }
             }
 
             if (Chunk->Voxels[Below].Flags&Voxel_Filled &&
-                Chunk->Voxels[Below].Color == GRASS_GREEN-1)
+                Chunk->Voxels[Below].Color == RGB_GRASS_GREEN-1)
             {
               r32 GrassChance = RandomUnilateral(&GenColorEntropy);
               if (GrassChance > 0.85f)
               {
                 NoiseChoice = True;
-                ThisColor = GRASS_GREEN-1;
+                ThisColor = RGB_GRASS_GREEN-1;
               }
               if (GrassChance > 0.997f)
               {
@@ -211,7 +213,7 @@ GrassyIslandTerrain( world_chunk *Chunk,
               r32 VineChance = RandomUnilateral(&GenColorEntropy);
               if (CornersFilled <= 2 && VineChance > 0.9f)
               {
-                ThisColor = GRASS_GREEN;
+                ThisColor = RGB_GRASS_GREEN;
                 while (RandomUnilateral(&GenColorEntropy) > 0.95f)
                 {
                 }
@@ -222,7 +224,7 @@ GrassyIslandTerrain( world_chunk *Chunk,
 #endif
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u8(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += NoiseChoice;
 
@@ -298,7 +300,7 @@ WarpedTerrain( world_chunk *Chunk,
 
         b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
 
-        u16 ThisColor = ColorIndex;
+        v3 ThisColor = RGBColor;
 
 #if 0
         s32 SnowThreshold = 100;
@@ -322,7 +324,7 @@ WarpedTerrain( world_chunk *Chunk,
 #endif
 
         SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
+        Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
@@ -385,7 +387,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             v3 Period = V3(100);
             s32 Amplititude = 25;
             s32 StartingZDepth = -1;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_Flat, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, ChunkInitFlag_Noop, 0);
           } break;
 
@@ -398,7 +400,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* s32 Amplititude = 2500; */
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_SinCos, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, 0);
           } break;
 
@@ -409,7 +411,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             s32 Amplititude = 50;
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_Voronoi2D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, 0);
           } break;
 
@@ -421,7 +423,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             s32 StartingZDepth = -1;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_Checkerboard, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, 0);
           } break;
 
@@ -431,7 +433,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             v3 Period = V3(100);
             s32 Amplititude = 5;
             s32 StartingZDepth = 0;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             u32 Octaves = 1;
             InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_Noop, &Octaves);
           } break;
@@ -442,7 +444,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             v3 Period = V3(50);
             s32 Amplititude = 8;
             s32 StartingZDepth = 2;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_Perlin3D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_Noop, 0);
           } break;
 
@@ -456,7 +458,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             u32 Octaves = 4;
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_FBM2D, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, (void*)&Octaves);
           } break;
 
@@ -481,7 +483,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyTerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -506,7 +508,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyTerracedTerrain2, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -533,7 +535,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyTerracedTerrain3, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -555,7 +557,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -581,7 +583,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( TerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -608,7 +610,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_GenLODs;
             /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyLargeTerracedTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -633,7 +635,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( GrassyIslandTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -654,7 +656,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             /* chunk_init_flags InitFlags    = ChunkInitFlag_GenMipMapLODs; */
             /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots | ChunkInitFlag_GenMipMapLODs); */
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( HoodooTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
           } break;
 
@@ -680,7 +682,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
-            u16 Color = GRASS_GREEN;
+            v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( WarpedTerrain, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, (void*)&OctaveBuf);
           } break;
 

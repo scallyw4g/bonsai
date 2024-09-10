@@ -66,7 +66,7 @@ NotFilledInChunk( world_chunk *Chunk, s32 Index)
 }
 
 void
-FillChunk(world_chunk *Chunk, chunk_dimension Dim, u8 ColorIndex = BLACK)
+FillChunk(world_chunk *Chunk, chunk_dimension Dim, u8 ColorIndex = MCV_BLACK)
 {
   s32 Vol = Volume(Dim);
 

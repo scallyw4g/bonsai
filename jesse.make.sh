@@ -10,13 +10,13 @@
 # ./make.sh RunTests
 
 ./make.sh $OPT                                                 \
-  BuildSingleExample examples/project_and_level_picker         \
-  BuildSingleExample examples/blank_project                    \
   BuildExecutables                                             \
+  BuildSingleExample examples/transparency                     \
+  # BuildSingleExample examples/project_and_level_picker         \
+  # BuildSingleExample examples/blank_project                    \
 #   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 #   BuildSingleExample examples/turn_based                       \
 #   BuildSingleExample examples/terrain_gen                      \
-#   BuildSingleExample examples/transparency                     \
 #   BuildSingleExample examples/the_wanderer                     \
 #   BuildTests                                                   \
 

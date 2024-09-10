@@ -356,13 +356,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Colors[6]"), CSz("> Colors[6]"), UiId(Window, "toggle particle_system u8 Colors", Element->Colors), Params ))
+      if (ToggleButton(Ui, CSz("v PackedHSVColors[6]"), CSz("> PackedHSVColors[6]"), UiId(Window, "toggle particle_system u16 PackedHSVColors", Element->PackedHSVColors), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 6)
         {
-          DoEditorUi(Ui, Window, Element->Colors+ArrayIndex, FSz("Colors[%d]", ArrayIndex), Params);
+          DoEditorUi(Ui, Window, Element->PackedHSVColors+ArrayIndex, FSz("PackedHSVColors[%d]", ArrayIndex), Params);
  PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

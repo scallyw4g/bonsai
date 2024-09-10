@@ -173,7 +173,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
                   {
                     s32 VoxIndex = GetIndex(xVox, yVox, zVox, World->ChunkDim);
                     Chunk->Voxels[VoxIndex].Flags = Voxel_Filled;
-                    Chunk->Voxels[VoxIndex].Color = RED;
+                    Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(RGB_RED);
                     ++Chunk->FilledCount;
                   }
                 }
@@ -510,10 +510,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       ResetMaxTile = ChangePropagationInfoStack.Max+Radius;
 
       {
-        u8 Color;
+        v3 Color;
         if (ErrorLevel)
         {
-          Color = RED;
+          Color = RGB_RED;
           ResetChangePropagationStack(&ChangePropagationInfoStack);
           /* PartiallyResetVoxelSynthesisProgress(World, BakeResult, ResetMinTile, ResetMaxTile, &ChangePropagationInfoStack, &VoxelSynthesisEntropy, GetTranArena()); */
           InitializeWorkingStateFromBakeResult(World, TileSuperpositionsCount, InitInfo, GenInfo, &VoxelSynthesisEntropy);
@@ -522,7 +522,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
         else
         {
-          Color = GREEN;
+          Color = RGB_GREEN;
         }
 
         if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE)
@@ -611,7 +611,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       v3i VoxBaseP = TileP * Global_TileDim;
       v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
       aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
-      DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, GREEN, DEFAULT_LINE_THICKNESS*2.f);
+      DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, RGB_GREEN, DEFAULT_LINE_THICKNESS*2.f);
     }
 
     if (NextTileIndex != TILE_INDEX_GENERATION_COMPLETE)
@@ -621,7 +621,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       v3i VoxBaseP = TileP * Global_TileDim;
       v3 VoxRenderBaseP = GetRenderP(World->ChunkDim, V3(VoxBaseP), Camera);
       aabb TileRect = AABBMinDim(VoxRenderBaseP, Global_TileDim);
-      u8 Color = ErrorLevel > 0 ? RED : YELLOW;
+      v3 Color = ErrorLevel > 0 ? RGB_RED : RGB_YELLOW;
       DEBUG_DrawAABB(&GpuMap->Buffer, TileRect, Color, DEFAULT_LINE_THICKNESS*2.f);
     }
 
@@ -663,8 +663,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   if (HoverEntity != BakeEntity)
   {
-    if (MousePickedEntities[0]) { DrawEntityCollisionVolume(MousePickedEntities[0], &GpuMap->Buffer, Graphics, World->ChunkDim, ORANGE, 0.2f ); }
-    if (MousePickedEntities[1]) { DrawEntityCollisionVolume(MousePickedEntities[1], &GpuMap->Buffer, Graphics, World->ChunkDim, ORANGE, 0.2f ); }
+    if (MousePickedEntities[0]) { DrawEntityCollisionVolume(MousePickedEntities[0], &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_ORANGE, 0.2f ); }
+    if (MousePickedEntities[1]) { DrawEntityCollisionVolume(MousePickedEntities[1], &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_ORANGE, 0.2f ); }
 
     if (Input->Enter.Clicked && MousePickedEntities[0] && MousePickedEntities[1])
     {
@@ -680,9 +680,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         else                             { MousePickedEntities[1] = HoverEntity; }
       }
 
-      if      (HoverEntity == MousePickedEntities[0]) { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, LIGHT_ORANGE, 0.3f ); }
-      else if (HoverEntity == MousePickedEntities[1]) { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, DARK_ORANGE,  0.3f ); }
-      else                                            { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, BLACK,        0.3f ); }
+      if      (HoverEntity == MousePickedEntities[0]) { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_LIGHT_ORANGE, 0.3f ); }
+      else if (HoverEntity == MousePickedEntities[1]) { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_DARK_ORANGE,  0.3f ); }
+      else                                            { DrawEntityCollisionVolume(HoverEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_BLACK,        0.3f ); }
     }
   }
 
@@ -704,9 +704,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       voxel_synth_tile *MousePickedTile0 = MousePickedEntities[0] ? Cast(voxel_synth_tile*, MousePickedEntities[0]->UserData) : 0;
       voxel_synth_tile *MousePickedTile1 = MousePickedEntities[1] ? Cast(voxel_synth_tile*, MousePickedEntities[1]->UserData) : 0;
 
-      if      (MousePickedTile0 && MousePickedTile0->RuleId == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, LIGHT_ORANGE, 0.2f); }
-      else if (MousePickedTile1 && MousePickedTile1->RuleId == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, DARK_ORANGE,  0.2f); }
-      else if (HoverTile        && HoverTile->RuleId        == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, BLACK, 0.2f); }
+      if      (MousePickedTile0 && MousePickedTile0->RuleId == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, RGB_LIGHT_ORANGE, 0.2f); }
+      else if (MousePickedTile1 && MousePickedTile1->RuleId == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, RGB_DARK_ORANGE,  0.2f); }
+      else if (HoverTile        && HoverTile->RuleId        == BakeTile->RuleId) { DEBUG_DrawAABB(&GpuMap->Buffer, Rect, RGB_BLACK, 0.2f); }
     }
   }
 

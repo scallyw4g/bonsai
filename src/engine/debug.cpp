@@ -253,7 +253,7 @@ DoEntityWindow(engine_resources *Engine)
       if (Entity && Entity->Id != EngineDebug->SelectedEntity)
       {
         Assert(Spawned(Entity));
-        DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, YELLOW);
+        DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_YELLOW);
 
         if (Input->LMB.Clicked)
         {
@@ -266,7 +266,7 @@ DoEntityWindow(engine_resources *Engine)
   entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
   if (SelectedEntity)
   {
-    DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, WHITE);
+    DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_WHITE);
 
     local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_Align_Right);
 
@@ -288,7 +288,7 @@ DoEntityWindow(engine_resources *Engine)
       auto Face = AABBTest.Face;
       if (Face)
       {
-        HighlightFace(Engine, AABBTest.Face, EntityAABB, 0.f, GREEN, 0.15f);
+        HighlightFace(Engine, AABBTest.Face, EntityAABB, 0.f, RGB_GREEN, 0.15f);
 
         if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed) )
         {

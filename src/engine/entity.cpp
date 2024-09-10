@@ -1215,14 +1215,14 @@ SimulateParticleSystem(work_queue_entry_sim_particle_system *Job)
           auto Dest = System->ParticleStartingTransparency > 0.f ? &TranspDest : &SolidDest;
           /* auto Dest = &TranspDest; */
           /* auto Dest = &SolidDest; */
-          DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->Colors[ColorIndex], Diameter, V2(Transparency, System->ParticleLightEmission) );
+          DrawVoxel( Dest, RenderSpaceP + Particle->Offset, System->PackedHSVColors[ColorIndex], Diameter, V2(Transparency, System->ParticleLightEmission) );
 
 #if 1
           if (Particle->IsLight)
           {
-            v3 EmissionColor = MagicaVoxelDefaultPaletteToRGB(System->Colors[ColorIndex]);
             engine_resources *Engine = GetEngineResources();
-            DoLight(&Engine->Graphics.Lighting.Lights, RenderSpaceP + Particle->Offset, EmissionColor);
+            v3 RGBColor = PackedHSVtoRGB(System->PackedHSVColors[ColorIndex]);
+            DoLight(&Engine->Graphics.Lighting.Lights, RenderSpaceP + Particle->Offset, RGBColor);
           }
 #endif
         }
