@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:348:0
+// src/engine/serdes.cpp:358:0
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count = 1);

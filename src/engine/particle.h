@@ -22,7 +22,7 @@ enum particle_spawn_type
 
 #define PARTICLE_SYSTEM_COLOR_COUNT 6
 #define PARTICLES_PER_SYSTEM   (4096)
-struct particle_system
+struct particle_system poof(@version(1))
 {
   random_series Entropy;
 
@@ -67,6 +67,57 @@ struct particle_system
   r32 ElapsedSinceLastEmission;
 
   u16 PackedHSVColors[PARTICLE_SYSTEM_COLOR_COUNT];
+
+  particle Particles[PARTICLES_PER_SYSTEM]; poof(@no_serialize)
+
+  /* untextured_3d_geometry_buffer *Dest; */
+};
+
+struct particle_system_0
+{
+  random_series Entropy;
+
+  particle_spawn_type SpawnType;
+
+  r32 Drag;
+
+  r32 Lifetime;  // Time since spawned
+
+  r32 EmissionDelay;    // How long the system waits to before starting to emit
+  r32 EmissionLifespan; // How long the system emits for
+
+  u32 ActiveParticles;
+
+  r32 LifespanMod;
+  r32 ParticleLifespan;      // How long an individual particle lasts
+  r32 ParticlesPerSecond;
+
+  // Are particles emissive?
+  // Value is rounded up to 1.f.  Values greater than 1.f contribute to emission
+  // which is accumulated into the bloom texuture
+  r32 ParticleLightEmission;
+
+  // Chance to emit a light-emitting particle that's treated as a point light
+  // and accumulated into the lighting buffer
+  r32 ParticleLightEmissionChance; // 0.f - 1.f (no chance - always emit)
+
+  // 0.f is ignored, f32_MIN is fully transparent, 1.f is opaque
+  r32 ParticleStartingTransparency;
+  r32 ParticleEndingTransparency; // Can be 0.f
+
+  v3  ParticleStartingDim;
+  f32 ParticleEndingDim;
+
+  v3 ParticleTurbMin;
+  v3 ParticleTurbMax;
+
+  aabb SpawnRegion;
+
+  r32 SystemMovementCoefficient;
+
+  r32 ElapsedSinceLastEmission;
+
+  u8 MCVColors[PARTICLE_SYSTEM_COLOR_COUNT]; poof(@custom_marshal( Live->PackedHSVColors[Index] = MagicaVoxelDefaultPaletteToPackedHSV(Stored->MCVColors[Index]);))
 
   particle Particles[PARTICLES_PER_SYSTEM]; poof(@no_serialize)
 

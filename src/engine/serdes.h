@@ -24,7 +24,13 @@ poof(
         {
           RangeIterator(Index, member.array)
           {
-            Live->member.name[Index] = Stored->member.name[Index];
+            member.has_tag(custom_marshal)?
+            {
+              member.tag_value(custom_marshal)
+            }
+            {
+              Live->member.name[Index] = Stored->member.name[Index];
+            }
           }
         }
         {

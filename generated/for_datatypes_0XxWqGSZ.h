@@ -185,6 +185,7 @@
 
 
 
+
 struct render_to_texture_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )

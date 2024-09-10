@@ -1,12 +1,12 @@
-// src/engine/serdes.cpp:287:0
+// src/engine/serdes.cpp:284:0
 
 link_internal bonsai_type_info
-TypeInfo(particle_system *Ignored)
+TypeInfo(particle_system_0 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("particle_system");
-  Result.Version =1 ;
+  Result.Name = CSz("particle_system_0");
+  Result.Version = 0 ;
 
   /* type.map(member) */
   /* { */
@@ -20,7 +20,7 @@ TypeInfo(particle_system *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, particle_system_0 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -29,14 +29,11 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 
   b32 Result = True;
 
-  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
-  Serialize(Bytes, &VersionNumber);
-
+  
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    particle_system *Element = BaseElement + ElementIndex;
+    particle_system_0 *Element = BaseElement + ElementIndex;
     Result &= Serialize(Bytes, &Element->Entropy);
 
 
@@ -165,7 +162,7 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
     {
       umm ThisCount = 6;
 
-      Result &= Serialize(Bytes, Element->PackedHSVColors, ThisCount);
+      Result &= Serialize(Bytes, Element->MCVColors, ThisCount);
     }
 
 
@@ -183,38 +180,16 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory);
 
 
-link_internal b32
-DeserializeVersioned(u8_cursor *Bytes, particle_system *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
-{
-  Assert(TypeInfo->Version <=1);
-
-  b32 Result = True;
-
-  if (TypeInfo->Version == 0)
-  {
-    particle_system_0 T0 = {};
-    Result &= Deserialize(Bytes, &T0, Memory);
-    Marshal(&T0, Element);
-  }
-
-
-  if (TypeInfo->Version ==1)
-  {
-    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
-  }
-
-  return Result;
-}
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
   // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -385,7 +360,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
   {
     umm Count = 6;
 
-    Result &= Deserialize(Bytes, Element->PackedHSVColors, Memory, Count);
+    Result &= Deserialize(Bytes, Element->MCVColors, Memory, Count);
   }
 
 
@@ -401,29 +376,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("particle_system"));
-
-    if (MaybeSerializedType.Tag)
-    {
-      u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
-      {
-        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
-      }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
-    }
-    else
-    {
-      bonsai_type_info T0TypeInfo = {};
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
-    }
+    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

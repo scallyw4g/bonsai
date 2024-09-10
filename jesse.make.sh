@@ -12,8 +12,8 @@
 ./make.sh $OPT                                                 \
   BuildExecutables                                             \
   BuildSingleExample examples/transparency                     \
-  # BuildSingleExample examples/project_and_level_picker         \
-  # BuildSingleExample examples/blank_project                    \
+  BuildSingleExample examples/project_and_level_picker         \
+  BuildSingleExample examples/blank_project                    \
 #   BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 #   BuildSingleExample examples/turn_based                       \
 #   BuildSingleExample examples/terrain_gen                      \

@@ -274,6 +274,16 @@ poof(serdes_struct(rect3i))
 poof(serdes_struct(random_series))
 #include <generated/serdes_struct_random_series.h>
 
+link_internal void
+Marshal(particle_system_0 *Stored, particle_system *Live)
+{
+  poof(default_marshal(particle_system_0))
+#include <generated/default_marshal_particle_system_0.h>
+}
+
+poof(serdes_struct(particle_system_0))
+#include <generated/serdes_struct_particle_system_0.h>
+
 poof(serdes_struct(particle_system))
 #include <generated/serdes_struct_particle_system.h>
 

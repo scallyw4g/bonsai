@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:533:0
+// src/engine/serdes.cpp:543:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings_2 *Ignored)
