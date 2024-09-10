@@ -1,6 +1,6 @@
-* 1.6.3
+* 1.6.2
 
-- Change color from a 16-bit palette index (which had many problems) to 16-bit HSV encoded color
+- Change color from a 16-bit palette index to 16-bit HSV encoded color
 	Handling color in the same way MagicaVoxel does (by using a fixed 255 element palette)
 	turned out to be a bad idea for several reasons.  Firstly, if you import
 	multiple models from different sources, and those sources have more than 255
@@ -8,10 +8,12 @@
 	that point you might as well just do 16-bit color and be done with it.  So,
 	that's what I did here.
 
+	This change ended up being pretty sweeping, affecting world gen, asset/level
+	loading, particle systems, rendering.
+
 - Implement HSV color picker
 
-
-* 1.6.2
+- Implement a Modal widget in the UI
 
 * Change "SeedBrushWithSelection" to work with destructive brush previews
 
