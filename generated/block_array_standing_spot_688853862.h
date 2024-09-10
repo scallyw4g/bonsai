@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:523:0
+// src/engine/world_chunk.h:503:0
 
 struct standing_spot_block
 {

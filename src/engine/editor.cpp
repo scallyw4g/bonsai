@@ -2164,8 +2164,6 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  /* v3 HSV = *HSVDest; // NOTE(Jesse): Must copy so we don't stomp on the dest value */
-
   DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
   DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
   DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
@@ -2189,8 +2187,6 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   PushColumn(Ui, RGBColorString );
   PushNewRow(Ui);
-
-  /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
 }
 
 link_internal void
