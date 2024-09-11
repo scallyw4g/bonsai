@@ -116,6 +116,9 @@ GetWorldChunkHash(world_position P, chunk_dimension VisibleRegion, u32 WorldHash
 link_internal b32
 InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dimension VisibleRegion, u32 WorldHashSize)
 {
+  NotImplemented;
+  return {};
+#if 0
   /* TIMED_FUNCTION(); */
 
   GetWorld()->HashSlotsUsed += 1;
@@ -172,12 +175,15 @@ InsertChunkIntoWorld(world_chunk **WorldChunkHash, world_chunk *Chunk, chunk_dim
   *Current = Chunk;
 
   return Result;
+#endif
 }
 
 link_internal b32
 InsertChunkIntoWorld(world *World, world_chunk *Chunk)
 {
-  b32 Result = InsertChunkIntoWorld(World->ChunkHash, Chunk, World->VisibleRegion, World->HashSize);
+  NotImplemented;
+  /* b32 Result = InsertChunkIntoWorld(World->ChunkHash, Chunk, World->VisibleRegion, World->HashSize); */
+  b32 Result = {};
   return Result;
 }
 
@@ -341,6 +347,9 @@ GetWorldChunkFromHashtable(world *World, world_position P)
 {
   /* TIMED_FUNCTION(); */ // This makes things much slower
 
+  NotImplemented;
+  return {};
+#if 0
   u32 HashIndex = GetWorldChunkHash(P, World->VisibleRegion, World->HashSize);
   u32 StartingHashIndex = HashIndex;
 
@@ -375,21 +384,26 @@ GetWorldChunkFromHashtable(world *World, world_position P)
   }
 
   return Result;
+#endif
 }
 
 link_internal world_chunk**
 CurrentWorldHashtable(engine_resources *Engine)
 {
-  u32 Index = Engine->FrameIndex % 2;
-  world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index];
+  /* u32 Index = Engine->FrameIndex % 2; */
+  /* world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index]; */
+  NotImplemented;
+  world_chunk **Hashtable = {};
   return Hashtable;
 }
 
 link_internal world_chunk**
 NextWorldHashtable(engine_resources *Engine)
 {
-  u32 Index = (Engine->FrameIndex+1) % 2;
-  world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index];
+  /* u32 Index = (Engine->FrameIndex+1) % 2; */
+  /* world_chunk **Hashtable = Engine->World->ChunkHashMemory[Index]; */
+  NotImplemented;
+  world_chunk **Hashtable = {};
   return Hashtable;
 }
 
@@ -397,7 +411,9 @@ link_internal void
 CollectUnusedChunksAndClearCurrentTable(engine_resources *Engine, chunk_dimension VisibleRegion)
 {
   TIMED_FUNCTION();
+  NotImplemented;
 
+#if 0
   UNPACK_ENGINE_RESOURCES(Engine);
 
 #if 1
@@ -484,6 +500,7 @@ CollectUnusedChunksAndClearCurrentTable(engine_resources *Engine, chunk_dimensio
 
 #endif
   return;
+#endif
 }
 
 #if 0

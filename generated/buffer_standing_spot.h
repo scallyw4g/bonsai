@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:530:0
+// src/engine/world_chunk.h:528:0
 
 struct standing_spot_buffer
 {

@@ -59,8 +59,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->HashSlotsUsed),
-        CSz("HashSlotsUsed"),
+        Cast(octree_node*,&Element->Root),
+        CSz("Root"),
         Params
         );
 
@@ -70,13 +70,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->HashSize),
-        CSz("HashSize"),
+        Cast(memory_arena*,&Element->OctreeMemory),
+        CSz("OctreeMemory"),
         Params
         );
 
@@ -86,13 +85,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->ChunkHash),
-        CSz("ChunkHash"),
+        Cast(octree_node_freelist*,&Element->OctreeNodeFreelist),
+        CSz("OctreeNodeFreelist"),
         Params
         );
 

@@ -1,18 +1,46 @@
+enum octree_node_flags
+{
+  OctreeNodeFlag_Undefined,
 
-link_internal world * GetWorld();
+  OctreeNodeFlag_Transit,
+  OctreeNodeFlag_Leaf,
+};
 
-link_internal void
-GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffer *ChunkBuffer, rect3i_buffer *ResultRanges);
+struct octree_node
+{
+  octree_node_flags Flags;
+
+  u32 LodLevel; // Multiply by Chunk->Dim to get the world-space dimensions of the chunk
+
+  // TODO(Jesse): Maybe make this a pointer ..?
+  world_chunk Chunk;
+
+  octree_node *Children[8];
+};
+
+typedef octree_node* octree_node_ptr;
+
+poof(are_equal(octree_node))
+#include <generated/are_equal_octree_node.h>
+poof(generate_stack(octree_node_ptr, {}))
+#include <generated/generate_stack_octree_node_ptr_0.h>
+
+poof(freelist_allocator(octree_node))
+#include <generated/freelist_allocator_octree_node.h>
 
 struct world
 {
   v3i Center;
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
-  u32 HashSlotsUsed;
-  u32 HashSize;
-  world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
-  world_chunk **ChunkHash;           poof(@array_length(Element->HashSize))
+  /* u32 HashSlotsUsed; */
+  /* u32 HashSize; */
+  /* world_chunk **ChunkHashMemory[2];  poof(@ui_skip) */
+  /* world_chunk **ChunkHash;           poof(@array_length(Element->HashSize)) */
+
+  octree_node Root;
+  memory_arena OctreeMemory;
+  octree_node_freelist OctreeNodeFreelist;
 
 
   bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
@@ -23,6 +51,8 @@ struct world
   memory_arena *ChunkMemory;         poof(@ui_skip)
   world_flag Flags;                  poof(@ui_skip)
 };
+
+
 
 inline canonical_position
 Canonicalize( world *World, canonical_position CP )
@@ -147,3 +177,8 @@ TryGetVoxel(world *World, cp P)
   return Result;
 }
 
+
+link_internal world * GetWorld();
+
+link_internal void
+GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffer *ChunkBuffer, rect3i_buffer *ResultRanges);

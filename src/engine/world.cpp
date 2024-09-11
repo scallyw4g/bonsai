@@ -1,5 +1,5 @@
 link_internal world *
-AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim, chunk_dimension VisibleRegion)
+AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 {
   Clear(World);
 
@@ -7,13 +7,16 @@ AllocateWorld(world* World, world_position Center, voxel_position WorldChunkDim,
   World->ChunkMemory = WorldChunkMemory;
   DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
 
-  World->HashSize = (u32)(Volume(VisibleRegion)*4);
+  /* World->HashSize = (u32)(Volume(VisibleRegion)*4); */
   /* World->HashSize = WorldHashSize; */
-  World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize );
-  World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize );
+  /* World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize ); */
+  /* World->ChunkHashMemory[1] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize ); */
 
-  World->ChunkHash = World->ChunkHashMemory[0];
+  /* World->ChunkHash = World->ChunkHashMemory[0]; */
   /* World->FreeChunks = Allocate(world_chunk*, WorldChunkMemory, FREELIST_SIZE ); */
+
+
+  World->Root.Chunk.Dim = VisibleRegion;
 
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
@@ -169,4 +172,143 @@ GatherVoxelsOverlappingArea(engine_resources *Engine, rect3cp Rect, memory_arena
   Result.Dim = V3i(CopyDim);
   return Result;
 }
+
+link_internal b32
+ContainsCamera(octree_node *Node, camera *Camera)
+{
+  b32 Result = {};
+  NotImplemented;
+  return Result;
+}
+
+link_internal b32
+OctreeNodeNeedsToSplit(world *World, octree_node *Node, camera *Camera)
+{
+  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+
+  b32 Result = Node->Chunk.Dim > World->ChunkDim && Node->LodLevel > 0 && ContainsCamera(Node, Camera);
+  return Result;
+}
+
+link_internal b32
+OctreeChildrenNeedToMerge(world *World, octree_node *Node, camera *Camera)
+{
+  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+
+  b32 Result = ContainsCamera(Node, Camera) == False;
+  return Result;
+}
+
+link_internal u32
+SplitOctreeNode(world *World, work_queue *Queue, octree_node *Node, memory_arena *Memory)
+{
+  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+  Assert(Node->Flags == OctreeNodeFlag_Leaf);
+
+  RangeIterator_t(umm, ChildIndex, ArrayCount(Node->Children))
+  {
+    Node->Children[ChildIndex] = Allocate(octree_node, Memory, 1);
+  }
+
+  RangeIterator(Index, 8)
+  {
+    Assert(Node->Children[Index] == 0);
+
+    Node->Children[Index] = GetOrAllocate(&World->OctreeNodeFreelist);
+    world_chunk *Chunk = &Node->Children[Index]->Chunk;
+
+    AllocateWorldChunk({}, World->ChunkDim, World->ChunkMemory);
+
+    Chunk->Dim = Node->Chunk.Dim = World->ChunkDim;
+    Assert(Chunk->Dim % World->ChunkDim == V3i(0));
+
+    QueueChunkForInit(Queue, Chunk, MeshBit_Lod0);
+    /* Node->Children[Index]->Chunk = Chunk; */
+  }
+
+  return 8;
+}
+
+link_internal void
+CheckedDeallocateChildNode(engine_resources *Engine, octree_node *Node)
+{
+  Assert(Node->Flags == OctreeNodeFlag_Leaf);
+  Free(&Engine->World->OctreeNodeFreelist, Node);
+}
+
+link_internal u32
+MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+  Assert(Node->Flags == OctreeNodeFlag_Transit);
+
+  u32 Result = False;
+
+  v3i Dim = Node->Chunk.Dim;
+
+  CheckedDeallocateChildNode(Engine, Node->Children[0]);
+  CheckedDeallocateChildNode(Engine, Node->Children[1]);
+  CheckedDeallocateChildNode(Engine, Node->Children[2]);
+  CheckedDeallocateChildNode(Engine, Node->Children[3]);
+  CheckedDeallocateChildNode(Engine, Node->Children[4]);
+  CheckedDeallocateChildNode(Engine, Node->Children[5]);
+  CheckedDeallocateChildNode(Engine, Node->Children[6]);
+  CheckedDeallocateChildNode(Engine, Node->Children[7]);
+
+  QueueChunkForInit(&Plat->LowPriority, &Node->Chunk, MeshBit_Lod0);
+
+  return 1;
+}
+
+
+
+// TODO(Jesse): Definitely compute this from the number of worker threads available on the system
+#define MAX_WORLD_CHUNKS_QUEUED_PER_FRAME (16)
+link_internal void
+MaintainWorldOctree(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  SleepMs(1000);
+
+  b32     Continue = True;
+  u32 ChunksQueued = 0;
+
+  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
+  Push(&Stack, &World->Root);
+
+  while (CurrentCount(&Stack) && (ChunksQueued < MAX_WORLD_CHUNKS_QUEUED_PER_FRAME) )
+  {
+    octree_node *Current = Pop(&Stack);
+
+    if (OctreeNodeNeedsToSplit(World, Current, Camera))
+    {
+      ChunksQueued += SplitOctreeNode(World, &Plat->LowPriority, Current, &World->OctreeMemory);
+    }
+
+    if (OctreeChildrenNeedToMerge(World, Current, Camera))
+    {
+      ChunksQueued += MergeOctreeChildren(Engine, Current);
+    }
+
+    if (Current->Flags == OctreeNodeFlag_Transit)
+    {
+      if (Current->Children[0]) { Push(&Stack, Current->Children[0]); }
+      if (Current->Children[1]) { Push(&Stack, Current->Children[1]); }
+      if (Current->Children[2]) { Push(&Stack, Current->Children[2]); }
+      if (Current->Children[3]) { Push(&Stack, Current->Children[3]); }
+      if (Current->Children[4]) { Push(&Stack, Current->Children[4]); }
+      if (Current->Children[5]) { Push(&Stack, Current->Children[5]); }
+      if (Current->Children[6]) { Push(&Stack, Current->Children[6]); }
+      if (Current->Children[7]) { Push(&Stack, Current->Children[7]); }
+    }
+  }
+}
+
+
+
+
+
 

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:135:0
+// src/engine/world_chunk.h:133:0
 
 link_internal voxel_lighting
 VoxelLighting( u8   Emission  )

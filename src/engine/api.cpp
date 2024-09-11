@@ -71,7 +71,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
   // the thing that is populating the next hashtable
-  Resources->World->HashSlotsUsed = 0;
+  /* Resources->World->HashSlotsUsed = 0; */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
@@ -86,6 +86,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // sim pulls chunks out of the hashtable.
   //
   Resources->FrameIndex += 1;
+
+  MaintainWorldOctree(Resources);
+
   /* Resources->World->ChunkHash = CurrentWorldHashtable(Resources); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */

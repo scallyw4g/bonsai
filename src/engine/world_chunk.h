@@ -1,7 +1,5 @@
 #define INVALID_WORLD_CHUNK_POSITION (V3i(s32_MAX, s32_MAX, s32_MAX))
 
-struct world;
-struct world_chunk;
 struct heap_allocator;
 struct entity;
 
@@ -355,8 +353,8 @@ struct world_chunk poof(@version(1))
   v3i WorldP;
 
   s32 FilledCount;            poof(@no_serialize)
-  b32 DrawBoundingVoxels;     poof(@no_serialize)
 
+  b32 DrawBoundingVoxels;     poof(@no_serialize)
   s32 PointsToLeaveRemaining; poof(@no_serialize)
   u32 TriCount;               poof(@no_serialize)
   s32 EdgeBoundaryVoxelCount; poof(@no_serialize)

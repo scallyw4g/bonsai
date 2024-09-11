@@ -14,7 +14,10 @@ DoLevelWindow(engine_resources *Engine)
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
+
       u32 ChunkCount = 0;
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (World->ChunkHash[HashIndex])
@@ -22,6 +25,7 @@ DoLevelWindow(engine_resources *Engine)
           ++ChunkCount;
         }
       }
+#endif
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -45,6 +49,9 @@ DoLevelWindow(engine_resources *Engine)
       Serialize(&OutputStream, &Header);
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
@@ -52,6 +59,7 @@ DoLevelWindow(engine_resources *Engine)
           SerializeChunk(Chunk, &OutputStream);
         }
       }
+#endif
 
       Ensure(Serialize(&OutputStream, &Delimeter));
 
@@ -193,6 +201,8 @@ DoLevelWindow(engine_resources *Engine)
         }
 
 
+        NotImplemented;
+#if 0
         RangeIterator_t(u32, ChunkIndex, World->HashSize)
         {
           if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
@@ -206,6 +216,7 @@ DoLevelWindow(engine_resources *Engine)
             QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
+#endif
 
 #endif
 
