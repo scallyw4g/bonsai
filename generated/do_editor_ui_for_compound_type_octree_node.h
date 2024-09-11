@@ -44,21 +44,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->DimInChunks),
-        CSz("DimInChunks"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
         Cast(world_chunk*,&Element->Chunk),
         CSz("Chunk"),
         Params

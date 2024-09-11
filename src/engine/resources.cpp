@@ -29,6 +29,40 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 }
 
 link_internal void
+RenderOctree(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  b32     Continue = True;
+  u32 ChunksQueued = 0;
+
+  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
+  Push(&Stack, &World->Root);
+
+  /* RuntimeBreak(); */
+  while (CurrentCount(&Stack) && (ChunksQueued < MAX_WORLD_CHUNKS_QUEUED_PER_FRAME) )
+  {
+    octree_node *Node = Pop(&Stack);
+
+    if (Node->Type == OctreeNodeType_Leaf)
+    {
+      SyncGpuBuffersImmediate(Engine, &Node->Chunk.Meshes);
+      DrawLod(Engine, Shader, &Node->Chunk.Meshes, 0, {}, Quaternion(), V3(1));
+    }
+
+    if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
+    if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
+    if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
+    if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
+    if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
+    if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
+    if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
+    if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
+  }
+}
+
+
+link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
   // Map immediate GPU buffers for first frame
@@ -245,6 +279,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
               Clear(&GpuMap->Buffer);
 
+
               // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
               // after the transparency/luminance textures.  I have literally 0 ideas as to
               // why that would be, but here we are.
@@ -257,6 +292,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
               /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
+
+
 
 
               CompositeGameTexturesAndDisplay(Plat, Graphics);

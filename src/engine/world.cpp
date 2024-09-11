@@ -24,7 +24,7 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
 
   World->Root.Type = OctreeNodeType_Leaf;
-  World->Root.DimInChunks = VisibleRegion;
+  World->Root.Chunk.DimInChunks = VisibleRegion;
   AllocateWorldChunk(&World->Root.Chunk, {}, WorldChunkDim, World->ChunkMemory);
 
   World->OctreeNodeFreelist.Memory = &World->OctreeMemory;
@@ -204,7 +204,7 @@ link_internal rect3cp
 GetBoundingBox(world *World, octree_node *Node)
 {
   cp Min = Canonical_Position(Node->Chunk.WorldP, {});
-  cp Max = Canonicalize(World, Canonical_Position(V3(Node->DimInChunks), Node->Chunk.WorldP));
+  cp Max = Canonicalize(World, Canonical_Position(V3(Node->Chunk.DimInChunks), Node->Chunk.WorldP));
 
   rect3cp Rect = RectMinMax(Min, Max);
   return Rect;
@@ -252,7 +252,7 @@ link_internal void
 InitOctreeNodeAndQueueChunkForInit(world *World, work_queue *Queue, octree_node *Node, v3i WorldP, v3i DimInChunks)
 {
   Node->Type = OctreeNodeType_Leaf;
-  Node->DimInChunks = DimInChunks;
+  Node->Chunk.DimInChunks = DimInChunks;
 
   world_chunk *Chunk = &Node->Chunk;
   AllocateWorldChunk(Chunk, WorldP, World->ChunkDim, World->ChunkMemory);
@@ -266,7 +266,7 @@ SplitOctreeNode(world *World, work_queue *Queue, octree_node *Parent, memory_are
   Assert(Parent->Type == OctreeNodeType_Leaf);
   Parent->Type = OctreeNodeType_Transit;
 
-  v3i ChildDimInChunks = Parent->DimInChunks / 2;
+  v3i ChildDimInChunks = Parent->Chunk.DimInChunks / 2;
 
   RangeIterator(Index, s32(ArrayCount(Parent->Children)))
   {
@@ -338,6 +338,18 @@ MaintainWorldOctree(engine_resources *Engine)
   octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
   Push(&Stack, &World->Root);
 
+  world_chunk_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
+  world_chunk_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
+
+  // Reset world_chunk draw lists
+  {
+    Clear(MainDrawList);
+    Clear(ShadowMapDrawList);
+
+    MainDrawList->Memory = GetTranArena();
+    ShadowMapDrawList->Memory = GetTranArena();
+  }
+
   /* RuntimeBreak(); */
   while (CurrentCount(&Stack) && (ChunksQueued < MAX_WORLD_CHUNKS_QUEUED_PER_FRAME) )
   {
@@ -345,9 +357,9 @@ MaintainWorldOctree(engine_resources *Engine)
 
     Assert(Node->Chunk.Dim == World->ChunkDim);
     Assert(Node->Type);
-    Assert(Node->DimInChunks >= V3i(1));
+    Assert(Node->Chunk.DimInChunks >= V3i(1));
 
-    b32 OctreeNodeNeedsToSplit  = (Node->DimInChunks > V3i(1));
+    b32 OctreeNodeNeedsToSplit  = (Node->Chunk.DimInChunks > V3i(1));
         OctreeNodeNeedsToSplit &= (Node->Type == OctreeNodeType_Leaf);
         OctreeNodeNeedsToSplit &= (Node->Chunk.Flags & Chunk_Queued) == 0;
         OctreeNodeNeedsToSplit &= ContainsCameraGhost(World, EntityTable, Node, Camera);
@@ -366,16 +378,21 @@ MaintainWorldOctree(engine_resources *Engine)
       ChunksQueued += MergeOctreeChildren(Engine, Node);
     }
 
+    if (Node->Type == OctreeNodeType_Leaf)
     {
-      if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
-      if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
-      if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
-      if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
-      if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
-      if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
-      if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
-      if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
+      auto Chunk = &Node->Chunk;
+      SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
+      Push(MainDrawList, &Chunk);
     }
+
+    if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
+    if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
+    if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
+    if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
+    if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
+    if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
+    if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
+    if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
   }
 }
 
@@ -393,7 +410,7 @@ GetWorldChunkFromOctree(world *World, v3i QueryP)
     if (Contains(Box, Canonical_Position(V3(0), QueryP)))
     {
       v3i CurrentToQuery = QueryP - Current->Chunk.WorldP;
-      v3i Cell =  CurrentToQuery / Current->DimInChunks;
+      v3i Cell =  CurrentToQuery / Current->Chunk.DimInChunks;
       Assert(Cell < V3i(2));
 
       s32 Index = GetIndex(Cell, V3i(2)); Assert(Index < 8);

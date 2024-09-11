@@ -53,6 +53,12 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+    Result &= Serialize(Bytes, &Element->DimInChunks);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->WorldP);
 
 
@@ -127,6 +133,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
   b64 HadVoxelLightingPointer = Read_u64(Bytes);
   Assert(HadVoxelLightingPointer < 2); // Should be 0 or 1
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->DimInChunks, Memory);
+
+
 
 
 

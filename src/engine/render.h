@@ -176,3 +176,5 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);
 
+link_internal b32
+SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);

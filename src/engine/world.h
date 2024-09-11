@@ -11,7 +11,7 @@ struct octree_node
   octree_node_type Type;
 
   // This is the world-space dimension of the node, in chunks
-  v3i DimInChunks;
+  /* v3i DimInChunks; */
 
   // TODO(Jesse): Maybe make this a pointer ..?
   world_chunk Chunk;

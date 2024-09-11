@@ -350,6 +350,7 @@ struct world_chunk poof(@version(1))
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
 
+  v3i DimInChunks;
   v3i WorldP;
 
   s32 FilledCount;            poof(@no_serialize)
