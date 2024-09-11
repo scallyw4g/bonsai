@@ -44,7 +44,9 @@ void main()
   v4 WorldVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 
   vertexP_worldspace = WorldVertex.xyz;
-  vertexN_worldspace = mat3(NormalMatrix) * V3(vertexNormal_modelspace);
+
+  // NOTE(Jesse): We have to normalize because a scale factor will grow/shrink the normal!
+  vertexN_worldspace = normalize(mat3(NormalMatrix) * V3(vertexNormal_modelspace));
 
   gl_Position =  ViewProjection * WorldVertex;
 }
