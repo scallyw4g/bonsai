@@ -1450,6 +1450,8 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 link_internal void
 ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 {
+  NotImplemented;
+#if 0
   TIMED_FUNCTION();
 
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1504,6 +1506,7 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
       { InvalidCodePath(); }
     }
   }
+#endif
 }
 
 link_internal void

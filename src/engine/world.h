@@ -1,21 +1,25 @@
-enum octree_node_flags
+enum octree_node_type
 {
-  OctreeNodeFlag_Undefined,
+  OctreeNodeType_Undefined,
 
-  OctreeNodeFlag_Transit,
-  OctreeNodeFlag_Leaf,
+  OctreeNodeType_Transit,
+  OctreeNodeType_Leaf,
 };
 
 struct octree_node
 {
-  octree_node_flags Flags;
+  octree_node_type Type;
 
-  u32 LodLevel; // Multiply by Chunk->Dim to get the world-space dimensions of the chunk
+  // This is the world-space dimension of the node, in chunks
+  v3i DimInChunks;
 
   // TODO(Jesse): Maybe make this a pointer ..?
   world_chunk Chunk;
 
-  octree_node *Children[8];
+  union {
+    octree_node *Next; // NOTE(Jesse): Freelist Next
+    octree_node *Children[8];
+  };
 };
 
 typedef octree_node* octree_node_ptr;
@@ -182,3 +186,6 @@ link_internal world * GetWorld();
 
 link_internal void
 GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffer *ChunkBuffer, rect3i_buffer *ResultRanges);
+
+link_internal octree_node *
+GetWorldChunkFromOctree(world *World, v3i QueryP);

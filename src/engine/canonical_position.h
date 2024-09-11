@@ -202,28 +202,32 @@ operator-(canonical_position P1, canonical_position P2)
 inline b32
 operator>(cp P1, cp P2)
 {
-  b32 Result = (P1.WorldP > P2.WorldP) && (P1.Offset > P2.Offset);
+  b32 Result = (P1.WorldP > P2.WorldP) ||
+                (P1.WorldP == P2.WorldP && (P1.Offset > P2.Offset));
   return Result;
 }
 
 inline b32
 operator<(cp P1, cp P2)
 {
-  b32 Result = (P1.WorldP < P2.WorldP) && (P1.Offset < P2.Offset);
+  b32 Result = (P1.WorldP < P2.WorldP) ||
+               (P1.WorldP == P2.WorldP && (P1.Offset < P2.Offset));
   return Result;
 }
 
 inline b32
 operator>=(cp P1, cp P2)
 {
-  b32 Result = (P1.WorldP >= P2.WorldP) && (P1.Offset >= P2.Offset);
+  b32 Result = (P1.WorldP >= P2.WorldP) ||
+               (P1.WorldP == P2.WorldP && (P1.Offset >= P2.Offset));
   return Result;
 }
 
 inline b32
 operator<=(cp P1, cp P2)
 {
-  b32 Result = (P1.WorldP <= P2.WorldP) && (P1.Offset <= P2.Offset);
+  b32 Result = (P1.WorldP <= P2.WorldP) ||
+               (P1.WorldP == P2.WorldP && (P1.Offset <= P2.Offset));
   return Result;
 }
 
@@ -254,6 +258,8 @@ Rect3CP(rect3 *Rect)
   NotImplemented;
   return Result;
 }
+
+/* poof(gen_rect_helpers(rect3cp, cp)) */
 
 link_internal rect3cp
 RectMinMax(cp Min, cp Max)
@@ -288,6 +294,14 @@ IsInside(cp P, rect3cp Rect)
   b32 Result = (P >= Rect.Min && P < Rect.Max);
   return Result;
 }
+
+link_internal b32
+Contains(rect3cp Rect, cp P)
+{
+  b32 Result = (P >= Rect.Min && P < Rect.Max);
+  return Result;
+}
+
 
 link_internal cp
 Max(cp P0, cp P1)

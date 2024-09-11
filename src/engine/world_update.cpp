@@ -90,69 +90,6 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 }
 
 link_internal void
-BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
-{
-  world *World = Engine->World;
-
-  Assert(Asset->LoadState == AssetLoadState_Loaded);
-
-  world_chunk SrcChunk = {};
-  chunk_dimension ModelDim = {};
-  switch (Asset->Type)
-  {
-    InvalidCase(AssetType_Undefined);
-
-    case AssetType_Models:
-    {
-      Assert(Asset->Models.Count > 0);
-      chunk_data *VoxData = Asset->Models.Start[0].Vox.ChunkData;
-
-      ModelDim = Asset->Models.Start[0].Dim;
-
-      SrcChunk = {
-        .Flags = VoxData->Flags,
-        .Dim = VoxData->Dim,
-        .Voxels = VoxData->Voxels,
-      };
-
-    } break;
-
-    case AssetType_WorldChunk:
-    {
-      SrcChunk = Asset->Chunk;
-      ModelDim = Asset->Chunk.Dim;
-    } break;
-  }
-
-  // TODO(Jesse): Need to account for model offset in its chunk here.
-  chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim + Origin.Offset, World->ChunkDim);
-
-  DebugLine("%d %d %d", ChunkCounts.x, ChunkCounts.y, ChunkCounts.z);
-
-  DimIterator(xChunk, yChunk, zChunk, ChunkCounts)
-  {
-    v3i SrcWorldP = V3i(xChunk, yChunk, zChunk);
-
-    v3i DestWorldP = Origin.WorldP + SrcWorldP;
-    world_chunk *DestChunk = GetWorldChunkFromHashtable(World, DestWorldP);
-    if (DestChunk)
-    {
-      Assert(DestChunk->Flags & Chunk_VoxelsInitialized);
-
-      v3i SrcVoxelsOffset = (SrcWorldP*World->ChunkDim) - V3i(Origin.Offset);
-
-      MergeChunksOffset(&SrcChunk, DestChunk, SrcVoxelsOffset);
-
-      // NOTE(Jesse): We have to either call MarkBoundaryVoxels_??? here or somehow infer
-      // what the face values are in the Merge routine
-      NotImplemented;
-
-      QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
-    }
-  }
-}
-
-link_internal void
 QueueWorldUpdateForRegion( engine_resources *Engine,
                             world_edit_mode  Mode,
                    world_edit_mode_modifier  Modifier,

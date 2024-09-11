@@ -16,7 +16,18 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   /* World->FreeChunks = Allocate(world_chunk*, WorldChunkMemory, FREELIST_SIZE ); */
 
 
-  World->Root.Chunk.Dim = VisibleRegion;
+  Assert(VisibleRegion.x == VisibleRegion.y);
+  Assert(VisibleRegion.y == VisibleRegion.z);
+
+  Assert(WorldChunkDim.x == WorldChunkDim.y);
+  Assert(WorldChunkDim.y == WorldChunkDim.z);
+
+
+  World->Root.Type = OctreeNodeType_Leaf;
+  World->Root.DimInChunks = VisibleRegion;
+  AllocateWorldChunk(&World->Root.Chunk, {}, WorldChunkDim, World->ChunkMemory);
+
+  World->OctreeNodeFreelist.Memory = &World->OctreeMemory;
 
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
@@ -173,20 +184,51 @@ GatherVoxelsOverlappingArea(engine_resources *Engine, rect3cp Rect, memory_arena
   return Result;
 }
 
-link_internal b32
-ContainsCamera(octree_node *Node, camera *Camera)
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// Octree implementation
+//
+
+link_internal rect3cp
+GetBoundingBox(world *World, octree_node *Node)
 {
-  b32 Result = {};
-  NotImplemented;
+  cp Min = Canonical_Position(Node->Chunk.WorldP, {});
+  cp Max = Canonicalize(World, Canonical_Position(V3(Node->DimInChunks), Node->Chunk.WorldP));
+
+  rect3cp Rect = RectMinMax(Min, Max);
+  return Rect;
+}
+
+link_internal b32
+ContainsCamera(world *World, octree_node *Node, camera *Camera)
+{
+  rect3cp Rect = GetBoundingBox(World, Node);
+  b32 Result = Contains(Rect, Camera->CurrentP);
   return Result;
 }
 
 link_internal b32
 OctreeNodeNeedsToSplit(world *World, octree_node *Node, camera *Camera)
 {
-  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+  Assert(Node->Chunk.Dim == World->ChunkDim);
+  Assert(Node->Type);
+  Assert(Node->DimInChunks >= V3i(1));
 
-  b32 Result = Node->Chunk.Dim > World->ChunkDim && Node->LodLevel > 0 && ContainsCamera(Node, Camera);
+  b32 Result  = Node->DimInChunks > V3i(1);
+      Result &= (Node->Chunk.Flags & Chunk_Queued) == 0;
+      Result &= ContainsCamera(World, Node, Camera);
+
   return Result;
 }
 
@@ -195,44 +237,57 @@ OctreeChildrenNeedToMerge(world *World, octree_node *Node, camera *Camera)
 {
   Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
 
-  b32 Result = ContainsCamera(Node, Camera) == False;
+  b32 Result  = Node->Type == OctreeNodeType_Transit;
+      Result &= ContainsCamera(World, Node, Camera) == False;
   return Result;
 }
 
-link_internal u32
-SplitOctreeNode(world *World, work_queue *Queue, octree_node *Node, memory_arena *Memory)
+
+link_internal void
+InitOctreeNodeAndQueueChunkForInit(world *World, work_queue *Queue, octree_node *Node, v3i WorldP, v3i DimInChunks)
 {
-  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
-  Assert(Node->Flags == OctreeNodeFlag_Leaf);
+  Node->Type = OctreeNodeType_Leaf;
+  Node->DimInChunks = DimInChunks;
 
-  RangeIterator_t(umm, ChildIndex, ArrayCount(Node->Children))
+  world_chunk *Chunk = &Node->Chunk;
+  AllocateWorldChunk(Chunk, WorldP, World->ChunkDim, World->ChunkMemory);
+  QueueChunkForInit(Queue, Chunk, MeshBit_Lod0);
+}
+
+link_internal u32
+SplitOctreeNode(world *World, work_queue *Queue, octree_node *Parent, memory_arena *Memory)
+{
+  Assert(Parent->Chunk.Dim % World->ChunkDim == V3i(0));
+  Assert(Parent->Type == OctreeNodeType_Leaf);
+  Parent->Type = OctreeNodeType_Transit;
+
+  v3i ChildDimInChunks = Parent->DimInChunks / 2;
+
+  RangeIterator(Index, s32(ArrayCount(Parent->Children)))
   {
-    Node->Children[ChildIndex] = Allocate(octree_node, Memory, 1);
-  }
+    Assert(Parent->Children[Index] == 0);
 
-  RangeIterator(Index, 8)
-  {
-    Assert(Node->Children[Index] == 0);
+    // NOTE(Jesse): This is used as a mask so we can drop out dimensions that are on the min edge
+    // when computing RelWorldP
+    v3i P = PositionFromIndex(Index, V3i(2,2,2));
+    v3i RelWorldP = P * ChildDimInChunks;
 
-    Node->Children[Index] = GetOrAllocate(&World->OctreeNodeFreelist);
-    world_chunk *Chunk = &Node->Children[Index]->Chunk;
+    octree_node *Child = GetOrAllocate(&World->OctreeNodeFreelist);
+    Parent->Children[Index] = Child;
 
-    AllocateWorldChunk({}, World->ChunkDim, World->ChunkMemory);
-
-    Chunk->Dim = Node->Chunk.Dim = World->ChunkDim;
-    Assert(Chunk->Dim % World->ChunkDim == V3i(0));
-
-    QueueChunkForInit(Queue, Chunk, MeshBit_Lod0);
-    /* Node->Children[Index]->Chunk = Chunk; */
+    InitOctreeNodeAndQueueChunkForInit(World, Queue, Child, Parent->Chunk.WorldP + RelWorldP, ChildDimInChunks);
   }
 
   return 8;
 }
 
 link_internal void
-CheckedDeallocateChildNode(engine_resources *Engine, octree_node *Node)
+CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 {
-  Assert(Node->Flags == OctreeNodeFlag_Leaf);
+  octree_node *Node = *Bucket;
+  *Bucket = 0;
+
+  Assert(Node->Type == OctreeNodeType_Leaf);
   Free(&Engine->World->OctreeNodeFreelist, Node);
 }
 
@@ -242,20 +297,20 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
-  Assert(Node->Flags == OctreeNodeFlag_Transit);
+  Assert(Node->Type == OctreeNodeType_Transit);
 
   u32 Result = False;
 
   v3i Dim = Node->Chunk.Dim;
 
-  CheckedDeallocateChildNode(Engine, Node->Children[0]);
-  CheckedDeallocateChildNode(Engine, Node->Children[1]);
-  CheckedDeallocateChildNode(Engine, Node->Children[2]);
-  CheckedDeallocateChildNode(Engine, Node->Children[3]);
-  CheckedDeallocateChildNode(Engine, Node->Children[4]);
-  CheckedDeallocateChildNode(Engine, Node->Children[5]);
-  CheckedDeallocateChildNode(Engine, Node->Children[6]);
-  CheckedDeallocateChildNode(Engine, Node->Children[7]);
+  CheckedDeallocateChildNode(Engine, Node->Children+0);
+  CheckedDeallocateChildNode(Engine, Node->Children+1);
+  CheckedDeallocateChildNode(Engine, Node->Children+2);
+  CheckedDeallocateChildNode(Engine, Node->Children+3);
+  CheckedDeallocateChildNode(Engine, Node->Children+4);
+  CheckedDeallocateChildNode(Engine, Node->Children+5);
+  CheckedDeallocateChildNode(Engine, Node->Children+6);
+  CheckedDeallocateChildNode(Engine, Node->Children+7);
 
   QueueChunkForInit(&Plat->LowPriority, &Node->Chunk, MeshBit_Lod0);
 
@@ -270,8 +325,6 @@ link_internal void
 MaintainWorldOctree(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  SleepMs(1000);
 
   b32     Continue = True;
   u32 ChunksQueued = 0;
@@ -293,7 +346,6 @@ MaintainWorldOctree(engine_resources *Engine)
       ChunksQueued += MergeOctreeChildren(Engine, Current);
     }
 
-    if (Current->Flags == OctreeNodeFlag_Transit)
     {
       if (Current->Children[0]) { Push(&Stack, Current->Children[0]); }
       if (Current->Children[1]) { Push(&Stack, Current->Children[1]); }
@@ -308,6 +360,45 @@ MaintainWorldOctree(engine_resources *Engine)
 }
 
 
+link_internal octree_node *
+GetWorldChunkFromOctree(world *World, v3i QueryP)
+{
+  octree_node *Result = {};
+  octree_node *Current = &World->Root;
+
+  b32 Done = False;
+  while (Done == False)
+  {
+    rect3cp Box = GetBoundingBox(World, Current);
+    if (Contains(Box, Canonical_Position(V3(0), QueryP)))
+    {
+      v3i CurrentToQuery = QueryP - Current->Chunk.WorldP;
+      v3i Cell =  CurrentToQuery / Current->DimInChunks;
+      Assert(Cell < V3i(2));
+
+      s32 Index = GetIndex(Cell, V3i(2)); Assert(Index < 8);
+
+      if (Current->Type == OctreeNodeType_Transit)
+      {
+        Current = Current->Children[Index];
+      }
+      else
+      {
+        Assert (Current->Type == OctreeNodeType_Leaf);
+        Result = Current;
+        Done = True;
+      }
+
+    }
+    else
+    {
+      Done = True;
+    }
+
+  }
+
+  return Result;
+}
 
 
 
