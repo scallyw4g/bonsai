@@ -7,7 +7,21 @@ Deactivate(particle_system *System)
 link_internal void
 Destroy(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
@@ -18,7 +32,21 @@ Destroy(entity *Entity)
 link_internal void
 Unspawn(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
@@ -431,7 +459,26 @@ SpawnEntity(entity *Entity)
     }
   }
 
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Spawned;
 }
@@ -1505,9 +1552,43 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
   }
 
 
-  DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena()); */
   FinalizeEntityUpdate(Entity);
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  //
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 }
 
 link_internal void

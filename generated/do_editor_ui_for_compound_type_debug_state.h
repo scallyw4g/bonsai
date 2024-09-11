@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:149:0
+// src/engine/editor.cpp:150:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -334,6 +334,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         RangeIterator(ArrayIndex, (128))
         {
           DoEditorUi(Ui, Window, Element->Frames+ArrayIndex, FSz("Frames[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -382,6 +383,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         RangeIterator(ArrayIndex, (1024))
         {
           DoEditorUi(Ui, Window, Element->RegisteredMemoryArenas+ArrayIndex, FSz("RegisteredMemoryArenas[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -398,6 +400,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         RangeIterator(ArrayIndex, (4096))
         {
           DoEditorUi(Ui, Window, Element->TrackedDrawCalls+ArrayIndex, FSz("TrackedDrawCalls[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

@@ -347,7 +347,24 @@ GetWorldChunkFromHashtable(world *World, world_position P)
 {
   /* TIMED_FUNCTION(); */ // This makes things much slower
 
-  NotImplemented;
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
+  // nopush-
   return {};
 #if 0
   u32 HashIndex = GetWorldChunkHash(P, World->VisibleRegion, World->HashSize);

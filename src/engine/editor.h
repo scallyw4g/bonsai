@@ -193,7 +193,13 @@ poof(
                       PushNewRow(Ui);
                       RangeIterator(ArrayIndex, member.array)
                       {
-                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        member.has_tag(custom_ui)?
+                        {
+                          member.tag_value(custom_ui);
+                        }
+                        {
+                          DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        }
                         member.is_primitive?  { PushNewRow(Ui); }
                       }
                     CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

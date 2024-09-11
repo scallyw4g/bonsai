@@ -16,10 +16,11 @@ struct octree_node
   // TODO(Jesse): Maybe make this a pointer ..?
   world_chunk Chunk;
 
-  union {
+  // NOTE(Jesse): Took the union out because the UI doesn't know how to deal..
+  /* union { */
+    octree_node *Children[8]; poof(@custom_ui(if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);}))
     octree_node *Next; // NOTE(Jesse): Freelist Next
-    octree_node *Children[8];
-  };
+  /* }; */
 };
 
 typedef octree_node* octree_node_ptr;

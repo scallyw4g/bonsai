@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:410:0
+// src/engine/editor.cpp:415:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -361,6 +361,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         RangeIterator(ArrayIndex, 2)
         {
           DoEditorUi(Ui, Window, Element->GpuBuffers+ArrayIndex, FSz("GpuBuffers[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

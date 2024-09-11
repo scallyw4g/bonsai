@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:298:0
+// src/engine/editor.cpp:297:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -277,6 +277,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         RangeIterator(ArrayIndex, 28)
         {
           DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, FSz("_Pad1[%d]", ArrayIndex), Params);
+
  PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

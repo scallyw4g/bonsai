@@ -211,36 +211,41 @@ GetBoundingBox(world *World, octree_node *Node)
 }
 
 link_internal b32
-ContainsCamera(world *World, octree_node *Node, camera *Camera)
+ContainsCameraGhost(world *World, entity **EntityTable, octree_node *Node, camera *Camera)
 {
   rect3cp Rect = GetBoundingBox(World, Node);
-  b32 Result = Contains(Rect, Camera->CurrentP);
+
+  b32 Result = {};
+  if (entity *Ghost = GetEntity(EntityTable, Camera->GhostId))
+  {
+    Result = Contains(Rect, Ghost->P);
+  }
   return Result;
 }
 
-link_internal b32
-OctreeNodeNeedsToSplit(world *World, octree_node *Node, camera *Camera)
-{
-  Assert(Node->Chunk.Dim == World->ChunkDim);
-  Assert(Node->Type);
-  Assert(Node->DimInChunks >= V3i(1));
+/* link_internal b32 */
+/* OctreeNodeNeedsToSplit(world *World, octree_node *Node, camera *Camera) */
+/* { */
+/*   Assert(Node->Chunk.Dim == World->ChunkDim); */
+/*   Assert(Node->Type); */
+/*   Assert(Node->DimInChunks >= V3i(1)); */
 
-  b32 Result  = Node->DimInChunks > V3i(1);
-      Result &= (Node->Chunk.Flags & Chunk_Queued) == 0;
-      Result &= ContainsCamera(World, Node, Camera);
+/*   b32 Result  = Node->DimInChunks > V3i(1); */
+/*       Result &= (Node->Chunk.Flags & Chunk_Queued) == 0; */
+/*       Result &= ContainsCamera(World, Node, Camera); */
 
-  return Result;
-}
+/*   return Result; */
+/* } */
 
-link_internal b32
-OctreeChildrenNeedToMerge(world *World, octree_node *Node, camera *Camera)
-{
-  Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
+/* link_internal b32 */
+/* OctreeChildrenNeedToMerge(world *World, octree_node *Node, camera *Camera) */
+/* { */
+/*   Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0)); */
 
-  b32 Result  = Node->Type == OctreeNodeType_Transit;
-      Result &= ContainsCamera(World, Node, Camera) == False;
-  return Result;
-}
+/*   b32 Result  = Node->Type == OctreeNodeType_Transit; */
+/*       Result &= ContainsCamera(World, Node, Camera) == False; */
+/*   return Result; */
+/* } */
 
 
 link_internal void
@@ -298,6 +303,7 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
 
   Assert(Node->Chunk.Dim % World->ChunkDim == V3i(0));
   Assert(Node->Type == OctreeNodeType_Transit);
+  Node->Type = OctreeNodeType_Leaf;
 
   u32 Result = False;
 
@@ -332,29 +338,43 @@ MaintainWorldOctree(engine_resources *Engine)
   octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
   Push(&Stack, &World->Root);
 
+  /* RuntimeBreak(); */
   while (CurrentCount(&Stack) && (ChunksQueued < MAX_WORLD_CHUNKS_QUEUED_PER_FRAME) )
   {
-    octree_node *Current = Pop(&Stack);
+    octree_node *Node = Pop(&Stack);
 
-    if (OctreeNodeNeedsToSplit(World, Current, Camera))
+    Assert(Node->Chunk.Dim == World->ChunkDim);
+    Assert(Node->Type);
+    Assert(Node->DimInChunks >= V3i(1));
+
+    b32 OctreeNodeNeedsToSplit  = (Node->DimInChunks > V3i(1));
+        OctreeNodeNeedsToSplit &= (Node->Type == OctreeNodeType_Leaf);
+        OctreeNodeNeedsToSplit &= (Node->Chunk.Flags & Chunk_Queued) == 0;
+        OctreeNodeNeedsToSplit &= ContainsCameraGhost(World, EntityTable, Node, Camera);
+    if (OctreeNodeNeedsToSplit)
     {
-      ChunksQueued += SplitOctreeNode(World, &Plat->LowPriority, Current, &World->OctreeMemory);
+      ChunksQueued += SplitOctreeNode(World, &Plat->LowPriority, Node, &World->OctreeMemory);
     }
 
-    if (OctreeChildrenNeedToMerge(World, Current, Camera))
+
+
+    b32 OctreeChildrenNeedToMerge  = Node->Type == OctreeNodeType_Transit;
+        OctreeChildrenNeedToMerge &= (Node->Chunk.Flags & Chunk_Queued) == 0;
+        OctreeChildrenNeedToMerge &= ContainsCameraGhost(World, EntityTable, Node, Camera) == False;
+    if (OctreeChildrenNeedToMerge)
     {
-      ChunksQueued += MergeOctreeChildren(Engine, Current);
+      ChunksQueued += MergeOctreeChildren(Engine, Node);
     }
 
     {
-      if (Current->Children[0]) { Push(&Stack, Current->Children[0]); }
-      if (Current->Children[1]) { Push(&Stack, Current->Children[1]); }
-      if (Current->Children[2]) { Push(&Stack, Current->Children[2]); }
-      if (Current->Children[3]) { Push(&Stack, Current->Children[3]); }
-      if (Current->Children[4]) { Push(&Stack, Current->Children[4]); }
-      if (Current->Children[5]) { Push(&Stack, Current->Children[5]); }
-      if (Current->Children[6]) { Push(&Stack, Current->Children[6]); }
-      if (Current->Children[7]) { Push(&Stack, Current->Children[7]); }
+      if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
+      if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
+      if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
+      if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
+      if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
+      if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
+      if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
+      if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
     }
   }
 }

@@ -88,6 +88,7 @@ GetUiDebug()
 }
 
 
+
 poof(do_editor_ui_for_compound_type(white_noise_params))
 #include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
 
@@ -186,8 +187,6 @@ poof(do_editor_ui_for_enum(tone_mapping_type))
 
 
 
-poof(do_editor_ui_for_compound_type(world))
-#include <generated/do_editor_ui_for_compound_type_world.h>
 
 poof(do_editor_ui_for_compound_type(lighting_settings))
 #include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
@@ -297,6 +296,12 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+poof(do_editor_ui_for_compound_type(octree_node))
+#include <generated/do_editor_ui_for_compound_type_octree_node.h>
+
+poof(do_editor_ui_for_compound_type(world))
+#include <generated/do_editor_ui_for_compound_type_world.h>
 
 // NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
 /* poof(do_editor_ui_for_enum(asset_load_state)) */

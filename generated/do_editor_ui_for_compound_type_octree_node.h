@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:397:0
+// src/engine/editor.cpp:300:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle octree_node", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -29,24 +29,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ID),
-        CSz("ID"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader_uniform*, Element->FirstUniform),
-        CSz("FirstUniform"),
+        Cast(octree_node_type*,&Element->Type),
+        CSz("Type"),
         Params
         );
 
@@ -60,8 +44,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->VertexSourceFilename),
-        CSz("VertexSourceFilename"),
+        Cast(v3i*,&Element->DimInChunks),
+        CSz("DimInChunks"),
         Params
         );
 
@@ -71,13 +55,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-      PushNewRow(Ui);
-
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->FragSourceFilename),
-        CSz("FragSourceFilename"),
+        Cast(world_chunk*,&Element->Chunk),
+        CSz("Chunk"),
         Params
         );
 
@@ -87,7 +70,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+      
+      if (ToggleButton(Ui, CSz("v Children[8]"), CSz("> Children[8]"), UiId(Window, "toggle octree_node octree_node Children", Element->Children), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 8)
+        {
+if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);};
+
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
       PushNewRow(Ui);
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(octree_node*, Element->Next),
+        CSz("Next"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }
