@@ -1,3 +1,5 @@
+#define COMPUTE_NOISE_INPUT(channel_name, chunk) (chunk->DimInChunks.channel_name/2) + (channel_name*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
+
 
 struct noise_value_to_material_index
 {

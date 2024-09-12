@@ -452,10 +452,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_FBM2D:
           {
             // FBM params
-            v3 Period = V3(300);
-            s32 Amplititude = 220;
-            s32 StartingZDepth = -200;
-            u32 Octaves = 4;
+            v3 Period = V3(18000);
+            s32 Amplititude = 10000;
+            s32 StartingZDepth = 200;
+            u32 Octaves = 6;
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
@@ -567,7 +567,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
             v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
-            s32 StartingZDepth = -100;
+            s32 StartingZDepth = 100;
             u32 OctaveCount = 1;
 
             octave_buffer OctaveBuf = { OctaveCount, {} };
@@ -716,7 +716,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_SinCos;
+  /* GameState->TerrainGenType = TerrainGenType_SinCos; */
+  /* GameState->TerrainGenType = TerrainGenType_TerracedTerrain; */
+  GameState->TerrainGenType = TerrainGenType_FBM2D;
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
   /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */

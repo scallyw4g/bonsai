@@ -9,8 +9,10 @@ WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 8);
 #else
 
 global_variable chunk_dimension
-/* g_VisibleRegion = Chunk_Dimension(120, 120, 6); */
-g_VisibleRegion = Chunk_Dimension(128, 128, 128);
+g_VisibleRegion = Chunk_Dimension(2048, 2048, 2048);
+/* g_VisibleRegion = Chunk_Dimension(512, 512, 512); */
+/* g_VisibleRegion = Chunk_Dimension(256, 256, 256); */
+/* g_VisibleRegion = Chunk_Dimension(128, 128, 128); */
 /* g_VisibleRegion = Chunk_Dimension(64, 64, 64); */
 /* g_VisibleRegion = Chunk_Dimension(80, 80, 8); */
 /* g_VisibleRegion = Chunk_Dimension(64, 64, 8); */

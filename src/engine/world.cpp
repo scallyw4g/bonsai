@@ -322,6 +322,7 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
     {
       MergeOctreeChildren(Engine, Node);
     } break;
+
   }
 }
 
@@ -355,7 +356,7 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
 
 
 // TODO(Jesse): Definitely compute this from the number of worker threads available on the system
-#define MAX_WORLD_CHUNKS_QUEUED_PER_FRAME (16)
+#define MAX_WORLD_CHUNKS_QUEUED_PER_FRAME (128)
 link_internal void
 MaintainWorldOctree(engine_resources *Engine)
 {

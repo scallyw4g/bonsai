@@ -674,6 +674,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   u32 ChunkSum = 0;
 
+#if 0
   s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
   s32 MaxZ = MinZ+WorldChunkDim.z ;
 
@@ -690,6 +691,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   if (MinZ > Amplitude)
     return ChunkSum;
+#endif
 
 #if VOXEL_DEBUG_COLOR
   memory_arena *TempArena = GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory;
