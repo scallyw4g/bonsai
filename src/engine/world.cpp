@@ -301,7 +301,15 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
     {
       if (Node->Chunk.Flags & Chunk_Queued)
       {
-        Free(&Engine->World->OctreeNodeDeferFreelist, Node);
+        if ((Node->Chunk.Flags&Chunk_Deallocate) == 0)
+        {
+          {
+            octree_node *TestNode = Engine->World->OctreeNodeDeferFreelist.First;
+            while (TestNode) { Assert(TestNode != Node); TestNode = TestNode->Next; }
+          }
+          Node->Chunk.Flags = chunk_flag(Node->Chunk.Flags|Chunk_Deallocate);
+          Free(&Engine->World->OctreeNodeDeferFreelist, Node);
+        }
       }
       else
       {
@@ -355,6 +363,33 @@ MaintainWorldOctree(engine_resources *Engine)
 
   b32     Continue = True;
   u32 ChunksQueued = 0;
+
+
+
+  // Free deferred chunks that are complete
+  {
+    while (World->OctreeNodeDeferFreelist.First)
+    {
+      octree_node *Node = World->OctreeNodeDeferFreelist.First;
+      octree_node *Next = Node->Next;
+
+      if (Node->Chunk.Flags & Chunk_Queued)
+      {
+        break;
+      }
+      else
+      {
+        DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
+        Free(&World->OctreeNodeFreelist, Node);
+
+      }
+
+      Node = Next;
+      World->OctreeNodeDeferFreelist.First = Node;
+    }
+  }
+
+
 
   octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
   Push(&Stack, &World->Root);
