@@ -2238,9 +2238,6 @@ Terrain_SinCos( world_chunk *Chunk,
 
   u32 ChunkSum = 0;
 
-  s32 MinZ = Chunk->WorldP.z*WorldChunkDim.z;
-  s32 MaxZ = MinZ+WorldChunkDim.z ;
-
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
     s64 WorldZ = (Chunk->DimInChunks.z/2) + (z*Chunk->DimInChunks.z) + (Chunk->WorldP.z*WorldChunkDim.z) + SrcToDest.z ;
@@ -2262,21 +2259,17 @@ Terrain_SinCos( world_chunk *Chunk,
     }
   }
 
-/*   s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin; */
-/*   NotImplemented; */
-/*   /1* ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, Normals); *1/ */
-
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZ = (Chunk->DimInChunks.z/2) + (z*Chunk->DimInChunks.z) + (Chunk->WorldP.z*WorldChunkDim.z) + SrcToDest.z ;
     s64 WorldZSubZMin = WorldZ - zMin;
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
-      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      s64 WorldY = (Chunk->DimInChunks.y/2) + (y*Chunk->DimInChunks.y) + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
+        s64 WorldX = (Chunk->DimInChunks.x/2) + (x*Chunk->DimInChunks.x) + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
 
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         r32 *NoiseValue = NoiseValues+VoxIndex;

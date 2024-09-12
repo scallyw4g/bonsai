@@ -299,8 +299,15 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 
     case OctreeNodeType_Leaf:
     {
-      DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
-      Free(&Engine->World->OctreeNodeFreelist, Node);
+      if (Node->Chunk.Flags & Chunk_Queued)
+      {
+        Free(&Engine->World->OctreeNodeDeferFreelist, Node);
+      }
+      else
+      {
+        DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
+        Free(&Engine->World->OctreeNodeFreelist, Node);
+      }
     } break;
 
     case OctreeNodeType_Transit:

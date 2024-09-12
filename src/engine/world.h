@@ -46,6 +46,7 @@ struct world
   octree_node Root;
   memory_arena OctreeMemory;
   octree_node_freelist OctreeNodeFreelist;
+  octree_node_freelist OctreeNodeDeferFreelist; // Chunks that were queued, to be freed later.
 
 
   bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)

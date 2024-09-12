@@ -104,6 +104,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(octree_node_freelist*,&Element->OctreeNodeDeferFreelist),
+        CSz("OctreeNodeDeferFreelist"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(s32*,&Element->FreeChunkCount),
         CSz("FreeChunkCount"),
         Params
