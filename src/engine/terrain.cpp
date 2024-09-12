@@ -2243,14 +2243,14 @@ Terrain_SinCos( world_chunk *Chunk,
 
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    s64 WorldZ = z + SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZ = (Chunk->DimInChunks.z/2) + (z*Chunk->DimInChunks.z) + (Chunk->WorldP.z*WorldChunkDim.z) + SrcToDest.z ;
     s64 WorldZSubZMin = WorldZ - zMin;
     for ( s32 y = 0; y < Dim.y; ++ y)
     {
-      s64 WorldY = y + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
+      s64 WorldY = (Chunk->DimInChunks.y/2) + (y*Chunk->DimInChunks.y) + SrcToDest.y + (WorldChunkDim.y*Chunk->WorldP.y);
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
-        s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
+        s64 WorldX = (Chunk->DimInChunks.x/2) + (x*Chunk->DimInChunks.x) + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         r32 NoiseValue = ((Sin(r32(WorldX)/Period.x)+1.f)/2.f) + ((Cos(r32(WorldY)/Period.y)+1.f)/4.f);
 

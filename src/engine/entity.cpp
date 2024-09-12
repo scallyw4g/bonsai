@@ -447,7 +447,9 @@ SpawnEntity(entity *Entity)
           octree_node *Node = GetWorldChunkFromOctree( World, CP.WorldP );
           if (Node == 0)
           {
-            NotImplemented;
+            //nopush 
+            //do we care?
+            /* NotImplemented; */
             /* Chunk = AllocateAndInsertChunk(World, CP.WorldP); */
             /* if (Chunk) */
             /* { */
