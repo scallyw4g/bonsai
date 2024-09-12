@@ -579,10 +579,10 @@ global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 struct mesh_freelist;
 
 link_internal void
-AllocateWorldChunk(world_chunk *Result,  world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
+AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage);
 
 link_internal world_chunk *
-AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
+AllocateWorldChunk(v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage);
 
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);

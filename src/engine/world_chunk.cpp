@@ -69,7 +69,7 @@ ChunkIsGarbage(world_chunk* Chunk)
 }
 
 link_internal void
-AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension Dim, memory_arena *Storage)
+AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage)
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
@@ -77,6 +77,7 @@ AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension D
   Result->WorldP = WorldP;
 
   Result->Dim  = Dim;
+  Result->DimInChunks  = DimInChunks;
   /* Result->DimX = SafeTruncateU8(Dim.x); */
   /* Result->DimY = SafeTruncateU8(Dim.y); */
   /* Result->DimZ = SafeTruncateU8(Dim.z); */
@@ -85,10 +86,10 @@ AllocateWorldChunk(world_chunk *Result, world_position WorldP, chunk_dimension D
 }
 
 link_internal world_chunk *
-AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage)
+AllocateWorldChunk(v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage)
 {
   world_chunk *Result = AllocateAlignedProtection(world_chunk, Storage, 1, CACHE_LINE_SIZE, false);
-  AllocateWorldChunk(Result, WorldP, Dim, Storage);
+  AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Storage);
   return Result;
 }
 
@@ -192,7 +193,10 @@ AllocateAndInsertChunk(world *World, world_position P)
 {
   TIMED_FUNCTION();
 
+  NotImplemented;
+
   world_chunk *Result = 0;
+#if 0
 
   if (IsInsideVisibleRegion(World, P))
   {
@@ -219,6 +223,7 @@ AllocateAndInsertChunk(world *World, world_position P)
     }
   }
 
+#endif
   return Result;
 }
 
@@ -242,7 +247,7 @@ GetFreeWorldChunk(world *World)
   else
   {
     /* Info("Allocated World Chunk"); */
-    Result = AllocateWorldChunk({}, World->ChunkDim, World->ChunkMemory);
+    Result = AllocateWorldChunk({}, World->ChunkDim, {}, World->ChunkMemory);
     Assert(Result->Flags == Chunk_Uninitialized);
   }
 
@@ -707,7 +712,7 @@ Terrain_FBM2D( world_chunk *Chunk,
   u32 Octaves = *(u32*)OctaveCount;
   for ( s32 z = 0; z < Dim.z; ++ z)
   {
-    s64 WorldZ = z - SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z);
+    s64 WorldZ = (Chunk->DimInChunks.z/2) + (z*Chunk->DimInChunks.z) + (Chunk->WorldP.z*WorldChunkDim.z) - SrcToDest.z ;
     s64 WorldZBiased = WorldZ - zMin;
     /* s64 WorldZ = z + NoiseBasis.z; */
     /* s64 WorldZBiased = WorldZ - zMin; */
@@ -724,7 +729,8 @@ Terrain_FBM2D( world_chunk *Chunk,
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
-          v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), IPeriod);
+          Assert(Chunk->DimInChunks > V3i(0));
+          v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z)*V3(Chunk->DimInChunks) + Chunk->DimInChunks/2.f, IPeriod) ;
 
           r32 Warp = 0.f;
           r32 N = PerlinNoise(NoiseInput+Warp);
@@ -3665,7 +3671,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   v3i SynChunkP = DestChunk->WorldP;
 
 
-  world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Thread->TempMemory);
+  world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, DestChunk->DimInChunks, Thread->TempMemory);
 
 
   // Map to absolute space.  Very bad, no good, do not try this at home.
@@ -4368,6 +4374,7 @@ MousePickVoxel(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
+#if 0
   maybe_ray MaybeRay = Resources->MaybeMouseRay;
   if (MaybeRay.Tag == Maybe_Yes)
   {
@@ -4382,6 +4389,7 @@ MousePickVoxel(engine_resources *Resources)
       Result.Value = RayResult;
     }
   }
+#endif
 
   return Result;
 }

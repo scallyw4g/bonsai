@@ -1034,7 +1034,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     //
     /* DeallocateWorldChunk(Chunk, MeshFreelist); */
     DeallocateGpuBuffers(RenderQ, Chunk);
-    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
+    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, {}, Editor->Memory);
   }
 
   if (UpdateVoxels)
@@ -1743,7 +1743,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           else
           {
             // @editor_chunk_memory_question
-            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
+            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, {}, Editor->Memory);
           }
 
           world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
@@ -1753,7 +1753,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           }
           else
           {
-            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, Editor->Memory);
+            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, {}, Editor->Memory);
           }
 
 

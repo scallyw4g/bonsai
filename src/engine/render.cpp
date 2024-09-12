@@ -1526,7 +1526,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
       /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
       AssertNoGlErrors;
 
-      v3 Basis = GetRenderP(Engine, Chunk->WorldP);
+      v3 Basis = GetRenderP(Engine, Chunk->WorldP); // - (Chunk->DimInChunks/2.f);
       DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }

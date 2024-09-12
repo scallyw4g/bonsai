@@ -24,8 +24,7 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
 
   World->Root.Type = OctreeNodeType_Leaf;
-  World->Root.Chunk.DimInChunks = VisibleRegion;
-  AllocateWorldChunk(&World->Root.Chunk, {}, WorldChunkDim, World->ChunkMemory);
+  AllocateWorldChunk(&World->Root.Chunk, {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
 
   World->OctreeNodeFreelist.Memory = &World->OctreeMemory;
 
@@ -203,8 +202,8 @@ GatherVoxelsOverlappingArea(engine_resources *Engine, rect3cp Rect, memory_arena
 link_internal rect3cp
 GetBoundingBox(world *World, octree_node *Node)
 {
-  cp Min = Canonical_Position(Node->Chunk.WorldP, {});
-  cp Max = Canonicalize(World, Canonical_Position(V3(Node->Chunk.DimInChunks), Node->Chunk.WorldP));
+  cp Min = Canonical_Position(V3(0), Node->Chunk.WorldP);
+  cp Max = Canonicalize(World, Canonical_Position(V3(0), Node->Chunk.WorldP+Node->Chunk.DimInChunks));
 
   rect3cp Rect = RectMinMax(Min, Max);
   return Rect;
@@ -252,10 +251,9 @@ link_internal void
 InitOctreeNodeAndQueueChunkForInit(world *World, work_queue *Queue, octree_node *Node, v3i WorldP, v3i DimInChunks)
 {
   Node->Type = OctreeNodeType_Leaf;
-  Node->Chunk.DimInChunks = DimInChunks;
 
   world_chunk *Chunk = &Node->Chunk;
-  AllocateWorldChunk(Chunk, WorldP, World->ChunkDim, World->ChunkMemory);
+  AllocateWorldChunk(Chunk, WorldP, World->ChunkDim, DimInChunks, World->ChunkMemory);
   QueueChunkForInit(Queue, Chunk, MeshBit_Lod0);
 }
 
@@ -286,14 +284,30 @@ SplitOctreeNode(world *World, work_queue *Queue, octree_node *Parent, memory_are
   return 8;
 }
 
+link_internal u32
+MergeOctreeChildren(engine_resources *Engine, octree_node *Node);
+
 link_internal void
 CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 {
   octree_node *Node = *Bucket;
   *Bucket = 0;
 
-  Assert(Node->Type == OctreeNodeType_Leaf);
-  Free(&Engine->World->OctreeNodeFreelist, Node);
+  switch(Node->Type)
+  {
+    InvalidCase(OctreeNodeType_Undefined);
+
+    case OctreeNodeType_Leaf:
+    {
+      DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
+      Free(&Engine->World->OctreeNodeFreelist, Node);
+    } break;
+
+    case OctreeNodeType_Transit:
+    {
+      MergeOctreeChildren(Engine, Node);
+    } break;
+  }
 }
 
 link_internal u32
@@ -362,7 +376,7 @@ MaintainWorldOctree(engine_resources *Engine)
     b32 OctreeNodeNeedsToSplit  = (Node->Chunk.DimInChunks > V3i(1));
         OctreeNodeNeedsToSplit &= (Node->Type == OctreeNodeType_Leaf);
         OctreeNodeNeedsToSplit &= (Node->Chunk.Flags & Chunk_Queued) == 0;
-        OctreeNodeNeedsToSplit &= ContainsCameraGhost(World, EntityTable, Node, Camera);
+        OctreeNodeNeedsToSplit &= ContainsCameraGhost(World, EntityTable, Node, GameCamera);
     if (OctreeNodeNeedsToSplit)
     {
       ChunksQueued += SplitOctreeNode(World, &Plat->LowPriority, Node, &World->OctreeMemory);
@@ -372,9 +386,10 @@ MaintainWorldOctree(engine_resources *Engine)
 
     b32 OctreeChildrenNeedToMerge  = Node->Type == OctreeNodeType_Transit;
         OctreeChildrenNeedToMerge &= (Node->Chunk.Flags & Chunk_Queued) == 0;
-        OctreeChildrenNeedToMerge &= ContainsCameraGhost(World, EntityTable, Node, Camera) == False;
+        OctreeChildrenNeedToMerge &= ContainsCameraGhost(World, EntityTable, Node, GameCamera) == False;
     if (OctreeChildrenNeedToMerge)
     {
+      ContainsCameraGhost(World, EntityTable, Node, Camera);
       ChunksQueued += MergeOctreeChildren(Engine, Node);
     }
 
@@ -383,6 +398,35 @@ MaintainWorldOctree(engine_resources *Engine)
       auto Chunk = &Node->Chunk;
       SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
       Push(MainDrawList, &Chunk);
+    }
+
+    switch(Node->Type)
+    {
+      InvalidCase(OctreeNodeType_Undefined);
+
+      case OctreeNodeType_Leaf:
+      {
+        Assert(Node->Children[0] == 0); 
+        Assert(Node->Children[1] == 0);
+        Assert(Node->Children[2] == 0);
+        Assert(Node->Children[3] == 0);
+        Assert(Node->Children[4] == 0);
+        Assert(Node->Children[5] == 0);
+        Assert(Node->Children[6] == 0);
+        Assert(Node->Children[7] == 0);
+      } break;
+
+      case OctreeNodeType_Transit:
+      {
+        Assert(Node->Children[0]); 
+        Assert(Node->Children[1]);
+        Assert(Node->Children[2]);
+        Assert(Node->Children[3]);
+        Assert(Node->Children[4]);
+        Assert(Node->Children[5]);
+        Assert(Node->Children[6]);
+        Assert(Node->Children[7]);
+      } break;
     }
 
     if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
