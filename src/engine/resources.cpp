@@ -5,7 +5,8 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   Assert(Chunk->DEBUG_OwnedByThread == 0);
   Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
 
-  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
+  Assert( (Chunk->Flags & Chunk_Queued) == 0);
+  Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
 
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
 
@@ -34,13 +35,12 @@ RenderOctree(engine_resources *Engine, shader *Shader)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   b32     Continue = True;
-  u32 ChunksQueued = 0;
 
   octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
   Push(&Stack, &World->Root);
 
   /* RuntimeBreak(); */
-  while (CurrentCount(&Stack) && (ChunksQueued < MAX_WORLD_CHUNKS_QUEUED_PER_FRAME) )
+  while (CurrentCount(&Stack))
   {
     octree_node *Node = Pop(&Stack);
 
