@@ -200,4 +200,7 @@ link_internal octree_node *
 GetWorldChunkFromOctree(world *World, v3i QueryP);
 
 link_internal b32
-OctreeLeafShouldSplit(world *World, entity **EntityTable, camera *Camera, octree_node *Node);
+OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node);
+
+link_internal u32
+MergeOctreeChildren(engine_resources *Engine, octree_node *Node);

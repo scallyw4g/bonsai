@@ -454,8 +454,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             // FBM params
             v3 Period = V3(18000);
             s32 Amplititude = 10000;
-            s32 StartingZDepth = 200;
-            u32 Octaves = 4;
+            s32 StartingZDepth = 100;
+            u32 Octaves = 6;
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
@@ -708,7 +708,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 100000.0f, 5000.0f);
+  StandardCamera(Graphics->Camera, 200000.0f, 50000.0f);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
