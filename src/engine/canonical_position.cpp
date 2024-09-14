@@ -33,6 +33,33 @@ Canonicalize( world *World, canonical_position *P)
   *P = Canonicalize(World->ChunkDim, P->Offset, P->WorldP);
 }
 
+// Canonical add
+link_internal cp
+CAdd(world *World, cp P1, cp P2)
+{
+  cp Result = {
+    P1.Offset + P2.Offset,
+    P1.WorldP + P2.WorldP
+  };
+
+  Canonicalize(World, &Result);
+  return Result;
+}
+
+// Canonical add
+link_internal cp
+CSub(world *World, cp P1, cp P2)
+{
+  cp Result = {
+    P1.Offset - P2.Offset,
+    P1.WorldP - P2.WorldP
+  };
+
+  Canonicalize(World, &Result);
+  return Result;
+}
+
+
 link_internal cp
 SimSpaceToCanonical(world *World, v3 P)
 {

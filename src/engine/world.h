@@ -2,16 +2,14 @@ enum octree_node_type
 {
   OctreeNodeType_Undefined,
 
-  OctreeNodeType_Transit,
-  OctreeNodeType_Leaf,
+  OctreeNodeType_Branch, // Interior edge
+  /* OctreeNodeType_Twig,   // Edge directly connected to leaf */
+  OctreeNodeType_Leaf,   // .. leaf
 };
 
 struct octree_node
 {
   octree_node_type Type;
-
-  // This is the world-space dimension of the node, in chunks
-  /* v3i DimInChunks; */
 
   // TODO(Jesse): Maybe make this a pointer ..?
   world_chunk Chunk;
@@ -56,6 +54,15 @@ struct world
   v3i ChunkDim;                      poof(@ui_skip)
   memory_arena *ChunkMemory;         poof(@ui_skip)
   world_flag Flags;                  poof(@ui_skip)
+};
+
+
+struct octree_stats
+{
+  s32 NewQueues = 0;
+  s32 TotalQueued = 0;
+  s32 TotalLeaves = 0;
+  s32 TotalBranches = 0;
 };
 
 
@@ -191,3 +198,6 @@ GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffe
 
 link_internal octree_node *
 GetWorldChunkFromOctree(world *World, v3i QueryP);
+
+link_internal b32
+OctreeLeafShouldSplit(world *World, entity **EntityTable, camera *Camera, octree_node *Node);

@@ -739,9 +739,9 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Pack
 }
 
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 HSVColor, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 RGBColor, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  DrawVoxel(Mesh, RenderP_VoxelCenter, PackHSVColor(HSVColor), Diameter, TransEmiss);
+  DrawVoxel(Mesh, RenderP_VoxelCenter, RGBtoPackedHSV(RGBColor), Diameter, TransEmiss);
 }
 
 inline void

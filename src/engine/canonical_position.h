@@ -168,6 +168,16 @@ operator+(canonical_position A, v3 B)
   return Result;
 }
 
+inline canonical_position
+operator/(canonical_position A, s32 Int)
+{
+  canonical_position Result = A;
+  Result.Offset /= f32(Int);
+  Result.WorldP /= Int;
+  return Result;
+}
+
+
 inline canonical_position&
 operator+=(canonical_position& A, float B)
 {
@@ -230,6 +240,7 @@ operator<=(cp P1, cp P2)
                (P1.WorldP == P2.WorldP && (P1.Offset <= P2.Offset));
   return Result;
 }
+
 
 
 

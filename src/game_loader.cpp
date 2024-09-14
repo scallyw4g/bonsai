@@ -235,6 +235,8 @@ main( s32 ArgCount, const char ** Args )
    *  Main Game loop
    */
 
+  /* SleepMs(2000); */
+
   r32 LastMs = 0;
   while (Os->ContinueRunning)
   {

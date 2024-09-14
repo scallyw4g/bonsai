@@ -3634,6 +3634,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
   // NOTE(Jesse): Chunk flags modified by caller; this routine gets called multiple times per job
 }
 
+
 link_internal void
 InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                            thread_local_state *Thread,
@@ -3921,7 +3922,7 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
   }
 #endif
 #if 0
-        v3 RGBColor = 0;
+        v3 RGBColor = {};
 
         if (Chunk)
         {

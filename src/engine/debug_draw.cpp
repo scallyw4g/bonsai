@@ -294,7 +294,7 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, wo
                      chunk_dimension WorldChunkDim, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
-  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim*Chunk->DimInChunks, Chunk->WorldP), Graphics->Camera);
 
 
   DEBUG_DrawAABB(Mesh, MinP, MaxP, RGBColor, Thickness);
