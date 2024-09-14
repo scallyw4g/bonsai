@@ -466,7 +466,7 @@ poof(generate_cursor(octree_node_ptr))
 #include <generated/generate_cursor_octree_node.h>
 
 #define MAX_OCTREE_NODE_BUCKETS (8)
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (2)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (4)
 struct octree_node_priority_queue
 {
   octree_node_ptr_cursor Lists[MAX_OCTREE_NODE_BUCKETS];
@@ -710,34 +710,40 @@ MaintainWorldOctree(engine_resources *Engine)
 
   octree_stats Stats = {};
 
-  u32 NumQueued = 0;
-  RangeIterator(ListIndex, MAX_OCTREE_NODE_BUCKETS)
+  s32 LowPriorityQueueCount = s32(EventsCurrentlyInQueue(&Plat->LowPriority));
+
+  s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - LowPriorityQueueCount);
+  s32 NumQueuedThisFrame = 0;
+  if (MaxToQueueThisFrame)
   {
-    octree_node_ptr_cursor List = Queue.Lists[ListIndex];
-    RangeIterator(BucketIndex, MAX_OCTREE_NODES_QUEUED_PER_FRAME)
+    RangeIterator(ListIndex, MAX_OCTREE_NODE_BUCKETS)
     {
-      octree_node **NodeP = GetPtr(&List, umm(BucketIndex));
-      if (NodeP)
+      octree_node_ptr_cursor List = Queue.Lists[ListIndex];
+      RangeIterator(BucketIndex, MAX_OCTREE_NODES_QUEUED_PER_FRAME)
       {
-        octree_node *Node = *NodeP;
-        Assert(Node->Type == OctreeNodeType_Leaf);
-
-        world_chunk *Chunk = &Node->Chunk;
-        if ((Chunk->Flags & Chunk_Queued) == 0)
+        octree_node **NodeP = GetPtr(&List, umm(BucketIndex));
+        if (NodeP)
         {
-          if (Node->Chunk.Flags == Chunk_Uninitialized)
-          {
-            AllocateWorldChunk(Chunk, Chunk->WorldP, World->ChunkDim, Chunk->DimInChunks, World->ChunkMemory);
-          }
-          QueueChunkForInit(&Plat->LowPriority, &Node->Chunk, MeshBit_Lod0);
-          ++Stats.NewQueues;
-        }
+          octree_node *Node = *NodeP;
+          Assert(Node->Type == OctreeNodeType_Leaf);
 
-        if (++NumQueued == MAX_OCTREE_NODES_QUEUED_PER_FRAME) goto done_queueing_nodes;
-      }
-      else
-      {
-        break;
+          world_chunk *Chunk = &Node->Chunk;
+          if ((Chunk->Flags & Chunk_Queued) == 0)
+          {
+            if (Node->Chunk.Flags == Chunk_Uninitialized)
+            {
+              AllocateWorldChunk(Chunk, Chunk->WorldP, World->ChunkDim, Chunk->DimInChunks, World->ChunkMemory);
+            }
+            QueueChunkForInit(&Plat->LowPriority, &Node->Chunk, MeshBit_Lod0);
+            ++Stats.NewQueues;
+          }
+
+          if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+        }
+        else
+        {
+          break;
+        }
       }
     }
   }
