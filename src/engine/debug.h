@@ -58,6 +58,10 @@ struct engine_debug
   b8 TriggerRuntimeBreak;
   b8 ResetAssetNodeView;
 
+  b8 DrawBranchNodes;
+  b8 DrawLeafNodes;
+  b8 DrawQueuedNodes;
+
   u8 PickedChunkState;
   world_chunk *PickedChunk;
 

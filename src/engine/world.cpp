@@ -365,7 +365,10 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, octree_stats *
 
       case OctreeNodeType_Branch:
       {
-        /* DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim); */
+        if (EngineDebug->DrawBranchNodes)
+        {
+          DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
+        }
         DrawOctreeRecursive(Engine, Node->Children[0], Stats, MainDrawList, ShadowMapDrawList);
         DrawOctreeRecursive(Engine, Node->Children[1], Stats, MainDrawList, ShadowMapDrawList);
         DrawOctreeRecursive(Engine, Node->Children[2], Stats, MainDrawList, ShadowMapDrawList);
@@ -379,7 +382,10 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, octree_stats *
 
       case OctreeNodeType_Leaf:
       {
-        /* DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim); */
+        if (EngineDebug->DrawLeafNodes)
+        {
+          DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
+        }
 
         SyncGpuBuffersAsync(Engine, &Node->Chunk.Meshes);
         world_chunk *Chunk = &Node->Chunk;
@@ -393,12 +399,15 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, octree_stats *
 
   if (Node->Chunk.Flags & Chunk_Queued)
   {
-    /* DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_RED, AABBLineDim*2.f); */
+    if (EngineDebug->DrawQueuedNodes)
+    {
+      DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, &Node->Chunk, World->ChunkDim, RGB_RED, AABBLineDim*2.f);
+    }
     ++Stats->TotalQueued;
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (2)
+#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (4)
 
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
@@ -407,7 +416,7 @@ ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
 
   v3i Result = {};
 
-  if (entity *Ghost = GetEntity(EntityTable, Camera->GhostId))
+  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
   {
     rect3 NodeRect = GetSimSpaceAABB(World, Node);
     v3 GhostP = GetSimSpaceP(World, Ghost);
@@ -429,7 +438,7 @@ OctreeBranchShouldCollapse(engine_resources *Engine, octree_node *Node)
   b32 Result = False;
   if (Node->Chunk.Flags & Chunk_Queued) return Result;
 
-  if (entity *Ghost = GetEntity(EntityTable, Camera->GhostId))
+  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
   {
     v3i Res = ComputeNodeDesiredResolution(Engine, Node);
     if (Res > Node->Chunk.DimInChunks)
@@ -447,7 +456,7 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
   Assert(Node->Type == OctreeNodeType_Leaf);
 
   b32 Result = False;
-  if (entity *Ghost = GetEntity(EntityTable, Camera->GhostId))
+  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
   {
     if (Node->Chunk.DimInChunks > V3i(1))
     {
@@ -473,16 +482,21 @@ struct octree_node_priority_queue
 };
 
 link_internal void
-PushOctreeNodeToPriorityQueue(octree_node_priority_queue *Queue, octree_node *Node)
+PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node)
 {
   Assert(Node->Chunk.Flags == Chunk_Uninitialized);
 
-  /* Assert(Node->Chunk.DimInChunks.x%OCTREE_CHUNKS_PER_RESOLUTION_STEP == 0); */
-  s32 ListIndex = Min(MAX_OCTREE_NODE_BUCKETS-1, Node->Chunk.DimInChunks.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
+  s32 IdealListIndex = Min(MAX_OCTREE_NODE_BUCKETS-1,
+                           Node->Chunk.DimInChunks.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
 
-  if (Remaining(&Queue->Lists[ListIndex]))
+  if (IsInFrustum(World, GameCamera, &Node->Chunk) == False)
   {
-    Push(&Queue->Lists[ListIndex], Node);
+    IdealListIndex = MAX_OCTREE_NODE_BUCKETS-1;
+  }
+
+  if (Remaining(&Queue->Lists[IdealListIndex]))
+  {
+    Push(&Queue->Lists[IdealListIndex], Node);
   }
 }
 
@@ -550,7 +564,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
               if ( (Child->Chunk.Flags & Chunk_Queued) == 0 &&
                    (Child->Chunk.Flags & Chunk_VoxelsInitialized) == 0)
               {
-                PushOctreeNodeToPriorityQueue(Queue, Child);
+                PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Child);
               }
             }
 
@@ -562,7 +576,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
                (NodeToSplit->Chunk.Flags & Chunk_VoxelsInitialized) == 0 )
 
           {
-            PushOctreeNodeToPriorityQueue(Queue, NodeToSplit);
+            PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit);
           }
         }
 

@@ -183,6 +183,54 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawBranchNodes),
+        CSz("DrawBranchNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawLeafNodes),
+        CSz("DrawLeafNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawQueuedNodes),
+        CSz("DrawQueuedNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u8*,&Element->PickedChunkState),
         CSz("PickedChunkState"),
         Params

@@ -454,7 +454,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             // FBM params
             v3 Period = V3(18000);
             s32 Amplititude = 10000;
-            s32 StartingZDepth = 100;
+            /* s32 StartingZDepth = 100; */
+            s32 StartingZDepth = 0;
             u32 Octaves = 6;
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
@@ -716,9 +717,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_SinCos;
+  /* GameState->TerrainGenType = TerrainGenType_SinCos; */
   /* GameState->TerrainGenType = TerrainGenType_TerracedTerrain; */
-  /* GameState->TerrainGenType = TerrainGenType_FBM2D; */
+  GameState->TerrainGenType = TerrainGenType_FBM2D;
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
   /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */
