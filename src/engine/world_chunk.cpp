@@ -715,6 +715,8 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   u32 Octaves = *(u32*)OctaveCount;
 
+
+#if 0
   poof(
     terrain_iteration_pattern({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
       {
@@ -722,23 +724,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
-          Assert(Chunk->DimInChunks > V3i(0));
-          v3 WorldP;
-
-
-          r32 Warp = 0.f;
-          v3 ThisInput = NoiseInput / IPeriod;
-          r32 N = PerlinNoise(ThisInput+Warp);
-          Assert(N <= 1.05f);
-          Assert(N > -1.05f);
-
-          s32 zValue = (s32)Abs( (N*InteriorAmp) );
-
-          b32 IsUnderground =  zValue < WorldZBiased;
-          b32 NoiseChoice = IsUnderground;
-
-          NoiseValue += N*(r32(OctaveIndex+1));
-          NoiseValue += N*InteriorAmp;
+          NoiseValue = PerlinNoise(NoiseInput/IPeriod) * InteriorAmp;
 
           InteriorAmp = Max(1, InteriorAmp/2);
           IPeriod = Max(V3(1.f), IPeriod/2);
@@ -748,6 +734,42 @@ Terrain_FBM2D( world_chunk *Chunk,
       }
     ))
 #include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
+#endif
+#if 1
+  poof(
+    terrain_iteration_pattern_8x({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
+      {
+        v3 InteriorPeriod = Period;
+        r32 InteriorAmp = r32(Amplitude);
+        for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+        {
+          Assert(Chunk->DimInChunks > V3i(0));
+
+          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+          {
+            xCoords[ValueIndex] /= InteriorPeriod.x;
+          }
+          f32 yIn = yCoord/InteriorPeriod.y;
+          f32 zIn = zCoord/InteriorPeriod.z;
+
+          // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
+          f32 TmpPerlinResults[8];
+          PerlinNoise_8x(xCoords, yIn, zIn, TmpPerlinResults);
+
+          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+          {
+            NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
+          }
+
+          InteriorAmp = Max(1.f, InteriorAmp/2.f);
+          InteriorPeriod = Max(V3(1.f), InteriorPeriod/2);
+        }
+
+        u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
+      }
+    ))
+#include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
+#endif
 
   /* s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin; */
   /* ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, NoiseDim, Normals, NormalDim); */

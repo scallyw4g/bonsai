@@ -2,7 +2,7 @@
 #define MIN_TERRAIN_NOISE_WIDTH (8)
 
 
-#define COMPUTE_NOISE_INPUT(channel_name, chunk) (chunk->DimInChunks.channel_name/2) + (channel_name*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
+#define COMPUTE_NOISE_INPUT(channel_name, offset, chunk) (chunk->DimInChunks.channel_name/2) + ((f32(offset)+channel_name)*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
 
 
 poof(
@@ -16,7 +16,7 @@ poof(
 
     for ( s32 z = 0; z < Dim.z; ++ z)
     {
-      s64 WorldZ = COMPUTE_NOISE_INPUT(z, Chunk);
+      s64 WorldZ = s64(COMPUTE_NOISE_INPUT(z, 0, Chunk));
       s64 WorldZBiased = WorldZ - zMin;
       for ( s32 y = 0; y < Dim.y; ++ y)
       {
@@ -26,9 +26,9 @@ poof(
           Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
           v3 noise_input_name = V3(
-              COMPUTE_NOISE_INPUT(x, Chunk),
-              COMPUTE_NOISE_INPUT(y, Chunk),
-              COMPUTE_NOISE_INPUT(z, Chunk)
+              COMPUTE_NOISE_INPUT(x, 0, Chunk),
+              COMPUTE_NOISE_INPUT(y, 0, Chunk),
+              COMPUTE_NOISE_INPUT(z, 0, Chunk)
           );
 
 
@@ -52,6 +52,72 @@ poof(
           {
             Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
           }
+        }
+      }
+    }
+  }
+)
+
+
+
+poof(
+  func terrain_iteration_pattern_8x( type_poof_symbol noise_input_name,
+                                     type_poof_symbol noise_value_name,
+                                     type_poof_symbol packed_HSV_color_value_name,
+                                     type_poof_symbol user_code)
+  @code_fragment
+  {
+    // NOTE(Jesse): This must hold true for using any Noise_8x func
+    Assert(Chunk->Dim % V3i(MIN_TERRAIN_NOISE_WIDTH) == V3i(0));
+
+    Period = Max(Period, V3(1.f));
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      f32 zCoord = COMPUTE_NOISE_INPUT(z, 0, Chunk);
+      f32 WorldZBiased = zCoord - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
+        for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH)
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+          Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] =
+          {
+            (COMPUTE_NOISE_INPUT(x, 0, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 1, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 2, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 3, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 4, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 5, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 6, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 7, Chunk)),
+          };
+
+          user_code
+
+          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+          {
+            s32 ThisIndex = VoxIndex+ValueIndex;
+            b32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
+            ChunkSum += NoiseChoice;
+
+            SetFlag(&Chunk->Voxels[ThisIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+            Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+
+            Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0);
+            if (NoiseChoice)
+            {
+              Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
+            }
+            else
+            {
+              Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
+            }
+          }
+
         }
       }
     }

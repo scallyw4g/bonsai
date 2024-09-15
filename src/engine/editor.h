@@ -637,15 +637,15 @@ struct generic_noise_params
 };
 
 // TODO(Jesse): Get rid of zMin
-#define UNPACK_NOISE_PARAMS(P)                                       \
-  v3i WorldChunkDim = GetWorldChunkDim();                            \
-  v3i Dim = Chunk->Dim;                                              \
-  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold;         \
-  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
-  v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
-  s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  v3  RGBColor      = Cast(generic_noise_params*, (P))->RGBColor;    \
-  v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
+#define UNPACK_NOISE_PARAMS(P)                                          \
+  v3i WorldChunkDim = GetWorldChunkDim();                               \
+  v3i           Dim = Chunk->Dim;                                       \
+  r32        Thresh = Cast(generic_noise_params*, (P))->Threshold;      \
+  s64          zMin = s64(Cast(generic_noise_params*, (P))->Threshold); \
+  v3         Period = Cast(generic_noise_params*, (P))->Period;         \
+  s32     Amplitude = s32(Cast(generic_noise_params*, (P))->Amplitude); \
+  v3       RGBColor = Cast(generic_noise_params*, (P))->RGBColor;       \
+  v3i     SrcToDest = {-1*Global_ChunkApronMinDim};
 
 
 struct white_noise_params
