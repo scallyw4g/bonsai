@@ -661,6 +661,7 @@ Terrain_Flat( world_chunk *Chunk,
 
 
 // Starting 227k
+// Perlin_8x 110k
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
                        v3i  NoiseBasis,
@@ -745,6 +746,18 @@ Terrain_FBM2D( world_chunk *Chunk,
         {
           Assert(Chunk->DimInChunks > V3i(0));
 
+          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] =
+          {
+            (COMPUTE_NOISE_INPUT(x, 0, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 1, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 2, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 3, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 4, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 5, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 6, Chunk)),
+            (COMPUTE_NOISE_INPUT(x, 7, Chunk)),
+          };
+
           RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
           {
             xCoords[ValueIndex] /= InteriorPeriod.x;
@@ -762,7 +775,7 @@ Terrain_FBM2D( world_chunk *Chunk,
           }
 
           InteriorAmp = Max(1.f, InteriorAmp/2.f);
-          InteriorPeriod = Max(V3(1.f), InteriorPeriod/2);
+          InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
         }
 
         u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);

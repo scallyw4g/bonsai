@@ -72,6 +72,9 @@ poof(
 
     Period = Max(Period, V3(1.f));
 
+
+    /* s32 xChunkMax = Dim.x/MIN_TERRAIN_NOISE_WIDTH; */
+
     for ( s32 z = 0; z < Dim.z; ++ z)
     {
       f32 zCoord = COMPUTE_NOISE_INPUT(z, 0, Chunk);
@@ -79,22 +82,22 @@ poof(
       for ( s32 y = 0; y < Dim.y; ++ y)
       {
         f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
-        for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH)
+        for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH )
         {
           s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
           Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] =
-          {
-            (COMPUTE_NOISE_INPUT(x, 0, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 1, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 2, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 3, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 4, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 5, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 6, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 7, Chunk)),
-          };
+/*           f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] = */
+/*           { */
+/*             (COMPUTE_NOISE_INPUT(x, 0, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 1, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 2, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 3, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 4, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 5, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 6, Chunk)), */
+/*             (COMPUTE_NOISE_INPUT(x, 7, Chunk)), */
+/*           }; */
 
           user_code
 
