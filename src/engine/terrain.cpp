@@ -532,6 +532,10 @@ ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i No
 {
   TIMED_FUNCTION();
 
+  // NOTE(Jesse): For this function to work the noise has to be one voxel larger
+  // than the normal data
+  Assert(NoiseDim == NormalsDim+2);
+
 #if 1
   for ( s32 z = 0; z < NormalsDim.z; ++ z)
   {
@@ -1590,7 +1594,7 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 #endif
 
   // NOTE(Jesse): Perlin_8x needs a multiple of 8 here.
-  /* Assert(Dim.x % 8 == 0); */
+  Assert(Dim.x % 8 == 0);
 
   s32 xNoiseBlockCount = NoiseDim.x / 8;
   {

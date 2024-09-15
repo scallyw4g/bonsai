@@ -1,4 +1,64 @@
+
+#define MIN_TERRAIN_NOISE_WIDTH (8)
+
+
 #define COMPUTE_NOISE_INPUT(channel_name, chunk) (chunk->DimInChunks.channel_name/2) + (channel_name*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
+
+
+poof(
+  func terrain_iteration_pattern( type_poof_symbol noise_input_name,
+                                  type_poof_symbol noise_value_name,
+                                  type_poof_symbol packed_HSV_color_value_name,
+                                  type_poof_symbol user_code)
+  @code_fragment
+  {
+    Period = Max(Period, V3(1.f));
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      s64 WorldZ = COMPUTE_NOISE_INPUT(z, Chunk);
+      s64 WorldZBiased = WorldZ - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        for ( s32 x = 0; x < Dim.x; ++ x)
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+          Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+          v3 noise_input_name = V3(
+              COMPUTE_NOISE_INPUT(x, Chunk),
+              COMPUTE_NOISE_INPUT(y, Chunk),
+              COMPUTE_NOISE_INPUT(z, Chunk)
+          );
+
+
+          r32 noise_value_name = 0.f;
+
+          user_code
+
+          b32 NoiseChoice = r64((noise_value_name)) > r64(WorldZBiased);
+
+          SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+          Chunk->Voxels[VoxIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+          ChunkSum += NoiseChoice;
+
+          Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+
+          if (NoiseChoice)
+          {
+            Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+          }
+          else
+          {
+            Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+          }
+        }
+      }
+    }
+  }
+)
+
+
 
 
 struct noise_value_to_material_index

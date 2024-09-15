@@ -290,9 +290,9 @@ Bonsai_Simulate(engine_resources *Resources)
   {
     if (Graphics->Camera == &Graphics->GameCamera)
     {
-      entity_id Prev = Graphics->DebugCamera.GhostId;
-      Graphics->DebugCamera = Graphics->GameCamera;
-      Graphics->DebugCamera.GhostId = Prev;
+      /* entity_id Prev = Graphics->DebugCamera.GhostId; */
+      /* Graphics->DebugCamera = Graphics->GameCamera; */
+      /* Graphics->DebugCamera.GhostId = Prev; */
 
       Graphics->Camera = &Graphics->DebugCamera;
     }

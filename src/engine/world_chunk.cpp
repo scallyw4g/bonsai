@@ -660,13 +660,15 @@ Terrain_Flat( world_chunk *Chunk,
 }
 
 
+// Starting 227k
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
                        v3i  NoiseBasis,
                       void *NoiseParams,
                       void *OctaveCount )
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   UNPACK_NOISE_PARAMS(NoiseParams);
 
@@ -712,30 +714,21 @@ Terrain_FBM2D( world_chunk *Chunk,
   Period = Max(Period, V3(1.f));
 
   u32 Octaves = *(u32*)OctaveCount;
-  for ( s32 z = 0; z < Dim.z; ++ z)
-  {
-    s64 WorldZ = (Chunk->DimInChunks.z/2) + (z*Chunk->DimInChunks.z) + (Chunk->WorldP.z*WorldChunkDim.z) - SrcToDest.z ;
-    s64 WorldZBiased = WorldZ - zMin;
-    /* s64 WorldZ = z + NoiseBasis.z; */
-    /* s64 WorldZBiased = WorldZ - zMin; */
-    for ( s32 y = 0; y < Dim.y; ++ y)
-    {
-      for ( s32 x = 0; x < Dim.x; ++ x)
-      {
-        r32 NoiseValue = 0.f;
-        s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
+  poof(
+    terrain_iteration_pattern({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
+      {
         v3 IPeriod = Period; // Interior Period
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
           Assert(Chunk->DimInChunks > V3i(0));
-          v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z)*V3(Chunk->DimInChunks) + Chunk->DimInChunks/2.f, IPeriod) ;
+          v3 WorldP;
+
 
           r32 Warp = 0.f;
-          r32 N = PerlinNoise(NoiseInput+Warp);
+          v3 ThisInput = NoiseInput / IPeriod;
+          r32 N = PerlinNoise(ThisInput+Warp);
           Assert(N <= 1.05f);
           Assert(N > -1.05f);
 
@@ -751,41 +744,13 @@ Terrain_FBM2D( world_chunk *Chunk,
           IPeriod = Max(V3(1.f), IPeriod/2);
         }
 
-#if VOXEL_DEBUG_COLOR
-        s32 NoiseIndex = GetIndex(V3i(x,y,z)+1, NoiseDim);
-        Chunk->NoiseValues[NoiseIndex] = NoiseValue;
-#endif
-        b32 NoiseChoice = r64(NoiseValue) > r64(WorldZBiased);
-
-        if (NoiseChoice)
-        {
-          u32 BreakHere = 54;
-          BreakHere ++;
-        }
-
-        /* u16 ThisColor = SafeTruncateToU16(RandomBetween(u32(Color), &GenColorEntropy, u32(Color)+2));; */
-        u16 ThisColor = RGBtoPackedHSV(RGBColor);
-
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
-        Chunk->Voxels[VoxIndex].Color = ThisColor*u16(NoiseChoice);
-        ChunkSum += NoiseChoice;
-
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
+        u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
       }
-    }
-  }
+    ))
+#include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
 
-  s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin;
-  ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, NoiseDim, Normals, NormalDim);
+  /* s64 ChunkWorldZThresh = SrcToDest.z + (WorldChunkDim.z*Chunk->WorldP.z) - zMin; */
+  /* ComputeNormalsForChunkFromNoiseValues(ChunkWorldZThresh, NoiseValues, NoiseDim, Normals, NormalDim); */
 
   return ChunkSum;
 }
@@ -3659,20 +3624,11 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
   Assert(!ChunkIsGarbage(DestChunk));
 
-  /* Assert(MeshBit == MeshBit_Lod0); */
-
-
-
-  // TODO(Jesse): Pretty sure this is unnecessary
-  /* ClearChunkVoxels(DestChunk->Voxels, DestChunk->Dim); */
-
   untextured_3d_geometry_buffer* Mesh = 0;
-  /* untextured_3d_geometry_buffer* DebugMesh = 0; */
-  /* untextured_3d_geometry_buffer* TransparencyMesh = 0; */
 
-  v3i SynChunkDim = (DestChunk->Dim + Global_ChunkApronDim);
+  v3i SynChunkDimMin = (DestChunk->Dim + Global_ChunkApronDim);
+  v3i SynChunkDim = RoundToMultiple(SynChunkDimMin, V3i(MIN_TERRAIN_NOISE_WIDTH));
   v3i SynChunkP = DestChunk->WorldP;
-
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, DestChunk->DimInChunks, Thread->TempMemory);
 
@@ -3691,8 +3647,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 #if 1 && VOXEL_DEBUG_COLOR
   DestChunk->NoiseValues = SyntheticChunk->NoiseValues;
   DestChunk->NormalValues = SyntheticChunk->NormalValues;
-
-#if 1
   if (DestChunk->NoiseValues)
   {
     for ( s32 z = 0; z < SyntheticChunk->Dim.z; ++ z)
@@ -3709,8 +3663,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
       }
     }
   }
-#endif
-
 #endif
 
 
