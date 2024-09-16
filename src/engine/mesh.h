@@ -174,9 +174,9 @@ poof(
         auto Src1 = Rotate(Src[VertIndex + 1], Rot);
         auto Src2 = Rotate(Src[VertIndex + 2], Rot);
 
-        f32_reg Vert0;
-        f32_reg Vert1;
-        f32_reg Vert2;
+        f32_4x Vert0;
+        f32_4x Vert1;
+        f32_4x Vert2;
 
         Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
         Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -186,9 +186,9 @@ poof(
         Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
         Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
-        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
-        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.E[0]), result_primitive_t.name(Vert0.E[1]), result_primitive_t.name(Vert0.E[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.E[0]), result_primitive_t.name(Vert1.E[1]), result_primitive_t.name(Vert1.E[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.E[0]), result_primitive_t.name(Vert2.E[1]), result_primitive_t.name(Vert2.E[2]) }};
 
         Dest[0] = Result0;
         Dest[1] = Result1;
@@ -217,9 +217,9 @@ poof(
         auto Src1 = Src[VertIndex + 1];
         auto Src2 = Src[VertIndex + 2];
 
-        f32_reg Vert0;
-        f32_reg Vert1;
-        f32_reg Vert2;
+        f32_4x Vert0;
+        f32_4x Vert1;
+        f32_4x Vert2;
 
         Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
         Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -229,9 +229,9 @@ poof(
         Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
         Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
-        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
-        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.E[0]), result_primitive_t.name(Vert0.E[1]), result_primitive_t.name(Vert0.E[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.E[0]), result_primitive_t.name(Vert1.E[1]), result_primitive_t.name(Vert1.E[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.E[0]), result_primitive_t.name(Vert2.E[1]), result_primitive_t.name(Vert2.E[2]) }};
 
         Dest[0] = Result0;
         Dest[1] = Result1;
