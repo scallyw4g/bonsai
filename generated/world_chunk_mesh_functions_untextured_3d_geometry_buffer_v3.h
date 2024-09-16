@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:2100:0
+// src/engine/world_chunk.cpp:2089:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3( voxel *Voxels,

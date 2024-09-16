@@ -87,18 +87,6 @@ poof(
           s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
           Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
-/*           f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] = */
-/*           { */
-/*             (COMPUTE_NOISE_INPUT(x, 0, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 1, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 2, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 3, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 4, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 5, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 6, Chunk)), */
-/*             (COMPUTE_NOISE_INPUT(x, 7, Chunk)), */
-/*           }; */
-
           user_code
 
           RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)

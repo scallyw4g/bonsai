@@ -746,27 +746,17 @@ Terrain_FBM2D( world_chunk *Chunk,
         {
           Assert(Chunk->DimInChunks > V3i(0));
 
-          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH] =
-          {
-            (COMPUTE_NOISE_INPUT(x, 0, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 1, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 2, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 3, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 4, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 5, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 6, Chunk)),
-            (COMPUTE_NOISE_INPUT(x, 7, Chunk)),
-          };
-
+          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH];
           RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
           {
-            xCoords[ValueIndex] /= InteriorPeriod.x;
+            xCoords[ValueIndex] = (COMPUTE_NOISE_INPUT(x, ValueIndex, Chunk)) / InteriorPeriod.x;
           }
+
           f32 yIn = yCoord/InteriorPeriod.y;
           f32 zIn = zCoord/InteriorPeriod.z;
 
           // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
-          f32 TmpPerlinResults[8];
+          f32 TmpPerlinResults[MIN_TERRAIN_NOISE_WIDTH];
           PerlinNoise_8x(xCoords, yIn, zIn, TmpPerlinResults);
 
           RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
