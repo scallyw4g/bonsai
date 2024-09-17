@@ -725,7 +725,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         s32 InteriorAmp = Amplitude;
         for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
         {
-          NoiseValue = PerlinNoise(NoiseInput/IPeriod) * InteriorAmp;
+          NoiseValue += PerlinNoise(NoiseInput/IPeriod) * InteriorAmp;
 
           InteriorAmp = Max(1, InteriorAmp/2);
           IPeriod = Max(V3(1.f), IPeriod/2);
