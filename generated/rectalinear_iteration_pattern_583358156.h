@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:813:0
+// src/engine/world_update.cpp:831:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -13,7 +13,8 @@ DimIterator(x, y, z, UpdateDim)
     
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; }
+        NotImplemented;
+        /* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; } */
       
 
     if ( ((OverwriteVoxel == True ) && (Invert == False)) ||

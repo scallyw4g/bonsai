@@ -387,7 +387,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
               minZ = Min(TestP.z, minZ);
 
               LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, Color);
-              SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
+              /* SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled); */
             }
             else
             {
@@ -436,24 +436,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
+
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
-
-            if (Voxel->V.Flags & Voxel_Filled)
-            /* if (Voxel->V.Flags & Voxel_Filled && VoxelCacheIndex == 16) */
-            {
-              /* if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; } */
-              /* Current.ChunkData->Voxels[Index].Transparency = 128; */
-              /* Voxel->V.Transparency = 255; */
-            }
-            else
-            {
-              /* Voxel->V.Transparency = 0; */
-              Assert(Voxel->V.Transparency == 0);
-              Voxel->V.Transparency = 128;
-              /* Voxel->V.Emission = 128; */
-            }
-            /* Voxel->V.Transparency = 0; */
-
             Current.ChunkData->Voxels[Index] = Voxel->V;
             /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
           }
@@ -463,7 +447,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
           Current.ChunkData->Flags = Chunk_VoxelsInitialized;
 
           /* MarkBoundaryVoxels_NoExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
-          MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);
+          MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);
 
           Push(&Result, &Current);
         } break;

@@ -316,10 +316,10 @@ ClearWorldChunk( world_chunk *Chunk )
 {
   Chunk->WorldP = INVALID_WORLD_CHUNK_POSITION;
   Chunk->FilledCount = {};
-  Chunk->DrawBoundingVoxels = {};
-  Chunk->PointsToLeaveRemaining = {};
-  Chunk->TriCount = {};
-  Chunk->EdgeBoundaryVoxelCount = {};
+  /* Chunk->DrawBoundingVoxels = {}; */
+  /* Chunk->PointsToLeaveRemaining = {}; */
+  /* Chunk->TriCount = {}; */
+  /* Chunk->EdgeBoundaryVoxelCount = {}; */
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
   Chunk->Entities = {};
   Chunk->Next = {};
@@ -329,39 +329,6 @@ ClearWorldChunk( world_chunk *Chunk )
   Clear(&Chunk->Meshes);
 
   Chunk->Flags = {};
-}
-
-inline b32
-IsFilled(voxel *Voxel)
-{
-  b32 Result = (Voxel->Flags & Voxel_Filled) == Voxel_Filled;
-
-#if BONSAI_INTERNAL
-  if (!Result) Assert( (Voxel->Flags&VoxelFaceMask) == 0);
-#endif
-  return Result;
-}
-
-inline b32
-NotFilled(voxel *Voxel)
-{
-  b32 Result = !IsFilled(Voxel);
-  return Result;
-}
-
-inline b32
-IsFilled( voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
-{
-  s32 VoxelIndex = GetIndex(VoxelP, Dim);
-  b32 isFilled = IsSet(Voxels + VoxelIndex, Voxel_Filled);
-  return isFilled;
-}
-
-inline b32
-NotFilled(voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
-{
-  b32 Result = !IsFilled(Voxels, VoxelP, Dim);
-  return Result;
 }
 
 inline world_position

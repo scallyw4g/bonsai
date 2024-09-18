@@ -393,7 +393,7 @@ ComputeNormalsForChunkFromFilledFlag(world_chunk *Chunk, v3i WorldChunkDim, v3 *
       {
         s32 VoxIndex = GetIndex(V3i(x,y,z), ChunkDim);
 
-        if ( Chunk->Voxels[VoxIndex].Flags & Voxel_Filled )
+        if ( GetOccupancyBit(Chunk, VoxIndex) )
         {
           v3 Normal = {};
           for ( s32 dz = -1; dz < 2; ++ dz)
@@ -407,7 +407,7 @@ ComputeNormalsForChunkFromFilledFlag(world_chunk *Chunk, v3i WorldChunkDim, v3 *
                 s32 dP = TryGetIndex(V3i(x+dx,y+dy,z+dz), ChunkDim);
                 if (dP > -1)
                 {
-                  if ( Chunk->Voxels[dP].Flags & Voxel_Filled )
+                  if ( GetOccupancyBit(Chunk, dP) )
                   {
                     Normal += V3(dx,dy,dz);
                   }
@@ -643,7 +643,7 @@ HoodooTerrain( world_chunk *Chunk,
         r32 NoiseValue = 0.f;
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         /* s32 Amp2 = Amplitude*2; */
         r32 HighestNoise = 0.f;
@@ -770,20 +770,12 @@ HoodooTerrain( world_chunk *Chunk,
         /*   ThisColor = BLUE; */
         /* } */
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         ChunkSum += IsFilled;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -994,23 +986,16 @@ TerracedTerrain( world_chunk *Chunk,
         }
 #endif
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
 
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
       }
     }
   }
@@ -1173,23 +1158,14 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
 
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
+
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-
-
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -1329,23 +1305,13 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
 
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-TerraceMask, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-
-
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -1776,24 +1742,12 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
             /* NormalsHit[NormalIndex+Index] = 1; */
 
             b32 IsFilled = NoiseValues[NoiseIndex+Index] > r32(z+ChunkWorldZThresh);
-            SetFlag(&Chunk->Voxels[NormalIndex+Index], (voxel_flag)(Voxel_Filled*IsFilled));
+            /* SetFlag(&Chunk->Voxels[NormalIndex+Index], (voxel_flag)(Voxel_Filled*IsFilled)); */
+            SetOccupancyBit(Chunk, NormalIndex+Index, s32(IsFilled));
             Chunk->Voxels[NormalIndex+Index].Color = RGBtoPackedHSV(ThisColor[Index])*u16(IsFilled);
             /* Chunk->Voxels[NormalIndex].Transparency = ThisTransparency; */
             ChunkSum += IsFilled;
           }
-
-#if 0
-          Assert( (Chunk->Voxels[NormalIndex].Flags&VoxelFaceMask) == 0);
-
-          if (IsFilled)
-          {
-            Assert( IsSet(&Chunk->Voxels[NormalIndex], Voxel_Filled) );
-          }
-          else
-          {
-            Assert( NotSet(&Chunk->Voxels[NormalIndex], Voxel_Filled) );
-          }
-#endif
         }
 
         s32 xFixupBase = (xShapingBlockCount * 8);
@@ -1814,7 +1768,8 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
           GrowGrassVoronoi( Chunk, V3i(x,y,z), NoiseValue, Normal, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor);
 
           b32 IsFilled = NoiseValues[NoiseIndex] > r32(z+ChunkWorldZThresh);
-          SetFlag(&Chunk->Voxels[NormalIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+          /* SetFlag(&Chunk->Voxels[NormalIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+          SetOccupancyBit(Chunk, NormalIndex, s32(IsFilled));
           Chunk->Voxels[NormalIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
           /* Chunk->Voxels[NormalIndex].Transparency = ThisTransparency; */
           ChunkSum += IsFilled;
@@ -2026,23 +1981,13 @@ GrassyTerracedTerrain( world_chunk *Chunk,
 
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f, SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-
-
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -2185,23 +2130,13 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
         GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, 1.f-Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled );
         /* GrowGrassPerlin( Chunk, V3i(x,y,z), NoiseValue, Clamp01(TerraceMask), SrcToDest, WorldChunkDim, WorldZSubZMin, &ThisColor, &IsFilled ); */
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u8(IsFilled);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-
-
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (IsFilled)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -2284,7 +2219,8 @@ Terrain_SinCos( world_chunk *Chunk,
 
         b32 IsFilled = r32(*NoiseValue) > r32(WorldZSubZMin);
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor);
         ChunkSum += IsFilled;
       }
@@ -2332,7 +2268,8 @@ Terrain_Voronoi3D( world_chunk *Chunk,
 
         b32 IsFilled = r32(NoiseValue) > r32(zMin) ;
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = PackHSVColor(RGBColor)*u8(IsFilled);
         ChunkSum += IsFilled;
       }
@@ -2382,7 +2319,8 @@ Terrain_Voronoi2D( world_chunk *Chunk,
 
         b32 IsFilled = r32(NoiseValue) > r32(WorldZSubZMin) ;
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(RGBColor)*u16(IsFilled);
         ChunkSum += IsFilled;
       }

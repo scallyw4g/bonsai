@@ -73,9 +73,15 @@ AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, me
 {
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
-  Result->Voxels = AllocateVoxels(Storage, Dim);
-  Result->WorldP = WorldP;
+  s32 VoxCount = Volume(Dim);
+  if (VoxCount)
+  {
+    s32 OccupancyCount = (VoxCount+7) / 8; // Add seven so we round up when we divide if there's an extra one (or several)
+    Result->Occupancy = AllocateAlignedProtection(u8, Storage , OccupancyCount, CACHE_LINE_SIZE, false);
+    Result->Voxels = AllocateAlignedProtection(voxel, Storage , VoxCount, CACHE_LINE_SIZE, false);
+  }
 
+  Result->WorldP = WorldP;
   Result->Dim  = Dim;
   Result->DimInChunks  = DimInChunks;
   /* Result->DimX = SafeTruncateU8(Dim.x); */
@@ -578,11 +584,19 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
           s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
           voxel *SrcV = Src->Voxels+SrcIndex;
           voxel *DestV = Dest->Voxels+DestIndex;
-          DestV->Flags |= (SrcV->Flags & Voxel_Filled);
+
+          // TODO(Jesse): Can we do this branchless ..?
+          s32 SrcOccupancy = GetOccupancyBit(Src, SrcIndex);
+          if (SrcOccupancy) { SetOccupancyBit(Dest, DestIndex, SrcOccupancy); }
+          /* DestV->Flags |= (SrcV->Flags & Voxel_Filled); */
+
           if (SrcV->Color) { DestV->Color = SrcV->Color; }
           /* if (!DestV->Color) { DestV->Color = SrcV->Color; } */
-          Dest->FilledCount += DestV->Flags & Voxel_Filled;
-          CAssert(Voxel_Filled == 1);
+
+          Dest->FilledCount += SrcOccupancy;
+          /* Dest->FilledCount += DestV->Flags & Voxel_Filled; */
+
+/*           CAssert(Voxel_Filled == 1); */
 
           // At the moment at least, I'm running under the assumption that the
           // dest chunk will be ready for the face mask computation to be run
@@ -619,9 +633,15 @@ CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestCh
         if (SrcIndex > -1)
         {
           s32 DestIndex = GetIndex(Voxel_Position(x,y,z), DestChunkDim);
+
+          // TODO(Jesse): We can definitely do this much more efficiently by
+          // doing 8 wide or something.
+          s32 SrcOccupancy = GetOccupancyBit(Src, SrcIndex);
+          SetOccupancyBit(Dest, DestIndex, SrcOccupancy);
+
           Dest->Voxels[DestIndex] = Src->Voxels[SrcIndex];
-          Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled;
-          CAssert(Voxel_Filled == 1);
+          /* Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled; */
+          /* CAssert(Voxel_Filled == 1); */
         }
       }
     }
@@ -648,7 +668,8 @@ Terrain_Flat( world_chunk *Chunk,
         if ((z + NoiseBasis.z) < Thresh)
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Chunk->Dim);
-          Chunk->Voxels[Index].Flags = Voxel_Filled;
+          SetOccupancyBit(Chunk, Index, VoxelOccupancy_Filled);
+          /* Chunk->Voxels[Index].Flags = Voxel_Filled; */
           Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
           ++Result;
         }
@@ -660,8 +681,6 @@ Terrain_Flat( world_chunk *Chunk,
 }
 
 
-// Starting 227k
-// Perlin_8x 110k
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
                        v3i  NoiseBasis,
@@ -819,7 +838,7 @@ Terrain_Perlin3D( world_chunk *Chunk,
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[i].Flags = Voxel_Empty;
 
-        Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+        /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
 
         v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), Period);
         r32 NoiseValue = PerlinNoise(NoiseInput);
@@ -827,17 +846,19 @@ Terrain_Perlin3D( world_chunk *Chunk,
         s32 NoiseChoice = NoiseValue*Amplitude > Thresh;
         Assert(NoiseChoice == 0 || NoiseChoice == 1);
 
-        SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
+
+        SetOccupancyBit(Chunk, i, NoiseChoice);
+        /* SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled)); */
 
         if (NoiseChoice)
         {
           Chunk->Voxels[i].Color = RGBtoPackedHSV(RGBColor);
-          Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
+          /* Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) ); */
           ++Result;
         }
         else
         {
-          Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+          /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
         }
 
       }
@@ -870,7 +891,7 @@ Terrain_WhiteNoise( world_chunk *Chunk,
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[i].Flags = Voxel_Empty;
 
-        Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+        /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
 
         v3 NoiseInput = MapWorldPositionToNoiseInputValue(V3(NoiseBasis), V3(x,y,z), Period);
         random_series Entropy = RandomSeriesFromV3(NoiseInput);
@@ -880,17 +901,18 @@ Terrain_WhiteNoise( world_chunk *Chunk,
         s32 NoiseChoice = NoiseValue > Thresh;
         Assert(NoiseChoice == 0 || NoiseChoice == 1);
 
-        SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled));
+        SetOccupancyBit(Chunk, i, NoiseChoice);
+        /* SetFlag(&Chunk->Voxels[i], (voxel_flag)(NoiseChoice * Voxel_Filled)); */
 
         if (NoiseChoice)
         {
           Chunk->Voxels[i].Color = RGBtoPackedHSV(RGBColor);
-          Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) );
+          /* Assert( IsSet(&Chunk->Voxels[i], Voxel_Filled) ); */
           ++Result;
         }
         else
         {
-          Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) );
+          /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
         }
 
       }
@@ -917,6 +939,8 @@ TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
   /* Assert(SrcVox->Flags & Voxel_Filled); */
 
   b32 Result = False;
+  /* NotImplemented; */
+#if 0
   if (SrcVox->Transparency)
   {
     // Transparent source voxels can only increase in transparency if the dest is unfilled
@@ -941,6 +965,7 @@ TransparencyIncreases(voxel *SrcVox, voxel *DstVox)
     }
 
   }
+#endif
 
   return Result;
 }
@@ -951,9 +976,10 @@ TransparencyIncreases(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
   voxel *SrcVox = Voxels+SrcIndex;
   voxel *DstVox = Voxels+DestIndex;
 
-  Assert(SrcVox->Flags & Voxel_Filled);
+  /* Assert(SrcVox->Flags & Voxel_Filled); */
 
   b32 Result = False;
+#if 0
   if (SrcVox->Transparency)
   {
     // Transparent source voxels can only increase in transparency if the dest is unfilled
@@ -978,10 +1004,12 @@ TransparencyIncreases(voxel *Voxels, s32 SrcIndex, v3i DestP, v3i SrcChunkDim)
     }
 
   }
+#endif
 
   return Result;
 }
 
+#if 0
 link_internal void
 MarkBoundaryVoxels_Debug( voxel *Voxels, chunk_dimension SrcChunkDim)
 {
@@ -1005,9 +1033,11 @@ MarkBoundaryVoxels_Debug( voxel *Voxels, chunk_dimension SrcChunkDim)
     }
   }
 }
+#endif
 
 link_internal s32
-MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
+MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
+                                      voxel *Voxels,
                                       chunk_dimension SrcChunkDim,
                                       chunk_dimension SrcChunkMin,
                                       chunk_dimension SrcChunkMax )
@@ -1028,14 +1058,15 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
       {
         voxel_position DestP  = Voxel_Position(x,y,z);
         s32 SrcIndex = GetIndex(DestP, SrcChunkDim);
+        s32 VOccupancy = GetOccupancyBit(Occupancy, SrcIndex);
 
         voxel *Voxel = Voxels + SrcIndex;
 
-        Result += Voxel->Flags&Voxel_Filled;
+        Result += VOccupancy;
 
-        if (Voxel->Flags&Voxel_Filled)
+        if (VOccupancy)
         {
-          Voxel->Flags = Voxel_Filled;
+          Voxel->Flags = {};
 
           voxel_position rightVoxel = DestP + V3i(1, 0, 0);
           voxel_position leftVoxel  = DestP - V3i(1, 0, 0);
@@ -1045,27 +1076,27 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
           voxel_position backVoxel  = DestP - V3i(0, 1, 0);
 
 
-          if ( !Contains( ClampedDim, rightVoxel) || NotFilled( Voxels, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, rightVoxel) || NotFilled( Occupancy, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_RightFace;
           }
-          if ( !Contains( ClampedDim, leftVoxel)  || NotFilled( Voxels, leftVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, leftVoxel, SrcChunkDim)  )
+          if ( !Contains( ClampedDim, leftVoxel)  || NotFilled( Occupancy, leftVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, leftVoxel, SrcChunkDim)  )
           {
             Voxel->Flags |= Voxel_LeftFace;
           }
-          if ( !Contains( ClampedDim, botVoxel)   || NotFilled( Voxels, botVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, botVoxel, SrcChunkDim)   )
+          if ( !Contains( ClampedDim, botVoxel)   || NotFilled( Occupancy, botVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, botVoxel, SrcChunkDim)   )
           {
             Voxel->Flags |= Voxel_BottomFace;
           }
-          if ( !Contains( ClampedDim, topVoxel)   || NotFilled( Voxels, topVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, topVoxel, SrcChunkDim)   )
+          if ( !Contains( ClampedDim, topVoxel)   || NotFilled( Occupancy, topVoxel, SrcChunkDim)   || TransparencyIncreases( Voxels, SrcIndex, topVoxel, SrcChunkDim)   )
           {
             Voxel->Flags |= Voxel_TopFace;
           }
-          if ( !Contains( ClampedDim, frontVoxel) || NotFilled( Voxels, frontVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, frontVoxel, SrcChunkDim) )
+          if ( !Contains( ClampedDim, frontVoxel) || NotFilled( Occupancy, frontVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, frontVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_FrontFace;
           }
-          if ( !Contains( ClampedDim, backVoxel)  || NotFilled( Voxels, backVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, backVoxel, SrcChunkDim)  )
+          if ( !Contains( ClampedDim, backVoxel)  || NotFilled( Occupancy, backVoxel, SrcChunkDim)  || TransparencyIncreases( Voxels, SrcIndex, backVoxel, SrcChunkDim)  )
           {
             Voxel->Flags |= Voxel_BackFace;
           }
@@ -1078,7 +1109,8 @@ MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels,
 }
 
 link_internal s32
-MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
+MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
+                                    voxel *Voxels,
                                       v3i  SrcChunkDim,
                                       v3i  SrcChunkMin,
                                       v3i  SrcChunkMax )
@@ -1102,12 +1134,15 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
       {
         v3i SrcP = V3i(x,y,z);
         s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
+        s32 VOccupancy = GetOccupancyBit(Occupancy, SrcIndex);
+
         voxel *Voxel = Voxels + SrcIndex;
 
-        Result += Voxel->Flags&Voxel_Filled;
-        if (Voxel->Flags & Voxel_Filled)
+        Result += VOccupancy;
+
+        if (VOccupancy)
         {
-          Voxel->Flags = Voxel_Filled;
+          Voxel->Flags = {};
 
           s32 RightIndex = TryGetIndex(SrcP + V3i(1, 0, 0), SrcChunkDim);
           s32 LeftIndex  = TryGetIndex(SrcP - V3i(1, 0, 0), SrcChunkDim);
@@ -1119,7 +1154,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( RightIndex >= 0 && RightIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + RightIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, RightIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_RightFace;
             }
@@ -1127,7 +1163,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( LeftIndex >= 0 && LeftIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + LeftIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, LeftIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_LeftFace;
             }
@@ -1136,7 +1173,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( TopIndex >= 0 && TopIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + TopIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, TopIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_TopFace;
             }
@@ -1144,7 +1182,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( BottomIndex >= 0 && BottomIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + BottomIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, BottomIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_BottomFace;
             }
@@ -1154,7 +1193,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( FrontIndex >= 0 && FrontIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + FrontIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, FrontIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_FrontFace;
             }
@@ -1162,7 +1202,8 @@ MarkBoundaryVoxels_NoExteriorFaces( voxel *Voxels,
           if ( BackIndex >= 0 && BackIndex < MaxIndex )
           {
             voxel *NextVoxel = Voxels + BackIndex;
-            if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel))
+            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
+            if ( GetOccupancyBit(Occupancy, BackIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_BackFace;
             }
@@ -2595,28 +2636,6 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
 }
 
 link_internal b32
-AboveVoxelIsUnfilled(s32 Index, voxel *Voxels, chunk_dimension ChunkDim)
-{
-  TIMED_FUNCTION();
-
-  /* Assert( IsSet(Chunk, Chunk_VoxelsInitialized) ); */
-
-  s32 VolumeChunkDim = Volume(ChunkDim);
-  Assert(Index < VolumeChunkDim);
-
-  voxel_position CurrentP = GetPosition(Index, ChunkDim);
-
-  voxel_position TopVoxel   = CurrentP + Voxel_Position(0, 0, 1);
-  s32 TopVoxelReadIndex   = GetIndexUnsafe(TopVoxel, ChunkDim);
-
-  b32 Result = False;
-
-  if (TopVoxelReadIndex > -1 && TopVoxelReadIndex < VolumeChunkDim)
-    Result |= NotFilled( Voxels+TopVoxelReadIndex );
-
-  return Result;
-}
-link_internal b32
 HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 {
   TIMED_FUNCTION();
@@ -2670,6 +2689,8 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
 {
   /* TIMED_FUNCTION(); */
 
+  NotImplemented;
+#if 0
   v3 MinClip = GetMin(Clip);
   v3 MaxClip = GetMax(Clip);
 
@@ -2703,6 +2724,7 @@ GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundar
       }
     }
   }
+#endif
 
   return;
 }
@@ -2932,7 +2954,7 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
 
 /* // TODO(Jesse): This literally only accumulates an integer .. remove TempBoundingPoints and other ancillary shit */
 standing_spot
-ComputeStandingSpotFor8x8x2_V2(voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim) //, boundary_voxels *TempBoundingPoints)
+ComputeStandingSpotFor8x8x2_V2(u8* Occupancy, voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim) //, boundary_voxels *TempBoundingPoints)
 {
   TIMED_FUNCTION();
   standing_spot Result = {};
@@ -2952,7 +2974,9 @@ ComputeStandingSpotFor8x8x2_V2(voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffs
 
         s32 vIndex = GetIndex(P, SrcChunkDim);
         voxel *V = Voxels + vIndex;
-        if (IsSet(V, Voxel_Filled) && IsSet(V, Voxel_TopFace))
+        s32 vOccupancy = GetOccupancyBit(Occupancy, vIndex);
+
+        if (vOccupancy && IsSet(V, Voxel_TopFace))
         {
           ++StandableCount;
         }
@@ -3104,6 +3128,7 @@ IsValidForDestChunk(v3i Spot, v3i DestChunkDim)
 
 link_internal void
 ComputeStandingSpots( v3i SrcChunkDim,
+                      u8 *Occupancy,
                       voxel *Voxels,
                       v3i SrcChunkOffset,
 
@@ -3139,7 +3164,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
       for (s32 zIndex = MinDim.z; zIndex <= MaxDim.z; zIndex += 1)
       {
         v3i TileOffset = V3i(xIndex, yIndex, zIndex);
-        standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(Voxels, SrcChunkDim, TileOffset, TileDim); //, TempBoundingPoints);
+        standing_spot Spot = ComputeStandingSpotFor8x8x2_V2(Occupancy, Voxels, SrcChunkDim, TileOffset, TileDim); //, TempBoundingPoints);
 
         if (Spot.CanStand)
         {
@@ -3185,7 +3210,7 @@ ComputeStandingSpots( v3i SrcChunkDim,
                       /* memory_arena *PermMemory, */
                       memory_arena *TempMemory )
 {
-  ComputeStandingSpots( SrcChunkDim, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /* PermMemory, */ TempMemory );
+  ComputeStandingSpots( SrcChunkDim, SrcChunk->Occupancy, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /* PermMemory, */ TempMemory );
 }
 
 #if 0
@@ -3698,11 +3723,11 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
   if (MakeExteriorFaces)
   {
-    MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
+    MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
   }
   else
   {
-    MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+    MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
   }
 
   CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim);
@@ -4565,17 +4590,17 @@ PushChunkDetails(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
     PushColumn(Group, CS(Chunk->WorldP.z));
     PushNewRow(Group);
 
-    PushColumn(Group, CSz("PointsToLeaveRemaining"));
-    PushColumn(Group, CS(Chunk->PointsToLeaveRemaining));
-    PushNewRow(Group);
+    /* PushColumn(Group, CSz("PointsToLeaveRemaining")); */
+    /* PushColumn(Group, CS(Chunk->PointsToLeaveRemaining)); */
+    /* PushNewRow(Group); */
 
-    PushColumn(Group, CSz("BoundaryVoxels Count"));
-    PushColumn(Group, CS(Chunk->EdgeBoundaryVoxelCount));
-    PushNewRow(Group);
+    /* PushColumn(Group, CSz("BoundaryVoxels Count")); */
+    /* PushColumn(Group, CS(Chunk->EdgeBoundaryVoxelCount)); */
+    /* PushNewRow(Group); */
 
-    PushColumn(Group, CSz("Triangles"));
-    PushColumn(Group, CS(Chunk->TriCount));
-    PushNewRow(Group);
+    /* PushColumn(Group, CSz("Triangles")); */
+    /* PushColumn(Group, CS(Chunk->TriCount)); */
+    /* PushNewRow(Group); */
 
     PushColumn(Group, CSz("StandingSpots"));
     PushColumn(Group, CS(AtElements(&Chunk->StandingSpots)));

@@ -570,6 +570,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       if (Job->Flags & ChunkInitFlag_ComputeStandingSpots)
       {
         ComputeStandingSpots( Chunk->Dim,
+                              Chunk->Occupancy,
                               Chunk->Voxels,
                               {},
 

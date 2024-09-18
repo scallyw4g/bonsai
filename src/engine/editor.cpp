@@ -1331,7 +1331,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 
         v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
 
-        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
+        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Occupancy, SrcChunk->Voxels, SrcChunk->VoxelLighting};
         world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
 
         Assert(SrcChunk->Dim <= DestChunk->Dim);
@@ -1349,7 +1349,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     {
       work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, HSVtoRGB(Layer->Settings.HSVColor), {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
-      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Occupancy, DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
   }
 
@@ -1789,7 +1789,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               /*   } */
               /* } */
 
-              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
+              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Occupancy, SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
 
               FinalizeChunkInitialization(SeedChunk);
 
@@ -1818,7 +1818,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
             auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
-            MarkBoundaryVoxels_MakeExteriorFaces(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim-V3i(2));
+            MarkBoundaryVoxels_MakeExteriorFaces( Root_LayeredBrushPreview->Occupancy,
+                                                  Root_LayeredBrushPreview->Voxels,
+                                                  Root_LayeredBrushPreview->Dim,
+                                                  {},
+                                                  Root_LayeredBrushPreview->Dim-V3i(2));
 
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
@@ -2440,7 +2444,7 @@ DoWorldEditor(engine_resources *Engine)
                 Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
-              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
+              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Occupancy, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
 
               world_edit_shape Shape =

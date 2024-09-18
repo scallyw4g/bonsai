@@ -607,7 +607,7 @@ InitAsset(asset *Asset, thread_local_state *Thread)
     // chunk is a weird one as the buffers can be of arbitrary size.
     Deserialize(&Bytes, Chunk, Thread->PermMemory, 1);
 
-    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
+    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Occupancy, Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
 
     FinalizeChunkInitialization(Chunk);
 

@@ -1,4 +1,6 @@
 
+#include <engine/voxel.cpp>
+
 #include <engine/color.cpp>
 #include <engine/debug_draw.cpp>
 

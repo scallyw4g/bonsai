@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:797:0
+// src/engine/world_update.cpp:813:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -29,7 +29,8 @@ while (AtElements(&Stack))
     
           v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
           voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-          if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
+          NotImplemented;
+          /* if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0) */
         
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
@@ -44,7 +45,8 @@ while (AtElements(&Stack))
     }
 
     
-          if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = {}; }
+          NotImplemented;
+          /* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = {}; } */
         
 
     V->Flags |= Voxel_MarkBit;

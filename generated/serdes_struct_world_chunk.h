@@ -43,6 +43,11 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+    if (Element->Occupancy) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
     if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
@@ -64,6 +69,10 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+
+
+
+    if (Element->Occupancy) { Result &= Serialize(Bytes, Element->Occupancy); }
 
 
 
@@ -126,6 +135,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  b64 HadOccupancyPointer = Read_u64(Bytes);
+  Assert(HadOccupancyPointer < 2); // Should be 0 or 1
+
+
+
   b64 HadVoxelsPointer = Read_u64(Bytes);
   Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
@@ -152,6 +166,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+
+
+  if (HadOccupancyPointer)
+  {
+    umm Count = 1;
+
+
+    if (Element->Occupancy == 0)
+    {
+      Element->Occupancy = Allocate(u8, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Occupancy, Memory, Count);
+  }
 
 
   if (HadVoxelsPointer)

@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:617:0
+// src/engine/world_update.cpp:622:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -12,11 +12,13 @@ DimIterator(x, y, z, UpdateDim)
   {
     
 
-        if ((V->Flags&Voxel_Filled) == False)
+        NotImplemented;
+        /* if ((V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
           poof_check_for_unfilled_border()
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
+          NotImplemented;
+          /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;

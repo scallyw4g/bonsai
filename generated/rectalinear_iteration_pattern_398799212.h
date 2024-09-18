@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:517:0
+// src/engine/world_update.cpp:518:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -13,11 +13,12 @@ DimIterator(x, y, z, UpdateDim)
     
 
         v3i CenterToVoxP = SimVoxP - EditCenterP;
-        if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == False)
+        NotImplemented;
+        /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
           poof_check_for_unfilled_border()
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
+          /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;

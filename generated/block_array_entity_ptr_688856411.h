@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:326:0
+// src/engine/world_chunk.h:327:0
 
 struct entity_ptr_block
 {

@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:557:0
+// src/engine/world_update.cpp:559:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -27,7 +27,8 @@ while (AtElements(&Stack))
     v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
     
-      if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0)
+      NotImplemented;
+      /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0) */
     
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
@@ -42,7 +43,8 @@ while (AtElements(&Stack))
     }
 
     
-      if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) )
+      NotImplemented;
+      /* if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) ) */
          { V->Flags = Voxel_Empty; }
     
 
@@ -82,7 +84,8 @@ while (AtElements(&Stack))
       v3i CenterToVoxP = SimVoxP - EditCenterP;
       if (Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f)
       {
-        if (V->Flags & Voxel_Filled)
+        NotImplemented;
+        /* if (V->Flags & Voxel_Filled) */
         {
           V->Color = MagicaVoxelDefaultPaletteToPackedHSV(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1)));
         }

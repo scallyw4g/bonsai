@@ -213,7 +213,9 @@ GetCollision( world *World, aabb SimSpaceCollisionDim )
           {
             v3i Offset = V3i(x,y,z);
             s32 Index = GetIndex(Offset, Chunk->Dim);
-            if (Chunk->Voxels[Index].Flags & Voxel_Filled)
+            s32 vOccupancy = GetOccupancyBit(Chunk->Occupancy, Index);
+
+            if (vOccupancy)
             {
               cp Hit = {V3(Offset), Chunk->WorldP};
               /* Assert(Hit > Result.MaxP); */

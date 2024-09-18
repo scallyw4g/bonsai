@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:696:0
+// src/engine/world_update.cpp:707:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,7 +11,8 @@ DimIterator(x, y, z, UpdateDim)
   if (Contains(SSRect, SimVoxP))
   {
     
-        if (V->Flags & Voxel_Filled)
+        NotImplemented;
+        /* if (V->Flags & Voxel_Filled) */
         {
           OverwriteVoxel = True;
         }

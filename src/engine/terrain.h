@@ -85,30 +85,24 @@ poof(
         for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH )
         {
           s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-          Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+          /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
           user_code
 
+          u8 OccupancyByte = 0;
           RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
           {
             s32 ThisIndex = VoxIndex+ValueIndex;
-            b32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
-            ChunkSum += NoiseChoice;
+            s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
+            ChunkSum += u32(NoiseChoice);
 
-            SetFlag(&Chunk->Voxels[ThisIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+            OccupancyByte |= (NoiseChoice << ValueIndex);
             Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
-
-            /* Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0); */
-            /* if (NoiseChoice) */
-            /* { */
-            /*   Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
-            /* } */
-            /* else */
-            /* { */
-            /*   Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
-            /* } */
           }
 
+          SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
+          /* s32 ByteIndex = VoxIndex/8; */
+          /* Chunk->Occupancy[ByteIndex] = OccupancyByte; */
         }
       }
     }

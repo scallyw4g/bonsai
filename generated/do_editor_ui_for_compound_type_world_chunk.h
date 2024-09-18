@@ -74,6 +74,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(u8*, Element->Occupancy),
+        CSz("Occupancy"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(voxel*, Element->Voxels),
         CSz("Voxels"),
         Params
@@ -285,11 +301,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
       PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v _Pad1[28]"), CSz("> _Pad1[28]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
+      if (ToggleButton(Ui, CSz("v _Pad1[20]"), CSz("> _Pad1[20]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 28)
+        RangeIterator(ArrayIndex, 20)
         {
           DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, FSz("_Pad1[%d]", ArrayIndex), Params);
 

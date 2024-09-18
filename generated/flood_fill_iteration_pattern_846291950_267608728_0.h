@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:661:0
+// src/engine/world_update.cpp:668:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -26,7 +26,10 @@ while (AtElements(&Stack))
 
     v3i CenterToVoxP = SimVoxP - FloodOrigin;
 
-     if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)) ) 
+    
+          NotImplemented;
+          /* { if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)) ) }, */
+        
     {
       if ( (V->Flags & Voxel_MarkBit) == 0)
       {
@@ -40,9 +43,10 @@ while (AtElements(&Stack))
     }
 
     
-          if ( Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
-          { }
-          else
+          NotImplemented;
+          /* if ( Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) */
+          /* { } */
+          /* else */
           {
             OverwriteVoxel = True;
           }

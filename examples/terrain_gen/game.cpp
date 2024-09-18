@@ -32,7 +32,8 @@ Terrain_Checkerboard( world_chunk *Chunk,
         if (WorldZ < zMin)
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
-          Chunk->Voxels[Index].Flags = Voxel_Filled;
+          /* Chunk->Voxels[Index].Flags = Voxel_Filled; */
+          SetOccupancyBit(Chunk, Index, VoxelOccupancy_Filled);
           Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
           ++Result;
         }
@@ -71,7 +72,7 @@ GrassyIslandTerrain( world_chunk *Chunk,
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -223,23 +224,13 @@ GrassyIslandTerrain( world_chunk *Chunk,
         }
 #endif
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += NoiseChoice;
 
-
-
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }
@@ -276,7 +267,6 @@ WarpedTerrain( world_chunk *Chunk,
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
         Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
 
         r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -323,20 +313,12 @@ WarpedTerrain( world_chunk *Chunk,
         }
 #endif
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
         Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
       }
     }
   }

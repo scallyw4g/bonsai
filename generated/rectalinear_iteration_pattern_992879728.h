@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:750:0
+// src/engine/world_update.cpp:763:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -15,7 +15,8 @@ DimIterator(x, y, z, UpdateDim)
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
         if (NewVoxelValue)
         {
-          if ( (V->Flags&VoxelFaceMask) && (NewVoxelValue->Flags&Voxel_Filled) )
+          NotImplemented;
+          /* if ( (V->Flags&VoxelFaceMask) && (NewVoxelValue->Flags&Voxel_Filled) ) */
           {
             OverwriteVoxel = True;
           }

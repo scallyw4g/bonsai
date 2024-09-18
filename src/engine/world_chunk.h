@@ -89,7 +89,7 @@ poof(string_and_value_tables(chunk_flag))
 enum voxel_flag
 {
   Voxel_Empty      =      0,
-  Voxel_Filled     = 1 << 0,
+  /* Voxel_Filled     = 1 << 0, // NOTE(Jesse): This now lives in the Occupancy buffer */
 
   Voxel_LeftFace   = 1 << 1,
   Voxel_RightFace  = 1 << 2,
@@ -192,6 +192,7 @@ struct chunk_data
 {
   chunk_flag Flags;
   v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
+  u8             *Occupancy;
   voxel          *Voxels;
   voxel_lighting *VoxelLighting;
 };
@@ -334,7 +335,8 @@ struct world_chunk poof(@version(1))
 
   // chunk_data {
           chunk_flag  Flags;          poof(@no_serialize)
-                 v3i  Dim; // could be compressed?
+                 v3i  Dim;            // could/should be compressed?
+                  u8 *Occupancy;
                voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
       voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
   // }
@@ -375,9 +377,9 @@ struct world_chunk poof(@version(1))
 #if VOXEL_DEBUG_COLOR
   f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
   v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
-  u8 _Pad1[16];      poof(@no_serialize)
+  u8 _Pad1[8];      poof(@no_serialize)
 #else
-  u8 _Pad1[28];      poof(@no_serialize)
+  u8 _Pad1[20];      poof(@no_serialize)
 #endif
 };
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
@@ -386,7 +388,7 @@ struct world_chunk poof(@version(1))
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
-CAssert(sizeof(chunk_data) == 32);
+/* CAssert(sizeof(chunk_data) == 32); */
 /* CAssert(sizeof(threadsafe_geometry_buffer) == 112); */
 CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
@@ -562,6 +564,8 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
+
+
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
@@ -664,7 +668,7 @@ link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 
 link_internal s32
-MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
+MarkBoundaryVoxels_MakeExteriorFaces(u8 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
 
 /* link_internal world_chunk_geometry_buffer* */
 /* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */
