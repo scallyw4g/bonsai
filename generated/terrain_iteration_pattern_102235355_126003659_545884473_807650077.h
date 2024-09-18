@@ -18,13 +18,12 @@ for ( s32 z = 0; z < Dim.z; ++ z)
     for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH )
     {
       s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-      /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
       
         u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
 
         {
-          HISTOGRAM_FUNCTION();
+          /* HISTOGRAM_FUNCTION(); */
 
           v3 InteriorPeriod = Period;
           r32 InteriorAmp = r32(Amplitude);
@@ -69,8 +68,6 @@ for ( s32 z = 0; z < Dim.z; ++ z)
       }
 
       SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
-      /* s32 ByteIndex = VoxIndex/8; */
-      /* Chunk->Occupancy[ByteIndex] = OccupancyByte; */
     }
   }
 }

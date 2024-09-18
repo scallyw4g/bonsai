@@ -640,7 +640,7 @@ CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestCh
           SetOccupancyBit(Dest, DestIndex, SrcOccupancy);
 
           Dest->Voxels[DestIndex] = Src->Voxels[SrcIndex];
-          /* Dest->FilledCount += Dest->Voxels[DestIndex].Flags & Voxel_Filled; */
+          Dest->FilledCount += SrcOccupancy;
           /* CAssert(Voxel_Filled == 1); */
         }
       }

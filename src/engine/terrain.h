@@ -85,7 +85,6 @@ poof(
         for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH )
         {
           s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-          /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
           user_code
 
@@ -101,8 +100,6 @@ poof(
           }
 
           SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
-          /* s32 ByteIndex = VoxIndex/8; */
-          /* Chunk->Occupancy[ByteIndex] = OccupancyByte; */
         }
       }
     }
@@ -264,6 +261,7 @@ link_internal u32
 Terrain_Perlin2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
 
 link_internal u32
+
 Terrain_Voronoi3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
 
 link_internal u32

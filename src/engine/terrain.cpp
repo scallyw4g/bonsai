@@ -111,7 +111,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
 
         {
-          HISTOGRAM_FUNCTION();
+          /* HISTOGRAM_FUNCTION(); */
 
           v3 InteriorPeriod = Period;
           r32 InteriorAmp = r32(Amplitude);
