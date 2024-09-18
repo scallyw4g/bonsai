@@ -3217,13 +3217,6 @@ ComputeLodMesh( thread_local_state *Thread,
 #if 1
 #endif
 
-/* link_internal chunk_dimension */
-/* ChunkDimension(world_chunk* Chunk) */
-/* { */
-/*   chunk_dimension Result = Chunk->Dim; */
-/*   return Result; */
-/* } */
-
 link_internal void
 InitializeWorldChunkEmpty(world_chunk *DestChunk)
 {
@@ -3251,9 +3244,6 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 
   return;
 }
-
-// TODO(Jesse)(hack): Remove this!
-global_variable memory_arena Global_PermMemory = {};
 
 inline void
 QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
