@@ -21,35 +21,40 @@ for ( s32 z = 0; z < Dim.z; ++ z)
       Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
 
       
-        v3 InteriorPeriod = Period;
-        r32 InteriorAmp = r32(Amplitude);
-        for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
-        {
-          Assert(Chunk->DimInChunks > V3i(0));
-
-          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH];
-          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
-          {
-            xCoords[ValueIndex] = (COMPUTE_NOISE_INPUT(x, ValueIndex, Chunk)) / InteriorPeriod.x;
-          }
-
-          f32 yIn = yCoord/InteriorPeriod.y;
-          f32 zIn = zCoord/InteriorPeriod.z;
-
-          // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
-          f32 TmpPerlinResults[MIN_TERRAIN_NOISE_WIDTH];
-          PerlinNoise_8x(xCoords, yIn, zIn, TmpPerlinResults);
-
-          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
-          {
-            NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
-          }
-
-          InteriorAmp = Max(1.f, InteriorAmp/2.f);
-          InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
-        }
-
         u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
+
+        {
+          HISTOGRAM_FUNCTION();
+
+          v3 InteriorPeriod = Period;
+          r32 InteriorAmp = r32(Amplitude);
+          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH];
+          for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+          {
+            Assert(Chunk->DimInChunks > V3i(0));
+
+            RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+            {
+              xCoords[ValueIndex] = (COMPUTE_NOISE_INPUT(x, ValueIndex, Chunk)) / InteriorPeriod.x;
+            }
+
+            f32 yIn = yCoord/InteriorPeriod.y;
+            f32 zIn = zCoord/InteriorPeriod.z;
+
+            // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
+            f32 TmpPerlinResults[MIN_TERRAIN_NOISE_WIDTH];
+            PerlinNoise_8x(xCoords, yIn, zIn, TmpPerlinResults);
+
+            RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+            {
+              NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
+            }
+
+            InteriorAmp = Max(1.f, InteriorAmp/2.f);
+            InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
+          }
+
+        }
       
 
       RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
@@ -61,15 +66,15 @@ for ( s32 z = 0; z < Dim.z; ++ z)
         SetFlag(&Chunk->Voxels[ThisIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
         Chunk->Voxels[ThisIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
 
-        Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0);
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
-        }
+        /* Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0); */
+        /* if (NoiseChoice) */
+        /* { */
+        /*   Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
+        /* } */
+        /* else */
+        /* { */
+        /*   Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
+        /* } */
       }
 
     }

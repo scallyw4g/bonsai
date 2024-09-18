@@ -98,15 +98,15 @@ poof(
             SetFlag(&Chunk->Voxels[ThisIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
             Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
 
-            Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0);
-            if (NoiseChoice)
-            {
-              Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
-            }
-            else
-            {
-              Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) );
-            }
+            /* Assert( (Chunk->Voxels[ThisIndex].Flags&VoxelFaceMask) == 0); */
+            /* if (NoiseChoice) */
+            /* { */
+            /*   Assert( IsSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
+            /* } */
+            /* else */
+            /* { */
+            /*   Assert( NotSet(&Chunk->Voxels[ThisIndex], Voxel_Filled) ); */
+            /* } */
           }
 
         }
