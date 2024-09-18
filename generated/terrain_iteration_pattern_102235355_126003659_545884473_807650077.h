@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:760:0
+// src/engine/terrain.cpp:109:0
 
 // NOTE(Jesse): This must hold true for using any Noise_8x func
 Assert(Chunk->Dim % V3i(MIN_TERRAIN_NOISE_WIDTH) == V3i(0));

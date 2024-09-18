@@ -259,3 +259,18 @@ ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i No
 
 link_internal u32
 Terrain_Voronoi3D( world_chunk *, v3i, void *, void * );
+
+link_internal u32
+Terrain_WhiteNoise( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+
+link_internal u32
+Terrain_Perlin3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+
+link_internal u32
+Terrain_Perlin2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+
+link_internal u32
+Terrain_Voronoi3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+
+link_internal u32
+Terrain_Voronoi2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
