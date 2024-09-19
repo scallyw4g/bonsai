@@ -434,18 +434,20 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_FBM2D:
           {
             // FBM params
-            /* v3 Period = V3(18000); */
-            /* s32 Amplititude = 10000; */
+            v3 Period = V3(18000);
+            s32 Amplititude = 10000;
+            s32 StartingZDepth = 0;
+            u32 Octaves = 7;
 
             /* v3 Period = V3(125); */
             /* s32 Amplititude = 125; */
-            /* u32 Octaves = 1; */
             /* s32 StartingZDepth = 0; */
+            /* u32 Octaves = 1; */
 
-            v3 Period = V3(2500);
-            s32 Amplititude = 1500;
-            s32 StartingZDepth = -400;
-            u32 Octaves = 3;
+            /* v3 Period = V3(2500); */
+            /* s32 Amplititude = 1500; */
+            /* s32 StartingZDepth = -400; */
+            /* u32 Octaves = 3; */
 
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;

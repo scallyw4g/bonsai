@@ -10,6 +10,7 @@ enum octree_node_type
 struct octree_node
 {
   octree_node_type Type;
+  /* s32 AllChildrenCanDraw; */
 
   // TODO(Jesse): Maybe make this a pointer ..?
   world_chunk Chunk;
