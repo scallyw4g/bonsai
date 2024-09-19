@@ -63,6 +63,10 @@ struct engine_debug
   b8 DrawLeafNodes;
   b8 DrawQueuedNodes = 1;
 
+  r64 ChunkGenTimeElapsedMS;
+  u64 CellsGenerated;
+  r64 ChunkGenCyclesElapsed;
+
   u8 PickedChunkState;
   world_chunk *PickedChunk;
 

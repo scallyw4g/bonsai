@@ -247,6 +247,54 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(r64*,&Element->ChunkGenTimeElapsedMS),
+        CSz("ChunkGenTimeElapsedMS"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->CellsGenerated),
+        CSz("CellsGenerated"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r64*,&Element->ChunkGenCyclesElapsed),
+        CSz("ChunkGenCyclesElapsed"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u8*,&Element->PickedChunkState),
         CSz("PickedChunkState"),
         Params

@@ -36,22 +36,14 @@ poof(
 
           user_code
 
-          b32 NoiseChoice = r64((noise_value_name)) > r64(WorldZBiased);
+          s32 NoiseChoice = r64((noise_value_name)) > r64(WorldZBiased);
 
-          SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+          SetOccupancyBit(Chunk, VoxIndex, NoiseChoice);
+          /* SetOccupancyByte(Chunk, VoxIndex, OccupancyByte); */
           Chunk->Voxels[VoxIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
-          ChunkSum += NoiseChoice;
+          ChunkSum += u32(NoiseChoice);
 
           Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-          if (NoiseChoice)
-          {
-            Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-          }
-          else
-          {
-            Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-          }
         }
       }
     }
@@ -68,12 +60,9 @@ poof(
   @code_fragment
   {
     // NOTE(Jesse): This must hold true for using any Noise_8x func
-    Assert(Chunk->Dim % V3i(MIN_TERRAIN_NOISE_WIDTH) == V3i(0));
+    Assert(Chunk->Dim % V3i(8) == V3i(0));
 
     Period = Max(Period, V3(1.f));
-
-
-    /* s32 xChunkMax = Dim.x/MIN_TERRAIN_NOISE_WIDTH; */
 
     for ( s32 z = 0; z < Dim.z; ++ z)
     {
@@ -82,14 +71,58 @@ poof(
       for ( s32 y = 0; y < Dim.y; ++ y)
       {
         f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
-        for ( s32 x = 0; x < Dim.x; x += MIN_TERRAIN_NOISE_WIDTH )
+        for ( s32 x = 0; x < Dim.x; x += 8 )
         {
           s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
 
           user_code
 
           u8 OccupancyByte = 0;
-          RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+          RangeIterator(ValueIndex, 8)
+          {
+            s32 ThisIndex = VoxIndex+ValueIndex;
+            s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
+            ChunkSum += u32(NoiseChoice);
+
+            OccupancyByte |= (NoiseChoice << ValueIndex);
+            Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+          }
+
+          SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
+        }
+      }
+    }
+  }
+)
+
+poof(
+  func terrain_iteration_pattern_16x( type_poof_symbol noise_input_name,
+                                      type_poof_symbol noise_value_name,
+                                      type_poof_symbol packed_HSV_color_value_name,
+                                      type_poof_symbol user_code)
+  @code_fragment
+  {
+    // NOTE(Jesse): This must hold true for using any Noise_8x func
+    Assert(Chunk->Dim % V3i(16) == V3i(0));
+
+    Period = Max(Period, V3(1.f));
+
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      f32 zCoord = COMPUTE_NOISE_INPUT(z, 0, Chunk);
+      f32 WorldZBiased = zCoord - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
+        for ( s32 x = 0; x < Dim.x; x += 16 )
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+
+          user_code
+
+          u8 OccupancyByte = 0;
+          RangeIterator(ValueIndex, 16)
           {
             s32 ThisIndex = VoxIndex+ValueIndex;
             s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
