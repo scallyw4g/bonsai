@@ -1,5 +1,5 @@
 
-#define MIN_TERRAIN_NOISE_WIDTH (8)
+#define MIN_TERRAIN_NOISE_WIDTH (16)
 
 
 #define COMPUTE_NOISE_INPUT(channel_name, offset, chunk) (chunk->DimInChunks.channel_name/2) + ((f32(offset)+channel_name)*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
@@ -102,11 +102,10 @@ poof(
                                       type_poof_symbol user_code)
   @code_fragment
   {
-    // NOTE(Jesse): This must hold true for using any Noise_8x func
+    // NOTE(Jesse): This must hold true for using any Noise_16x func
     Assert(Chunk->Dim % V3i(16) == V3i(0));
 
     Period = Max(Period, V3(1.f));
-
 
     for ( s32 z = 0; z < Dim.z; ++ z)
     {
@@ -121,7 +120,7 @@ poof(
 
           user_code
 
-          u8 OccupancyByte = 0;
+          u16 OccupancyByte = 0;
           RangeIterator(ValueIndex, 16)
           {
             s32 ThisIndex = VoxIndex+ValueIndex;
@@ -131,8 +130,8 @@ poof(
             OccupancyByte |= (NoiseChoice << ValueIndex);
             Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
           }
-
-          SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
+          SetOccupancyByte(Chunk, VoxIndex, u8(OccupancyByte));
+          SetOccupancyByte(Chunk, VoxIndex+8, u8(OccupancyByte>>8));
         }
       }
     }

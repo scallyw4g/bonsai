@@ -717,6 +717,13 @@ DoEngineDebug(engine_resources *Engine)
   r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
   r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / EngineDebug->CellsGenerated;
 
+  if (ChunkGenSeconds > 3.)
+  {
+    EngineDebug->ChunkGenTimeElapsedMS = 0.;
+    EngineDebug->ChunkGenCyclesElapsed = 0;
+    EngineDebug->CellsGenerated = 0;
+  }
+
   if (ChunkGenSeconds != 0.0)
   {
     u64 CellsGenerated = EngineDebug->CellsGenerated;

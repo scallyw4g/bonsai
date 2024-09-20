@@ -107,7 +107,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     ))
 #include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
 #endif
-#if 1
+#if 0
   poof(
     terrain_iteration_pattern_8x({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
       {
@@ -138,12 +138,24 @@ Terrain_FBM2D( world_chunk *Chunk,
             // best 26.15 cycles/cell
             /* PerlinNoise_8x_sse(xCoords, yIn, zIn, TmpPerlinResults); */
 
+            //
             // best 143 million points/sec
             // best 157 million points/sec
+            // best 199 million points/sec
             //
             // best 18.75 cycles/cell
             // best 17.11 cycles/cell
+            // best 13.51 cycles/cell
+            //
+            // targ 9-10 cycles/cell
             PerlinNoise_8x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
+            /* PerlinNoise_8x_avx2(xCoords+1, yIn, zIn, TmpPerlinResults+1); */
+            /* PerlinNoise_8x_avx2(xCoords+2, yIn, zIn, TmpPerlinResults+2); */
+            /* PerlinNoise_8x_avx2(xCoords+3, yIn, zIn, TmpPerlinResults+3); */
+            /* PerlinNoise_8x_avx2(xCoords+4, yIn, zIn, TmpPerlinResults+4); */
+            /* PerlinNoise_8x_avx2(xCoords+5, yIn, zIn, TmpPerlinResults+5); */
+            /* PerlinNoise_8x_avx2(xCoords+6, yIn, zIn, TmpPerlinResults+6); */
+            /* PerlinNoise_8x_avx2(xCoords+7, yIn, zIn, TmpPerlinResults+7); */
 
             /* TmpPerlinResults[0] = f32(PackedHSVColorValue); */ 
             /* TmpPerlinResults[1] = f32(PackedHSVColorValue); */
@@ -155,6 +167,63 @@ Terrain_FBM2D( world_chunk *Chunk,
             /* TmpPerlinResults[7] = f32(PackedHSVColorValue); */
 
             RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
+            {
+              NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
+            }
+
+            InteriorAmp = Max(1.f, InteriorAmp/2.f);
+            InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
+          }
+
+        }
+      }
+    ))
+#include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
+#endif
+#if 1
+  poof(
+    terrain_iteration_pattern_16x({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
+      {
+        u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
+
+        {
+          /* HISTOGRAM_FUNCTION(); */
+
+          v3 InteriorPeriod = Period;
+          r32 InteriorAmp = r32(Amplitude);
+          f32 xCoords[16];
+          for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+          {
+            Assert(Chunk->DimInChunks > V3i(0));
+
+            RangeIterator(ValueIndex, 16)
+            {
+              xCoords[ValueIndex] = (COMPUTE_NOISE_INPUT(x, ValueIndex, Chunk)) / InteriorPeriod.x;
+            }
+
+            f32 yIn = yCoord/InteriorPeriod.y;
+            f32 zIn = zCoord/InteriorPeriod.z;
+
+            // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
+            f32 TmpPerlinResults[16];
+
+            // best 102.7 million points/sec
+            // best 26.15 cycles/cell
+            /* PerlinNoise_8x_sse(xCoords, yIn, zIn, TmpPerlinResults); */
+
+            //
+            // best 143 million points/sec
+            // best 157 million points/sec
+            // best 199 million points/sec
+            //
+            // best 18.75 cycles/cell
+            // best 17.11 cycles/cell
+            // best 13.51 cycles/cell
+            //
+            // targ 9-10 cycles/cell
+            PerlinNoise_16x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
+
+            RangeIterator(ValueIndex, 16)
             {
               NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
             }
