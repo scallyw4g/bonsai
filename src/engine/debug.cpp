@@ -714,27 +714,24 @@ DoEngineDebug(engine_resources *Engine)
   ui_toggle_button_group EditorButtonGroup =
     ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
-  r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
-  r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / EngineDebug->CellsGenerated;
+  u64 CellsGenerated = EngineDebug->CellsGenerated;
 
-  if (ChunkGenSeconds > 3.)
+  if (CellsGenerated)
   {
-    EngineDebug->ChunkGenTimeElapsedMS = 0.;
-    EngineDebug->ChunkGenCyclesElapsed = 0;
-    EngineDebug->CellsGenerated = 0;
+    r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / CellsGenerated;
+    Text(Ui, CSz("CyclesPerCell : "));
+    Text(Ui, CS(CyclesPerCell));
+    PushNewRow(Ui);
   }
 
+  r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
   if (ChunkGenSeconds != 0.0)
   {
-    u64 CellsGenerated = EngineDebug->CellsGenerated;
     r64 CellsPerSecond = (CellsGenerated/ChunkGenSeconds);
 
     Text(Ui, CSz("CellsPerSecond : "));
     Text(Ui, CS(CellsPerSecond));
     PushNewRow(Ui);
-
-    Text(Ui, CSz("CyclesPerCell : "));
-    Text(Ui, CS(CyclesPerCell));
   }
 
   engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;

@@ -1,7 +1,7 @@
-// src/engine/terrain.cpp:185:0
+// src/engine/terrain.cpp:112:0
 
-// NOTE(Jesse): This must hold true for using any Noise_16x func
-Assert(Chunk->Dim % V3i(16) == V3i(0));
+// NOTE(Jesse): This must hold true for using any Noise_8x func
+Assert(Chunk->Dim % V3i(8) == V3i(0));
 
 Period = Max(Period, V3(1.f));
 
@@ -12,7 +12,9 @@ for ( s32 z = 0; z < Dim.z; ++ z)
   for ( s32 y = 0; y < Dim.y; ++ y)
   {
     f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
-    for ( s32 x = 0; x < Dim.x; x += 16 )
+
+    ComputePerlinParameters(y);
+    for ( s32 x = 0; x < Dim.x; x += 8 )
     {
       s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
 
@@ -24,12 +26,12 @@ for ( s32 z = 0; z < Dim.z; ++ z)
 
           v3 InteriorPeriod = Period;
           r32 InteriorAmp = r32(Amplitude);
-          f32 xCoords[16];
+          f32 xCoords[MIN_TERRAIN_NOISE_WIDTH];
           for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
           {
             Assert(Chunk->DimInChunks > V3i(0));
 
-            RangeIterator(ValueIndex, 16)
+            RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
             {
               xCoords[ValueIndex] = (COMPUTE_NOISE_INPUT(x, ValueIndex, Chunk)) / InteriorPeriod.x;
             }
@@ -38,7 +40,7 @@ for ( s32 z = 0; z < Dim.z; ++ z)
             f32 zIn = zCoord/InteriorPeriod.z;
 
             // NOTE(Jesse): Important to use Tmp here so we don't stomp on the result already in NoiseValues
-            f32 TmpPerlinResults[16];
+            f32 TmpPerlinResults[MIN_TERRAIN_NOISE_WIDTH];
 
             // best 102.7 million points/sec
             // best 26.15 cycles/cell
@@ -54,9 +56,8 @@ for ( s32 z = 0; z < Dim.z; ++ z)
             // best 13.51 cycles/cell
             //
             // targ 9-10 cycles/cell
-            PerlinNoise_16x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
-
-            RangeIterator(ValueIndex, 16)
+            PerlinNoise_8x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
+            RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
             {
               NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
             }
@@ -68,8 +69,8 @@ for ( s32 z = 0; z < Dim.z; ++ z)
         }
       
 
-      u16 OccupancyByte = 0;
-      RangeIterator(ValueIndex, 16)
+      u8 OccupancyByte = 0;
+      RangeIterator(ValueIndex, 8)
       {
         s32 ThisIndex = VoxIndex+ValueIndex;
         s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
@@ -78,8 +79,8 @@ for ( s32 z = 0; z < Dim.z; ++ z)
         OccupancyByte |= (NoiseChoice << ValueIndex);
         Chunk->Voxels[ThisIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
       }
-      SetOccupancyByte(Chunk, VoxIndex, u8(OccupancyByte));
-      SetOccupancyByte(Chunk, VoxIndex+8, u8(OccupancyByte>>8));
+
+      SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
     }
   }
 }

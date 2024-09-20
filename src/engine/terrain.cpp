@@ -85,8 +85,8 @@ Terrain_FBM2D( world_chunk *Chunk,
   u32 Octaves = *(u32*)OctaveCount;
 
 
-  r64 NoiseTimeStart = GetHighPrecisionClock();
-  u64 CycleCountStart = GetCycleCount();
+  /* r64 NoiseTimeStart = GetHighPrecisionClock(); */
+  /* u64 CycleCountStart = GetCycleCount(); */
 
 #if 0
   poof(
@@ -149,23 +149,6 @@ Terrain_FBM2D( world_chunk *Chunk,
             //
             // targ 9-10 cycles/cell
             PerlinNoise_8x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
-            /* PerlinNoise_8x_avx2(xCoords+1, yIn, zIn, TmpPerlinResults+1); */
-            /* PerlinNoise_8x_avx2(xCoords+2, yIn, zIn, TmpPerlinResults+2); */
-            /* PerlinNoise_8x_avx2(xCoords+3, yIn, zIn, TmpPerlinResults+3); */
-            /* PerlinNoise_8x_avx2(xCoords+4, yIn, zIn, TmpPerlinResults+4); */
-            /* PerlinNoise_8x_avx2(xCoords+5, yIn, zIn, TmpPerlinResults+5); */
-            /* PerlinNoise_8x_avx2(xCoords+6, yIn, zIn, TmpPerlinResults+6); */
-            /* PerlinNoise_8x_avx2(xCoords+7, yIn, zIn, TmpPerlinResults+7); */
-
-            /* TmpPerlinResults[0] = f32(PackedHSVColorValue); */ 
-            /* TmpPerlinResults[1] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[2] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[3] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[4] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[5] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[6] = f32(PackedHSVColorValue); */
-            /* TmpPerlinResults[7] = f32(PackedHSVColorValue); */
-
             RangeIterator(ValueIndex, MIN_TERRAIN_NOISE_WIDTH)
             {
               NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
@@ -180,7 +163,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     ))
 #include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
 #endif
-#if 1
+#if 0
   poof(
     terrain_iteration_pattern_16x({NoiseInput}, {NoiseValue}, {PackedHSVColorValue},
       {
@@ -223,6 +206,7 @@ Terrain_FBM2D( world_chunk *Chunk,
             // targ 9-10 cycles/cell
             PerlinNoise_16x_avx2(xCoords, yIn, zIn, TmpPerlinResults);
 
+
             RangeIterator(ValueIndex, 16)
             {
               NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
@@ -235,19 +219,21 @@ Terrain_FBM2D( world_chunk *Chunk,
         }
       }
     ))
-#include <generated/terrain_iteration_pattern_102235355_126003659_545884473_807650077.h>
+#include <generated/terrain_iteration_pattern_16x_102235355_126003659_545884473_634032968.h>
 #endif
 
-  u64 CycleCountEnd = GetCycleCount();
-  r64 NoiseTimeEnd = GetHighPrecisionClock();
+#include <generated/terrain_iteration_pattern_16x_102235355_126003659_545884473_634032968.h>
 
-  u64 CyclesElapsed = CycleCountEnd-CycleCountStart;
-  r64 NoiseTimeElapsed = NoiseTimeEnd-NoiseTimeStart;
+  /* u64 CycleCountEnd = GetCycleCount(); */
+  /* r64 NoiseTimeEnd = GetHighPrecisionClock(); */
 
-  engine_debug *ED = GetEngineDebug();
-  ED->ChunkGenCyclesElapsed += CyclesElapsed;
-  ED->ChunkGenTimeElapsedMS += NoiseTimeElapsed;
-  ED->CellsGenerated += u64(Volume(Chunk->Dim)) * Octaves;
+  /* u64 CyclesElapsed = CycleCountEnd-CycleCountStart; */
+  /* r64 NoiseTimeElapsed = NoiseTimeEnd-NoiseTimeStart; */
+
+  /* engine_debug *ED = GetEngineDebug(); */
+  /* ED->ChunkGenCyclesElapsed += CyclesElapsed; */
+  /* ED->ChunkGenTimeElapsedMS += NoiseTimeElapsed; */
+  /* ED->CellsGenerated += u64(Volume(Chunk->Dim)) * Octaves; */
 
   /* PushHistogramDataPoint(); */
 
