@@ -36,7 +36,7 @@ Terrain_FBM2D( world_chunk *Chunk,
                       void *NoiseParams,
                       void *OctaveCount )
 {
-  /* HISTOGRAM_FUNCTION(); */
+  HISTOGRAM_FUNCTION();
   /* TIMED_FUNCTION(); */
 
   UNPACK_NOISE_PARAMS(NoiseParams);
