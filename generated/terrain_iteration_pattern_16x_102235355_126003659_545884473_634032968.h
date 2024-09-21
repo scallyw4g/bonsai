@@ -11,6 +11,8 @@ auto PrimeZ = U32_8X(1720413743);
 
 u64 CycleCountStart = GetCycleCount();
 
+Assert(u64(NoiseValues) % 32 == 0);
+
 // TODO(Jesse): Make this dynamic
 Assert(Octaves < 8);
 perlin_params zParams[8];
@@ -59,6 +61,8 @@ for ( s32 z = 0; z < Dim.z; ++ z)
         auto Index = 0;
         auto _x0 = F32_8X( xCoords[0], xCoords[1], xCoords[2], xCoords[3], xCoords[4], xCoords[5], xCoords[6], xCoords[7] );
         auto _x1 = F32_8X( xCoords[8], xCoords[9], xCoords[10], xCoords[11], xCoords[12], xCoords[13], xCoords[14], xCoords[15] );
+        /* auto _x0 = F32_8X( xCoords[7], xCoords[6], xCoords[5], xCoords[4], xCoords[3], xCoords[2], xCoords[1],  xCoords[0] ); */
+        /* auto _x1 = F32_8X( xCoords[15], xCoords[14], xCoords[13], xCoords[12], xCoords[11], xCoords[10], xCoords[9], xCoords[8] ); */
         xParams[ParamsIndex++] = ComputePerlinParameters(_x0, PrimeX);
         xParams[ParamsIndex++] = ComputePerlinParameters(_x1, PrimeX);
         InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
@@ -66,13 +70,7 @@ for ( s32 z = 0; z < Dim.z; ++ z)
 
       for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
       {
-        f32 TmpPerlinResults[16];
-        PerlinNoise_16x_avx2(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, TmpPerlinResults);
-        RangeIterator(ValueIndex, 16)
-        {
-          NoiseValues[VoxIndex+ValueIndex] += TmpPerlinResults[ValueIndex]*InteriorAmp;
-        }
-
+        PerlinNoise_16x_avx2(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+VoxIndex, InteriorAmp);
         InteriorAmp = Max(1.f, InteriorAmp/2.f);
       }
 

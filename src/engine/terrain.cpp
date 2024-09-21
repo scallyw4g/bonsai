@@ -222,6 +222,9 @@ Terrain_FBM2D( world_chunk *Chunk,
 #include <generated/terrain_iteration_pattern_16x_102235355_126003659_545884473_634032968.h>
 #endif
 
+
+      // 8.85 cycles/cell
+
 #include <generated/terrain_iteration_pattern_16x_102235355_126003659_545884473_634032968.h>
 
   /* u64 CycleCountEnd = GetCycleCount(); */
