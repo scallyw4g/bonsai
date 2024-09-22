@@ -424,7 +424,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (4)
+#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (3)
 
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
