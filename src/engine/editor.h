@@ -645,7 +645,7 @@ struct generic_noise_params
   v3         Period = Cast(generic_noise_params*, (P))->Period;         \
   s32     Amplitude = s32(Cast(generic_noise_params*, (P))->Amplitude); \
   v3       RGBColor = Cast(generic_noise_params*, (P))->RGBColor;       \
-  v3i     SrcToDest = {-1*Global_ChunkApronMinDim};
+  v3i     SrcToDest = {}
 
 
 struct white_noise_params
