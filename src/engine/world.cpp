@@ -424,7 +424,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (3)
+#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (4)
 
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
@@ -499,7 +499,7 @@ struct octree_node_priority_queue
 };
 
 link_internal void
-PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node)
+PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent)
 {
   Assert(Node->Chunk.Flags == Chunk_Uninitialized);
 
@@ -508,9 +508,16 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
 
   IdealListIndex = (MAX_OCTREE_NODE_BUCKETS-1)-IdealListIndex;
 
+  // 
   if (IsInFrustum(World, GameCamera, &Node->Chunk) == False)
   {
-    IdealListIndex = MAX_OCTREE_NODE_BUCKETS-1;
+    IdealListIndex = Min(MAX_OCTREE_NODE_BUCKETS-1, IdealListIndex+1);;
+  }
+
+  // Prefer chunks who have a high chance of having geometry
+  if (Parent && HasGpuMesh(&Parent->Chunk.Meshes))
+  {
+    IdealListIndex = Max(0, IdealListIndex-1);
   }
 
   if (Remaining(&Queue->Lists[IdealListIndex]))
@@ -593,7 +600,7 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
 
 
 link_internal s32
-SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, memory_arena *Memory)
+SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, octree_node *Parent, memory_arena *Memory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -609,7 +616,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
        (NodeToSplit->Chunk.Flags & Chunk_VoxelsInitialized) == 0 )
 
   {
-    PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit);
+    PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent);
     PushedToPriorityQueue = True;
   }
 
@@ -630,14 +637,14 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
         }
         else
         {
-          s32 ChildrenReadyToDraw  = SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[0], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[1], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[2], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[3], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[4], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], Memory);
+          s32 ChildrenReadyToDraw  = SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[0], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[1], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[2], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[3], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[4], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], NodeToSplit, Memory);
+              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], NodeToSplit, Memory);
 
           /* NodeToSplit->AllChildrenCanDraw = (ChildrenReadyToDraw == 8); */
           /* Result = NodeToSplit->AllChildrenCanDraw; */
@@ -833,7 +840,7 @@ MaintainWorldOctree(engine_resources *Engine)
     Queue.Lists[ListIndex] = OctreeNodePtrCursor(MAX_OCTREE_NODES_QUEUED_PER_FRAME, GetTranArena());
   }
 
-  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, &World->OctreeMemory);
+  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0,  &World->OctreeMemory);
 
   octree_stats Stats = {};
 

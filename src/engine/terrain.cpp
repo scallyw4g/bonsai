@@ -73,7 +73,7 @@ Terrain_FBM2D( world_chunk *Chunk,
   v3i NoiseDim = Chunk->Dim + 2;
   v3i NormalDim = Chunk->Dim;
   r32 *NoiseValues = Allocate(r32, TempArena, Volume(NoiseDim));
-  v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim));
+  /* v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim)); */
 
 #if VOXEL_DEBUG_COLOR
   Chunk->NoiseValues = NoiseValues;

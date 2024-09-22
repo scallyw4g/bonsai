@@ -9,7 +9,6 @@ auto PrimeX = U32_8X(501125321);
 auto PrimeY = U32_8X(1136930381);
 auto PrimeZ = U32_8X(1720413743);
 
-u64 CycleCountStart = GetCycleCount();
 
 Assert(u64(NoiseValues) % 32 == 0);
 
@@ -18,6 +17,9 @@ Assert(Octaves < 8);
 perlin_params zParams[8];
 perlin_params yParams[8];
 perlin_params xParams[16];
+f32 xCoords[16];
+
+/* u64 CycleCountStart = GetCycleCount(); */
 
 for ( s32 z = 0; z < Dim.z; ++ z)
 {
@@ -44,12 +46,11 @@ for ( s32 z = 0; z < Dim.z; ++ z)
 
     for ( s32 x = 0; x < Dim.x; x += 16 )
     {
-      s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+      s32 VoxIndex = GetIndex(x,y,z, Dim);
       
       u16 PackedHSVColorValue = RGBtoPackedHSV(RGBColor);
 
       r32 InteriorAmp = r32(Amplitude);
-      f32 xCoords[16];
       u32 ParamsIndex = 0;
       InteriorPeriod = Period;
       for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
@@ -61,18 +62,23 @@ for ( s32 z = 0; z < Dim.z; ++ z)
         auto Index = 0;
         auto _x0 = F32_8X( xCoords[0], xCoords[1], xCoords[2], xCoords[3], xCoords[4], xCoords[5], xCoords[6], xCoords[7] );
         auto _x1 = F32_8X( xCoords[8], xCoords[9], xCoords[10], xCoords[11], xCoords[12], xCoords[13], xCoords[14], xCoords[15] );
-        /* auto _x0 = F32_8X( xCoords[7], xCoords[6], xCoords[5], xCoords[4], xCoords[3], xCoords[2], xCoords[1],  xCoords[0] ); */
-        /* auto _x1 = F32_8X( xCoords[15], xCoords[14], xCoords[13], xCoords[12], xCoords[11], xCoords[10], xCoords[9], xCoords[8] ); */
         xParams[ParamsIndex++] = ComputePerlinParameters(_x0, PrimeX);
         xParams[ParamsIndex++] = ComputePerlinParameters(_x1, PrimeX);
         InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
       }
 
+      u64 CycleCountStart = GetCycleCount();
       for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
       {
         PerlinNoise_16x_avx2(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+VoxIndex, InteriorAmp);
         InteriorAmp = Max(1.f, InteriorAmp/2.f);
       }
+      u64 CycleCountEnd = GetCycleCount();
+      u64 CyclesElapsed = CycleCountEnd-CycleCountStart;
+
+      engine_debug *ED = GetEngineDebug();
+      ED->ChunkGenCyclesElapsed += CyclesElapsed;
+      ED->CellsGenerated += u64(16)*u64(Octaves);
 
     
 
@@ -91,10 +97,9 @@ for ( s32 z = 0; z < Dim.z; ++ z)
     }
   }
 }
+/* u64 CycleCountEnd = GetCycleCount(); */
+/* u64 CyclesElapsed = CycleCountEnd-CycleCountStart; */
 
-u64 CycleCountEnd = GetCycleCount();
-u64 CyclesElapsed = CycleCountEnd-CycleCountStart;
-
-engine_debug *ED = GetEngineDebug();
-ED->ChunkGenCyclesElapsed += CyclesElapsed;
-ED->CellsGenerated += u64(Volume(Chunk->Dim))*u64(Octaves);
+/* engine_debug *ED = GetEngineDebug(); */
+/* ED->ChunkGenCyclesElapsed += CyclesElapsed; */
+/* ED->CellsGenerated += u64(Volume(Chunk->Dim))*u64(Octaves); */

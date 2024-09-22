@@ -2,7 +2,7 @@
 #define MIN_TERRAIN_NOISE_WIDTH (16)
 
 
-#define COMPUTE_NOISE_INPUT(channel_name, offset, chunk) (chunk->DimInChunks.channel_name/2) + ((f32(offset)+channel_name)*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name) + SrcToDest.channel_name 
+#define COMPUTE_NOISE_INPUT(channel_name, offset, chunk) (chunk->DimInChunks.channel_name/2.f) + ((f32(offset)+channel_name)*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name)
 
 
 poof(
