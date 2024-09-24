@@ -469,7 +469,8 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMinorGrid"
+    .Name = "DrawMinorGrid",
+    .Next = 0,
   };
 
   shader_uniform MajorGridUniform =
@@ -477,7 +478,8 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMajorGrid"
+    .Name = "DrawMajorGrid",
+    .Next = 0,
   };
 
 
@@ -499,7 +501,11 @@ Bonsai_Render(engine_resources *Engine)
   {
     layout DefaultLayout = {};
     DefaultLayout.DrawBounds = InvertedInfinityRectangle();
-    render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+
+    render_state RenderState = {};
+    RenderState.Layout = &DefaultLayout;
+    RenderState.ClipRect = DISABLE_CLIPPING;
+
     SetWindowZDepths(Ui->CommandBuffer);
     FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
   }

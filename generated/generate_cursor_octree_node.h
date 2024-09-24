@@ -15,12 +15,10 @@ link_internal octree_node_ptr_cursor
 OctreeNodePtrCursor(umm ElementCount, memory_arena* Memory)
 {
   octree_node_ptr *Start = (octree_node_ptr*)PushStruct(Memory, sizeof(octree_node_ptr)*ElementCount, 1, 0);
-  octree_node_ptr_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  octree_node_ptr_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 

@@ -508,16 +508,16 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
 
   IdealListIndex = (MAX_OCTREE_NODE_BUCKETS-1)-IdealListIndex;
 
-  // 
+  // Penalize nodes not in the frustum
   if (IsInFrustum(World, GameCamera, &Node->Chunk) == False)
   {
-    IdealListIndex = Min(MAX_OCTREE_NODE_BUCKETS-1, IdealListIndex+1);;
+    IdealListIndex = Min(MAX_OCTREE_NODE_BUCKETS-1, IdealListIndex+3);
   }
 
   // Prefer chunks who have a high chance of having geometry
   if (Parent && HasGpuMesh(&Parent->Chunk.Meshes))
   {
-    IdealListIndex = Max(0, IdealListIndex-1);
+    IdealListIndex = Max(0, IdealListIndex-3);
   }
 
   if (Remaining(&Queue->Lists[IdealListIndex]))

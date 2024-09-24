@@ -403,7 +403,8 @@ RenderThread_Main(void *ThreadStartupParams)
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
-    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
+    bitmap_block_array Bitmaps = {};
+    Bitmaps.Memory = GetTranArena();
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));

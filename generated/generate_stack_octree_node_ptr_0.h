@@ -12,11 +12,10 @@ link_internal octree_node_ptr_stack
 OctreeNodePtrStack(umm ElementCount, memory_arena* Memory)
 {
   octree_node_ptr *Start = (octree_node_ptr*)PushStruct(Memory, sizeof(octree_node_ptr)*ElementCount, 1, 0);
-  octree_node_ptr_stack Result = {
-    .Start = Start,
-    .End = ElementCount,
-    .At = 0,
-  };
+  octree_node_ptr_stack Result = {};
+  Result.Start = Start;
+  Result.End = ElementCount;
+  Result.At = 0;
   return Result;
 }
 

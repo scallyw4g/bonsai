@@ -219,10 +219,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
 
 
   voxel_synthesis_result Result = {
+    .Errors = {},
     .VoxData = Vox,
     .Tiles = AllTiles,
     .Rules = Rules,
     .MaxTileEntropy = MaxTileEntropy,
+    .TileSuperpositionsDim = {},
   };
 
 #if 1

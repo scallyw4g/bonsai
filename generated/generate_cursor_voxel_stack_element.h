@@ -15,12 +15,10 @@ link_internal voxel_stack_element_cursor
 VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
 {
   voxel_stack_element *Start = (voxel_stack_element*)PushStruct(Memory, sizeof(voxel_stack_element)*ElementCount, 1, 0);
-  voxel_stack_element_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  voxel_stack_element_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 

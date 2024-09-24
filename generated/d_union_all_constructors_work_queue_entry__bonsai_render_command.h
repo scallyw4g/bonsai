@@ -290,6 +290,8 @@ link_internal bonsai_render_command_deallocate_buffers
 BonsaiRenderCommandDeallocateBuffers( u32*  Buffers , s32   Count  )
 {
   bonsai_render_command_deallocate_buffers Reuslt = {
+    .Buffers = {}
+,
     .Count = Count
   };
 
