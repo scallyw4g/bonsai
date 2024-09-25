@@ -850,7 +850,8 @@ MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
 
   v3i InnerDim = MaxDim-MinDim;
 
-  s32 MaxIndex = Volume(SrcChunkDim);
+  Assert(MinDim == V3i(0));
+  Assert(MaxDim % V3i(8) == V3i(0));
 
   s32 Result = 0;
   for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
@@ -878,38 +879,37 @@ MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
           s32 FrontIndex = TryGetIndex(SrcP + V3i(0, 1, 0), SrcChunkDim);
           s32 BackIndex  = TryGetIndex(SrcP - V3i(0, 1, 0), SrcChunkDim);
 
-          if ( RightIndex >= 0 && RightIndex < MaxIndex )
+          /* RightFaces = (Bits >> 1) & (~Bits); */
+          /* LeftFaces = (Bits << 1) & (~Bits); */
+
+          if ( RightIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + RightIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
             if ( GetOccupancyBit(Occupancy, RightIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_RightFace;
             }
           }
-          if ( LeftIndex >= 0 && LeftIndex < MaxIndex )
+          if ( LeftIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + LeftIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
             if ( GetOccupancyBit(Occupancy, LeftIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_LeftFace;
             }
           }
 
-          if ( TopIndex >= 0 && TopIndex < MaxIndex )
+          if ( TopIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + TopIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
             if ( GetOccupancyBit(Occupancy, TopIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_TopFace;
             }
           }
-          if ( BottomIndex >= 0 && BottomIndex < MaxIndex )
+          if ( BottomIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + BottomIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
             if ( GetOccupancyBit(Occupancy, BottomIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
             {
               Voxel->Flags |= Voxel_BottomFace;
@@ -917,7 +917,7 @@ MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
           }
 
 
-          if ( FrontIndex >= 0 && FrontIndex < MaxIndex )
+          if ( FrontIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + FrontIndex;
             /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
@@ -926,7 +926,7 @@ MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
               Voxel->Flags |= Voxel_FrontFace;
             }
           }
-          if ( BackIndex >= 0 && BackIndex < MaxIndex )
+          if ( BackIndex >= 0 )
           {
             voxel *NextVoxel = Voxels + BackIndex;
             /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */

@@ -578,7 +578,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   /* Result->Settings.UseShadowMapping = True; */
   Result->Settings.UseLightingBloom = True;
 
-  Result->Settings.DrawMajorGrid = True;
+  /* Result->Settings.DrawMajorGrid = True; */
   Result->Settings.DrawMinorGrid = True;
   Result->Settings.MajorGridDim = 8.f;
 
