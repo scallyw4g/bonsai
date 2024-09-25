@@ -3414,73 +3414,75 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                          NoiseParams,
                                          UserData );
 
-  Assert(SyntheticChunk->Dim == SynChunkDim);
+  // If the chunk didn't have any voxels filled, we're done
+  if (SyntheticChunkSum)
+  {
+    Assert(SyntheticChunk->Dim == SynChunkDim);
 
 #if 1 && VOXEL_DEBUG_COLOR
-  DestChunk->NoiseValues = SyntheticChunk->NoiseValues;
-  DestChunk->NormalValues = SyntheticChunk->NormalValues;
-  if (DestChunk->NoiseValues)
-  {
-    for ( s32 z = 0; z < SyntheticChunk->Dim.z; ++ z)
+    DestChunk->NoiseValues = SyntheticChunk->NoiseValues;
+    DestChunk->NormalValues = SyntheticChunk->NormalValues;
+    if (DestChunk->NoiseValues)
     {
-      for ( s32 y = 0; y < SyntheticChunk->Dim.y; ++ y)
+      for ( s32 z = 0; z < SyntheticChunk->Dim.z; ++ z)
       {
-        for ( s32 x = 0; x < SyntheticChunk->Dim.x; ++ x)
+        for ( s32 y = 0; y < SyntheticChunk->Dim.y; ++ y)
         {
-          s32 NormalIndex  = GetIndex(V3i(x,y,z), SyntheticChunk->Dim);
-          s32 NoiseIndex   = GetIndex(V3i(x,y,z)+1, SyntheticChunk->Dim+2);
-          SyntheticChunk->Voxels[NormalIndex].DebugColor = SyntheticChunk->NormalValues[NormalIndex];
-          SyntheticChunk->Voxels[NormalIndex].DebugNoiseValue = SyntheticChunk->NoiseValues[NoiseIndex];
+          for ( s32 x = 0; x < SyntheticChunk->Dim.x; ++ x)
+          {
+            s32 NormalIndex  = GetIndex(V3i(x,y,z), SyntheticChunk->Dim);
+            s32 NoiseIndex   = GetIndex(V3i(x,y,z)+1, SyntheticChunk->Dim+2);
+            SyntheticChunk->Voxels[NormalIndex].DebugColor = SyntheticChunk->NormalValues[NormalIndex];
+            SyntheticChunk->Voxels[NormalIndex].DebugNoiseValue = SyntheticChunk->NoiseValues[NoiseIndex];
+          }
         }
       }
     }
-  }
 #endif
 
 
-  if (MakeExteriorFaces)
-  {
-    MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
-  }
-  else
-  {
-    MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-  }
+    /* MakeExteriorFaces = True; */
+    if (MakeExteriorFaces)
+    {
+      MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
+    }
+    else
+    {
+      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+    }
 
-  CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim);
+    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim);
 
-  // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
-  /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
+    // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
+    /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
 
-  /* FullBarrier; */
+    /* FullBarrier; */
 
-  // NOTE(Jesse): The DestChunk is finalized at the end of the routine
-  /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
-  FinalizeChunkInitialization(SyntheticChunk);
+    // NOTE(Jesse): The DestChunk is finalized at the end of the routine
+    /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
+    FinalizeChunkInitialization(SyntheticChunk);
 
-  if (Flags & ChunkInitFlag_ComputeStandingSpots)
-  {
-    ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                          DestChunk->Dim, 0, &DestChunk->StandingSpots,
-                          Thread->TempMemory);
-  }
+    if (Flags & ChunkInitFlag_ComputeStandingSpots)
+    {
+      ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                            DestChunk->Dim, 0, &DestChunk->StandingSpots,
+                            Thread->TempMemory);
+    }
 
 #if 0
-  if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
-  {
-    untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-    ComputeLodMesh( Thread, DestChunk, DestChunk->Dim, SyntheticChunk, SynChunkDim, TempMesh, True);
-
-    if (TempMesh->At)
+    if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
     {
-      LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-      DeepCopy(TempMesh, LodMesh);
+      untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
+      ComputeLodMesh( Thread, DestChunk, DestChunk->Dim, SyntheticChunk, SynChunkDim, TempMesh, True);
+
+      if (TempMesh->At)
+      {
+        LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
+        DeepCopy(TempMesh, LodMesh);
+      }
     }
-  }
 #endif
 
-  if (SyntheticChunkSum)
-  {
     geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
 
     RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);

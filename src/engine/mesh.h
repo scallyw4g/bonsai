@@ -21,7 +21,7 @@ struct mesh_freelist
 
 #define TIERED_MESH_FREELIST_MAX_ELEMENTS (128)
 #define WORLD_CHUNK_MESH_MIN_SIZE         (2048)
-#define ELEMENTS_PER_TEMP_MESH    (WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
+#define ELEMENTS_PER_TEMP_MESH    (32*WORLD_CHUNK_MESH_MIN_SIZE*TIERED_MESH_FREELIST_MAX_ELEMENTS)
 
 poof( staticbuffer(mesh_freelist, {TIERED_MESH_FREELIST_MAX_ELEMENTS}, {tiered_mesh_freelist}) )
 #include <generated/tiered_mesh_freelist.h>

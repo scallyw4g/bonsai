@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:1132:0
+// external/bonsai_stdlib/src/vector.h:1145:0
 
 struct maybe_v3
 {

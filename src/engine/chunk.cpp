@@ -37,18 +37,16 @@ IsFilledInChunk( world_chunk *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 }
 
 inline b32
-NotFilled(u8 *Occupancy, u32 Index)
+NotFilled(u8 *Occupancy, s32 Index)
 {
-  b32 Result = {};
-  NotImplemented;
+  b32 Result = b32(GetOccupancyBit(Occupancy, Index)) == 0;
   return Result;
 }
 
 inline b32
 NotFilled(u8 *Occupancy, v3i P, v3i Dim)
 {
-  b32 Result = {};
-  NotImplemented;
+  b32 Result = b32(GetOccupancyBit(Occupancy, GetIndex(P, Dim))) == 0;
   return Result;
 }
 

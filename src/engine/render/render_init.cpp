@@ -575,7 +575,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   Result->Settings.BravoilMyersOIT   = True;
   Result->Settings.BravoilMcGuireOIT = True;
 
-  Result->Settings.UseShadowMapping = True;
+  /* Result->Settings.UseShadowMapping = True; */
   Result->Settings.UseLightingBloom = True;
 
   Result->Settings.DrawMajorGrid = True;

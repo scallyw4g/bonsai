@@ -283,6 +283,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(bonsai_futex*,&Element->HistogramFutex),
+        CSz("HistogramFutex"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(debug_profile_scope*,&Element->FreeScopeSentinel),
         CSz("FreeScopeSentinel"),
         Params

@@ -58,7 +58,7 @@ struct engine_debug
   b8 TriggerRuntimeBreak;
   b8 ResetAssetNodeView;
 
-  b8 DrawBranchNodesWithMeshes = 1;
+  b8 DrawBranchNodesWithMeshes;
   b8 DrawBranchNodes;
   b8 DrawLeafNodes;
   b8 DrawQueuedNodes = 1;
