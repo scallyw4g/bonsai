@@ -9,8 +9,9 @@ AllocateChunkData(memory_arena *Storage, chunk_dimension Dim)
   s32 VoxCount = Volume(Dim);
   if (VoxCount)
   {
-    s32 OccupancyCount    = (VoxCount+7) / 8; // Add seven so we round up when we divide if there's an extra one (or several)
-    Result->Occupancy     = AllocateAlignedProtection(            u8, Storage , OccupancyCount, CACHE_LINE_SIZE, false);
+    s32 OccupancyCount    = (VoxCount+63) / 64; // Add seven so we round up when we divide if there's an extra one (or several)
+    Result->Occupancy     = AllocateAlignedProtection(           u64, Storage ,   OccupancyCount, CACHE_LINE_SIZE, false);
+    Result->FaceMasks     = AllocateAlignedProtection(           u64, Storage , 6*OccupancyCount, CACHE_LINE_SIZE, false);
     Result->Voxels        = AllocateAlignedProtection(         voxel, Storage , VoxCount,       CACHE_LINE_SIZE, false);
     Result->VoxelLighting = AllocateAlignedProtection(voxel_lighting, Storage , VoxCount,       CACHE_LINE_SIZE, false);
   }
@@ -37,14 +38,14 @@ IsFilledInChunk( world_chunk *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 }
 
 inline b32
-NotFilled(u8 *Occupancy, s32 Index)
+NotFilled(u64 *Occupancy, s32 Index)
 {
   b32 Result = b32(GetOccupancyBit(Occupancy, Index)) == 0;
   return Result;
 }
 
 inline b32
-NotFilled(u8 *Occupancy, v3i P, v3i Dim)
+NotFilled(u64 *Occupancy, v3i P, v3i Dim)
 {
   b32 Result = b32(GetOccupancyBit(Occupancy, GetIndex(P, Dim))) == 0;
   return Result;

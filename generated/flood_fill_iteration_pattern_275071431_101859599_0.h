@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:813:0
+// src/engine/world_update.cpp:823:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -33,7 +33,8 @@ while (AtElements(&Stack))
           /* if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0) */
         
     {
-      if ( (V->Flags & Voxel_MarkBit) == 0)
+      NotImplemented;
+      /* if ( (V->Flags & Voxel_MarkBit) == 0) */
       {
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -49,7 +50,8 @@ while (AtElements(&Stack))
           /* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = {}; } */
         
 
-    V->Flags |= Voxel_MarkBit;
+    NotImplemented;
+    /* V->Flags |= Voxel_MarkBit; */
 
     if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True))  )
@@ -83,7 +85,8 @@ while (AtElements(&Stack))
 
       
 
-      if ( (V->Flags&Voxel_MarkBit))
+      NotImplemented;
+      /* if ( (V->Flags&Voxel_MarkBit)) */
       {
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -93,7 +96,8 @@ while (AtElements(&Stack))
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
       }
 
-      V->Flags &= ~Voxel_MarkBit;
+      NotImplemented;
+      /* V->Flags &= ~Voxel_MarkBit; */
     }
   }
 }

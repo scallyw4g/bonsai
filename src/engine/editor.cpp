@@ -724,8 +724,8 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 
     if (V)
     {
-      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
-      PushNewRow(Ui);
+      /* DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags")); */
+      /* PushNewRow(Ui); */
 
       DoEditorUi(Ui, &Window, &VoxelCP, CSz("CP"));
 
@@ -1331,7 +1331,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 
         v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
 
-        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Occupancy, SrcChunk->Voxels, SrcChunk->VoxelLighting};
+        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Occupancy, SrcChunk->FaceMasks, SrcChunk->Voxels, SrcChunk->VoxelLighting};
         world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
 
         Assert(SrcChunk->Dim <= DestChunk->Dim);
@@ -2444,7 +2444,7 @@ DoWorldEditor(engine_resources *Engine)
                 Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
-              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Occupancy, Chunk->Voxels, Chunk->VoxelLighting};
+              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Occupancy, Chunk->FaceMasks, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
 
               world_edit_shape Shape =

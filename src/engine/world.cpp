@@ -124,7 +124,7 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
 #if VOXEL_DEBUG_COLOR
   voxel UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {} };
 #else
-  voxel UnsetVoxel = { 0xff, 0xff, 0xffff };
+  voxel UnsetVoxel = { 0xff, 0xffff };
 #endif
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { Voxels[VoxelIndex] = UnsetVoxel; }
 
@@ -153,7 +153,8 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
         {
           voxel_position RelVoxP = Voxel_Position(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 

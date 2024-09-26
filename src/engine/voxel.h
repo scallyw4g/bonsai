@@ -7,11 +7,11 @@ enum voxel_occupancy
 
 
 link_internal s32
-GetOccupancyBit(u8 *Occupancy, s32 Index)
+GetOccupancyBit(u64 *Occupancy, s32 Index)
 {
-  s32 ByteIndex = Index/8;
-  s32 BitIndex = Index%8;
-  s32 Result = (Occupancy[ByteIndex] >> BitIndex) & 1;
+  s32 MaskIndex = Index/64;
+  s32 BitIndex = Index%64;
+  s32 Result = (Occupancy[MaskIndex] >> BitIndex) & 1;
   return Result;
 }
 

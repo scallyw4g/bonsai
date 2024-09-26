@@ -29,22 +29,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u8*,&Element->Flags),
-        CSz("Flags"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
         Cast(u8*,&Element->Transparency),
         CSz("Transparency"),
         Params

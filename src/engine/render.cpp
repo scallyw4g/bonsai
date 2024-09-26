@@ -612,12 +612,15 @@ IsBoundaryVoxel(world_chunk *Chunk, voxel_position Offset, chunk_dimension Dim)
   voxel *V = &Chunk->Voxels[VoxelIndex];
 
   b32 Result = False;
+  NotImplemented;
+#if 0
   Result |= IsSet( V, Voxel_BackFace);
   Result |= IsSet( V, Voxel_FrontFace);
   Result |= IsSet( V, Voxel_TopFace);
   Result |= IsSet( V, Voxel_BottomFace);
   Result |= IsSet( V, Voxel_LeftFace);
   Result |= IsSet( V, Voxel_RightFace);
+#endif
 
   return Result;
 }

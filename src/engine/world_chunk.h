@@ -86,6 +86,7 @@ poof(string_and_value_tables(chunk_flag))
 // If we make a mapping between these bit-flags and another face_index enum we
 // could delete a bit of code.
 // @duplicate_face_index_enum
+#if 0
 enum voxel_flag
 {
   Voxel_Empty      =      0,
@@ -105,25 +106,18 @@ enum voxel_flag
   Voxel_MarkBit    = 1 << 7,
 };
 CAssert(Voxel_MarkBit < u8_MAX);
+#endif
 
-global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
+/* global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace; */
 
 #define VOXEL_DEBUG_COLOR (0)
 
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel
 {
-  u8 Flags;
   u8 Transparency;
   u16 Color;
-
-  /* v3 Derivs; */
-#if VOXEL_DEBUG_COLOR
-  v3 DebugColor;       poof(@no_serialize)
-  f32 DebugNoiseValue; poof(@no_serialize)
-#endif
 };
-/* CAssert(sizeof(voxel) == 8); */
 
 struct voxel_lighting
 {
@@ -133,27 +127,10 @@ struct voxel_lighting
 poof(gen_constructor(voxel_lighting))
 #include <generated/gen_constructor_voxel_lighting.h>
 
-#if 0
-link_internal b32
-IsValid(voxel *V)
-{
-  b32 Result = (V->Flags & Voxel_INVALID_BIT) == 0;
-  if (V->Flags & Voxel_Filled)
-  {
-    Result &= (V->Flags & Voxel_INVALID_BIT) == 0;
-  }
-  else
-  {
-    Result &= (V->Flags & VoxelFaceMask) == 0;
-  }
-  return Result;
-}
-#endif
-
 b32
-operator ==(voxel &V1, voxel &V2)
+operator==(voxel &V1, voxel &V2)
 {
-  b32 Result = V1.Flags == V2.Flags && V1.Color == V2.Color;
+  b32 Result = V1.Transparency == V2.Transparency && V1.Color == V2.Color;
   return Result;
 }
 
@@ -177,7 +154,7 @@ struct boundary_voxel
 
     this->V.Color = w;
 
-    this->V.Flags = Voxel_Empty;
+    /* this->V.Flags = Voxel_Empty; */
     this->V.Transparency = 0;
   }
 
@@ -192,7 +169,8 @@ struct chunk_data
 {
   chunk_flag Flags;
   v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
-  u8             *Occupancy;
+  u64            *Occupancy;
+  u64            *FaceMasks;
   voxel          *Voxels;
   voxel_lighting *VoxelLighting;
 };
@@ -336,7 +314,8 @@ struct world_chunk poof(@version(1))
   // chunk_data {
           chunk_flag  Flags;          poof(@no_serialize)
                  v3i  Dim;            // could/should be compressed?
-                  u8 *Occupancy;
+                 u64 *Occupancy;
+                 u64 *FaceMasks;
                voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
       voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
   // }
@@ -668,7 +647,7 @@ link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 
 link_internal s32
-MarkBoundaryVoxels_MakeExteriorFaces(u8 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
+MarkBoundaryVoxels_MakeExteriorFaces(u64 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
 
 /* link_internal world_chunk_geometry_buffer* */
 /* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */

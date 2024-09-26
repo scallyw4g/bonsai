@@ -264,6 +264,7 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
         .Dim           = Asset->Chunk.Dim,
         .Voxels        = Asset->Chunk.Voxels,
         .Occupancy     = Asset->Chunk.Occupancy,
+        .FaceMasks     = Asset->Chunk.FaceMasks,
         .VoxelLighting = Asset->Chunk.VoxelLighting,
       };
     } break;

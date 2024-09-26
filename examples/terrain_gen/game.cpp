@@ -6,6 +6,38 @@
 #include "game_types.h"
 
 link_internal u32
+Terrain_Debug( world_chunk *Chunk,
+                       v3i  NoiseBasis,
+                      void *NoiseParams,
+                      void *UserData )
+{
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
+  u32 Result = 0;
+
+  auto AbsX = Abs(Chunk->WorldP.x);
+  auto AbsY = Abs(Chunk->WorldP.y);
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        if (x == 2 && y == 2 && z == 2)
+        {
+          s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
+          SetOccupancyBit(Chunk, Index, VoxelOccupancy_Filled);
+          Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
+          ++Result;
+        }
+      }
+    }
+  }
+
+  return Result;;
+}
+link_internal u32
 Terrain_Checkerboard( world_chunk *Chunk,
                               v3i  NoiseBasis,
                              void *NoiseParams,
@@ -71,7 +103,8 @@ GrassyIslandTerrain( world_chunk *Chunk,
       {
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -230,7 +263,8 @@ GrassyIslandTerrain( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += NoiseChoice;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -266,7 +300,8 @@ WarpedTerrain( world_chunk *Chunk,
       {
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
         r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -318,7 +353,8 @@ WarpedTerrain( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -352,7 +388,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         // NOTE(Jesse): This is an optimization; the engine marks chunks that
         // have moved outside of the visible region as garbage.
-        Chunk->Flags = Chunk_Uninitialized;
+        NotImplemented;
+        /* Chunk->Flags = Chunk_Uninitialized; */
       }
       else
       {
@@ -363,6 +400,15 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         /* Info("%S", ToString(GenType)); */
         switch (GenType)
         {
+          case TerrainGenType_Debug:
+          {
+            // Flat Params
+            v3 Period = {};
+            s32 Amplititude = {};
+            s32 StartingZDepth = {};
+            v3 Color = RGB_GRASS_GREEN;
+            InitializeChunkWithNoise( Terrain_Debug, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, ChunkInitFlag_Noop, 0);
+          } break;
           case TerrainGenType_Flat:
           {
             // Flat Params
@@ -376,11 +422,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_SinCos:
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
-            v3 Period = V3(100);
-            s32 Amplititude = 250;
+            v3 Period = V3(20);
+            s32 Amplititude = 70;
             /* s32 Period = 100; */
             /* s32 Amplititude = 2500; */
-            s32 StartingZDepth = -1;
+            s32 StartingZDepth = 15;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_SinCos, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, 0);
@@ -439,16 +485,17 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* s32 StartingZDepth = 0; */
             /* u32 Octaves = 7; */
 
-            /* v3 Period = V3(125); */
-            /* s32 Amplititude = 125; */
-            /* s32 StartingZDepth = 0; */
-            /* u32 Octaves = 1; */
+            v3 Period = V3(125);
+            s32 Amplititude = 125;
+            s32 StartingZDepth = 0;
+            u32 Octaves = 1;
 
-            v3 Period = V3(1000);
-            s32 Amplititude = 800;
-            s32 StartingZDepth = 1000;
-            /* u32 Octaves = 1; */
-            u32 Octaves = 6;
+            /* v3 Period = V3(1000); */
+            /* s32 Amplititude = 800; */
+            /* /1* s32 StartingZDepth = 1000; *1/ */
+            /* s32 StartingZDepth = 0; */
+            /* /1* u32 Octaves = 1; *1/ */
+            /* u32 Octaves = 6; */
 
 /*             v3 Period = V3(2500); */
 /*             s32 Amplititude = 1500; */
@@ -716,9 +763,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  /* GameState->TerrainGenType = TerrainGenType_SinCos; */
+  /* GameState->TerrainGenType = TerrainGenType_Debug; */
+  GameState->TerrainGenType = TerrainGenType_SinCos;
   /* GameState->TerrainGenType = TerrainGenType_TerracedTerrain; */
-  GameState->TerrainGenType = TerrainGenType_FBM2D;
+  /* GameState->TerrainGenType = TerrainGenType_FBM2D; */
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
   /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */

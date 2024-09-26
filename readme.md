@@ -143,6 +143,11 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
 
+
+## Goodies
+
+[ ] Better (faster) Sin/Cos ? https://www.shadertoy.com/view/432yWW
+
 -------------------------------------------------------------------------------
 ## Profiler
 

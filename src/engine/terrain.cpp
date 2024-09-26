@@ -36,8 +36,8 @@ Terrain_FBM2D( world_chunk *Chunk,
                       void *NoiseParams,
                       void *OctaveCount )
 {
-  HISTOGRAM_FUNCTION();
-  /* TIMED_FUNCTION(); */
+  TIMED_FUNCTION();
+  /* HISTOGRAM_FUNCTION(); */
 
   UNPACK_NOISE_PARAMS(NoiseParams);
 
@@ -263,7 +263,8 @@ Terrain_Perlin3D( world_chunk *Chunk,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[i].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[i].Flags = Voxel_Empty; */
 
         /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
 
@@ -316,7 +317,8 @@ Terrain_WhiteNoise( world_chunk *Chunk,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 i = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[i].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[i].Flags = Voxel_Empty; */
 
         /* Assert( NotSet(&Chunk->Voxels[i], Voxel_Filled) ); */
 
@@ -993,7 +995,8 @@ HoodooTerrain( world_chunk *Chunk,
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         r32 NoiseValue = 0.f;
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         /* s32 Amp2 = Amplitude*2; */
@@ -1126,7 +1129,8 @@ HoodooTerrain( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(IsFilled);
         ChunkSum += IsFilled;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -1162,7 +1166,8 @@ TerracedTerrain( world_chunk *Chunk,
       {
         /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -1345,6 +1350,7 @@ TerracedTerrain( world_chunk *Chunk,
 
 
 
+        NotImplemented;
         /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
         SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
       }
@@ -1431,7 +1437,8 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
 
         /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -1516,7 +1523,8 @@ GrassyTerracedTerrain2( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -1593,7 +1601,8 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
 
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -1662,7 +1671,8 @@ GrassyTerracedTerrain3( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -2234,7 +2244,8 @@ GrassyTerracedTerrain( world_chunk *Chunk,
       {
         /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -2340,7 +2351,8 @@ GrassyTerracedTerrain( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -2414,7 +2426,8 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
 
         /* s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x); */
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
         /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
@@ -2489,7 +2502,8 @@ GrassyLargeTerracedTerrain( world_chunk *Chunk,
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += IsFilled;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -2610,7 +2624,8 @@ Terrain_Voronoi3D( world_chunk *Chunk,
       for ( s32 x = 0; x < Dim.x; ++ x)
       {
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
         v3 RepeatBasisInCells = V3(8);
         v3  NoiseInput = NoiseMod((V3(x,y,z) + NoiseBasis)/Period, RepeatBasisInCells);
@@ -2662,7 +2677,8 @@ Terrain_Voronoi2D( world_chunk *Chunk,
       {
         s64 WorldX = x + SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(V3i(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
         r32 NoiseValue = VoronoiNoise3D(V3(f32(WorldX), f32(WorldY), f32(WorldZ)) / Period, Squareness, MaskChance);
         /* r32 NoiseValue =  VoronoiNoise3D(V3(s32(WorldX), s32(WorldY), s32(WorldZ)) * 0.04f) * 25.f; */

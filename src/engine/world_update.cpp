@@ -323,7 +323,8 @@ poof(
 
         (FloodPredicate)
         {
-          if ( (V->Flags & Voxel_MarkBit) == 0)
+          NotImplemented;
+          /* if ( (V->Flags & Voxel_MarkBit) == 0) */
           {
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -336,7 +337,8 @@ poof(
 
         (UserCode)
 
-        V->Flags |= Voxel_MarkBit;
+          NotImplemented;
+        /* V->Flags |= Voxel_MarkBit; */
 
         if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
              ((OverwriteVoxel == False) && (Invert == True))  )
@@ -370,7 +372,8 @@ poof(
 
           (UserCode2)
 
-          if ( (V->Flags&Voxel_MarkBit))
+          NotImplemented;
+          /* if ( (V->Flags&Voxel_MarkBit)) */
           {
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -380,7 +383,8 @@ poof(
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
           }
 
-          V->Flags &= ~Voxel_MarkBit;
+          NotImplemented;
+          /* V->Flags &= ~Voxel_MarkBit; */
         }
       }
     }
@@ -419,7 +423,8 @@ poof(
           // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
           // We recompute these, so it's fine there.  It's slower on non-surface
           // paths, but .. when that's the bottleneck, we've won.
-          V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+          NotImplemented;
+          /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
         }
       }
     }
@@ -428,7 +433,9 @@ poof(
 )
 
 // TODO(Jesse): Make this not a macro.
-#define poof_check_for_unfilled_border()                              \
+#define poof_check_for_unfilled_border() NotImplemented
+
+#if 0
   {                                                                    \
     if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(1,0,0)))  \
     {                                                                  \
@@ -456,7 +463,8 @@ poof(
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
-  }                                                                    \
+  }
+#endif
 
 #if 0
 poof(
@@ -522,7 +530,7 @@ WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquare
         /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
           {
@@ -538,7 +546,8 @@ WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquare
     {
       poof(rectalinear_iteration_pattern({
         v3i CenterToVoxP = SimVoxP - EditCenterP;
-        if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&VoxelFaceMask))
+        NotImplemented;
+        /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&VoxelFaceMask)) */
         {
           OverwriteVoxel = True;
         }
@@ -564,7 +573,7 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
     {
       NotImplemented;
       /* if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) ) */
-         { V->Flags = Voxel_Empty; }
+         /* { V->Flags = Voxel_Empty; } */
     },
     {
       v3i CenterToVoxP = SimVoxP - EditCenterP;
@@ -625,7 +634,7 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
         /* if ((V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           NotImplemented;
           /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
@@ -641,7 +650,8 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
     case WorldEdit_Mode_Remove:
     {
       poof(rectalinear_iteration_pattern({
-        if ( (V->Flags&VoxelFaceMask))
+        NotImplemented;
+        /* if ( (V->Flags&VoxelFaceMask)) */
         {
           OverwriteVoxel = True;
         }
@@ -747,7 +757,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
         /* if ((V->Flags&Voxel_Filled)==False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -845,7 +855,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
-  voxel InvertV = { VoxelOccupancy_Filled, Params->Transparency, Params->Color };
+  voxel InvertV = { Params->Transparency, Params->Color };
 
   switch (Mode)
   {
@@ -898,9 +908,9 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
   {
 #if VOXEL_DEBUG_COLOR
-    _NewVoxelValue = { VoxelOccupancy_Filled, NewTransparency, NewColor, {}, {}};
+    _NewVoxelValue = { NewTransparency, NewColor, {}, {}};
 #else
-    _NewVoxelValue = { VoxelOccupancy_Filled, NewTransparency, NewColor};
+    _NewVoxelValue = { NewTransparency, NewColor};
 #endif
   }
 
@@ -1103,7 +1113,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           v3i RelVoxP = V3i(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
@@ -1137,7 +1148,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
 
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Occupancy, CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Occupancy, CopiedChunk.FaceMasks, CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
@@ -1175,11 +1186,13 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(UpdateMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, UpdateMinP, UpdateDim);
           Assert(s32(Index) < TotalVoxels);
-          Assert(CopiedChunk.Voxels[Index].Flags        != Global_UnsetVoxel.Flags);
+          /* Assert(CopiedChunk.Voxels[Index].Flags        != Global_UnsetVoxel.Flags); */
           Assert(CopiedChunk.Voxels[Index].Transparency != Global_UnsetVoxel.Transparency);
           Assert(CopiedChunk.Voxels[Index].Color        != Global_UnsetVoxel.Color);
 
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
+
           StartedFilled += GetOccupancyBit(Chunk, s32(Index));
 #if VOXEL_DEBUG_COLOR
           V->Flags = CopiedChunk.Voxels[Index].Flags;
@@ -1189,7 +1202,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           *V = CopiedChunk.Voxels[Index];
 #endif
           EndedFilled += GetOccupancyBit(&CopiedChunk, s32(Index));
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
         }
       }
     }

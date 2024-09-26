@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:858:0
+// src/engine/world_update.cpp:868:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -38,7 +38,8 @@ DimIterator(x, y, z, UpdateDim)
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

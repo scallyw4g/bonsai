@@ -76,8 +76,9 @@ AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, me
   s32 VoxCount = Volume(Dim);
   if (VoxCount)
   {
-    s32 OccupancyCount = (VoxCount+7) / 8; // Add seven so we round up when we divide if there's an extra one (or several)
-    Result->Occupancy = AllocateAlignedProtection(u8, Storage , OccupancyCount, CACHE_LINE_SIZE, false);
+    s32 OccupancyCount = (VoxCount+63) / 64; // Add seven so we round up when we divide if there's an extra one (or several)
+    Result->Occupancy = AllocateAlignedProtection(u64, Storage ,   OccupancyCount, CACHE_LINE_SIZE, false);
+    Result->FaceMasks = AllocateAlignedProtection(u64, Storage , 6*OccupancyCount, CACHE_LINE_SIZE, false);
     Result->Voxels = AllocateAlignedProtection(voxel, Storage , VoxCount, CACHE_LINE_SIZE, false);
   }
 
@@ -763,7 +764,7 @@ MarkBoundaryVoxels_Debug( voxel *Voxels, chunk_dimension SrcChunkDim)
 #endif
 
 link_internal s32
-MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
+MarkBoundaryVoxels_MakeExteriorFaces( u64 *Occupancy,
                                       voxel *Voxels,
                                       chunk_dimension SrcChunkDim,
                                       chunk_dimension SrcChunkMin,
@@ -793,8 +794,6 @@ MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
 
         if (VOccupancy)
         {
-          Voxel->Flags = {};
-
           voxel_position rightVoxel = DestP + V3i(1, 0, 0);
           voxel_position leftVoxel  = DestP - V3i(1, 0, 0);
           voxel_position topVoxel   = DestP + V3i(0, 0, 1);
@@ -802,7 +801,9 @@ MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
           voxel_position frontVoxel = DestP + V3i(0, 1, 0);
           voxel_position backVoxel  = DestP - V3i(0, 1, 0);
 
+          NotImplemented;
 
+#if 0
           if ( !Contains( ClampedDim, rightVoxel) || NotFilled( Occupancy, rightVoxel, SrcChunkDim) || TransparencyIncreases( Voxels, SrcIndex, rightVoxel, SrcChunkDim) )
           {
             Voxel->Flags |= Voxel_RightFace;
@@ -827,6 +828,8 @@ MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
           {
             Voxel->Flags |= Voxel_BackFace;
           }
+#endif
+
         }
       }
     }
@@ -836,7 +839,8 @@ MarkBoundaryVoxels_MakeExteriorFaces( u8 *Occupancy,
 }
 
 link_internal s32
-MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
+MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
+                                      u64 *FaceMasks,
                                     voxel *Voxels,
                                       v3i  SrcChunkDim,
                                       v3i  SrcChunkMin,
@@ -851,95 +855,57 @@ MarkBoundaryVoxels_NoExteriorFaces(    u8 *Occupancy,
   v3i InnerDim = MaxDim-MinDim;
 
   Assert(MinDim == V3i(0));
-  Assert(MaxDim % V3i(8) == V3i(0));
+  Assert(MaxDim % V3i(64) == V3i(0));
+  Assert(SrcChunkDim % V3i(64) == V3i(0));
+
+  v2i BlockDim = {{64,64}};
 
   s32 Result = 0;
-  for ( s32 z = MinDim.z; z < MaxDim.z ; ++z )
+  for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
   {
-    for ( s32 y = MinDim.y; y < MaxDim.y ; ++y )
+    for ( s32 yBlock = 1; yBlock < 63; ++yBlock )
     {
-      for ( s32 x = MinDim.x; x < MaxDim.x ; ++x )
-      {
-        v3i SrcP = V3i(x,y,z);
-        s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
-        s32 VOccupancy = GetOccupancyBit(Occupancy, SrcIndex);
+      s32 OccupancyIndex = GetIndex(yBlock, zBlock, BlockDim);
 
-        voxel *Voxel = Voxels + SrcIndex;
-
-        Result += VOccupancy;
-
-        if (VOccupancy)
-        {
-          Voxel->Flags = {};
-
-          s32 RightIndex = TryGetIndex(SrcP + V3i(1, 0, 0), SrcChunkDim);
-          s32 LeftIndex  = TryGetIndex(SrcP - V3i(1, 0, 0), SrcChunkDim);
-          s32 TopIndex   = TryGetIndex(SrcP + V3i(0, 0, 1), SrcChunkDim);
-          s32 BottomIndex= TryGetIndex(SrcP - V3i(0, 0, 1), SrcChunkDim);
-          s32 FrontIndex = TryGetIndex(SrcP + V3i(0, 1, 0), SrcChunkDim);
-          s32 BackIndex  = TryGetIndex(SrcP - V3i(0, 1, 0), SrcChunkDim);
-
-          /* RightFaces = (Bits >> 1) & (~Bits); */
-          /* LeftFaces = (Bits << 1) & (~Bits); */
-
-          if ( RightIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + RightIndex;
-            if ( GetOccupancyBit(Occupancy, RightIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_RightFace;
-            }
-          }
-          if ( LeftIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + LeftIndex;
-            if ( GetOccupancyBit(Occupancy, LeftIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_LeftFace;
-            }
-          }
-
-          if ( TopIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + TopIndex;
-            if ( GetOccupancyBit(Occupancy, TopIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_TopFace;
-            }
-          }
-          if ( BottomIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + BottomIndex;
-            if ( GetOccupancyBit(Occupancy, BottomIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_BottomFace;
-            }
-          }
+      u64   Bits = Occupancy[OccupancyIndex];
+      u64  yBits = Occupancy[OccupancyIndex+1];
+      u64 nyBits = Occupancy[OccupancyIndex-1];
+      u64  zBits = Occupancy[OccupancyIndex+64];
+      u64 nzBits = Occupancy[OccupancyIndex-64];
 
 
-          if ( FrontIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + FrontIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
-            if ( GetOccupancyBit(Occupancy, FrontIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_FrontFace;
-            }
-          }
-          if ( BackIndex >= 0 )
-          {
-            voxel *NextVoxel = Voxels + BackIndex;
-            /* if ( !(NextVoxel->Flags&Voxel_Filled) || TransparencyIncreases(Voxel, NextVoxel)) */
-            if ( GetOccupancyBit(Occupancy, BackIndex) == VoxelOccupancy_Empty || TransparencyIncreases(Voxel, NextVoxel))
-            {
-              Voxel->Flags |= Voxel_BackFace;
-            }
-          }
+      u64 LeftFaces  =  (Bits>>1) & ~Bits;
+      u64 RightFaces =  (Bits<<1) & ~Bits;
+      /* u64 LeftFaces  =  Bits & ~(Bits >> 1ULL); */
+      /* u64 RightFaces =  Bits & ~(Bits << 1ULL); */
 
-        }
+      /* u64 FrontFaces = 0; */
+      /* u64 BackFaces  = 0; */
+      u64 FrontFaces = Bits &  (~yBits);
+      u64 BackFaces  = Bits & (~nyBits);
 
-      }
+      /* u64 TopFaces = 0; */
+      /* u64 BotFaces = 0; */
+      u64 TopFaces = Bits &  (~zBits);
+      u64 BotFaces = Bits & (~nzBits);
 
+      /* Assert(LeftFaces == RightFaces); */
+      /* Assert(LeftFaces == FrontFaces); */
+      /* Assert(LeftFaces == BackFaces); */
+      /* Assert(LeftFaces == TopFaces); */
+      /* Assert(LeftFaces == BotFaces); */
+
+      /* if (LeftFaces) */
+      /* { */
+      /*   int foo = 3; */
+      /* } */
+
+      FaceMasks[(OccupancyIndex*6)+0] = LeftFaces;
+      FaceMasks[(OccupancyIndex*6)+1] = RightFaces;
+      FaceMasks[(OccupancyIndex*6)+2] = FrontFaces;
+      FaceMasks[(OccupancyIndex*6)+3] = BackFaces;
+      FaceMasks[(OccupancyIndex*6)+4] = TopFaces;
+      FaceMasks[(OccupancyIndex*6)+5] = BotFaces;
     }
 
   }
@@ -1069,6 +1035,9 @@ DrawDebugVoxels( voxel *Voxels,
         /* v3 Color = GetColorData(Voxel->Color); */
         FillArray(VertexMaterial(Voxel->Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
+        NotImplemented;
+
+#if 0
         if (Voxel->Flags & Voxel_RightFace)
         {
           RightFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
@@ -1099,6 +1068,8 @@ DrawDebugVoxels( voxel *Voxels,
           BackFaceVertexData( V3(SrcP-SrcChunkMin), Diameter, VertexData);
           BufferFaceData(DestGeometry, VertexData, v3_BackFaceNormalData, Materials);
         }
+#endif
+
       }
     }
   }
@@ -1135,6 +1106,7 @@ TransparencyIsSimilar(u8 T0, u8 T1)
   return Result;
 }
 
+#if 0
 link_internal b32
 Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag FaceFlag, u16 PackedHSV, u8 Transparency)
 {
@@ -1273,6 +1245,7 @@ DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color
   v3 Result = V3(DidStepX, DidStepY, 0) + V3(1);
   return Result;
 }
+#endif
 
 #if 0
 link_internal void
@@ -1373,13 +1346,121 @@ poof(
   func world_chunk_mesh_functions(buffer_t, vert_t)
   {
     link_internal void
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve_(vert_t.name)(   u64 *FaceMasks,
+                                                                v3i  SrcChunkDim,
+
+                                                                v3i  SrcChunkMin,
+                                                                v3i  SrcChunkMax,
+
+                                                     // TODO(Jesse)(immediate, poof): @poof_parens_bug
+                                                    (buffer_t.name) *Dest,
+                                                    (buffer_t.name) *Unused,
+
+                                                        // NOTE(Jesse): This is so we can offset vertices such that we center
+                                                        // entity models about 0 and rotation works properly.
+                                                        vert_t.name  VertexOffset = {})
+    {
+      /* HISTOGRAM_FUNCTION(); */
+      TIMED_FUNCTION();
+
+      Assert(SrcChunkMin == V3i(0));
+      Assert(SrcChunkMax % V3i(64) == V3i(0));
+      Assert(SrcChunkDim % V3i(64) == V3i(0));
+
+      v2i BlockDim = {{64,64}};
+
+      vert_t.name VertexData[VERTS_PER_FACE];
+             matl Materials[VERTS_PER_FACE];
+
+      s32 Result = 0;
+      for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
+      {
+        s32 z = zBlock;
+        for ( s32 yBlock = 1; yBlock < 63; ++yBlock )
+        {
+          s32 y = yBlock;
+          s32 OccupancyIndex = GetIndex(yBlock, zBlock, BlockDim);
+
+          u64 LeftFaces  = FaceMasks[(OccupancyIndex*6)+0];
+          u64 RightFaces = FaceMasks[(OccupancyIndex*6)+1];
+          u64 FrontFaces = FaceMasks[(OccupancyIndex*6)+2];
+          u64 BackFaces  = FaceMasks[(OccupancyIndex*6)+3];
+          u64 TopFaces   = FaceMasks[(OccupancyIndex*6)+4];
+          u64 BotFaces   = FaceMasks[(OccupancyIndex*6)+5];
+
+          /* Assert(LeftFaces == RightFaces); */
+
+
+          while (LeftFaces)
+          {
+            v3 Dim = V3(0.f, 1.f, 1.f);
+            u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
+            u64 xOffset = GetIndexOfSingleSetBit(This);
+            LeftFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
+          }
+
+          while (RightFaces)
+          {
+            v3 Dim = V3(0.f, 1.f, 1.f);
+            u64 This = UnsetLeastSignificantSetBit(&RightFaces);
+            u64 xOffset = GetIndexOfSingleSetBit(This);
+            RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
+          }
+
+          while (FrontFaces)
+          {
+            v3 Dim = V3(1.f, 0.f, 1.f);
+            u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
+            u64 xOffset = GetIndexOfSingleSetBit(This);
+            FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y+1, z), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
+          }
+
+          while (BackFaces)
+          {
+            v3 Dim = V3(1.f, 0.f, 1.f);
+            u64 This = UnsetLeastSignificantSetBit(&BackFaces);
+            u64 xOffset = GetIndexOfSingleSetBit(This);
+            BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
+          }
+
+          while (TopFaces)
+          {
+            v3 Dim = V3(1.f, 1.f, 0.f);
+            u64 This = UnsetLeastSignificantSetBit(&TopFaces);
+            u64 xOffset = GetIndexOfSingleSetBit(This);
+            TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z+1), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
+          }
+
+          while (BotFaces)
+          {
+            v3 Dim = V3(1.f, 1.f, 0.f);
+            u64 This = UnsetLeastSignificantSetBit(&BotFaces);
+            u32 xOffset = GetIndexOfSingleSetBit(This);
+            BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
+          }
+
+
+
+        }
+
+      }
+    }
+
+
+    link_internal void
     BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)( voxel *Voxels,
                                                 v3i SrcChunkDim,
 
                                                 v3i SrcChunkMin,
                                                 v3i SrcChunkMax,
 
-                                                // TODO(Jesse)(immediate, poof): removing the braces here causes poof to bail .. why?
+                                                // TODO(Jesse)(immediate, poof, @poof_parens_bug): removing the parens here causes poof to bail .. why?
                                                 (buffer_t.name) *DestGeometry,
                                                 (buffer_t.name) *DestTransparentGeometry,
                                                 memory_arena *TempMemory,
@@ -1391,111 +1472,113 @@ poof(
       /* HISTOGRAM_FUNCTION(); */
       TIMED_FUNCTION();
 
-      Assert(DestGeometry->Type == DataType_(vert_t.name));
+      NotImplemented;
+/*       Assert(DestGeometry->Type == DataType_(vert_t.name)); */
 
-      vert_t.name VertexData[VERTS_PER_FACE];
-      matl Materials[VERTS_PER_FACE];
+/*       vert_t.name VertexData[VERTS_PER_FACE]; */
+/*       matl Materials[VERTS_PER_FACE]; */
 
-      auto SrcMinP = SrcChunkMin;
-      auto MaxDim = Min(SrcChunkDim, SrcChunkMax);
+/*       auto SrcMinP = SrcChunkMin; */
+/*       auto MaxDim = Min(SrcChunkDim, SrcChunkMax); */
 
-      auto TmpDim = MaxDim-SrcMinP;
+/*       auto TmpDim = MaxDim-SrcMinP; */
 
-      u32 TmpVol = u32(Volume(TmpDim));
-      auto TempVoxels = Allocate(voxel, TempMemory, TmpVol);
+/*       u32 TmpVol = u32(Volume(TmpDim)); */
+/*       auto TempVoxels = Allocate(voxel, TempMemory, TmpVol); */
 
-      // NOTE(Jesse): It's necessary to copy the voxel data because the meshing
-      // algorithm unsets the face flags for the voxels instead of marking them
-      // as being processed.  When complete, there should be no face-flags left on
-      // this data. (This is not asserted, but maybe should be?)
-      //
-      // TODO(Jesse): Assert there are no face flags left in this copy at the end of
-      // this process?
-      //
-      // TODO(Jesse): Copy data into here as the algorithm proceedes instead of in
-      // one shot at the start?
-      //
-      u32 TmpIndex = 0;
-      for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex )
-      {
-        for ( s32 yIndex = 0; yIndex < TmpDim.y ; ++yIndex )
-        {
-          for ( s32 xIndex = 0; xIndex < TmpDim.x ; ++xIndex )
-          {
-            voxel_position SrcP = SrcMinP + Voxel_Position(xIndex, yIndex, zIndex);
-            s32 SrcIndex = GetIndex(SrcP, SrcChunkDim);
-            /* Assert(TmpIndex < TmpVol); */
-            TempVoxels[TmpIndex] = Voxels[SrcIndex];
-            TmpIndex++;
-          }
-        }
-      }
+/*       // NOTE(Jesse): It's necessary to copy the voxel data because the meshing */
+/*       // algorithm unsets the face flags for the voxels instead of marking them */
+/*       // as being processed.  When complete, there should be no face-flags left on */
+/*       // this data. (This is not asserted, but maybe should be?) */
+/*       // */
+/*       // TODO(Jesse): Assert there are no face flags left in this copy at the end of */
+/*       // this process? */
+/*       // */
+/*       // TODO(Jesse): Copy data into here as the algorithm proceedes instead of in */
+/*       // one shot at the start? */
+/*       // */
+/*       u32 TmpIndex = 0; */
+/*       for ( s32 zIndex = 0; zIndex < TmpDim.z ; ++zIndex ) */
+/*       { */
+/*         for ( s32 yIndex = 0; yIndex < TmpDim.y ; ++yIndex ) */
+/*         { */
+/*           for ( s32 xIndex = 0; xIndex < TmpDim.x ; ++xIndex ) */
+/*           { */
+/*             voxel_position SrcP = SrcMinP + Voxel_Position(xIndex, yIndex, zIndex); */
+/*             s32 SrcIndex = GetIndex(SrcP, SrcChunkDim); */
+/*             /1* Assert(TmpIndex < TmpVol); *1/ */
+/*             TempVoxels[TmpIndex] = Voxels[SrcIndex]; */
+/*             TmpIndex++; */
+/*           } */
+/*         } */
+/*       } */
 
-      Assert(TmpIndex == TmpVol);
+/*       Assert(TmpIndex == TmpVol); */
 
-      s32 Index = 0;
-      for ( s32 z = 0; z < TmpDim.z ; ++z )
-      {
-        for ( s32 y = 0; y < TmpDim.y ; ++y )
-        {
-          for ( s32 x = 0; x < TmpDim.x ; ++x )
-          {
-            v3i TmpVoxP = V3i(x,y,z);
-            voxel *Voxel = TempVoxels + Index;
+/*       s32 Index = 0; */
+/*       for ( s32 z = 0; z < TmpDim.z ; ++z ) */
+/*       { */
+/*         for ( s32 y = 0; y < TmpDim.y ; ++y ) */
+/*         { */
+/*           for ( s32 x = 0; x < TmpDim.x ; ++x ) */
+/*           { */
+/*             v3i TmpVoxP = V3i(x,y,z); */
+/*             voxel *Voxel = TempVoxels + Index; */
 
-            FillArray(VertexMaterial(Voxel->Color, Voxel->Transparency, 0), Materials, VERTS_PER_FACE);
+/*             FillArray(VertexMaterial(Voxel->Color, Voxel->Transparency, 0), Materials, VERTS_PER_FACE); */
 
-            (buffer_t.name) *Dest = {};
-            if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; }
+/*             (buffer_t.name) *Dest = {}; */
+/*             if (Voxel->Transparency) { Dest = DestTransparentGeometry; } else { Dest = DestGeometry; } */
 
-            if (Dest)
-            {
-              if (Voxel->Flags & Voxel_RightFace)
-              {
-                v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency);
-                RightFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
-              }
-              if (Voxel->Flags & Voxel_LeftFace)
-              {
-                v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency);
-                LeftFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
-              }
-              if (Voxel->Flags & Voxel_BottomFace)
-              {
-                v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency);
-                BottomFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
-              }
+/*             if (Dest) */
+/*             { */
+/*               if (Voxel->Flags & Voxel_RightFace) */
+/*               { */
+/*                 v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_RightFace, Voxel->Color, Voxel->Transparency); */
+/*                 RightFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials); */
+/*               } */
+/*               if (Voxel->Flags & Voxel_LeftFace) */
+/*               { */
+/*                 v3 Dim = DoXStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_LeftFace, Voxel->Color, Voxel->Transparency); */
+/*                 LeftFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials); */
+/*               } */
+/*               if (Voxel->Flags & Voxel_BottomFace) */
+/*               { */
+/*                 v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BottomFace, Voxel->Color, Voxel->Transparency); */
+/*                 BottomFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials); */
+/*               } */
 
-              if (Voxel->Flags & Voxel_TopFace)
-              {
-                v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency);
-                TopFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
-              }
-              if (Voxel->Flags & Voxel_FrontFace)
-              {
-                v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency);
-                FrontFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
-              }
-              if (Voxel->Flags & Voxel_BackFace)
-              {
-                v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency);
-                BackFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData);
-                BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
-              }
-            }
+/*               if (Voxel->Flags & Voxel_TopFace) */
+/*               { */
+/*                 v3 Dim = DoZStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_TopFace, Voxel->Color, Voxel->Transparency); */
+/*                 TopFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials); */
+/*               } */
+/*               if (Voxel->Flags & Voxel_FrontFace) */
+/*               { */
+/*                 v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_FrontFace, Voxel->Color, Voxel->Transparency); */
+/*                 FrontFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials); */
+/*               } */
+/*               if (Voxel->Flags & Voxel_BackFace) */
+/*               { */
+/*                 v3 Dim = DoYStepping(TempVoxels, TmpDim, TmpVoxP, Voxel_BackFace, Voxel->Color, Voxel->Transparency); */
+/*                 BackFaceVertexData( VertexOffset+TmpVoxP, Dim, VertexData); */
+/*                 BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials); */
+/*               } */
+/*             } */
 
-            ++Index;
-          }
-        }
-      }
+/*             ++Index; */
+/*           } */
+/*         } */
+/*       } */
 
-      if (DestGeometry) DestGeometry->Timestamp = __rdtsc();
-      if (DestTransparentGeometry) DestTransparentGeometry->Timestamp = __rdtsc();
+/*       if (DestGeometry) DestGeometry->Timestamp = __rdtsc(); */
+/*       if (DestTransparentGeometry) DestTransparentGeometry->Timestamp = __rdtsc(); */
+
     }
 
     link_internal void
@@ -2645,6 +2728,8 @@ link_internal v3
 ComputeNormalBonsai(world_chunk *DestChunk, v3i DestChunkDim, v3 BoundingVoxelMidpoint)
 {
   v3 Normal = {};
+  NotImplemented;
+#if 0
   for ( s32 VoxelIndex = 0;
         VoxelIndex < Volume(DestChunkDim);
         ++VoxelIndex)
@@ -2659,6 +2744,7 @@ ComputeNormalBonsai(world_chunk *DestChunk, v3i DestChunkDim, v3 BoundingVoxelMi
   }
 
   Normal = Normalize(Normal);
+#endif
   return Normal;
 }
 
@@ -2681,7 +2767,7 @@ GetBoundingVoxelsMidpoint(world_chunk *Chunk, v3i ChunkDim)
 
 /* // TODO(Jesse): This literally only accumulates an integer .. remove TempBoundingPoints and other ancillary shit */
 standing_spot
-ComputeStandingSpotFor8x8x2_V2(u8* Occupancy, voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim) //, boundary_voxels *TempBoundingPoints)
+ComputeStandingSpotFor8x8x2_V2(u64* Occupancy, voxel *Voxels, v3i SrcChunkDim, v3i TileChunkOffset, v3i TileChunkDim) //, boundary_voxels *TempBoundingPoints)
 {
   TIMED_FUNCTION();
   standing_spot Result = {};
@@ -2703,10 +2789,12 @@ ComputeStandingSpotFor8x8x2_V2(u8* Occupancy, voxel *Voxels, v3i SrcChunkDim, v3
         voxel *V = Voxels + vIndex;
         s32 vOccupancy = GetOccupancyBit(Occupancy, vIndex);
 
+#if 0
         if (vOccupancy && IsSet(V, Voxel_TopFace))
         {
           ++StandableCount;
         }
+#endif
       }
     }
   }
@@ -2855,7 +2943,7 @@ IsValidForDestChunk(v3i Spot, v3i DestChunkDim)
 
 link_internal void
 ComputeStandingSpots( v3i SrcChunkDim,
-                      u8 *Occupancy,
+                      u64 *Occupancy,
                       voxel *Voxels,
                       v3i SrcChunkOffset,
 
@@ -3230,11 +3318,10 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
   ZeroChunk(DestChunk, Volume(WorldChunkDim));
 #else
   for ( s32 VoxelIndex = 0;
-        VoxelIndex < Volume(DestChunk->Dim);
-        ++VoxelIndex)
+            VoxelIndex < Volume(DestChunk->Dim);
+          ++VoxelIndex)
   {
     voxel *Voxel = &DestChunk->Voxels[VoxelIndex];
-    Voxel->Flags = Voxel_Empty;
     Voxel->Color = 0;
   }
 #endif
@@ -3297,6 +3384,17 @@ QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags
 }
 
 link_internal void
+BuildWorldChunkMeshFromMarkedVoxels_Naieve( u64 *FaceMasks, v3i SrcChunkDim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, v3 VertexOffset = {})
+{
+  switch(DestGeometry->Type)
+  {
+    InvalidCase(DataType_Undefinded);
+    case DataType_v3: BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3(FaceMasks, SrcChunkDim, SrcChunkMin, SrcChunkMax, DestGeometry, DestTransparentGeometry, VertexOffset); break;
+    case DataType_v3_u8: BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(FaceMasks, SrcChunkDim, SrcChunkMin, SrcChunkMax, DestGeometry, DestTransparentGeometry, V3U8(VertexOffset)); break;
+  }
+}
+
+link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Greedy( voxel *Voxels, v3i SrcChunkDim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, memory_arena *TempMemory, v3 VertexOffset = {})
 {
   switch(DestGeometry->Type)
@@ -3342,11 +3440,13 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 
   if (MeshBit == MeshBit_Lod0)
   {
-#if VOXEL_DEBUG_COLOR
-    BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0);
-#else
-    BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem, VertexOffset);
-#endif
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0);
+
+/* #if VOXEL_DEBUG_COLOR */
+/*     BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0); */
+/* #else */
+/*     BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem, VertexOffset); */
+/* #endif */
   }
   else
   {
@@ -3385,7 +3485,8 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           b32  MakeExteriorFaces = False,
                                           v3i  NoiseBasisOffset  = {} )
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   engine_resources *EngineResources = GetEngineResources();
 
@@ -3398,7 +3499,9 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
   untextured_3d_geometry_buffer* Mesh = 0;
 
-  v3i SynChunkDimMin = (DestChunk->Dim + Global_ChunkApronDim);
+  /* v3i SynChunkDimMin = (DestChunk->Dim + Global_ChunkApronDim); */
+  v3i SynChunkDimMin = (DestChunk->Dim);
+  Assert(SynChunkDimMin == V3i(64));
   v3i SynChunkDim = RoundToMultiple(SynChunkDimMin, V3i(MIN_TERRAIN_NOISE_WIDTH));
   v3i SynChunkP = DestChunk->WorldP;
 
@@ -3448,7 +3551,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     }
     else
     {
-      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
     }
 
     CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim);
@@ -3485,7 +3588,8 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
     geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
 
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+    /* RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory); */
+    RebuildWorldChunkMesh(Thread, SyntheticChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
     TempMesh->At = 0;
 
     if (Flags & ChunkInitFlag_GenLODs)

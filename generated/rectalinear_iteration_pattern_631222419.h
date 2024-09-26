@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:741:0
+// src/engine/world_update.cpp:751:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -19,7 +19,7 @@ DimIterator(x, y, z, UpdateDim)
         /* if ((V->Flags&Voxel_Filled)==False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -43,7 +43,8 @@ DimIterator(x, y, z, UpdateDim)
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

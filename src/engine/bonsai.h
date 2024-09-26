@@ -112,13 +112,6 @@ struct entity_entity_collision_event
 };
 
 inline void
-UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
-{
-  *Flags = (voxel_flag)(*Flags & ~Flag);
-  return;
-}
-
-inline void
 UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
   *Flags = (chunk_flag)(*Flags & ~Flag);
@@ -140,14 +133,6 @@ UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 /* } */
 
 inline void
-SetFlag( u8 *Flags, voxel_flag Flag )
-{
-  /* Assert(Flag < u8_MAX); */
-  *Flags = (u8)(*Flags | Flag);
-  return;
-}
-
-inline void
 SetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
   /* Assert( (*Flags & Flag) == 0); */ // NOTE(Jesse): This should probably be in, but it's annoying ..
@@ -167,27 +152,6 @@ SetFlag( world_chunk *Chunk, chunk_flag Flag )
 {
   Chunk->Flags = (chunk_flag)(Chunk->Flags | Flag);
   return;
-}
-
-inline void
-SetFlag(voxel *Voxel, voxel_flag Flag )
-{
-  SetFlag(&Voxel->Flags, Flag);
-  return;
-}
-
-inline void
-SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
-{
-  SetFlag(&Voxel->V.Flags, Flag);
-  return;
-}
-
-inline b32
-IsSet( u8 Flags, voxel_flag Flag )
-{
-  b32 Result = ( (Flags & Flag) != 0 );
-  return Result;
 }
 
 inline b32
@@ -212,27 +176,6 @@ IsSet( world_chunk *Chunk, chunk_flag Flag )
 }
 
 inline b32
-IsSet( voxel *V, voxel_flag Flag )
-{
-  b32 Result = IsSet(V->Flags, Flag);
-  return Result;
-}
-
-inline b32
-IsSet( boundary_voxel *V, voxel_flag Flag )
-{
-  b32 Result = IsSet(&V->V, Flag);
-  return Result;
-}
-
-inline b32
-NotSet( voxel_flag Flags, voxel_flag Flag )
-{
-  b32 Result = !(IsSet(Flags, Flag));
-  return Result;
-}
-
-inline b32
 NotSet( chunk_flag Flags, chunk_flag Flag )
 {
   b32 Result = !(IsSet(Flags, Flag));
@@ -250,13 +193,6 @@ inline b32
 NotSet( world_chunk *Chunk, chunk_flag Flag )
 {
   b32 Result = !(IsSet(Chunk, Flag));
-  return Result;
-}
-
-inline b32
-NotSet( voxel *Voxel, voxel_flag Flag )
-{
-  b32 Result = !(IsSet(Voxel, Flag));
   return Result;
 }
 

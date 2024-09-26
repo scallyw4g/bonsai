@@ -48,6 +48,11 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+    if (Element->FaceMasks) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
     if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
@@ -73,6 +78,10 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
     if (Element->Occupancy) { Result &= Serialize(Bytes, Element->Occupancy); }
+
+
+
+    if (Element->FaceMasks) { Result &= Serialize(Bytes, Element->FaceMasks); }
 
 
 
@@ -140,6 +149,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  b64 HadFaceMasksPointer = Read_u64(Bytes);
+  Assert(HadFaceMasksPointer < 2); // Should be 0 or 1
+
+
+
   b64 HadVoxelsPointer = Read_u64(Bytes);
   Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
@@ -175,10 +189,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
     if (Element->Occupancy == 0)
     {
-      Element->Occupancy = Allocate(u8, Memory, Count);
+      Element->Occupancy = Allocate(u64, Memory, Count);
     }
 
     Result &= Deserialize(Bytes, Element->Occupancy, Memory, Count);
+  }
+
+
+  if (HadFaceMasksPointer)
+  {
+    umm Count = 1;
+
+
+    if (Element->FaceMasks == 0)
+    {
+      Element->FaceMasks = Allocate(u64, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->FaceMasks, Memory, Count);
   }
 
 
