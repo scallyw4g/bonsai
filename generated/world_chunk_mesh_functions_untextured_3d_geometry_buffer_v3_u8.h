@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:1948:0
+// src/engine/world_chunk.cpp:1929:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(   u64 *FaceMasks,
@@ -43,15 +43,13 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(   u64 *FaceMasks,
       u64 TopFaces   = FaceMasks[(OccupancyIndex*6)+4];
       u64 BotFaces   = FaceMasks[(OccupancyIndex*6)+5];
 
-      /* Assert(LeftFaces == RightFaces); */
-
 
       while (LeftFaces)
       {
         v3 Dim = V3(0.f, 1.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        LeftFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
+        LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_u8_LeftFaceNormalData, Materials);
       }
 
@@ -60,7 +58,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(   u64 *FaceMasks,
         v3 Dim = V3(0.f, 1.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&RightFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+        RightFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_u8_RightFaceNormalData, Materials);
       }
 

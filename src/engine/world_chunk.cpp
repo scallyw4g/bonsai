@@ -874,31 +874,14 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
       u64 nzBits = Occupancy[OccupancyIndex-64];
 
 
-      u64 LeftFaces  =  (Bits>>1) & ~Bits;
-      u64 RightFaces =  (Bits<<1) & ~Bits;
-      /* u64 LeftFaces  =  Bits & ~(Bits >> 1ULL); */
-      /* u64 RightFaces =  Bits & ~(Bits << 1ULL); */
+      u64 RightFaces  =  (Bits>>1) & ~Bits;
+      u64 LeftFaces =  (Bits<<1) & ~Bits;
 
-      /* u64 FrontFaces = 0; */
-      /* u64 BackFaces  = 0; */
       u64 FrontFaces = Bits &  (~yBits);
       u64 BackFaces  = Bits & (~nyBits);
 
-      /* u64 TopFaces = 0; */
-      /* u64 BotFaces = 0; */
       u64 TopFaces = Bits &  (~zBits);
       u64 BotFaces = Bits & (~nzBits);
-
-      /* Assert(LeftFaces == RightFaces); */
-      /* Assert(LeftFaces == FrontFaces); */
-      /* Assert(LeftFaces == BackFaces); */
-      /* Assert(LeftFaces == TopFaces); */
-      /* Assert(LeftFaces == BotFaces); */
-
-      /* if (LeftFaces) */
-      /* { */
-      /*   int foo = 3; */
-      /* } */
 
       FaceMasks[(OccupancyIndex*6)+0] = LeftFaces;
       FaceMasks[(OccupancyIndex*6)+1] = RightFaces;
@@ -1388,15 +1371,13 @@ poof(
           u64 TopFaces   = FaceMasks[(OccupancyIndex*6)+4];
           u64 BotFaces   = FaceMasks[(OccupancyIndex*6)+5];
 
-          /* Assert(LeftFaces == RightFaces); */
-
 
           while (LeftFaces)
           {
             v3 Dim = V3(0.f, 1.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            LeftFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
+            LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
           }
 
@@ -1405,7 +1386,7 @@ poof(
             v3 Dim = V3(0.f, 1.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&RightFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            RightFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
           }
 
@@ -3554,7 +3535,9 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
       MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
     }
 
-    CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim);
+    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim); */
+
+    DestChunk->FilledCount = SyntheticChunk->FilledCount;
 
     // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
     /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
@@ -3606,11 +3589,12 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
       RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
       TempMesh->At = 0;
     }
+    Assert( DestChunk->FilledCount == SyntheticChunk->FilledCount);
   }
 
 #define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
   {                                                                           \
-    auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                         \
+    auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
     if (SrcMesh) {                                                            \
       if (SrcMesh->At) {                                                      \
         AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \

@@ -1524,12 +1524,8 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
     if (HasGpuMesh(&Chunk->Meshes))
     {
       v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-      v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
 
-      /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-      AssertNoGlErrors;
-
-      v3 Basis = GetRenderP(Engine, Chunk->WorldP); // - (Chunk->DimInChunks/2.f);
+      v3 Basis = GetRenderP(Engine, Chunk->WorldP);
       DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }

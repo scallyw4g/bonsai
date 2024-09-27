@@ -604,10 +604,9 @@ link_internal s32
 SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, octree_node *Parent, memory_arena *Memory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  s32 Result = False;
 
   SyncGpuBuffersAsync(Engine, &NodeToSplit->Chunk.Meshes);
-
-  s32 Result = False;
 
   Assert(NodeToSplit->Chunk.Dim % World->ChunkDim == V3i(0));
   b32 PushedToPriorityQueue = False;
@@ -634,7 +633,6 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
         if (OctreeBranchShouldCollapse(Engine, NodeToSplit))
         {
           MergeOctreeChildren(Engine, NodeToSplit);
-          /* Result = True; */
         }
         else
         {
@@ -646,9 +644,6 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
               ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], NodeToSplit, Memory);
               ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], NodeToSplit, Memory);
               ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], NodeToSplit, Memory);
-
-          /* NodeToSplit->AllChildrenCanDraw = (ChildrenReadyToDraw == 8); */
-          /* Result = NodeToSplit->AllChildrenCanDraw; */
         }
       } break;
 
@@ -769,7 +764,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
         {
           Push(MainDrawList, &Chunk);
           Push(ShadowMapDrawList, &Chunk);
-          Assert(Chunk->FilledCount);
+          /* Assert(Chunk->FilledCount); */
         }
 
       } break;
