@@ -1,7 +1,7 @@
-// src/engine/world_chunk.cpp:1929:0
+// src/engine/world_chunk.cpp:1931:0
 
 link_internal void
-BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(   u64 *FaceMasks,
+BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( u64 *FaceMasks,
   v3i  SrcChunkDim,
 
   v3i  SrcChunkMin,
@@ -26,6 +26,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8(   u64 *FaceMasks,
 
   v3_u8 VertexData[VERTS_PER_FACE];
   matl Materials[VERTS_PER_FACE];
+
+  FillArray(VertexMaterial(PackHSVColor(HSV_GRASS_GREEN), 0.f, 0.f), Materials, VERTS_PER_FACE);
 
   s32 Result = 0;
   for ( s32 zBlock = 1; zBlock < 63; ++zBlock )

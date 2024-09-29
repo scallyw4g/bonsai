@@ -493,7 +493,7 @@ poof(generate_cursor(octree_node_ptr))
 #include <generated/generate_cursor_octree_node.h>
 
 #define MAX_OCTREE_NODE_BUCKETS (512)
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (4)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (256)
 struct octree_node_priority_queue
 {
   octree_node_ptr_cursor Lists[MAX_OCTREE_NODE_BUCKETS];

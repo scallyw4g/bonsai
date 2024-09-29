@@ -1329,11 +1329,11 @@ poof(
   func world_chunk_mesh_functions(buffer_t, vert_t)
   {
     link_internal void
-    BuildWorldChunkMeshFromMarkedVoxels_Naieve_(vert_t.name)(   u64 *FaceMasks,
-                                                                v3i  SrcChunkDim,
+    BuildWorldChunkMeshFromMarkedVoxels_Naieve_(vert_t.name)( u64 *FaceMasks,
+                                                              v3i  SrcChunkDim,
 
-                                                                v3i  SrcChunkMin,
-                                                                v3i  SrcChunkMax,
+                                                              v3i  SrcChunkMin,
+                                                              v3i  SrcChunkMax,
 
                                                      // TODO(Jesse)(immediate, poof): @poof_parens_bug
                                                     (buffer_t.name) *Dest,
@@ -1354,6 +1354,8 @@ poof(
 
       vert_t.name VertexData[VERTS_PER_FACE];
              matl Materials[VERTS_PER_FACE];
+
+      FillArray(VertexMaterial(PackHSVColor(HSV_GRASS_GREEN), 0.f, 0.f), Materials, VERTS_PER_FACE);
 
       s32 Result = 0;
       for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
@@ -3422,12 +3424,6 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
   if (MeshBit == MeshBit_Lod0)
   {
     BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0);
-
-/* #if VOXEL_DEBUG_COLOR */
-/*     BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0); */
-/* #else */
-/*     BuildWorldChunkMeshFromMarkedVoxels_Greedy( Chunk->Voxels, Chunk->Dim, MinOffset, MaxOffset, TempMesh, 0, TempMem, VertexOffset); */
-/* #endif */
   }
   else
   {
