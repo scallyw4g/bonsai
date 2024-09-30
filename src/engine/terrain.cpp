@@ -70,7 +70,11 @@ Terrain_FBM2D( world_chunk *Chunk,
   memory_arena *TempArena = GetTranArena();
 #endif
 
-  v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(16)); // + 2;
+  s32 NoiseUpsampleFactor = 1;
+
+  /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(16)); */
+  v3i NoiseDim = RoundUp(Chunk->Dim/NoiseUpsampleFactor, V3i(16));
+  /* v3i NoiseDim = Chunk->Dim; */
   // NOTE(Jesse): This must hold true for using any Noise_16x func
   Assert(NoiseDim % V3i(16) == V3i(0));
 
@@ -116,7 +120,7 @@ Terrain_FBM2D( world_chunk *Chunk,
   v3i Basis = Chunk->WorldP;
   for ( s32 z = 0; z < NoiseDim.z; ++ z)
   {
-    f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, z*2, Chunk->DimInChunks);
+    f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, z*NoiseUpsampleFactor, Chunk->DimInChunks);
     f32 WorldZBiased = zCoord - zMin;
 
     v3 InteriorPeriod = Period;
@@ -128,7 +132,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
     for ( s32 y = 0; y < NoiseDim.y; ++ y)
     {
-      f32 yCoord = __COMPUTE_NOISE_INPUT(y, Basis, y*2, Chunk->DimInChunks);
+      f32 yCoord = __COMPUTE_NOISE_INPUT(y, Basis, y*NoiseUpsampleFactor, Chunk->DimInChunks);
 
       InteriorPeriod = Period;
       RangeIterator_t(u32, OctaveIndex, Octaves)
@@ -148,7 +152,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         {
           RangeIterator(ValueIndex, 16)
           {
-            xCoords[ValueIndex] = (__COMPUTE_NOISE_INPUT(x, Basis, (x+ValueIndex)*2, Chunk->DimInChunks)) / InteriorPeriod.x;
+            xCoords[ValueIndex] = (__COMPUTE_NOISE_INPUT(x, Basis, (x+ValueIndex)*NoiseUpsampleFactor, Chunk->DimInChunks)) / InteriorPeriod.x;
           }
           auto Index = 0;
           auto _x0 = F32_8X( xCoords[0], xCoords[1], xCoords[2], xCoords[3], xCoords[4], xCoords[5], xCoords[6], xCoords[7] );
@@ -174,6 +178,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     }
   }
 
+#if 1
   for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
   {
     f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, zChunk, Chunk->DimInChunks);
@@ -183,7 +188,8 @@ Terrain_FBM2D( world_chunk *Chunk,
       for ( s32 xChunk = 0; xChunk < Chunk->Dim.x; ++ xChunk)
       {
         v3i ChunkP = V3i(xChunk, yChunk, zChunk);
-        v3i NoiseP = V3i(xChunk, yChunk, zChunk)/2;
+        /* v3i NoiseP = V3i(xChunk, yChunk, zChunk); */
+        v3i NoiseP = V3i(xChunk, yChunk, zChunk)/NoiseUpsampleFactor;
 
         s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
         s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
@@ -224,6 +230,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       }
     }
   }
+#endif
 
 
 

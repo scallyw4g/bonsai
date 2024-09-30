@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:1928:0
+// src/engine/world_chunk.cpp:1919:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( u64 *FaceMasks,
@@ -19,10 +19,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( u64 *FaceMasks,
   TIMED_FUNCTION();
 
   Assert(SrcChunkMin == V3i(0));
-  Assert(SrcChunkMax % V3i(64) == V3i(0));
-  Assert(SrcChunkDim % V3i(64) == V3i(0));
-
-  v2i BlockDim = {{64,64}};
+  Assert(SrcChunkMax == V3i(0));
+  Assert(SrcChunkDim == V3i(64, 66, 66));
 
   v3 VertexData[VERTS_PER_FACE];
   matl Materials[VERTS_PER_FACE];
@@ -30,13 +28,13 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( u64 *FaceMasks,
   FillArray(VertexMaterial(PackHSVColor(HSV_GRASS_GREEN), 0.f, 0.f), Materials, VERTS_PER_FACE);
 
   s32 Result = 0;
-  for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
+  for ( s32 zBlock = 0; zBlock < SrcChunkDim.z; ++zBlock )
   {
     s32 z = zBlock;
-    for ( s32 yBlock = 1; yBlock < 63; ++yBlock )
+    for ( s32 yBlock = 0; yBlock < SrcChunkDim.y; ++yBlock )
     {
       s32 y = yBlock;
-      s32 OccupancyIndex = GetIndex(yBlock, zBlock, BlockDim);
+      s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
       u64 LeftFaces  = FaceMasks[(OccupancyIndex*6)+0];
       u64 RightFaces = FaceMasks[(OccupancyIndex*6)+1];
@@ -45,58 +43,53 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( u64 *FaceMasks,
       u64 TopFaces   = FaceMasks[(OccupancyIndex*6)+4];
       u64 BotFaces   = FaceMasks[(OccupancyIndex*6)+5];
 
+      v3 Dim = V3(1.f, 1.f, 1.f);
 
       while (LeftFaces)
       {
-        v3 Dim = V3(0.f, 1.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+        LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_LeftFaceNormalData, Materials);
       }
 
       while (RightFaces)
       {
-        v3 Dim = V3(0.f, 1.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&RightFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        RightFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
+        RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_RightFaceNormalData, Materials);
       }
 
       while (FrontFaces)
       {
-        v3 Dim = V3(1.f, 0.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y+1, z), Dim, VertexData);
+        FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_FrontFaceNormalData, Materials);
       }
 
       while (BackFaces)
       {
-        v3 Dim = V3(1.f, 0.f, 1.f);
         u64 This = UnsetLeastSignificantSetBit(&BackFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+        BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_BackFaceNormalData, Materials);
       }
 
       while (TopFaces)
       {
-        v3 Dim = V3(1.f, 1.f, 0.f);
         u64 This = UnsetLeastSignificantSetBit(&TopFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
-        TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z+1), Dim, VertexData);
+        TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_TopFaceNormalData, Materials);
       }
 
       while (BotFaces)
       {
-        v3 Dim = V3(1.f, 1.f, 0.f);
         u64 This = UnsetLeastSignificantSetBit(&BotFaces);
         u32 xOffset = GetIndexOfSingleSetBit(This);
-        BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+        BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
         BufferFaceData(Dest, VertexData, v3_BottomFaceNormalData, Materials);
       }
 

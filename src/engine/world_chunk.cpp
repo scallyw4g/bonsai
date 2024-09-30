@@ -850,32 +850,30 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
   TIMED_FUNCTION();
 
   auto MinDim = SrcChunkMin;
-  auto MaxDim = Min(SrcChunkDim, SrcChunkMax); // SrcChunkMin+DestChunkDim+1
+  auto MaxDim = Min(SrcChunkDim, SrcChunkMax);
 
   v3i InnerDim = MaxDim-MinDim;
 
   Assert(MinDim == V3i(0));
-  Assert(MaxDim % V3i(64) == V3i(0));
-  Assert(SrcChunkDim % V3i(64) == V3i(0));
-
-  v2i BlockDim = {{64,64}};
+  Assert(MaxDim ==V3i(64, 66, 66));
+  Assert(SrcChunkDim == V3i(64, 66, 66));
 
   s32 Result = 0;
-  for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
+  for ( s32 zBlock = 1; zBlock < SrcChunkDim.z-1; ++zBlock )
   {
-    for ( s32 yBlock = 1; yBlock < 63; ++yBlock )
+    for ( s32 yBlock = 1; yBlock < SrcChunkDim.y-1; ++yBlock )
     {
-      s32 OccupancyIndex = GetIndex(yBlock, zBlock, BlockDim);
+      s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
       u64   Bits = Occupancy[OccupancyIndex];
       u64  yBits = Occupancy[OccupancyIndex+1];
       u64 nyBits = Occupancy[OccupancyIndex-1];
-      u64  zBits = Occupancy[OccupancyIndex+64];
-      u64 nzBits = Occupancy[OccupancyIndex-64];
+      u64  zBits = Occupancy[OccupancyIndex+SrcChunkDim.z];
+      u64 nzBits = Occupancy[OccupancyIndex-SrcChunkDim.z];
 
 
-      u64 RightFaces  =  (Bits>>1) & ~Bits;
-      u64 LeftFaces =  (Bits<<1) & ~Bits;
+      u64 RightFaces = (Bits>>1) & ~Bits;
+      u64 LeftFaces  = (Bits<<1) & ~Bits;
 
       u64 FrontFaces = Bits &  (~yBits);
       u64 BackFaces  = Bits & (~nyBits);
@@ -1347,10 +1345,8 @@ poof(
       TIMED_FUNCTION();
 
       Assert(SrcChunkMin == V3i(0));
-      Assert(SrcChunkMax % V3i(64) == V3i(0));
-      Assert(SrcChunkDim % V3i(64) == V3i(0));
-
-      v2i BlockDim = {{64,64}};
+      Assert(SrcChunkMax == V3i(0));
+      Assert(SrcChunkDim == V3i(64, 66, 66));
 
       vert_t.name VertexData[VERTS_PER_FACE];
              matl Materials[VERTS_PER_FACE];
@@ -1358,13 +1354,13 @@ poof(
       FillArray(VertexMaterial(PackHSVColor(HSV_GRASS_GREEN), 0.f, 0.f), Materials, VERTS_PER_FACE);
 
       s32 Result = 0;
-      for ( s32 zBlock = 1; zBlock < 63; ++zBlock )
+      for ( s32 zBlock = 0; zBlock < SrcChunkDim.z; ++zBlock )
       {
         s32 z = zBlock;
-        for ( s32 yBlock = 1; yBlock < 63; ++yBlock )
+        for ( s32 yBlock = 0; yBlock < SrcChunkDim.y; ++yBlock )
         {
           s32 y = yBlock;
-          s32 OccupancyIndex = GetIndex(yBlock, zBlock, BlockDim);
+          s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
           u64 LeftFaces  = FaceMasks[(OccupancyIndex*6)+0];
           u64 RightFaces = FaceMasks[(OccupancyIndex*6)+1];
@@ -1373,58 +1369,53 @@ poof(
           u64 TopFaces   = FaceMasks[(OccupancyIndex*6)+4];
           u64 BotFaces   = FaceMasks[(OccupancyIndex*6)+5];
 
+          v3 Dim = V3(1.f, 1.f, 1.f);
 
           while (LeftFaces)
           {
-            v3 Dim = V3(0.f, 1.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
           }
 
           while (RightFaces)
           {
-            v3 Dim = V3(0.f, 1.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&RightFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            RightFaceVertexData( VertexOffset+V3(s32(xOffset)+1, y, z), Dim, VertexData);
+            RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
           }
 
           while (FrontFaces)
           {
-            v3 Dim = V3(1.f, 0.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y+1, z), Dim, VertexData);
+            FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
           }
 
           while (BackFaces)
           {
-            v3 Dim = V3(1.f, 0.f, 1.f);
             u64 This = UnsetLeastSignificantSetBit(&BackFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
           }
 
           while (TopFaces)
           {
-            v3 Dim = V3(1.f, 1.f, 0.f);
             u64 This = UnsetLeastSignificantSetBit(&TopFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z+1), Dim, VertexData);
+            TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
           }
 
           while (BotFaces)
           {
-            v3 Dim = V3(1.f, 1.f, 0.f);
             u64 This = UnsetLeastSignificantSetBit(&BotFaces);
             u32 xOffset = GetIndexOfSingleSetBit(This);
-            BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
+            BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
           }
 
@@ -3479,7 +3470,9 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   /* v3i SynChunkDimMin = (DestChunk->Dim + Global_ChunkApronDim); */
   v3i SynChunkDimMin = (DestChunk->Dim);
   Assert(SynChunkDimMin == V3i(64));
-  v3i SynChunkDim = RoundToMultiple(SynChunkDimMin, V3i(MIN_TERRAIN_NOISE_WIDTH));
+  /* v3i SynChunkDim = RoundToMultiple(SynChunkDimMin, V3i(MIN_TERRAIN_NOISE_WIDTH)); */
+  /* v3i SynChunkDim = SynChunkDimMin + V3i(0, 2, 4); */
+  v3i SynChunkDim = SynChunkDimMin + V3i(0, 2, 2);
   v3i SynChunkP = DestChunk->WorldP;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, DestChunk->DimInChunks, Thread->TempMemory);
