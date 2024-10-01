@@ -89,7 +89,7 @@ main(s32 ArgCount, const char** Args)
           xParams[0] = ComputePerlinParameters(_x0, PrimeX);
           xParams[1] = ComputePerlinParameters(_x1, PrimeX);
 
-          PerlinNoise_16x_avx2(xParams, &yParams, &zParams, NoiseValues+DestIndex, 1.f);
+          PerlinNoise_16x_avx2_x(xParams, &yParams, &zParams, NoiseValues+DestIndex, 1.f);
           DestIndex += 16;
         }
       }

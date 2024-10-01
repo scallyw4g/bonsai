@@ -1148,7 +1148,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
 
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Occupancy, CopiedChunk.FaceMasks, CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
+  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Occupancy, CopiedChunk.xOccupancyBorder, CopiedChunk.FaceMasks, CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */

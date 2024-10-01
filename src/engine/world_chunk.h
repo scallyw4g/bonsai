@@ -165,11 +165,16 @@ struct boundary_voxel
   }
 };
 
+// 2 sides (1 bit per side), 66 z slices, each bit corresponds to a y index
+#define xOccupancyBorder_Dim V3i(1, 2, 66)
+#define xOccupancyBorder_ElementCount Volume(xOccupancyBorder_Dim)
+
 struct chunk_data
 {
   chunk_flag Flags;
   v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
   u64            *Occupancy;
+  u64            *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
   u64            *FaceMasks;
   voxel          *Voxels;
   voxel_lighting *VoxelLighting;
@@ -305,6 +310,8 @@ typedef entity* entity_ptr;
 poof( block_array(entity_ptr, {8}) )
 #include <generated/block_array_entity_ptr_688856411.h>
 
+
+
 struct world_chunk poof(@version(1))
 {
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
@@ -315,6 +322,7 @@ struct world_chunk poof(@version(1))
           chunk_flag  Flags;          poof(@no_serialize)
                  v3i  Dim;            // could/should be compressed?
                  u64 *Occupancy;
+                 u64 *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
                  u64 *FaceMasks;
                voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
       voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))

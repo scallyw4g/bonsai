@@ -78,6 +78,7 @@ AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, me
   {
     s32 OccupancyCount = (VoxCount+63) / 64; // Add seven so we round up when we divide if there's an extra one (or several)
     Result->Occupancy = AllocateAlignedProtection(u64, Storage ,   OccupancyCount, CACHE_LINE_SIZE, false);
+    Result->xOccupancyBorder = AllocateAlignedProtection(u64, Storage ,   xOccupancyBorder_ElementCount, CACHE_LINE_SIZE, false);
     Result->FaceMasks = AllocateAlignedProtection(u64, Storage , 6*OccupancyCount, CACHE_LINE_SIZE, false);
     Result->Voxels = AllocateAlignedProtection(voxel, Storage , VoxCount, CACHE_LINE_SIZE, false);
   }
@@ -840,6 +841,7 @@ MarkBoundaryVoxels_MakeExteriorFaces( u64 *Occupancy,
 
 link_internal s32
 MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
+                                      u64 *xOccupancyBorder,
                                       u64 *FaceMasks,
                                     voxel *Voxels,
                                       v3i  SrcChunkDim,
@@ -865,15 +867,27 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
     {
       s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
+      /* u64 LeftColumn = 0; */
+      /* u64 RightColumn = 0; */
+      u64 LeftColumn = xOccupancyBorder[zBlock];
+      u64 RightColumn = xOccupancyBorder[zBlock+1];
+
+      u64 LeftBit = (LeftColumn >> yBlock) & 1;
+      u64 RightBit = (RightColumn >> yBlock) & 1;
+
       u64   Bits = Occupancy[OccupancyIndex];
       u64  yBits = Occupancy[OccupancyIndex+1];
       u64 nyBits = Occupancy[OccupancyIndex-1];
       u64  zBits = Occupancy[OccupancyIndex+SrcChunkDim.z];
       u64 nzBits = Occupancy[OccupancyIndex-SrcChunkDim.z];
 
+      /* u64 RightFaces = ( RightBit | (Bits>>1) ) & ~Bits; */
+      /* u64 LeftFaces  = ( LeftBit  | (Bits<<1) ) & ~Bits; */
 
-      u64 RightFaces = (Bits>>1) & ~Bits;
-      u64 LeftFaces  = (Bits<<1) & ~Bits;
+      // NOTE(Jesse): When viewing these in the debugger they look backwards
+      // because it displays the values in register order.
+      u64 RightFaces = ( RightBit | Bits ) & ~(Bits>>1);
+      u64 LeftFaces  = ( LeftBit  | Bits ) & ~(Bits<<1);
 
       u64 FrontFaces = Bits &  (~yBits);
       u64 BackFaces  = Bits & (~nyBits);
@@ -1375,7 +1389,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            LeftFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
           }
 
@@ -1383,7 +1397,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&RightFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            RightFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
           }
 
@@ -1391,7 +1405,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            FrontFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
           }
 
@@ -1399,7 +1413,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&BackFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            BackFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
           }
 
@@ -1407,7 +1421,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&TopFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
-            TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            TopFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
           }
 
@@ -1415,7 +1429,7 @@ poof(
           {
             u64 This = UnsetLeastSignificantSetBit(&BotFaces);
             u32 xOffset = GetIndexOfSingleSetBit(This);
-            BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z)-V3(1), Dim, VertexData);
+            BottomFaceVertexData( VertexOffset+V3(s32(xOffset), y, z), Dim, VertexData);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
           }
 
@@ -3521,7 +3535,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     }
     else
     {
-      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->xOccupancyBorder, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
     }
 
     /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim); */

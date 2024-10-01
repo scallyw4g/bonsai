@@ -76,7 +76,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
     Vox.ChunkData->Voxels[VIndex].Color = RGBtoPackedHSV(RGB_GRASS_GREEN);
   }
 
-  MarkBoundaryVoxels_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->FaceMasks, Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
+  MarkBoundaryVoxels_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->xOccupancyBorder, Vox.ChunkData->FaceMasks, Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
 
   Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
   Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
