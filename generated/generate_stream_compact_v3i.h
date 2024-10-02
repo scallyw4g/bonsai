@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:2893:0
+// src/engine/world_chunk.cpp:2897:0
 
 link_internal v3i_buffer
 Compact(v3i_stream *Stream, memory_arena *PermMemory)

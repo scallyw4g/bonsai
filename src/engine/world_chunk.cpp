@@ -869,19 +869,19 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
 
       /* u64 LeftColumn = 0; */
       /* u64 RightColumn = 0; */
-      u64 LeftColumn = xOccupancyBorder[zBlock];
-      u64 RightColumn = xOccupancyBorder[zBlock+1];
+      u64 LeftColumn  = xOccupancyBorder[ zBlock*2   ];
+      u64 RightColumn = xOccupancyBorder[(zBlock*2)+1];
 
-      /* u64 LeftBit = ((LeftColumn >> yBlock) & 1) << 63; */
-      /* u64 RightBit = (RightColumn >> yBlock) & 1; */
+      u64 LeftBit  = ((LeftColumn  >> yBlock) & 1);
+      u64 RightBit = ((RightColumn >> yBlock) & 1) << 63;
 
       // NOTE(Jesse): These look backwards, but they're not.  In register ordering,
       // the directions are reversed; the highest bit is the right-most voxel in
       // 3D space.
       //
       // @register_ordering_looks_backwards
-      u64 RightBit = 1llu << 63;
-      u64 LeftBit = 1;
+      /* u64 RightBit = 1llu << 63; */
+      /* u64 LeftBit = 1; */
 
       u64   Bits = Occupancy[OccupancyIndex];
       u64  yBits = Occupancy[OccupancyIndex+1];

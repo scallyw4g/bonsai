@@ -30,6 +30,8 @@ Terrain_Flat( world_chunk *Chunk,
 }
 
 
+global_variable random_series TEST_ENTROPY = {653765435432};
+
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
                        v3i  NoiseBasis,
@@ -83,21 +85,23 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   s32 NoiseUpsampleFactor = 1;
 
-  /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(16)); */
-  v3i NoiseDim = RoundUp(Chunk->Dim/NoiseUpsampleFactor, V3i(16));
-  /* v3i NoiseDim = Chunk->Dim; */
-  // NOTE(Jesse): This must hold true for using any Noise_16x func
-  Assert(NoiseDim % V3i(16) == V3i(0));
-
-  // NOTE(Jesse): Must be true to use _mm256_store_ps, which we do in the 16x version of perlin
-
-  /* v3i NoiseDim = Chunk->Dim + 2; */
-
   v3i Basis = Chunk->WorldP;
 
+  /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(16)); */
+  /* v3i NoiseDim = RoundUp((Chunk->Dim+2)/NoiseUpsampleFactor, V3i(16, 1, 1)); */
+  v3i NoiseDim = RoundUp((Chunk->Dim+2)/NoiseUpsampleFactor, V3i(16));
+  /* v3i NoiseDim = Chunk->Dim; */
+  // NOTE(Jesse): This must hold true for using any Noise_16x func
+  Assert(NoiseDim.x % 16 == 0);
+
+
+  /* v3i NoiseDim = Chunk->Dim + 2; */
+  s32 NoiseValuesCount = Volume(NoiseDim);
+  r32 *NoiseValues = Allocate(r32, TempArena, NoiseValuesCount);
+  // NOTE(Jesse): Must be true to use _mm256_store_ps, which we do in the 16x version of perlin
+  Assert(u64(NoiseValues) % 32 == 0);
+
   {
-    r32 *NoiseValues = Allocate(r32, TempArena, Volume(NoiseDim));
-    Assert(u64(NoiseValues) % 32 == 0);
     /* v3i NormalDim = Chunk->Dim; */
     /* v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim)); */
 
@@ -114,15 +118,15 @@ Terrain_FBM2D( world_chunk *Chunk,
     perlin_params xParams[16];
     f32 xCoords[16];
 
-#define __COMPUTE_NOISE_INPUT(channel, basis_chunk_point, offset, chunk_dim_in_chunks) \
-      f32(basis_chunk_point.channel*WorldChunkDim.channel)                               \
-    + f32(offset)*Chunk->DimInChunks.channel                                             \
-    + SrcToDest.channel                                                                  \
+#define __COMPUTE_NOISE_INPUT(channel, basis_chunk_point, offset, chunk_dim_in_chunks)  \
+      f32(basis_chunk_point.channel*WorldChunkDim.channel)                              \
+    + f32(offset)*Chunk->DimInChunks.channel                                            \
+    + SrcToDest.channel                                                                 \
 
-    for ( s32 z = 0; z < NoiseDim.z; ++ z)
+    // Start at -1 for the coordinates because we're initializing a border around the chunk
+    for ( s32 z = -1; z < NoiseDim.z-1; ++ z)
     {
       f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, z*NoiseUpsampleFactor, Chunk->DimInChunks);
-      f32 WorldZBiased = zCoord - zMin;
 
       v3 InteriorPeriod = Period;
       RangeIterator_t(u32, OctaveIndex, Octaves)
@@ -131,7 +135,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
       }
 
-      for ( s32 y = 0; y < NoiseDim.y; ++ y)
+      for ( s32 y = -1; y < NoiseDim.y-1; ++ y)
       {
         f32 yCoord = __COMPUTE_NOISE_INPUT(y, Basis, y*NoiseUpsampleFactor, Chunk->DimInChunks);
 
@@ -142,39 +146,36 @@ Terrain_FBM2D( world_chunk *Chunk,
           InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
         }
 
-        for ( s32 x = 0; x < NoiseDim.x; x += 16 )
+        for ( s32 x = -1; x < NoiseDim.x-1; x += 16 )
         {
-          s32 NoiseIndex = GetIndex(x,y,z, NoiseDim);
+          // +1 because we started at -1 for coordinates on the border
+          s32 NoiseIndex = GetIndex(x+1,y+1,z+1, NoiseDim);
 
           r32 InteriorAmp = r32(Amplitude);
-          u32 ParamsIndex = 0;
           InteriorPeriod = Period;
           for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
           {
             RangeIterator(ValueIndex, 16)
             {
+              Assert(ValueIndex < 16);
               xCoords[ValueIndex] = (__COMPUTE_NOISE_INPUT(x, Basis, (x+ValueIndex)*NoiseUpsampleFactor, Chunk->DimInChunks)) / InteriorPeriod.x;
             }
-            auto Index = 0;
             auto _x0 = F32_8X( xCoords[0], xCoords[1], xCoords[2], xCoords[3], xCoords[4], xCoords[5], xCoords[6], xCoords[7] );
             auto _x1 = F32_8X( xCoords[8], xCoords[9], xCoords[10], xCoords[11], xCoords[12], xCoords[13], xCoords[14], xCoords[15] );
-            xParams[ParamsIndex++] = ComputePerlinParameters(_x0, PrimeX);
-            xParams[ParamsIndex++] = ComputePerlinParameters(_x1, PrimeX);
+            u32 xParamsIndex = (OctaveIndex*2);
+            Assert(xParamsIndex < 15);
+            xParams[xParamsIndex] = ComputePerlinParameters(_x0, PrimeX);
+            xParams[xParamsIndex+1] = ComputePerlinParameters(_x1, PrimeX);
             InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
           }
 
-          u64 CycleCountStart = GetCycleCount();
           for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
           {
+            Assert(NoiseIndex < NoiseValuesCount);
+            Assert(u64(NoiseValues+NoiseIndex) % 32 == 0);
             PerlinNoise_16x_avx2_x(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
-          u64 CycleCountEnd = GetCycleCount();
-          u64 CyclesElapsed = CycleCountEnd-CycleCountStart;
-
-          engine_debug *ED = GetEngineDebug();
-          ED->ChunkGenCyclesElapsed += CyclesElapsed;
-          ED->CellsGenerated += u64(16*Octaves);
         }
       }
     }
@@ -189,7 +190,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         {
           v3i ChunkP = V3i(xChunk, yChunk, zChunk);
           /* v3i NoiseP = V3i(xChunk, yChunk, zChunk); */
-          v3i NoiseP = V3i(xChunk, yChunk, zChunk)/NoiseUpsampleFactor;
+          v3i NoiseP = V3i(xChunk+1, yChunk+1, zChunk+1)/NoiseUpsampleFactor;
 
           s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
           s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
@@ -230,13 +231,51 @@ Terrain_FBM2D( world_chunk *Chunk,
         }
       }
     }
+
+    for ( s32 z = 1; z < NoiseDim.z; ++ z)
+    {
+      f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, z, Chunk->DimInChunks);
+      f32 WorldZBiased = zCoord - zMin;
+      for ( s32 y = 1; y < 65; ++ y)
+      {
+        Assert(NoiseDim.y >= 65);
+
+        {
+          v3i NoiseP = V3i(0, y, z)/NoiseUpsampleFactor;
+          s32 BorderIndex = GetIndex(NoiseP, NoiseDim);
+
+          r32 ThisNoiseV = NoiseValues[BorderIndex];
+
+          u64 NoiseChoice = ThisNoiseV > WorldZBiased;
+          /* u64 NoiseChoice = 1ull; */
+          /* u64 NoiseChoice = RandomU32(&TEST_ENTROPY) & 1; */
+          Chunk->xOccupancyBorder[(z-1)*2] |= NoiseChoice << y;
+        }
+
+        {
+          v3i NoiseP = V3i(65, y, z)/NoiseUpsampleFactor;
+          s32 BorderIndex = GetIndex(NoiseP, NoiseDim);
+
+          r32 ThisNoiseV = NoiseValues[BorderIndex];
+
+          u64 NoiseChoice = ThisNoiseV > WorldZBiased;
+          /* u64 NoiseChoice = 1ull; */
+          /* u64 NoiseChoice = RandomU32(&TEST_ENTROPY) & 1; */
+          Chunk->xOccupancyBorder[((z-1)*2)+1] |= NoiseChoice << y;
+        }
+
+      }
+    }
   }
 
+#if 0
   {
     // Have to multiply by 64 because xOccupancyBorder_ElementCount is the number of
     // u64 elements, and we need a value per bit
 
     v3i BorderValuesDim = V3i(2, xOccupancyBorder_Dim.y, xOccupancyBorder_Dim.z);
+    /* Assert(BorderValuesDim.y == NoiseDim.y); */
+    /* Assert(BorderValuesDim.z == NoiseDim.z); */
     const s32 BorderValueCount = xOccupancyBorder_ElementCount*64;
     f32 *BorderValues = Allocate(f32, GetTranArena(), BorderValueCount);
     // TODO(Jesse): Make this dynamic
@@ -246,10 +285,9 @@ Terrain_FBM2D( world_chunk *Chunk,
     perlin_params xParams[8];
     f32 yCoords[16];
 
-    for ( s32 z = 0; z < NoiseDim.z; ++ z)
+    for ( s32 z = 0; z < BorderValuesDim.z; ++ z)
     {
       f32 zCoord = __COMPUTE_NOISE_INPUT(z, Basis, z*NoiseUpsampleFactor, Chunk->DimInChunks);
-      f32 WorldZBiased = zCoord - zMin;
 
       v3 InteriorPeriod = Period;
       RangeIterator_t(u32, OctaveIndex, Octaves)
@@ -258,16 +296,13 @@ Terrain_FBM2D( world_chunk *Chunk,
         InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
       }
 
-      for ( s32 y = 0; y < NoiseDim.y; y += 16)
+      for ( s32 y = 0; y < BorderValuesDim.y; y += 16)
       {
         f32 yCoord = __COMPUTE_NOISE_INPUT(y, Basis, y*NoiseUpsampleFactor, Chunk->DimInChunks);
 
-        s32 BorderIndex = GetIndex(0, y, z, V3i(1, 64, 66));
-        Assert(BorderIndex < BorderValueCount);
-
         RangeIterator(ValueIndex, 16)
         {
-          yCoords[ValueIndex] = (__COMPUTE_NOISE_INPUT(y, Basis, (y+ValueIndex)*NoiseUpsampleFactor, Chunk->DimInChunks)) / InteriorPeriod.y;
+          yCoords[ValueIndex] = (__COMPUTE_NOISE_INPUT(y, Basis, (y+ValueIndex)*NoiseUpsampleFactor, Chunk->DimInChunks));
         }
         auto _y0 = F32_8X( yCoords[0], yCoords[1], yCoords[2], yCoords[3], yCoords[4], yCoords[5], yCoords[6], yCoords[7] );
         auto _y1 = F32_8X( yCoords[8], yCoords[9], yCoords[10], yCoords[11], yCoords[12], yCoords[13], yCoords[14], yCoords[15] );
@@ -275,8 +310,8 @@ Terrain_FBM2D( world_chunk *Chunk,
         InteriorPeriod = Period;
         RangeIterator_t(u32, OctaveIndex, Octaves)
         {
-          yParams[0+OctaveIndex*2] = ComputePerlinParameters(_y0/F32_8X(InteriorPeriod.y), PrimeY);
-          yParams[1+OctaveIndex*2] = ComputePerlinParameters(_y1/F32_8X(InteriorPeriod.y), PrimeY);
+          yParams[0+(OctaveIndex*2)] = ComputePerlinParameters(_y0/F32_8X(InteriorPeriod.y), PrimeY);
+          yParams[1+(OctaveIndex*2)] = ComputePerlinParameters(_y1/F32_8X(InteriorPeriod.y), PrimeY);
           InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
         }
 
@@ -291,18 +326,35 @@ Terrain_FBM2D( world_chunk *Chunk,
             InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
           }
 
-          u64 CycleCountStart = GetCycleCount();
           for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
           {
+            s32 BorderIndex = GetIndex(y, z, BorderValuesDim.yz);
+            Assert(BorderIndex < BorderValueCount);
+
             PerlinNoise_16x_avx2_y(xParams+OctaveIndex, yParams+(OctaveIndex*2), zParams+OctaveIndex, BorderValues+BorderIndex, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
-          u64 CycleCountEnd = GetCycleCount();
-          u64 CyclesElapsed = CycleCountEnd-CycleCountStart;
+        }
 
-          engine_debug *ED = GetEngineDebug();
-          ED->ChunkGenCyclesElapsed += CyclesElapsed;
-          ED->CellsGenerated += u64(16*Octaves);
+        {
+          r32 InteriorAmp = r32(Amplitude);
+          InteriorPeriod = Period;
+          for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+          {
+            s32 x = 64;
+            auto xCoord0 = F32_8X(__COMPUTE_NOISE_INPUT(x, Basis, x*NoiseUpsampleFactor, Chunk->DimInChunks));
+            xParams[OctaveIndex] = ComputePerlinParameters(xCoord0, PrimeX);
+            InteriorPeriod = Max(V3(1.f), InteriorPeriod/2.f);
+          }
+
+          for (u32 OctaveIndex = 0; OctaveIndex < Octaves; ++OctaveIndex)
+          {
+            s32 BorderIndex = GetIndex(y, z, BorderValuesDim.yz)*2;
+            Assert(BorderIndex < BorderValueCount);
+
+            PerlinNoise_16x_avx2_y(xParams+OctaveIndex, yParams+(OctaveIndex*2), zParams+OctaveIndex, BorderValues+BorderIndex, InteriorAmp);
+            InteriorAmp = Max(1.f, InteriorAmp/2.f);
+          }
         }
       }
     }
@@ -313,24 +365,36 @@ Terrain_FBM2D( world_chunk *Chunk,
       f32 WorldZBiased = zCoord - zMin;
       for ( s32 yChunk = 0; yChunk < BorderValuesDim.y; ++ yChunk)
       {
-        // NOTE(Jesse): This is used to compute the index into buffers
-        // The actual world positions are -1 and 64 but we're going to use 0 and 1 here
-        s32 x = 0;
-        v3i ChunkP = V3i(x, yChunk, zChunk);
-        v3i NoiseP = V3i(x, yChunk, zChunk)/NoiseUpsampleFactor;
 
-        s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
-        s32 BorderIndex = GetIndex(NoiseP, BorderValuesDim);
+        {
+          v3i NoiseP = V3i(0, yChunk, zChunk)/NoiseUpsampleFactor;
+          s32 BorderIndex = GetIndex(NoiseP.yz, BorderValuesDim.yz);
 
-        r32 ThisNoiseV = BorderValues[BorderIndex];
+          r32 ThisNoiseV = BorderValues[BorderIndex];
 
-        u64 NoiseChoice = ThisNoiseV > WorldZBiased;
-        Chunk->xOccupancyBorder[zChunk] |= NoiseChoice<<yChunk;
+          u64 NoiseChoice = ThisNoiseV > WorldZBiased;
+          /* u64 NoiseChoice = 1ull; */
+          /* u64 NoiseChoice = RandomU32(&TEST_ENTROPY) & 1; */
+          Chunk->xOccupancyBorder[zChunk] |= NoiseChoice<<yChunk;
 
-        Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
+        }
+
+        {
+          v3i NoiseP = V3i(0, yChunk, zChunk)/NoiseUpsampleFactor;
+          s32 BorderIndex = GetIndex(NoiseP.yz, BorderValuesDim.yz)*2;
+
+          r32 ThisNoiseV = BorderValues[BorderIndex];
+
+          u64 NoiseChoice = ThisNoiseV > WorldZBiased;
+          /* u64 NoiseChoice = 1ull; */
+          /* u64 NoiseChoice = RandomU32(&TEST_ENTROPY) & 1; */
+          Chunk->xOccupancyBorder[zChunk] |= NoiseChoice<<yChunk;
+        }
+
       }
     }
   }
+#endif
 
 
 

@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:1939:0
+// src/engine/world_chunk.cpp:1943:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( u64 *FaceMasks,
