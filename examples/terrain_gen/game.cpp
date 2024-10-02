@@ -755,7 +755,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 200000.0f, 50000.0f);
+  StandardCamera(Graphics->Camera, 250000.0f, 20000.0f);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
@@ -780,6 +780,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = V3i(330, -87, 2); */ 
   /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
   /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
+  /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);

@@ -872,8 +872,16 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
       u64 LeftColumn = xOccupancyBorder[zBlock];
       u64 RightColumn = xOccupancyBorder[zBlock+1];
 
-      u64 LeftBit = (LeftColumn >> yBlock) & 1;
-      u64 RightBit = (RightColumn >> yBlock) & 1;
+      /* u64 LeftBit = ((LeftColumn >> yBlock) & 1) << 63; */
+      /* u64 RightBit = (RightColumn >> yBlock) & 1; */
+
+      // NOTE(Jesse): These look backwards, but they're not.  In register ordering,
+      // the directions are reversed; the highest bit is the right-most voxel in
+      // 3D space.
+      //
+      // @register_ordering_looks_backwards
+      u64 RightBit = 1llu << 63;
+      u64 LeftBit = 1;
 
       u64   Bits = Occupancy[OccupancyIndex];
       u64  yBits = Occupancy[OccupancyIndex+1];
@@ -884,10 +892,9 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
       /* u64 RightFaces = ( RightBit | (Bits>>1) ) & ~Bits; */
       /* u64 LeftFaces  = ( LeftBit  | (Bits<<1) ) & ~Bits; */
 
-      // NOTE(Jesse): When viewing these in the debugger they look backwards
-      // because it displays the values in register order.
-      u64 RightFaces = ( RightBit | Bits ) & ~(Bits>>1);
-      u64 LeftFaces  = ( LeftBit  | Bits ) & ~(Bits<<1);
+      // @register_ordering_looks_backwards
+      u64 RightFaces = ( Bits ) & ~(RightBit | (Bits>>1));
+      u64 LeftFaces  = ( Bits ) & ~(LeftBit  | (Bits<<1));
 
       u64 FrontFaces = Bits &  (~yBits);
       u64 BackFaces  = Bits & (~nyBits);
