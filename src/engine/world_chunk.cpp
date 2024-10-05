@@ -875,10 +875,10 @@ MarkBoundaryVoxels_NoExteriorFaces(   u64 *Occupancy,
       // 3D space.
       //
       // @register_ordering_looks_backwards
-      /* u64 RightBit = ((RightYRow >> (y-1)) & 1) << 63; */
+      u64 RightBit = ((RightYRow >> (y-1)) & 1) << 63;
       u64 LeftBit  = ((LeftYRow  >> (y-1)) & 1);
 
-      u64 RightBit = 1llu << 63;
+      /* u64 RightBit = 1llu << 63; */
       /* u64 LeftBit = 1; */
 
       /* u64 RightBit = 0; */
