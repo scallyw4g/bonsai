@@ -165,8 +165,8 @@ struct boundary_voxel
   }
 };
 
-// 2 sides (1 bit per side), 66 z slices, each bit corresponds to a y index
-#define xOccupancyBorder_Dim V3i(1, 64, 66)
+// 2 planar slices (1 bit per slice), each bit corresponds to a y index (64 y indices), 66 z slices
+#define xOccupancyBorder_Dim V3i(2, 1, 66)
 #define xOccupancyBorder_ElementCount Volume(xOccupancyBorder_Dim)
 
 struct chunk_data
