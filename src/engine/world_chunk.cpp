@@ -3520,12 +3520,8 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, DestChunk->DimInChunks, Thread->TempMemory);
 
 
-  // Map to absolute space.  Very bad, no good, do not try this at home.
-  //
-  v3i NoiseBasis = GetWorld()->Center + NoiseBasisOffset + (DestChunk->WorldP*GetWorldChunkDim());
-
   u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk,
-                                         NoiseBasis,
+                                         NoiseBasisOffset,
                                          NoiseParams,
                                          UserData );
 
