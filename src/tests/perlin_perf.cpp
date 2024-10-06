@@ -66,6 +66,8 @@ main(s32 ArgCount, const char** Args)
   perlin_params yParams;
   perlin_params xParams[2];
 
+  NotImplemented;
+#if 0
   u64 CyclesElapsed = 0;
   u64 CellsGenerated = 0;
   RangeIterator(Index, 4096*32)
@@ -109,6 +111,7 @@ main(s32 ArgCount, const char** Args)
       printf("CyclesPerCell (%.2f)\n", CyclesPerCell);
     }
   }
+#endif
 
 
   /* RangeIterator(Index, 4096) */

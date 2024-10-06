@@ -11,8 +11,8 @@ OPT="-O2"
 
 ./make.sh $OPT                                                 \
   BuildSingleExample examples/terrain_gen                      \
-  BuildTests                                                   \
-  BuildExecutables                                             \
+  # BuildTests                                                   \
+  # BuildExecutables                                             \
   # BuildSingleExample examples/blank_project                    \
   # BuildSingleExample examples/project_and_level_picker         \
   # BuildSingleExample examples/transparency                     \

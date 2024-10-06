@@ -34,7 +34,7 @@ poof(freelist_allocator(octree_node))
 
 struct world
 {
-  v3i Center;
+  v3i Center;        // the world chunk position of the center of the visible region
   v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
 
   /* u32 HashSlotsUsed; */

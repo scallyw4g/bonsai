@@ -760,7 +760,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
-  world_position WorldCenter = {};
+  /* world_position WorldCenter = V3i(s32_MAX-1000); */
+  world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
   StandardCamera(Graphics->Camera, 250000.0f, 20000.0f);
@@ -789,6 +790,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
   /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
   /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
+  /* CameraGhost->P.WorldP = WorldCenter; */
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);
