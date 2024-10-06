@@ -166,8 +166,8 @@ Terrain_FBM2D( world_chunk *Chunk,
             auto _x1 = U32_8X( xCoords[8], xCoords[9], xCoords[10], xCoords[11], xCoords[12], xCoords[13], xCoords[14], xCoords[15] );
             u32 xParamsIndex = (OctaveIndex*2);
             Assert(xParamsIndex < 15);
-            xParams[OctaveIndex]   = ComputePerlinParameters(U32_8X(WorldBasis.x), _x0, xChunkResolution, U32_8X(u32(InteriorPeriod.x)), PrimeX);
-            xParams[OctaveIndex+1] = ComputePerlinParameters(U32_8X(WorldBasis.x), _x1, xChunkResolution, U32_8X(u32(InteriorPeriod.x)), PrimeX);
+            xParams[(OctaveIndex*2)]   = ComputePerlinParameters(U32_8X(WorldBasis.x), _x0, xChunkResolution, U32_8X(u32(InteriorPeriod.x)), PrimeX);
+            xParams[(OctaveIndex*2)+1] = ComputePerlinParameters(U32_8X(WorldBasis.x), _x1, xChunkResolution, U32_8X(u32(InteriorPeriod.x)), PrimeX);
             InteriorPeriod = Max(V3i(1), InteriorPeriod/2);
           }
 
