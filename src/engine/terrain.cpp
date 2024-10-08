@@ -160,7 +160,8 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-          _zParams[(zNoise*OctaveIndex)+OctaveIndex] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
+        /* zParams[OctaveIndex]                      = ComputePerlinParameters_scalar(u32(WorldBasis.z), zOffset, zChunkResolution, zPeriods[OctaveIndex], PrimeZ); */
+          _zParams[zNoise] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
         }
       }
 
@@ -168,7 +169,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-          _yParams[(yNoise*OctaveIndex)+OctaveIndex] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
+          _yParams[yNoise] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
         }
       }
 
@@ -183,81 +184,36 @@ Terrain_FBM2D( world_chunk *Chunk,
         RangeIterator(OctaveIndex, Octaves)
         {
           auto _x0 = U32_8X(_xCoords+xNoise);
-          _xParams[(xNoise*OctaveIndex)+OctaveIndex] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x0, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
+          _xParams[xNoise] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x0, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
         }
       }
     }
-
-
-#if 0
-    {
-      TIMED_NAMED_BLOCK(octaves);
-      /* s32 ResultOffset = 0; */
-      for ( s32 zNoise = 0; zNoise < NoiseDim.z; ++ zNoise)
-      {
-        for ( s32 yNoise = 0; yNoise < NoiseDim.y; ++ yNoise)
-        {
-          for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
-          {
-            s32 ResultOffset = GetIndex(xNoise, yNoise, zNoise, NoiseDim);
-            r32 InteriorAmp = r32(Amplitude);
-            RangeIterator(OctaveIndex, Octaves)
-            {
-              auto zParam = zParams+(zNoise*OctaveIndex) + OctaveIndex;
-              auto yParam = yParams+(yNoise*OctaveIndex) + OctaveIndex;
-              auto xParam = xParams+(xNoise*OctaveIndex) + OctaveIndex;
-              PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+ResultOffset, InteriorAmp);
-              InteriorAmp = Max(1.f, InteriorAmp/2.f);
-            }
-
-            /* ResultOffset += 8; */
-          }
-        }
-      }
-    }
-#endif
 
     for ( s32 zNoise = 0; zNoise < NoiseDim.z; ++ zNoise)
     {
-      u32 zOffset = u32(zNoise);
-      RangeIterator(OctaveIndex, Octaves)
-      {
-        zParams[OctaveIndex] = ComputePerlinParameters_scalar(u32(WorldBasis.z), zOffset, zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
-      }
-
       for ( s32 yNoise = 0; yNoise < NoiseDim.y; ++ yNoise)
       {
-        u32 yOffset = u32(yNoise);
-
-        RangeIterator(OctaveIndex, Octaves)
-        {
-          yParams[OctaveIndex] = ComputePerlinParameters_scalar(u32(WorldBasis.y), yOffset, yChunkResolution, yPeriods[OctaveIndex], PrimeY);
-        }
-
         for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
         {
           s32 NoiseIndex = GetIndex(xNoise, yNoise, zNoise, NoiseDim);
 
-          RangeIterator(OctaveIndex, Octaves)
-          {
-            RangeIterator(ValueIndex, 8)
-            {
-              xCoords[ValueIndex] = u32(xNoise-1+ValueIndex);
-            }
-            auto _x0 = U32_8X(xCoords+0);
-            xParams[OctaveIndex]   = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x0, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
-          }
-
           r32 InteriorAmp = r32(Amplitude);
           RangeIterator(OctaveIndex, Octaves)
           {
-            PerlinNoise_8x_avx2(xParams+OctaveIndex, yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex, InteriorAmp);
+            auto zParam = _zParams+zNoise;
+            auto yParam = _yParams+yNoise;
+            auto xParam = _xParams+xNoise;
+            PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
         }
       }
     }
 
+    u64 EndingCycles = __rdtsc();
+    u64 ElapsedCycles = EndingCycles - StartingCycles;
+    GetEngineDebug()->ChunkGenCyclesElapsed += ElapsedCycles;
+    GetEngineDebug()->CellsGenerated += Volume(NoiseDim)*Octaves;
 
 #define __COMPUTE_NOISE_INPUT(channel, basis_chunk_point, offset, chunk_dim_in_chunks)  \
       f32(basis_chunk_point.channel)                              \
