@@ -1,4 +1,4 @@
-// src/engine/voxel_face.h:218:0
+// src/engine/voxel_face.h:216:0
 
 inline void
 RightFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
@@ -19,8 +19,6 @@ RightFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)
 
   v3_u8 Temp[] = { P2, P1, P0, P2, P3, P1 };
   MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
-
-  return;
 }
 
 inline void

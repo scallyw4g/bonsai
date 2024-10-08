@@ -256,22 +256,24 @@ poof(d_union_constructors(work_queue_entry))
 
 
 
-link_internal u32
+link_internal s32
 EventsCurrentlyInQueue(work_queue *Queue)
 {
   u32 Enqueue = Queue->EnqueueIndex;
   u32 Dequeue = Queue->DequeueIndex;
 
-  u32 Result = 0;
-  if (Enqueue < Dequeue)
+  s32 Result = 0;
+  if (Dequeue < Enqueue)
   {
-    Result = Dequeue - Enqueue;
-  }
-  else if (Dequeue < Enqueue)
-  {
-    Result = (WORK_QUEUE_SIZE - Dequeue) + Enqueue;
+    Result = s32(Enqueue - Dequeue);
   }
 
+  if (Enqueue < Dequeue)
+  {
+    Result = s32((WORK_QUEUE_SIZE - Dequeue) + Enqueue);
+  }
+
+  Assert(Result >= 0);
   return Result;
 }
 

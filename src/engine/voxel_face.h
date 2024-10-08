@@ -90,8 +90,6 @@ poof(
 
       vector_t.name Temp[] = { P2, P1, P0, P2, P3, P1 };
       MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
-
-      return;
     }
 
     inline void

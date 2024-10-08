@@ -845,6 +845,9 @@ MaintainWorldOctree(engine_resources *Engine)
   s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - LowPriorityQueueCount);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
 
+  DEBUG_VALUE_u32(u32(LowPriorityQueueCount));
+  DEBUG_VALUE_u32(u32(MaxToQueueThisFrame));
+
   s32 NumQueuedThisFrame = 0;
   if (MaxToQueueThisFrame)
   {

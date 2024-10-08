@@ -1143,34 +1143,10 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
-  if (DistanceSquared > Square(400*32))
+  if (HasGpuMesh(Meshes, MeshBit_Lod0))
   {
-    if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-  }
-  else if (DistanceSquared > Square(250*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-  }
-  else if (DistanceSquared > Square(150*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-  }
-  else if (DistanceSquared > Square(70*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-  }
-  else
-  {
-   if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-  }
-
-  if (MeshBit != MeshBit_None)
-  {
-    m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
-    AssertNoGlErrors;
-
+    m4 LocalTransform = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
-    AssertNoGlErrors;
 
     // @janky_model_matrix_bs
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
@@ -1178,7 +1154,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
 
-    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit)];
+    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit_Lod0)];
 
     SetupVertexAttribsFor_u3d_geo_element_buffer(Handles);
     DrawGpuBufferImmediate(Handles);
