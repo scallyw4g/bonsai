@@ -160,8 +160,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-        /* zParams[OctaveIndex]                      = ComputePerlinParameters_scalar(u32(WorldBasis.z), zOffset, zChunkResolution, zPeriods[OctaveIndex], PrimeZ); */
-          _zParams[zNoise] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
+          _zParams[zNoise+(zNoise*OctaveIndex)] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
         }
       }
 
@@ -169,7 +168,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-          _yParams[yNoise] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
+          _yParams[yNoise+(yNoise*OctaveIndex)] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
         }
       }
 
@@ -181,10 +180,10 @@ Terrain_FBM2D( world_chunk *Chunk,
 
       for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
       {
+        auto _x = U32_8X(_xCoords+xNoise);
         RangeIterator(OctaveIndex, Octaves)
         {
-          auto _x0 = U32_8X(_xCoords+xNoise);
-          _xParams[xNoise] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x0, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
+          _xParams[xNoise+(xNoise*OctaveIndex)] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
         }
       }
     }
@@ -200,9 +199,9 @@ Terrain_FBM2D( world_chunk *Chunk,
           r32 InteriorAmp = r32(Amplitude);
           RangeIterator(OctaveIndex, Octaves)
           {
-            auto zParam = _zParams+zNoise;
-            auto yParam = _yParams+yNoise;
-            auto xParam = _xParams+xNoise;
+            auto zParam = _zParams+zNoise+(zNoise*OctaveIndex);
+            auto yParam = _yParams+yNoise+(yNoise*OctaveIndex);
+            auto xParam = _xParams+xNoise+(xNoise*OctaveIndex);
             PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
