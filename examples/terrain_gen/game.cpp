@@ -482,9 +482,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
             /* // FBM params */
 
-            v3 Period = V3(100000);
-            s32 Amplititude = 20000;
-            s32 StartingZDepth = 20000;
+            // 2km features
+            v3 Period = V3(200'000);
+            // 600m high
+            s32 Amplititude = 60'000;
+            s32 StartingZDepth = 60000;
             u32 Octaves = 7;
 
             /* v3 Period = V3(500); */
@@ -765,7 +767,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 250000.0f, 20000.0f);
+  StandardCamera(Graphics->Camera, 150000.0f, 20000.0f);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 

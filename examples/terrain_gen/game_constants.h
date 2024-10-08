@@ -9,6 +9,7 @@ WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 8);
 #else
 
 global_variable chunk_dimension
+/* g_VisibleRegion = Chunk_Dimension(8192*32, 8192*32, 8192*32); // 1677km */
 g_VisibleRegion = Chunk_Dimension(8192*8, 8192*8, 8192*8); // 416km
 /* g_VisibleRegion = Chunk_Dimension(8192, 8192, 8192); // 52km */
 /* g_VisibleRegion = Chunk_Dimension(4096, 4096, 4096); // 26km */
