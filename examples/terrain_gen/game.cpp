@@ -495,8 +495,9 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             v3 Period = V3(1000);
             s32 Amplititude = 800;
             s32 StartingZDepth = 1000;
-            /* u32 Octaves = 7; */
-            u32 Octaves = 1;
+            u32 Octaves = 7;
+            /* u32 Octaves = 2; */
+            /* u32 Octaves = 1; */
 
             /* v3 Period = V3(2500); */
             /* s32 Amplititude = 1500; */

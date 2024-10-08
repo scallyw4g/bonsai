@@ -113,26 +113,23 @@ Terrain_FBM2D( world_chunk *Chunk,
     Chunk->NormalValues = Normals;
 #endif
 
-    // TODO(Jesse): Make this dynamic
-    Assert(Octaves < 8);
-    u32 zPeriods[8];
-    u32 yPeriods[8];
-    avx_divisor xPeriods[8];
-
-    // TODO(Jesse): Make this dynamic
-    Assert(Octaves < 8);
-    perlin_params zParams[8];
-    perlin_params yParams[8];
-    perlin_params xParams[8];
-    u32 xCoords[8];
-
-    u32_8x xChunkDim8 = U32_8X(u32(WorldChunkDim.x));
-    u32_8x yChunkDim8 = U32_8X(u32(WorldChunkDim.y));
-    u32_8x zChunkDim8 = U32_8X(u32(WorldChunkDim.z));
-
     u32_8x xChunkResolution = U32_8X(u32(Chunk->DimInChunks.x));
-    u32 yChunkResolution = u32(Chunk->DimInChunks.y);
-    u32 zChunkResolution = u32(Chunk->DimInChunks.z);
+       u32 yChunkResolution = u32(Chunk->DimInChunks.y);
+       u32 zChunkResolution = u32(Chunk->DimInChunks.z);
+
+            u32 *zPeriods = Allocate(u32, TempArena, Octaves);
+            u32 *yPeriods = Allocate(u32, TempArena, Octaves);
+    avx_divisor *xPeriods = Allocate(avx_divisor, TempArena, Octaves);
+
+    perlin_params *xParams = AllocateAligned(perlin_params, TempArena, NoiseDim.x*Octaves*2, 32);
+    perlin_params *yParams = AllocateAligned(perlin_params, TempArena, NoiseDim.y*Octaves*2, 32);
+    perlin_params *zParams = AllocateAligned(perlin_params, TempArena, NoiseDim.z*Octaves*2, 32);
+
+    /* u32 Offset = 200'000'000; */
+    /* v3i WorldBasis = V3i(Offset, Offset, 0) + NoiseBasis + (Chunk->WorldP*GetWorldChunkDim()); */
+    v3i WorldBasis = NoiseBasis + (Chunk->WorldP*GetWorldChunkDim());
+
+
 
     v3i InteriorPeriod = V3i(Period);
     RangeIterator(OctaveIndex, Octaves)
@@ -143,16 +140,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       InteriorPeriod = Max(V3i(1), InteriorPeriod/2);
     }
 
-    /* u32 Offset = 200'000'000; */
-    /* v3i WorldBasis = V3i(Offset, Offset, 0) + NoiseBasis + (Chunk->WorldP*GetWorldChunkDim()); */
-    v3i WorldBasis = NoiseBasis + (Chunk->WorldP*GetWorldChunkDim());
-
-    perlin_params *_xParams = Allocate(perlin_params, TempArena, NoiseDim.x*Octaves);
-    perlin_params *_yParams = Allocate(perlin_params, TempArena, NoiseDim.y*Octaves);
-    perlin_params *_zParams = Allocate(perlin_params, TempArena, NoiseDim.z*Octaves);
-
     u64 StartingCycles = __rdtsc();
-
     {
       TIMED_NAMED_BLOCK(precalculate_parameters);
 
@@ -160,7 +148,8 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-          _zParams[zNoise+(zNoise*OctaveIndex)] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
+          s32 i = OctaveIndex+(zNoise*Octaves);
+          zParams[i] = ComputePerlinParameters_scalar(u32(WorldBasis.z), u32(zNoise), zChunkResolution, zPeriods[OctaveIndex], PrimeZ);
         }
       }
 
@@ -168,11 +157,12 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         RangeIterator(OctaveIndex, Octaves)
         {
-          _yParams[yNoise+(yNoise*OctaveIndex)] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
+          s32 i = OctaveIndex+(yNoise*Octaves);
+          yParams[i] = ComputePerlinParameters_scalar(u32(WorldBasis.y), u32(yNoise), yChunkResolution, yPeriods[OctaveIndex], PrimeY);
         }
       }
 
-      u32 *_xCoords = Allocate(u32, TempArena, NoiseDim.x*Octaves);
+      u32 *_xCoords = AllocateAligned(u32, TempArena, NoiseDim.x, 32);
       for ( s32 xNoise = 0; xNoise < NoiseDim.x; ++ xNoise )
       {
         _xCoords[xNoise] = u32(xNoise-1);
@@ -183,7 +173,8 @@ Terrain_FBM2D( world_chunk *Chunk,
         auto _x = U32_8X(_xCoords+xNoise);
         RangeIterator(OctaveIndex, Octaves)
         {
-          _xParams[xNoise+(xNoise*OctaveIndex)] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
+          s32 i = OctaveIndex+(xNoise*Octaves);
+          xParams[i] = ComputePerlinParameters_vector(U32_8X(WorldBasis.x), _x, xChunkResolution, xPeriods[OctaveIndex], PrimeX);
         }
       }
     }
@@ -199,9 +190,9 @@ Terrain_FBM2D( world_chunk *Chunk,
           r32 InteriorAmp = r32(Amplitude);
           RangeIterator(OctaveIndex, Octaves)
           {
-            auto zParam = _zParams+zNoise+(zNoise*OctaveIndex);
-            auto yParam = _yParams+yNoise+(yNoise*OctaveIndex);
-            auto xParam = _xParams+xNoise+(xNoise*OctaveIndex);
+            auto zParam = zParams+OctaveIndex+(zNoise*Octaves);
+            auto yParam = yParams+OctaveIndex+(yNoise*Octaves);
+            auto xParam = xParams+OctaveIndex+(xNoise*Octaves);
             PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
@@ -212,7 +203,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     u64 EndingCycles = __rdtsc();
     u64 ElapsedCycles = EndingCycles - StartingCycles;
     GetEngineDebug()->ChunkGenCyclesElapsed += ElapsedCycles;
-    GetEngineDebug()->CellsGenerated += Volume(NoiseDim)*Octaves;
+    GetEngineDebug()->CellsGenerated += u64(Volume(NoiseDim))*u64(Octaves);
 
 #define __COMPUTE_NOISE_INPUT(channel, basis_chunk_point, offset, chunk_dim_in_chunks)  \
       f32(basis_chunk_point.channel)                              \
