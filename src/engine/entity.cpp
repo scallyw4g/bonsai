@@ -1509,7 +1509,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
           if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
           Offset = Normalize(Offset);
-          Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+          Entity->P.Offset += Offset * Plat->dt * (CameraSpeed*(1.f/GLOBAL_RENDER_SCALE_FACTOR));
         }
 
       }
