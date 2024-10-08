@@ -189,7 +189,9 @@ Terrain_FBM2D( world_chunk *Chunk,
           {
             /* Assert(NoiseIndex < NoiseValuesCount); */
             /* Assert(u64(NoiseValues+NoiseIndex) % 32 == 0); */
-            PerlinNoise_16x_avx2_x(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex, InteriorAmp);
+            /* PerlinNoise_16x_avx2_x(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex, InteriorAmp); */
+            PerlinNoise_8x_avx2(xParams+(OctaveIndex*2), yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex, InteriorAmp);
+            PerlinNoise_8x_avx2(xParams+(OctaveIndex*2)+1, yParams+OctaveIndex, zParams+OctaveIndex, NoiseValues+NoiseIndex+8, InteriorAmp);
             InteriorAmp = Max(1.f, InteriorAmp/2.f);
           }
         }
