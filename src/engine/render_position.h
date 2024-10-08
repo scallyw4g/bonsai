@@ -1,8 +1,3 @@
-//
-// TODO(Jesse)(high-priority, getrenderp): This is complete garbage and needs to be removed asap.
-//
-#if 1
-
 link_internal cp
 ComputeTarget(camera *Camera)
 {
@@ -11,16 +6,16 @@ ComputeTarget(camera *Camera)
 }
 
 inline v3
-GetRenderP(canonical_position P, camera *Camera, world_position WorldChunkDim)
+GetRenderP(cp P, camera *Camera, world_position WorldChunkDim)
 {
   cp ViewingTarget = ComputeTarget(Camera);
-  v3 CameraOffset = ViewingTarget.Offset + (ViewingTarget.WorldP * WorldChunkDim);
-  v3 Result = P.Offset + (P.WorldP * WorldChunkDim) - CameraOffset;
+  cp TargetRelative = P-ViewingTarget;
+  v3 Result = TargetRelative.Offset + (V3(TargetRelative.WorldP) * WorldChunkDim);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, canonical_position P, camera *Camera)
+GetRenderP( chunk_dimension WorldChunkDim, cp P, camera *Camera)
 {
   v3 Result = GetRenderP(P, Camera, WorldChunkDim);
   return Result;
@@ -84,7 +79,6 @@ GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera
   aabb Result = RectCenterRad(Center, Radius);
   return Result;
 }
-#endif
 
 inline m4
 LookAt(v3 P, v3 Target, v3 Up)
