@@ -1,3 +1,9 @@
+
+debug_global u32 DeferrFreedNodes;
+debug_global u32 FreedNodes;
+
+debug_global u32 TotalWorldChunksAllocated;
+
 link_internal world *
 AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 {
@@ -456,13 +462,10 @@ OctreeBranchShouldCollapse(engine_resources *Engine, octree_node *Node)
   b32 Result = False;
   if (Node->Chunk.Flags & Chunk_Queued) return Result;
 
-  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
+  v3i Res = ComputeNodeDesiredResolution(Engine, Node);
+  if (Res > Node->Chunk.DimInChunks)
   {
-    v3i Res = ComputeNodeDesiredResolution(Engine, Node);
-    if (Res > Node->Chunk.DimInChunks)
-    {
-      Result = True;
-    }
+    Result = True;
   }
   return Result;
 }
@@ -474,15 +477,12 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
   Assert(Node->Type == OctreeNodeType_Leaf);
 
   b32 Result = False;
-  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
+  if (Node->Chunk.DimInChunks > V3i(1))
   {
-    if (Node->Chunk.DimInChunks > V3i(1))
+    v3i Res = ComputeNodeDesiredResolution(Engine, Node);
+    if (Res < Node->Chunk.DimInChunks)
     {
-      v3i Res = ComputeNodeDesiredResolution(Engine, Node);
-      if (Res < Node->Chunk.DimInChunks)
-      {
-        Result = True;
-      }
+      Result = True;
     }
   }
   return Result;
@@ -540,30 +540,6 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 
     case OctreeNodeType_Leaf:
     {
-      if (Node->Chunk.Flags & Chunk_Queued)
-      {
-        if ((Node->Chunk.Flags&Chunk_Deallocate) == 0)
-        {
-          {
-            octree_node *TestNode = Engine->World->OctreeNodeDeferFreelist.First;
-            while (TestNode) { Assert(TestNode != Node); TestNode = TestNode->Next; }
-          }
-          Node->Chunk.Flags = chunk_flag(Node->Chunk.Flags|Chunk_Deallocate);
-          Free(&Engine->World->OctreeNodeDeferFreelist, Node);
-        }
-      }
-      else
-      {
-        if (Node->Chunk.Flags == Chunk_VoxelsInitialized)
-        {
-          DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
-          Free(&Engine->World->OctreeNodeFreelist, Node);
-        }
-        else
-        {
-          Assert(Node->Chunk.Flags == Chunk_Uninitialized);
-        }
-      }
     } break;
 
     case OctreeNodeType_Branch:
@@ -572,8 +548,37 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
     } break;
 
   }
+
+  if (Node->Chunk.Flags & Chunk_Queued)
+  {
+    if ( (Node->Chunk.Flags & Chunk_Deallocate) == 0)
+    {
+      {
+        octree_node *TestNode = Engine->World->OctreeNodeDeferFreelist.First;
+        while (TestNode) { Assert(TestNode != Node); TestNode = TestNode->Next; }
+      }
+      // NOTE(Jesse): This is a bug waiting to happen.  Pretty sure this could
+      // accidentally persist the Chunk_Queued flag after the worker thread had
+      // un-set it and therefore jam up the DeferFreelist (forever waiting on
+      // a "Queued" chunk that's not actually queued).
+      Node->Chunk.Flags = chunk_flag(Node->Chunk.Flags|Chunk_Deallocate);
+      Free(&Engine->World->OctreeNodeDeferFreelist, Node);
+      ++DeferrFreedNodes;
+    }
+  }
+  else
+  {
+    if (Node->Chunk.Flags == Chunk_VoxelsInitialized)
+    {
+      DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
+    }
+    Free(&Engine->World->OctreeNodeFreelist, Node);
+    ++FreedNodes;
+  }
+
 }
 
+#if 1
 link_internal u32
 MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
 {
@@ -597,6 +602,7 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
   u32 Result = 1;
   return Result;
 }
+#endif
 
 
 
@@ -632,18 +638,20 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
       {
         if (OctreeBranchShouldCollapse(Engine, NodeToSplit))
         {
+          octree_node *Tmp = NodeToSplit;
+          /* CheckedDeallocateChildNode(Engine, &Tmp); */
           MergeOctreeChildren(Engine, NodeToSplit);
         }
         else
         {
-          s32 ChildrenReadyToDraw  = SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[0], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[1], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[2], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[3], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[4], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], NodeToSplit, Memory);
-              ChildrenReadyToDraw += SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[0], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[1], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[2], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[3], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[4], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], NodeToSplit, Memory);
         }
       } break;
 
@@ -805,6 +813,7 @@ MaintainWorldOctree(engine_resources *Engine)
         Assert(Node->Chunk.Flags & Chunk_VoxelsInitialized);
         DeallocateAndClearWorldChunk(Engine, &Node->Chunk);
         Free(&World->OctreeNodeFreelist, Node);
+        ++FreedNodes;;
       }
 
       Node = Next;
@@ -813,10 +822,6 @@ MaintainWorldOctree(engine_resources *Engine)
   }
 #endif
 
-
-
-  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
-  Push(&Stack, &World->Root);
 
   world_chunk_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
   world_chunk_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
@@ -848,6 +853,13 @@ MaintainWorldOctree(engine_resources *Engine)
   DEBUG_VALUE_u32(u32(LowPriorityQueueCount));
   DEBUG_VALUE_u32(u32(MaxToQueueThisFrame));
 
+  DEBUG_VALUE_u32(TotalWorldChunksAllocated);
+  DEBUG_VALUE_u32(FreedNodes);
+  DEBUG_VALUE_u32(DeferrFreedNodes);
+
+  DEBUG_VALUE_u32(ReusedNode);
+  DEBUG_VALUE_u32(AllocatedNode);
+
   s32 NumQueuedThisFrame = 0;
   if (MaxToQueueThisFrame)
   {
@@ -865,9 +877,15 @@ MaintainWorldOctree(engine_resources *Engine)
           world_chunk *Chunk = &Node->Chunk;
           Assert((Chunk->Flags & Chunk_Queued) == 0);
           {
-            if (Node->Chunk.Flags == Chunk_Uninitialized)
+            if (IsAllocated(&Node->Chunk) == False)
             {
+              /* Info("Chunk allocated."); */
+              ++TotalWorldChunksAllocated;
               AllocateWorldChunk(Chunk, Chunk->WorldP, World->ChunkDim, Chunk->DimInChunks, World->ChunkMemory);
+            }
+            else
+            {
+              /* Info("Chunk already allocated."); */
             }
             QueueChunkForInit(&Plat->LowPriority, &Node->Chunk, MeshBit_Lod0);
             ++Stats.NewQueues;

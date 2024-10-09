@@ -382,6 +382,11 @@ CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 
 
+b32 IsAllocated(world_chunk *Chunk)
+{
+  b32 Result = Volume(Chunk->Dim) > 0;
+  return Result;
+}
 
 
 

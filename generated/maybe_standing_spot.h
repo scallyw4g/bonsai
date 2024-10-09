@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:491:0
+// src/engine/world_chunk.h:496:0
 
 struct maybe_standing_spot
 {
