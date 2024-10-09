@@ -10,10 +10,16 @@ enum octree_node_type
 struct octree_node
 {
   octree_node_type Type;
-  /* s32 AllChildrenCanDraw; */
 
-  // TODO(Jesse): Maybe make this a pointer ..?
-  world_chunk Chunk;
+  // TODO(Jesse): Pack into something else
+  b32 HadNoVisibleSurface;
+
+  v3i WorldP;
+  v3i Resolution; // in world-chunk space.  Resolution of V3i(2) means the chunk occupies 2x2x2 in world-space
+
+  // NOTE(Jesse): This is a pointer such that we can cull chunks that are
+  // empty, or completely full.
+  world_chunk *Chunk;
 
   // NOTE(Jesse): Took the union out because the UI doesn't know how to deal..
   /* union { */
@@ -205,3 +211,6 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node);
 
 link_internal u32
 MergeOctreeChildren(engine_resources *Engine, octree_node *Node);
+
+link_internal void
+InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks);

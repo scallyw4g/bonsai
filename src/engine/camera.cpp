@@ -217,6 +217,15 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
 }
 
 link_internal bool
+IsInFrustum( world *World, camera *Camera, octree_node *Chunk )
+{
+  v3 ChunkMid = (Chunk->Resolution*World->ChunkDim)/2.f;
+  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(World, Camera, P1);
+  return Result;
+}
+
+link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = (Chunk->DimInChunks*World->ChunkDim)/2.f;

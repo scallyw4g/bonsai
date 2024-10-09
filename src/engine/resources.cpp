@@ -46,8 +46,8 @@ RenderOctree(engine_resources *Engine, shader *Shader)
 
     if (Node->Type == OctreeNodeType_Leaf)
     {
-      SyncGpuBuffersImmediate(Engine, &Node->Chunk.Meshes);
-      DrawLod(Engine, Shader, &Node->Chunk.Meshes, 0, {}, Quaternion(), V3(1));
+      SyncGpuBuffersImmediate(Engine, &Node->Chunk->Meshes);
+      DrawLod(Engine, Shader, &Node->Chunk->Meshes, 0, {}, Quaternion(), V3(1));
     }
 
     if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
