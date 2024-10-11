@@ -4,6 +4,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 {
   TIMED_FUNCTION();
   if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
+  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);

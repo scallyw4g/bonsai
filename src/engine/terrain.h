@@ -186,6 +186,7 @@ MapNoiseValueToFinal(f32 Value)
   /* Assert(Value >= 0.f); */
 
   // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
+
   /* v2 Points[] = */
   /* { */
   /*   {{1.0f, 1.0f }}, */
@@ -207,25 +208,26 @@ MapNoiseValueToFinal(f32 Value)
   /* }; */
 
   // Pretty nice
-/*   v2 Points[] = */
-/*   { */
-/*     {{1.0f, 1.0f }}, */
-/*     {{0.7f, 0.7f }}, */
-/*     {{0.65f, 0.43f }}, */
-/*     {{0.6f, 0.4f }}, */
-/*     {{0.5f, 0.1f }}, */
-/*     {{0.0f, 0.0f }}, */
-/*   }; */
 
-  // Pillar-y
   v2 Points[] =
   {
-    {{1.0f, 0.5f }},
-    {{0.6f, 0.3f }},
-    {{0.1f, 0.2f }},
-    {{0.05f, 0.45f }},
-    {{0.0f , 0.5f }},
+    {{1.0f, 1.0f }},
+    {{0.7f, 0.7f }},
+    {{0.65f, 0.43f }},
+    {{0.6f, 0.4f }},
+    {{0.5f, 0.1f }},
+    {{0.0f, 0.0f }},
   };
+
+  // Pillar-y
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 0.5f }}, */
+  /*   {{0.6f, 0.3f }}, */
+  /*   {{0.1f, 0.2f }}, */
+  /*   {{0.05f, 0.45f }}, */
+  /*   {{0.0f , 0.5f }}, */
+  /* }; */
 
 /*   v2 Points[] = */
 /*   { */
@@ -279,7 +281,7 @@ MapNoiseValueToFinal(f32 Value)
 
 
 link_internal void
-ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
 
 
 link_internal u32

@@ -744,6 +744,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
       world_chunk *ThisChunk = GetWorldChunkFromHashtable(World, VoxelCP.WorldP);
 
       PushTableStart(Ui);
+
         PushNewRow(Ui);
         PushColumn(Ui, CSz("Contributed"));
         PushColumn(Ui, CSz(" "));

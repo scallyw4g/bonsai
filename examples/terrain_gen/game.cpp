@@ -479,38 +479,36 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
           case TerrainGenType_FBM2D:
           {
-
             /* // FBM params */
 
-            // 2km features
-            v3 Period = V3(200'000);
-            // 600m high
-            s32 Amplititude = 60'000;
+            // 5km features
+            v3 Period = V3(500'000);
+            s32 Amplititude = 80'000;
             s32 StartingZDepth = 60000;
-            u32 Octaves = 7;
+            u32 Octaves = 9;
 
-            /* v3 Period = V3(500); */
-            /* s32 Amplititude = 500; */
-            /* s32 StartingZDepth = 500; */
-            /* u32 Octaves = 1; */
+            // 2km features
+            /* v3 Period = V3(200'000); */
+            /* // 600m high */
+            /* s32 Amplititude = 60'000; */
+            /* s32 StartingZDepth = 60000; */
+            /* u32 Octaves = 7; */
 
-            /* v3 Period = V3(1000); */
-            /* s32 Amplititude = 800; */
-            /* s32 StartingZDepth = 1000; */
-            /* /1* u32 Octaves = 12; *1/ */
-            /* u32 Octaves = 2; */
-            /* /1* u32 Octaves = 1; *1/ */
-
-            /* v3 Period = V3(2500); */
+            /* v3 Period = V3(5000); */
             /* s32 Amplititude = 1500; */
             /* s32 StartingZDepth = 1600; */
-            /* u32 Octaves = 1; */
-            /* /1* u32 Octaves = 4; *1/ */
+            /* u32 Octaves = 8; */
 
-/*             v3 Period = V3(50); */
-/*             s32 Amplititude = 60; */
-/*             s32 StartingZDepth = 60; */
+/*             v3 Period = V3(2500); */
+/*             s32 Amplititude = 1500; */
+/*             s32 StartingZDepth = 1600; */
+/*             /1* u32 Octaves = 1; *1/ */
 /*             u32 Octaves = 4; */
+
+            /* v3 Period = V3(50); */
+            /* s32 Amplititude = 60; */
+            /* s32 StartingZDepth = 6000; */
+            /* u32 Octaves = 1; */
             /* u32 Octaves = 4; */
 
 
@@ -749,8 +747,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       }
 
-      FinalizeChunkInitialization(Chunk);
-      UnSetFlag(&Chunk->Flags, Chunk_Queued);
     } break;
   }
 

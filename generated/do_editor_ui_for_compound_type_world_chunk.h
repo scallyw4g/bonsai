@@ -166,6 +166,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
+        Cast(b8*,&Element->HasMesh),
+        CSz("HasMesh"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel_position_cursor*,&Element->StandingSpots),
         CSz("StandingSpots"),

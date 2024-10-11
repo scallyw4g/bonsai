@@ -1,13 +1,10 @@
-// src/engine/world.h:32:0
+// src/engine/world.h:38:0
 
 struct octree_node_freelist
 {
   octree_node *First;
   memory_arena *Memory;
 };
-
-debug_global u32 ReusedNode;
-debug_global u32 AllocatedNode;
 
 link_internal octree_node *
 GetOrAllocate(octree_node_freelist *Freelist)
@@ -16,12 +13,10 @@ GetOrAllocate(octree_node_freelist *Freelist)
 
   if (Result)
   {
-    ++ReusedNode;
     Freelist->First = Result->Next;
   }
   else
   {
-    ++AllocatedNode;
     Result = Allocate( octree_node, Freelist->Memory, 1 );
   }
 

@@ -334,6 +334,9 @@ struct world_chunk poof(@version(1))
   // smaller, which is probably pretty worth.
   lod_element_buffer Meshes; poof(@no_serialize)
 
+  // TODO(Jesse): Pack this into something else.. or ideally remove it entirely.
+  b32 HasMesh;                poof(@no_serialize)
+
   /* threadsafe_geometry_buffer TransparentMeshes; */
   /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
 

@@ -43,8 +43,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
       
       DoEditorUi(Ui,
         Window,
+        Cast(b8*,&Element->HadNoVisibleSurface),
+        CSz("HadNoVisibleSurface"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*,&Element->Chunk),
+        Cast(v3i*,&Element->WorldP),
+        CSz("WorldP"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3i*,&Element->Resolution),
+        CSz("Resolution"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_chunk*, Element->Chunk),
         CSz("Chunk"),
         Params
         );

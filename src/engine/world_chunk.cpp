@@ -53,9 +53,23 @@ FinalizeChunkInitialization(world_chunk *Chunk)
 {
   FullBarrier;
 
+  u32 Flags = Chunk->Flags ;
+  if ( (Flags & Chunk_Freelist) != 0)
+  {
+    Info("%d", Flags);
+    RuntimeBreak();
+  }
+
+  if ( (Flags & Chunk_Queued) == 0)
+  {
+    Info("%d", Flags);
+    RuntimeBreak();
+  }
+
   /* UnSetFlag(Chunk, Chunk_Garbage); */
   UnSetFlag(&Chunk->Flags, Chunk_Queued);
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
+
 }
 
 inline b32
@@ -66,6 +80,14 @@ ChunkIsGarbage(world_chunk* Chunk)
   Assert( IsSet(Chunk, Chunk_Queued) );
   b32 Garbage = IsSet(Chunk, Chunk_Garbage);
   return Garbage;
+}
+
+link_internal void
+WorldChunk(world_chunk *Chunk, v3i WorldP, v3i Dim, v3i DimInChunks)
+{
+  Chunk->WorldP = WorldP;
+  Chunk->Dim  = Dim;
+  Chunk->DimInChunks  = DimInChunks;
 }
 
 link_internal void
@@ -83,9 +105,7 @@ AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, me
     Result->Voxels           = AllocateAlignedProtection(voxel, Storage,   VoxCount,                     CACHE_LINE_SIZE, false);
   }
 
-  Result->WorldP = WorldP;
-  Result->Dim  = Dim;
-  Result->DimInChunks  = DimInChunks;
+  WorldChunk(Result, WorldP, Dim, DimInChunks);
   /* Result->DimX = SafeTruncateU8(Dim.x); */
   /* Result->DimY = SafeTruncateU8(Dim.y); */
   /* Result->DimZ = SafeTruncateU8(Dim.z); */
@@ -235,6 +255,7 @@ AllocateAndInsertChunk(world *World, world_position P)
   return Result;
 }
 
+debug_global u32 TotalWorldChunksAllocated;
 link_internal world_chunk *
 GetFreeWorldChunk(world *World)
 {
@@ -248,6 +269,8 @@ GetFreeWorldChunk(world *World)
     World->FreeChunkCount -= 1;
 
     Result = (world_chunk*)Next;
+    u32 Flags = Result->Flags;
+    if (Flags != Chunk_Freelist) { Info("%d", Flags); RuntimeBreak(); }
     Assert(Result->Flags == Chunk_Freelist);
     Result->Flags = {};
     ReleaseFutex(&World->ChunkFreelistFutex);
@@ -257,6 +280,7 @@ GetFreeWorldChunk(world *World)
     /* Info("Allocated World Chunk"); */
     Result = AllocateWorldChunk({}, World->ChunkDim, {}, World->ChunkMemory);
     Assert(Result->Flags == Chunk_Uninitialized);
+    ++TotalWorldChunksAllocated;
   }
 
   Assert(Result->Meshes.MeshMask == 0);
@@ -327,6 +351,26 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  u32 Flags = Chunk->Flags;
+
+  if ( (Flags & Chunk_Queued) != 0)
+  {
+    Info("%d", Flags);
+    RuntimeBreak();
+  }
+
+  if ( (Flags & Chunk_Freelist) != 0)
+  {
+    Info("%d", Flags);
+    RuntimeBreak();
+  }
+
+  if ( (Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized)) == 0)
+  {
+    Info("%d", Flags);
+    RuntimeBreak();
+  }
+
   Assert(Chunk->Next == 0);
   Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
 
@@ -346,7 +390,15 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   world_chunk *Next = World->ChunkFreelistSentinal.Next;
 
   Chunk->Flags = Chunk_Freelist;
-  if (Next) { Assert(Next->Flags == Chunk_Freelist); }
+  if (Next)
+  {
+    u32 nFlags = Next->Flags;
+    if (nFlags != Chunk_Freelist)
+    {
+      Info("%d", nFlags);
+      RuntimeBreak();
+    }
+  }
 
   World->ChunkFreelistSentinal.Next = Chunk;
   World->ChunkFreelistSentinal.Next->Next = Next;
@@ -3497,6 +3549,19 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   HISTOGRAM_FUNCTION();
   /* TIMED_FUNCTION(); */
 
+
+  u32 ChunkFlags = DestChunk->Flags;
+  if ( (ChunkFlags & Chunk_Queued) == 0)
+  {
+    Info("%d", ChunkFlags);
+    RuntimeBreak();
+  }
+  if ( (ChunkFlags & Chunk_Freelist) != 0)
+  {
+    Info("%d", ChunkFlags);
+    RuntimeBreak();
+  }
+
   engine_resources *EngineResources = GetEngineResources();
 
   // @runtime_assert_chunk_aprons_are_valid
@@ -3518,15 +3583,17 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   v3i SynChunkP = DestChunk->WorldP;
 
   world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, DestChunk->DimInChunks, Thread->TempMemory);
+  SyntheticChunk->Flags = Chunk_Queued;
 
 
-  u32 SyntheticChunkSum = NoiseCallback( SyntheticChunk,
-                                         NoiseBasisOffset,
-                                         NoiseParams,
-                                         UserData );
+  SyntheticChunk->FilledCount = s32(NoiseCallback( SyntheticChunk,
+                                                   NoiseBasisOffset,
+                                                   NoiseParams,
+                                                   UserData ));
 
+  
   // If the chunk didn't have any voxels filled, we're done
-  if (SyntheticChunkSum)
+  if (SyntheticChunk->FilledCount)
   {
     Assert(SyntheticChunk->Dim == SynChunkDim);
 
@@ -3564,7 +3631,22 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
     /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim); */
 
-    DestChunk->FilledCount = SyntheticChunk->FilledCount;
+
+    /* DestChunk->FilledCount = SyntheticChunk->FilledCount; */
+
+
+    Assert(DestChunk->FilledCount == 0);
+    Assert(DestChunk->Dim.x == 64);
+    Assert(DestChunk->Dim.y == 64);
+    Assert(DestChunk->Dim.z == 64);
+    RangeIterator(z, 64)
+    RangeIterator(y, 64)
+    {
+      u64 Occ = DestChunk->Occupancy[y + z*64];
+      DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+    }
+
+    Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
 
     // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
     /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
@@ -3583,7 +3665,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     }
 
 #if 0
-    if (SyntheticChunkSum && (Flags & ChunkInitFlag_GenSmoothLODs) )
+    if (SyntheticChunk->FilledCount && (Flags & ChunkInitFlag_GenSmoothLODs) )
     {
       untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
       ComputeLodMesh( Thread, DestChunk, DestChunk->Dim, SyntheticChunk, SynChunkDim, TempMesh, True);
@@ -3621,7 +3703,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     Assert( (Flags & ChunkInitFlag_GenLODs) == 0);
 #endif
 
-    Assert( DestChunk->FilledCount == SyntheticChunk->FilledCount);
+    /* Assert( DestChunk->FilledCount == SyntheticChunk->FilledCount); */
   }
 
 #define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
@@ -3629,6 +3711,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
     if (SrcMesh) {                                                            \
       if (SrcMesh->At) {                                                      \
+        DestChunk->HasMesh = True;                                            \
         AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
       } else {                                                                \
         DeallocateMesh(EngineResources, SrcMesh);                             \
@@ -3641,8 +3724,12 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod2 );
   FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod3 );
   FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod4 );
-
 #undef FINALIZE_MESH_FOR_CHUNK
+
+  Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
+  Assert( DestChunk->FilledCount <= s32(Volume(SyntheticChunk)));
+
+  /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
 
   FinalizeChunkInitialization(DestChunk);
 }

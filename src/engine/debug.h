@@ -61,7 +61,8 @@ struct engine_debug
   b8 DrawBranchNodesWithMeshes;
   b8 DrawBranchNodes;
   b8 DrawLeafNodes;
-  b8 DrawQueuedNodes = 1;
+  b8 DrawNodesWithChunks = 1;
+  b8 DrawQueuedNodes;
 
   r64 ChunkGenTimeElapsedMS;
   u64 CellsGenerated;
@@ -76,6 +77,10 @@ struct engine_debug
   u64 ModelIndex;
 
   entity_id SelectedEntity;
+
+  u32 OctreeDrawDepth = 0xFFFFFFFF;
+
+  octree_node *SelectedNode;
 
   // World Edit debug
   //
