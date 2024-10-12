@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:2021:0
+// src/engine/world_chunk.cpp:2017:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
@@ -553,11 +553,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
   /*       // TODO(Jesse): This copy could be avoided in multiple ways, and should be. */
   /*       /1* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); *1/ */
 
-/* /1* #if VOXEL_DEBUG_COLOR *1/ */
-  /*       /1* v3 Color = Abs(Voxel->DebugColor); *1/ */
-/* /1* #else *1/ */
   /*       /1* v3 Color = GetColorData(Voxel->Color); *1/ */
-/* /1* #endif *1/ */
 
   /*       f32 Trans = (f32)Voxel->Transparency / 255.f; */
   /*       FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE); */

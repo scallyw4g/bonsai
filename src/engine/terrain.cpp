@@ -89,9 +89,9 @@ Terrain_FBM2D( world_chunk *Chunk,
   /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(8)); */
   /* v3i NoiseDim = RoundUp((Chunk->Dim+2)/NoiseUpsampleFactor, V3i(8, 1, 1)); */
   v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0))/NoiseUpsampleFactor, V3i(8, 1, 1));
-  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(2,2,2))/NoiseUpsampleFactor, V3i(8, 1, 1));
+  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2))/NoiseUpsampleFactor, V3i(8, 1, 1));
 
-  Assert(Chunk->Dim == V3i(64));
+  Assert(Chunk->Dim == V3i(64, 66, 66));
   Assert(NormalsDim == V3i(64));
 
   /* v3i NoiseDim = Chunk->Dim; */
@@ -253,7 +253,7 @@ Terrain_FBM2D( world_chunk *Chunk,
             ChunkSum += u32(NoiseChoice);
             SetOccupancyBit(Chunk, ChunkIndex, NoiseChoice);
 
-            s32 NormalIndex = TryGetIndex(ChunkP, NormalsDim);
+            s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim);
             if (NormalIndex > -1)
             {
               Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex]));
@@ -1008,7 +1008,9 @@ ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Norma
         }
 
         s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
-        Normals[NormalIndex] = Normalize(Normal) * -1.f;
+        v3 Result = V3(x/64.f, y/64.f, z/64.f);
+        /* v3 Result = Normalize(Normal) * -1.f; */
+        Normals[NormalIndex] = Result;
       }
     }
   }
@@ -1064,6 +1066,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
   Assert(NormalsDim.x % 8 == 0);
   /* Assert(NoiseDim.x % 8 == 0); */
 
+  Assert(NormalsDim == V3i(64));
   Assert(NormalsDim <= NoiseDim-V3i(2,2,2));
 
 
@@ -1074,8 +1077,8 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
     {
       for ( s32 x = 0; x < NormalsDim.x; x += 8)
       {
-        s32 BaseIndex = GetIndex(V3i(x,y,z), NoiseDim);
-        f32_8x CurrentNoiseValue = F32_8X(NoiseValues+BaseIndex);
+        s32 NoiseBaseIndex = GetIndex(V3i(x,y,z), NoiseDim);
+        f32_8x CurrentNoiseValue = F32_8X(NoiseValues+NoiseBaseIndex);
 
         v3_8x Normal = {};
         for ( s32 dz = -1; dz < 2; ++ dz)
@@ -1086,9 +1089,9 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
             {
               if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
 
-              s32 dIndex = GetIndex(V3i(x+dx,y+dy,z+dz)+1, NoiseDim);
+              s32 dNoiseIndex = GetIndex(V3i(x+dx,y+dy,z+dz)+1, NoiseDim);
               {
-                f32_8x OffsetNoiseValue = F32_8X_unaligned(NoiseValues + dIndex);
+                f32_8x OffsetNoiseValue = F32_8X_unaligned(NoiseValues + dNoiseIndex);
                 f32_8x Diff = OffsetNoiseValue - F32_8X(dz) - Truncate(CurrentNoiseValue);
 
                 u32_8x AddMask = Diff > 0.f;
@@ -1111,7 +1114,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
 
         s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
         /* v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse; */
-        v3_8x Result = V3_8X(x, y, z);
+        v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f);
 
         f32 *Basis = Cast(f32*, Normals+NormalIndex);
 

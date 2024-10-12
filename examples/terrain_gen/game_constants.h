@@ -10,13 +10,13 @@ WORLD_CHUNK_DIM = Chunk_Dimension(32, 32, 8);
 
 global_variable chunk_dimension
 /* g_VisibleRegion = Chunk_Dimension(8192*32, 8192*32, 8192*32); // 1677km */
-g_VisibleRegion = Chunk_Dimension(8192*8, 8192*8, 8192*8); // 416km
+/* g_VisibleRegion = Chunk_Dimension(8192*8, 8192*8, 8192*8); // 416km */
 /* g_VisibleRegion = Chunk_Dimension(8192, 8192, 8192); // 52km */
 /* g_VisibleRegion = Chunk_Dimension(4096, 4096, 4096); // 26km */
 /* g_VisibleRegion = Chunk_Dimension(2048, 2048, 2048); // 13.11 km */
 /* g_VisibleRegion = Chunk_Dimension(512, 512, 512); //  3.28 km */
 /* g_VisibleRegion = Chunk_Dimension(256, 256, 256); */
-/* g_VisibleRegion = Chunk_Dimension(128, 128, 128); */
+g_VisibleRegion = Chunk_Dimension(128, 128, 128);
 /* g_VisibleRegion = Chunk_Dimension(64, 64, 64); */
 /* g_VisibleRegion = Chunk_Dimension(32, 32, 32); */
 /* g_VisibleRegion = Chunk_Dimension(16, 16, 16); */

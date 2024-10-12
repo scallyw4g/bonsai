@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:222:0
+// src/engine/world_chunk.h:220:0
 
 link_internal counted_string
 ToStringPrefixless(world_chunk_mesh_index Type)
