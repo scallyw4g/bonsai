@@ -907,11 +907,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
 
   if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
   {
-#if VOXEL_DEBUG_COLOR
-    _NewVoxelValue = { NewTransparency, NewColor, {}, {}};
-#else
     _NewVoxelValue = { NewTransparency, NewColor};
-#endif
   }
 
   switch (Shape.Type)
@@ -1194,13 +1190,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
 
           StartedFilled += GetOccupancyBit(Chunk, s32(Index));
-#if VOXEL_DEBUG_COLOR
-          V->Flags = CopiedChunk.Voxels[Index].Flags;
-          V->Color = CopiedChunk.Voxels[Index].Color;
-          V->Transparency = CopiedChunk.Voxels[Index].Transparency;
-#else
           *V = CopiedChunk.Voxels[Index];
-#endif
           EndedFilled += GetOccupancyBit(&CopiedChunk, s32(Index));
           NotImplemented;
           /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
@@ -1228,11 +1218,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   chunk_data CD = { Chunk_VoxelsInitialized, UpdateDim, CopiedChunk.Voxels, 0 };
   vox_data Vox = {&CD};
-#if VOXEL_DEBUG_COLOR
-  BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim, DebugMesh );
-#else
   BuildWorldChunkMeshFromMarkedVoxels_Greedy( &Vox, DebugMesh, 0, GetTranArena());
-#endif
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
 

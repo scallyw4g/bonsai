@@ -82,38 +82,36 @@ Terrain_FBM2D( world_chunk *Chunk,
     return ChunkSum;
 #endif
 
-#if VOXEL_DEBUG_COLOR
-  memory_arena *TempArena = GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory;
-#else
   memory_arena *TempArena = GetTranArena();
-#endif
 
   s32 NoiseUpsampleFactor = 1;
 
   /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(8)); */
   /* v3i NoiseDim = RoundUp((Chunk->Dim+2)/NoiseUpsampleFactor, V3i(8, 1, 1)); */
-  v3i NoiseDim = RoundUp((Chunk->Dim+V3i(2,0,0))/NoiseUpsampleFactor, V3i(8));
+  v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0))/NoiseUpsampleFactor, V3i(8, 1, 1));
+  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(2,2,2))/NoiseUpsampleFactor, V3i(8, 1, 1));
+
+  Assert(Chunk->Dim == V3i(64));
+  Assert(NormalsDim == V3i(64));
+
   /* v3i NoiseDim = Chunk->Dim; */
   // NOTE(Jesse): This must hold true for using any Noise_16x func
   Assert(NoiseDim.x % 8 == 0);
 
 
   /* v3i NoiseDim       = Chunk->Dim + 2; */
-  s32  NoiseValuesCount = Volume(NoiseDim);
-  r32 *NoiseValues      = Allocate(r32, TempArena, NoiseValuesCount);
-   v3 *Normals          = Allocate(v3, TempArena, NoiseValuesCount-2);
+  s32  NoiseValuesCount  = Volume(NoiseDim);
+  s32  NormalValuesCount = Volume(NormalsDim);
+  //
+  // NOTE(Jesse): Have to add 1 to compute the normals because on the last
+  // iteration we go +1 in the x direction.  This is super garbage/sketchy and
+  // I hate it, but I don't have a better solution for now.
+  r32 *NoiseValues      = Allocate(r32, TempArena, NoiseValuesCount+1);
+   v3 *Normals          = Allocate( v3, TempArena, NormalValuesCount );
   // NOTE(Jesse): Must be true to use _mm256_store_ps, which we do in the 16x version of perlin
   Assert(u64(NoiseValues) % 32 == 0);
 
   {
-    /* v3i NormalDim = Chunk->Dim; */
-    /* v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim)); */
-
-#if VOXEL_DEBUG_COLOR
-    Chunk->NoiseValues = NoiseValues;
-    Chunk->NormalValues = Normals;
-#endif
-
     u32_8x xChunkResolution = U32_8X(u32(Chunk->DimInChunks.x));
        u32 yChunkResolution = u32(Chunk->DimInChunks.y);
        u32 zChunkResolution = u32(Chunk->DimInChunks.z);
@@ -226,7 +224,8 @@ Terrain_FBM2D( world_chunk *Chunk,
     GetEngineDebug()->CellsGenerated += u64(Volume(NoiseDim))*u64(Octaves);
 
 
-    ComputeNormalsForChunkFromNoiseValues( NoiseValues, NoiseDim, Normals, NoiseDim-2);
+    ComputeNormalsForChunkFromNoiseValues_avx( NoiseValues, NoiseDim, Normals, NormalsDim);
+    /* ComputeNormalsForChunkFromNoiseValues( NoiseValues, NoiseDim, Normals, NormalsDim); */
 
     {
 #if 1
@@ -247,7 +246,6 @@ Terrain_FBM2D( world_chunk *Chunk,
 
             s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
             s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
-            s32 NormalIndex = GetIndex(NoiseP, NoiseDim-2);
 
             /* r32 ThisNoiseV = MapNoiseValueToFinal(NoiseValues[NoiseIndex]/OctaveAmplitudeMax)*OctaveAmplitudeMax; */
             r32 ThisNoiseV = NoiseValues[NoiseIndex];
@@ -255,8 +253,12 @@ Terrain_FBM2D( world_chunk *Chunk,
             ChunkSum += u32(NoiseChoice);
             SetOccupancyBit(Chunk, ChunkIndex, NoiseChoice);
 
+            s32 NormalIndex = TryGetIndex(ChunkP, NormalsDim);
+            if (NormalIndex > -1)
+            {
+              Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex]));
+            }
             /* Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice); */
-            Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex]));
             /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
             /* if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); } */
             /* if (xChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_YELLOW)*u16(NoiseChoice); } */
@@ -971,7 +973,7 @@ ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Norma
 
   // NOTE(Jesse): For this function to work the noise has to be one voxel larger
   // than the normal data
-  Assert(NoiseDim == NormalsDim+2);
+  Assert(NoiseDim >= NormalsDim+2);
 
 #if 1
   for ( s32 z = 0; z < NormalsDim.z; ++ z)
@@ -1007,6 +1009,118 @@ ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Norma
 
         s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
         Normals[NormalIndex] = Normalize(Normal) * -1.f;
+      }
+    }
+  }
+#else
+  for ( s32 z = 1; z < NoiseDim.z-1; ++ z)
+  {
+    for ( s32 y = 1; y < NoiseDim.y-1; ++ y)
+    {
+      for ( s32 x = 1; x < NoiseDim.x-1; ++ x)
+      {
+        s32 NormalIndex = GetIndex(V3i(x,y,z)-1, NormalsDim);
+        s32 NoiseIndex = GetIndex(V3i(x,y,z), NoiseDim);
+        r32 CurrentNoiseValue = NoiseValues[NoiseIndex];
+
+        v3 Normal = {};
+        for ( s32 dz = -1; dz < 2; ++ dz)
+        {
+          for ( s32 dy = -1; dy < 2; ++ dy)
+          {
+            for ( s32 dx = -1; dx < 2; ++ dx)
+            {
+              if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
+
+              s32 dPIndex = GetIndex(V3i(x+dx,y+dy,z+dz), NoiseDim);
+              {
+                r32 Diff = NoiseValues[dPIndex]-dz - Truncate(CurrentNoiseValue);
+                if ( Diff > 0.f )
+                {
+                  // TODO(Jesse): Recompute with a small random variance to the weight if this is 0?
+                  Normal += V3(dx,dy,dz)*Diff;
+                }
+              }
+            }
+          }
+        }
+        Normals[NormalIndex] = Normalize(Normal) * -1.f;
+      }
+    }
+  }
+#endif
+}
+
+link_internal void
+ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim)
+{
+  TIMED_FUNCTION();
+
+  // NOTE(Jesse): The Normal values are undefined on the edges
+  //
+  // NOTE(Jesse): For this function to work the buffers have to be the same size
+  // and bounded by a multiple of 8, cause AVX.
+  //
+  Assert(NormalsDim.x % 8 == 0);
+  /* Assert(NoiseDim.x % 8 == 0); */
+
+  Assert(NormalsDim <= NoiseDim-V3i(2,2,2));
+
+
+#if 1
+  for ( s32 z = 0; z < NormalsDim.z; ++ z)
+  {
+    for ( s32 y = 0; y < NormalsDim.y; ++ y)
+    {
+      for ( s32 x = 0; x < NormalsDim.x; x += 8)
+      {
+        s32 BaseIndex = GetIndex(V3i(x,y,z), NoiseDim);
+        f32_8x CurrentNoiseValue = F32_8X(NoiseValues+BaseIndex);
+
+        v3_8x Normal = {};
+        for ( s32 dz = -1; dz < 2; ++ dz)
+        {
+          for ( s32 dy = -1; dy < 2; ++ dy)
+          {
+            for ( s32 dx = -1; dx < 2; ++ dx)
+            {
+              if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
+
+              s32 dIndex = GetIndex(V3i(x+dx,y+dy,z+dz)+1, NoiseDim);
+              {
+                f32_8x OffsetNoiseValue = F32_8X_unaligned(NoiseValues + dIndex);
+                f32_8x Diff = OffsetNoiseValue - F32_8X(dz) - Truncate(CurrentNoiseValue);
+
+                u32_8x AddMask = Diff > 0.f;
+
+                v3_8x AddVal = Select(AddMask, V3_8X(dx,dy,dz)*Diff.Sse, V3_8X(0.f));
+
+                Normal.avx.x = Normal.avx.x + AddVal.avx.x;
+                Normal.avx.y = Normal.avx.y + AddVal.avx.y;
+                Normal.avx.z = Normal.avx.z + AddVal.avx.z;
+
+                /* if ( Diff > 0.f ) */
+                /* { */
+                /*   // TODO(Jesse): Recompute with a small random variance to the weight if this is 0? */
+                /*   Normal += V3_8X(dx,dy,dz)*Diff; */
+                /* } */
+              }
+            }
+          }
+        }
+
+        s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
+        /* v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse; */
+        v3_8x Result = V3_8X(x, y, z);
+
+        f32 *Basis = Cast(f32*, Normals+NormalIndex);
+
+        _mm256_storeu_ps( Basis+ 0, Result.avx.x.Sse);
+        _mm256_storeu_ps( Basis+ 8, Result.avx.y.Sse);
+        _mm256_storeu_ps( Basis+16, Result.avx.z.Sse);
+
+        /* f32_8x A, B, C; */
+        /* A = {{ }}; */
       }
     }
   }
@@ -1991,19 +2105,10 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
   /* b32 *NoiseHit   = Allocate(b32, GetTranArena(), Volume(NoiseDim)); */
   /* b32 *NormalsHit = Allocate(b32, GetTranArena(), Volume(NormalDim)); */
 
-#if VOXEL_DEBUG_COLOR
   memory_arena *TempArena = GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory;
-#else
-  memory_arena *TempArena = GetTranArena();
-#endif
 
   r32 *NoiseValues = Allocate(r32, TempArena, Volume(NoiseDim));
   v3  *Normals     = Allocate( v3, TempArena, Volume(NormalDim));
-
-#if VOXEL_DEBUG_COLOR
-  Chunk->NoiseValues = NoiseValues;
-  Chunk->NormalValues = Normals;
-#endif
 
   // NOTE(Jesse): Perlin_8x needs a multiple of 8 here.
   Assert(Dim.x % 8 == 0);
@@ -2274,25 +2379,6 @@ GrassyTerracedTerrain4( world_chunk *Chunk,
 #if 0
   v3 *Normals = Allocate(v3, GetTranArena(), Volume(Dim));
   ComputeNormalsForChunkFromFilledFlag(Chunk, WorldChunkDim, Normals);
-#endif
-
-#if VOXEL_DEBUG_COLOR
-#if 0
-  for ( s32 z = 0; z < Chunk->Dim.z; ++ z)
-  {
-    for ( s32 y = 0; y < Chunk->Dim.y; ++ y)
-    {
-      for ( s32 x = 0; x < Chunk->Dim.x; ++ x)
-      {
-        /* s32 Index  = GetIndex(V3i(x,y,z), NormalDim); */
-        s32 NormalIndex  = GetIndex(V3i(x,y,z), NormalDim);
-        s32 NoiseIndex   = GetIndex(V3i(x,y,z)+1, NoiseDim);
-        Chunk->Voxels[NormalIndex].DebugColor      = Normals[NormalIndex];
-        Chunk->Voxels[NormalIndex].DebugNoiseValue = NoiseValues[NoiseIndex];
-      }
-    }
-  }
-#endif
 #endif
 
   return ChunkSum;

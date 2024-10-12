@@ -1959,11 +1959,7 @@ poof(
       /*       // TODO(Jesse): This copy could be avoided in multiple ways, and should be. */
       /*       /1* FillColorArray(Voxel->Color, FaceColors, ColorPallette, VERTS_PER_FACE); *1/ */
 
-/* /1* #if VOXEL_DEBUG_COLOR *1/ */
-      /*       /1* v3 Color = Abs(Voxel->DebugColor); *1/ */
-/* /1* #else *1/ */
       /*       /1* v3 Color = GetColorData(Voxel->Color); *1/ */
-/* /1* #endif *1/ */
 
       /*       f32 Trans = (f32)Voxel->Transparency / 255.f; */
       /*       FillArray(VertexMaterial(Voxel->Color, Trans, 0.f), Materials, VERTS_PER_FACE); */
@@ -3596,28 +3592,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   if (SyntheticChunk->FilledCount)
   {
     Assert(SyntheticChunk->Dim == SynChunkDim);
-
-#if 1 && VOXEL_DEBUG_COLOR
-    DestChunk->NoiseValues = SyntheticChunk->NoiseValues;
-    DestChunk->NormalValues = SyntheticChunk->NormalValues;
-    if (DestChunk->NoiseValues)
-    {
-      for ( s32 z = 0; z < SyntheticChunk->Dim.z; ++ z)
-      {
-        for ( s32 y = 0; y < SyntheticChunk->Dim.y; ++ y)
-        {
-          for ( s32 x = 0; x < SyntheticChunk->Dim.x; ++ x)
-          {
-            s32 NormalIndex  = GetIndex(V3i(x,y,z), SyntheticChunk->Dim);
-            s32 NoiseIndex   = GetIndex(V3i(x,y,z)+1, SyntheticChunk->Dim+2);
-            SyntheticChunk->Voxels[NormalIndex].DebugColor = SyntheticChunk->NormalValues[NormalIndex];
-            SyntheticChunk->Voxels[NormalIndex].DebugNoiseValue = SyntheticChunk->NoiseValues[NoiseIndex];
-          }
-        }
-      }
-    }
-#endif
-
 
     /* MakeExteriorFaces = True; */
     if (MakeExteriorFaces)

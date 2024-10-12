@@ -484,7 +484,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             // 5km features
             v3 Period = V3(500'000);
             s32 Amplititude = 80'000;
-            s32 StartingZDepth = 60000;
+            s32 StartingZDepth = 20000;
             u32 Octaves = 9;
 
             // 2km features

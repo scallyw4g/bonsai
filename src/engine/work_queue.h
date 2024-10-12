@@ -110,11 +110,7 @@ CAssert( (sizeof(work_queue_entry__align_to_cache_line_helper)+8) % CACHE_LINE_S
 
 
 
-#if VOXEL_DEBUG_COLOR
-global_variable voxel Global_UnsetVoxel = { 0xff, 0xff, 0xffff, {}, {}};
-#else
 global_variable voxel Global_UnsetVoxel = { 0xff, 0xffff };
-#endif
 
 
 

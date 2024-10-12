@@ -283,6 +283,9 @@ MapNoiseValueToFinal(f32 Value)
 link_internal void
 ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
 
+link_internal void
+ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+
 
 link_internal u32
 Terrain_WhiteNoise( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );

@@ -705,18 +705,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   voxel *V = TryGetVoxelPointer(World, VoxelCP);
-
-
   v3 SimP = Floor(GetSimSpaceP(World, VoxelCP));
-#if VOXEL_DEBUG_COLOR
-  if (V)
-  {
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)* 40.f,  GREEN, 0.25f);
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.25f);
-    DEBUG_HighlightVoxel(Engine, SimP, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
-  }
-#endif
-
 
   {
     local_persist window_layout Window = WindowLayout("Voxel Debug Window", V2(150.f, 150.f));

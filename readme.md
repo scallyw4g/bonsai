@@ -152,9 +152,6 @@ See the docs on the [build process](docs/01_build_process.md).
     https://www.intel.com/content/dam/develop/external/us/en/documents/spir-vtointe-ispcgpu-compute-on-the-cpu.pdf
     https://ispc.github.io/
 
-[ ] Look into using slang dual CPU/GPU world-gen?
-    https://github.com/shader-slang/slang
-
 -------------------------------------------------------------------------------
 ## Profiler
 
