@@ -37,6 +37,7 @@ global_variable random_series DEBUG_ENTROPY = {653765435432};
 // 30.0m cycles | u32 ComputePerlinParameters 
 // 28.7m cycles | u32 ComputePerlinParameters 
 // 27.8m cycles | u32 ComputePerlinParameters 
+//
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
                        v3i  NoiseBasis,
@@ -1084,6 +1085,8 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
   Assert(NormalsDim == V3i(64));
 
   Assert(NoiseDim >= NormalsDim+V3i(2,2,2));
+
+#if 0
   for ( s32 z = 0; z < NormalsDim.z; ++ z)
   {
     for ( s32 y = 0; y < NormalsDim.y; ++ y)
@@ -1095,6 +1098,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
       }
     }
   }
+#endif
 
 
 #if 1
@@ -1143,23 +1147,27 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
         v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse;
         /* v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f); */
 
-        v3 Swizzled[8];
-        Swizzle_V38X_ForStorage(Result, Swizzled);
+        f32 Swizzled[8*3];
+        Swizzle_V38X_ForStorage(Result, (v3*)Swizzled);
+        CAssert(sizeof(v3)*8 == 8*3*4);
 
-        Normals[NormalIndex+0] = Swizzled[0];
-        Normals[NormalIndex+1] = Swizzled[1];
-        Normals[NormalIndex+2] = Swizzled[2];
-        Normals[NormalIndex+3] = Swizzled[3];
-        Normals[NormalIndex+4] = Swizzled[4];
-        Normals[NormalIndex+5] = Swizzled[5];
-        Normals[NormalIndex+6] = Swizzled[6];
-        Normals[NormalIndex+7] = Swizzled[7];
+        /* Normals[NormalIndex+0] = Swizzled[0]; */
+        /* Normals[NormalIndex+1] = Swizzled[1]; */
+        /* Normals[NormalIndex+2] = Swizzled[2]; */
+        /* Normals[NormalIndex+3] = Swizzled[3]; */
+        /* Normals[NormalIndex+4] = Swizzled[4]; */
+        /* Normals[NormalIndex+5] = Swizzled[5]; */
+        /* Normals[NormalIndex+6] = Swizzled[6]; */
+        /* Normals[NormalIndex+7] = Swizzled[7]; */
 
 
-        /* f32 *Basis = Cast(f32*, Normals+NormalIndex); */
-        /* _mm256_storeu_ps( Basis+ 0, Result.avx.x.Sse); */
-        /* _mm256_storeu_ps( Basis+ 8, Result.avx.y.Sse); */
-        /* _mm256_storeu_ps( Basis+16, Result.avx.z.Sse); */
+        f32 *Basis = Cast(f32*, Normals+NormalIndex);
+        __m256 A = _mm256_load_ps(Swizzled);
+        __m256 B = _mm256_load_ps(Swizzled+8);
+        __m256 C = _mm256_load_ps(Swizzled+16);
+        _mm256_storeu_ps( Basis+ 0, A);
+        _mm256_storeu_ps( Basis+ 8, B);
+        _mm256_storeu_ps( Basis+16, C);
 
         /* f32_8x A, B, C; */
         /* A = {{ }}; */
