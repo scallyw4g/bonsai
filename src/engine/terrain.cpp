@@ -229,7 +229,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
     {
 #if 1
-      TIMED_NAMED_BLOCK(finalize);
+      TIMED_NAMED_BLOCK(Finalize);
       for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
       {
         f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, (zChunk)*NoiseUpsampleFactor, Chunk->DimInChunks);
@@ -1054,6 +1054,21 @@ ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Norma
 }
 
 link_internal void
+Swizzle_V38X_ForStorage(v3_8x In, v3 *Result)
+{
+  /* v3_8x Result = {}; */
+
+  Result[0] = V3(In.E.x[0], In.E.y[0], In.E.z[0]);
+  Result[1] = V3(In.E.x[1], In.E.y[1], In.E.z[1]);
+  Result[2] = V3(In.E.x[2], In.E.y[2], In.E.z[2]);
+  Result[3] = V3(In.E.x[3], In.E.y[3], In.E.z[3]);
+  Result[4] = V3(In.E.x[4], In.E.y[4], In.E.z[4]);
+  Result[5] = V3(In.E.x[5], In.E.y[5], In.E.z[5]);
+  Result[6] = V3(In.E.x[6], In.E.y[6], In.E.z[6]);
+  Result[7] = V3(In.E.x[7], In.E.y[7], In.E.z[7]);
+}
+
+link_internal void
 ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim)
 {
   TIMED_FUNCTION();
@@ -1067,7 +1082,19 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
   /* Assert(NoiseDim.x % 8 == 0); */
 
   Assert(NormalsDim == V3i(64));
-  Assert(NormalsDim <= NoiseDim-V3i(2,2,2));
+
+  Assert(NoiseDim >= NormalsDim+V3i(2,2,2));
+  for ( s32 z = 0; z < NormalsDim.z; ++ z)
+  {
+    for ( s32 y = 0; y < NormalsDim.y; ++ y)
+    {
+      for ( s32 x = 0; x < NormalsDim.x; x += 1)
+      {
+        s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
+        Normals[NormalIndex] = V3(1,0,1);
+      }
+    }
+  }
 
 
 #if 1
@@ -1113,14 +1140,26 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
         }
 
         s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
-        /* v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse; */
-        v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f);
+        v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse;
+        /* v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f); */
 
-        f32 *Basis = Cast(f32*, Normals+NormalIndex);
+        v3 Swizzled[8];
+        Swizzle_V38X_ForStorage(Result, Swizzled);
 
-        _mm256_storeu_ps( Basis+ 0, Result.avx.x.Sse);
-        _mm256_storeu_ps( Basis+ 8, Result.avx.y.Sse);
-        _mm256_storeu_ps( Basis+16, Result.avx.z.Sse);
+        Normals[NormalIndex+0] = Swizzled[0];
+        Normals[NormalIndex+1] = Swizzled[1];
+        Normals[NormalIndex+2] = Swizzled[2];
+        Normals[NormalIndex+3] = Swizzled[3];
+        Normals[NormalIndex+4] = Swizzled[4];
+        Normals[NormalIndex+5] = Swizzled[5];
+        Normals[NormalIndex+6] = Swizzled[6];
+        Normals[NormalIndex+7] = Swizzled[7];
+
+
+        /* f32 *Basis = Cast(f32*, Normals+NormalIndex); */
+        /* _mm256_storeu_ps( Basis+ 0, Result.avx.x.Sse); */
+        /* _mm256_storeu_ps( Basis+ 8, Result.avx.y.Sse); */
+        /* _mm256_storeu_ps( Basis+16, Result.avx.z.Sse); */
 
         /* f32_8x A, B, C; */
         /* A = {{ }}; */
