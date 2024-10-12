@@ -3500,6 +3500,8 @@ BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_ch
 link_internal void
 RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem, v3 VertexOffset = {})
 {
+  TIMED_FUNCTION();
+
   engine_resources *Engine = GetEngineResources();
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
   Assert( MeshBit == MeshBit_Lod0 );
@@ -3542,7 +3544,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           b32  MakeExteriorFaces = False,
                                           v3i  NoiseBasisOffset  = {} )
 {
-  HISTOGRAM_FUNCTION();
+  /* HISTOGRAM_FUNCTION(); */
   /* TIMED_FUNCTION(); */
 
 
@@ -3633,6 +3635,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
     if (Flags & ChunkInitFlag_ComputeStandingSpots)
     {
+      NotImplemented;
       ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
                             DestChunk->Dim, 0, &DestChunk->StandingSpots,
                             Thread->TempMemory);
@@ -3693,19 +3696,22 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     }                                                                         \
   }
 
-  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod0 );
-  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod1 );
-  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod2 );
-  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod3 );
-  FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod4 );
+  {
+    TIMED_NAMED_BLOCK(Chunk_Finalize);
+    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod0 );
+    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod1 );
+    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod2 );
+    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod3 );
+    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod4 );
 #undef FINALIZE_MESH_FOR_CHUNK
 
-  Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
-  Assert( DestChunk->FilledCount <= s32(Volume(SyntheticChunk)));
+    Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
+    Assert( DestChunk->FilledCount <= s32(Volume(SyntheticChunk)));
 
-  /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
+    /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
 
-  FinalizeChunkInitialization(DestChunk);
+    FinalizeChunkInitialization(DestChunk);
+  }
 }
 
 // TODO(Jesse): Remove this thnk

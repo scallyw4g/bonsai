@@ -36,7 +36,7 @@ global_variable random_series DEBUG_ENTROPY = {653765435432};
 //
 // 30.0m cycles | u32 ComputePerlinParameters 
 // 28.7m cycles | u32 ComputePerlinParameters 
-// 27.8m cycles | u32 ComputePerlinParameters 
+// 27.6m cycles | u32 ComputePerlinParameters 
 //
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
@@ -44,7 +44,7 @@ Terrain_FBM2D( world_chunk *Chunk,
                       void *NoiseParams,
                       void *OctaveCount )
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
   /* HISTOGRAM_FUNCTION(); */
 
   UNPACK_NOISE_PARAMS(NoiseParams);
@@ -230,7 +230,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
     {
 #if 1
-      TIMED_NAMED_BLOCK(Finalize);
+      TIMED_NAMED_BLOCK(NoiseFinalize);
       for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
       {
         f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, (zChunk)*NoiseUpsampleFactor, Chunk->DimInChunks);
@@ -278,6 +278,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       Assert(Chunk->Dim.x == 64);
       Assert(Chunk->Dim.y == 66);
       Assert(Chunk->Dim.z == 66);
+
       for ( s32 zNoise = 1; zNoise < 65; ++ zNoise)
       {
         /* f32 zCoord = 75.f; */
@@ -1054,11 +1055,86 @@ ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Norma
 #endif
 }
 
-link_internal void
-Swizzle_V38X_ForStorage(v3_8x In, v3 *Result)
-{
-  /* v3_8x Result = {}; */
+typedef __m256 f256;
+typedef __m256i i256;
 
+#define set8i _mm256_setr_epi32
+
+inline f256 permute8f(const f256 a, const i256 choice) {
+   return _mm256_permutevar8x32_ps(a, choice); 
+}
+
+template<bool c0, bool c1, bool c2, bool c3, bool c4, bool c5, bool c6, bool c7>
+inline f256 select8f(const f256 tr, const f256 fr)
+  { return _mm256_blend_ps(fr, tr, (c7 << 7) | (c6 << 6) | (c5 << 5) | (c4 << 4) | (c3 << 3) | (c2 << 2) | (c1 << 1) | c0); }
+
+void vec3_soa_to_aos(f256& A, f256& B, f256& C,
+         const f256 x, const f256 y, const f256 z)
+{
+  // indices so we can permute into something sane. 
+  const i256 PX = set8i(0, 3, 6, 1, 4, 7, 2, 5);
+  const i256 PY = set8i(5, 0, 3, 6, 1, 4, 7, 2);
+  const i256 PZ = set8i(2, 5, 0, 3, 6, 1, 4, 7);
+
+  // re-arrange so we can select correct elements.
+  const f256 X = permute8f(x, PX);  // 0.0f  3.0f  6.0f  1.0f  4.0f  7.0f  2.0f  5.0f
+  const f256 Y = permute8f(y, PY);  // 5.1f  0.1f  3.1f  6.1f  1.1f  4.1f  7.1f  2.1f
+  const f256 Z = permute8f(z, PZ);  // 2.2f  5.2f  0.2f  3.2f  6.2f  1.2f  4.2f  7.2f 
+  
+  // perform our two stage selection
+  const f256 A0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(X, Y);  // 0.0f  0.1f  whatever  1.0f  1.1f  whatever  2.0f  2.1f
+  const f256 B0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(Z, X);  // 2.2f  3.0f  whatever  3.2f  4.0f  whatever  4.2f  5.0f
+  const f256 C0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(Y, Z);  // 5.1f  5.2f  whatever  6.1f  6.2f  whatever  7.1f  7.2f
+  A = select8f<0, 0, 1, 0, 0, 1, 0, 0>(Z, A0);  // 0.0f  0.1f  0.2f  1.0f  1.1f  1.2f  2.0f  2.1f
+  B = select8f<0, 0, 1, 0, 0, 1, 0, 0>(Y, B0);  // 2.2f  3.0f  3.1f  3.2f  4.0f  4.1f  4.2f  5.0f
+  C = select8f<0, 0, 1, 0, 0, 1, 0, 0>(X, C0);  // 5.1f  5.2f  6.0f  6.1f  6.2f  7.0f  7.1f  7.2f 
+}
+
+// for completeness.... 
+inline void vec3_aos_to_soa(
+  const f256 A, const f256 B, const f256 C, 
+  f256& x, f256& y, f256& z)
+{
+  const f256 X0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(A, B);
+  const f256 Y0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(C, A);
+  const f256 Z0 = select8f<1, 0, 0, 1, 0, 0, 1, 0>(B, C);
+
+  const f256 X = select8f<0, 0, 1, 0, 0, 1, 0, 0>(C, X0);
+  const f256 Y = select8f<0, 0, 1, 0, 0, 1, 0, 0>(B, Y0);
+  const f256 Z = select8f<0, 0, 1, 0, 0, 1, 0, 0>(A, Z0);
+
+  const i256 PX = set8i(0, 3, 6, 1, 4, 7, 2, 5);
+  const i256 PY = set8i(1, 4, 7, 2, 5, 0, 3, 6);
+  const i256 PZ = set8i(2, 5, 0, 3, 6, 1, 4, 7);
+
+  // rearrange and output
+  x = permute8f(X, PX);
+  y = permute8f(Y, PY);
+  z = permute8f(Z, PZ);
+}
+
+/* __m256 x = _mm256_set_ps(7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f); */
+/* __m256 y = _mm256_set_ps(7.1f, 6.1f, 5.1f, 4.1f, 3.1f, 2.1f, 1.1f, 0.1f); */
+/* __m256 z = _mm256_set_ps(7.2f, 6.2f, 5.2f, 4.2f, 3.2f, 2.2f, 1.2f, 0.2f); */
+
+/* vec3_soa_to_aos(x, y, z, x, y, z); */
+
+
+/* std::vector<float> result; */
+/* result.resize(24); */
+/* _mm256_storeu_ps(result.data(), x); */
+/* _mm256_storeu_ps(result.data() + 8, y); */
+/* _mm256_storeu_ps(result.data() + 16, z); */
+
+link_internal void
+Interleave( f32_8x X, f32_8x Y, f32_8x Z)
+{
+  vec3_soa_to_aos(X.Sse, Y.Sse, Z.Sse, X.Sse, Y.Sse, Z.Sse);
+}
+
+link_internal void
+Interleave(v3_8x In, v3 *Result)
+{
   Result[0] = V3(In.E.x[0], In.E.y[0], In.E.z[0]);
   Result[1] = V3(In.E.x[1], In.E.y[1], In.E.z[1]);
   Result[2] = V3(In.E.x[2], In.E.y[2], In.E.z[2]);
@@ -1069,10 +1145,15 @@ Swizzle_V38X_ForStorage(v3_8x In, v3 *Result)
   Result[7] = V3(In.E.x[7], In.E.y[7], In.E.z[7]);
 }
 
+// 3.55M
+// 2.53M
+// 2.51M
+//
 link_internal void
 ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim)
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   // NOTE(Jesse): The Normal values are undefined on the edges
   //
@@ -1112,10 +1193,13 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
         f32_8x CurrentNoiseValue = F32_8X(NoiseValues+NoiseBaseIndex);
 
         v3_8x Normal = {};
+#pragma unroll(3)
         for ( s32 dz = -1; dz < 2; ++ dz)
         {
+#pragma unroll(3)
           for ( s32 dy = -1; dy < 2; ++ dy)
           {
+#pragma unroll(3)
             for ( s32 dx = -1; dx < 2; ++ dx)
             {
               if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
@@ -1143,34 +1227,28 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
           }
         }
 
-        s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
         v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse;
         /* v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f); */
 
-        f32 Swizzled[8*3];
-        Swizzle_V38X_ForStorage(Result, (v3*)Swizzled);
-        CAssert(sizeof(v3)*8 == 8*3*4);
 
-        /* Normals[NormalIndex+0] = Swizzled[0]; */
-        /* Normals[NormalIndex+1] = Swizzled[1]; */
-        /* Normals[NormalIndex+2] = Swizzled[2]; */
-        /* Normals[NormalIndex+3] = Swizzled[3]; */
-        /* Normals[NormalIndex+4] = Swizzled[4]; */
-        /* Normals[NormalIndex+5] = Swizzled[5]; */
-        /* Normals[NormalIndex+6] = Swizzled[6]; */
-        /* Normals[NormalIndex+7] = Swizzled[7]; */
-
-
+        s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
         f32 *Basis = Cast(f32*, Normals+NormalIndex);
-        __m256 A = _mm256_load_ps(Swizzled);
-        __m256 B = _mm256_load_ps(Swizzled+8);
-        __m256 C = _mm256_load_ps(Swizzled+16);
-        _mm256_storeu_ps( Basis+ 0, A);
-        _mm256_storeu_ps( Basis+ 8, B);
-        _mm256_storeu_ps( Basis+16, C);
 
-        /* f32_8x A, B, C; */
-        /* A = {{ }}; */
+        // TODO(Jesse): The second interleave (from SO) is wrong, but 500k cycles faster..
+#if 1
+        f32 Swizzled[8*3];
+        Interleave(Result, (v3*)Swizzled);
+
+        __m256 *A = (__m256*)Swizzled;
+        _mm256_storeu_ps( Basis+ 0, A[0]);
+        _mm256_storeu_ps( Basis+ 8, A[1]);
+        _mm256_storeu_ps( Basis+16, A[2]);
+#else
+        Interleave(Result.avx.x, Result.avx.y, Result.avx.z);
+        _mm256_storeu_ps( Basis+ 0, Result.avx.x.Sse);
+        _mm256_storeu_ps( Basis+ 8, Result.avx.y.Sse);
+        _mm256_storeu_ps( Basis+16, Result.avx.z.Sse);
+#endif
       }
     }
   }
