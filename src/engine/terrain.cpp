@@ -89,28 +89,21 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   s32 NoiseUpsampleFactor = 1;
 
-  /* v3i NoiseDim = RoundUp(Chunk->Dim/2, V3i(8)); */
-  /* v3i NoiseDim = RoundUp((Chunk->Dim+2)/NoiseUpsampleFactor, V3i(8, 1, 1)); */
-  v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0))/NoiseUpsampleFactor, V3i(8, 1, 1));
-  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2))/NoiseUpsampleFactor, V3i(8, 1, 1));
+  v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0)), V3i(8, 1, 1));
+  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2)), V3i(8, 1, 1));
 
   Assert(Chunk->Dim == V3i(64, 66, 66));
   Assert(NormalsDim == V3i(64));
 
-  /* v3i NoiseDim = Chunk->Dim; */
-  // NOTE(Jesse): This must hold true for using any Noise_16x func
+  // NOTE(Jesse): This must hold true for using any Noise_8x func
   Assert(NoiseDim.x % 8 == 0);
 
-
-  /* v3i NoiseDim       = Chunk->Dim + 2; */
   s32  NoiseValuesCount  = Volume(NoiseDim);
   s32  NormalValuesCount = Volume(NormalsDim);
+
   //
-  // NOTE(Jesse): Have to add 1 to compute the normals because on the last
-  // iteration we go +1 in the x direction.  This is super garbage/sketchy and
-  // I hate it, but I don't have a better solution for now.
-  r32 *NoiseValues      = AllocateAligned(r32, TempArena, NoiseValuesCount+1, 32);
-   v3 *Normals          = AllocateAligned( v3, TempArena, NormalValuesCount , 32);
+  r32 *NoiseValues      = AllocateAligned(r32, TempArena, NoiseValuesCount,  32);
+   v3 *Normals          = AllocateAligned( v3, TempArena, NormalValuesCount, 32);
   // NOTE(Jesse): Must be true to use _mm256_store_ps, which we do in the 16x version of perlin
   Assert(u64(NoiseValues) % 32 == 0);
 
@@ -167,7 +160,8 @@ Terrain_FBM2D( world_chunk *Chunk,
       u32 *_xCoords = AllocateAligned(u32, TempArena, NoiseDim.x, 32);
       for ( s32 xNoise = 0; xNoise < NoiseDim.x; ++ xNoise )
       {
-        _xCoords[xNoise] = u32(xNoise-1);
+        _xCoords[xNoise] = u32(xNoise*NoiseUpsampleFactor) - 1;
+        /* _xCoords[xNoise] = u32(xNoise) - 1; */
       }
 
       for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
@@ -203,9 +197,12 @@ Terrain_FBM2D( world_chunk *Chunk,
       {
         for ( s32 yNoise = 0; yNoise < NoiseDim.y; ++ yNoise)
         {
-          for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
+          for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8*NoiseUpsampleFactor )
           {
             s32 NoiseIndex = GetIndex(xNoise, yNoise, zNoise, NoiseDim);
+
+            const s32 SampleCount = 8;
+            f32 Samples[SampleCount] = {};
 
             r32 InteriorAmp = r32(Amplitude);
             RangeIterator(OctaveIndex, Octaves)
@@ -213,9 +210,19 @@ Terrain_FBM2D( world_chunk *Chunk,
               auto zParam = zParams+OctaveIndex+(zNoise*Octaves);
               auto yParam = yParams+OctaveIndex+(yNoise*Octaves);
               auto xParam = xParams+OctaveIndex+(xNoise*Octaves);
-              PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp);
+
+              /* PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp); */
+              PerlinNoise_8x_avx2(xParam, yParam, zParam, Samples, InteriorAmp);
               InteriorAmp = Max(1.f, InteriorAmp/2.f);
             }
+
+            RangeIterator(SampleIndex, SampleCount)
+            {
+              NoiseValues[NoiseIndex+SampleIndex] += Samples[SampleIndex];
+              /* NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+0] += Samples[SampleIndex]; */
+              /* NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+1] += Samples[SampleIndex]; */
+            }
+
           }
         }
       }
@@ -224,7 +231,7 @@ Terrain_FBM2D( world_chunk *Chunk,
     u64 EndingCycles = __rdtsc();
     u64 ElapsedCycles = EndingCycles - StartingCycles;
     GetEngineDebug()->ChunkGenCyclesElapsed += ElapsedCycles;
-    GetEngineDebug()->CellsGenerated += u64(Volume(NoiseDim))*u64(Octaves);
+    GetEngineDebug()->CellsGenerated += u64(Volume(NoiseDim))*u64(Octaves)*u64(NoiseUpsampleFactor);
 
 
     ComputeNormalsForChunkFromNoiseValues_avx( NoiseValues, NoiseDim, Normals, NormalsDim);
@@ -235,7 +242,7 @@ Terrain_FBM2D( world_chunk *Chunk,
       TIMED_NAMED_BLOCK(NoiseFinalize);
       for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
       {
-        f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, (zChunk)*NoiseUpsampleFactor, Chunk->DimInChunks);
+        f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
         /* f32 zCoord = 75.f; */
         f32 WorldZBiased = zCoord - zMin;
         for ( s32 yChunk = 0; yChunk < Chunk->Dim.y; ++ yChunk)
@@ -246,7 +253,7 @@ Terrain_FBM2D( world_chunk *Chunk,
             v3i ChunkP = V3i(xChunk, yChunk, zChunk);
             /* v3i NoiseP = V3i(xChunk, yChunk, zChunk); */
             /* v3i NoiseP = V3i(xChunk+1, yChunk+1, zChunk+1)/NoiseUpsampleFactor; */
-            v3i NoiseP = V3i(xChunk+1, yChunk, zChunk)/NoiseUpsampleFactor;
+            v3i NoiseP = V3i(xChunk+1, yChunk, zChunk);
 
             s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
             s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
@@ -289,13 +296,13 @@ Terrain_FBM2D( world_chunk *Chunk,
       for ( s32 zNoise = 1; zNoise < 65; ++ zNoise)
       {
         /* f32 zCoord = 75.f; */
-        f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, (zNoise)*NoiseUpsampleFactor, Chunk->DimInChunks);
+        f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks);
         f32 WorldZBiased = zCoord - zMin;
         for ( s32 yNoise = 1; yNoise < 65; ++ yNoise)
         {
 
           {
-            v3i BorderP = V3i(0, yNoise, zNoise)/NoiseUpsampleFactor;
+            v3i BorderP = V3i(0, yNoise, zNoise);
             s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
             r32 ThisNoiseV = NoiseValues[BorderIndex];
@@ -307,7 +314,7 @@ Terrain_FBM2D( world_chunk *Chunk,
           }
 
           {
-            v3i BorderP = V3i(65, yNoise, zNoise)/NoiseUpsampleFactor;
+            v3i BorderP = V3i(65, yNoise, zNoise);
             s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
             r32 ThisNoiseV = NoiseValues[BorderIndex];
