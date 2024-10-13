@@ -22,6 +22,6 @@ SetOccupancyBit(world_chunk *Chunk, s32 Index, s32 BitValue)
 link_internal void
 SetOccupancyMask(world_chunk *Chunk, s32 Index, u64 MaskValue)
 {
-  s32 MaskIndex = Index/64;
-  Chunk->Occupancy[MaskIndex] = MaskValue;
+  /* s32 MaskIndex = Index/64; */
+  Chunk->Occupancy[Index] = MaskValue;
 }

@@ -37,6 +37,8 @@ global_variable random_series DEBUG_ENTROPY = {653765435432};
 // 30.0m cycles | u32 ComputePerlinParameters 
 // 28.7m cycles | u32 ComputePerlinParameters 
 // 27.6m cycles | u32 ComputePerlinParameters 
+// 24.3m cycles | u32 ComputePerlinParameters 
+// 19.3m cycles | u32 ComputePerlinParameters 
 //
 link_internal u32
 Terrain_FBM2D( world_chunk *Chunk,
@@ -45,7 +47,7 @@ Terrain_FBM2D( world_chunk *Chunk,
                       void *OctaveCount )
 {
   /* TIMED_FUNCTION(); */
-  /* HISTOGRAM_FUNCTION(); */
+  HISTOGRAM_FUNCTION();
 
   UNPACK_NOISE_PARAMS(NoiseParams);
 
@@ -107,8 +109,8 @@ Terrain_FBM2D( world_chunk *Chunk,
   // NOTE(Jesse): Have to add 1 to compute the normals because on the last
   // iteration we go +1 in the x direction.  This is super garbage/sketchy and
   // I hate it, but I don't have a better solution for now.
-  r32 *NoiseValues      = Allocate(r32, TempArena, NoiseValuesCount+1);
-   v3 *Normals          = Allocate( v3, TempArena, NormalValuesCount );
+  r32 *NoiseValues      = AllocateAligned(r32, TempArena, NoiseValuesCount+1, 32);
+   v3 *Normals          = AllocateAligned( v3, TempArena, NormalValuesCount , 32);
   // NOTE(Jesse): Must be true to use _mm256_store_ps, which we do in the 16x version of perlin
   Assert(u64(NoiseValues) % 32 == 0);
 
@@ -238,6 +240,7 @@ Terrain_FBM2D( world_chunk *Chunk,
         f32 WorldZBiased = zCoord - zMin;
         for ( s32 yChunk = 0; yChunk < Chunk->Dim.y; ++ yChunk)
         {
+          u64 Mask = 0;
           for ( s32 xChunk = 0; xChunk < Chunk->Dim.x; ++ xChunk)
           {
             v3i ChunkP = V3i(xChunk, yChunk, zChunk);
@@ -250,16 +253,18 @@ Terrain_FBM2D( world_chunk *Chunk,
 
             /* r32 ThisNoiseV = MapNoiseValueToFinal(NoiseValues[NoiseIndex]/OctaveAmplitudeMax)*OctaveAmplitudeMax; */
             r32 ThisNoiseV = NoiseValues[NoiseIndex];
-            s32 NoiseChoice = ThisNoiseV > WorldZBiased;
+            u64 NoiseChoice = u64(ThisNoiseV > WorldZBiased);
             ChunkSum += u32(NoiseChoice);
-            SetOccupancyBit(Chunk, ChunkIndex, NoiseChoice);
 
-            s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim);
-            if (NormalIndex > -1)
-            {
-              Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex]));
-            }
-            /* Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice); */
+            Mask |= (NoiseChoice << xChunk);
+            /* SetOccupancyBit(Chunk, ChunkIndex,  NoiseChoice); */
+
+            /* s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim); */
+            /* if (NormalIndex > -1) */
+            /* { */
+            /*   Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex])); */
+            /* } */
+            Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
             /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
             /* if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); } */
             /* if (xChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_YELLOW)*u16(NoiseChoice); } */
@@ -267,6 +272,8 @@ Terrain_FBM2D( world_chunk *Chunk,
             /* if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_GREEN)*u16(NoiseChoice); } */
             /* if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); } */
           }
+
+          SetOccupancyMask(Chunk, yChunk + zChunk*Chunk->Dim.y, Mask);
         }
       }
 #endif
@@ -1152,8 +1159,8 @@ Interleave(v3_8x In, v3 *Result)
 link_internal void
 ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim)
 {
-  HISTOGRAM_FUNCTION();
-  /* TIMED_FUNCTION(); */
+  /* HISTOGRAM_FUNCTION(); */
+  TIMED_FUNCTION();
 
   // NOTE(Jesse): The Normal values are undefined on the edges
   //
@@ -1196,6 +1203,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
 #pragma unroll(3)
         for ( s32 dz = -1; dz < 2; ++ dz)
         {
+          auto _dz = F32_8X(dz);
 #pragma unroll(3)
           for ( s32 dy = -1; dy < 2; ++ dy)
           {
@@ -1207,7 +1215,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
               s32 dNoiseIndex = GetIndex(V3i(x+dx,y+dy,z+dz)+1, NoiseDim);
               {
                 f32_8x OffsetNoiseValue = F32_8X_unaligned(NoiseValues + dNoiseIndex);
-                f32_8x Diff = OffsetNoiseValue - F32_8X(dz) - Truncate(CurrentNoiseValue);
+                f32_8x Diff = OffsetNoiseValue - _dz - Truncate(CurrentNoiseValue);
 
                 u32_8x AddMask = Diff > 0.f;
 
@@ -1234,9 +1242,10 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
         s32 NormalIndex = GetIndex(V3i(x,y,z), NormalsDim);
         f32 *Basis = Cast(f32*, Normals+NormalIndex);
 
-        // TODO(Jesse): The second interleave (from SO) is wrong, but 500k cycles faster..
+        // TODO(Jesse): The second interleave (from SO) is wrong, but it makes
+        // the function 25% faster ...
 #if 1
-        f32 Swizzled[8*3];
+        alignas(32) f32 Swizzled[8*3];
         Interleave(Result, (v3*)Swizzled);
 
         __m256 *A = (__m256*)Swizzled;
