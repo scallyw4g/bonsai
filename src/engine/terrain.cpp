@@ -87,10 +87,14 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   memory_arena *TempArena = GetTranArena();
 
-  s32 NoiseUpsampleFactor = 1;
+  s32 NoiseUpsampleFactor = 2;
+  /* s32 NoiseUpsampleFactor = 4; */
 
-  v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0)), V3i(8, 1, 1));
-  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2)), V3i(8, 1, 1));
+  v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0)), V3i(8*NoiseUpsampleFactor, 1, 1));
+  v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2)), V3i(8*NoiseUpsampleFactor, 1, 1));
+
+  /* v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0)), V3i(8, 1, 1)); */
+  /* v3i NormalsDim = RoundUp((Chunk->Dim-V3i(0,2,2)), V3i(8, 1, 1)); */
 
   Assert(Chunk->Dim == V3i(64, 66, 66));
   Assert(NormalsDim == V3i(64));
@@ -157,16 +161,27 @@ Terrain_FBM2D( world_chunk *Chunk,
         }
       }
 
-      u32 *_xCoords = AllocateAligned(u32, TempArena, NoiseDim.x, 32);
-      for ( s32 xNoise = 0; xNoise < NoiseDim.x; ++ xNoise )
+      s32 _xCoordsCount  = NoiseDim.x*NoiseUpsampleFactor;
+      u32 *_xCoords = AllocateAligned(u32, TempArena, _xCoordsCount, 32);
+      for ( s32 xNoise = 0; xNoise < _xCoordsCount; ++ xNoise )
       {
-        _xCoords[xNoise] = u32(xNoise*NoiseUpsampleFactor) - 1;
-        /* _xCoords[xNoise] = u32(xNoise) - 1; */
+        /* _xCoords[xNoise] = u32(xNoise); */
+        _xCoords[xNoise] = u32(xNoise) - 1;
       }
 
       for ( s32 xNoise = 0; xNoise < NoiseDim.x; xNoise += 8 )
       {
-        auto _x = U32_8X(_xCoords+xNoise);
+        /* auto _x = U32_8X(_xCoords+xNoise); */
+        auto _x = U32_8X(
+            _xCoords[xNoise+(0*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(1*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(2*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(3*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(4*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(5*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(6*NoiseUpsampleFactor)],
+            _xCoords[xNoise+(7*NoiseUpsampleFactor)] );
+
         RangeIterator(OctaveIndex, Octaves)
         {
           s32 i = OctaveIndex+(xNoise*Octaves);
@@ -202,7 +217,7 @@ Terrain_FBM2D( world_chunk *Chunk,
             s32 NoiseIndex = GetIndex(xNoise, yNoise, zNoise, NoiseDim);
 
             const s32 SampleCount = 8;
-            f32 Samples[SampleCount] = {};
+            alignas(32) f32_8x Samples = {};
 
             r32 InteriorAmp = r32(Amplitude);
             RangeIterator(OctaveIndex, Octaves)
@@ -212,15 +227,22 @@ Terrain_FBM2D( world_chunk *Chunk,
               auto xParam = xParams+OctaveIndex+(xNoise*Octaves);
 
               /* PerlinNoise_8x_avx2(xParam, yParam, zParam, NoiseValues+NoiseIndex, InteriorAmp); */
-              PerlinNoise_8x_avx2(xParam, yParam, zParam, Samples, InteriorAmp);
+              PerlinNoise_8x_avx2(xParam, yParam, zParam, Samples.E, InteriorAmp);
               InteriorAmp = Max(1.f, InteriorAmp/2.f);
             }
 
+            f32_8x OffsetSamples = StaticShuffle_avx(Samples, 1, 2, 3, 4, 5, 6, 7, 7);
+            f32_8x BlendedSamples = Lerp8x(F32_8X(0.5f), Samples, OffsetSamples);
+
             RangeIterator(SampleIndex, SampleCount)
             {
-              NoiseValues[NoiseIndex+SampleIndex] += Samples[SampleIndex];
-              /* NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+0] += Samples[SampleIndex]; */
-              /* NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+1] += Samples[SampleIndex]; */
+              /* RangeIterator(UpsampleIndex, NoiseUpsampleFactor) */
+              {
+                s32 UpsampleIndex = 0;
+                NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+UpsampleIndex] += Samples.E[SampleIndex];
+                    UpsampleIndex = 1;
+                NoiseValues[NoiseIndex+(SampleIndex*NoiseUpsampleFactor)+UpsampleIndex] += BlendedSamples.E[SampleIndex];
+              }
             }
 
           }
@@ -273,11 +295,11 @@ Terrain_FBM2D( world_chunk *Chunk,
             /* } */
             Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
             /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
-            /* if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); } */
             /* if (xChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_YELLOW)*u16(NoiseChoice); } */
             /* if (xChunk == Chunk->Dim.x-1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); } */
-            /* if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_GREEN)*u16(NoiseChoice); } */
-            /* if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); } */
+            if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
+            if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_GREEN)*u16(NoiseChoice); }
+            if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); }
           }
 
           SetOccupancyMask(Chunk, yChunk + zChunk*Chunk->Dim.y, Mask);
