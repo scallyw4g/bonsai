@@ -1,3 +1,28 @@
+
+
+struct gradient_noise_shader
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/noise/gradient.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[1];
+         texture  ChunkData;
+
+       v3  ChunkSize; poof(@uniform)
+};
+
+poof(shader_magic(gradient_noise_shader))
+#include <generated/shader_magic_gradient_noise_shader.h>
+
+struct gpu_noise_render_group
+{
+  framebuffer FBO;
+  u32 GlTimerObject;
+
+  gradient_noise_shader GradientShader;
+
+};
+
 struct composite_render_group
 {
   shader Shader;
@@ -23,6 +48,8 @@ struct transparency_render_group
 };
 
 struct shadow_render_group;
+
+
 
 struct graphics
 {
@@ -77,6 +104,7 @@ struct graphics
   lighting_render_group     Lighting;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
+  gpu_noise_render_group    GpuNoise;
 
   gpu_mapped_element_buffer GpuBuffers[2];
   u32 GpuBufferWriteIndex;

@@ -245,7 +245,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 Graphics->ColorPaletteTexture =
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
-
+              //
               // Editor preview
               /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
               {
@@ -293,12 +293,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
               /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
-
-
-
               CompositeGameTexturesAndDisplay(Plat, Graphics);
 
               UiFrameEnd(&Engine->Ui);
+
+              {
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+                SetViewport(V2i(64, 4096));
+                UseShader( &Graphics->GpuNoise.GradientShader );
+                RenderQuad();
+              }
+
 
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 

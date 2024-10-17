@@ -354,6 +354,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_noise_render_group*,&Element->GpuNoise),
+        CSz("GpuNoise"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       if (ToggleButton(Ui, CSz("v GpuBuffers[2]"), CSz("> GpuBuffers[2]"), UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
