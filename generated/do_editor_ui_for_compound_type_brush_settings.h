@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:108:0
+// src/engine/editor.cpp:109:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -150,8 +150,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->RGBColor),
-        CSz("RGBColor"),
+        Cast(v3*,&Element->HSVColor),
+        CSz("HSVColor"),
         Params
         );
 

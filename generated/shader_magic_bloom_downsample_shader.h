@@ -18,6 +18,8 @@ InitializeBloomDownsampleShader( bloom_downsample_shader *Struct  , v2*SrcResolu
   }
 
 
+
+  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 
 link_internal void

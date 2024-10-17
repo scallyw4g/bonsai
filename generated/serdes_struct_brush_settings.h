@@ -82,7 +82,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
-    Result &= Serialize(Bytes, &Element->RGBColor);
+    Result &= Serialize(Bytes, &Element->HSVColor);
 
 
 
@@ -202,7 +202,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->RGBColor, Memory);
+  Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
 
 

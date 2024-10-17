@@ -19,7 +19,7 @@ TestChunkCopy(memory_arena *Memory)
     temp_memory_handle TmpMemHandle = BeginTemporaryMemory(Memory);
 
     /* world_chunk *SyntheticChunk = AllocateWorldChunk(Memory, SynChunkP, SynChunkDim); */
-    world_chunk *DestChunk = AllocateWorldChunk(DestChunkP, DestChunkDim, Memory);
+    world_chunk *DestChunk = AllocateWorldChunk(DestChunkP, DestChunkDim, V3i(1), Memory);
 
     // NOTE(Jesse): This is a hack because this function checks to make sure
     // it's called from a worker thread.  Kinda janky, but worth the jank IMO
@@ -55,8 +55,8 @@ TestChunkCopy(memory_arena *Memory)
   { // Ensure copy works as intended
     temp_memory_handle TmpMemHandle = BeginTemporaryMemory(Memory);
 
-    world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, Memory);
-    world_chunk *DestChunk = AllocateWorldChunk(DestChunkP, DestChunkDim, Memory);
+    world_chunk *SyntheticChunk = AllocateWorldChunk(SynChunkP, SynChunkDim, V3i(1), Memory);
+    world_chunk *DestChunk = AllocateWorldChunk(DestChunkP, DestChunkDim, V3i(1), Memory);
 
     // @set_chunk_queued_hack
     SetFlag(SyntheticChunk, Chunk_Queued);

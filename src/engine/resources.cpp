@@ -5,7 +5,8 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   Assert(Chunk->DEBUG_OwnedByThread == 0);
   Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
 
-  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
+  Assert( (Chunk->Flags & Chunk_Queued) == 0);
+  Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
 
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
 
@@ -27,6 +28,39 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   FullBarrier;
 }
+
+link_internal void
+RenderOctree(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  b32     Continue = True;
+
+  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
+  Push(&Stack, &World->Root);
+
+  /* RuntimeBreak(); */
+  while (CurrentCount(&Stack))
+  {
+    octree_node *Node = Pop(&Stack);
+
+    if (Node->Type == OctreeNodeType_Leaf)
+    {
+      SyncGpuBuffersImmediate(Engine, &Node->Chunk->Meshes);
+      DrawLod(Engine, Shader, &Node->Chunk->Meshes, 0, {}, Quaternion(), V3(1));
+    }
+
+    if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
+    if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
+    if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
+    if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
+    if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
+    if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
+    if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
+    if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
+  }
+}
+
 
 link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
@@ -211,7 +245,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 Graphics->ColorPaletteTexture =
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
-
+              //
               // Editor preview
               /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
               {
@@ -245,6 +279,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
               Clear(&GpuMap->Buffer);
 
+
               // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
               // after the transparency/luminance textures.  I have literally 0 ideas as to
               // why that would be, but here we are.
@@ -258,13 +293,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
               /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
-
               CompositeGameTexturesAndDisplay(Plat, Graphics);
 
               UiFrameEnd(&Engine->Ui);
 
+              {
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+                SetViewport(V2i(64, 4096));
+                UseShader( &Graphics->GpuNoise.GradientShader );
+                RenderQuad();
+              }
+
+
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
+
+              HotReloadShaders(GetStdlib());
 
 
               /* GpuMap = GetNextGpuMap(Graphics); */
@@ -366,7 +410,8 @@ RenderThread_Main(void *ThreadStartupParams)
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
-    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
+    bitmap_block_array Bitmaps = {};
+    Bitmaps.Memory = GetTranArena();
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
@@ -486,6 +531,9 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   CancelAllWorkQueueJobs(Engine);
 
+  // TODO(Jesse): Free octree here.
+  NotImplemented;
+#if 0
   u32 ChunksFreed = 0;
   RangeIterator(HashIndex, s32(World->HashSize))
   {
@@ -497,6 +545,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
       ++ChunksFreed;
     }
   }
+#endif
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
