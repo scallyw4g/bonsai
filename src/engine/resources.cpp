@@ -308,6 +308,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
 
+              HotReloadShaders(GetStdlib());
+
 
               /* GpuMap = GetNextGpuMap(Graphics); */
 

@@ -17,6 +17,8 @@ InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkSize  )
   }
 
 
+
+  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 
 link_internal void

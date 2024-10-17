@@ -18,6 +18,8 @@ InitializeBloomUpsampleShader( bloom_upsample_shader *Struct  , f32*FilterRadius
   }
 
 
+
+  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 
 link_internal void

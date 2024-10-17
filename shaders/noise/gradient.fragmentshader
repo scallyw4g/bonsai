@@ -37,7 +37,7 @@ out float Output;
 
 // 0: integer hash
 // 1: float hash (aliasing based)
-#define METHOD 0
+#define METHOD 1
 
 // 0: cubic
 // 1: quintic
@@ -156,13 +156,19 @@ float gradient_noise( in vec3 p )
 
 void main()
 {
-  v3 xyz = v3(UV, 1.f);
+  v2 _UV = UV*64.f;
+
+  f32 x = _UV.x;
+  f32 y = f32(s32(_UV.y) % 64);
+  f32 z = _UV.y / 64;
+
+  v3 xyz = v3(x,y,z) * 25;
 
   /* for (s32 Octave = 0; Octave < 1; ++Octave) */
   {
     /* Output += gradient_noise_derivs(xyz / Octave).x; */
-    Output += gradient_noise_derivs(xyz*5).x;
-    /* Output += gradient_noise(xyz * 150.f/Octave); */
+    Output += gradient_noise_derivs(xyz).x;
+    /* Output += gradient_noise(xyz); */
   }
   /* Output = (UV.x + UV.y) / 2.f; */
 }

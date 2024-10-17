@@ -31,6 +31,8 @@ InitializeShadowMapShader( shadow_map_shader *Struct  , m4 MVP    , m4 ModelMatr
   }
 
 
+
+  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 
 link_internal void

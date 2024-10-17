@@ -89,6 +89,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(shader_ptr_block_array*,&Element->AllShaders),
+        CSz("AllShaders"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(debug_state*,&Element->DebugState),
         CSz("DebugState"),
         Params

@@ -13,29 +13,7 @@
 global_variable s64 LastGameLibTime;
 global_variable s64 LastDebugLibTime;
 
-#include <sys/stat.h>
-
 /* #include <bonsai_debug/headers/win32_pmc.cpp> */
-
-typedef struct stat bonsai_stat;
-
-link_internal b32
-LibIsNew(const char *LibPath, s64 *LastLibTime)
-{
-  b32 Result = False;
-  bonsai_stat StatStruct;
-
-  if (stat(LibPath, &StatStruct) == 0)
-  {
-    if (StatStruct.st_mtime > *LastLibTime)
-    {
-      *LastLibTime = StatStruct.st_mtime;
-      Result = True;
-    }
-  }
-
-  return Result;
-}
 
 
 #if 0
@@ -155,8 +133,8 @@ main( s32 ArgCount, const char ** Args )
   application_api *GameApi   = &EngineResources->GameApi;
   engine_api       EngineApi = {};
   {
-    LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
-    LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
+    FileIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
+    FileIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
     GameLib = OpenLibrary(GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
@@ -287,7 +265,7 @@ main( s32 ArgCount, const char ** Args )
     DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
-    if ( LibIsNew(GameLibName, &LastGameLibTime) )
+    if ( FileIsNew(GameLibName, &LastGameLibTime) )
     {
       Info("Reloading Game Lib");
 
