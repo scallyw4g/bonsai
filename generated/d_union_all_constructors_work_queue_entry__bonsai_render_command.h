@@ -1,4 +1,4 @@
-// src/engine/render_command.h:160:0
+// src/engine/render_command.h:168:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -171,6 +171,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_all_entities A  )
 }
 
 link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_initialize_noise_buffer,
+    .bonsai_render_command_initialize_noise_buffer = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_init A  )
 {
   work_queue_entry__bonsai_render_command Result = {
@@ -290,6 +303,8 @@ link_internal bonsai_render_command_deallocate_buffers
 BonsaiRenderCommandDeallocateBuffers( u32*  Buffers , s32   Count  )
 {
   bonsai_render_command_deallocate_buffers Reuslt = {
+    .Buffers = {}
+,
     .Count = Count
   };
 
@@ -379,6 +394,19 @@ BonsaiRenderCommandDrawAllEntities( shader*  Shader  )
 {
   bonsai_render_command_draw_all_entities Reuslt = {
     .Shader = Shader
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_initialize_noise_buffer
+BonsaiRenderCommandInitializeNoiseBuffer( v3   ChunkSize , f32*  NoiseData  )
+{
+  bonsai_render_command_initialize_noise_buffer Reuslt = {
+    .ChunkSize = ChunkSize
+,
+    .NoiseData = NoiseData
   };
 
   

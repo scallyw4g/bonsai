@@ -1,4 +1,4 @@
-// examples/terrain_gen/game_types.h:23:0
+// examples/terrain_gen/game_types.h:25:0
 
 link_internal ui_toggle_button_group
 RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
@@ -26,6 +26,7 @@ RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
     { CSz("GrassyIsland"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_GrassyIsland")), TerrainGenType_GrassyIsland },
     { CSz("Hoodoo"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Hoodoo")), TerrainGenType_Hoodoo },
     { CSz("Warped"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Warped")), TerrainGenType_Warped },
+    { CSz("Debug"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Debug")), TerrainGenType_Debug },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

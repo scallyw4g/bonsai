@@ -62,6 +62,8 @@ struct engine_resources
 
   asset_system AssetSystem;
 
+  // TODO(Jesse): Rename this to FrameNumber because it's incremented at the
+  // beginning of the frame, meaning we never see (FrameIndex == 0)
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
   tiered_mesh_freelist geo_u3d_MeshFreelist;
@@ -170,5 +172,6 @@ GetCameraGhost(engine_resources *Engine)
   gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
   camera                    *Camera        =  Graphics->Camera;           \
+  camera                    *GameCamera    = &Graphics->GameCamera;       \
   work_queue                *RenderQ       = &Plat->RenderQ
 

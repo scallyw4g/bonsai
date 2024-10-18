@@ -71,14 +71,14 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
   // the thing that is populating the next hashtable
-  Resources->World->HashSlotsUsed = 0;
+  /* Resources->World->HashSlotsUsed = 0; */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
   // NOTE(Jesse): Must come before we update the frame index becaues
   // CollectUnusedChunks picks the hashtable based on the frame index.
   //
-  CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion);
+  /* CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, CurrentWorldHashtable(Resources)); */
 
@@ -86,11 +86,14 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // sim pulls chunks out of the hashtable.
   //
   Resources->FrameIndex += 1;
-  Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
+
+  MaintainWorldOctree(Resources);
+
+  /* Resources->World->ChunkHash = CurrentWorldHashtable(Resources); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
-  ComputeDrawListsAndQueueUnallocatedChunks(Resources);
+  /* ComputeDrawListsAndQueueUnallocatedChunks(Resources); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
@@ -287,6 +290,10 @@ Bonsai_Simulate(engine_resources *Resources)
   {
     if (Graphics->Camera == &Graphics->GameCamera)
     {
+      /* entity_id Prev = Graphics->DebugCamera.GhostId; */
+      /* Graphics->DebugCamera = Graphics->GameCamera; */
+      /* Graphics->DebugCamera.GhostId = Prev; */
+
       Graphics->Camera = &Graphics->DebugCamera;
     }
     else
@@ -462,7 +469,8 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMinorGrid"
+    .Name = "DrawMinorGrid",
+    .Next = 0,
   };
 
   shader_uniform MajorGridUniform =
@@ -470,7 +478,8 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMajorGrid"
+    .Name = "DrawMajorGrid",
+    .Next = 0,
   };
 
 
@@ -492,7 +501,11 @@ Bonsai_Render(engine_resources *Engine)
   {
     layout DefaultLayout = {};
     DefaultLayout.DrawBounds = InvertedInfinityRectangle();
-    render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+
+    render_state RenderState = {};
+    RenderState.Layout = &DefaultLayout;
+    RenderState.ClipRect = DISABLE_CLIPPING;
+
     SetWindowZDepths(Ui->CommandBuffer);
     FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
   }
@@ -541,6 +554,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       SimulateParticleSystem(Job);
     } break;
 
+    case type_work_queue_entry_build_chunk_mesh:
+    {
+    } break;
+
     case type_work_queue_entry_rebuild_mesh:
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
@@ -563,6 +580,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       if (Job->Flags & ChunkInitFlag_ComputeStandingSpots)
       {
         ComputeStandingSpots( Chunk->Dim,
+                              Chunk->Occupancy,
                               Chunk->Voxels,
                               {},
 
@@ -598,8 +616,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       {
         s32 Period = 150;
         s32 Amplititude = 10;
-        s32 StartingZDepth = 0;
-        v3 Color = HSV_GRASS_GREEN;
+        s32 StartingZDepth = 120;
+        v3 Color = RGB_GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
         u32 Octaves = 1;

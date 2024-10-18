@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:153:0
+// src/engine/editor.cpp:154:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -76,6 +76,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         // Cast to remove const/volatile keywords if they're there
         Cast(texture_block_array*,&Element->AllTextures),
         CSz("AllTextures"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader_ptr_block_array*,&Element->AllShaders),
+        CSz("AllShaders"),
         Params
         );
 

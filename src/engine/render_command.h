@@ -103,6 +103,12 @@ struct bonsai_render_command_do_stuff
   u32 Ignored = 0;
 };
 
+struct bonsai_render_command_initialize_noise_buffer
+{
+  v3 ChunkSize; // TODO(Jesse): Make this v3i
+  f32 *NoiseData;
+};
+
 struct bonsai_render_command_gl_timer_init
 {
   u32 *GlTimerObject;
@@ -148,6 +154,8 @@ poof(
 
     bonsai_render_command_draw_world_chunk_draw_list
     bonsai_render_command_draw_all_entities
+
+    bonsai_render_command_initialize_noise_buffer
 
     bonsai_render_command_gl_timer_init
     bonsai_render_command_gl_timer_start

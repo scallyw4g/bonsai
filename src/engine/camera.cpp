@@ -4,6 +4,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 {
   TIMED_FUNCTION();
   if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
+  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
@@ -217,10 +218,19 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
 }
 
 link_internal bool
+IsInFrustum( world *World, camera *Camera, octree_node *Chunk )
+{
+  v3 ChunkMid = (Chunk->Resolution*World->ChunkDim)/2.f;
+  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(World, Camera, P1);
+  return Result;
+}
+
+link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = World->ChunkDim/2.0f;
-  canonical_position P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  v3 ChunkMid = (Chunk->DimInChunks*World->ChunkDim)/2.f;
+  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
   bool Result = IsInFrustum(World, Camera, P1);
   return Result;
 }

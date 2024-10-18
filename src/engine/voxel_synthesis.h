@@ -115,11 +115,14 @@ AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
     {
       auto i = GetIndex(xIndex, yIndex, zIndex, Global_TileDim);
 
+      // Need to use the occupancy mask here
+      NotImplemented;
+
       Result &=
 #if VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH
                       (T0->Voxels[i].Flags) == (T1->Voxels[i].Flags) &&
 #else
-        (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) &&
+        /* (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) && */
 #endif
                      (T0->Voxels[i].Color) == (T1->Voxels[i].Color);
 
@@ -144,10 +147,12 @@ Hash(voxel *V, v3i P)
 {
   // Air voxels don't contribute to the hash, which is why we do the multiply
   //
+  u64 Result = 0;
+  NotImplemented;
 #if VOXEL_FACE_FLAGS_CONTRIBUTE_TO_HASH
-  u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled);
+  /* u64 Result = u64(P.x + P.y + P.z + V->Flags + V->Color) * (V->Flags & Voxel_Filled); */
 #else
-  u64 Result = u64(P.x + P.y + P.z + V->Color) * (V->Flags & Voxel_Filled);
+  /* u64 Result = u64(P.x + P.y + P.z + V->Color) * (V->Flags & Voxel_Filled); */
 #endif
 
   /* u64 Result = u64(V->Flags + V->Color); */

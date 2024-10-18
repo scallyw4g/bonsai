@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:347:0
+// src/engine/editor.cpp:352:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -33,6 +33,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         RangeIterator(ArrayIndex, (256) + 1)
         {
           DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
+
  PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -66,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         RangeIterator(ArrayIndex, 16)
         {
           DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -82,6 +84,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush_editor *Element
         RangeIterator(ArrayIndex, 16)
         {
           DoEditorUi(Ui, Window, Element->LayerPreviews+ArrayIndex, FSz("LayerPreviews[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

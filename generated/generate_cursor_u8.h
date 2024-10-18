@@ -15,12 +15,10 @@ link_internal u8_cursor
 U8Cursor(umm ElementCount, memory_arena* Memory)
 {
   u8 *Start = (u8*)PushStruct(Memory, sizeof(u8)*ElementCount, 1, 0);
-  u8_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u8_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 
