@@ -1,9 +1,10 @@
-// src/engine/work_queue.h:220:0
+// src/engine/work_queue.h:225:0
 
 enum work_queue_entry_type
 {
   type_work_queue_entry_noop,
   type_work_queue_entry_init_world_chunk,
+  type_work_queue_entry_build_chunk_mesh,
   type_work_queue_entry_copy_buffer_set,
   type_work_queue_entry_copy_buffer_ref,
   type_work_queue_entry_init_asset,
@@ -22,6 +23,7 @@ struct work_queue_entry
   union
   {
     struct work_queue_entry_init_world_chunk work_queue_entry_init_world_chunk;
+    struct work_queue_entry_build_chunk_mesh work_queue_entry_build_chunk_mesh;
     struct work_queue_entry_copy_buffer_set work_queue_entry_copy_buffer_set;
     struct work_queue_entry_copy_buffer_ref work_queue_entry_copy_buffer_ref;
     struct work_queue_entry_init_asset work_queue_entry_init_asset;

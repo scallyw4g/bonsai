@@ -554,6 +554,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       SimulateParticleSystem(Job);
     } break;
 
+    case type_work_queue_entry_build_chunk_mesh:
+    {
+    } break;
+
     case type_work_queue_entry_rebuild_mesh:
     {
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);

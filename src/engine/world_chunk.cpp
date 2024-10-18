@@ -3589,7 +3589,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                                    NoiseParams,
                                                    UserData ));
 
-  
   // If the chunk didn't have any voxels filled, we're done
   if (SyntheticChunk->FilledCount)
   {
@@ -3605,12 +3604,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
       MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->xOccupancyBorder, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
     }
 
-    /* CopyChunkOffset(SyntheticChunk, SynChunkDim, DestChunk, DestChunk->Dim, Global_ChunkApronMinDim); */
-
-
-    /* DestChunk->FilledCount = SyntheticChunk->FilledCount; */
-
-
     Assert(DestChunk->FilledCount == 0);
     Assert(DestChunk->Dim.x == 64);
     Assert(DestChunk->Dim.y == 64);
@@ -3624,11 +3617,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
     Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
 
-    // NOTE(Jesse): You can use this for debug, but it doesn't work if you change it to NoExteriorFaces
-    /* MarkBoundaryVoxels_MakeExteriorFaces(DestChunk->Voxels, DestChunk->Dim, {}, DestChunk->Dim); */
-
-    /* FullBarrier; */
-
     // NOTE(Jesse): The DestChunk is finalized at the end of the routine
     /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
     FinalizeChunkInitialization(SyntheticChunk);
@@ -3641,46 +3629,12 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                             Thread->TempMemory);
     }
 
-#if 0
-    if (SyntheticChunk->FilledCount && (Flags & ChunkInitFlag_GenSmoothLODs) )
-    {
-      untextured_3d_geometry_buffer *TempMesh = AllocateTempWorldChunkMesh(Thread->TempMemory);
-      ComputeLodMesh( Thread, DestChunk, DestChunk->Dim, SyntheticChunk, SynChunkDim, TempMesh, True);
-
-      if (TempMesh->At)
-      {
-        LodMesh = GetPermMeshForChunk(&EngineResources->MeshFreelist, TempMesh, Thread->PermMemory);
-        DeepCopy(TempMesh, LodMesh);
-      }
-    }
-#endif
-
     geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
 
-    /* RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory); */
     RebuildWorldChunkMesh(Thread, SyntheticChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
     TempMesh->At = 0;
 
-#if 0
-    if (Flags & ChunkInitFlag_GenLODs)
-    {
-      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-
-      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-
-      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-
-      RebuildWorldChunkMesh(Thread, SyntheticChunk, Global_ChunkApronMinDim, Global_ChunkApronMinDim+DestChunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-    }
-#else
     Assert( (Flags & ChunkInitFlag_GenLODs) == 0);
-#endif
-
-    /* Assert( DestChunk->FilledCount == SyntheticChunk->FilledCount); */
   }
 
 #define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
@@ -3747,6 +3701,14 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
   work_queue_entry_rebuild_mesh Result = { Chunk, Flags };
   return Result;
 }
+
+link_internal work_queue_entry_build_chunk_mesh
+WorkQueueEntryBuildChunkMesh(v3 Dim, f32 *NoiseData)
+{
+  work_queue_entry_build_chunk_mesh Result = { Dim, NoiseData };
+  return Result;
+}
+
 
 link_internal work_queue_entry_update_world_region
 WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,

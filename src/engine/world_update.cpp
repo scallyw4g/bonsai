@@ -32,6 +32,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
         case type_work_queue_entry_copy_buffer_ref:
         case type_work_queue_entry_init_asset:
         case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_build_chunk_mesh:
         case type_work_queue_entry_sim_particle_system:
         case type_work_queue_entry__align_to_cache_line_helper:
         case type_work_queue_entry_async_function_call:

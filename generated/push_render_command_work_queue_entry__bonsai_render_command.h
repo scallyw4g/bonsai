@@ -144,6 +144,17 @@ PushBonsaiRenderCommandDrawAllEntities(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer(
+  work_queue *RenderQueue
+ , v3 ChunkSize   , f32* NoiseData  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer( ChunkSize , NoiseData  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandGlTimerInit(
   work_queue *RenderQueue
  , u32* GlTimerObject  

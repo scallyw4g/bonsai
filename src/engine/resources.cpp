@@ -90,6 +90,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
         case type_work_queue_entry_init_asset:
         case type_work_queue_entry_update_world_region:
         case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_build_chunk_mesh:
         case type_work_queue_entry_sim_particle_system:
         case type_work_queue_entry__align_to_cache_line_helper:
         {
@@ -221,6 +222,24 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
 
+            { tmatch(bonsai_render_command_initialize_noise_buffer, RC, Command)
+
+              auto *Shader = &Graphics->GpuNoise.GradientShader;
+              Assert(Command->ChunkSize == Shader->ChunkSize);
+
+              GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+
+              v2i ViewportSize = V2i(s32(Command->ChunkSize.x), s32(Command->ChunkSize.y*Command->ChunkSize.z));
+              SetViewport(ViewportSize);
+              UseShader(Shader);
+              RenderQuad();
+
+              GL.GetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, Command->NoiseData);
+
+              auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(Command->ChunkSize, Command->NoiseData));
+              PushWorkQueueEntry(&Plat->LowPriority, &E);
+            } break;
+
 
             { tmatch(bonsai_render_command_do_stuff, RC, Command)
 
@@ -296,13 +315,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               CompositeGameTexturesAndDisplay(Plat, Graphics);
 
               UiFrameEnd(&Engine->Ui);
-
-              {
-                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
-                SetViewport(V2i(64, 4096));
-                UseShader( &Graphics->GpuNoise.GradientShader );
-                RenderQuad();
-              }
 
 
               BonsaiSwapBuffers(&Engine->Stdlib.Os);

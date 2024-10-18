@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:248:0
+// src/engine/work_queue.h:254:0
 
 
 link_internal work_queue_entry
@@ -7,6 +7,19 @@ WorkQueueEntry( work_queue_entry_init_world_chunk A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_world_chunk,
     .work_queue_entry_init_world_chunk = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_build_chunk_mesh A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_build_chunk_mesh,
+    .work_queue_entry_build_chunk_mesh = A,
 
     
 

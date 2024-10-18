@@ -55,10 +55,15 @@ struct work_queue_entry_copy_buffer_set
 };
 
 struct world_chunk;
-struct work_queue_entry_init_world_chunk
-{
+struct work_queue_entry_init_world_chunk {
   world_chunk *Chunk;
   /* world_chunk_mesh_bitfield MeshBit; */
+};
+
+struct work_queue_entry_build_chunk_mesh
+{
+  v3 Dim;
+  f32 *NoiseData;
 };
 
 struct work_queue_entry_rebuild_mesh
@@ -220,6 +225,7 @@ poof(
   d_union work_queue_entry
   {
     work_queue_entry_init_world_chunk
+    work_queue_entry_build_chunk_mesh
     /* work_queue_entry_copy_buffer */
     work_queue_entry_copy_buffer_set
     work_queue_entry_copy_buffer_ref
