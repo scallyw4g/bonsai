@@ -1,5 +1,18 @@
-// src/engine/render_command.h:160:0
+// src/engine/render_command.h:168:0
 
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_initialize_noise_buffer,
+    .bonsai_render_command_initialize_noise_buffer = A,
+
+    
+
+  };
+  return Result;
+}
 
 link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers A  )
@@ -223,6 +236,17 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and
 }
 
 
+link_internal bonsai_render_command_initialize_noise_buffer
+BonsaiRenderCommandInitializeNoiseBuffer( world_chunk*  Chunk  )
+{
+  bonsai_render_command_initialize_noise_buffer Reuslt = {
+    .Chunk = Chunk
+  };
+
+  
+  return Reuslt;
+}
+
 link_internal bonsai_render_command_clear_all_framebuffers
 BonsaiRenderCommandClearAllFramebuffers( u32   Ignored  )
 {
@@ -290,6 +314,8 @@ link_internal bonsai_render_command_deallocate_buffers
 BonsaiRenderCommandDeallocateBuffers( u32*  Buffers , s32   Count  )
 {
   bonsai_render_command_deallocate_buffers Reuslt = {
+    .Buffers = {}
+,
     .Count = Count
   };
 

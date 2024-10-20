@@ -5,7 +5,8 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   Assert(Chunk->DEBUG_OwnedByThread == 0);
   Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
 
-  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
+  Assert( (Chunk->Flags & Chunk_Queued) == 0);
+  Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
 
   DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
 
@@ -27,6 +28,39 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   FullBarrier;
 }
+
+link_internal void
+RenderOctree(engine_resources *Engine, shader *Shader)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  b32     Continue = True;
+
+  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
+  Push(&Stack, &World->Root);
+
+  /* RuntimeBreak(); */
+  while (CurrentCount(&Stack))
+  {
+    octree_node *Node = Pop(&Stack);
+
+    if (Node->Type == OctreeNodeType_Leaf)
+    {
+      SyncGpuBuffersImmediate(Engine, &Node->Chunk->Meshes);
+      DrawLod(Engine, Shader, &Node->Chunk->Meshes, 0, {}, Quaternion(), V3(1));
+    }
+
+    if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
+    if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
+    if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
+    if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
+    if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
+    if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
+    if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
+    if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
+  }
+}
+
 
 link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
@@ -56,6 +90,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
         case type_work_queue_entry_init_asset:
         case type_work_queue_entry_update_world_region:
         case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_build_chunk_mesh:
         case type_work_queue_entry_sim_particle_system:
         case type_work_queue_entry__align_to_cache_line_helper:
         {
@@ -187,6 +222,203 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
 
+            { tmatch(bonsai_render_command_initialize_noise_buffer, RC, _Command)
+              /* Command = 0; */
+              TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
+
+              bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
+
+
+              world_chunk **Chunk2 = &C.Chunk;
+              world_chunk *Chunk1 = C.Chunk;
+              world_chunk *Chunk = Chunk1;
+
+              Info("(%llu)  (%llu)", u64(Chunk), u64(Chunk1));
+              Assert(s64(Chunk) == s64(Chunk1));
+
+              /* world_chunk *Chunk = C.Chunk; */
+              auto *Shader = &Graphics->GpuNoise.GradientShader;
+
+              v3i Apron = V3i(2, 2, 2);
+              v3 NoiseDim = V3(Shader->ChunkDim);
+              Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
+
+              v2i ViewportSize = V2i(s32(Chunk1->Dim.x), s32(Chunk1->Dim.y*Chunk1->Dim.z));
+
+              {
+                TIMED_NAMED_BLOCK(Draw);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+
+                SetViewport(ViewportSize);
+                UseShader(Shader);
+                RenderQuad();
+                AssertNoGlErrors;
+              }
+
+
+              s32 NoiseElementCount = s32(Volume(NoiseDim));
+              r32 *NoiseValues;
+#if 1
+              s32 NoiseByteCount = NoiseElementCount*s32(sizeof(f32));
+              {
+                TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
+                u32 PBO;
+                GL.GenBuffers(1, &PBO);
+                AssertNoGlErrors;
+                GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+                GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
+                AssertNoGlErrors;
+                GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED, GL_FLOAT, 0);
+                AssertNoGlErrors;
+              }
+
+              {
+                TIMED_NAMED_BLOCK(Fence);
+                gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+                b32 Done = False;
+                while (!Done)
+                {
+                u32 SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                  switch(SyncStatus)
+                  {
+                    case GL_ALREADY_SIGNALED:
+                    case GL_CONDITION_SATISFIED:
+                    {
+                      Done = True;
+                    } break;
+
+                    case GL_TIMEOUT_EXPIRED:
+                    {
+                      SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                    } break;
+
+                    case GL_WAIT_FAILED:
+                    {
+                      SoftError("Error waiting on gl sync object");
+                      Done = True;
+                    } break;
+                  }
+                }
+                AssertNoGlErrors;
+              }
+
+              /* SleepMs(1); */
+
+              {
+                HISTOGRAM_FUNCTION();
+                TIMED_NAMED_BLOCK(MapBuffer);
+                NoiseValues = Cast(f32*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+                AssertNoGlErrors;
+              }
+#else
+              NoiseValues = AllocateAligned(r32, GetTranArena(), NoiseElementCount, 32);
+              {
+                TIMED_NAMED_BLOCK(BindTexture);
+                GL.BindTexture(GL_TEXTURE_2D, Shader->ChunkTexture.ID);
+              }
+              {
+                HISTOGRAM_FUNCTION();
+                TIMED_NAMED_BLOCK(GetTexImage);
+                GL.GetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, NoiseValues);
+              }
+#endif
+              Assert(NoiseValues);
+
+              /* auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(C->ChunkSize, C->NoiseValues)); */
+              /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
+
+              world_chunk *DestChunk = Chunk1;
+              world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetTranArena());
+              SynChunk->Flags = Chunk_Queued;
+              v3i WorldBasis = {};
+              v3i SynChunkDim = SynChunk->Dim;
+              v3i SrcToDest = {};
+              s64 zMin = 0;
+              u16 PackedHSVColorValue = PackHSVColor(HSV_GREEN);
+              b32 MakeExteriorFaces = False;
+
+              u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, V3i(NoiseDim), NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
+
+              if (ChunkSum)
+              {
+                if (MakeExteriorFaces)
+                {
+                  MarkBoundaryVoxels_MakeExteriorFaces(SynChunk->Occupancy, SynChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
+                }
+                else
+                {
+                  MarkBoundaryVoxels_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+                }
+
+                Assert(DestChunk->FilledCount == 0);
+                Assert(DestChunk->Dim.x == 64);
+                Assert(DestChunk->Dim.y == 64);
+                Assert(DestChunk->Dim.z == 64);
+                RangeIterator(z, 64)
+                RangeIterator(y, 64)
+                {
+                  u64 Occ = DestChunk->Occupancy[y + z*64];
+                  DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+                }
+
+                Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
+
+                // NOTE(Jesse): The DestChunk is finalized at the end of the routine
+                /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
+                FinalizeChunkInitialization(SynChunk);
+
+#if 0
+                if (Flags & ChunkInitFlag_ComputeStandingSpots)
+                {
+                  NotImplemented;
+                  ComputeStandingSpots( SynChunkDim, SynChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                                        DestChunk->Dim, 0, &DestChunk->StandingSpots,
+                                        Thread->TempMemory);
+                }
+#endif
+
+                auto *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+                geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
+
+                RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+                TempMesh->At = 0;
+
+                /* Assert( (Flags & ChunkInitFlag_GenLODs) == 0); */
+
+#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
+                {                                                                           \
+                  auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
+                  if (SrcMesh) {                                                            \
+                    if (SrcMesh->At) {                                                      \
+                      DestChunk->HasMesh = True;                                            \
+                      AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
+                    } else {                                                                \
+                      DeallocateMesh(EngineResources, SrcMesh);                             \
+                    }                                                                       \
+                  }                                                                         \
+                }
+
+                {
+                  auto *EngineResources = GetEngineResources();
+                  TIMED_NAMED_BLOCK(Chunk_Finalize);
+                  FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod0 );
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod1 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod2 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod3 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod4 ); */
+#undef FINALIZE_MESH_FOR_CHUNK
+
+                  Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
+                  Assert( DestChunk->FilledCount <= s32(Volume(SynChunk)));
+
+                  /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
+
+                  FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
+                }
+              }
+            } break;
+
 
             { tmatch(bonsai_render_command_do_stuff, RC, Command)
 
@@ -211,7 +443,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 Graphics->ColorPaletteTexture =
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
-
+              //
               // Editor preview
               /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
               {
@@ -245,6 +477,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
               Clear(&GpuMap->Buffer);
 
+
               // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
               // after the transparency/luminance textures.  I have literally 0 ideas as to
               // why that would be, but here we are.
@@ -258,13 +491,15 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
               /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
 
-
               CompositeGameTexturesAndDisplay(Plat, Graphics);
 
               UiFrameEnd(&Engine->Ui);
 
+
               BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
+
+              HotReloadShaders(GetStdlib());
 
 
               /* GpuMap = GetNextGpuMap(Graphics); */
@@ -366,7 +601,8 @@ RenderThread_Main(void *ThreadStartupParams)
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
-    bitmap_block_array Bitmaps = { .Memory = GetTranArena() };
+    bitmap_block_array Bitmaps = {};
+    Bitmaps.Memory = GetTranArena();
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
@@ -486,6 +722,9 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   CancelAllWorkQueueJobs(Engine);
 
+  // TODO(Jesse): Free octree here.
+  NotImplemented;
+#if 0
   u32 ChunksFreed = 0;
   RangeIterator(HashIndex, s32(World->HashSize))
   {
@@ -497,6 +736,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
       ++ChunksFreed;
     }
   }
+#endif
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {

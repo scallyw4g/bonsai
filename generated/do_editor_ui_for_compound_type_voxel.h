@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:246:0
+// src/engine/editor.cpp:245:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,22 +26,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u8*,&Element->Flags),
-        CSz("Flags"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

@@ -1,8 +1,9 @@
-// src/engine/render_command.h:128:0
+// src/engine/render_command.h:133:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
   type_work_queue_entry__bonsai_render_command_noop,
+  type_bonsai_render_command_initialize_noise_buffer,
   type_bonsai_render_command_clear_all_framebuffers,
   type_bonsai_render_command_allocate_texture,
   type_bonsai_render_command_deallocate_texture,
@@ -28,6 +29,7 @@ struct work_queue_entry__bonsai_render_command
 
   union
   {
+    struct bonsai_render_command_initialize_noise_buffer bonsai_render_command_initialize_noise_buffer;
     struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
     struct bonsai_render_command_allocate_texture bonsai_render_command_allocate_texture;
     struct bonsai_render_command_deallocate_texture bonsai_render_command_deallocate_texture;

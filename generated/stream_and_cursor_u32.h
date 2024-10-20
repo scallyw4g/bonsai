@@ -15,12 +15,10 @@ link_internal u32_cursor
 U32Cursor(umm ElementCount, memory_arena* Memory)
 {
   u32 *Start = (u32*)PushStruct(Memory, sizeof(u32)*ElementCount, 1, 0);
-  u32_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u32_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 

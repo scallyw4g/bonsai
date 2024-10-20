@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:876:0
+// src/engine/world_update.cpp:842:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -13,7 +13,8 @@ DimIterator(x, y, z, UpdateDim)
     
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; }
+        NotImplemented;
+        /* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; } */
       
 
     if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
@@ -32,7 +33,8 @@ DimIterator(x, y, z, UpdateDim)
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

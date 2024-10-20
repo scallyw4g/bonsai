@@ -18,6 +18,7 @@ struct engine_resources;
 link_internal engine_resources *GetEngineResources();
 
 #include <engine/color.h>
+#include <engine/voxel.h>
 #include <engine/voxel_face.h>
 #include <engine/ray.h>
 #include <engine/mesh.h>

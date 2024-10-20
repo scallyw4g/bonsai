@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:419:0
+// src/engine/editor.cpp:424:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -183,6 +183,134 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawBranchNodesWithMeshes),
+        CSz("DrawBranchNodesWithMeshes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawBranchNodes),
+        CSz("DrawBranchNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawLeafNodes),
+        CSz("DrawLeafNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawNodesWithChunks),
+        CSz("DrawNodesWithChunks"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawQueuedNodes),
+        CSz("DrawQueuedNodes"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r64*,&Element->ChunkGenTimeElapsedMS),
+        CSz("ChunkGenTimeElapsedMS"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*,&Element->CellsGenerated),
+        CSz("CellsGenerated"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r64*,&Element->ChunkGenCyclesElapsed),
+        CSz("ChunkGenCyclesElapsed"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(u8*,&Element->PickedChunkState),
         CSz("PickedChunkState"),
         Params
@@ -262,6 +390,37 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_id*,&Element->SelectedEntity),
         CSz("SelectedEntity"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->OctreeDrawDepth),
+        CSz("OctreeDrawDepth"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(octree_node*, Element->SelectedNode),
+        CSz("SelectedNode"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

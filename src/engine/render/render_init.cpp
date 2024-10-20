@@ -575,10 +575,10 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   Result->Settings.BravoilMyersOIT   = True;
   Result->Settings.BravoilMcGuireOIT = True;
 
-  Result->Settings.UseShadowMapping = True;
+  /* Result->Settings.UseShadowMapping = True; */
   Result->Settings.UseLightingBloom = True;
 
-  Result->Settings.DrawMajorGrid = True;
+  /* Result->Settings.DrawMajorGrid = True; */
   Result->Settings.DrawMinorGrid = True;
   Result->Settings.MajorGridDim = 8.f;
 
@@ -615,8 +615,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Lighting->DuskIntensity = 0.50f;
   }
 
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
+  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
 
   Result->Camera = &Result->GameCamera;
 
@@ -755,6 +755,29 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Settings.BravoilMcGuireOIT,
                                                         &Result->Settings.ToneMappingType
                                                        );
+  }
+
+
+  {
+
+    gradient_noise_shader *GradientShader = &Result->GpuNoise.GradientShader;
+    v3 ChunkDim = V3(66, 66, 66);
+    GradientShader->ChunkDim = ChunkDim;
+    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, ChunkDim);
+
+    Result->GpuNoise.FBO = GenFramebuffer();
+
+    GL.GenQueries(1, &Result->GpuNoise.GlTimerObject);
+    Assert(Result->GpuNoise.GlTimerObject);
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
+
+    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+    GradientShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False);
+    FramebufferTexture(&Result->GpuNoise.FBO, &GradientShader->ChunkTexture);
+    SetDrawBuffers(&Result->GpuNoise.FBO);
+
+    Ensure(CheckAndClearFramebuffer());
   }
 
   GL.Enable(GL_CULL_FACE);

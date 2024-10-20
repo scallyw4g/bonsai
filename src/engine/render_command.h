@@ -103,6 +103,11 @@ struct bonsai_render_command_do_stuff
   u32 Ignored = 0;
 };
 
+struct bonsai_render_command_initialize_noise_buffer
+{
+  world_chunk *Chunk;
+};
+
 struct bonsai_render_command_gl_timer_init
 {
   u32 *GlTimerObject;
@@ -127,6 +132,9 @@ struct bonsai_render_command_gl_timer_read_value_and_histogram
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
+    bonsai_render_command_initialize_noise_buffer
+
+
     bonsai_render_command_clear_all_framebuffers
 
     bonsai_render_command_allocate_texture
@@ -185,3 +193,6 @@ PushDoStuffCommand(work_queue *RenderQueue);
 
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
+
+link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *RenderQueue , world_chunk* Chunk  );
