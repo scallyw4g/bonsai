@@ -6,9 +6,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[1];
-         texture  ChunkData;
+         texture  ChunkTexture;
 
-              v3  ChunkSize; poof(@uniform)
+              v3  ChunkDim; poof(@uniform)
 };
 
 poof(shader_magic(gradient_noise_shader))

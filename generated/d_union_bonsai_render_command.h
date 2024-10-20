@@ -1,8 +1,9 @@
-// src/engine/render_command.h:134:0
+// src/engine/render_command.h:133:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
   type_work_queue_entry__bonsai_render_command_noop,
+  type_bonsai_render_command_initialize_noise_buffer,
   type_bonsai_render_command_clear_all_framebuffers,
   type_bonsai_render_command_allocate_texture,
   type_bonsai_render_command_deallocate_texture,
@@ -16,7 +17,6 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_set_shader_uniform,
   type_bonsai_render_command_draw_world_chunk_draw_list,
   type_bonsai_render_command_draw_all_entities,
-  type_bonsai_render_command_initialize_noise_buffer,
   type_bonsai_render_command_gl_timer_init,
   type_bonsai_render_command_gl_timer_start,
   type_bonsai_render_command_gl_timer_end,
@@ -29,6 +29,7 @@ struct work_queue_entry__bonsai_render_command
 
   union
   {
+    struct bonsai_render_command_initialize_noise_buffer bonsai_render_command_initialize_noise_buffer;
     struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
     struct bonsai_render_command_allocate_texture bonsai_render_command_allocate_texture;
     struct bonsai_render_command_deallocate_texture bonsai_render_command_deallocate_texture;
@@ -42,7 +43,6 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_set_shader_uniform bonsai_render_command_set_shader_uniform;
     struct bonsai_render_command_draw_world_chunk_draw_list bonsai_render_command_draw_world_chunk_draw_list;
     struct bonsai_render_command_draw_all_entities bonsai_render_command_draw_all_entities;
-    struct bonsai_render_command_initialize_noise_buffer bonsai_render_command_initialize_noise_buffer;
     struct bonsai_render_command_gl_timer_init bonsai_render_command_gl_timer_init;
     struct bonsai_render_command_gl_timer_start bonsai_render_command_gl_timer_start;
     struct bonsai_render_command_gl_timer_end bonsai_render_command_gl_timer_end;

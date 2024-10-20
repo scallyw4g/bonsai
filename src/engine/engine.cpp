@@ -14,11 +14,14 @@
 #include <engine/triangle.cpp>
 #include <engine/camera.cpp>
 #include <engine/lod.cpp>
-#include <engine/world_chunk.cpp>
 #include <engine/physics.cpp>
+
+#include <engine/world_chunk.cpp>
 #include <engine/entity.cpp>
-#include <engine/world.cpp>
-#include <engine/asset_loaders.cpp>
+
+#include <engine/loaders/vox.cpp>
+#include <engine/loaders/obj.cpp>
+#include <engine/loaders/collada.cpp>
 
 #include <engine/shader.cpp>
 #include <engine/gpu_mapped_buffer.cpp>
@@ -29,6 +32,8 @@
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #include <engine/settings.cpp>
 #include <engine/resources.cpp>
+
+#include <engine/world.cpp>
 
 #include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
 #include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des

@@ -1,6 +1,17 @@
 // src/engine/render_command.cpp:27:0
 
 link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer(
+  work_queue *RenderQueue
+ , world_chunk* Chunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer( Chunk  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandClearAllFramebuffers(
   work_queue *RenderQueue
  , u32 Ignored = 0  
@@ -140,17 +151,6 @@ PushBonsaiRenderCommandDrawAllEntities(
 {
   work_queue_entry Work = WorkQueueEntry(
     WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawAllEntities( Shader  )));
-
-  PushWorkQueueEntry(RenderQueue, &Work);
-}
-link_internal void
-PushBonsaiRenderCommandInitializeNoiseBuffer(
-  work_queue *RenderQueue
- , v3 ChunkSize   , f32* NoiseData  
-)
-{
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer( ChunkSize , NoiseData  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

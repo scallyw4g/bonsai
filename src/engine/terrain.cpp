@@ -12,9 +12,10 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
   for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
   {
-    f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
+    f32 zCoord = 0.f; //__COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
     /* f32 zCoord = 75.f; */
-    f32 WorldZBiased = zCoord - zMin;
+    /* f32 WorldZBiased = zCoord - zMin; */
+    f32 WorldZBiased = 0.f;
     for ( s32 yChunk = 0; yChunk < Chunk->Dim.y; ++ yChunk)
     {
       u64 Mask = 0;
@@ -65,8 +66,9 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
   for ( s32 zNoise = 1; zNoise < 65; ++ zNoise)
   {
     /* f32 zCoord = 75.f; */
-    f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks);
-    f32 WorldZBiased = zCoord - zMin;
+    /* f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks); */
+    /* f32 WorldZBiased = zCoord - zMin; */
+    f32 WorldZBiased = 0.f;
     for ( s32 yNoise = 1; yNoise < 65; ++ yNoise)
     {
 

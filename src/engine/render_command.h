@@ -105,8 +105,7 @@ struct bonsai_render_command_do_stuff
 
 struct bonsai_render_command_initialize_noise_buffer
 {
-  v3 ChunkSize; // TODO(Jesse): Make this v3i
-  f32 *NoiseData;
+  world_chunk *Chunk;
 };
 
 struct bonsai_render_command_gl_timer_init
@@ -133,6 +132,9 @@ struct bonsai_render_command_gl_timer_read_value_and_histogram
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
+    bonsai_render_command_initialize_noise_buffer
+
+
     bonsai_render_command_clear_all_framebuffers
 
     bonsai_render_command_allocate_texture
@@ -154,8 +156,6 @@ poof(
 
     bonsai_render_command_draw_world_chunk_draw_list
     bonsai_render_command_draw_all_entities
-
-    bonsai_render_command_initialize_noise_buffer
 
     bonsai_render_command_gl_timer_init
     bonsai_render_command_gl_timer_start
@@ -193,3 +193,6 @@ PushDoStuffCommand(work_queue *RenderQueue);
 
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
+
+link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *RenderQueue , world_chunk* Chunk  );

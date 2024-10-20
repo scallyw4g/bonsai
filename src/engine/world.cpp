@@ -507,7 +507,7 @@ poof(generate_cursor(octree_node_ptr))
 
 #define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)
 #define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (128)
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (16)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (1)
 struct octree_node_priority_queue
 {
   octree_node_ptr_cursor Lists[OCTREE_PRIORITY_QUEUE_LIST_COUNT];
@@ -970,7 +970,8 @@ MaintainWorldOctree(engine_resources *Engine)
               /* Node->Chunk = AllocateWorldChunk(Node->WorldP, World->ChunkDim, Node->Resolution, World->ChunkMemory); */
             }
 
-            QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0);
+            /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
+            QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0);
             ++Stats.NewQueues;
 
             if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;

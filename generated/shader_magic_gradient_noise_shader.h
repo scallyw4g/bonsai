@@ -1,14 +1,14 @@
 // src/engine/graphics.h:14:0
 
 link_internal void
-InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkSize  )
+InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkDim  )
 {
   Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/noise/gradient.fragmentshader"));
 
   u32 UniformIndex = 0;
 
   
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program,&Struct->ChunkSize, "ChunkSize");
+  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program,&Struct->ChunkDim, "ChunkDim");
   ++UniformIndex;
 
   if (UniformIndex != 1  )

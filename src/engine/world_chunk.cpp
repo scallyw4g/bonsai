@@ -3409,6 +3409,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
 
 /*   DebugLine("Queuing Chunk (%p)(%d, %d, %d)", Chunk, Chunk->WorldP.x, Chunk->WorldP.y, Chunk->WorldP.z); */
 
+#if 0
   work_queue_entry Entry = {};
   {
     Entry.Type = type_work_queue_entry_init_world_chunk;
@@ -3417,11 +3418,13 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
     /* Job->MeshBit = MeshBit; */
   }
 
+  PushWorkQueueEntry(Queue, &Entry);
+#else
+  PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Chunk);
+#endif
+
   Assert( NotSet(Chunk->Flags, Chunk_Queued) );
   SetFlag(&Chunk->Flags, Chunk_Queued);
-  PushWorkQueueEntry(Queue, &Entry);
-
-  return;
 }
 
 inline void

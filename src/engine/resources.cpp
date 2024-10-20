@@ -222,22 +222,201 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
 
-            { tmatch(bonsai_render_command_initialize_noise_buffer, RC, Command)
+            { tmatch(bonsai_render_command_initialize_noise_buffer, RC, _Command)
+              /* Command = 0; */
+              TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
 
+              bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
+
+
+              world_chunk **Chunk2 = &C.Chunk;
+              world_chunk *Chunk1 = C.Chunk;
+              world_chunk *Chunk = Chunk1;
+
+              Info("(%llu)  (%llu)", u64(Chunk), u64(Chunk1));
+              Assert(s64(Chunk) == s64(Chunk1));
+
+              /* world_chunk *Chunk = C.Chunk; */
               auto *Shader = &Graphics->GpuNoise.GradientShader;
-              Assert(Command->ChunkSize == Shader->ChunkSize);
 
-              GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+              v3i Apron = V3i(2, 2, 2);
+              v3 NoiseDim = V3(Shader->ChunkDim);
+              Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
 
-              v2i ViewportSize = V2i(s32(Command->ChunkSize.x), s32(Command->ChunkSize.y*Command->ChunkSize.z));
-              SetViewport(ViewportSize);
-              UseShader(Shader);
-              RenderQuad();
+              v2i ViewportSize = V2i(s32(Chunk1->Dim.x), s32(Chunk1->Dim.y*Chunk1->Dim.z));
 
-              GL.GetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, Command->NoiseData);
+              {
+                TIMED_NAMED_BLOCK(Draw);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
 
-              auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(Command->ChunkSize, Command->NoiseData));
-              PushWorkQueueEntry(&Plat->LowPriority, &E);
+                SetViewport(ViewportSize);
+                UseShader(Shader);
+                RenderQuad();
+                AssertNoGlErrors;
+              }
+
+
+              s32 NoiseElementCount = s32(Volume(NoiseDim));
+              r32 *NoiseValues;
+#if 1
+              s32 NoiseByteCount = NoiseElementCount*s32(sizeof(f32));
+              {
+                TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
+                u32 PBO;
+                GL.GenBuffers(1, &PBO);
+                AssertNoGlErrors;
+                GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+                GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
+                AssertNoGlErrors;
+                GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED, GL_FLOAT, 0);
+                AssertNoGlErrors;
+              }
+
+              {
+                TIMED_NAMED_BLOCK(Fence);
+                gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+                b32 Done = False;
+                while (!Done)
+                {
+                u32 SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                  switch(SyncStatus)
+                  {
+                    case GL_ALREADY_SIGNALED:
+                    case GL_CONDITION_SATISFIED:
+                    {
+                      Done = True;
+                    } break;
+
+                    case GL_TIMEOUT_EXPIRED:
+                    {
+                      SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                    } break;
+
+                    case GL_WAIT_FAILED:
+                    {
+                      SoftError("Error waiting on gl sync object");
+                      Done = True;
+                    } break;
+                  }
+                }
+                AssertNoGlErrors;
+              }
+
+              /* SleepMs(1); */
+
+              {
+                HISTOGRAM_FUNCTION();
+                TIMED_NAMED_BLOCK(MapBuffer);
+                NoiseValues = Cast(f32*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+                AssertNoGlErrors;
+              }
+#else
+              NoiseValues = AllocateAligned(r32, GetTranArena(), NoiseElementCount, 32);
+              {
+                TIMED_NAMED_BLOCK(BindTexture);
+                GL.BindTexture(GL_TEXTURE_2D, Shader->ChunkTexture.ID);
+              }
+              {
+                HISTOGRAM_FUNCTION();
+                TIMED_NAMED_BLOCK(GetTexImage);
+                GL.GetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, NoiseValues);
+              }
+#endif
+              Assert(NoiseValues);
+
+              /* auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(C->ChunkSize, C->NoiseValues)); */
+              /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
+
+              world_chunk *DestChunk = Chunk1;
+              world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetTranArena());
+              SynChunk->Flags = Chunk_Queued;
+              v3i WorldBasis = {};
+              v3i SynChunkDim = SynChunk->Dim;
+              v3i SrcToDest = {};
+              s64 zMin = 0;
+              u16 PackedHSVColorValue = PackHSVColor(HSV_GREEN);
+              b32 MakeExteriorFaces = False;
+
+              u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, V3i(NoiseDim), NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
+
+              if (ChunkSum)
+              {
+                if (MakeExteriorFaces)
+                {
+                  MarkBoundaryVoxels_MakeExteriorFaces(SynChunk->Occupancy, SynChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
+                }
+                else
+                {
+                  MarkBoundaryVoxels_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+                }
+
+                Assert(DestChunk->FilledCount == 0);
+                Assert(DestChunk->Dim.x == 64);
+                Assert(DestChunk->Dim.y == 64);
+                Assert(DestChunk->Dim.z == 64);
+                RangeIterator(z, 64)
+                RangeIterator(y, 64)
+                {
+                  u64 Occ = DestChunk->Occupancy[y + z*64];
+                  DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+                }
+
+                Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
+
+                // NOTE(Jesse): The DestChunk is finalized at the end of the routine
+                /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
+                FinalizeChunkInitialization(SynChunk);
+
+#if 0
+                if (Flags & ChunkInitFlag_ComputeStandingSpots)
+                {
+                  NotImplemented;
+                  ComputeStandingSpots( SynChunkDim, SynChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
+                                        DestChunk->Dim, 0, &DestChunk->StandingSpots,
+                                        Thread->TempMemory);
+                }
+#endif
+
+                auto *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+                geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
+
+                RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
+                TempMesh->At = 0;
+
+                /* Assert( (Flags & ChunkInitFlag_GenLODs) == 0); */
+
+#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
+                {                                                                           \
+                  auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
+                  if (SrcMesh) {                                                            \
+                    if (SrcMesh->At) {                                                      \
+                      DestChunk->HasMesh = True;                                            \
+                      AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
+                    } else {                                                                \
+                      DeallocateMesh(EngineResources, SrcMesh);                             \
+                    }                                                                       \
+                  }                                                                         \
+                }
+
+                {
+                  auto *EngineResources = GetEngineResources();
+                  TIMED_NAMED_BLOCK(Chunk_Finalize);
+                  FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod0 );
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod1 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod2 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod3 ); */
+                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod4 ); */
+#undef FINALIZE_MESH_FOR_CHUNK
+
+                  Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
+                  Assert( DestChunk->FilledCount <= s32(Volume(SynChunk)));
+
+                  /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
+
+                  FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
+                }
+              }
             } break;
 
 

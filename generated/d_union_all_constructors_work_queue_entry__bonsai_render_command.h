@@ -2,6 +2,19 @@
 
 
 link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_initialize_noise_buffer,
+    .bonsai_render_command_initialize_noise_buffer = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers A  )
 {
   work_queue_entry__bonsai_render_command Result = {
@@ -171,19 +184,6 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_draw_all_entities A  )
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A  )
-{
-  work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_initialize_noise_buffer,
-    .bonsai_render_command_initialize_noise_buffer = A,
-
-    
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_init A  )
 {
   work_queue_entry__bonsai_render_command Result = {
@@ -235,6 +235,17 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and
   return Result;
 }
 
+
+link_internal bonsai_render_command_initialize_noise_buffer
+BonsaiRenderCommandInitializeNoiseBuffer( world_chunk*  Chunk  )
+{
+  bonsai_render_command_initialize_noise_buffer Reuslt = {
+    .Chunk = Chunk
+  };
+
+  
+  return Reuslt;
+}
 
 link_internal bonsai_render_command_clear_all_framebuffers
 BonsaiRenderCommandClearAllFramebuffers( u32   Ignored  )
@@ -394,19 +405,6 @@ BonsaiRenderCommandDrawAllEntities( shader*  Shader  )
 {
   bonsai_render_command_draw_all_entities Reuslt = {
     .Shader = Shader
-  };
-
-  
-  return Reuslt;
-}
-
-link_internal bonsai_render_command_initialize_noise_buffer
-BonsaiRenderCommandInitializeNoiseBuffer( v3   ChunkSize , f32*  NoiseData  )
-{
-  bonsai_render_command_initialize_noise_buffer Reuslt = {
-    .ChunkSize = ChunkSize
-,
-    .NoiseData = NoiseData
   };
 
   

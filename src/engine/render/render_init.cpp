@@ -759,9 +759,11 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
 
   {
-    v2i ChunkDim = V2i(64, 64*64);
 
-    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, V3(64));
+    gradient_noise_shader *GradientShader = &Result->GpuNoise.GradientShader;
+    v3 ChunkDim = V3(66, 66, 66);
+    GradientShader->ChunkDim = ChunkDim;
+    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, ChunkDim);
 
     Result->GpuNoise.FBO = GenFramebuffer();
 
@@ -770,8 +772,9 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
 
-    texture ChunkDataTexture = MakeTexture_SingleChannel(ChunkDim, CSz("PerlinNoiseTexture"), False);
-    FramebufferTexture(&Result->GpuNoise.FBO, &ChunkDataTexture);
+    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+    GradientShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False);
+    FramebufferTexture(&Result->GpuNoise.FBO, &GradientShader->ChunkTexture);
     SetDrawBuffers(&Result->GpuNoise.FBO);
 
     Ensure(CheckAndClearFramebuffer());

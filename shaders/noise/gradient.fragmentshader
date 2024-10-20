@@ -154,6 +154,18 @@ float gradient_noise( in vec3 p )
 }
 #endif
 
+float structured_noise( in vec3 p )
+{
+  if (p.x < 32.f && p.y < 32.f && p.z < 32.f)
+  {
+    return 1.f;
+  }
+  else
+  {
+    return -1.f;
+  }
+}
+
 void main()
 {
   v2 _UV = UV*64.f;
@@ -162,13 +174,14 @@ void main()
   f32 y = f32(s32(_UV.y) % 64);
   f32 z = _UV.y / 64;
 
-  v3 xyz = v3(x,y,z) * 25;
+  v3 xyz = v3(x,y,z)*2;
 
   /* for (s32 Octave = 0; Octave < 1; ++Octave) */
   {
     /* Output += gradient_noise_derivs(xyz / Octave).x; */
-    Output += gradient_noise_derivs(xyz).x;
+    /* Output += gradient_noise_derivs(xyz).x; */
     /* Output += gradient_noise(xyz); */
+    Output += structured_noise(xyz);
   }
   /* Output = (UV.x + UV.y) / 2.f; */
 }
