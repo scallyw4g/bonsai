@@ -260,6 +260,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               v3 NoiseDim = V3(Shader->ChunkDim);
               Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
 
+              Shader->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+              Shader->ChunkResolution = V3(Chunk->DimInChunks);
               v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
 
               {

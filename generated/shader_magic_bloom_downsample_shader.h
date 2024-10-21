@@ -8,7 +8,6 @@ InitializeBloomDownsampleShader( bloom_downsample_shader *Struct  , v2*SrcResolu
   u32 UniformIndex = 0;
 
   Struct->SrcResolution = SrcResolution;
-
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->SrcResolution, "SrcResolution");
   ++UniformIndex;
 

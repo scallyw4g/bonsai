@@ -7,21 +7,19 @@ InitializeShadowMapShader( shadow_map_shader *Struct  , m4 MVP    , m4 ModelMatr
 
   u32 UniformIndex = 0;
 
-  
+  Struct->MVP = MVP;
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program,&Struct->MVP, "MVP");
   ++UniformIndex;
 
-  
+  Struct->ModelMatrix = ModelMatrix;
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program,&Struct->ModelMatrix, "ModelMatrix");
   ++UniformIndex;
 
   Struct->MinClipP_worldspace = MinClipP_worldspace;
-
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->MinClipP_worldspace, "MinClipP_worldspace");
   ++UniformIndex;
 
   Struct->MaxClipP_worldspace = MaxClipP_worldspace;
-
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->MaxClipP_worldspace, "MaxClipP_worldspace");
   ++UniformIndex;
 

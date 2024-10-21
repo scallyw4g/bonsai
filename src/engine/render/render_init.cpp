@@ -762,8 +762,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     gradient_noise_shader *GradientShader = &Result->GpuNoise.GradientShader;
     v3 ChunkDim = V3(66, 66, 66);
-    GradientShader->ChunkDim = ChunkDim;
-    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, ChunkDim);
+    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, ChunkDim, {}, {});
 
     Result->GpuNoise.FBO = GenFramebuffer();
 

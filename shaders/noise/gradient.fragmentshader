@@ -1,4 +1,5 @@
 uniform v3 WorldspaceBasis;
+uniform v3 ChunkResolution;
 
 in vec2 UV;
 out float Output;
@@ -192,9 +193,9 @@ void main()
 
   f32 x = _UV.x;
   f32 y = f32(s32(_UV.y) % 66);
-  f32 z = _UV.y / 66;
+  f32 z = (_UV.y / 66) - 10.f;
 
-  v3 xyz = v3(x,y,z)/16;
+  v3 xyz = (WorldspaceBasis+ (v3(x,y,z)*ChunkResolution) ) / 50.f;
 
   /* for (s32 Octave = 0; Octave < 1; ++Octave) */
   {

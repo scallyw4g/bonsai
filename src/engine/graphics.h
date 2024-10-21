@@ -5,10 +5,12 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
       @frag_source_file("shaders/noise/gradient.fragmentshader") )
 {
           shader  Program;
-  shader_uniform  Uniforms[1];
+  shader_uniform  Uniforms[3];
          texture  ChunkTexture;
 
               v3  ChunkDim; poof(@uniform)
+              v3  WorldspaceBasis; poof(@uniform)
+              v3  ChunkResolution; poof(@uniform)
 };
 
 poof(shader_magic(gradient_noise_shader))
