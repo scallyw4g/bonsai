@@ -1,4 +1,4 @@
-/* uniform v3i WorldspaceBasis; */
+uniform v3 WorldspaceBasis;
 
 in vec2 UV;
 out float Output;
