@@ -224,7 +224,7 @@ MapGpuBuffer_untextured_3d_geometry_buffer(gpu_element_buffer_handles *Handles)
   if (!Buffer.Normals) { Error("Allocating gpu_mapped_element_buffer::Normals"); }
   if (!Buffer.Mat)     { Error("Allocating gpu_mapped_element_buffer::Mat");     }
 
-GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
   return {*Handles, Buffer};
 }

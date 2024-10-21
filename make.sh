@@ -363,8 +363,8 @@ function RunPoof
   # $TESTS/rng.cpp
   # $TESTS/file.cpp
   # $TESTS/sort.cpp
-  # $TESTS/containers/block_array.cpp
 TESTS_TO_BUILD="
+  $TESTS/containers/block_array.cpp
   $TESTS/perlin_perf.cpp
 "
 

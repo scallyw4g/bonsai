@@ -61,7 +61,7 @@ struct engine_debug
   b8 DrawBranchNodesWithMeshes;
   b8 DrawBranchNodes;
   b8 DrawLeafNodes;
-  b8 DrawNodesWithChunks = 1;
+  b8 DrawNodesWithChunks;
   b8 DrawQueuedNodes;
 
   r64 ChunkGenTimeElapsedMS;

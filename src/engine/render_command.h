@@ -1,3 +1,9 @@
+struct gpu_readback_buffer
+{
+  u32 PBO;
+  GLsync Fence;
+};
+
 
 //
 // Renderer commands
@@ -128,6 +134,11 @@ struct bonsai_render_command_gl_timer_read_value_and_histogram
   u32 GlTimerObject;
 };
 
+struct bonsai_render_command_unmap_and_deallocate_buffer
+{
+  gpu_readback_buffer PBOBuf;
+};
+
 
 poof(
   d_union work_queue_entry__bonsai_render_command
@@ -149,6 +160,8 @@ poof(
     /* bonsai_render_command_reallocate_world_chunk_buffers */
 
     bonsai_render_command_do_stuff
+
+    bonsai_render_command_unmap_and_deallocate_buffer
 
     bonsai_render_command_setup_shader
     bonsai_render_command_teardown_shader

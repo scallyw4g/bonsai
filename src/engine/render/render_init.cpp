@@ -620,8 +620,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->Camera = &Result->GameCamera;
 
-  AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
-  AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Kilobytes(1));
+  AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Kilobytes(1));
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))

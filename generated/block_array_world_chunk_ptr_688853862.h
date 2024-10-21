@@ -30,17 +30,32 @@ RemoveUnordered(world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_
 
   if (Array->Current->At == 0)
   {
-    // Walk the chain till we get to the second-last one
-    world_chunk_ptr_block *Current = Array->First;
-    world_chunk_ptr_block *LastB = LastI.Block;
+    // TODO(Jesse): There's obviously a way better way to do this ..
+    auto AtE = AtElements(Array);
+    s32 Count = s32(GetIndex(&AtE));
 
-    while (Current->Next && Current->Next != LastB)
+    if (Count == 0)
     {
-      Current = Current->Next;
+      // Nothing to be done, we've popping the last thing off the array
+      Assert(Index.Block == Array->First);
+      Assert(Index.Block == Array->Current);
+      Assert(Index.BlockIndex == 0);
+      Assert(Index.ElementIndex == 0);
     }
+    else
+    {
+      // Walk the chain till we get to the second-last one
+      world_chunk_ptr_block *Current = Array->First;
+      world_chunk_ptr_block *LastB = LastI.Block;
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+      while (Current->Next && Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
+
+      Assert(Current->Next == LastB || Current->Next == 0);
+      Array->Current = Current;
+    }
   }
 }
 

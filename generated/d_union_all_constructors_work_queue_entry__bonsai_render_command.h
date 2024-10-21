@@ -1,4 +1,4 @@
-// src/engine/render_command.h:168:0
+// src/engine/render_command.h:181:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -111,6 +111,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A  )
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_do_stuff,
     .bonsai_render_command_do_stuff = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_unmap_and_deallocate_buffer,
+    .bonsai_render_command_unmap_and_deallocate_buffer = A,
 
     
 
@@ -344,6 +357,17 @@ BonsaiRenderCommandDoStuff( u32   Ignored  )
 {
   bonsai_render_command_do_stuff Reuslt = {
     .Ignored = Ignored
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_unmap_and_deallocate_buffer
+BonsaiRenderCommandUnmapAndDeallocateBuffer( gpu_readback_buffer   PBOBuf  )
+{
+  bonsai_render_command_unmap_and_deallocate_buffer Reuslt = {
+    .PBOBuf = PBOBuf
   };
 
   

@@ -99,6 +99,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
         { tmatch(work_queue_entry_async_function_call, Job, RPC)
+          TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
           DispatchAsyncFunctionCall(RPC);
         } break;
 
@@ -106,6 +107,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           tswitch(RC)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
+
+            { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RC, Command)
+
+              gpu_readback_buffer PBOBuf = Command->PBOBuf;
+              GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+              AssertNoGlErrors;
+              GL.UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+              AssertNoGlErrors;
+              GL.DeleteBuffers(1, &PBOBuf.PBO);
+              AssertNoGlErrors;
+            } break;
 
             { tmatch(bonsai_render_command_allocate_texture, RC, Command)
 
@@ -138,6 +150,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_reallocate_buffers, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_reallocate_buffers);
               auto *Handles = Command->Handles;
               auto *Mesh    = Command->Mesh;
 
@@ -147,6 +160,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
             { tmatch(bonsai_render_command_deallocate_buffers, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_buffers);
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;
@@ -160,6 +174,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
             { tmatch(bonsai_render_command_clear_all_framebuffers, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
               ClearFramebuffers(Graphics, &Engine->RTTGroup);
             } break;
 
@@ -167,6 +182,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
             { tmatch(bonsai_render_command_setup_shader, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
               switch (Command->ShaderId)
               {
                 InvalidCase(BonsaiRenderCommand_ShaderId_noop);
@@ -184,6 +200,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_teardown_shader, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
               switch (Command->ShaderId)
               {
                 InvalidCase(BonsaiRenderCommand_ShaderId_noop);
@@ -201,6 +218,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_set_shader_uniform, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
               shader *Shader = Command->Shader;
               shader_uniform *Uniform = &Command->Uniform;
               if (Uniform->ID >= 0)
@@ -214,29 +232,28 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
               RenderDrawList(Engine, Command->DrawList, Command->Shader);
             } break;
 
             { tmatch(bonsai_render_command_draw_all_entities, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
               DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
             } break;
 
 
             { tmatch(bonsai_render_command_initialize_noise_buffer, RC, _Command)
-              /* Command = 0; */
               TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
+              /* Command = 0; */
 
               bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
-
 
               world_chunk **Chunk2 = &C.Chunk;
               world_chunk *Chunk1 = C.Chunk;
               world_chunk *Chunk = Chunk1;
 
-              Info("(%llu)  (%llu)", u64(Chunk), u64(Chunk1));
               Assert(s64(Chunk) == s64(Chunk1));
 
-              /* world_chunk *Chunk = C.Chunk; */
               auto *Shader = &Graphics->GpuNoise.GradientShader;
 
               v3i Apron = V3i(2, 2, 2);
@@ -258,8 +275,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               s32 NoiseElementCount = s32(Volume(NoiseDim));
               r32 *NoiseValues;
-#if 1
               s32 NoiseByteCount = NoiseElementCount*s32(sizeof(f32));
+
               {
                 TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
                 u32 PBO;
@@ -270,157 +287,19 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
                 GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED, GL_FLOAT, 0);
                 AssertNoGlErrors;
-              }
+                GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-              {
-                TIMED_NAMED_BLOCK(Fence);
                 gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-                b32 Done = False;
-                while (!Done)
-                {
-                u32 SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-                  switch(SyncStatus)
-                  {
-                    case GL_ALREADY_SIGNALED:
-                    case GL_CONDITION_SATISFIED:
-                    {
-                      Done = True;
-                    } break;
-
-                    case GL_TIMEOUT_EXPIRED:
-                    {
-                      SyncStatus = GL.ClientWaitSync(Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-                    } break;
-
-                    case GL_WAIT_FAILED:
-                    {
-                      SoftError("Error waiting on gl sync object");
-                      Done = True;
-                    } break;
-                  }
-                }
-                AssertNoGlErrors;
+                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, V3i(NoiseDim), Chunk};
+                Push(&Graphics->NoiseReadbackJobs, &Readback);
               }
 
-              /* SleepMs(1); */
-
-              {
-                HISTOGRAM_FUNCTION();
-                TIMED_NAMED_BLOCK(MapBuffer);
-                NoiseValues = Cast(f32*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-                AssertNoGlErrors;
-              }
-#else
-              NoiseValues = AllocateAligned(r32, GetTranArena(), NoiseElementCount, 32);
-              {
-                TIMED_NAMED_BLOCK(BindTexture);
-                GL.BindTexture(GL_TEXTURE_2D, Shader->ChunkTexture.ID);
-              }
-              {
-                HISTOGRAM_FUNCTION();
-                TIMED_NAMED_BLOCK(GetTexImage);
-                GL.GetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, NoiseValues);
-              }
-#endif
-              Assert(NoiseValues);
-
-              /* auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(C->ChunkSize, C->NoiseValues)); */
-              /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
-
-              world_chunk *DestChunk = Chunk1;
-              world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetTranArena());
-              SynChunk->Flags = Chunk_Queued;
-              v3i WorldBasis = {};
-              v3i SynChunkDim = SynChunk->Dim;
-              v3i SrcToDest = {};
-              s64 zMin = 0;
-              u16 PackedHSVColorValue = PackHSVColor(HSV_GREEN);
-              b32 MakeExteriorFaces = False;
-
-              u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, V3i(NoiseDim), NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
-
-              if (ChunkSum)
-              {
-                if (MakeExteriorFaces)
-                {
-                  MarkBoundaryVoxels_MakeExteriorFaces(SynChunk->Occupancy, SynChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
-                }
-                else
-                {
-                  MarkBoundaryVoxels_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-                }
-
-                Assert(DestChunk->FilledCount == 0);
-                Assert(DestChunk->Dim.x == 64);
-                Assert(DestChunk->Dim.y == 64);
-                Assert(DestChunk->Dim.z == 64);
-                RangeIterator(z, 64)
-                RangeIterator(y, 64)
-                {
-                  u64 Occ = DestChunk->Occupancy[y + z*64];
-                  DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
-                }
-
-                Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
-
-                // NOTE(Jesse): The DestChunk is finalized at the end of the routine
-                /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
-                FinalizeChunkInitialization(SynChunk);
-
-#if 0
-                if (Flags & ChunkInitFlag_ComputeStandingSpots)
-                {
-                  NotImplemented;
-                  ComputeStandingSpots( SynChunkDim, SynChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                                        DestChunk->Dim, 0, &DestChunk->StandingSpots,
-                                        Thread->TempMemory);
-                }
-#endif
-
-                auto *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-                geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
-
-                RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-                TempMesh->At = 0;
-
-                /* Assert( (Flags & ChunkInitFlag_GenLODs) == 0); */
-
-#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
-                {                                                                           \
-                  auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
-                  if (SrcMesh) {                                                            \
-                    if (SrcMesh->At) {                                                      \
-                      DestChunk->HasMesh = True;                                            \
-                      AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
-                    } else {                                                                \
-                      DeallocateMesh(EngineResources, SrcMesh);                             \
-                    }                                                                       \
-                  }                                                                         \
-                }
-
-                {
-                  auto *EngineResources = GetEngineResources();
-                  TIMED_NAMED_BLOCK(Chunk_Finalize);
-                  FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod0 );
-                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod1 ); */
-                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod2 ); */
-                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod3 ); */
-                  /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod4 ); */
-#undef FINALIZE_MESH_FOR_CHUNK
-
-                  Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
-                  Assert( DestChunk->FilledCount <= s32(Volume(SynChunk)));
-
-                  /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
-
-                  FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
-                }
-              }
             } break;
 
 
             { tmatch(bonsai_render_command_do_stuff, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
 
               //
               // Render begin
@@ -514,24 +393,29 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_init, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_init);
               AssertNoGlErrors;
               GL.GenQueries(1, Command->GlTimerObject);
               AssertNoGlErrors;
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_start, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_start);
               AssertNoGlErrors;
               GL.BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
               AssertNoGlErrors;
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_end, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_end);
               AssertNoGlErrors;
               GL.EndQuery(GL_TIME_ELAPSED);
               AssertNoGlErrors;
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_read_value_and_histogram);
+#if 0
               AssertNoGlErrors;
               u64 TimerNs = 0;
 
@@ -547,6 +431,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
               /* GetDebugState()->PushHistogramDataPoint(TimerNs); */
               AssertNoGlErrors;
+#endif
             } break;
 
           }
@@ -554,6 +439,44 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
       }
 
       RewindArena(GetTranArena());
+    }
+
+    {
+      TIMED_NAMED_BLOCK(CheckReadbackJobs);
+      IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+      {
+        u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+        AssertNoGlErrors;
+        switch(SyncStatus)
+        {
+          case GL_ALREADY_SIGNALED:
+          case GL_CONDITION_SATISFIED:
+          {
+            TIMED_NAMED_BLOCK(MapBuffer);
+            AssertNoGlErrors;
+            GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
+            AssertNoGlErrors;
+            f32 *NoiseValues = Cast(f32*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+            AssertNoGlErrors;
+
+            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
+            PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
+
+            RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
+
+          } break;
+
+          case GL_TIMEOUT_EXPIRED:
+          {
+          } break;
+
+          case GL_WAIT_FAILED:
+          {
+            Graphics->ChunksCurrentlyQueued -= 1;
+            SoftError("Error waiting on gl sync object");
+          } break;
+        }
+      }
     }
 
     SleepMs(1);

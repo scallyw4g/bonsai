@@ -62,8 +62,12 @@ struct work_queue_entry_init_world_chunk {
 
 struct work_queue_entry_build_chunk_mesh
 {
-  v3 Dim;
+  gpu_readback_buffer PBOBuf;
+
   f32 *NoiseData;
+  v3i NoiseDim;
+
+  world_chunk *Chunk;
 };
 
 struct work_queue_entry_rebuild_mesh
@@ -233,6 +237,7 @@ poof(
     work_queue_entry_update_world_region
     work_queue_entry_rebuild_mesh
     work_queue_entry_sim_particle_system
+
 
     // NOTE(Jesse): This is kind of a hack to put render commands onto the work
     // queue so I don't have to invent a whole generic system for having queues

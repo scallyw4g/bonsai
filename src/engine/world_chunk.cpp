@@ -3706,9 +3706,9 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
 }
 
 link_internal work_queue_entry_build_chunk_mesh
-WorkQueueEntryBuildChunkMesh(v3 Dim, f32 *NoiseData)
+WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk)
 {
-  work_queue_entry_build_chunk_mesh Result = { Dim, NoiseData };
+  work_queue_entry_build_chunk_mesh Result = { PBOBuf, NoiseData, NoiseDim, Chunk };
   return Result;
 }
 

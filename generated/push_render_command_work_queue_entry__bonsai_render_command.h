@@ -100,6 +100,17 @@ PushBonsaiRenderCommandDoStuff(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
+PushBonsaiRenderCommandUnmapAndDeallocateBuffer(
+  work_queue *RenderQueue
+ , gpu_readback_buffer PBOBuf  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocateBuffer( PBOBuf  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandSetupShader(
   work_queue *RenderQueue
  , bonsai_render_command_shader_id ShaderId  

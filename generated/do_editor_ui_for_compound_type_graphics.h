@@ -369,6 +369,37 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*,&Element->ChunksCurrentlyQueued),
+        CSz("ChunksCurrentlyQueued"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(dummy_work_queue_entry_build_chunk_mesh_block_array*,&Element->NoiseReadbackJobs),
+        CSz("NoiseReadbackJobs"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       if (ToggleButton(Ui, CSz("v GpuBuffers[2]"), CSz("> GpuBuffers[2]"), UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();

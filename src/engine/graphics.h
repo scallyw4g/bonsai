@@ -49,7 +49,22 @@ struct transparency_render_group
 
 struct shadow_render_group;
 
+poof(gen_constructor(gpu_readback_buffer))
+#include <generated/gen_constructor_gpu_readback_buffer.h>
 
+poof(block_array(gpu_readback_buffer, {32}))
+#include <generated/block_array_gpu_readback_buffer_688853862.h>
+
+
+struct dummy_work_queue_entry_build_chunk_mesh
+{
+  gpu_readback_buffer PBOBuf;
+  v3i NoiseDim;
+  world_chunk *Chunk;
+};
+
+poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
+#include <generated/block_array_dummy_work_queue_entry_build_chunk_mesh_688853862.h>
 
 struct graphics
 {
@@ -105,6 +120,10 @@ struct graphics
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
   gpu_noise_render_group    GpuNoise;
+
+  s32 ChunksCurrentlyQueued;
+  /* gpu_readback_buffer_block_array NoiseReadbackJobs; */
+  dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs;
 
   gpu_mapped_element_buffer GpuBuffers[2];
   u32 GpuBufferWriteIndex;

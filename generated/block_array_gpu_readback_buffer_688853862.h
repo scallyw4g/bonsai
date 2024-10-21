@@ -1,32 +1,32 @@
-// external/bonsai_stdlib/src/bitmap.cpp:182:0
+// src/engine/graphics.h:55:0
 
-struct bitmap_block
+struct gpu_readback_buffer_block
 {
   u32 Index;
   u32 At;
-  bitmap *Elements;
-  bitmap_block *Next;
+  gpu_readback_buffer *Elements;
+  gpu_readback_buffer_block *Next;
 };
 
-struct bitmap_block_array_index
+struct gpu_readback_buffer_block_array_index
 {
-  bitmap_block *Block;
+  gpu_readback_buffer_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
-struct bitmap_block_array
+struct gpu_readback_buffer_block_array
 {
-  bitmap_block *First;
-  bitmap_block *Current;
+  gpu_readback_buffer_block *First;
+  gpu_readback_buffer_block *Current;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-typedef bitmap_block_array bitmap_paged_list;
+typedef gpu_readback_buffer_block_array gpu_readback_buffer_paged_list;
 
-link_internal bitmap_block_array_index
-operator++(bitmap_block_array_index &I0)
+link_internal gpu_readback_buffer_block_array_index
+operator++(gpu_readback_buffer_block_array_index &I0)
 {
   if (I0.Block)
   {
@@ -49,30 +49,30 @@ operator++(bitmap_block_array_index &I0)
 }
 
 link_internal b32
-operator<(bitmap_block_array_index I0, bitmap_block_array_index I1)
+operator<(gpu_readback_buffer_block_array_index I0, gpu_readback_buffer_block_array_index I1)
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(bitmap_block_array_index *Index)
+GetIndex(gpu_readback_buffer_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
-link_internal bitmap_block_array_index
-ZerothIndex(bitmap_block_array *Arr)
+link_internal gpu_readback_buffer_block_array_index
+ZerothIndex(gpu_readback_buffer_block_array *Arr)
 {
-  bitmap_block_array_index Result = {};
+  gpu_readback_buffer_block_array_index Result = {};
   Result.Block = Arr->First;
   /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(bitmap_block_array *Arr)
+TotalElements(gpu_readback_buffer_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -82,10 +82,10 @@ TotalElements(bitmap_block_array *Arr)
   return Result;
 }
 
-link_internal bitmap_block_array_index
-LastIndex(bitmap_block_array *Arr)
+link_internal gpu_readback_buffer_block_array_index
+LastIndex(gpu_readback_buffer_block_array *Arr)
 {
-  bitmap_block_array_index Result = {};
+  gpu_readback_buffer_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -97,10 +97,10 @@ LastIndex(bitmap_block_array *Arr)
   return Result;
 }
 
-link_internal bitmap_block_array_index
-AtElements(bitmap_block_array *Arr)
+link_internal gpu_readback_buffer_block_array_index
+AtElements(gpu_readback_buffer_block_array *Arr)
 {
-  bitmap_block_array_index Result = {};
+  gpu_readback_buffer_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -110,80 +110,80 @@ AtElements(bitmap_block_array *Arr)
   return Result;
 }
 
-link_internal bitmap *
-GetPtr(bitmap_block_array *Arr, bitmap_block_array_index Index)
+link_internal gpu_readback_buffer *
+GetPtr(gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
 {
-  bitmap *Result = {};
+  gpu_readback_buffer *Result = {};
   if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
   return Result;
 }
 
-link_internal bitmap *
-GetPtr(bitmap_block *Block, umm Index)
+link_internal gpu_readback_buffer *
+GetPtr(gpu_readback_buffer_block *Block, umm Index)
 {
-  bitmap *Result = 0;
+  gpu_readback_buffer *Result = 0;
   if (Index < Block->At) { Result = Block->Elements + Index; }
   return Result;
 }
 
-link_internal bitmap *
-GetPtr(bitmap_block_array *Arr, umm Index)
+link_internal gpu_readback_buffer *
+GetPtr(gpu_readback_buffer_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  bitmap_block *Block = Arr->First;
+  gpu_readback_buffer_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
   }
 
-  bitmap *Result = Block->Elements+ElementIndex;
+  gpu_readback_buffer *Result = Block->Elements+ElementIndex;
   return Result;
 }
 
-link_internal bitmap *
-TryGetPtr(bitmap_block_array *Arr, umm Index)
+link_internal gpu_readback_buffer *
+TryGetPtr(gpu_readback_buffer_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  bitmap *Result = {};
+  gpu_readback_buffer *Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 
 link_internal u32
-AtElements(bitmap_block *Block)
+AtElements(gpu_readback_buffer_block *Block)
 {
   return Block->At;
 }
 
 
-link_internal bitmap_block*
-Allocate_bitmap_block(memory_arena *Memory)
+link_internal gpu_readback_buffer_block*
+Allocate_gpu_readback_buffer_block(memory_arena *Memory)
 {
-  bitmap_block *Result = Allocate(bitmap_block, Memory, 1);
-  Result->Elements = Allocate(bitmap, Memory, 8);
+  gpu_readback_buffer_block *Result = Allocate(gpu_readback_buffer_block, Memory, 1);
+  Result->Elements = Allocate(gpu_readback_buffer, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(bitmap_block_array_index Index)
+CS(gpu_readback_buffer_block_array_index Index)
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(bitmap_block_array *Array, bitmap_block_array_index Index)
+RemoveUnordered(gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
 {
-  bitmap_block_array_index LastI = LastIndex(Array);
+  gpu_readback_buffer_block_array_index LastI = LastIndex(Array);
 
-  bitmap *Element = GetPtr(Array, Index);
-  bitmap *LastElement = GetPtr(Array, LastI);
+  gpu_readback_buffer *Element = GetPtr(Array, Index);
+  gpu_readback_buffer *LastElement = GetPtr(Array, LastI);
 
   *Element = *LastElement;
 
@@ -207,8 +207,8 @@ RemoveUnordered(bitmap_block_array *Array, bitmap_block_array_index Index)
     else
     {
       // Walk the chain till we get to the second-last one
-      bitmap_block *Current = Array->First;
-      bitmap_block *LastB = LastI.Block;
+      gpu_readback_buffer_block *Current = Array->First;
+      gpu_readback_buffer_block *LastB = LastI.Block;
 
       while (Current->Next && Current->Next != LastB)
       {
@@ -221,12 +221,12 @@ RemoveUnordered(bitmap_block_array *Array, bitmap_block_array_index Index)
   }
 }
 
-link_internal bitmap *
-Push(bitmap_block_array *Array, bitmap *Element)
+link_internal gpu_readback_buffer *
+Push(gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 
-  if (Array->First == 0) { Array->First = Allocate_bitmap_block(Array->Memory); Array->Current = Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_gpu_readback_buffer_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {
@@ -237,7 +237,7 @@ Push(bitmap_block_array *Array, bitmap *Element)
     }
     else
     {
-      bitmap_block *Next = Allocate_bitmap_block(Array->Memory);
+      gpu_readback_buffer_block *Next = Allocate_gpu_readback_buffer_block(Array->Memory);
       Next->Index = Array->Current->Index + 1;
 
       Array->Current->Next = Next;
@@ -245,7 +245,7 @@ Push(bitmap_block_array *Array, bitmap *Element)
     }
   }
 
-  bitmap *Result = Array->Current->Elements + Array->Current->At;
+  gpu_readback_buffer *Result = Array->Current->Elements + Array->Current->At;
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 

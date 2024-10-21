@@ -168,11 +168,11 @@ float structured_noise( in vec3 p )
 
 void main()
 {
-  v2 _UV = UV*64.f;
+  v2 _UV = UV*66.f;
 
   f32 x = _UV.x;
-  f32 y = f32(s32(_UV.y) % 64);
-  f32 z = _UV.y / 64;
+  f32 y = f32(s32(_UV.y) % 66);
+  f32 z = _UV.y / 66;
 
   v3 xyz = v3(x,y,z)*2;
 
