@@ -260,7 +260,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               v3 NoiseDim = V3(Shader->ChunkDim);
               Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
 
-              v2i ViewportSize = V2i(s32(Chunk1->Dim.x), s32(Chunk1->Dim.y*Chunk1->Dim.z));
+              v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
 
               {
                 TIMED_NAMED_BLOCK(Draw);
@@ -272,6 +272,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
+              Assert(Chunk1->Dim == V3i(64));
+              Assert(NoiseDim == V3(66));
 
               s32 NoiseElementCount = s32(Volume(NoiseDim));
               r32 *NoiseValues;

@@ -1,3 +1,5 @@
+/* uniform v3i WorldspaceBasis; */
+
 in vec2 UV;
 out float Output;
 
@@ -156,7 +158,8 @@ float gradient_noise( in vec3 p )
 
 float structured_noise( in vec3 p )
 {
-  if (p.x < 32.f && p.y < 32.f && p.z < 32.f)
+#if 1
+  if (p.x < 33.f && p.y < 33.f && p.z < 33.f)
   {
     return 1.f;
   }
@@ -164,24 +167,41 @@ float structured_noise( in vec3 p )
   {
     return -1.f;
   }
+#else
+  if (p.x > 2.1f && p.x < 3.1f)
+  {
+    if (p.y < 3.1f)
+    {
+      return 1.f;
+    }
+    else
+    {
+      return -1.f;
+    }
+  }
+  else
+  {
+    return -1.f;
+  }
+#endif
 }
 
 void main()
 {
-  v2 _UV = UV*66.f;
+  v2 _UV = UV*V2(66.f, 66.f*66.f);
 
   f32 x = _UV.x;
   f32 y = f32(s32(_UV.y) % 66);
   f32 z = _UV.y / 66;
 
-  v3 xyz = v3(x,y,z)*2;
+  v3 xyz = v3(x,y,z)/16;
 
   /* for (s32 Octave = 0; Octave < 1; ++Octave) */
   {
     /* Output += gradient_noise_derivs(xyz / Octave).x; */
-    /* Output += gradient_noise_derivs(xyz).x; */
+    Output += gradient_noise_derivs(xyz).x;
     /* Output += gradient_noise(xyz); */
-    Output += structured_noise(xyz);
+    /* Output += structured_noise(xyz); */
   }
   /* Output = (UV.x + UV.y) / 2.f; */
 }
