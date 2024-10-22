@@ -123,7 +123,7 @@ struct graphics
   composite_render_group    CompositeGroup;
   gpu_noise_render_group    GpuNoise;
 
-  s32 ChunksCurrentlyQueued;
+  volatile u32 ChunksCurrentlyQueued;
   /* gpu_readback_buffer_block_array NoiseReadbackJobs; */
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs;
 

@@ -476,7 +476,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
           case GL_WAIT_FAILED:
           {
-            Graphics->ChunksCurrentlyQueued -= 1;
+            AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
             SoftError("Error waiting on gl sync object");
           } break;
         }

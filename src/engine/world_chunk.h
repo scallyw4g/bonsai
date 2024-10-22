@@ -662,3 +662,10 @@ FinalizeChunkInitialization(world_chunk *Chunk);
 
 link_internal untextured_3d_geometry_buffer*
 AllocateTempMesh(memory_arena* TempMemory, data_type Type);
+
+
+struct work_queue_entry_build_chunk_mesh;
+struct gpu_readback_buffer;
+
+link_internal work_queue_entry_build_chunk_mesh
+WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk);

@@ -360,7 +360,18 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   }
 
+#if 1
   u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(Chunk, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
+#else
+
+  if (ChunkSum)
+  {
+    auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryBuildChunkMesh({INVALID_PBO_HANDLE,0}, NoiseValues, NoiseDim, Chunk));
+    thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    HandleJob(&BuildMeshJob, Thread, &GetEngineResources()->GameApi);
+  }
+  u32 ChunkSum = Chunk->FilledCount;
+#endif
   return ChunkSum;
 }
 

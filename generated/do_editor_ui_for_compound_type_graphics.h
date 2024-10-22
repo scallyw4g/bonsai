@@ -372,7 +372,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->ChunksCurrentlyQueued),
+        Cast(u32*,&Element->ChunksCurrentlyQueued),
         CSz("ChunksCurrentlyQueued"),
         Params
         );

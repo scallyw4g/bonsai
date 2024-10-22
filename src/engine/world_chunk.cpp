@@ -3409,7 +3409,7 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
 
 /*   DebugLine("Queuing Chunk (%p)(%d, %d, %d)", Chunk, Chunk->WorldP.x, Chunk->WorldP.y, Chunk->WorldP.z); */
 
-#if 0
+#if 1
   work_queue_entry Entry = {};
   {
     Entry.Type = type_work_queue_entry_init_world_chunk;
@@ -3592,6 +3592,8 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                                    NoiseParams,
                                                    UserData ));
 
+#if 0
+#else
   // If the chunk didn't have any voxels filled, we're done
   if (SyntheticChunk->FilledCount)
   {
@@ -3638,7 +3640,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     TempMesh->At = 0;
 
     Assert( (Flags & ChunkInitFlag_GenLODs) == 0);
-  }
 
 #define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
   {                                                                           \
@@ -3666,13 +3667,15 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
     Assert( DestChunk->FilledCount <= s32(Volume(SyntheticChunk)));
 
     /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
-
-    FinalizeChunkInitialization(DestChunk);
   }
+
+  }
+  FinalizeChunkInitialization(DestChunk);
 
   auto Graphics = &EngineResources->Graphics;
   Assert(Graphics->ChunksCurrentlyQueued > 0);
-  Graphics->ChunksCurrentlyQueued -= 1;
+  AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
+#endif
 }
 
 // TODO(Jesse): Remove this thnk

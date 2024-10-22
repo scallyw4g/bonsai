@@ -2,7 +2,7 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out float Output;
+out f32 Output;
 
 // https://www.shadertoy.com/view/4dffRH
 //
@@ -71,6 +71,43 @@ vec3 hash( vec3 p )      // this hash is not production ready, please
 }
 #endif
 
+float hashf( float f )
+{
+  return -1.0 + 2.0*fract(sin(f)*43758.5453123);
+}
+
+#if 1
+vec4 value_noise_derivs( in vec3 x )
+{
+    vec3 p = floor(x);
+    vec3 w = fract(x);
+    vec3 u = w*w*(3.0-2.0*w);
+    vec3 du = 6.0*w*(1.0-w);
+    
+    float n = p.x + p.y*157.0 + 113.0*p.z;
+    
+    float a = hashf(n+  0.0);
+    float b = hashf(n+  1.0);
+    float c = hashf(n+157.0);
+    float d = hashf(n+158.0);
+    float e = hashf(n+113.0);
+    float f = hashf(n+114.0);
+    float g = hashf(n+270.0);
+    float h = hashf(n+271.0);
+	
+    float k0 =   a;
+    float k1 =   b - a;
+    float k2 =   c - a;
+    float k3 =   e - a;
+    float k4 =   a - b - c + d;
+    float k5 =   a - c - e + g;
+    float k6 =   a - b - e + f;
+    float k7 = - a + b + c - d + e - f - g + h;
+
+    return vec4( k0 + k1*u.x + k2*u.y + k3*u.z + k4*u.x*u.y + k5*u.y*u.z + k6*u.z*u.x + k7*u.x*u.y*u.z, 
+                 du * (vec3(k1,k2,k3) + u.yzx*vec3(k4,k5,k6) + u.zxy*vec3(k6,k4,k5) + k7*u.yzx*u.zxy ));
+}
+#endif
 
 // return value noise (in x) and its derivatives (in yzw)
 //
@@ -157,34 +194,118 @@ float gradient_noise( in vec3 p )
 }
 #endif
 
+vec3 vhash(vec3 UV, vec3 offset)
+{
+	mat3 m = mat3(127.1,311.7, 74.7,269.5,183.3,246.1,113.5,271.9,124.6);
+	UV = fract(sin(UV* m) * 46839.32);
+	return vec3(sin(UV.z * +offset.x) * 0.5 + 0.5, cos(UV.x* offset.y) * 0.5 + 0.5,tan(UV.y * offset.z) * 0.5 + 0.5);
+}
+
+vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
+{
+  vec3 g = floor(p * CellDensity);
+  vec3 f = fract(p * CellDensity);	
+  float res = 8.0;
+  float md=8.0;
+  vec3 mr;
+  vec4 Out;
+  for( int z=-1; z<=1; z++ )
+  for( int y=-1; y<=1; y++ )
+  for( int x=-1; x<=1; x++ )
+  {
+    vec3 lattice = vec3(x,y,z);
+    vec3 offset=vhash(lattice + g ,AngleOffset);
+    vec3 r = lattice +offset -f;
+    float d = dot( r, r );
+    if (d < res)
+    {
+      res=d;
+      mr=r;
+    }
+  }
+
+  res = 8.0;
+  for( int z=-1; z<=1; z++ )
+  for( int y=-1; y<=1; y++ )
+  for( int x=-1; x<=1; x++ )
+  {
+    vec3 lattice = vec3(x,y,z);
+    vec3 offset=vhash(lattice + g ,AngleOffset);
+    vec3 r = lattice +offset -f;
+    float d = dot( r, r );
+    if( d < res )
+    {
+      res = d;
+      Out.x =  d;
+      Out.y= offset.x;
+    }
+    if( dot(mr-r,mr-r)>0.00001)
+    {
+      md = min( md, dot( 0.5*(mr+r), normalize(r-mr) ) );
+    }
+  }
+  Out.z = mix(1.0, 0.0, smoothstep( 0.0, 0.1, md ));
+  Out.w = 1.0-smoothstep( 0.0, 0.1, res);
+  return Out;
+}
 void main()
 {
-  f32 P = 5000.f;
+  f32 P = 30000.f;
   v3 Period = V3(P,P,P);
-  float Amplitude = 1000.f;
-  f32 StartingZDepth = 10000.f;
-  s32 Octaves = 15;
+  float Amplitude = 30000.f;
+  f32 StartingZDepth = 50000.f;
+  s32 Octaves = 1;
 
   f32 x = gl_FragCoord.x;
   f32 y = f32(s32(gl_FragCoord.y) % 66);
   f32 z = (gl_FragCoord.y / 66);
 
-  v3 Offset = V3(-1, -1, -1);
+  /* v3 Offset = V3(-1, -1, -1); */
+  v3 Offset = V3(0,0,0);
 
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
-  Output = StartingZDepth;
+  f32 NoiseValue = StartingZDepth;
+  v3 Color = V3(1,0,1);
 
   //
   // -- user code -- 
   //
 
+  v3 deriv = v3(0.f);
+#if 1
   for (s32 Octave = 1; Octave <= Octaves; ++Octave)
   {
     /* Basis.x = round(Basis.x); */
     v3 xyz = Basis / (Period/Octave);
-    Output = Output + (gradient_noise_derivs(xyz).x * (Amplitude/Octave));
-  }
 
-  Output = Output - Basis.z;
+    /* f32 warp = gradient_noise(xyz*2)*0.2f; */
+    f32 warp = 0.f;
+
+    v4 gn = value_noise_derivs(xyz+warp);
+    /* v4 gn = gradient_noise_derivs(xyz+warp); */
+
+    deriv += gn.xyz;
+
+    NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+  }
+#endif
+
+  deriv = normalize(deriv);
+
+  f32 cosDeriv = dot(deriv, V3(0,0,1));
+  /* f32 cosDeriv = 1.f; */
+
+  v4 vn = voronoi_noise(Basis/(Period/4.f), vec3(3.f), vec3(3.f));
+  NoiseValue = NoiseValue + (cosDeriv * vn.y * (Amplitude/2.f));
+
+
+  //
+  // -- end user code --
+  //
+
+  NoiseValue = NoiseValue - Basis.z;
+  NoiseValue = clamp(NoiseValue, -1, 1);
+
+  Output = NoiseValue;
 }

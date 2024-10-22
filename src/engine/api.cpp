@@ -665,14 +665,19 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       auto Graphics = &EngineResources->Graphics;
       Assert(Graphics->ChunksCurrentlyQueued > 0);
-      Graphics->ChunksCurrentlyQueued -= 1;
+      AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
 
-      auto NextJob = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandUnmapAndDeallocateBuffer(Job->PBOBuf)));
-      PushWorkQueueEntry(&EngineResources->Stdlib.Plat.RenderQ, &NextJob);
+      if (Job->PBOBuf.PBO != INVALID_PBO_HANDLE)
+      {
+        auto DeallocPBOs = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandUnmapAndDeallocateBuffer(Job->PBOBuf)));
+        PushWorkQueueEntry(&EngineResources->Stdlib.Plat.RenderQ, &DeallocPBOs);
+      }
     } break;
 
     case type_work_queue_entry_rebuild_mesh:
     {
+      NotImplemented;
+#if 0
       work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
       world_chunk *Chunk = Job->Chunk;
 
@@ -710,6 +715,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
       Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
       /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
+#endif
     } break;
 
     case type_work_queue_entry_init_world_chunk:

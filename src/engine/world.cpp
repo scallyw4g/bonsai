@@ -959,9 +959,9 @@ MaintainWorldOctree(engine_resources *Engine)
 
   octree_stats Stats = {};
 
-  s32 ChunksCurrentlyQueued = Graphics->ChunksCurrentlyQueued;
+  u32 ChunksCurrentlyQueued = Graphics->ChunksCurrentlyQueued;
 
-  s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
+  u32 MaxToQueueThisFrame = Max(0u, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
 
   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued));
@@ -974,7 +974,7 @@ MaintainWorldOctree(engine_resources *Engine)
   /* DEBUG_VALUE_u32(ReusedNode); */
   /* DEBUG_VALUE_u32(AllocatedNode); */
 
-  s32 NumQueuedThisFrame = 0;
+  u32 NumQueuedThisFrame = 0;
   if (MaxToQueueThisFrame)
   {
     RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
@@ -1003,10 +1003,10 @@ MaintainWorldOctree(engine_resources *Engine)
               /* Node->Chunk = AllocateWorldChunk(Node->WorldP, World->ChunkDim, Node->Resolution, World->ChunkMemory); */
             }
 
-            /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
-            QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0);
+            QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0);
+            /* QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0); */
             ++Stats.NewQueues;
-            ++Graphics->ChunksCurrentlyQueued;
+            AtomicIncrement(&Graphics->ChunksCurrentlyQueued);
 
             if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
           }

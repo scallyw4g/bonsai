@@ -1,6 +1,7 @@
+#define INVALID_PBO_HANDLE (0xFFFFFFFF)
 struct gpu_readback_buffer
 {
-  u32 PBO;
+  u32 PBO = INVALID_PBO_HANDLE;
   GLsync Fence;
 };
 
