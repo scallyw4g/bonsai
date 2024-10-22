@@ -14,8 +14,8 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
   {
     f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
     /* f32 zCoord = 75.f; */
-    /* f32 WorldZBiased = zCoord - zMin; */
-    f32 WorldZBiased = 0.f;
+    f32 WorldZBiased = zCoord - zMin;
+    /* f32 WorldZBiased = 0.f; */
     for ( s32 yChunk = 0; yChunk < Chunk->Dim.y; ++ yChunk)
     {
       u64 Mask = 0;
@@ -67,8 +67,8 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
   {
     /* f32 zCoord = 75.f; */
     f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks);
-    /* f32 WorldZBiased = zCoord - zMin; */
-    f32 WorldZBiased = 0.f;
+    f32 WorldZBiased = zCoord - zMin;
+    /* f32 WorldZBiased = 0.f; */
     for ( s32 yNoise = 1; yNoise < 65; ++ yNoise)
     {
 
@@ -190,7 +190,7 @@ Terrain_FBM2D( world_chunk *Chunk,
 
   memory_arena *TempArena = GetTranArena();
 
-  s32 NoiseUpsampleFactor = 2;
+  s32 NoiseUpsampleFactor = 1;
   /* s32 NoiseUpsampleFactor = 4; */
 
   v3i NoiseDim   = RoundUp((Chunk->Dim+V3i(2,0,0)), V3i(8*NoiseUpsampleFactor, 1, 1));
