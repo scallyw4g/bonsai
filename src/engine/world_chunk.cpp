@@ -3669,6 +3669,10 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
     FinalizeChunkInitialization(DestChunk);
   }
+
+  auto Graphics = &EngineResources->Graphics;
+  Assert(Graphics->ChunksCurrentlyQueued > 0);
+  Graphics->ChunksCurrentlyQueued -= 1;
 }
 
 // TODO(Jesse): Remove this thnk

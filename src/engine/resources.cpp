@@ -674,6 +674,28 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   HardResetAssets(Engine);
 }
 
+
+
+link_internal void
+HardResetWorld(engine_resources *Engine)
+{
+  world *World = Engine->World;
+
+  MergeOctreeChildren(Engine, &World->Root);
+
+  if (World->Root.Chunk)
+  {
+    FreeWorldChunk(Engine, World->Root.Chunk);
+  }
+  World->Root = {};
+
+  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion);
+  World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, World->VisibleRegion, World->ChunkMemory);
+
+  /* VaporizeArena(World->ChunkMemory); */
+  /* World->ChunkMemory = AllocateArena(); */
+}
+
 link_internal void
 HardResetEngine(engine_resources *Engine)
 {
@@ -688,10 +710,9 @@ HardResetEngine(engine_resources *Engine)
   VaporizeArena(Engine->GameMemory);
   Engine->GameMemory = AllocateArena();
 
-  VaporizeArena(Engine->World->ChunkMemory);
-  Engine->World->ChunkMemory = AllocateArena();
-
   HardResetEditor(&Engine->Editor);
+
+  HardResetWorld(Engine);
 
   // TODO(Jesse)(leak): This leaks the texture handles; make a HardResetEngineDebug()
   VaporizeArena(Engine->EngineDebug.Memory);

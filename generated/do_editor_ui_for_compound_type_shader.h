@@ -120,6 +120,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
       PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->HotReloaded),
+        CSz("HotReloaded"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -371,6 +371,39 @@ CountsAsDrawableOrUnmeshed(octree_node *Node)
   return Result;
 }
 
+
+typedef void (*octree_traversal_callback)(octree_node *);
+
+link_internal void
+RecursiveOctreeTraversal( engine_resources *Engine, octree_node *Node, octree_traversal_callback Callback)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  Callback(Node);
+
+  switch(Node->Type)
+  {
+    InvalidCase(OctreeNodeType_Undefined);
+
+    case OctreeNodeType_Branch:
+    {
+      RecursiveOctreeTraversal(Engine, Node->Children[0], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[1], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[2], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[3], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[4], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[5], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[6], Callback);
+      RecursiveOctreeTraversal(Engine, Node->Children[7], Callback);
+    } break;
+
+    case OctreeNodeType_Leaf:
+    {
+    } break;
+
+  }
+}
+
 link_internal void
 DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats *Stats)
 {

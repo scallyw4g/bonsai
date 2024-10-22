@@ -12,7 +12,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
   for ( s32 zChunk = 0; zChunk < Chunk->Dim.z; ++ zChunk)
   {
-    f32 zCoord = 0.f; //__COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
+    f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zChunk, Chunk->DimInChunks);
     /* f32 zCoord = 75.f; */
     /* f32 WorldZBiased = zCoord - zMin; */
     f32 WorldZBiased = 0.f;
@@ -47,7 +47,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
         /* if (xChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_YELLOW)*u16(NoiseChoice); } */
         /* if (xChunk == Chunk->Dim.x-1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); } */
         if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
-        if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_GREEN)*u16(NoiseChoice); }
+        if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); }
         if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); }
       }
 
@@ -66,7 +66,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
   for ( s32 zNoise = 1; zNoise < 65; ++ zNoise)
   {
     /* f32 zCoord = 75.f; */
-    /* f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks); */
+    f32 zCoord = __COMPUTE_NOISE_INPUT(z, WorldBasis, zNoise, Chunk->DimInChunks);
     /* f32 WorldZBiased = zCoord - zMin; */
     f32 WorldZBiased = 0.f;
     for ( s32 yNoise = 1; yNoise < 65; ++ yNoise)

@@ -87,6 +87,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   Resources->FrameIndex += 1;
 
+  if (Resources->Graphics.GpuNoise.GradientShader.Program.HotReloaded)
+  {
+    HardResetWorld(Resources);
+  }
+
   MaintainWorldOctree(Resources);
 
   /* Resources->World->ChunkHash = CurrentWorldHashtable(Resources); */
@@ -652,10 +657,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
           /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
 
-          FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
         }
       }
 #endif
+
+      FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
 
       auto Graphics = &EngineResources->Graphics;
       Assert(Graphics->ChunksCurrentlyQueued > 0);

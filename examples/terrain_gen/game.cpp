@@ -764,7 +764,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 150000.0f, 5000.0f);
+  f32 DistanceFromTarget = Length(g_VisibleRegion);
+  f32 FarClip = 150000.f;
+  StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
