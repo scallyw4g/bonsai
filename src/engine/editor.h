@@ -193,7 +193,13 @@ poof(
                       PushNewRow(Ui);
                       RangeIterator(ArrayIndex, member.array)
                       {
-                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        member.has_tag(custom_ui)?
+                        {
+                          member.tag_value(custom_ui);
+                        }
+                        {
+                          DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        }
                         member.is_primitive?  { PushNewRow(Ui); }
                       }
                     CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -631,15 +637,15 @@ struct generic_noise_params
 };
 
 // TODO(Jesse): Get rid of zMin
-#define UNPACK_NOISE_PARAMS(P)                                       \
-  v3i WorldChunkDim = GetWorldChunkDim();                            \
-  v3i Dim = Chunk->Dim;                                              \
-  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold;         \
-  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
-  v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
-  s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  v3  RGBColor      = Cast(generic_noise_params*, (P))->RGBColor;    \
-  v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
+#define UNPACK_NOISE_PARAMS(P)                                          \
+  v3i WorldChunkDim = GetWorldChunkDim();                               \
+  v3i           Dim = Chunk->Dim;                                       \
+  r32        Thresh = Cast(generic_noise_params*, (P))->Threshold;      \
+  s64          zMin = s64(Cast(generic_noise_params*, (P))->Threshold); \
+  v3         Period = Cast(generic_noise_params*, (P))->Period;         \
+  s32     Amplitude = s32(Cast(generic_noise_params*, (P))->Amplitude); \
+  v3       RGBColor = Cast(generic_noise_params*, (P))->RGBColor;       \
+  v3i     SrcToDest = {}
 
 
 struct white_noise_params
@@ -878,8 +884,9 @@ struct brush_settings poof(@version(3))
 
   v3i NoiseBasisOffset;
 
-  /* v3 HSVColor = DEFAULT_HSV_COLOR; */
-  v3 RGBColor = DEFAULT_RGB_COLOR;
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  /* v3 RGBColor = DEFAULT_RGB_COLOR; */
   b8 Invert;
 };
 
@@ -906,7 +913,7 @@ struct brush_settings_2
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
   b8 Invert;
 };
 poof(are_equal(brush_settings))
@@ -933,7 +940,7 @@ struct brush_settings_1
 
   v3i NoiseBasisOffset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
 
 struct brush_settings_0
@@ -954,7 +961,7 @@ struct brush_settings_0
   // Used to inflate or contract the area affected by the brush.
   rect3i Offset;
 
-  u16 Color = 1; poof(@custom_marshal(Live->RGBColor = MagicaVoxelDefaultPaletteToRGB(Stored->Color);)) // Default to white
+  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
 };
 
 link_internal void

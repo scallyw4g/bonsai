@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:264:0
+// src/engine/editor.cpp:263:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -49,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
           DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("GpuBufferHandles[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -65,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
           DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("E[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -81,6 +83,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         RangeIterator(ArrayIndex, MeshIndex_Count)
         {
           DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("Locks[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

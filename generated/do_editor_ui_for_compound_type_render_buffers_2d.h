@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:395:0
+// src/engine/editor.cpp:400:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -45,8 +45,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SolidUIColorBuffer),
-        CSz("SolidUIColorBuffer"),
+        Cast(u32*,&Element->SolidUIUVBuffer),
+        CSz("SolidUIUVBuffer"),
         Params
         );
 
@@ -61,8 +61,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SolidUIUVBuffer),
-        CSz("SolidUIUVBuffer"),
+        Cast(u32*,&Element->SolidUIColorBuffer),
+        CSz("SolidUIColorBuffer"),
         Params
         );
 

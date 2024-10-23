@@ -1,3 +1,10 @@
+#define INVALID_PBO_HANDLE (0xFFFFFFFF)
+struct gpu_readback_buffer
+{
+  u32 PBO = INVALID_PBO_HANDLE;
+  GLsync Fence;
+};
+
 
 //
 // Renderer commands
@@ -103,6 +110,11 @@ struct bonsai_render_command_do_stuff
   u32 Ignored = 0;
 };
 
+struct bonsai_render_command_initialize_noise_buffer
+{
+  world_chunk *Chunk;
+};
+
 struct bonsai_render_command_gl_timer_init
 {
   u32 *GlTimerObject;
@@ -123,10 +135,18 @@ struct bonsai_render_command_gl_timer_read_value_and_histogram
   u32 GlTimerObject;
 };
 
+struct bonsai_render_command_unmap_and_deallocate_buffer
+{
+  gpu_readback_buffer PBOBuf;
+};
+
 
 poof(
   d_union work_queue_entry__bonsai_render_command
   {
+    bonsai_render_command_initialize_noise_buffer
+
+
     bonsai_render_command_clear_all_framebuffers
 
     bonsai_render_command_allocate_texture
@@ -141,6 +161,8 @@ poof(
     /* bonsai_render_command_reallocate_world_chunk_buffers */
 
     bonsai_render_command_do_stuff
+
+    bonsai_render_command_unmap_and_deallocate_buffer
 
     bonsai_render_command_setup_shader
     bonsai_render_command_teardown_shader
@@ -185,3 +207,6 @@ PushDoStuffCommand(work_queue *RenderQueue);
 
 link_internal void
 PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
+
+link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *RenderQueue , world_chunk* Chunk  );

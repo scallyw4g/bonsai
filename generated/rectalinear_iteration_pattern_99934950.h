@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:759:0
+// src/engine/world_update.cpp:718:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,7 +11,8 @@ DimIterator(x, y, z, UpdateDim)
   if (Contains(SSRect, SimVoxP))
   {
     
-        if (V->Flags & Voxel_Filled)
+        NotImplemented;
+        /* if (V->Flags & Voxel_Filled) */
         {
           OverwriteVoxel = True;
         }
@@ -33,7 +34,8 @@ DimIterator(x, y, z, UpdateDim)
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

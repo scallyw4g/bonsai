@@ -612,12 +612,15 @@ IsBoundaryVoxel(world_chunk *Chunk, voxel_position Offset, chunk_dimension Dim)
   voxel *V = &Chunk->Voxels[VoxelIndex];
 
   b32 Result = False;
+  NotImplemented;
+#if 0
   Result |= IsSet( V, Voxel_BackFace);
   Result |= IsSet( V, Voxel_FrontFace);
   Result |= IsSet( V, Voxel_TopFace);
   Result |= IsSet( V, Voxel_BottomFace);
   Result |= IsSet( V, Voxel_LeftFace);
   Result |= IsSet( V, Voxel_RightFace);
+#endif
 
   return Result;
 }
@@ -1140,34 +1143,10 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
-  if (DistanceSquared > Square(400*32))
+  if (HasGpuMesh(Meshes, MeshBit_Lod0))
   {
-    if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-  }
-  else if (DistanceSquared > Square(250*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-  }
-  else if (DistanceSquared > Square(150*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-  }
-  else if (DistanceSquared > Square(70*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-  }
-  else
-  {
-   if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-  }
-
-  if (MeshBit != MeshBit_None)
-  {
-    m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
-    AssertNoGlErrors;
-
+    m4 LocalTransform = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
-    AssertNoGlErrors;
 
     // @janky_model_matrix_bs
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
@@ -1175,7 +1154,7 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
 
-    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit)];
+    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit_Lod0)];
 
     SetupVertexAttribsFor_u3d_geo_element_buffer(Handles);
     DrawGpuBufferImmediate(Handles);
@@ -1450,6 +1429,8 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 link_internal void
 ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 {
+  NotImplemented;
+#if 0
   TIMED_FUNCTION();
 
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1504,6 +1485,7 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
       { InvalidCodePath(); }
     }
   }
+#endif
 }
 
 link_internal void
@@ -1518,13 +1500,9 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
     if (HasGpuMesh(&Chunk->Meshes))
     {
       v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-      v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
-
-      /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
-      AssertNoGlErrors;
 
       v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-      DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+      DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
   }

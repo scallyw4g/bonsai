@@ -34,12 +34,6 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voxel *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Flags);
-
-
-
-
-
     Result &= Serialize(Bytes, &Element->Transparency);
 
 
@@ -69,14 +63,6 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Flags, Memory);
-
-
-
-
-
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Transparency, Memory);
