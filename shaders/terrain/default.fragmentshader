@@ -304,8 +304,8 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
     if( d < res )
     {
       res = d;
-      Out.x =  d;
-      Out.y= offset.x;
+      Out.x= offset.x;
+      Out.y =  d;
     }
     if( dot(mr-r,mr-r)>0.00001)
     {
@@ -316,77 +316,65 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   Out.w = 1.0-smoothstep( 0.0, 0.1, res);
   return Out;
 }
+
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
-  /* f32 y = f32(s32(gl_FragCoord.y) % 66); */
   f32 y = floor(gl_FragCoord.y - (z*66));
 
   v3 Offset = V3(-1, -1, -1);
-  /* v3 Offset = v3(1,1,1); */
-
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
 
   //
   // -- user code -- 
   //
-  f32 Per = 1000.f;
-  v3 Period = V3(Per, Per, Per);
-  float Amplitude = 1000.f;
-  f32 StartingZDepth = 1000.f; /* f32 StartingZDepth = 0.f; */
-  s32 Octaves = 1;
-
-
-  f32 NoiseValue = StartingZDepth;
-  v3 Color = V3(1,1,1);
-
-
-  v3 deriv = v3(0.f);
-  f32 warp = gradient_noise(Basis*2)*5.2f;
-
-#if 1
-  for (s32 Octave = 1; Octave <= Octaves; ++Octave)
   {
-    /* Basis.x = round(Basis.x); */
-    v3 xyz = Basis / (Period/Octave);
+    v3 Period = V3(100.f);
+    float Amplitude = 200.f;
+    f32 StartingZDepth = 1000.f;
+    s32 Octaves = 1;
 
-    /* f32 warp = 0.f; */
+    NoiseValue = StartingZDepth;
 
-    /* v4 gn = value_noise_derivs(xyz+warp); */
-    v4 gn = gradient_noise_derivs(xyz+warp);
 
-    deriv += gn.xyz;
+    v3 deriv = v3(0.f);
+    /* f32 warp = gradient_noise(Basis*2)*5.2f; */
+    f32 warp = 0.f;
 
-    NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      v4 gn = value_noise_derivs(xyz+warp);
+      /* v4 gn = gradient_noise_derivs(xyz+warp); */
+      /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
+      /* v4 gn = V4(0); */
+
+      // NOTE(Jesse): yzw is not derivitives for voronoi_noise
+      deriv += gn.yzw;
+
+      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+    }
+
+    deriv = normalize(deriv);
+    ColorValue = abs(deriv);
+
+    // Bias noise value to lower values as we get higher in z.
+    // This creates a "plane" of terrain
+    NoiseValue = NoiseValue - Basis.z;
   }
-#endif
-
-  deriv = normalize(deriv);
-  Color = abs(deriv);
-
-  /* f32 cosDeriv = dot(deriv, V3(0,0,1)); */
-  /* f32 cosDeriv = 1.f; */
-
-  /* v4 vn = voronoi_noise(Basis/(Period/4.f), vec3(3.f), vec3(3.f)); */
-  /* NoiseValue = NoiseValue + (cosDeriv * vn.y * (Amplitude/2.f)); */
-
 
   //
   // -- end user code --
   //
 
-  NoiseValue = NoiseValue - Basis.z;
-  NoiseValue = clamp(NoiseValue, -1, 1);
-
-  bool Solid = NoiseValue > 0.f;
-  uint SolidBit = Solid ? 1u : 0u;
-
-  uint PackedColor = RGBtoPackedHSV(Color);
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+  uint PackedColor = RGBtoPackedHSV(ColorValue);
 
   Output = (SolidBit << 15) | PackedColor;
-  /* Output = (SolidBit << 15) | 1u; */
-  /* Output = (SolidBit << 15); */
-  /* Output = SolidBit; */
-  /* Output = 0u; */
 }
