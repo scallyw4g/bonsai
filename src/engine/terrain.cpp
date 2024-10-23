@@ -32,14 +32,14 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
             /* r32 ThisNoiseV = MapNoiseValueToFinal(NoiseValues[NoiseIndex]/OctaveAmplitudeMax)*OctaveAmplitudeMax; */
             u16 ThisNoiseV = NoiseValues[NoiseIndex];
-            Assert(ThisNoiseV == (1 << 15) || ThisNoiseV == 0);
+            /* Assert(ThisNoiseV == (1 << 15) || ThisNoiseV == 0); */
 
-            u64 NoiseChoice = (ThisNoiseV >> 14) & 1;
-            u16 NoiseColor  = PackedHSVColorValue;
-
-            /* u64 NoiseChoice = (ThisNoiseV >> 15) & 1; */
-            /* u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1); */
+            u64 NoiseChoice = (ThisNoiseV >> 15);
+            Assert(NoiseChoice == 1 || NoiseChoice == 0);
             ChunkSum += u32(NoiseChoice);
+
+
+            u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1);
 
             Mask |= (NoiseChoice << xChunk);
             /* SetOccupancyBit(Chunk, ChunkIndex,  NoiseChoice); */

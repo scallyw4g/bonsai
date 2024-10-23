@@ -2,17 +2,18 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out int Output;
+out uint Output;
 /* layout (location = 0) out float Output; */
 
 
-int PackHSVColor(v3 Color)
+uint PackHSVColor(v3 Color)
 {
-  int FiveBits   = (1 << 6) - 1;
-  int H = int(Color.r * f32(FiveBits));
-  int S = int(Color.g * r32(FiveBits));
-  int V = int(Color.b * r32(FiveBits));
-  int Result = int((H << 10) | (S << 5) | V);
+  uint FiveBits   = (1u << 6) - 1u;
+  uint FifteenBits   = (1u << 15) - 1u;
+  uint H = uint(Color.r * f32(FiveBits));
+  uint S = uint(Color.g * r32(FiveBits));
+  uint V = uint(Color.b * r32(FiveBits));
+  uint Result = uint((H << 10) | (S << 5) | V) & FifteenBits;
   return Result;
 }
 
@@ -61,10 +62,10 @@ v3 RGBtoHSV(v3 Color)
   return result;
 }
 
-int RGBtoPackedHSV(v3 Color)
+uint RGBtoPackedHSV(v3 Color)
 {
   v3 HSV = RGBtoHSV(Color);
-  int Packed = PackHSVColor(HSV);
+  uint Packed = PackHSVColor(HSV);
   /* int Packed=  0; */
   return Packed;
 }
@@ -320,8 +321,7 @@ void main()
   f32 P = 1000.f;
   v3 Period = V3(P,P,P);
   float Amplitude = 1000.f;
-  /* f32 StartingZDepth = 5000.f; */
-  f32 StartingZDepth = 0.f;
+  f32 StartingZDepth = 1000.f; /* f32 StartingZDepth = 0.f; */
   s32 Octaves = 8;
 
   f32 x = floor(gl_FragCoord.x);
@@ -335,7 +335,7 @@ void main()
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
   f32 NoiseValue = StartingZDepth;
-  v3 Color = V3(1,0,1);
+  v3 Color = V3(1,1,1);
 
   //
   // -- user code -- 
@@ -351,8 +351,8 @@ void main()
     /* f32 warp = gradient_noise(xyz*2)*0.2f; */
     f32 warp = 0.f;
 
-    /* v4 gn = value_noise_derivs(xyz+warp); */
-    v4 gn = gradient_noise_derivs(xyz+warp);
+    v4 gn = value_noise_derivs(xyz+warp);
+    /* v4 gn = gradient_noise_derivs(xyz+warp); */
 
     deriv += gn.xyz;
 
@@ -360,7 +360,8 @@ void main()
   }
 #endif
 
-  /* deriv = normalize(deriv); */
+  deriv = normalize(deriv);
+  Color = deriv;
 
   /* f32 cosDeriv = dot(deriv, V3(0,0,1)); */
   /* f32 cosDeriv = 1.f; */
@@ -377,12 +378,13 @@ void main()
   NoiseValue = clamp(NoiseValue, -1, 1);
 
   bool Solid = NoiseValue > 0.f;
-  int SolidBit = Solid ? 1 : 0;
+  uint SolidBit = Solid ? 1u : 0u;
 
-  int PackedColor = RGBtoPackedHSV(Color);
+  uint PackedColor = RGBtoPackedHSV(Color);
 
-  /* Output = (SolidBit << 15 | PackedColor); */
-  /* Output = (SolidBit << 14); */
+  Output = (SolidBit << 15) | PackedColor;
+  /* Output = (SolidBit << 15) | 1u; */
+  /* Output = (SolidBit << 15); */
   /* Output = SolidBit; */
-  Output = 0;
+  /* Output = 0u; */
 }
