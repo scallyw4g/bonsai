@@ -793,6 +793,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
   /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
   /* CameraGhost->P.WorldP = WorldCenter; */
+  /* CameraGhost->P.WorldP = WorldCenter + g_VisibleRegion/2; */
+  CameraGhost->P.WorldP = g_VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);
