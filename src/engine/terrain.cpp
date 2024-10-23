@@ -4,7 +4,7 @@
     + SrcToDest.channel                                                                 \
 
 link_internal u32
-FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, f32 *NoiseValues, v3i SrcToDest, s64 zMin, u16 PackedHSVColorValue)
+FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin, u16 PackedHSVColorValue)
 {
   TIMED_FUNCTION();
   u32 ChunkSum = 0;
@@ -31,8 +31,14 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
             s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
 
             /* r32 ThisNoiseV = MapNoiseValueToFinal(NoiseValues[NoiseIndex]/OctaveAmplitudeMax)*OctaveAmplitudeMax; */
-            r32 ThisNoiseV = NoiseValues[NoiseIndex];
-            u64 NoiseChoice = u64(ThisNoiseV > WorldZBiased);
+            u16 ThisNoiseV = NoiseValues[NoiseIndex];
+            Assert(ThisNoiseV == (1 << 15) || ThisNoiseV == 0);
+
+            u64 NoiseChoice = (ThisNoiseV >> 14) & 1;
+            u16 NoiseColor  = PackedHSVColorValue;
+
+            /* u64 NoiseChoice = (ThisNoiseV >> 15) & 1; */
+            /* u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1); */
             ChunkSum += u32(NoiseChoice);
 
             Mask |= (NoiseChoice << xChunk);
@@ -44,7 +50,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
             /*   Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex])); */
             /* } */
 
-            Chunk->Voxels[ChunkIndex].Color = PackedHSVColorValue*u16(NoiseChoice);
+            Chunk->Voxels[ChunkIndex].Color = NoiseColor*u16(NoiseChoice);
             /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
             if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
             if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); }
@@ -385,6 +391,7 @@ Terrain_FBM2D( world_chunk *Chunk,
                       void *NoiseParams,
                       void *OctaveCount )
 {
+#if 0
   /* TIMED_FUNCTION(); */
   HISTOGRAM_FUNCTION();
 
@@ -565,6 +572,9 @@ Terrain_FBM2D( world_chunk *Chunk,
   ChunkSum = FinalizeOccupancyMasksFromNoiseValues(Chunk, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
 
   return ChunkSum;
+#else
+  return 0;
+#endif
 }
 
 link_internal u32

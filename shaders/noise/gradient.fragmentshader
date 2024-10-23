@@ -2,7 +2,74 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out f32 Output;
+out int Output;
+/* layout (location = 0) out float Output; */
+
+
+int PackHSVColor(v3 Color)
+{
+  int FiveBits   = (1 << 6) - 1;
+  int H = int(Color.r * f32(FiveBits));
+  int S = int(Color.g * r32(FiveBits));
+  int V = int(Color.b * r32(FiveBits));
+  int Result = int((H << 10) | (S << 5) | V);
+  return Result;
+}
+
+v3 RGBtoHSV(v3 Color)
+{
+  f32 r = Color.r;
+  f32 g = Color.g;
+  f32 b = Color.b;
+
+  f32 h, s, v; // h:0-360.0, s:0.0-1.0, v:0.0-1.0
+
+  f32 maxv = max(r, max(g, b));
+  f32 minv = min(r, min(g, b));
+
+  v = maxv;
+
+  if (maxv == 0.0f)
+  {
+      s = 0;
+      h = 0;
+  }
+  else if (maxv - minv == 0.0f)
+  {
+      s = 0;
+      h = 0;
+  }
+  else {
+      s = (maxv - minv) / maxv;
+
+      if (maxv == r) {
+          h = 60 * ((g - b) / (maxv - minv)) + 0;
+      }
+      else if (maxv == g) {
+          h = 60 * ((b - r) / (maxv - minv)) + 120;
+      }
+      else {
+          h = 60 * ((r - g) / (maxv - minv)) + 240;
+      }
+  }
+
+  if (h < 0) h += 360.0f;
+
+  h = (h / 360.f);
+
+  v3 result = V3(h,s,v);
+  return result;
+}
+
+int RGBtoPackedHSV(v3 Color)
+{
+  v3 HSV = RGBtoHSV(Color);
+  int Packed = PackHSVColor(HSV);
+  /* int Packed=  0; */
+  return Packed;
+}
+
+
 
 // https://www.shadertoy.com/view/4dffRH
 //
@@ -253,8 +320,8 @@ void main()
   f32 P = 1000.f;
   v3 Period = V3(P,P,P);
   float Amplitude = 1000.f;
-  f32 StartingZDepth = 500.f;
-  /* f32 StartingZDepth = 0.f; */
+  /* f32 StartingZDepth = 5000.f; */
+  f32 StartingZDepth = 0.f;
   s32 Octaves = 8;
 
   f32 x = floor(gl_FragCoord.x);
@@ -309,5 +376,13 @@ void main()
   NoiseValue = NoiseValue - Basis.z;
   NoiseValue = clamp(NoiseValue, -1, 1);
 
-  Output = NoiseValue;
+  bool Solid = NoiseValue > 0.f;
+  int SolidBit = Solid ? 1 : 0;
+
+  int PackedColor = RGBtoPackedHSV(Color);
+
+  /* Output = (SolidBit << 15 | PackedColor); */
+  /* Output = (SolidBit << 14); */
+  /* Output = SolidBit; */
+  Output = 0;
 }

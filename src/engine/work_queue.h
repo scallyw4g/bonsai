@@ -64,7 +64,7 @@ struct work_queue_entry_build_chunk_mesh
 {
   gpu_readback_buffer PBOBuf;
 
-  f32 *NoiseData;
+  u16 *NoiseData;
   v3i NoiseDim;
 
   world_chunk *Chunk;

@@ -279,7 +279,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               s32 NoiseElementCount = s32(Volume(NoiseDim));
               r32 *NoiseValues;
-              s32 NoiseByteCount = NoiseElementCount*s32(sizeof(f32));
+              s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
 
               {
                 TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
@@ -289,7 +289,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
                 GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
                 AssertNoGlErrors;
-                GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED, GL_FLOAT, 0);
+                GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
                 AssertNoGlErrors;
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
@@ -460,7 +460,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             AssertNoGlErrors;
             GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
             AssertNoGlErrors;
-            f32 *NoiseValues = Cast(f32*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+            u16 *NoiseValues = Cast(u16*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
             AssertNoGlErrors;
 
             auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));

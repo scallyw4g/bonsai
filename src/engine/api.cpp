@@ -564,7 +564,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       work_queue_entry_build_chunk_mesh *Job = SafeAccess(work_queue_entry_build_chunk_mesh, Entry);
 #if 1
       auto Chunk1 = Job->Chunk;
-      auto NoiseValues = Job->NoiseData;
+      u16 *NoiseValues = Job->NoiseData;
       v3i NoiseDim = Job->NoiseDim;
       Assert(NoiseValues);
 
