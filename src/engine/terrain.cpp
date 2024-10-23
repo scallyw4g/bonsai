@@ -32,8 +32,6 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
             /* r32 ThisNoiseV = MapNoiseValueToFinal(NoiseValues[NoiseIndex]/OctaveAmplitudeMax)*OctaveAmplitudeMax; */
             u16 ThisNoiseV = NoiseValues[NoiseIndex];
-            /* Assert(ThisNoiseV == (1 << 15) || ThisNoiseV == 0); */
-
             u64 NoiseChoice = (ThisNoiseV >> 15);
             Assert(NoiseChoice == 1 || NoiseChoice == 0);
             ChunkSum += u32(NoiseChoice);
@@ -83,11 +81,9 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
             v3i BorderP = V3i(0, yNoise, zNoise);
             s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
-            r32 ThisNoiseV = NoiseValues[BorderIndex];
-
-            u64 NoiseChoice = ThisNoiseV > WorldZBiased;
-            /* u64 NoiseChoice = 1ull; */
-            /* u64 NoiseChoice = RandomU32(&DEBUG_ENTROPY) & 1; */
+            u16 ThisNoiseV = NoiseValues[BorderIndex];
+            u64 NoiseChoice = (ThisNoiseV >> 15);
+            Assert(NoiseChoice == 1 || NoiseChoice == 0);
             Chunk->xOccupancyBorder[(zNoise-1)*2] |= NoiseChoice << (yNoise-1);
           }
 
@@ -95,11 +91,9 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
             v3i BorderP = V3i(65, yNoise, zNoise);
             s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
-            r32 ThisNoiseV = NoiseValues[BorderIndex];
-
-            u64 NoiseChoice = ThisNoiseV > WorldZBiased;
-            /* u64 NoiseChoice = 1ull; */
-            /* u64 NoiseChoice = RandomU32(&DEBUG_ENTROPY) & 1; */
+            u16 ThisNoiseV = NoiseValues[BorderIndex];
+            u64 NoiseChoice = (ThisNoiseV >> 15);
+            Assert(NoiseChoice == 1 || NoiseChoice == 0);
             Chunk->xOccupancyBorder[((zNoise-1)*2)+1] |= NoiseChoice << (yNoise-1);
           }
 
