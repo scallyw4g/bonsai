@@ -760,9 +760,9 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
 
-    gradient_noise_shader *GradientShader = &Result->GpuNoise.GradientShader;
+    terrain_shader *TerrainShader = &Result->GpuNoise.TerrainShader;
     v3 ChunkDim = V3(66, 66, 66);
-    InitializeGradientNoiseShader(&Result->GpuNoise.GradientShader, ChunkDim, {}, {});
+    InitializeTerrainShader(&Result->GpuNoise.TerrainShader, ChunkDim, {}, {});
 
     Result->GpuNoise.FBO = GenFramebuffer();
 
@@ -772,18 +772,18 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
 
     v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
-    /* GradientShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False); */
+    /* TerrainShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False); */
 
     u32 Channels = 1;
     u32 Slices = 1;
     {
-      GradientShader->ChunkTexture = GenTexture(TextureDim, CSz("PerlinNoiseTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
+      TerrainShader->ChunkTexture = GenTexture(TextureDim, CSz("PerlinNoiseTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
       GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
       AssertNoGlErrors;
       GL.BindTexture(GL_TEXTURE_2D, 0);
     }
 
-    FramebufferTexture(&Result->GpuNoise.FBO, &GradientShader->ChunkTexture);
+    FramebufferTexture(&Result->GpuNoise.FBO, &TerrainShader->ChunkTexture);
     SetDrawBuffers(&Result->GpuNoise.FBO);
 
     Ensure(CheckAndClearFramebuffer());

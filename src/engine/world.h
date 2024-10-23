@@ -214,3 +214,6 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node);
 
 link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks);
+
+link_internal world *
+AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion);

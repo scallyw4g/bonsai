@@ -1,9 +1,9 @@
 // src/engine/graphics.h:16:0
 
 link_internal void
-InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkDim    , v3 WorldspaceBasis    , v3 ChunkResolution  )
+InitializeTerrainShader( terrain_shader *Struct  , v3 ChunkDim    , v3 WorldspaceBasis    , v3 ChunkResolution  )
 {
-  Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/noise/gradient.fragmentshader"));
+  Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/default.fragmentshader"));
 
   u32 UniformIndex = 0;
 
@@ -21,7 +21,7 @@ InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkDim    ,
 
   if (UniformIndex != 3  )
   {
-    Error("Shader (gradient_noise_shader) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_shader) had an incorrect number of uniform slots!");
   }
 
 
@@ -30,7 +30,7 @@ InitializeGradientNoiseShader( gradient_noise_shader *Struct  , v3 ChunkDim    ,
 }
 
 link_internal void
-UseShader( gradient_noise_shader *Struct )
+UseShader( terrain_shader *Struct )
 {
   GL.UseProgram(Struct->Program.ID);
 
@@ -47,7 +47,7 @@ UseShader( gradient_noise_shader *Struct )
 
   if (UniformIndex != 3  )
   {
-    Error("Shader (gradient_noise_shader) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_shader) had an incorrect number of uniform slots!");
   }
 }
 

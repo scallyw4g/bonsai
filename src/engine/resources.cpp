@@ -254,7 +254,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              auto *Shader = &Graphics->GpuNoise.GradientShader;
+              auto *Shader = &Graphics->GpuNoise.TerrainShader;
 
               v3i Apron = V3i(2, 2, 2);
               v3 NoiseDim = V3(Shader->ChunkDim);
@@ -677,7 +677,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
 
 link_internal void
-HardResetWorld(engine_resources *Engine)
+SoftResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
 
@@ -691,9 +691,21 @@ HardResetWorld(engine_resources *Engine)
 
   InitOctreeNode(World, &World->Root, {}, World->VisibleRegion);
   World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, World->VisibleRegion, World->ChunkMemory);
+}
 
-  /* VaporizeArena(World->ChunkMemory); */
-  /* World->ChunkMemory = AllocateArena(); */
+link_internal void
+HardResetWorld(engine_resources *Engine)
+{
+  world *World = Engine->World;
+  VaporizeArena(World->ChunkMemory);
+  VaporizeArena(&World->OctreeMemory);
+
+  v3i Center = World->Center;
+  v3i ChunkDim = World->ChunkDim;
+  v3i VisibleRegion = World->VisibleRegion;
+  Clear(World);
+
+  AllocateWorld(World, Center, ChunkDim, VisibleRegion);
 }
 
 link_internal void

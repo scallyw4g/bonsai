@@ -87,9 +87,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   Resources->FrameIndex += 1;
 
-  if (Resources->Graphics.GpuNoise.GradientShader.Program.HotReloaded)
+  if (Resources->Graphics.GpuNoise.TerrainShader.Program.HotReloaded)
   {
-    HardResetWorld(Resources);
+    SoftResetWorld(Resources);
   }
 
   MaintainWorldOctree(Resources);

@@ -1,8 +1,8 @@
 
 
-struct gradient_noise_shader
+struct terrain_shader
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/noise/gradient.fragmentshader") )
+      @frag_source_file("shaders/terrain/default.fragmentshader") )
 {
           shader  Program;
   shader_uniform  Uniforms[3];
@@ -13,16 +13,15 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
               v3  ChunkResolution; poof(@uniform)
 };
 
-poof(shader_magic(gradient_noise_shader))
-#include <generated/shader_magic_gradient_noise_shader.h>
+poof(shader_magic(terrain_shader))
+#include <generated/shader_magic_terrain_shader.h>
 
 struct gpu_noise_render_group
 {
   framebuffer FBO;
   u32 GlTimerObject;
 
-  gradient_noise_shader GradientShader;
-
+  terrain_shader TerrainShader;
 };
 
 struct composite_render_group
