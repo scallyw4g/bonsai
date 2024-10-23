@@ -1003,8 +1003,8 @@ MaintainWorldOctree(engine_resources *Engine)
               /* Node->Chunk = AllocateWorldChunk(Node->WorldP, World->ChunkDim, Node->Resolution, World->ChunkMemory); */
             }
 
-            QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0);
-            /* QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0); */
+            /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
+            QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0);
             ++Stats.NewQueues;
             AtomicIncrement(&Graphics->ChunksCurrentlyQueued);
 

@@ -250,18 +250,20 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
 }
 void main()
 {
-  f32 P = 30000.f;
+  f32 P = 1000.f;
   v3 Period = V3(P,P,P);
-  float Amplitude = 30000.f;
-  f32 StartingZDepth = 50000.f;
-  s32 Octaves = 1;
+  float Amplitude = 1000.f;
+  f32 StartingZDepth = 500.f;
+  /* f32 StartingZDepth = 0.f; */
+  s32 Octaves = 8;
 
-  f32 x = gl_FragCoord.x;
-  f32 y = f32(s32(gl_FragCoord.y) % 66);
-  f32 z = (gl_FragCoord.y / 66);
+  f32 x = floor(gl_FragCoord.x);
+  /* f32 y = f32(s32(gl_FragCoord.y) % 66); */
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
 
   /* v3 Offset = V3(-1, -1, -1); */
-  v3 Offset = V3(0,0,0);
+  v3 Offset = V3(0,-1,0);
 
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
@@ -282,8 +284,8 @@ void main()
     /* f32 warp = gradient_noise(xyz*2)*0.2f; */
     f32 warp = 0.f;
 
-    v4 gn = value_noise_derivs(xyz+warp);
-    /* v4 gn = gradient_noise_derivs(xyz+warp); */
+    /* v4 gn = value_noise_derivs(xyz+warp); */
+    v4 gn = gradient_noise_derivs(xyz+warp);
 
     deriv += gn.xyz;
 
@@ -291,13 +293,13 @@ void main()
   }
 #endif
 
-  deriv = normalize(deriv);
+  /* deriv = normalize(deriv); */
 
-  f32 cosDeriv = dot(deriv, V3(0,0,1));
+  /* f32 cosDeriv = dot(deriv, V3(0,0,1)); */
   /* f32 cosDeriv = 1.f; */
 
-  v4 vn = voronoi_noise(Basis/(Period/4.f), vec3(3.f), vec3(3.f));
-  NoiseValue = NoiseValue + (cosDeriv * vn.y * (Amplitude/2.f));
+  /* v4 vn = voronoi_noise(Basis/(Period/4.f), vec3(3.f), vec3(3.f)); */
+  /* NoiseValue = NoiseValue + (cosDeriv * vn.y * (Amplitude/2.f)); */
 
 
   //
