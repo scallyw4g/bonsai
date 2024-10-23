@@ -579,7 +579,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   Result->Settings.UseLightingBloom = True;
 
   /* Result->Settings.DrawMajorGrid = True; */
-  Result->Settings.DrawMinorGrid = True;
+  /* Result->Settings.DrawMinorGrid = True; */
   Result->Settings.MajorGridDim = 8.f;
 
   Result->Exposure = 1.5f;
