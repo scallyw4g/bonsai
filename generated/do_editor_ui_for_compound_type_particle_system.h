@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:210:0
+// src/engine/editor.cpp:209:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -363,6 +363,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         RangeIterator(ArrayIndex, 6)
         {
           DoEditorUi(Ui, Window, Element->PackedHSVColors+ArrayIndex, FSz("PackedHSVColors[%d]", ArrayIndex), Params);
+
  PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -380,6 +381,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         RangeIterator(ArrayIndex, (4096))
         {
           DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("Particles[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

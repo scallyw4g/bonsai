@@ -7,7 +7,21 @@ Deactivate(particle_system *System)
 link_internal void
 Destroy(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
@@ -18,7 +32,21 @@ Destroy(entity *Entity)
 link_internal void
 Unspawn(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
@@ -185,7 +213,9 @@ GetCollision( world *World, aabb SimSpaceCollisionDim )
           {
             v3i Offset = V3i(x,y,z);
             s32 Index = GetIndex(Offset, Chunk->Dim);
-            if (Chunk->Voxels[Index].Flags & Voxel_Filled)
+            s32 vOccupancy = GetOccupancyBit(Chunk->Occupancy, Index);
+
+            if (vOccupancy)
             {
               cp Hit = {V3(Offset), Chunk->WorldP};
               /* Assert(Hit > Result.MaxP); */
@@ -415,21 +445,44 @@ SpawnEntity(entity *Entity)
         {
           /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
           cp CP = Canonical_Position(V3(0), V3i(x,y,z));
-          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-          if (Chunk == 0)
+          /* world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP ); */
+          octree_node *Node = GetWorldChunkFromOctree( World, CP.WorldP );
+          if (Node == 0)
           {
-            Chunk = AllocateAndInsertChunk(World, CP.WorldP);
-            if (Chunk)
-            {
-              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
-            }
+            //nopush 
+            //do we care?
+            /* NotImplemented; */
+            /* Chunk = AllocateAndInsertChunk(World, CP.WorldP); */
+            /* if (Chunk) */
+            /* { */
+            /*   QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0); */
+            /* } */
           }
         }
       }
     }
   }
 
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Spawned;
 }
@@ -1456,7 +1509,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
           if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
           Offset = Normalize(Offset);
-          Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+          Entity->P.Offset += Offset * Plat->dt * (CameraSpeed*(1.f/GLOBAL_RENDER_SCALE_FACTOR));
         }
 
       }
@@ -1503,9 +1556,43 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
   }
 
 
-  DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena()); */
   FinalizeEntityUpdate(Entity);
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  //
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 }
 
 link_internal void

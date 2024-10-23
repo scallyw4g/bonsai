@@ -88,6 +88,7 @@ GetUiDebug()
 }
 
 
+
 poof(do_editor_ui_for_compound_type(white_noise_params))
 #include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
 
@@ -186,8 +187,6 @@ poof(do_editor_ui_for_enum(tone_mapping_type))
 
 
 
-poof(do_editor_ui_for_compound_type(world))
-#include <generated/do_editor_ui_for_compound_type_world.h>
 
 poof(do_editor_ui_for_compound_type(lighting_settings))
 #include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
@@ -297,6 +296,12 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+poof(do_editor_ui_for_compound_type(octree_node))
+#include <generated/do_editor_ui_for_compound_type_octree_node.h>
+
+poof(do_editor_ui_for_compound_type(world))
+#include <generated/do_editor_ui_for_compound_type_world.h>
 
 // NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
 /* poof(do_editor_ui_for_enum(asset_load_state)) */
@@ -700,18 +705,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   voxel *V = TryGetVoxelPointer(World, VoxelCP);
-
-
   v3 SimP = Floor(GetSimSpaceP(World, VoxelCP));
-#if VOXEL_DEBUG_COLOR
-  if (V)
-  {
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)* 40.f,  GREEN, 0.25f);
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.25f);
-    DEBUG_HighlightVoxel(Engine, SimP, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
-  }
-#endif
-
 
   {
     local_persist window_layout Window = WindowLayout("Voxel Debug Window", V2(150.f, 150.f));
@@ -719,8 +713,8 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
 
     if (V)
     {
-      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
-      PushNewRow(Ui);
+      /* DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags")); */
+      /* PushNewRow(Ui); */
 
       DoEditorUi(Ui, &Window, &VoxelCP, CSz("CP"));
 
@@ -739,6 +733,7 @@ DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
       world_chunk *ThisChunk = GetWorldChunkFromHashtable(World, VoxelCP.WorldP);
 
       PushTableStart(Ui);
+
         PushNewRow(Ui);
         PushColumn(Ui, CSz("Contributed"));
         PushColumn(Ui, CSz(" "));
@@ -1029,7 +1024,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     //
     /* DeallocateWorldChunk(Chunk, MeshFreelist); */
     DeallocateGpuBuffers(RenderQ, Chunk);
-    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
+    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, {}, Editor->Memory);
   }
 
   if (UpdateVoxels)
@@ -1326,7 +1321,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 
         v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
 
-        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
+        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Occupancy, SrcChunk->xOccupancyBorder, SrcChunk->FaceMasks, SrcChunk->Voxels, SrcChunk->VoxelLighting};
         world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
 
         Assert(SrcChunk->Dim <= DestChunk->Dim);
@@ -1344,7 +1339,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     {
       work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, HSVtoRGB(Layer->Settings.HSVColor), {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
-      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Occupancy, DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
     }
   }
 
@@ -1738,7 +1733,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           else
           {
             // @editor_chunk_memory_question
-            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
+            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, {}, Editor->Memory);
           }
 
           world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
@@ -1748,7 +1743,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           }
           else
           {
-            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, Editor->Memory);
+            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, {}, Editor->Memory);
           }
 
 
@@ -1784,7 +1779,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               /*   } */
               /* } */
 
-              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
+              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Occupancy, SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
 
               FinalizeChunkInitialization(SeedChunk);
 
@@ -1813,7 +1808,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
             data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
             auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
-            MarkBoundaryVoxels_MakeExteriorFaces(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim-V3i(2));
+            MarkBoundaryVoxels_MakeExteriorFaces( Root_LayeredBrushPreview->Occupancy,
+                                                  Root_LayeredBrushPreview->Voxels,
+                                                  Root_LayeredBrushPreview->Dim,
+                                                  {},
+                                                  Root_LayeredBrushPreview->Dim-V3i(2));
 
             RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
           }
@@ -2164,8 +2163,6 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  /* v3 HSV = *HSVDest; // NOTE(Jesse): Must copy so we don't stomp on the dest value */
-
   DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
   DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
   DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
@@ -2189,8 +2186,6 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   PushColumn(Ui, RGBColorString );
   PushNewRow(Ui);
-
-  /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
 }
 
 link_internal void
@@ -2439,7 +2434,7 @@ DoWorldEditor(engine_resources *Engine)
                 Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
-              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
+              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Occupancy, Chunk->xOccupancyBorder, Chunk->FaceMasks, Chunk->Voxels, Chunk->VoxelLighting};
               world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
 
               world_edit_shape Shape =

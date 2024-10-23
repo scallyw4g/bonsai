@@ -14,7 +14,10 @@ DoLevelWindow(engine_resources *Engine)
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
+
       u32 ChunkCount = 0;
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (World->ChunkHash[HashIndex])
@@ -22,6 +25,7 @@ DoLevelWindow(engine_resources *Engine)
           ++ChunkCount;
         }
       }
+#endif
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -45,6 +49,9 @@ DoLevelWindow(engine_resources *Engine)
       Serialize(&OutputStream, &Header);
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
@@ -52,6 +59,7 @@ DoLevelWindow(engine_resources *Engine)
           SerializeChunk(Chunk, &OutputStream);
         }
       }
+#endif
 
       Ensure(Serialize(&OutputStream, &Delimeter));
 
@@ -193,6 +201,8 @@ DoLevelWindow(engine_resources *Engine)
         }
 
 
+        NotImplemented;
+#if 0
         RangeIterator_t(u32, ChunkIndex, World->HashSize)
         {
           if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
@@ -206,6 +216,7 @@ DoLevelWindow(engine_resources *Engine)
             QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
+#endif
 
 #endif
 
@@ -703,6 +714,26 @@ DoEngineDebug(engine_resources *Engine)
   ui_toggle_button_group EditorButtonGroup =
     ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
+  u64 CellsGenerated = EngineDebug->CellsGenerated;
+
+  if (CellsGenerated)
+  {
+    r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / CellsGenerated;
+    Text(Ui, CSz("CyclesPerCell : "));
+    Text(Ui, CS(CyclesPerCell));
+    PushNewRow(Ui);
+  }
+
+  r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
+  if (ChunkGenSeconds != 0.0)
+  {
+    r64 CellsPerSecond = (CellsGenerated/ChunkGenSeconds);
+
+    Text(Ui, CSz("CellsPerSecond : "));
+    Text(Ui, CS(CellsPerSecond));
+    PushNewRow(Ui);
+  }
+
   engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;
 
   /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
@@ -746,7 +777,7 @@ DoEngineDebug(engine_resources *Engine)
       {
         world_chunk *PickedChunk = EngineDebug->PickedChunk;
         /* MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim); */
-        MarkBoundaryVoxels_NoExteriorFaces(PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
+        MarkBoundaryVoxels_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
         QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
       }
       PushNewRow(Ui);

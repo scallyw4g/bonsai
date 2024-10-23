@@ -217,7 +217,7 @@ PrintThreeBlocksRemoveFromMiddle()
   {
     I.ElementIndex = 7;
     RemoveUnordered(&Array, I);
-    /* TestThat( Array.Current->At == 6 ); */
+    TestThat( Array.Current->At == 5 );
     Print(&Array);
     Info("--");
   }
@@ -246,11 +246,22 @@ PrintThreeBlocksRemoveFromMiddle()
     Info("--");
   }
 
+}
 
 
+link_internal void
+RemoveAllBlocks()
+{
+  auto Array = MakeOrderedBlockArray(32);
 
+  RangeIterator(Index, 32)
+  {
+    RemoveUnordered(&Array, ZerothIndex(&Array));
 
-
+    auto AtE = AtElements(&Array);
+    s32 Count = s32(GetIndex(&AtE));
+    Assert( Count == 31 - Index );
+  }
 
 }
 
@@ -266,6 +277,8 @@ main(s32 ArgCount, const char** Args)
   TwoBlocksRemoveFromFront();
 
   PrintThreeBlocksRemoveFromMiddle();
+
+  RemoveAllBlocks();
 
   TestSuiteEnd();
   exit(TestsFailed);
