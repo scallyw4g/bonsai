@@ -267,11 +267,12 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
 vec4 mandlebulb(vec3 p)
 {
 	p.xyz = p.xzy;
+	/* p.xyz = p.xyz; */
 	vec3 z = p;
 	vec3 dz=vec3(0.0);
-	float power = 8.0;
+	float power = 6.;
 	float r, theta, phi;
-	float dr = 1.0;
+	float dr = 1.2;
 	
 	float t0 = 1.0;
 	for(int i = 0; i < 7; ++i) {
@@ -331,18 +332,17 @@ void main()
 
 
     v3 deriv = v3(0.f);
-    /* f32 warp = gradient_noise(Basis*2)*5.2f; */
+    /* f32 warp = gradient_noise(Basis*1.001); */
     f32 warp = 0.f;
 
     for (s32 Octave = 1; Octave <= Octaves; ++Octave)
     {
       v3 xyz = Basis / (Period/Octave);
 
-      v4 gn = value_noise_derivs(xyz+warp);
+      /* v4 gn = value_noise_derivs(xyz+warp); */
       /* v4 gn = gradient_noise_derivs(xyz+warp); */
       /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
-      /* v4 gn = voronoi_noisedxyz+warp, V3(1.f), V3(1.f)); */
-      /* v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(80.f, 1, 1, 1); */
+      v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(100.f, 1, 3, 18);
       /* v4 gn = V4(0); */
 
       // NOTE(Jesse): yzw is not derivitives for voronoi_noise
