@@ -548,7 +548,6 @@ GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChun
   Freelist->Memory = Memory;
   world_chunk *Result = GetOrAllocate(Freelist);
 
-
   if (Result->Voxels == 0)
   {
     AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
@@ -714,7 +713,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       if (ChunkIsGarbage(Chunk))
       {
-        // NOTE(Jesse): This is an optimization; the engine marks chunks that // have moved outside of the visible region as garbage.
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that
+        // // have moved outside of the visible region as garbage.
         Chunk->Flags = Chunk_Uninitialized;
       }
       else

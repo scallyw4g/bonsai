@@ -317,6 +317,46 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   return Out;
 }
 
+vec4 mandlebulb(vec3 p)
+{
+	p.xyz = p.xzy;
+	vec3 z = p;
+	vec3 dz=vec3(0.0);
+	float power = 8.0;
+	float r, theta, phi;
+	float dr = 1.0;
+	
+	float t0 = 1.0;
+	for(int i = 0; i < 7; ++i) {
+		r = length(z);
+		if(r > 2.0) continue;
+		theta = atan(z.y / z.x);
+        #ifdef phase_shift_on
+		phi = asin(z.z / r) + iTime*0.1;
+        #else
+        phi = asin(z.z / r);
+        #endif
+		
+		dr = pow(r, power - 1.0) * dr * power + 1.0;
+	
+		r = pow(r, power);
+		theta = theta * power;
+		phi = phi * power;
+		
+		z = r * vec3(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi)) + p;
+		
+		t0 = min(t0, r);
+	}
+
+  /* f32 Thing = 0.5 * log(r) * r / dr; */
+  f32 Thing = t0;
+  Thing = pow(clamp(Thing, 0.0, 1.0), 0.55);
+  vec3 tc0 = 0.5 + 0.5 * sin(3.0 + 4.2 * Thing + vec3(0.0, 0.5, 1.0));
+
+  vec4 Result = vec4(t0, tc0);
+	return Result;
+}
+
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
@@ -337,9 +377,9 @@ void main()
     v3 Period = V3(100.f);
     float Amplitude = 200.f;
     f32 StartingZDepth = 400.f;
-    s32 Octaves = 2;
+    s32 Octaves = 1;
 
-    NoiseValue = StartingZDepth;
+    /* NoiseValue = StartingZDepth; */
 
 
     v3 deriv = v3(0.f);
@@ -350,9 +390,11 @@ void main()
     {
       v3 xyz = Basis / (Period/Octave);
 
-      v4 gn = value_noise_derivs(xyz+warp);
+      /* v4 gn = value_noise_derivs(xyz+warp); */
       /* v4 gn = gradient_noise_derivs(xyz+warp); */
       /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
+      /* v4 gn = voronoi_noisedxyz+warp, V3(1.f), V3(1.f)); */
+      v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(80.f, 1, 1, 1);
       /* v4 gn = V4(0); */
 
       // NOTE(Jesse): yzw is not derivitives for voronoi_noise
