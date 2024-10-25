@@ -380,7 +380,7 @@ void main()
     f32 StartingZDepth = 400.f;
     s32 Octaves = 1;
 
-    /* NoiseValue = StartingZDepth; */
+    NoiseValue = StartingZDepth;
 
 
     v3 deriv = v3(0.f);
@@ -391,11 +391,11 @@ void main()
     {
       v3 xyz = Basis / (Period/Octave);
 
-      /* v4 gn = value_noise_derivs(xyz+warp); */
+      v4 gn = value_noise_derivs(xyz+warp);
       /* v4 gn = gradient_noise_derivs(xyz+warp); */
       /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
       /* v4 gn = voronoi_noisedxyz+warp, V3(1.f), V3(1.f)); */
-      v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(80.f, 1, 1, 1);
+      /* v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(80.f, 1, 1, 1); */
       /* v4 gn = V4(0); */
 
       // NOTE(Jesse): yzw is not derivitives for voronoi_noise
