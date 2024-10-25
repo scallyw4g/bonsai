@@ -1500,7 +1500,6 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             LeftFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
@@ -1512,7 +1511,6 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             RightFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
@@ -1524,7 +1522,6 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             FrontFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
@@ -1536,7 +1533,6 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             BackFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
@@ -1548,7 +1544,6 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             TopFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
@@ -1560,7 +1555,6 @@ poof(
             u32 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-            Assert(HSVColor == 3543u);
             BottomFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
             BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
