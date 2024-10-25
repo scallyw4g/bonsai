@@ -5,70 +5,17 @@ in vec2 UV;
 out uint Output;
 /* layout (location = 0) out float Output; */
 
-
-uint PackHSVColor(v3 Color)
+uint PackRGB(v3 Color)
 {
-  uint FiveBits   = (1u << 6) - 1u;
-  uint FifteenBits   = (1u << 15) - 1u;
-  uint H = uint(Color.r * f32(FiveBits));
-  uint S = uint(Color.g * r32(FiveBits));
-  uint V = uint(Color.b * r32(FiveBits));
-  uint Result = uint((H << 10) | (S << 5) | V) & FifteenBits;
+  uint FiveBits    = (1u << 5) - 1u;
+  uint FifteenBits = (1u << 15) - 1u;
+  uint R = uint(Color.r * f32(FiveBits)) & FiveBits;
+  uint G = uint(Color.g * r32(FiveBits)) & FiveBits;
+  uint B = uint(Color.b * r32(FiveBits)) & FiveBits;
+  uint Result = uint((R << 10) | (G << 5) | B) & FifteenBits;
   return Result;
 }
 
-v3 RGBtoHSV(v3 Color)
-{
-  f32 r = Color.r;
-  f32 g = Color.g;
-  f32 b = Color.b;
-
-  f32 h, s, v; // h:0-360.0, s:0.0-1.0, v:0.0-1.0
-
-  f32 maxv = max(r, max(g, b));
-  f32 minv = min(r, min(g, b));
-
-  v = maxv;
-
-  if (maxv == 0.0f)
-  {
-      s = 0;
-      h = 0;
-  }
-  else if (maxv - minv == 0.0f)
-  {
-      s = 0;
-      h = 0;
-  }
-  else {
-      s = (maxv - minv) / maxv;
-
-      if (maxv == r) {
-          h = 60 * ((g - b) / (maxv - minv)) + 0;
-      }
-      else if (maxv == g) {
-          h = 60 * ((b - r) / (maxv - minv)) + 120;
-      }
-      else {
-          h = 60 * ((r - g) / (maxv - minv)) + 240;
-      }
-  }
-
-  if (h < 0) h += 360.0f;
-
-  h = (h / 360.f);
-
-  v3 result = V3(h,s,v);
-  return result;
-}
-
-uint RGBtoPackedHSV(v3 Color)
-{
-  v3 HSV = RGBtoHSV(Color);
-  uint Packed = PackHSVColor(HSV);
-  /* int Packed=  0; */
-  return Packed;
-}
 
 
 
@@ -417,7 +364,7 @@ void main()
   //
 
   uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = RGBtoPackedHSV(ColorValue);
+  uint PackedColor = PackRGB(ColorValue);
   /* uint PackedColor = 3543u; */
 
   Output = (SolidBit << 15) | PackedColor;

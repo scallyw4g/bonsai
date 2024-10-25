@@ -28,6 +28,17 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
           u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1);
 
+          u32 FiveBits = (1<<5)-1;
+          u32 R = (ThisNoiseV >> 10) & FiveBits;
+          u32 G = (ThisNoiseV >>  5) & FiveBits;
+          u32 B = (ThisNoiseV >>  0) & FiveBits;
+
+          NoiseColor = RGBtoPackedHSV(V3(
+                f32(R)/f32(FiveBits),
+                f32(G)/f32(FiveBits),
+                f32(B)/f32(FiveBits)
+              ));
+
           Assert(xChunk < 64);
           Mask |= (NoiseChoice << xChunk);
 
