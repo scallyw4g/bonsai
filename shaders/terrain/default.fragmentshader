@@ -5,19 +5,6 @@ in vec2 UV;
 out uint Output;
 /* layout (location = 0) out float Output; */
 
-uint PackRGB(v3 Color)
-{
-  uint FiveBits    = (1u << 5) - 1u;
-  uint FifteenBits = (1u << 15) - 1u;
-  uint R = uint(Color.r * f32(FiveBits)) & FiveBits;
-  uint G = uint(Color.g * r32(FiveBits)) & FiveBits;
-  uint B = uint(Color.b * r32(FiveBits)) & FiveBits;
-  uint Result = uint((R << 10) | (G << 5) | B) & FifteenBits;
-  return Result;
-}
-
-
-
 
 // https://www.shadertoy.com/view/4dffRH
 //
@@ -264,47 +251,6 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   return Out;
 }
 
-vec4 mandlebulb(vec3 p)
-{
-	p.xyz = p.xzy;
-	/* p.xyz = p.xyz; */
-	vec3 z = p;
-	vec3 dz=vec3(0.0);
-	float power = 6.;
-	float r, theta, phi;
-	float dr = 1.2;
-	
-	float t0 = 1.0;
-	for(int i = 0; i < 7; ++i) {
-		r = length(z);
-		if(r > 2.0) continue;
-		theta = atan(z.y / z.x);
-        #ifdef phase_shift_on
-		phi = asin(z.z / r) + iTime*0.1;
-        #else
-        phi = asin(z.z / r);
-        #endif
-		
-		dr = pow(r, power - 1.0) * dr * power + 1.0;
-	
-		r = pow(r, power);
-		theta = theta * power;
-		phi = phi * power;
-		
-		z = r * vec3(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi)) + p;
-		
-		t0 = min(t0, r);
-	}
-
-  /* f32 Thing = 0.5 * log(r) * r / dr; */
-  f32 Thing = t0;
-  Thing = pow(clamp(Thing, 0.0, 1.0), 0.55);
-  vec3 tc0 = 0.5 + 0.5 * sin(3.0 + 4.2 * Thing + vec3(0.0, 0.5, 1.0));
-
-  vec4 Result = vec4(t0, tc0);
-	return Result;
-}
-
 
 void main()
 {
@@ -339,10 +285,9 @@ void main()
     {
       v3 xyz = Basis / (Period/Octave);
 
-      /* v4 gn = value_noise_derivs(xyz+warp); */
+      v4 gn = value_noise_derivs(xyz+warp);
       /* v4 gn = gradient_noise_derivs(xyz+warp); */
       /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
-      v4 gn = mandlebulb((xyz/8.f)-1.4f)*v4(100.f, 1, 3, 18);
       /* v4 gn = V4(0); */
 
       // NOTE(Jesse): yzw is not derivitives for voronoi_noise

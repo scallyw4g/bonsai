@@ -89,7 +89,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   if (Resources->Graphics.GpuNoise.TerrainShader.Program.HotReloaded)
   {
+    auto Plat = &Resources->Stdlib.Plat;
+    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+    CancelAllWorkQueueJobs(Resources);
     SoftResetWorld(Resources);
+    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 
   MaintainWorldOctree(Resources);

@@ -816,15 +816,33 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
 
   PushWindowStart(Ui, &Window);
-    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
+    file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain"), GetTranArena());
+
+    u32 I = 0;
+    IterateOver(&Files, FileNode, FileNodeIndex)
+    {
+      if (FileNode->Type == FileTraversalType_File)
+      {
+        if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+        {
+          // Force engine to reload new shader
+          Resources->Graphics.GpuNoise.TerrainShader.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+          Resources->Graphics.GpuNoise.TerrainShader.Program.FragmentTimeModifiedWhenLoaded = 0;
+        }
+        PushNewRow(Ui);
+      }
+
+    }
+    
+    /* ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical); */
   PushWindowEnd(Ui, &Window);
 
   /* Info("%S :: %d", ToString(GameState->TerrainGenType), GameState->TerrainGenType); */
 
-  if (TerrainGenTypeRadio.AnyElementClicked)
-  {
-    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-    SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
-    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-  }
+  /* if (TerrainGenTypeRadio.AnyElementClicked) */
+  /* { */
+  /*   SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex); */
+  /*   SoftResetEngine(Resources, HardResetFlag_NoResetCamera); */
+  /*   UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
+  /* } */
 }
