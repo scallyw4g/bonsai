@@ -38,6 +38,9 @@ poof(generate_stack(octree_node_ptr, {}))
 poof(freelist_allocator(octree_node))
 #include <generated/freelist_allocator_octree_node.h>
 
+poof(freelist_allocator(world_chunk))
+#include <generated/freelist_allocator_world_chunk.h>
+
 struct world
 {
   v3i Center;        // the world chunk position of the center of the visible region

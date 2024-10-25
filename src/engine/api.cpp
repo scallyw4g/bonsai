@@ -527,6 +527,36 @@ Bonsai_Render(engine_resources *Engine)
   return Result;
 }
 
+struct bonsai_thread_user_data
+{
+  u64 Magic0 = 0x69;
+
+  world_chunk_freelist SynChunkFreelist;
+
+  u64 Magic1 = 0x420;
+};
+
+link_internal void
+FreeWorldChunk(world_chunk_freelist *Freelist, world_chunk *Chunk)
+{
+  Free(Freelist, Chunk);
+}
+
+link_internal world_chunk *
+GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory)
+{
+  Freelist->Memory = Memory;
+  world_chunk *Result = GetOrAllocate(Freelist);
+
+
+  if (Result->Voxels == 0)
+  {
+    AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
+  }
+
+  return Result;
+}
+
 link_weak void
 WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
@@ -534,6 +564,17 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   world *World = EngineResources->World;
 
   auto RenderQ = &EngineResources->Stdlib.Plat.RenderQ;
+
+  if (Thread->UserData == 0)
+  {
+    Thread->UserData = Allocate(bonsai_thread_user_data, Thread->PermMemory, 1);
+    bonsai_thread_user_data *UserData = Cast(bonsai_thread_user_data*, Thread->UserData);
+    *UserData = {};
+  }
+
+  bonsai_thread_user_data *UserData = Cast(bonsai_thread_user_data*, Thread->UserData);
+  Assert(UserData->Magic0 == 0x69);
+  Assert(UserData->Magic1 == 0x420);
 
   tswitch (Entry)
   {
@@ -566,7 +607,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
 
       world_chunk *DestChunk = Chunk1;
-      world_chunk *SynChunk = HeapAllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1));
+      /* world_chunk *SynChunk = HeapAllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1)); */
+      /* world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory); */
+      world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks, Thread->PermMemory);
+      Assert(SynChunk->Dim == V3i(64, 66, 66));
+      /* WorldChunk(SynChunk, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks); */
       SynChunk->Flags = Chunk_Queued;
       v3i WorldBasis = {};
       v3i SynChunkDim = SynChunk->Dim;
@@ -603,14 +648,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         {
           Assert(HasGpuMesh(&DestChunk->Mesh) == False);
           FinalizeChunkInitialization(DestChunk);
-          HeapFreeWorldChunk(SynChunk);
+          FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
         }
       }
       else
       {
         Assert(HasGpuMesh(&DestChunk->Mesh) == False);
         FinalizeChunkInitialization(DestChunk);
-        HeapFreeWorldChunk(SynChunk);
+        FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
       }
 
       auto Graphics = &EngineResources->Graphics;
@@ -642,7 +687,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       DestChunk->HasMesh = True;
 
-      HeapFreeWorldChunk(SynChunk);
+      FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
       DestChunk->DEBUG_OwnedByThread = 0;
 

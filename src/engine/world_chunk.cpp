@@ -92,6 +92,7 @@ WorldChunk(world_chunk *Chunk, v3i WorldP, v3i Dim, v3i DimInChunks)
   Chunk->DimInChunks  = DimInChunks;
 }
 
+#if 0
 link_internal world_chunk *
 HeapAllocateWorldChunk( v3i WorldP, v3i Dim, v3i DimInChunks)
 {
@@ -136,6 +137,7 @@ HeapFreeWorldChunk( world_chunk *Chunk )
   _aligned_free(Chunk->Voxels);
   _aligned_free(Chunk);
 }
+#endif
 
 link_internal void
 AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage)
