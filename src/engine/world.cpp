@@ -1025,7 +1025,7 @@ done_queueing_nodes:
   DrawOctreeRecursive(Engine, &World->Root, MainDrawList, ShadowMapDrawList);
 
   DEBUG_OctreeTraversal(Engine, &World->Root, &Stats);
-  Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)", Stats.TotalLeaves, Stats.TotalBranches, Stats.TotalQueued, Stats.NewQueues);
+  /* Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)", Stats.TotalLeaves, Stats.TotalBranches, Stats.TotalQueued, Stats.NewQueues); */
 }
 
 

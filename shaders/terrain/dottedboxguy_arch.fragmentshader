@@ -4,14 +4,13 @@ uniform v3 ChunkResolution;
 in vec2 UV;
 out uint Output;
 
-#define PI 3.14159265359
-#define PI_INV 0.31830988618
-
 float sstep(float init_x){
     float x = clamp(init_x,-1.,1.);
     x = abs(x);
     return sign(init_x)*(x*(2.-x));
 }
+#define PI 3.14159265359
+#define PI_INV 0.31830988618
 
 float dot2( in vec2 v ) { return dot(v,v); }
 
@@ -94,7 +93,7 @@ void main()
 
   v3 Offset = V3(-1, -1, -1);
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
-  Basis *=.0001;
+  Basis *= .2;
 
   // NOTE(Jesse): Set these in the -- user code -- section
   v3 ColorValue = V3(0.f);
@@ -104,15 +103,17 @@ void main()
   // -- user code -- 
   //
   {
+    vec3 p = Basis;
+    float size = 200;
 
-    f32 d = sdBrickCircle(vec2(x,z), 20., 10., 0., 0.);
+    f32 d = sdBrickCircle(p.xz-size, size*.5, 10., 1., 0.);
 
     vec3 col = (d>0.0) ? vec3(0.9,0.6,0.3) : vec3(0.65,0.85,1.0);
-    col *= 1.0 - exp(-4.0*abs(d));
-    col *= 0.8 + 0.2*cos(80.0*d);
-    col = mix( col, vec3(1.0), 1.0-smoothstep(0.0,0.03,abs(d)));
+    col *= 1.0 - exp(-9.0*abs(d));
+    col *= 0.8 + 0.2*cos(1.0*d);
+    col = mix( col, vec3(1.0), 1.0-smoothstep(0.0,1.,abs(d)));
 
-    vec2 w = vec2( d, abs(y-8.) - 4. );
+    vec2 w = vec2( d, abs(p.y-80.) - 40. );
     d = min(max(w.x,w.y),0.0) + length(max(w,0.0));
 
     ColorValue = col;
@@ -126,6 +127,7 @@ void main()
 
   uint SolidBit = NoiseValue > 0.0f ? 1u : 0u;
   uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = 3543u; */
 
   Output = (SolidBit << 15) | PackedColor;
 }

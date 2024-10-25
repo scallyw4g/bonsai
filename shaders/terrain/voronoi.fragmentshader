@@ -4,208 +4,6 @@ uniform v3 ChunkResolution;
 in vec2 UV;
 out uint Output;
 
-
-
-uint RGBtoPackedHSV(v3 Color)
-{
-  v3 HSV = RGBtoHSV(Color);
-  uint Packed = PackHSVColor(HSV);
-  /* int Packed=  0; */
-  return Packed;
-}
-
-
-
-// https://www.shadertoy.com/view/4dffRH
-//
-//
-//
-// The MIT License
-// Copyright   2017 Inigo Quilez
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions: The above copyright
-// notice and this permission notice shall be included in all copies or
-// substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
-// WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-// CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-// https://www.youtube.com/c/InigoQuilez
-// https://iquilezles.org/
-
-// Computes the analytic derivatives of a 3D Gradient Noise. This can be used for example to compute normals to a
-// 3d rocks based on Gradient Noise without approximating the gradient by having to take central differences.
-//
-// More info here: https://iquilezles.org/articles/gradientnoise
-
-// All noise functions here:
-//
-// https://www.shadertoy.com/playlist/fXlXzf&from=0&num=12
-
-
-// 0: integer hash
-// 1: float hash (aliasing based)
-#define METHOD 1
-
-// 0: cubic
-// 1: quintic
-#define INTERPOLANT 1
-
-
-#if METHOD==0
-vec3 hash( ivec3 p )     // this hash is not production ready, please
-{                        // replace this by something better
-  ivec3 n = ivec3( p.x*127 + p.y*311 + p.z*74,
-                   p.x*269 + p.y*183 + p.z*246,
-                   p.x*113 + p.y*271 + p.z*124);
-
-  // 1D hash by Hugo Elias
-  n = (n << 13) ^ n;
-  n = n * (n * n * 15731 + 789221) + 1376312589;
-  return -1.0+2.0*vec3( n & ivec3(0x0fffffff))/float(0x0fffffff);
-}
-
-#else
-vec3 hash( vec3 p )      // this hash is not production ready, please
-{                        // replace this by something better
-  p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
-            dot(p,vec3(269.5,183.3,246.1)),
-            dot(p,vec3(113.5,271.9,124.6)));
-
-  return -1.0 + 2.0*fract(sin(p)*43758.5453123);
-}
-#endif
-
-float hashf( float f )
-{
-  return -1.0 + 2.0*fract(sin(f)*43758.5453123);
-}
-
-#if 1
-vec4 value_noise_derivs( in vec3 x )
-{
-    vec3 p = floor(x);
-    vec3 w = fract(x);
-    vec3 u = w*w*(3.0-2.0*w);
-    vec3 du = 6.0*w*(1.0-w);
-    
-    float n = p.x + p.y*157.0 + 113.0*p.z;
-    
-    float a = hashf(n+  0.0);
-    float b = hashf(n+  1.0);
-    float c = hashf(n+157.0);
-    float d = hashf(n+158.0);
-    float e = hashf(n+113.0);
-    float f = hashf(n+114.0);
-    float g = hashf(n+270.0);
-    float h = hashf(n+271.0);
-	
-    float k0 =   a;
-    float k1 =   b - a;
-    float k2 =   c - a;
-    float k3 =   e - a;
-    float k4 =   a - b - c + d;
-    float k5 =   a - c - e + g;
-    float k6 =   a - b - e + f;
-    float k7 = - a + b + c - d + e - f - g + h;
-
-    return vec4( k0 + k1*u.x + k2*u.y + k3*u.z + k4*u.x*u.y + k5*u.y*u.z + k6*u.z*u.x + k7*u.x*u.y*u.z, 
-                 du * (vec3(k1,k2,k3) + u.yzx*vec3(k4,k5,k6) + u.zxy*vec3(k6,k4,k5) + k7*u.yzx*u.zxy ));
-}
-#endif
-
-// return value noise (in x) and its derivatives (in yzw)
-//
-vec4 gradient_noise_derivs( in vec3 x )
-{
-  // grid
-  #if METHOD==0
-  ivec3 i = ivec3(floor(x));
-  #else
-  vec3 i = floor(x);
-  #endif
-  vec3 f = fract(x);
-  
-  #if INTERPOLANT==1
-  // quintic interpolant
-  vec3 u = f*f*f*(f*(f*6.0-15.0)+10.0);
-  vec3 du = 30.0*f*f*(f*(f-2.0)+1.0);
-  #else
-  // cubic interpolant
-  vec3 u = f*f*(3.0-2.0*f);
-  vec3 du = 6.0*f*(1.0-f);
-  #endif    
-  
-  // gradients
-  #if METHOD==0
-  vec3 ga = hash( i+ivec3(0,0,0) );
-  vec3 gb = hash( i+ivec3(1,0,0) );
-  vec3 gc = hash( i+ivec3(0,1,0) );
-  vec3 gd = hash( i+ivec3(1,1,0) );
-  vec3 ge = hash( i+ivec3(0,0,1) );
-  vec3 gf = hash( i+ivec3(1,0,1) );
-  vec3 gg = hash( i+ivec3(0,1,1) );
-  vec3 gh = hash( i+ivec3(1,1,1) );
-  #else
-  vec3 ga = hash( i+vec3(0.0,0.0,0.0) );
-  vec3 gb = hash( i+vec3(1.0,0.0,0.0) );
-  vec3 gc = hash( i+vec3(0.0,1.0,0.0) );
-  vec3 gd = hash( i+vec3(1.0,1.0,0.0) );
-  vec3 ge = hash( i+vec3(0.0,0.0,1.0) );
-  vec3 gf = hash( i+vec3(1.0,0.0,1.0) );
-  vec3 gg = hash( i+vec3(0.0,1.0,1.0) );
-  vec3 gh = hash( i+vec3(1.0,1.0,1.0) );
-  #endif
-  
-  // projections
-  float va = dot( ga, f-vec3(0.0,0.0,0.0) );
-  float vb = dot( gb, f-vec3(1.0,0.0,0.0) );
-  float vc = dot( gc, f-vec3(0.0,1.0,0.0) );
-  float vd = dot( gd, f-vec3(1.0,1.0,0.0) );
-  float ve = dot( ge, f-vec3(0.0,0.0,1.0) );
-  float vf = dot( gf, f-vec3(1.0,0.0,1.0) );
-  float vg = dot( gg, f-vec3(0.0,1.0,1.0) );
-  float vh = dot( gh, f-vec3(1.0,1.0,1.0) );
-
-  // interpolations
-  return vec4( va + u.x*(vb-va) + u.y*(vc-va) + u.z*(ve-va) + u.x*u.y*(va-vb-vc+vd) + u.y*u.z*(va-vc-ve+vg) + u.z*u.x*(va-vb-ve+vf) + (-va+vb+vc-vd+ve-vf-vg+vh)*u.x*u.y*u.z,    // value
-               ga + u.x*(gb-ga) + u.y*(gc-ga) + u.z*(ge-ga) + u.x*u.y*(ga-gb-gc+gd) + u.y*u.z*(ga-gc-ge+gg) + u.z*u.x*(ga-gb-ge+gf) + (-ga+gb+gc-gd+ge-gf-gg+gh)*u.x*u.y*u.z +   // derivatives
-               du * (vec3(vb,vc,ve) - va + u.yzx*vec3(va-vb-vc+vd,va-vc-ve+vg,va-vb-ve+vf) + u.zxy*vec3(va-vb-ve+vf,va-vb-vc+vd,va-vc-ve+vg) + u.yzx*u.zxy*(-va+vb+vc-vd+ve-vf-vg+vh) ));
-}
-
-// Doesn't support integer hashing
-#if METHOD == 1
-float gradient_noise( in vec3 p )
-{
-    vec3 i = floor( p );
-    vec3 f = fract( p );
-
-    #if INTERPOLANT==1
-    // quintic interpolant
-    vec3 u = f*f*f*(f*(f*6.0-15.0)+10.0);
-    #else
-    // cubic interpolant
-    vec3 u = f*f*(3.0-2.0*f);
-    #endif    
-
-    return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
-                          dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
-                     mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
-                          dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
-                mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
-                          dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
-                     mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
-                          dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
-}
-#endif
-
 vec3 vhash(vec3 UV, vec3 offset)
 {
 	mat3 m = mat3(127.1,311.7, 74.7,269.5,183.3,246.1,113.5,271.9,124.6);
@@ -261,96 +59,15 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   return Out;
 }
 
-float sstep(float init_x){
-    float x = clamp(init_x,-1.,1.);
-    x = abs(x);
-    return sign(init_x)*(x*(2.-x));
-}
-#define PI 3.14159265359
-#define PI_INV 0.31830988618
-
-float dot2( in vec2 v ) { return dot(v,v); }
-
-//trapezoid SDF from IQ
-float sdTrapezoid( in vec2 p, in float r1, float r2, float he ){
-    p = vec2(p.y, -p.x);
-    vec2 k1 = vec2(r2,he);
-    vec2 k2 = vec2(r2-r1,2.0*he);
-    p.x = abs(p.x);
-    vec2 ca = vec2(p.x-min(p.x,(p.y<0.0)?r1:r2), abs(p.y)-he);
-    vec2 cb = p - k1 + k2*clamp( dot(k1-p,k2)/dot2(k2), 0.0, 1.0 );
-    float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
-    return s*sqrt( min(dot2(ca),dot2(cb)) );
-}
-
-float brick_size(float id, float n, float r){
-    return (cos(mod(round(id)+.4, 2.)*PI)*.5+.5)*.5*r;
-}
-
-float sdBrickCircle(vec2 p, float r, float n, float padding, float rotation){
-
-    float inv_n = 1./n;
-    rotation *= n;
-    
-    vec2 point = normalize(p);
-    float angle = atan(point.y, point.x); // angle from the x axis
-    float neighbor = 0.;
-    
-    //quantization of the normal's angle. you must normalize the angle before doing quantization
-    angle *= n*PI_INV;
-    
-    angle += rotation;
-    
-    angle = floor(angle);
-    
-    vec2 ids = vec2(angle);
-    
-    angle -= rotation;
-    
-    ids.y += 1.;
-    
-    neighbor = angle + 1.;
-    
-    angle *= inv_n;
-    angle *= PI;
-    neighbor *=PI*inv_n;
-    
-    //recunstructing the normals
-    vec2 right = vec2(cos(angle), sin(angle));
-    vec2 left = vec2(cos(neighbor), sin(neighbor));
-    
-    vec2 sizes = vec2(brick_size(ids.x, n, r), brick_size(ids.y, n, r));
-    
-    //note : you can make the brick size not depend on the radius by removing r here
-    vec4 radii = vec4((1.-cos(inv_n*PI))/sin(inv_n*PI));
-    radii *= r + vec4(sizes.x, -sizes.x, sizes.y, -sizes.y);
-    radii-=padding;
-    
-    vec3 brick0 = vec3(sizes.x, radii.x, radii.y);
-    vec3 brick1 = vec3(sizes.y, radii.z, radii.w);
-    
-    vec2 p_right = vec2(p.x*right.x + p.y*right.y, p.x*right.y - p.y*right.x);
-    p_right.x-=r;
-    
-    float d = sdTrapezoid(p_right, brick0.y, brick0.z, brick0.x);
-    
-    vec2 p_left = vec2(p.x*left.x + p.y*left.y, p.x*left.y - p.y*left.x);
-    p_left.x-=r;
-
-    d = min(d, sdTrapezoid(p_left, brick1.y, brick1.z, brick1.x));
-    
-    return d;
-}
-
 void main()
 {
+
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
 
   v3 Offset = V3(-1, -1, -1);
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
-  Basis *=.0001;
 
   // NOTE(Jesse): Set these in the -- user code -- section
   v3 ColorValue = V3(0.f);
@@ -360,29 +77,34 @@ void main()
   // -- user code -- 
   //
   {
+    v3 Period = V3(100.f);
+    float Amplitude = 200.f;
+    f32 StartingZDepth = 400.f;
+    s32 Octaves = 1;
 
-    f32 d = sdBrickCircle(vec2(x,z), 20., 10., 0., 0.);
+    NoiseValue = StartingZDepth;
 
-    vec3 col = (d>0.0) ? vec3(0.9,0.6,0.3) : vec3(0.65,0.85,1.0);
-    col *= 1.0 - exp(-4.0*abs(d));
-    col *= 0.8 + 0.2*cos(80.0*d);
-    col = mix( col, vec3(1.0), 1.0-smoothstep(0.0,0.03,abs(d)));
+    f32 warp = 0.f;
 
-    vec2 w = vec2( d, abs(y-8.) - 4. );
-    d = min(max(w.x,w.y),0.0) + length(max(w,0.0));
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+      v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f));
+      ColorValue += gn.yzw;
+      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+    }
 
-    ColorValue = col;
+    ColorValue = abs(normalize(ColorValue));
 
-    NoiseValue = d ;
+    NoiseValue = NoiseValue - Basis.z;
   }
 
   //
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.0f ? 1u : 0u;
-  uint PackedColor = RGBtoPackedHSV(ColorValue);
-  /* uint PackedColor = 3543u; */
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+  uint PackedColor = PackRGB(ColorValue);
 
   Output = (SolidBit << 15) | PackedColor;
 }
