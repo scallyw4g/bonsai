@@ -8,16 +8,9 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   Assert( (Chunk->Flags & Chunk_Queued) == 0);
   Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
 
-  DeallocateMeshes(&Chunk->Meshes, MeshFreelist);
-
-  /* DeallocateGpuBuffers(RenderQueue, Chunk); */
-  RangeIterator(MeshIndex, MeshIndex_Count)
+  if (HasGpuMesh(&Chunk->Mesh))
   {
-    auto Handles = Chunk->Meshes.GpuBufferHandles+MeshIndex;
-    // @vertex_handle_primal
-    //
-    /* if (Handles->VertexHandle) { GL.DeleteBuffers(3, &Handles->VertexHandle); } */
-    PushDeallocateBuffersCommand(RenderQ, Handles);
+    PushDeallocateBuffersCommand(RenderQ, &Chunk->Mesh.Handles);
   }
 
   ClearWorldChunk(Chunk);
@@ -46,8 +39,7 @@ RenderOctree(engine_resources *Engine, shader *Shader)
 
     if (Node->Type == OctreeNodeType_Leaf)
     {
-      SyncGpuBuffersImmediate(Engine, &Node->Chunk->Meshes);
-      DrawLod(Engine, Shader, &Node->Chunk->Meshes, 0, {}, Quaternion(), V3(1));
+      DrawLod(Engine, Shader, &Node->Chunk->Mesh, 0, {}, Quaternion(), V3(1));
     }
 
     if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
@@ -68,6 +60,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
   // Map immediate GPU buffers for first frame
   MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
   MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
+
+  auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
 
   os *Os         = &Engine->Stdlib.Os;
   /* platform *Plat = &Engine->Stdlib.Plat; */
@@ -90,6 +84,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
         case type_work_queue_entry_init_asset:
         case type_work_queue_entry_update_world_region:
         case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_finalize_noise_values:
         case type_work_queue_entry_build_chunk_mesh:
         case type_work_queue_entry_sim_particle_system:
         case type_work_queue_entry__align_to_cache_line_helper:
@@ -108,7 +103,26 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
+            { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
+
+              Assert(HasGpuMesh(Command->Dest) == 0);
+              Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 0);
+              Command->Dest[0] = AllocateAndMapGpuBuffer(Command->Type, Command->ElementCount);
+              Assert(HasGpuMesh(Command->Dest) == 1);
+              Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 1);
+
+              auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestChunk));
+              PushWorkQueueEntry(LowPriorityQ, &Next);
+            } break;
+
+            { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
+              FlushBuffersToCard(Command->Buf);
+            } break;
+
             { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_buffer);
 
               gpu_readback_buffer PBOBuf = Command->PBOBuf;
               GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
@@ -120,6 +134,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
             { tmatch(bonsai_render_command_allocate_texture, RC, Command)
+              TIMED_NAMED_BLOCK(bonsai_render_command_allocate_texture);
 
               texture *Texture = Command->Texture;
               switch (Texture->Channels)
@@ -463,7 +478,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             u16 *NoiseValues = Cast(u16*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
             AssertNoGlErrors;
 
-            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
+            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
             PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
 
             RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);

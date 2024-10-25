@@ -135,6 +135,26 @@ struct bonsai_render_command_gl_timer_read_value_and_histogram
   u32 GlTimerObject;
 };
 
+struct bonsai_render_command_allocate_and_map_gpu_element_buffer
+{
+  data_type Type;
+  u32 ElementCount;
+
+  gpu_mapped_element_buffer *Dest;
+
+  // TODO(Jesse): This is a crutch for not being able to define the next job
+  // remove.
+  //
+  // nopush
+  world_chunk *SynChunk;
+  world_chunk *DestChunk;
+};
+
+struct bonsai_render_command_unmap_gpu_element_buffer
+{
+  gpu_mapped_element_buffer *Buf;
+};
+
 struct bonsai_render_command_unmap_and_deallocate_buffer
 {
   gpu_readback_buffer PBOBuf;
@@ -162,6 +182,8 @@ poof(
 
     bonsai_render_command_do_stuff
 
+    bonsai_render_command_allocate_and_map_gpu_element_buffer
+    bonsai_render_command_unmap_gpu_element_buffer
     bonsai_render_command_unmap_and_deallocate_buffer
 
     bonsai_render_command_setup_shader
@@ -177,7 +199,7 @@ poof(
     bonsai_render_command_gl_timer_read_value_and_histogram
   }
 )
-#include <generated/d_union_bonsai_render_command.h>
+#include <generated/d_union_work_queue_entry__bonsai_render_command.h>
 
 poof(d_union_all_constructors(work_queue_entry__bonsai_render_command))
 #include <generated/d_union_all_constructors_work_queue_entry__bonsai_render_command.h>

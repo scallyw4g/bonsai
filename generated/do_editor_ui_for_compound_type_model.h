@@ -59,6 +59,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_mapped_element_buffer*,&Element->Mesh),
+        CSz("Mesh"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(untextured_3d_geometry_buffer*,&Element->TransparentMesh),
         CSz("TransparentMesh"),
         Params

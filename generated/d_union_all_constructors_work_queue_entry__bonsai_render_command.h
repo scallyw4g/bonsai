@@ -1,4 +1,4 @@
-// src/engine/render_command.h:182:0
+// src/engine/render_command.h:204:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -111,6 +111,32 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A  )
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_do_stuff,
     .bonsai_render_command_do_stuff = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_and_map_gpu_element_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_allocate_and_map_gpu_element_buffer,
+    .bonsai_render_command_allocate_and_map_gpu_element_buffer = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_gpu_element_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_unmap_gpu_element_buffer,
+    .bonsai_render_command_unmap_gpu_element_buffer = A,
 
     
 
@@ -357,6 +383,36 @@ BonsaiRenderCommandDoStuff( u32   Ignored  )
 {
   bonsai_render_command_do_stuff Reuslt = {
     .Ignored = Ignored
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_allocate_and_map_gpu_element_buffer
+BonsaiRenderCommandAllocateAndMapGpuElementBuffer( data_type   Type , u32   ElementCount , gpu_mapped_element_buffer*  Dest , world_chunk*  SynChunk , world_chunk*  DestChunk  )
+{
+  bonsai_render_command_allocate_and_map_gpu_element_buffer Reuslt = {
+    .Type = Type
+,
+    .ElementCount = ElementCount
+,
+    .Dest = Dest
+,
+    .SynChunk = SynChunk
+,
+    .DestChunk = DestChunk
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_unmap_gpu_element_buffer
+BonsaiRenderCommandUnmapGpuElementBuffer( gpu_mapped_element_buffer*  Buf  )
+{
+  bonsai_render_command_unmap_gpu_element_buffer Reuslt = {
+    .Buf = Buf
   };
 
   

@@ -15,7 +15,7 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   NotImplemented;
   /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
-    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
+    /* Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At; */
   }
 
   Result.VertexElementSize        = (u32)sizeof(v3);
@@ -69,7 +69,7 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   NotImplemented;
   /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
-    Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At;
+    /* Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At; */
   }
 
 

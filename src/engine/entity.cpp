@@ -446,8 +446,8 @@ SpawnEntity(entity *Entity)
           /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
           cp CP = Canonical_Position(V3(0), V3i(x,y,z));
           /* world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP ); */
-          octree_node *Node = GetWorldChunkFromOctree( World, CP.WorldP );
-          if (Node == 0)
+          /* octree_node *Node = GetWorldChunkFromOctree( World, CP.WorldP ); */
+          /* if (Node == 0) */
           {
             //nopush 
             //do we care?

@@ -263,9 +263,10 @@ ClearWorldChunk( world_chunk *Chunk )
 
   Chunk->DEBUG_OwnedByThread = {};
 
-  Clear(&Chunk->Meshes);
+  Clear(&Chunk->Mesh);
 
   Chunk->Flags = {};
+  Chunk->DimInChunks = {};
 }
 
 inline world_position

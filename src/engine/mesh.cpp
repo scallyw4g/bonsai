@@ -54,17 +54,9 @@ link_internal void
 DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 {
   Assert(Mesh);
+  Assert(Mesh->End <= MeshFreelist->MeshSize);
 
 #if BONSAI_INTERNAL
-  if (MeshFreelist->MeshSize == 0)
-  {
-    MeshFreelist->MeshSize = Mesh->End;
-  }
-  else
-  {
-    Assert(MeshFreelist->MeshSize == Mesh->End);
-  }
-
   AcquireFutex(&MeshFreelist->DebugFutex);
 #endif
 
@@ -80,12 +72,6 @@ DeallocateMesh(untextured_3d_geometry_buffer* Mesh, mesh_freelist *MeshFreelist)
 link_internal void
 DeallocateMesh(void *VoidMesh, tiered_mesh_freelist* MeshFreelist)
 {
-  // NOTE(Jesse): The End offsets must be the same for the cast to
-  // untextured_3d_geometry_buffer to work for both buffer types.
-  //
-  // TODO(Jesse): Really don't like relying on this .. should probably find a better way.
-  /* CAssert(OffsetOf(End, untextured_3d_geometry_buffer) == OffsetOf(End, world_chunk_geometry_buffer)); */
-
   untextured_3d_geometry_buffer *Mesh = Cast(untextured_3d_geometry_buffer*, VoidMesh);
   mesh_freelist *Freelist = TryGetTierForSize(MeshFreelist, Mesh->End);
   if (Freelist)
@@ -93,6 +79,12 @@ DeallocateMesh(void *VoidMesh, tiered_mesh_freelist* MeshFreelist)
     u32 Tier = 1+ (Mesh->End/WORLD_CHUNK_MESH_MIN_SIZE);
     u32 Size = Tier*WORLD_CHUNK_MESH_MIN_SIZE;
 
+    if (Freelist->MeshSize == 0)
+    {
+      Freelist->MeshSize = Size;
+    }
+
+    Assert(Freelist->MeshSize >= Mesh->End);
     DeallocateMesh(Mesh, Freelist);
   }
   else
@@ -250,4 +242,11 @@ poof(threadsafe_mesh_container(lod_element_buffer, untextured_3d_geometry_buffer
 /* poof(threadsafe_mesh_container(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
 /* #include <generated/threadsafe_mesh_container_world_chunk_lod_element_buffer.h> */
 
+
+link_internal b32
+HasGpuMesh(gpu_mapped_element_buffer *Buf)
+{
+  b32 Result = (Buf->Handles.VertexHandle != 0);
+  return Result;
+}
 

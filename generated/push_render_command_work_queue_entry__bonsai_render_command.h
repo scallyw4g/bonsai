@@ -100,6 +100,28 @@ PushBonsaiRenderCommandDoStuff(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
+PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+  work_queue *RenderQueue
+ , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , world_chunk* SynChunk   , world_chunk* DestChunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer( Type , ElementCount , Dest , SynChunk , DestChunk  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandUnmapGpuElementBuffer(
+  work_queue *RenderQueue
+ , gpu_mapped_element_buffer* Buf  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer( Buf  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandUnmapAndDeallocateBuffer(
   work_queue *RenderQueue
  , gpu_readback_buffer PBOBuf  

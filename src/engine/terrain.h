@@ -304,4 +304,4 @@ link_internal u32
 Terrain_Voronoi2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
 
 link_internal u32
-FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin, u16 PackedHSVColorValue);
+FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin);

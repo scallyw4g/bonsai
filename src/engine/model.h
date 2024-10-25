@@ -67,7 +67,10 @@ struct model
 {
   vox_data Vox;
 
+  // TODO(Jesse): Delete
   lod_element_buffer Meshes; poof(@no_serialize)
+
+  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
 
   /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;

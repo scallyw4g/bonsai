@@ -40,7 +40,7 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
   // NOTE(Jesse): So we include the 1*minsize in the 0th bucket, 2*minsize in 1th bucket, etc
   if (Size % WORLD_CHUNK_MESH_MIN_SIZE == 0) { Size = Size-1; }
 
-  u32 Index = Size/WORLD_CHUNK_MESH_MIN_SIZE;
+  u32 Index = (Size)/WORLD_CHUNK_MESH_MIN_SIZE;
   if (Index < TIERED_MESH_FREELIST_MAX_ELEMENTS)
   {
     Result = TieredFreelist->Start + Index;

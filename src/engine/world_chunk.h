@@ -330,7 +330,11 @@ struct world_chunk poof(@version(1))
   // TODO(Jesse): This stores pointers that are completely ephemeral and as
   // such are wasted space.  We could remove those to make this struct 24 bytes
   // smaller, which is probably pretty worth.
-  lod_element_buffer Meshes; poof(@no_serialize)
+  //
+  // TODO(Jesse): remove this in favor of Mesh
+  /* lod_element_buffer Meshes; poof(@no_serialize) */
+
+  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
 
   // TODO(Jesse): Pack this into something else.. or ideally remove it entirely.
   b32 HasMesh;                poof(@no_serialize)
@@ -664,8 +668,8 @@ link_internal untextured_3d_geometry_buffer*
 AllocateTempMesh(memory_arena* TempMemory, data_type Type);
 
 
-struct work_queue_entry_build_chunk_mesh;
+struct work_queue_entry_finalize_noise_values;
 struct gpu_readback_buffer;
 
-link_internal work_queue_entry_build_chunk_mesh
+link_internal work_queue_entry_finalize_noise_values
 WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk);

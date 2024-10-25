@@ -1,4 +1,4 @@
-// src/engine/model.h:85:0
+// src/engine/model.h:88:0
 
 struct vox_data_block
 {

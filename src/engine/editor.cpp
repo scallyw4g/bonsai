@@ -1126,12 +1126,14 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
       } break;
     }
 
-    SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
+    // TODO(Jesse): Do we do this here still?
+    NotImplemented;
+    /* SyncGpuBuffersAsync(Engine, &Chunk->Meshes); */
   }
 
   if (Preview->Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, &Preview->Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, &Preview->Thumbnail, &Chunk->Mesh, V3(Chunk->Dim)/-2.f, 0);
   }
 
   return UpdateVoxels;
@@ -1786,7 +1788,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
               data_type Type = GetMeshDatatypeForDimension(SeedChunk->Dim);
               auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
               RebuildWorldChunkMesh(Thread, SeedChunk, {}, SeedChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-              SyncGpuBuffersAsync(Engine, &SeedChunk->Meshes);
+              // TODO(Jesse): Do we still do this here?
+              NotImplemented;
+              /* SyncGpuBuffersAsync(Engine, &SeedChunk->Meshes); */
 
               CopyChunkOffset(SeedChunk, SeedChunk->Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, {});
             }
@@ -1820,10 +1824,12 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           Editor->RootChunkNeedsNewMesh = False;
           Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;
 
-          if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
-          {
-            Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
-          }
+          // TODO(Jesse): Do we still do this here?
+          NotImplemented;
+          /* if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes)) */
+          /* { */
+          /*   Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin; */
+          /* } */
         }
 
 
@@ -2641,6 +2647,9 @@ DoWorldEditor(engine_resources *Engine)
 }
 
 link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale );
+
+link_internal void
 DrawEditorPreview(engine_resources *Engine, shader *Shader)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2671,7 +2680,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
 
   if (Chunk)
   {
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    DrawLod(Engine, Shader, &Chunk->Mesh, 0.f, Basis, Quaternion(), V3(1.f));
   }
 }
 

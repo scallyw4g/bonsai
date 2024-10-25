@@ -60,7 +60,7 @@ struct work_queue_entry_init_world_chunk {
   /* world_chunk_mesh_bitfield MeshBit; */
 };
 
-struct work_queue_entry_build_chunk_mesh
+struct work_queue_entry_finalize_noise_values
 {
   gpu_readback_buffer PBOBuf;
 
@@ -70,12 +70,19 @@ struct work_queue_entry_build_chunk_mesh
   world_chunk *Chunk;
 };
 
+struct work_queue_entry_build_chunk_mesh
+{
+  world_chunk *SynChunk;
+  world_chunk *DestChunk;
+};
+
+#if 1
 struct work_queue_entry_rebuild_mesh
 {
   world_chunk *Chunk;
   chunk_init_flags Flags;
-  /* world_chunk_mesh_bitfield MeshBit; */
 };
+#endif
 
 
 
@@ -139,8 +146,6 @@ poof(
   }
 )
 
-link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
 
 poof(
   func asyncify_render_function_c(func_t)
@@ -168,6 +173,9 @@ poof(
 
 poof(asyncify_render_function_h(RenderToTexture))
 #include <generated/asyncify_render_function_h_RenderToTexture.h>
+
+link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
 
 poof(asyncify_render_function_h(DrawLod))
 #include <generated/asyncify_render_function_h_DrawLod.h>
@@ -229,6 +237,7 @@ poof(
   d_union work_queue_entry
   {
     work_queue_entry_init_world_chunk
+    work_queue_entry_finalize_noise_values
     work_queue_entry_build_chunk_mesh
     /* work_queue_entry_copy_buffer */
     work_queue_entry_copy_buffer_set
@@ -310,7 +319,7 @@ poof(
 #include <generated/for_datatypes_0XxWqGSZ.h>
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera);
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Meshes, v3 Offset, camera *Camera);
 
 poof(asyncify_render_function_c(RenderToTexture))
 #include <generated/asyncify_render_function_c_RenderToTexture.h>

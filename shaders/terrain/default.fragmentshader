@@ -374,7 +374,8 @@ void main()
   //
 
   uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = RGBtoPackedHSV(ColorValue);
+  /* uint PackedColor = max(RGBtoPackedHSV(ColorValue), 3543u); */
+  uint PackedColor = 3543u;
 
   Output = (SolidBit << 15) | PackedColor;
 }

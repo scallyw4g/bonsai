@@ -361,7 +361,7 @@ CountsAsDrawableOrUnmeshed(octree_node *Node)
     // I'm going to say this is true to avoid data races for now
     b32 NotQueued = (Chunk->Flags&Chunk_Queued) == 0;
 
-    Result = ( NotQueued && Chunk->HasMesh && HasGpuMesh(&Chunk->Meshes) );
+    Result = ( NotQueued && Chunk->HasMesh && HasGpuMesh(&Chunk->Mesh) );
   }
   else
   {
@@ -425,7 +425,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
 
-        if (HasGpuMesh(&Node->Chunk->Meshes) && EngineDebug->DrawBranchNodesWithMeshes)
+        if (HasGpuMesh(&Node->Chunk->Mesh) && EngineDebug->DrawBranchNodesWithMeshes)
         {
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
@@ -566,7 +566,7 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
   }
 
   // Prefer chunks who have a higher chance of having geometry
-  if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Meshes))
+  if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
   {
     IdealListIndex = Max(0, IdealListIndex-3);
   }
@@ -678,7 +678,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
   if (Chunk)
   {
-    SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
+    /* SyncGpuBuffersAsync(Engine, &Chunk->Meshes); */
 
     Assert(Chunk->Dim % World->ChunkDim == V3i(0));
 
@@ -689,7 +689,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
         Assert( (Chunk->Flags & Chunk_Queued) == False);
         /* if (Chunk->WorldP == V3i(0,0,0)) { RuntimeBreak(); } */
         Assert(Chunk->FilledCount == 0 || Chunk->FilledCount == Volume(Chunk->Dim));
-        Assert(HasGpuMesh(&Chunk->Meshes) == 0);
+        Assert(HasGpuMesh(&Chunk->Mesh) == 0);
         NodeToSplit->HadNoVisibleSurface = True;
         NodeToSplit->Chunk = 0;
         FreeWorldChunk(Engine, Chunk);
@@ -816,7 +816,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
 
-        if (Chunk && HasGpuMesh(&Chunk->Meshes) && EngineDebug->DrawBranchNodesWithMeshes)
+        if (Chunk && HasGpuMesh(&Chunk->Mesh) && EngineDebug->DrawBranchNodesWithMeshes)
         {
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
@@ -850,7 +850,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
                 DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
               }
 
-              if (HasGpuMesh(&Chunk->Meshes))
+              if (HasGpuMesh(&Chunk->Mesh))
               {
                 Push(MainDrawList, &Chunk);
                 Push(ShadowMapDrawList, &Chunk);
@@ -876,7 +876,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
               DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
             }
 
-            if (HasGpuMesh(&Chunk->Meshes))
+            if (HasGpuMesh(&Chunk->Mesh))
             {
               Push(MainDrawList, &Chunk);
               Push(ShadowMapDrawList, &Chunk);
@@ -970,6 +970,8 @@ MaintainWorldOctree(engine_resources *Engine)
   DEBUG_VALUE_u32(TotalWorldChunksAllocated);
   DEBUG_VALUE_u32(FreedNodes);
   DEBUG_VALUE_u32(DeferrFreedNodes);
+
+  DEBUG_VALUE_u32(TotalChunksQueued);
 
   /* DEBUG_VALUE_u32(ReusedNode); */
   /* DEBUG_VALUE_u32(AllocatedNode); */

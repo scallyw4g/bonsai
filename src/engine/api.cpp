@@ -533,8 +533,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   engine_resources *EngineResources = GetEngineResources();
   world *World = EngineResources->World;
 
-  work_queue_entry_type WorkType = Entry->Type;
-  switch (WorkType)
+  auto RenderQ = &EngineResources->Stdlib.Plat.RenderQ;
+
+  tswitch (Entry)
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
@@ -547,22 +548,15 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       DispatchAsyncFunctionCall(Job);
     } break;
 
-    case type_work_queue_entry_init_asset:
-    {
-      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+    { tmatch(work_queue_entry_init_asset, Entry, Job)
       InitAsset(Job->Asset, Thread);
     } break;
 
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
+    { tmatch(work_queue_entry_sim_particle_system, Entry, Job)
       SimulateParticleSystem(Job);
     } break;
 
-    case type_work_queue_entry_build_chunk_mesh:
-    {
-      work_queue_entry_build_chunk_mesh *Job = SafeAccess(work_queue_entry_build_chunk_mesh, Entry);
-#if 1
+    { tmatch(work_queue_entry_finalize_noise_values, Entry, Job)
       auto Chunk1 = Job->Chunk;
       u16 *NoiseValues = Job->NoiseData;
       v3i NoiseDim = Job->NoiseDim;
@@ -572,27 +566,18 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
 
       world_chunk *DestChunk = Chunk1;
-      world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetTranArena());
+      world_chunk *SynChunk = HeapAllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1));
       SynChunk->Flags = Chunk_Queued;
       v3i WorldBasis = {};
       v3i SynChunkDim = SynChunk->Dim;
       v3i SrcToDest = {};
       s64 zMin = 0;
-      u16 PackedHSVColorValue = PackHSVColor(HSV_GREEN);
-      b32 MakeExteriorFaces = False;
 
-      u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin, PackedHSVColorValue);
+      u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
 
-      if (ChunkSum)
+      if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
-        if (MakeExteriorFaces)
-        {
-          MarkBoundaryVoxels_MakeExteriorFaces(SynChunk->Occupancy, SynChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
-        }
-        else
-        {
-          MarkBoundaryVoxels_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-        }
+        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
 
         Assert(DestChunk->FilledCount == 0);
         Assert(DestChunk->Dim.x == 64);
@@ -607,120 +592,76 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
         Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
 
-        // NOTE(Jesse): The DestChunk is finalized at the end of the routine
-        /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
         FinalizeChunkInitialization(SynChunk);
 
-#if 0
-        if (Flags & ChunkInitFlag_ComputeStandingSpots)
+        s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
+        if (FacesRequired)
         {
-          NotImplemented;
-          ComputeStandingSpots( SynChunkDim, SynChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                                DestChunk->Dim, 0, &DestChunk->StandingSpots,
-                                Thread->TempMemory);
+          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(RenderQ, DataType_v3_u8, u32(FacesRequired*6), &DestChunk->Mesh, SynChunk, DestChunk);
         }
-#endif
-
-        /* auto *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex); */
-        geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
-
-        RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-        TempMesh->At = 0;
-
-        /* Assert( (Flags & ChunkInitFlag_GenLODs) == 0); */
-
-#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
-        {                                                                           \
-          auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
-          if (SrcMesh) {                                                            \
-            if (SrcMesh->At) {                                                      \
-              DestChunk->HasMesh = True;                                            \
-              AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
-            } else {                                                                \
-              DeallocateMesh(EngineResources, SrcMesh);                             \
-            }                                                                       \
-          }                                                                         \
-        }
-
+        else
         {
-          /* auto *EngineResources = GetEngineResources(); */
-          TIMED_NAMED_BLOCK(Chunk_Finalize);
-          FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod0 );
-          /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod1 ); */
-          /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod2 ); */
-          /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod3 ); */
-          /* FINALIZE_MESH_FOR_CHUNK(SynChunk, DestChunk, MeshBit_Lod4 ); */
-#undef FINALIZE_MESH_FOR_CHUNK
-
-          Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
-          Assert( DestChunk->FilledCount <= s32(Volume(SynChunk)));
-
-          /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
-
+          Assert(HasGpuMesh(&DestChunk->Mesh) == False);
+          FinalizeChunkInitialization(DestChunk);
+          HeapFreeWorldChunk(SynChunk);
         }
       }
-#endif
-
-      FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*,DestChunk)));
+      else
+      {
+        Assert(HasGpuMesh(&DestChunk->Mesh) == False);
+        FinalizeChunkInitialization(DestChunk);
+        HeapFreeWorldChunk(SynChunk);
+      }
 
       auto Graphics = &EngineResources->Graphics;
       Assert(Graphics->ChunksCurrentlyQueued > 0);
       AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
 
+      // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
+      // a PBO, so it sets the PBO handle to -1
       if (Job->PBOBuf.PBO != INVALID_PBO_HANDLE)
       {
-        auto DeallocPBOs = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandUnmapAndDeallocateBuffer(Job->PBOBuf)));
-        PushWorkQueueEntry(&EngineResources->Stdlib.Plat.RenderQ, &DeallocPBOs);
+        PushBonsaiRenderCommandUnmapAndDeallocateBuffer(RenderQ, Job->PBOBuf);
       }
     } break;
 
-    case type_work_queue_entry_rebuild_mesh:
-    {
+    { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)
+
+      world_chunk               *SynChunk     = Job->SynChunk;
+      world_chunk               *DestChunk    = Job->DestChunk;
+      gpu_mapped_element_buffer *GpuMappedBuf = &DestChunk->Mesh;
+      Assert(HasGpuMesh(&DestChunk->Mesh) == True);
+      Assert(HasGpuMesh(GpuMappedBuf) == True);
+
+      Assert(DestChunk->DEBUG_OwnedByThread == 0);
+      DestChunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
+
+      RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf->Buffer, Thread->TempMemory);
+      Assert(GpuMappedBuf->Buffer.At == GpuMappedBuf->Buffer.End);
+      Assert(HasGpuMesh(&DestChunk->Mesh) == True);
+
+      DestChunk->HasMesh = True;
+
+      HeapFreeWorldChunk(SynChunk);
+
+      DestChunk->DEBUG_OwnedByThread = 0;
+
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh);
+
+      // TODO(Jesse)(bug, race): There's a race here; the chunk can get deallocated on the
+      // main thread and clear the Mesh before the Unmap job happens.  Have to somehow
+      // wait for that job to finish to call Finalize
+      //
+      // nopush
+
+      FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, DestChunk)));
+    } break;
+
+    { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)
       NotImplemented;
-#if 0
-      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      world_chunk *Chunk = Job->Chunk;
-
-      data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
-      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
-
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-
-      if (Job->Flags & ChunkInitFlag_ComputeStandingSpots)
-      {
-        ComputeStandingSpots( Chunk->Dim,
-                              Chunk->Occupancy,
-                              Chunk->Voxels,
-                              {},
-
-                              {},
-                              Global_TileDim,
-
-                              Chunk->Dim,
-                              0,
-                              &Chunk->StandingSpots,
-                              /* memory_arena *PermMemory, */
-                              Thread->TempMemory );
-      }
-
-      /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
-      Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
-      /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
-#endif
     } break;
 
-    case type_work_queue_entry_init_world_chunk:
-    {
-      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+    { tmatch(work_queue_entry_init_world_chunk, Entry, Job)
       world_chunk *Chunk = Job->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
@@ -745,14 +686,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
     } break;
 
-    case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
+    { tmatch(work_queue_entry_copy_buffer_ref, Entry, Job)
+      DoCopyJob(Job, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
     } break;
 
-    case type_work_queue_entry_copy_buffer_set:
-    {
+    { tmatch(work_queue_entry_copy_buffer_set, Entry, Job)
       TIMED_BLOCK("Copy Set");
       volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)

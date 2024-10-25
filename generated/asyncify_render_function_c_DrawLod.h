@@ -1,7 +1,7 @@
-// src/engine/work_queue.h:318:0
+// src/engine/work_queue.h:327:0
 
 link_internal void
-DrawLod_Async(work_queue *Queue,engine_resources *Engine ,shader *Shader ,lod_element_buffer *Meshes ,r32 DistanceSquared ,v3 Basis ,Quaternion Rotation ,v3 Scale )
+DrawLod_Async(work_queue *Queue,engine_resources *Engine ,shader *Shader ,gpu_mapped_element_buffer *Meshes ,r32 DistanceSquared ,v3 Basis ,Quaternion Rotation ,v3 Scale )
 {
   draw_lod_async_params Params =
   {
