@@ -334,10 +334,10 @@ void main()
   // -- user code -- 
   //
   {
-    v3 Period = V3(10000.f);
-    float Amplitude = 2000.f;
-    f32 StartingZDepth = 10000.f;
-    s32 Octaves = 10;
+    v3 Period = V3(100.f);
+    float Amplitude = 200.f;
+    f32 StartingZDepth = 400.f;
+    s32 Octaves = 2;
 
     NoiseValue = StartingZDepth;
 
