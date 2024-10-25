@@ -690,7 +690,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       DestChunk->DEBUG_OwnedByThread = 0;
 
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh);
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestChunk);
 
       // TODO(Jesse)(bug, race): There's a race here; the chunk can get deallocated on the
       // main thread and clear the Mesh before the Unmap job happens.  Have to somehow
@@ -698,7 +698,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       //
       // nopush
 
-      FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, DestChunk)));
+      /* FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, DestChunk))); */
     } break;
 
     { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)

@@ -113,11 +113,11 @@ PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
 link_internal void
 PushBonsaiRenderCommandUnmapGpuElementBuffer(
   work_queue *RenderQueue
- , gpu_mapped_element_buffer* Buf  
+ , gpu_mapped_element_buffer* Buf   , world_chunk* Chunk  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer( Buf  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer( Buf , Chunk  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

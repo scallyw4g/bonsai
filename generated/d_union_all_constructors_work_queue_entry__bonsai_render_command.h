@@ -1,4 +1,4 @@
-// src/engine/render_command.h:204:0
+// src/engine/render_command.h:210:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -409,10 +409,12 @@ BonsaiRenderCommandAllocateAndMapGpuElementBuffer( data_type   Type , u32   Elem
 }
 
 link_internal bonsai_render_command_unmap_gpu_element_buffer
-BonsaiRenderCommandUnmapGpuElementBuffer( gpu_mapped_element_buffer*  Buf  )
+BonsaiRenderCommandUnmapGpuElementBuffer( gpu_mapped_element_buffer*  Buf , world_chunk*  Chunk  )
 {
   bonsai_render_command_unmap_gpu_element_buffer Reuslt = {
     .Buf = Buf
+,
+    .Chunk = Chunk
   };
 
   

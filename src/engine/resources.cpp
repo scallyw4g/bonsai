@@ -119,6 +119,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RC, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
               FlushBuffersToCard(Command->Buf);
+
+              FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, Command->Chunk)));
             } break;
 
             { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RC, Command)
