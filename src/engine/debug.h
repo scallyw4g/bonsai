@@ -64,6 +64,8 @@ struct engine_debug
   b8 DrawNodesWithChunks;
   b8 DrawQueuedNodes;
 
+  b8 MarkChunkBorderVoxels;
+
   r64 ChunkGenTimeElapsedMS;
   u64 CellsGenerated;
   r64 ChunkGenCyclesElapsed;

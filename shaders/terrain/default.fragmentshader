@@ -73,46 +73,6 @@ vec3 hash( vec3 p )      // this hash is not production ready, please
 }
 #endif
 
-float hashf( float f )
-{
-  return -1.0 + 2.0*fract(sin(f)*43758.5453123);
-}
-
-#if 1
-vec4 value_noise_derivs( in vec3 x )
-{
-    vec3 p = floor(x);
-    vec3 w = fract(x);
-    vec3 u = w*w*(3.0-2.0*w);
-    vec3 du = 6.0*w*(1.0-w);
-    
-    float n = p.x + p.y*157.0 + 113.0*p.z;
-    
-    float a = hashf(n+  0.0);
-    float b = hashf(n+  1.0);
-    float c = hashf(n+157.0);
-    float d = hashf(n+158.0);
-    float e = hashf(n+113.0);
-    float f = hashf(n+114.0);
-    float g = hashf(n+270.0);
-    float h = hashf(n+271.0);
-	
-    float k0 =   a;
-    float k1 =   b - a;
-    float k2 =   c - a;
-    float k3 =   e - a;
-    float k4 =   a - b - c + d;
-    float k5 =   a - c - e + g;
-    float k6 =   a - b - e + f;
-    float k7 = - a + b + c - d + e - f - g + h;
-
-    return vec4( k0 + k1*u.x + k2*u.y + k3*u.z + k4*u.x*u.y + k5*u.y*u.z + k6*u.z*u.x + k7*u.x*u.y*u.z, 
-                 du * (vec3(k1,k2,k3) + u.yzx*vec3(k4,k5,k6) + u.zxy*vec3(k6,k4,k5) + k7*u.yzx*u.zxy ));
-}
-#endif
-
-// return value noise (in x) and its derivatives (in yzw)
-//
 vec4 gradient_noise_derivs( in vec3 x )
 {
   // grid
