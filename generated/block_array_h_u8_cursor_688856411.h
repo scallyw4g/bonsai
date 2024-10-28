@@ -110,6 +110,14 @@ AtElements(u8_cursor_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(u8_cursor_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal u8_cursor *
 GetPtr(u8_cursor_block_array *Arr, u8_cursor_block_array_index Index)
 {

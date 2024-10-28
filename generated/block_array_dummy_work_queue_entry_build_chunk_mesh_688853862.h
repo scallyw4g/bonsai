@@ -110,6 +110,14 @@ AtElements(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 GetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {

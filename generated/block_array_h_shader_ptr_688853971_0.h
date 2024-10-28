@@ -110,6 +110,14 @@ AtElements(shader_ptr_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(shader_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal shader_ptr *
 GetPtr(shader_ptr_block_array *Arr, shader_ptr_block_array_index Index)
 {

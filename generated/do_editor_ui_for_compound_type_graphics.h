@@ -372,8 +372,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ChunksCurrentlyQueued),
-        CSz("ChunksCurrentlyQueued"),
+        Cast(u32*,&Element->NoiseFinalizeJobsPending),
+        CSz("NoiseFinalizeJobsPending"),
         Params
         );
 

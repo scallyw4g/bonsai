@@ -29,7 +29,7 @@ RenderOctree(engine_resources *Engine, shader *Shader)
 
   b32     Continue = True;
 
-  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, &World->OctreeMemory);
+  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, World->OctreeMemory);
   Push(&Stack, &World->Root);
 
   /* RuntimeBreak(); */
@@ -103,6 +103,54 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
+            { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
+              TIMED_NAMED_BLOCK(CancelReadbackJobs);
+
+              IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+              {
+                b32 Done = False;
+                while (!Done)
+                {
+                  u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                  switch(SyncStatus)
+                  {
+                    case GL_ALREADY_SIGNALED:
+                    case GL_CONDITION_SATISFIED:
+                    {
+                      AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+                      TIMED_NAMED_BLOCK(MapBuffer);
+                      AssertNoGlErrors;
+                      GL.DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
+                      GL.DeleteSync(PBOJob->PBOBuf.Fence);
+                      AssertNoGlErrors;
+                      /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                      Done = True;
+                    } break;
+
+                    case GL_WAIT_FAILED:
+                    {
+                      /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                      SoftError("Error waiting on gl sync object");
+                    } break;
+
+                    case GL_TIMEOUT_EXPIRED:
+                    {
+                      SleepMs(1);
+                    } break;
+                  }
+                }
+                AssertNoGlErrors;
+              }
+
+              // Clear the jobs
+              umm C = Count(&Graphics->NoiseReadbackJobs);
+              auto Z = ZerothIndex(&Graphics->NoiseReadbackJobs);
+              RangeIterator_t(umm, Index, C) { RemoveUnordered(&Graphics->NoiseReadbackJobs, Z); }
+              Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
+
+              /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
+            } break;
+
             { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RC, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
@@ -132,6 +180,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               GL.UnmapBuffer(GL_PIXEL_PACK_BUFFER);
               AssertNoGlErrors;
               GL.DeleteBuffers(1, &PBOBuf.PBO);
+              GL.DeleteSync(PBOBuf.Fence);
               AssertNoGlErrors;
             } break;
 
@@ -262,6 +311,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_initialize_noise_buffer, RC, _Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
               /* Command = 0; */
+
+              AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
               bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
 
@@ -483,8 +534,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
             PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
 
+            // TODO(Jesse): This actually makes the loop skip a job because we
+            // shorten the array, but never update the index we're looking at.
+            //
+            // It doesn't matter in this case because this runs every frame, so
+            // the skipped job is just a frame late.  But, it would be nice if
+            // this was better.
             RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
-
           } break;
 
           case GL_TIMEOUT_EXPIRED:
@@ -493,18 +549,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
           case GL_WAIT_FAILED:
           {
-            AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
             SoftError("Error waiting on gl sync object");
           } break;
         }
       }
     }
 
-    SleepMs(1);
-
     if (FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex)) break;
 
     if (FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex)) { WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex); }
+
+    SleepMs(1);
   }
 
   Info("Exiting Render Thread (%d)", ThreadParams->ThreadIndex);
@@ -641,7 +696,13 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+
+  // NOTE(Jesse): The RendeQ flushes before it suspends, and at the time of this
+  // writing the application depends on this behavior.  Some render queue jobs
+  // have knowledge of who to call next (because we don't have a way of specifying
+  // the next next job when we submit one).  This makes it difficult to 
   CancelAllWorkQueueJobs(Plat, &Plat->RenderQ);
+  Assert(QueueIsEmpty(&Plat->RenderQ));
 }
 
 link_internal void
@@ -693,29 +754,30 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
 
 
-link_internal void
-SoftResetWorld(engine_resources *Engine)
-{
-  world *World = Engine->World;
+/* link_internal void */
+/* SoftResetWorld(engine_resources *Engine) */
+/* { */
+/*   world *World = Engine->World; */
 
-  MergeOctreeChildren(Engine, &World->Root);
+/*   MergeOctreeChildren(Engine, &World->Root); */
 
-  if (World->Root.Chunk)
-  {
-    FreeWorldChunk(Engine, World->Root.Chunk);
-  }
-  World->Root = {};
+/*   if (World->Root.Chunk) */
+/*   { */
+/*     FreeWorldChunk(Engine, World->Root.Chunk); */
+/*   } */
+/*   World->Root = {}; */
 
-  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion);
-  World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, World->VisibleRegion, World->ChunkMemory);
-}
+/*   InitOctreeNode(World, &World->Root, {}, World->VisibleRegion); */
+/*   World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, World->VisibleRegion, World->ChunkMemory); */
+
+/* } */
 
 link_internal void
 HardResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
   VaporizeArena(World->ChunkMemory);
-  VaporizeArena(&World->OctreeMemory);
+  VaporizeArena(World->OctreeMemory);
 
   v3i Center = World->Center;
   v3i ChunkDim = World->ChunkDim;

@@ -110,6 +110,14 @@ AtElements(voxel_stack_element_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(voxel_stack_element_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {

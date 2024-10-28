@@ -110,6 +110,14 @@ AtElements(file_traversal_node_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(file_traversal_node_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal file_traversal_node *
 GetPtr(file_traversal_node_block_array *Arr, file_traversal_node_block_array_index Index)
 {

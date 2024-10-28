@@ -1,4 +1,4 @@
-// src/engine/render_command.h:210:0
+// src/engine/render_command.h:218:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -274,6 +274,19 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and
   return Result;
 }
 
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_cancel_all_noise_readback_jobs A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_cancel_all_noise_readback_jobs,
+    .bonsai_render_command_cancel_all_noise_readback_jobs = A,
+
+    
+
+  };
+  return Result;
+}
+
 
 link_internal bonsai_render_command_initialize_noise_buffer
 BonsaiRenderCommandInitializeNoiseBuffer( world_chunk*  Chunk  )
@@ -531,6 +544,17 @@ BonsaiRenderCommandGlTimerReadValueAndHistogram( u32   GlTimerObject  )
 {
   bonsai_render_command_gl_timer_read_value_and_histogram Reuslt = {
     .GlTimerObject = GlTimerObject
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_cancel_all_noise_readback_jobs
+BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )
+{
+  bonsai_render_command_cancel_all_noise_readback_jobs Reuslt = {
+    
   };
 
   

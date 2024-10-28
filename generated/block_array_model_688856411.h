@@ -110,6 +110,14 @@ AtElements(model_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(model_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal model *
 GetPtr(model_block_array *Arr, model_block_array_index Index)
 {

@@ -41,6 +41,9 @@ poof(freelist_allocator(octree_node))
 poof(freelist_allocator(world_chunk))
 #include <generated/freelist_allocator_world_chunk.h>
 
+poof(generate_cursor(octree_node_ptr))
+#include <generated/generate_cursor_octree_node.h>
+
 struct world
 {
   v3i Center;        // the world chunk position of the center of the visible region
@@ -52,7 +55,7 @@ struct world
   /* world_chunk **ChunkHash;           poof(@array_length(Element->HashSize)) */
 
   octree_node Root;
-  memory_arena OctreeMemory;
+  memory_arena *OctreeMemory;
   octree_node_freelist OctreeNodeFreelist;
   octree_node_freelist OctreeNodeDeferFreelist; // Chunks that were queued, to be freed later.
 
@@ -201,6 +204,15 @@ TryGetVoxel(world *World, cp P)
 }
 
 
+#define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)
+#define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (128)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (25)
+struct octree_node_priority_queue
+{
+  octree_node_ptr_cursor Lists[OCTREE_PRIORITY_QUEUE_LIST_COUNT];
+};
+
+
 link_internal world * GetWorld();
 
 link_internal void
@@ -220,3 +232,7 @@ InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks);
 
 link_internal world *
 AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion);
+
+
+link_internal void
+SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, octree_node *Parent, memory_arena *Memory);

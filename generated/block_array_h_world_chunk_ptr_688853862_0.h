@@ -110,6 +110,14 @@ AtElements(world_chunk_ptr_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(world_chunk_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal world_chunk_ptr *
 GetPtr(world_chunk_ptr_block_array *Arr, world_chunk_ptr_block_array_index Index)
 {

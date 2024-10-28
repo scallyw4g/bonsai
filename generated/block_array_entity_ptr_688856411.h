@@ -110,6 +110,14 @@ AtElements(entity_ptr_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(entity_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal entity_ptr *
 GetPtr(entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
 {

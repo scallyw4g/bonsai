@@ -1,4 +1,4 @@
-// src/engine/render_command.h:171:0
+// src/engine/render_command.h:177:0
 
 enum work_queue_entry__bonsai_render_command_type
 {
@@ -24,6 +24,7 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_gl_timer_start,
   type_bonsai_render_command_gl_timer_end,
   type_bonsai_render_command_gl_timer_read_value_and_histogram,
+  type_bonsai_render_command_cancel_all_noise_readback_jobs,
 };
 
 struct work_queue_entry__bonsai_render_command
@@ -53,6 +54,7 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_gl_timer_start bonsai_render_command_gl_timer_start;
     struct bonsai_render_command_gl_timer_end bonsai_render_command_gl_timer_end;
     struct bonsai_render_command_gl_timer_read_value_and_histogram bonsai_render_command_gl_timer_read_value_and_histogram;
+    struct bonsai_render_command_cancel_all_noise_readback_jobs bonsai_render_command_cancel_all_noise_readback_jobs;
   };
 };
 

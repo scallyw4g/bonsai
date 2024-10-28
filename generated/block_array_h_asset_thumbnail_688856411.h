@@ -110,6 +110,14 @@ AtElements(asset_thumbnail_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(asset_thumbnail_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {

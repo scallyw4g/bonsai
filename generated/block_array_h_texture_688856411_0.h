@@ -110,6 +110,14 @@ AtElements(texture_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(texture_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal texture *
 GetPtr(texture_block_array *Arr, texture_block_array_index Index)
 {

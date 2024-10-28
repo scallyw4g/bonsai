@@ -11,6 +11,11 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   World->ChunkMemory = WorldChunkMemory;
   DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
 
+  memory_arena *OctreeMemory = AllocateArena(Megabytes(8));
+  World->OctreeMemory = OctreeMemory;
+  DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
+
+
   /* World->HashSize = (u32)(Volume(VisibleRegion)*4); */
   /* World->HashSize = WorldHashSize; */
   /* World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize ); */
@@ -29,15 +34,18 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
   InitOctreeNode(World, &World->Root, {}, VisibleRegion);
   World->Root.Chunk = AllocateWorldChunk( {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
-  /* AllocateWorldChunk(&World->Root.Chunk, {}, WorldChunkDim, VisibleRegion, World->ChunkMemory); */
+  auto Engine = GetEngineResources();
 
-  /* SplitOctreeNode(World, &Plat->LowPriority, EntityTable, Camera, &World->Root, &World->OctreeMemory); */
-
-  World->OctreeNodeFreelist.Memory = &World->OctreeMemory;
+  World->OctreeNodeFreelist.Memory = World->OctreeMemory;
 
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
   World->Center = Center;
+
+  // NOTE(Jesse): We can use an unallocated queue here because we're not actually
+  // gonna do anything with the results.. we just want to initialize the tree
+  octree_node_priority_queue Queue = {};
+  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0,  World->OctreeMemory);
 
   return World;
 }
@@ -531,20 +539,10 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
       Result = True;
     }
   }
+
   return Result;
 }
 
-
-poof(generate_cursor(octree_node_ptr))
-#include <generated/generate_cursor_octree_node.h>
-
-#define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)
-#define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (128)
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (256)
-struct octree_node_priority_queue
-{
-  octree_node_ptr_cursor Lists[OCTREE_PRIORITY_QUEUE_LIST_COUNT];
-};
 
 link_internal void
 PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent)
@@ -955,11 +953,12 @@ MaintainWorldOctree(engine_resources *Engine)
     Queue.Lists[ListIndex] = OctreeNodePtrCursor(OCTREE_PRIORITY_QUEUE_LIST_LENGTH, GetTranArena());
   }
 
-  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0,  &World->OctreeMemory);
+  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0, World->OctreeMemory);
 
   octree_stats Stats = {};
 
-  u32 ChunksCurrentlyQueued = Graphics->ChunksCurrentlyQueued;
+  /* u32 ChunksCurrentlyQueued = u32(Count(&Graphics->NoiseReadbackJobs)); */
+  u32 ChunksCurrentlyQueued = u32(Graphics->NoiseFinalizeJobsPending);
 
   u32 MaxToQueueThisFrame = Max(0u, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
@@ -1008,8 +1007,6 @@ MaintainWorldOctree(engine_resources *Engine)
             /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
             QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0);
             ++Stats.NewQueues;
-            AtomicIncrement(&Graphics->ChunksCurrentlyQueued);
-
             if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
           }
         }

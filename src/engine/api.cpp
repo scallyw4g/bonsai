@@ -90,9 +90,17 @@ Bonsai_FrameBegin(engine_resources *Resources)
   if (Resources->Graphics.GpuNoise.TerrainShader.Program.HotReloaded)
   {
     auto Plat = &Resources->Stdlib.Plat;
+
+    /* RuntimeBreak(); */
+    PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->RenderQ);
+
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
     CancelAllWorkQueueJobs(Resources);
-    SoftResetWorld(Resources);
+    Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
+
+    Resources->Graphics.NoiseFinalizeJobsPending = 0;
+
+    HardResetWorld(Resources);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 
@@ -606,18 +614,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       v3i NoiseDim = Job->NoiseDim;
       Assert(NoiseValues);
 
-      /* auto E = WorkQueueEntry(WorkQueueEntryBuildChunkMesh(C->ChunkSize, C->NoiseValues)); */
-      /* PushWorkQueueEntry(&Plat->LowPriority, &E); */
-
       world_chunk *DestChunk = Chunk1;
-      /* world_chunk *SynChunk = HeapAllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1)); */
-      /* world_chunk *SynChunk = AllocateWorldChunk({}, Chunk1->Dim + V3i(0, 2, 2), V3i(1), GetThreadLocalState(ThreadLocal_ThreadIndex)->PermMemory); */
       world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks, Thread->PermMemory);
-      Assert(SynChunk->Dim == V3i(64, 66, 66));
-      /* WorldChunk(SynChunk, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks); */
       SynChunk->Flags = Chunk_Queued;
+
+      Assert(SynChunk->Dim == V3i(64, 66, 66));
+
       v3i WorldBasis = {};
-      v3i SynChunkDim = SynChunk->Dim;
       v3i SrcToDest = {};
       s64 zMin = 0;
 
@@ -625,7 +628,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
-        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunkDim, {}, SynChunkDim);
+        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunk->Dim, {}, SynChunk->Dim);
 
         Assert(DestChunk->FilledCount == 0);
         Assert(DestChunk->Dim.x == 64);
@@ -662,15 +665,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       }
 
       auto Graphics = &EngineResources->Graphics;
-      Assert(Graphics->ChunksCurrentlyQueued > 0);
-      AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
 
       // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
       // a PBO, so it sets the PBO handle to -1
-      if (Job->PBOBuf.PBO != INVALID_PBO_HANDLE)
-      {
-        PushBonsaiRenderCommandUnmapAndDeallocateBuffer(RenderQ, Job->PBOBuf);
-      }
+      Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
+      PushBonsaiRenderCommandUnmapAndDeallocateBuffer(RenderQ, Job->PBOBuf);
+      Assert(Graphics->NoiseFinalizeJobsPending);
+      AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
     } break;
 
     { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)

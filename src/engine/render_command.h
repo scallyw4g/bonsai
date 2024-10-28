@@ -166,6 +166,12 @@ struct bonsai_render_command_unmap_and_deallocate_buffer
   gpu_readback_buffer PBOBuf;
 };
 
+struct bonsai_render_command_cancel_all_noise_readback_jobs
+{
+  // NOTE(Jesse): The thing that generates constructors and push functions
+  // doesn't know about enum_only .. so we have to create a dummy struct for this.
+};
+
 
 poof(
   d_union work_queue_entry__bonsai_render_command
@@ -203,6 +209,8 @@ poof(
     bonsai_render_command_gl_timer_start
     bonsai_render_command_gl_timer_end
     bonsai_render_command_gl_timer_read_value_and_histogram
+
+    bonsai_render_command_cancel_all_noise_readback_jobs
   }
 )
 #include <generated/d_union_work_queue_entry__bonsai_render_command.h>

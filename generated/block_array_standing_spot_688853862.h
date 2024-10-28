@@ -110,6 +110,14 @@ AtElements(standing_spot_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(standing_spot_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal standing_spot *
 GetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
 {

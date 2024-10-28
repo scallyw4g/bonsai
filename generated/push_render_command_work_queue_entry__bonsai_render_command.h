@@ -231,6 +231,17 @@ PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+link_internal void
+PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
+  work_queue *RenderQueue
+  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
 
 
 

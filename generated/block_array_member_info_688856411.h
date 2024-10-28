@@ -110,6 +110,14 @@ AtElements(member_info_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(member_info_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal member_info *
 GetPtr(member_info_block_array *Arr, member_info_block_array_index Index)
 {

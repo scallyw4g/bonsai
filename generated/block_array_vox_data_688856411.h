@@ -110,6 +110,14 @@ AtElements(vox_data_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(vox_data_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal vox_data *
 GetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
 {

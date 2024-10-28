@@ -122,8 +122,13 @@ struct graphics
   composite_render_group    CompositeGroup;
   gpu_noise_render_group    GpuNoise;
 
-  volatile u32 ChunksCurrentlyQueued;
-  /* gpu_readback_buffer_block_array NoiseReadbackJobs; */
+  // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
+  // step process going on.  First, the job is dispatched (copy values into PBO)
+  // then the job is complete (values copied, not used by app yet), then the
+  // NoiseFinalize is done, and the job is completed.  NoiseFinalizeJobsPending
+  // tracks this third stage.
+  //
+  volatile u32 NoiseFinalizeJobsPending;
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs;
 
   gpu_mapped_element_buffer GpuBuffers[2];

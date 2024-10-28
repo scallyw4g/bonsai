@@ -110,6 +110,14 @@ AtElements(gpu_readback_buffer_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(gpu_readback_buffer_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal gpu_readback_buffer *
 GetPtr(gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
 {
