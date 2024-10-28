@@ -1,0 +1,647 @@
+uniform v3 WorldspaceBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out uint Output;
+
+///
+//
+// fractal rock code
+//
+///
+
+
+
+#define PI 3.14159265
+#define SQRT2 1.4142135
+#define SQRT3 1.7320508
+#define SQRT5 2.2360679
+#define FOV 2.5
+
+#define MAX_DIST 500.
+#define MIN_DIST 1e-5
+#define MAX_MARCHES 512.
+#define LIGHT_ANGLE 0.04
+
+//how much does the terrain change in large scale
+#define PERLIN_SCALE 2
+
+//coefficients are fine-tuned
+//you can get all kinds of weird terrain by carefully setting the coefficients, 
+//even forests are possible, but they may look not as realistic as the rock fractals
+const int FRACTAL_ITER = 20;
+const float iFracScale = 1.6467;
+const float iFracAng1 = 2.7315;
+const float iFracAng2 = -0.2082;
+const vec3 iFracShift = vec3(-8.92, 3.66, 5.49);
+const vec3 iFracCol = vec3(0.3, 0.3, -0.2);
+
+float s1 = sin(iFracAng1), c1 = cos(iFracAng1), s2 = sin(iFracAng2), c2 = cos(iFracAng2);
+
+float PBR_METALLIC = 0.0;
+float PBR_ROUGHNESS = 0.7;
+
+vec3 BACKGROUND_COLOR = vec3(0.);
+vec3 LIGHT_DIRECTION = normalize(vec3(-1.,1.,0.68));
+vec3 LIGHT_COLOR = vec3(1., 0.95, 0.8);
+bool SHADOWS_ENABLED = true; 
+
+float gamma_material = 0.1;
+float gamma_sky = 0.76;
+float gamma_camera = 2.2;
+
+float LOD;
+
+float hash(float p)
+{
+   p = fract(p * .1031);
+    p *= p + 33.33;
+    p *= p + p;
+    return fract(p);
+}
+
+vec4 hash41(float p)
+{
+	vec4 p4 = fract(vec4(p) * vec4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+33.33);
+    return fract((p4.xxyz+p4.yzzw)*p4.zywx);
+    
+}
+
+vec4 hash42(vec2 p)
+{
+	vec4 p4 = fract(vec4(p.xyxy) * vec4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+33.33);
+    return fract((p4.xxyz+p4.yzzw)*p4.zywx);
+
+}
+
+
+//normally distributed random numbers
+vec3 randn(float p)
+{
+    vec4 rand = hash41(p);
+    vec3 box_muller = sqrt(-2.*log(max(vec3(rand.x,rand.x,rand.z),1e-8)))*vec3(sin(2.*PI*rand.y),cos(2.*PI*rand.y),sin(2.*PI*rand.w));
+    return box_muller;
+}
+
+//uniformly inside a sphere
+vec3 random_sphere(float p)
+{
+    return normalize(randn(p))*pow(hash(p+85.67),0.333333);
+}
+
+vec3 cosdistr(vec3 dir, float seed)
+{
+    vec3 rand_dir = normalize(randn(seed*SQRT2));
+    vec3 norm_dir = normalize(rand_dir - dot(dir,rand_dir)*dir);
+    float u = hash(seed);
+    return normalize(dir*sqrt(u) + norm_dir*sqrt(1.-u));
+}
+
+
+vec4 perlin_octave(vec2 p)
+{
+   vec2 pi = floor(p);
+   vec2 pf = p - pi;
+   vec2 pfc = 0.5 - 0.5*cos(pf*PI);
+   vec2 a = vec2(0.,1.);
+   
+   vec4 a00 = hash42(pi+a.xx);
+   vec4 a01 = hash42(pi+a.xy);
+   vec4 a10 = hash42(pi+a.yx);
+   vec4 a11 = hash42(pi+a.yy);
+   
+   vec4 i1 = mix(a00, a01, pfc.y);
+   vec4 i2 = mix(a10, a11, pfc.y);
+   
+   return mix(i1, i2, pfc.x);  
+}
+
+mat2 rotat = mat2(cos(0.5), -sin(0.5), sin(0.5), cos(0.5));
+
+vec4 perlin4(vec2 p)
+{
+	float a = 1.;
+	vec4 res = vec4(0.);
+	for(int i = 0; i < PERLIN_SCALE; i++)
+	{
+		res += a*(perlin_octave(p)-0.5);
+        //inverse perlin
+		p *= 0.6*rotat;
+		a *= 1.2;
+	}
+	return res;
+}
+
+/////
+/////Code from Marble Marcher Community Edition
+/////
+
+#define COL col_scene
+#define DE de_scene
+//##########################################
+//   Space folding
+//##########################################
+void planeFold(inout vec4 z, vec3 n, float d) {
+	z.xyz -= 2.0 * min(0.0, dot(z.xyz, n) - d) * n;
+}
+void sierpinskiFold(inout vec4 z) {
+	z.xy -= min(z.x + z.y, 0.0);
+	z.xz -= min(z.x + z.z, 0.0);
+	z.yz -= min(z.y + z.z, 0.0);
+}
+
+// Polynomial smooth minimum by iq
+float smoothmin(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5*(a-b)/k, 0.0, 1.0);
+  return mix(a, b, h) - k*h*(1.0-h);
+}
+
+/*void mengerFold(inout vec4 z) {
+	float a = smoothmin(z.x - z.y, 0.0, 0.03);
+	z.x -= a;
+	z.y += a;
+	a = smoothmin(z.x - z.z, 0.0, 0.03);
+	z.x -= a;
+	z.z += a;
+	a = smoothmin(z.y - z.z, 0.0, 0.03);
+	z.y -= a;
+	z.z += a;
+}*/
+
+void mengerFold(inout vec4 z) {
+	float a = min(z.x - z.y, 0.0);
+	z.x -= a;
+	z.y += a;
+	a = min(z.x - z.z, 0.0);
+	z.x -= a;
+	z.z += a;
+	a = min(z.y - z.z, 0.0);
+	z.y -= a;
+	z.z += a;
+}
+void boxFold(inout vec4 z, vec3 r) {
+	z.xyz = clamp(z.xyz, -r, r) * 2.0 - z.xyz;
+}
+void rotX(inout vec4 z, float s, float c) {
+	z.yz = vec2(c*z.y + s*z.z, c*z.z - s*z.y);
+}
+void rotY(inout vec4 z, float s, float c) {
+	z.xz = vec2(c*z.x - s*z.z, c*z.z + s*z.x);
+}
+void rotZ(inout vec4 z, float s, float c) {
+	z.xy = vec2(c*z.x + s*z.y, c*z.y - s*z.x);
+}
+void rotX(inout vec4 z, float a) {
+	rotX(z, sin(a), cos(a));
+}
+void rotY(inout vec4 z, float a) {
+	rotY(z, sin(a), cos(a));
+}
+void rotZ(inout vec4 z, float a) {
+	rotZ(z, sin(a), cos(a));
+}
+
+//##########################################
+//   Primitive DEs
+//##########################################
+float de_sphere(vec4 p, float r) {
+	return (length(p.xyz) - r) / p.w;
+}
+float de_box(vec4 p, vec3 s) {
+	
+	vec3 a = abs(p.xyz) - s;
+	return (min(max(max(a.x, a.y), a.z), 0.0) + length(max(a, 0.0))) / p.w;
+}
+float de_tetrahedron(vec4 p, float r) {
+	float md = max(max(-p.x - p.y - p.z, p.x + p.y - p.z),
+				max(-p.x + p.y + p.z, p.x - p.y + p.z));
+	return (md - r) / (p.w * sqrt(3.0));
+}
+float de_capsule(vec4 p, float h, float r) {
+	p.y -= clamp(p.y, -h, h);
+	return (length(p.xyz) - r) / p.w;
+}
+
+//##########################################
+//   Main DEs
+//##########################################
+float de_fractal(vec4 p)
+{
+	vec3 p0 = p.xyz;
+	p.xz = mod(p.xz + vec2(0.5*p.w), vec2(1.*p.w)) - vec2(0.5*p.w); 
+	vec4 perlin1 = perlin4(p0.xz);
+	vec3 shift =iFracShift + 0.35*perlin1.xyz;
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		
+		p.xyz = abs(p.xyz);
+		
+		rotZ(p, s1, c1);
+		mengerFold(p);
+		rotX(p, s2, c2);
+		p *= iFracScale*(1.);
+		p.xyz += shift;
+		
+	}
+	
+	return 0.66*de_box(p, vec3(6.0));
+}
+
+vec4 col_fractal(vec4 p) 
+{
+	vec3 p0 = p.xyz;
+	vec3 orbit = vec3(0.0);
+	p.xz = mod(p.xz + vec2(0.5*p.w), vec2(1.*p.w)) - vec2(0.5*p.w); 
+	vec4 perlin1 = perlin4(p0.xz);
+	vec3 shift =iFracShift + 0.35*(perlin1.xyz - 0.5);
+	for (int i = 0; i < FRACTAL_ITER; ++i) {
+		p.xyz = abs(p.xyz);
+		rotZ(p, s1, c1);
+		mengerFold(p);
+		rotX(p, s2, c2);
+		p *= iFracScale*(1.);
+		p.xyz += shift;
+		orbit = max(orbit, p.xyz*iFracCol);
+	}
+	return vec4(orbit, de_box(p, vec3(6.0)));
+}
+
+float de_scene(vec3 pos) 
+{
+	vec4 p = vec4(pos,1.f);
+	float d = de_fractal(p);
+	return d;
+}
+
+vec4 col_scene(vec3 pos) 
+{
+	vec4 p = vec4(pos,1.f);
+	vec4 col = col_fractal(p);
+	return vec4(min(col.xyz,1.), 0.0);
+}
+
+
+///
+//
+// end fractal code
+//
+///
+
+
+
+
+// return value noise (in x) and its derivatives (in yzw)
+//
+vec4 gradient_noise_derivs( in vec3 x )
+{
+  // grid
+  ivec3 i = ivec3(floor(x));
+  vec3 f = fract(x);
+  
+  #if INTERPOLANT==1
+  // quintic interpolant
+  vec3 u = f*f*f*(f*(f*6.0-15.0)+10.0);
+  vec3 du = 30.0*f*f*(f*(f-2.0)+1.0);
+  #else
+  // cubic interpolant
+  vec3 u = f*f*(3.0-2.0*f);
+  vec3 du = 6.0*f*(1.0-f);
+  #endif    
+  
+  // gradients
+  vec3 ga = ivhash( i+ivec3(0,0,0) );
+  vec3 gb = ivhash( i+ivec3(1,0,0) );
+  vec3 gc = ivhash( i+ivec3(0,1,0) );
+  vec3 gd = ivhash( i+ivec3(1,1,0) );
+  vec3 ge = ivhash( i+ivec3(0,0,1) );
+  vec3 gf = ivhash( i+ivec3(1,0,1) );
+  vec3 gg = ivhash( i+ivec3(0,1,1) );
+  vec3 gh = ivhash( i+ivec3(1,1,1) );
+
+  // projections
+  float va = dot( ga, f-vec3(0.0,0.0,0.0) );
+  float vb = dot( gb, f-vec3(1.0,0.0,0.0) );
+  float vc = dot( gc, f-vec3(0.0,1.0,0.0) );
+  float vd = dot( gd, f-vec3(1.0,1.0,0.0) );
+  float ve = dot( ge, f-vec3(0.0,0.0,1.0) );
+  float vf = dot( gf, f-vec3(1.0,0.0,1.0) );
+  float vg = dot( gg, f-vec3(0.0,1.0,1.0) );
+  float vh = dot( gh, f-vec3(1.0,1.0,1.0) );
+
+  // interpolations
+  return vec4( va + u.x*(vb-va) + u.y*(vc-va) + u.z*(ve-va) + u.x*u.y*(va-vb-vc+vd) + u.y*u.z*(va-vc-ve+vg) + u.z*u.x*(va-vb-ve+vf) + (-va+vb+vc-vd+ve-vf-vg+vh)*u.x*u.y*u.z,    // value
+               ga + u.x*(gb-ga) + u.y*(gc-ga) + u.z*(ge-ga) + u.x*u.y*(ga-gb-gc+gd) + u.y*u.z*(ga-gc-ge+gg) + u.z*u.x*(ga-gb-ge+gf) + (-ga+gb+gc-gd+ge-gf-gg+gh)*u.x*u.y*u.z +   // derivatives
+               du * (vec3(vb,vc,ve) - va + u.yzx*vec3(va-vb-vc+vd,va-vc-ve+vg,va-vb-ve+vf) + u.zxy*vec3(va-vb-ve+vf,va-vb-vc+vd,va-vc-ve+vg) + u.yzx*u.zxy*(-va+vb+vc-vd+ve-vf-vg+vh) ));
+}
+
+vec3 calcNormal( in vec3 pos )
+{
+	vec2 eps = vec2( 0.0001, 0.0 );
+	vec3 nor = vec3( value_noise_derivs(pos+eps.xyy).x - value_noise_derivs(pos-eps.xyy).x,
+	                 value_noise_derivs(pos+eps.yxy).x - value_noise_derivs(pos-eps.yxy).x,
+	                 value_noise_derivs(pos+eps.yyx).x - value_noise_derivs(pos-eps.yyx).x );
+	return normalize(nor);
+}
+
+#define PI64 (3.1415926535897932384626433832795028841971693993)
+#define PI32 (3.14159265358979)
+
+float
+CosineInterpolate( float t, f32 y1, f32 y2 )
+{
+  float t2 = (1.f-cos(t*PI32))/2.f;
+  float nt2 = (1.f-t2); 
+
+  f32 a = y1*nt2;
+  f32 b = y2*t2;
+  return(a+b);
+}
+
+f32
+MapNoiseValueToFinal(f32 Value)
+{
+  /* Assert(Value <= 1.f); */
+  /* Assert(Value >= 0.f); */
+
+  // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
+
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.7f, 0.85f }}, */
+  /*   {{0.6f, 0.5f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.5f, 0.7f }}, */
+  /*   {{0.35f, 0.43f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  const s32 PointCount = 2;
+  v2 Points[PointCount];
+  Points[0] = v2(1.0f, 1.0f);
+  Points[1] = v2(0.f, 0.0f);
+
+  // Pretty nice
+
+/*   s32 PointCount = 6; */
+/*   v2 Points[6]; */
+/*   Points[0] = v2(1.0f, 1.0f); */
+/*   Points[1] = v2(0.7f, 0.7f); */
+/*   Points[2] = v2(0.65f, 0.43f); */
+/*   Points[3] = v2(0.6f, 0.4f); */
+/*   Points[4] = v2(0.5f, 0.2f); */
+/*   Points[5] = v2(0.0f, 0.1f); */
+
+  // Pillar-y
+  /* v2 Points[] = */
+  /* { */
+  /*   {{2.0f, 0.5f }}, */
+  /*   {{0.6f, 0.3f }}, */
+  /*   {{0.1f, 0.2f }}, */
+  /*   {{0.05f, 0.45f }}, */
+  /*   {{0.0f , 0.5f }}, */
+  /* }; */
+
+/*   v2 Points[] = */
+/*   { */
+/*     {{1.0f, 0.0f }}, */
+/*     {{0.9f, 1.0f }}, */
+/*     {{0.6f, 0.3f }}, */
+/*     {{0.1f, 0.1f }}, */
+/*     {{0.05f, 0.45f }}, */
+/*     {{0.0f , 0.5f }}, */
+/*   }; */
+
+
+
+  r32 Result = Value;
+  for (int PointIndex = 0; PointIndex < PointCount-1; ++PointIndex)
+  {
+    v2 P = Points[PointIndex];
+
+    // This is sort of a hack to fix the degenerate case when the value is 0 or 1.
+    // TODO(Jesse): Make this branchless
+    if (Value == P.x) return P.y;
+
+    if (Value > P.x)
+    {
+      v2 PNext = Points[PointIndex + 1];
+
+      r32 Range = PNext.x - P.x;
+      r32 t = (Value-P.x) / Range;
+      Result = mix(t, P.y, PNext.y);
+      break;
+    }
+  }
+
+  Result = abs(max(Result, 1.0));
+  return Result;
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+
+  /* v3 Offset = V3(-1, -1, -1); */
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(800.f);
+    float Amplitude = 800.f;
+    /* f32 StartingZDepth = -800; */
+    f32 StartingZDepth = 5000;
+    s32 Octaves = 2;
+
+    NoiseValue = StartingZDepth;
+
+
+    v3 Deriv = v3(0.f);
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      v4 gn = gradient_noise_derivs(xyz+warp);
+      /* gn.x = MapNoiseValueToFinal(gn.x); */
+      /* v4 gn = value_noise_derivs(xyz+warp); */
+      NoiseValue += gn.x*(Amplitude/Octave);
+      /* Deriv += calcNormal(Basis); */
+      Deriv += gn.yzw;
+
+      /* v4 gn = COL(xyz+warp)*8; */
+      /* f32 fractal = DE(xyz/1.3f); */
+      /* NoiseValue += fractal * Amplitude; */
+      /* gn.x = fractal; */
+
+      /* v3 v = voronoi_noise(Basis/160); */
+      /* NoiseValue += v.x*150; */
+      /* NoiseValue += v.x*50; */
+      /* ColorValue += v3(v.y); */
+
+      /* ColorValue = bad_hash(Basis); */
+
+      /* NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave)); */
+    }
+
+    v3 Up = V3(0, 0, 1);
+
+    /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */
+
+    /* NoiseValue = pow(NoiseValue, 1.0); */
+    /* NoiseValue = pow(NoiseValue, 1.0); */
+
+    Deriv = normalize(Deriv);
+    /* Deriv.xy = abs(Deriv.xy); */
+    f32 Cliffness = clamp(dot(Deriv, Up), 0.f, 1.f);
+    f32 Grassness = clamp(.15f-Cliffness, 0.f, 1.f);
+
+    ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness);
+    /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
+    /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
+
+    // Grassy ripples
+    {
+      v4 gWobble = gradient_noise_derivs(Basis/v3(30, 30, 80));
+      NoiseValue += gWobble.x*Grassness*50;
+      ColorValue += V3(0.f, 1.f, 0.f)*gWobble.x*Grassness*1.5f;
+    }
+
+
+    f32 rng2d = white_noise(Basis.xy);
+    f32 rng3d = white_noise(Basis);
+
+    f32 gravel_patch_stregth  = value_noise_derivs(150+(Basis/300)).x;
+        gravel_patch_stregth  = value_noise_derivs(150+(Basis/160)).x;
+        gravel_patch_stregth  = value_noise_derivs(150+(Basis/80)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/40)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/20)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/8)).x;
+        gravel_patch_stregth = max(gravel_patch_stregth, 0.f);
+
+
+    // Rocky edges
+    {
+      f32 MinDotValue = 0.6f;
+      v3 v = voronoi_noise(Basis/v3(20,20,20));
+      f32 Power = 100*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0));
+      NoiseValue += v.x*Power;
+      ColorValue = mix(ColorValue, v3(1.0), Power/5*v.x);
+    }
+    {
+      f32 MinDotValue = 0.4f;
+      v3 v = voronoi_noise(Basis/v3(10,10,10));
+      f32 Power = 400*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0));
+      NoiseValue += v.x*Power;
+      /* NoiseValue -= ((1.f/v.x)*2)*Power; */
+      ColorValue = mix(ColorValue, v3(1.0), Power/3*v.x);
+    }
+
+
+
+    // Main cliffs
+    {
+      v3 v = voronoi_noise(Basis/v3(200,200,1800));
+      NoiseValue += (v.x*200)*Cliffness;
+      NoiseValue += (v.y*25)*Cliffness;
+      ColorValue = mix(ColorValue, v3(.18), clamp(10*Cliffness*v.x,0,1));
+    }
+    {
+      v3 v = voronoi_noise(Basis/v3(100,100,600));
+      NoiseValue += (v.x*8)*Cliffness;
+      /* NoiseValue += (v.y*10)*Cliffness; */
+      ColorValue = mix(ColorValue, v3(.7), Cliffness*v.x);
+    }
+    {
+      v3 v = voronoi_noise(Basis/v3(50,50,200));
+      NoiseValue += (v.x*10)*Cliffness;
+      NoiseValue += (v.y*10)*pow(Cliffness,3);
+      ColorValue = mix(ColorValue, v3(.9), Cliffness*v.x);
+    }
+    {
+      ColorValue = mix(ColorValue, v3(1.f), rng3d*Cliffness*.2);
+    }
+
+
+    // Grass & Flowers
+    {
+      f32 n = clamp(rng2d-0.7f, 0.f, 1.f);
+
+      f32 GrassValue = 90*n*Grassness;
+
+      f32 tFlower = Basis.z - (GrassValue + NoiseValue);
+          tFlower = max(tFlower, 0);
+
+
+    f32 grass_patch_stregth  = value_noise_derivs(Basis/80).x;
+        grass_patch_stregth += value_noise_derivs(Basis/40).x;
+        grass_patch_stregth += value_noise_derivs(Basis/20).x;
+        grass_patch_stregth += value_noise_derivs(Basis/8).x;
+        grass_patch_stregth = max(grass_patch_stregth-gravel_patch_stregth, 0.f);
+
+      NoiseValue += GrassValue*grass_patch_stregth;
+
+      f32 tColor = (grass_patch_stregth / 2.f)*Grassness;
+      ColorValue = mix(ColorValue, V3(.6f, .8f, .1f), tColor);
+
+      if (rng2d > 0.99f)
+      {
+        ColorValue = mix(ColorValue, V3(.5f, .5f, .5f), tFlower);
+      }
+      if (rng2d > 0.995f)
+      {
+        ColorValue = mix(ColorValue, V3(.5f, .2f, .5f), tFlower);
+      }
+
+
+      /* ColorValue *= tFlower; */
+
+      /* ColorValue = V3(tFlower); */
+      /* ColorValue = V3(GrassValue/1.f); */
+    }
+
+    {
+
+    }
+
+
+
+    /* ColorValue = V3(Grassness, Cliffness, 0.f); */
+    /* ColorValue = V3(Cliffness); */
+
+    // Bias noise value to lower values as we get higher in z.
+    // This creates a "plane" of terrain
+    NoiseValue = NoiseValue - Basis.z;
+  }
+
+  //
+  // -- end user code --
+  //
+
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+  ColorValue = min(ColorValue, v3(1.f));
+  uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = 3543u; */
+
+  Output = (SolidBit << 15) | PackedColor;
+}
