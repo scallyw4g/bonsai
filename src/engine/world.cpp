@@ -15,7 +15,6 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   World->OctreeMemory = OctreeMemory;
   DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
 
-
   /* World->HashSize = (u32)(Volume(VisibleRegion)*4); */
   /* World->HashSize = WorldHashSize; */
   /* World->ChunkHashMemory[0] = Allocate(world_chunk*, WorldChunkMemory, World->HashSize ); */
@@ -23,7 +22,6 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
   /* World->ChunkHash = World->ChunkHashMemory[0]; */
   /* World->FreeChunks = Allocate(world_chunk*, WorldChunkMemory, FREELIST_SIZE ); */
-
 
   Assert(VisibleRegion.x == VisibleRegion.y);
   Assert(VisibleRegion.y == VisibleRegion.z);

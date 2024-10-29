@@ -1,4 +1,4 @@
-// src/engine/graphics.h:53:0
+// src/engine/graphics.h:51:0
 
 link_internal gpu_readback_buffer
 GpuReadbackBuffer( u32   PBO , GLsync   Fence  )

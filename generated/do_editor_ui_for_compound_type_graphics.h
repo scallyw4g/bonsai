@@ -436,6 +436,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_timer_block_array*,&Element->GpuTimers),
+        CSz("GpuTimers"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->Memory),
         CSz("Memory"),
         Params

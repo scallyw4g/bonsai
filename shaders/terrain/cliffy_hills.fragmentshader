@@ -466,11 +466,11 @@ void main()
   // -- user code -- 
   //
   {
-    v3 Period = V3(800.f);
-    float Amplitude = 800.f;
+    v3 Period = V3(10000.f);
+    float Amplitude = 10000.f;
     /* f32 StartingZDepth = -800; */
-    f32 StartingZDepth = 5000;
-    s32 Octaves = 2;
+    f32 StartingZDepth = 15000;
+    s32 Octaves = 6;
 
     NoiseValue = StartingZDepth;
 
@@ -631,7 +631,8 @@ void main()
 
     // Bias noise value to lower values as we get higher in z.
     // This creates a "plane" of terrain
-    NoiseValue = NoiseValue - Basis.z;
+    /* NoiseValue = NoiseValue - Basis.z + sin(Basis.x/500.f)*1000.f; */
+    NoiseValue = NoiseValue - Basis.z + sin(Basis.x/5000.f)*10000.f - cos(Basis.y/8000.f)*8000.f;;
   }
 
   //

@@ -19,8 +19,6 @@ poof(shader_magic(terrain_shader))
 struct gpu_noise_render_group
 {
   framebuffer FBO;
-  u32 GlTimerObject;
-
   terrain_shader TerrainShader;
 };
 
@@ -133,6 +131,8 @@ struct graphics
 
   gpu_mapped_element_buffer GpuBuffers[2];
   u32 GpuBufferWriteIndex;
+
+  gpu_timer_block_array GpuTimers;
 
   memory_arena *Memory;
 };

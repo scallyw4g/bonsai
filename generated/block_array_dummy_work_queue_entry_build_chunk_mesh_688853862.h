@@ -1,4 +1,4 @@
-// src/engine/graphics.h:67:0
+// src/engine/graphics.h:65:0
 
 struct dummy_work_queue_entry_build_chunk_mesh_block
 {

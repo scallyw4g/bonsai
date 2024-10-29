@@ -1,4 +1,6 @@
 
+#include <engine/render/gpu_timer.cpp>
+
 #include <engine/voxel.cpp>
 
 #include <engine/color.cpp>

@@ -338,7 +338,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 SetViewport(ViewportSize);
                 UseShader(Shader);
+
+                gpu_timer NoiseShaderTimer = StartGpuTimer();
                 RenderQuad();
+                EndGpuTimer(&NoiseShaderTimer);
+
+                Push(&Graphics->GpuTimers, &NoiseShaderTimer);
+
                 AssertNoGlErrors;
               }
 
@@ -461,6 +467,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               Assert(GpuMap->Buffer.At == 0);
 
               Graphics->RenderGate = False;
+
+              IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
+              {
+                if (Timer->Ns == 0)
+                {
+                  if (QueryGpuTimer(Timer))
+                  {
+#if BONSAI_DEBUG_SYSTEM_API
+                    GetDebugState()->PushHistogramDataPoint(Timer->Ns);
+                    // NOTE(Jesse): This skips the next timer, but it'll get hit
+                    // on the next frame, so no worries ..
+                    RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
+#endif
+                  }
+                }
+              }
 
             } break;
 

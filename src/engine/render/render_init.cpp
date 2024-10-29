@@ -766,8 +766,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     Result->GpuNoise.FBO = GenFramebuffer();
 
-    GL.GenQueries(1, &Result->GpuNoise.GlTimerObject);
-    Assert(Result->GpuNoise.GlTimerObject);
+    /* GL.GenQueries(1, &Result->GpuNoise.GlTimerObject); */
+    /* Assert(Result->GpuNoise.GlTimerObject); */
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
 

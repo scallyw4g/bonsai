@@ -4,6 +4,7 @@
 #include <engine/serdes.h>
 #include <engine/serialize.h>
 
+
 #include <engine/api.h>
 #include <engine/thread.h>
 #include <engine/constants.h>
@@ -24,6 +25,7 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/mesh.h>
 #include <engine/world_chunk.h>
 
+#include <engine/render/gpu_timer.h>
 #include <engine/render/render_init.h>
 #include <engine/bloom.h>
 #include <engine/light.h>
