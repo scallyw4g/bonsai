@@ -114,8 +114,9 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
 
 
-    if (Element->GameCameraFOV) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+    Result &= Serialize(Bytes, &Element->GameCameraFOV);
+
+
 
 
 
@@ -157,11 +158,7 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
     Result &= Serialize(Bytes, &Element->iLuminanceMapResolution);
 
-    if (Element->GameCameraFOV) { Result &= Serialize(Bytes, Element->GameCameraFOV); }
-
-
-
-
+    
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -311,8 +308,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-  b64 HadGameCameraFOVPointer = Read_u64(Bytes);
-  Assert(HadGameCameraFOVPointer < 2); // Should be 0 or 1
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->GameCameraFOV, Memory);
+
+
 
 
 
@@ -368,21 +368,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
 
-  if (HadGameCameraFOVPointer)
-  {
-    umm Count = 1;
-
-
-    if (Element->GameCameraFOV == 0)
-    {
-      Element->GameCameraFOV = Allocate(f32, Memory, Count);
-    }
-
-    Result &= Deserialize(Bytes, Element->GameCameraFOV, Memory, Count);
-  }
-
-
-
+  
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

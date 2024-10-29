@@ -180,7 +180,12 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   Camera->Frust.farClip = FarClip;
   Camera->Frust.nearClip = 1.0f;
   Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
+
+  // Someone already set FOV .. probably when deserializing stored runtime settings.
+  if (Camera->Frust.FOV == 0.f)
+  {
+    Camera->Frust.FOV = 45.0f;
+  }
 
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;

@@ -184,7 +184,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, Element->GameCameraFOV),
+        Cast(f32*,&Element->GameCameraFOV),
         CSz("GameCameraFOV"),
         Params
 ,5, 250 );

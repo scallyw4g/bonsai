@@ -571,6 +571,10 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->Memory = GraphicsMemory;
 
+  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
+  Result->Camera = &Result->GameCamera;
+
   if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
   {
     u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
@@ -591,7 +595,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     /* Result->Settings.DrawMajorGrid = True; */
     /* Result->Settings.DrawMinorGrid = True; */
-    Result->Settings.MajorGridDim = 8.f;
+    Result->Settings.MajorGridDim = 16.f;
 
     Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
     Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
@@ -600,8 +604,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
     Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
     Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-    Result->Settings.GameCameraFOV = &Result->GameCamera.Frust.FOV;
 
+    Result->Settings.GameCameraFOV = Result->GameCamera.Frust.FOV;
 
     {
       lighting_settings *Lighting = &Result->Settings.Lighting;
@@ -622,17 +626,13 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     }
   }
 
+  Result->PrevSettings = Result->Settings;
 
-    Result->Exposure = 1.5f;
+  Result->Exposure = 1.5f;
   Result->FogPower = 2.f;
 
   Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
-
-  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
-
-  Result->Camera = &Result->GameCamera;
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));

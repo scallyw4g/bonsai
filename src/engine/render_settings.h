@@ -78,7 +78,7 @@ struct render_settings poof(@version(2))
 
   tone_mapping_type ToneMappingType;
 
-  f32 *GameCameraFOV; poof(@ui_value_range(5, 250))
+  f32 GameCameraFOV; poof(@ui_value_range(5, 250))
 
   lighting_settings Lighting;
 

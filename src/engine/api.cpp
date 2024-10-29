@@ -296,6 +296,8 @@ Bonsai_FrameEnd(engine_resources *Engine)
     FinalizeSerialization(&Bytes, RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH);
   }
 
+  Graphics->GameCamera.Frust.FOV = Graphics->Settings.GameCameraFOV;
+
   Graphics->PrevSettings = Graphics->Settings;
 
   return Result;
