@@ -70,6 +70,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(render_settings*,&Element->PrevSettings),
+        CSz("PrevSettings"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(v3*,&Element->SunBasis),
         CSz("SunBasis"),
         Params

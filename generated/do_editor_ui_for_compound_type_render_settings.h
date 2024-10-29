@@ -133,6 +133,35 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->DrawCameraGhost),
+        CSz("DrawCameraGhost"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(r32*,&Element->CameraGhostSize),
+        CSz("CameraGhostSize"),
+        Params
+,1, 100 );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
       
 
       PushNewRow(Ui);
@@ -152,6 +181,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*, Element->GameCameraFOV),
+        CSz("GameCameraFOV"),
+        Params
+,5, 250 );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

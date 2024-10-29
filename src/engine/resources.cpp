@@ -426,6 +426,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               AssertNoGlErrors;
 
+              if (Graphics->Settings.DrawCameraGhost)
+              {
+                untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+                DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
+              }
+
               Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
               if (GpuMap->Buffer.At)
               {
@@ -483,6 +489,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   }
                 }
               }
+
 
             } break;
 

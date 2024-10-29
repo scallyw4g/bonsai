@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:425:0
+// src/engine/serdes.cpp:440:0
 
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(render_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("render_settings");
-  Result.Version =1 ;
+  Result.Version =2 ;
 
   /* type.map(member) */
   /* { */
@@ -30,7 +30,7 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
   b32 Result = True;
 
   Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
+  u64 VersionNumber =2;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -85,6 +85,18 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
 
 
+    Result &= Serialize(Bytes, &Element->DrawCameraGhost);
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->CameraGhostSize);
+
+
+
+
+
     Result &= Serialize(Bytes, &Element->OffsetOfWorldCenterToGrid);
 
 
@@ -99,6 +111,11 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
     Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType);
 
+
+
+
+    if (Element->GameCameraFOV) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
@@ -140,7 +157,11 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
     Result &= Serialize(Bytes, &Element->iLuminanceMapResolution);
 
-    
+    if (Element->GameCameraFOV) { Result &= Serialize(Bytes, Element->GameCameraFOV); }
+
+
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -158,7 +179,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, render_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=1);
+  Assert(TypeInfo->Version <=2);
 
   b32 Result = True;
 
@@ -168,9 +189,15 @@ DeserializeVersioned(u8_cursor *Bytes, render_settings *Element, bonsai_type_inf
     Result &= Deserialize(Bytes, &T0, Memory);
     Marshal(&T0, Element);
   }
+  if (TypeInfo->Version == 1)
+  {
+    render_settings_1 T1 = {};
+    Result &= Deserialize(Bytes, &T1, Memory);
+    Marshal(&T1, Element);
+  }
 
 
-  if (TypeInfo->Version ==1)
+  if (TypeInfo->Version ==2)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -249,6 +276,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
   // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->CameraGhostSize, Memory);
+
+
+
+
+
+  // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->OffsetOfWorldCenterToGrid, Memory);
 
 
@@ -265,6 +308,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
   Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
 
+
+
+
+  b64 HadGameCameraFOVPointer = Read_u64(Bytes);
+  Assert(HadGameCameraFOVPointer < 2); // Should be 0 or 1
 
 
 
@@ -320,7 +368,21 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
 
-  
+  if (HadGameCameraFOVPointer)
+  {
+    umm Count = 1;
+
+
+    if (Element->GameCameraFOV == 0)
+    {
+      Element->GameCameraFOV = Allocate(f32, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->GameCameraFOV, Memory, Count);
+  }
+
+
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

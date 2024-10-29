@@ -25,6 +25,9 @@
 #include <engine/loaders/obj.cpp>
 #include <engine/loaders/collada.cpp>
 
+#include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
+#include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
+
 #include <engine/shader.cpp>
 #include <engine/gpu_mapped_buffer.cpp>
 #include <engine/bloom.cpp>
@@ -37,8 +40,6 @@
 
 #include <engine/world.cpp>
 
-#include <engine/serdes.cpp>    // NOTE(Jesse): generated code for ser/des
-#include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
 #include <engine/editor.cpp>
 #include <engine/world_update.cpp>
 #include <engine/debug_visualize.cpp>

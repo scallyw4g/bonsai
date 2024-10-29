@@ -54,7 +54,47 @@ struct lighting_settings_0
   v3 CurrentSunColor;
 };
 
-struct render_settings poof(@version(1))
+struct render_settings poof(@version(2))
+{
+  // NOTE(Jesse): These have to be 32bit because they get passed to shaders
+  // and the shader system is too dumb to handle 8-bit or 1-bit values
+  b32 UseSsao;
+  b32 UseShadowMapping;
+  b32 UseLightingBloom;
+
+  b32 BravoilMyersOIT;
+  b32 BravoilMcGuireOIT;
+
+  b32 DrawMajorGrid;
+  b32 DrawMinorGrid;
+  r32 MajorGridDim;             poof(@ui_value_range(0, 32))
+
+  b32 DrawCameraGhost;
+  r32 CameraGhostSize = 1.f; poof(@ui_value_range(1, 100))
+
+  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
+  b32 Headless;                 poof(@ui_skip)
+
+
+  tone_mapping_type ToneMappingType;
+
+  f32 *GameCameraFOV; poof(@ui_value_range(5, 250))
+
+  lighting_settings Lighting;
+
+  v2 ApplicationResolution;
+  v2 ShadowMapResolution;
+  v2 LuminanceMapResolution;
+
+  v2i iApplicationResolution;
+  v2i iShadowMapResolution;
+  v2i iLuminanceMapResolution;
+};
+
+poof(are_equal(render_settings))
+#include <generated/are_equal_render_settings.h>
+
+struct render_settings_1
 {
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values

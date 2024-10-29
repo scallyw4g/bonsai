@@ -409,6 +409,18 @@ poof(serdes_struct(lighting_settings))
 
 
 link_internal void
+Marshal(render_settings_1 *E0, render_settings *E1)
+{
+  poof(func (render_settings_1 settings_t) {
+      settings_t.map(member) {
+        E1->(member.name) = E0->(member.name);
+      }
+  })
+#include <generated/anonymous_render_settings_1_pFpWPpyN.h>
+}
+
+
+link_internal void
 Marshal(render_settings_0 *E0, render_settings *E1)
 {
   poof(func (render_settings_0 settings_t) {
@@ -418,6 +430,9 @@ Marshal(render_settings_0 *E0, render_settings *E1)
   })
 #include <generated/anonymous_render_settings_0_wwLVyABc.h>
 }
+
+poof(deserialize_struct(render_settings_1))
+#include <generated/deserialize_struct_render_settings_1.h>
 
 poof(deserialize_struct(render_settings_0))
 #include <generated/serialize_struct_render_settings_0.h>

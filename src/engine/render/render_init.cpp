@@ -561,6 +561,9 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+
+#define RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH "runtime_settings/graphics_settings.bin"
+
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
@@ -568,52 +571,63 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.ToneMappingType = ToneMappingType_Exposure;
+  if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
+  {
+    u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
+    Deserialize(&Bytes, &Result->Settings, GetTranArena());
+    FinalizeDeserialization(&Bytes);
+  }
+  else
+  {
+    Result->Settings.ToneMappingType = ToneMappingType_Exposure;
 
-  Result->Settings.UseSsao           = True;
+    Result->Settings.UseSsao           = True;
 
-  Result->Settings.BravoilMyersOIT   = True;
-  Result->Settings.BravoilMcGuireOIT = True;
+    Result->Settings.BravoilMyersOIT   = True;
+    Result->Settings.BravoilMcGuireOIT = True;
 
-  /* Result->Settings.UseShadowMapping = True; */
-  Result->Settings.UseLightingBloom = True;
+    /* Result->Settings.UseShadowMapping = True; */
+    Result->Settings.UseLightingBloom = True;
 
-  /* Result->Settings.DrawMajorGrid = True; */
-  /* Result->Settings.DrawMinorGrid = True; */
-  Result->Settings.MajorGridDim = 8.f;
+    /* Result->Settings.DrawMajorGrid = True; */
+    /* Result->Settings.DrawMinorGrid = True; */
+    Result->Settings.MajorGridDim = 8.f;
 
-  Result->Exposure = 1.5f;
+    Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+    Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+    Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
 
-  Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-  Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-  Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+    Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+    Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+    Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+    Result->Settings.GameCameraFOV = &Result->GameCamera.Frust.FOV;
 
-  Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-  Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-  Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
 
+    {
+      lighting_settings *Lighting = &Result->Settings.Lighting;
+
+      Lighting->tDay = 0.75f;
+
+      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
+      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
+      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
+      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+
+      Lighting->SunIntensity  = 1.10f;
+      Lighting->MoonIntensity = 0.10f;
+      Lighting->DawnIntensity = 0.70f;
+      Lighting->DuskIntensity = 0.50f;
+    }
+  }
+
+
+    Result->Exposure = 1.5f;
   Result->FogPower = 2.f;
 
   Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
-
-  {
-    lighting_settings *Lighting = &Result->Settings.Lighting;
-
-    Lighting->tDay = 0.75f;
-
-    Lighting->SunP = V3(-1.f, -1.f, 0.35f);
-
-    Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-    Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-    Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-    Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
-
-    Lighting->SunIntensity  = 1.10f;
-    Lighting->MoonIntensity = 0.10f;
-    Lighting->DawnIntensity = 0.70f;
-    Lighting->DuskIntensity = 0.50f;
-  }
 
   StandardCamera(&Result->GameCamera, 100000.f, 500.f);
   StandardCamera(&Result->DebugCamera, 100000.f, 500.f);

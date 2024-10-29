@@ -72,6 +72,7 @@ struct graphics
   volatile b32 RenderGate;
 
   render_settings Settings;
+  render_settings PrevSettings;
 
   v3 SunBasis;
 

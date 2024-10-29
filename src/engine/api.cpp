@@ -283,9 +283,21 @@ Bonsai_FrameBegin(engine_resources *Resources)
 }
 
 link_export b32
-Bonsai_FrameEnd(engine_resources *Resources)
+Bonsai_FrameEnd(engine_resources *Engine)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
   b32 Result = True;
+
+  if (!AreEqual(&Graphics->Settings, &Graphics->PrevSettings))
+  {
+    u8_cursor_block_array Bytes = BeginSerialization();
+    Serialize(&Bytes, &Graphics->Settings);
+    FinalizeSerialization(&Bytes, RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH);
+  }
+
+  Graphics->PrevSettings = Graphics->Settings;
+
   return Result;
 }
 
