@@ -25,7 +25,6 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           ChunkSum += u32(NoiseChoice);
 
-
           u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1);
 
           u32 FiveBits = (1<<5)-1;
