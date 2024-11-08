@@ -139,6 +139,15 @@ Bonsai_FrameBegin(engine_resources *Resources)
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), RGB_BLUE,  0.35f );
   }
 
+  /* if (GetEngineDebug()->DrawGameCameraLocation) */
+  {
+    if (Resources->Graphics.Camera == &Resources->Graphics.DebugCamera)
+    {
+      /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
+      DEBUG_HighlightVoxel(Resources, Graphics->GameCamera.CurrentP, RGB_PINK, 10.f);
+    }
+  }
+
 
   Graphics->Lighting.Lights.Count = 0;
 
@@ -148,19 +157,68 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   // @camera-update-ui-update-frame-jank
   //
+  //
 
+  f32 LineWidth = 3.f;
+  LineWidth = .1f;
   if (UiHoveredMouseInput(Ui))
   {
-    Resources->MaybeMouseRay   = {};
-    Resources->MousedOverVoxel = {};
-    Resources->HoverEntity     = {};
+    // We want to preserve these when we swap to the debug camera
+    if (Camera == &Graphics->GameCamera)
+    {
+      Resources->MaybeMouseRay   = {};
+      Resources->MousedOverVoxel = {};
+      Resources->HoverEntity     = {};
+    }
   }
   else
   {
-    Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-    Resources->MousedOverVoxel = MousePickVoxel(Resources);
+    if (Camera == &Graphics->GameCamera)
+    {
+      Resources->MaybeMouseRay   = ComputeCameraSpaceRayFromCursor(Resources, &gBuffer->ViewProjection, &Resources->Graphics.GameCamera, World->ChunkDim);
+
+      ray *Ray = &Resources->MaybeMouseRay.Ray;
+      v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
+      Ray->Origin = GameCameraSimSpaceP;
+    }
+
+    ray *Ray = &Resources->MaybeMouseRay.Ray;
+
+    DEBUG_VALUE_r32(Ray->Origin.x);
+    DEBUG_VALUE_r32(Ray->Origin.y);
+    DEBUG_VALUE_r32(Ray->Origin.z);
+
+    DEBUG_VALUE_r32(Ray->Dir.x);
+    DEBUG_VALUE_r32(Ray->Dir.y);
+    DEBUG_VALUE_r32(Ray->Dir.z);
+
+    Resources->MousedOverVoxel = MousePickVoxel(Resources, Ray);
     Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
   }
+
+#if 0
+  {
+    ray *Ray = &Resources->MaybeMouseRay.Ray;
+
+    {
+      untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
+      DEBUG_DrawLine(&Mesh, V3(0.,0.,LineWidth) + Ray->Origin, Ray->Origin + Ray->Dir*50000.f, RGB_PINK, LineWidth );
+    }
+
+    picked_octree_node_block_array NodeList = GetOctreeLeafNodesIntersectingRay(World, Ray, GetTranArena());
+    IterateOver(&NodeList, PickedNode, NodeIndex)
+    {
+      random_series Entropy = {Cast(u64, PickedNode->Node)};
+      v3 Color = RandomV3Unilateral(&Entropy);
+      aabb AABB = GetSimSpaceAABB(World, PickedNode->Node);
+      DEBUG_DrawSimSpaceAABB(Resources, &AABB, Color, 3.f);
+
+      v3 IntersectionPoint = Ray->Origin + Ray->Dir*PickedNode->t;
+      DEBUG_HighlightVoxel(Resources, IntersectionPoint, Color, 3);
+
+    }
+  }
+#endif
 
   // Find closest standing spot to cursor
   {
@@ -644,6 +702,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       {
         MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunk->Dim, {}, SynChunk->Dim);
 
+        Assert(SynChunk->Dim.x == 64);
+        Assert(SynChunk->Dim.y == 66);
+        Assert(SynChunk->Dim.z == 66);
+
         Assert(DestChunk->FilledCount == 0);
         Assert(DestChunk->Dim.x == 64);
         Assert(DestChunk->Dim.y == 64);
@@ -651,7 +713,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         RangeIterator(z, 64)
         RangeIterator(y, 64)
         {
-          u64 Occ = DestChunk->Occupancy[y + z*64];
+          u64 Occ = SynChunk->Occupancy[(y+1) + ((z+1)*66)];
+          DestChunk->Occupancy[y + (z*64)] = Occ;
           DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
         }
 

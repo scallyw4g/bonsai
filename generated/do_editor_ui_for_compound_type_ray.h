@@ -1,7 +1,7 @@
-// src/engine/editor.h:526:0
+// src/engine/editor.h:532:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ray *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3cp", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ray", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -29,8 +29,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->Min),
-        CSz("Min"),
+        Cast(v3*,&Element->Origin),
+        CSz("Origin"),
         Params
         );
 
@@ -44,8 +44,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->Max),
-        CSz("Max"),
+        Cast(v3*,&Element->Dir),
+        CSz("Dir"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -30,6 +30,12 @@ struct octree_node
 
 typedef octree_node* octree_node_ptr;
 
+struct picked_octree_node
+{
+  octree_node *Node;
+  r32 t;
+};
+
 poof(are_equal(octree_node))
 #include <generated/are_equal_octree_node.h>
 poof(generate_stack(octree_node_ptr, {}))
@@ -43,6 +49,12 @@ poof(freelist_allocator(world_chunk))
 
 poof(generate_cursor(octree_node_ptr))
 #include <generated/generate_cursor_octree_node.h>
+
+poof(block_array(octree_node_ptr, {32}))
+#include <generated/block_array_octree_node_ptr_688853862.h>
+
+poof(block_array(picked_octree_node, {32}))
+#include <generated/block_array_picked_octree_node_688853862.h>
 
 struct world
 {
@@ -233,6 +245,11 @@ InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks);
 link_internal world *
 AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion);
 
+link_internal rect3cp
+GetBoundingBox(world *World, octree_node *Node);
 
 link_internal void
 SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, octree_node *Parent, memory_arena *Memory);
+
+link_internal rect3
+GetSimSpaceAABB(world *World, octree_node *Node);

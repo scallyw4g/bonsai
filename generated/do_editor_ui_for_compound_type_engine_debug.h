@@ -279,6 +279,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(b8*,&Element->DrawGameCameraLocation),
+        CSz("DrawGameCameraLocation"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(r64*,&Element->ChunkGenTimeElapsedMS),
         CSz("ChunkGenTimeElapsedMS"),
         Params

@@ -436,7 +436,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (GpuMap->Buffer.At)
               {
                 RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-                RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
+                /* RenderImmediateGeometryToShadowMap(GpuMap, Graphics); */
               }
               Clear(&GpuMap->Buffer);
 

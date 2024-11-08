@@ -507,6 +507,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
   DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
+poof(string_and_value_tables(maybe_tag))
+#include <generated/string_and_value_tables_maybe_tag.h>
+poof(do_editor_ui_for_enum(maybe_tag))
+#include <generated/do_editor_ui_for_enum_maybe_tag.h>
+
 poof(string_and_value_tables(data_type))
 #include <generated/string_and_value_tables_data_type.h>
 poof(do_editor_ui_for_enum(data_type))
@@ -523,6 +528,12 @@ poof(do_editor_ui_for_compound_type(rect3cp))
 
 poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
+
+poof(do_editor_ui_for_compound_type(ray))
+#include <generated/do_editor_ui_for_compound_type_ray.h>
+
+poof(do_editor_ui_for_compound_type(maybe_ray))
+#include <generated/do_editor_ui_for_compound_type_maybe_ray.h>
 
 struct selection_modification_state
 {

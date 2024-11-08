@@ -66,6 +66,8 @@ struct engine_debug
 
   b8 MarkChunkBorderVoxels;
 
+  b8 DrawGameCameraLocation;
+
   r64 ChunkGenTimeElapsedMS;
   u64 CellsGenerated;
   r64 ChunkGenCyclesElapsed;

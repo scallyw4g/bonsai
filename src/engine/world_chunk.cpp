@@ -72,6 +72,7 @@ FinalizeChunkInitialization(world_chunk *Chunk)
   UnSetFlag(&Chunk->Flags, Chunk_Queued);
   SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
 
+  FullBarrier;
 }
 
 inline b32
@@ -4006,7 +4007,7 @@ GetStandingSpotsWithinRadiusSorted(world *World, standing_spot_buffer *Spots, cp
   v3 SimP = GetSimSpaceP(World, P);
 
   standing_spot_buffer UnsortedSpots = StandingSpotBuffer(Spots->Count, TempMemory);
-  sort_key_f *SortKeys = Allocate(sort_key_f, TempMemory, Spots->Count);
+  sort_key_f64 *SortKeys = Allocate(sort_key_f64, TempMemory, Spots->Count);
 
   r32 RadSq = Square(Radius);
   u32 ResultAt = 0;
@@ -4150,24 +4151,27 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
       for (s32 x = Min.x; x < Max.x; ++ x)
       {
         world_position P = World_Position(x,y,z);
-        world_chunk *Chunk = GetWorldChunkFromHashtable( World, P );
-
-        if (Chunk)
+        /* world_chunk *Chunk = GetWorldChunkFromHashtable( World, P ); */
+        
+        if (octree_node *Node = GetWorldChunkFromOctree( World, P ))
         {
-          /* aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) ); */
-          aabb ChunkAABB = GetSimSpaceAABB(World, Chunk);
-
-          aabb_intersect_result IntersectResult = Intersect(ChunkAABB, Ray);
-          if ( IntersectResult.Face != FaceIndex_None )
+          if (world_chunk *Chunk = Node->Chunk)
           {
-            /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED); */
-            r32 tChunk = IntersectResult.t;
-            if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
+            /* aabb ChunkAABB = AABBMinDim( V3(World->ChunkDim*Chunk->WorldP), V3(World->ChunkDim) ); */
+            aabb ChunkAABB = GetSimSpaceAABB(World, Chunk);
 
-            if (Chunk->FilledCount && tChunk < tChunkMin)
+            aabb_intersect_result IntersectResult = Intersect(ChunkAABB, Ray);
+            if ( IntersectResult.Face != FaceIndex_None )
             {
-              ClosestChunk = Chunk;
-              tChunkMin = tChunk;
+              /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED); */
+              r32 tChunk = IntersectResult.t;
+              if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
+
+              if (Chunk->FilledCount && tChunk < tChunkMin)
+              {
+                ClosestChunk = Chunk;
+                tChunkMin = tChunk;
+              }
             }
           }
         }
@@ -4176,6 +4180,56 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
   }
 
   return { .Chunk = ClosestChunk, .tChunk = r64(tChunkMin) };
+}
+
+link_internal void
+IntersectOctreeLeaves_Recursive(world *World, ray *Ray, octree_node *Node, picked_octree_node_block_array *Intersections)
+{
+  aabb Box = GetSimSpaceAABB(World, Node);
+  r32 t;
+  if (Intersect(&Box, Ray, &t))
+  {
+    switch(Node->Type)
+    {
+      InvalidCase(OctreeNodeType_Undefined);
+
+      case OctreeNodeType_Leaf:
+      {
+        /* if (Node->Chunk && (Node->Chunk->Flags&Chunk_VoxelsInitialized) && t > 0) */
+        if (t > 0)
+        {
+          picked_octree_node PNode = {Node, t};
+          Push(Intersections, &PNode);
+        }
+      } break;
+
+      case OctreeNodeType_Branch:
+      {
+        /* aabb AABB = GetSimSpaceAABB(World, Node); */
+        /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &AABB, RGB_GREEN, 2.f); */
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[0], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[1], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[2], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[3], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[4], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[5], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[6], Intersections);
+        IntersectOctreeLeaves_Recursive(World, Ray, Node->Children[7], Intersections);
+      } break;
+    }
+  }
+}
+
+link_internal picked_octree_node_block_array
+GetOctreeLeafNodesIntersectingRay(world *World, ray *Ray, memory_arena *Memory)
+{
+  picked_octree_node_block_array Result = {};
+  Result.Memory = Memory;
+
+  octree_node *Current = &World->Root;
+  IntersectOctreeLeaves_Recursive(World, Ray, Current, &Result);
+
+  return Result;
 }
 
 link_internal world_chunk*
@@ -4205,52 +4259,85 @@ WorldChunkAABB(world_chunk *Chunk, v3 WorldChunkDim)
 }
 
 link_internal picked_voxel
-RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, v3 RayDir)
+RayTraceCollision(engine_resources *Engine, ray *Ray)
 {
-  UNPACK_ENGINE_RESOURCES(Resources);
-  Assert(Length(RayDir) <= 1.01f);
-
-  /* { */
-  /*   untextured_3d_geometry_buffer VoxelMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-  /*   v3 RenderP = GetRenderP(World->ChunkDim, AbsRayOrigin, Camera); */
-  /*   DrawVoxel( &VoxelMesh, RenderP, V4(1,1,0,1), V3(11.f) ); */
-  /* } */
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   b32 Collision = False;
   v3 WorldChunkDim = V3(World->ChunkDim);
 
   picked_world_chunk_static_buffer AllChunksBuffer = {};
 
-  // TODO(Jesse): Use pre-computed ray on resources.
-  maybe_ray MaybeRay = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-  if (MaybeRay.Tag == Maybe_Yes) { GetChunksIntersectingRay(World, &MaybeRay.Ray, &AllChunksBuffer); }
-
-
-  v3 Advance = MaybeRay.Ray.Dir;
-  // b32 Hit = False;
-
-  BubbleSort((sort_key_f*)AllChunksBuffer.E, (u32)AllChunksBuffer.At);
+  DEBUG_DrawSimSpaceVectorAt(Engine, Ray->Origin+V3(1,1,1), Ray->Dir*10000.f, RGB_PINK, 1.f);
 
   picked_voxel Result = {};
-  for (s64 ClosestChunkIndex = s64(AllChunksBuffer.At)-1; ClosestChunkIndex > -1; --ClosestChunkIndex)
-  {
-    r32 tChunk = (r32)AllChunksBuffer.E[ClosestChunkIndex].tChunk;
-    world_chunk *ClosestChunk = AllChunksBuffer.E[ClosestChunkIndex].Chunk;
+#if 1
+  picked_octree_node_block_array NodeList = GetOctreeLeafNodesIntersectingRay(World, Ray, GetTranArena());
 
-    if (ClosestChunk->FilledCount == 0) continue;
+  u32 NodeCount = u32(Count(&NodeList));
+
+  sort_key_f32 *SortKeys = Allocate(sort_key_f32, GetTranArena(), NodeCount);
+
+  {
+    IterateOver(&NodeList, Node, NodeIndex)
+    {
+      umm I = GetIndex(&NodeIndex);
+      SortKeys[I].Index = Cast(u64, Node);
+      SortKeys[I].Value = Node->t;
+    }
+  }
+
+  BubbleSort_descending(SortKeys, NodeCount);
+
+  b32 Done = False;
+  /* IterateOver(&NodeList, PickedNode, NodeIndex) */
+  RangeIterator_t(u32, SortKeyIndex, NodeCount)
+  {
+    picked_octree_node *PickedNode = Cast(picked_octree_node*, SortKeys[SortKeyIndex].Index);
+
+    if (Done) break;
+
+    octree_node *Node = PickedNode->Node;
+    r32 tChunk = PickedNode->t;
+    world_chunk *ClosestChunk = Node->Chunk;
 
 #if 0
     {
-      aabb ChunkAABB = GetSimSpaceAABB(World, ClosestChunk);
-      DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED);
+      v3 Color = RGB_PINK;
+      if (Node->Chunk)
+      {
+        Color = RGB_YELLOW;
+        if (Node->Chunk->Flags & Chunk_VoxelsInitialized)
+        {
+          Color = RGB_GREEN;
+        }
+      }
+      else
+      {
+        Color = RGB_RED;
+      }
+
+      aabb AABB = GetSimSpaceAABB(World, Node);
+      DEBUG_DrawSimSpaceAABB(Engine, &AABB, Color, 1.f);
     }
 #endif
 
-    v3 CollisionP = MaybeRay.Ray.Origin + (MaybeRay.Ray.Dir*tChunk);
+    if (Node->Chunk == 0)
+    {
+      continue;
+    }
+
+    v3 Advance = Ray->Dir*0.1f;
+
+    // TODO(Jesse): This should pass.
+    /* Assert (ClosestChunk->FilledCount > 0); */
+
+    v3 CollisionP = Ray->Origin + (Ray->Dir*tChunk);
 
     v3 StartP = CollisionP + (Advance*0.1f);
 
-    v3 AtP = StartP - GetSimSpaceP(World, Canonical_Position(V3(0), ClosestChunk->WorldP));
+    v3 ChunkSimP = GetSimSpaceP(World, Canonical_Position(V3(0), ClosestChunk->WorldP));
+    v3 AtP = (StartP - ChunkSimP) / V3(ClosestChunk->DimInChunks);
 
     u32 AxisIndex = 0;
     for (;;)
@@ -4267,11 +4354,17 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
       voxel_position LocalTestP = Voxel_Position(AtP);
       if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
       {
-        // Hit = True;
-        ClosestChunkIndex = -1;
+        Done = True;
 
         Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, r64(tChunk)};
         Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
+
+        {
+          untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+          v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks);
+          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
+          DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_GREEN, V3(ClosestChunk->DimInChunks));
+        }
 
         break;
       }
@@ -4279,12 +4372,50 @@ RayTraceCollision(engine_resources *Resources, canonical_position AbsRayOrigin, 
       {
         Result.Chunks[PickedVoxel_LastEmpty] = {ClosestChunk, r64(tChunk)};
         Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
+        {
+          /* untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks); */
+          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
+          /* DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_BLUE, V3(ClosestChunk->DimInChunks)); */
+        }
       }
 
       AtP.E[AxisIndex] += Advance.E[AxisIndex];
       AxisIndex = (AxisIndex + 1) % 3;
     }
+
+#if 1
+    {
+
+#if 0
+      {
+        random_series Entropy = {u64(ClosestChunk)};
+        v3 Color = RandomV3Unilateral(&Entropy);
+        untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+        cp CollisionCP = SimSpaceToCanonical(World, CollisionP);
+        v3 RenderMin = GetRenderP(Engine, CollisionCP);
+        DrawVoxel_MinDim( &VoxMesh, RenderMin, Color, V3(ClosestChunk->DimInChunks));
+      }
+#endif
+
+      v3 Color = RGB_RED;
+      if (ClosestChunk == Result.Chunks[PickedVoxel_FirstFilled].Chunk)
+      {
+        Color = RGB_GREEN;
+      }
+      else if (ClosestChunk == Result.Chunks[PickedVoxel_LastEmpty].Chunk)
+      {
+        Color = RGB_BLUE;
+      }
+
+        untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
+        DEBUG_DrawChunkAABB( &Mesh, Graphics, ClosestChunk, World->ChunkDim, Color, 2.f);
+
+    }
+#endif
+
   }
+#endif
 
   return Result;
 }
@@ -4324,7 +4455,7 @@ RayTraceCollision(world_chunk *Chunk, chunk_dimension Dim, v3 StartingP, v3 Ray,
 }
 
 link_internal maybe_picked_voxel
-MousePickVoxel(engine_resources *Resources)
+MousePickVoxel(engine_resources *Resources, ray *Ray)
 {
   TIMED_FUNCTION();
 
@@ -4332,22 +4463,15 @@ MousePickVoxel(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-#if 0
-  maybe_ray MaybeRay = Resources->MaybeMouseRay;
-  if (MaybeRay.Tag == Maybe_Yes)
+  picked_voxel RayResult = RayTraceCollision(Resources, Ray);
+  if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
   {
-    picked_voxel RayResult = RayTraceCollision( Resources, Camera->CurrentP, MaybeRay.Ray.Dir);
+    v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
+    v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
-    if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
-    {
-      v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
-      v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
-
-      Result.Tag   = Maybe_Yes;
-      Result.Value = RayResult;
-    }
+    Result.Tag   = Maybe_Yes;
+    Result.Value = RayResult;
   }
-#endif
 
   return Result;
 }

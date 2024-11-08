@@ -257,7 +257,8 @@ void main()
     }
 
     deriv = normalize(deriv);
-    ColorValue = abs(deriv);
+    /* ColorValue = abs(deriv); */
+    ColorValue = v3(0.75f);
 
     // Bias noise value to lower values as we get higher in z.
     // This creates a "plane" of terrain
