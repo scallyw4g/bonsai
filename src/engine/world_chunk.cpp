@@ -4268,7 +4268,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
 
   picked_world_chunk_static_buffer AllChunksBuffer = {};
 
-  DEBUG_DrawSimSpaceVectorAt(Engine, Ray->Origin+V3(1,1,1), Ray->Dir*10000.f, RGB_PINK, 1.f);
+  /* DEBUG_DrawSimSpaceVectorAt(Engine, Ray->Origin+V3(1,1,1), Ray->Dir*10000.f, RGB_PINK, 1.f); */
 
   picked_voxel Result = {};
 #if 1
@@ -4359,12 +4359,14 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
         Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, r64(tChunk)};
         Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
 
+#if 0
         {
           untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
           v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks);
           /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
           DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_GREEN, V3(ClosestChunk->DimInChunks));
         }
+#endif
 
         break;
       }
@@ -4384,7 +4386,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
       AxisIndex = (AxisIndex + 1) % 3;
     }
 
-#if 1
+#if 0
     {
 
 #if 0
