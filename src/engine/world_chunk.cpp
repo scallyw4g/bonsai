@@ -1476,12 +1476,12 @@ poof(
              matl Materials[VERTS_PER_FACE];
 
       s32 Result = 0;
-      for ( s32 zBlock = 1; zBlock < SrcChunkDim.z; ++zBlock )
+      for ( s32 zBlock = 1; zBlock < SrcChunkDim.z-1; ++zBlock )
       {
-        s32 z = zBlock;
-        for ( s32 yBlock = 1; yBlock < SrcChunkDim.y; ++yBlock )
+        s32 z = zBlock-1;
+        for ( s32 yBlock = 1; yBlock < SrcChunkDim.y-1; ++yBlock )
         {
-          s32 y = yBlock;
+          s32 y = yBlock-1;
           s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
           u64 LeftFaces  = FaceMasks[(OccupancyIndex*6)+0];
@@ -4196,7 +4196,7 @@ IntersectOctreeLeaves_Recursive(world *World, ray *Ray, octree_node *Node, picke
       case OctreeNodeType_Leaf:
       {
         /* if (Node->Chunk && (Node->Chunk->Flags&Chunk_VoxelsInitialized) && t > 0) */
-        if (t > 0)
+        /* if (t > 0) */
         {
           picked_octree_node PNode = {Node, t};
           Push(Intersections, &PNode);
@@ -4327,7 +4327,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
       continue;
     }
 
-    v3 Advance = Ray->Dir*0.1f;
+    v3 Advance = Ray->Dir*0.01f;
 
     // TODO(Jesse): This should pass.
     /* Assert (ClosestChunk->FilledCount > 0); */

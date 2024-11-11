@@ -27,12 +27,12 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
   matl Materials[VERTS_PER_FACE];
 
   s32 Result = 0;
-  for ( s32 zBlock = 1; zBlock < SrcChunkDim.z; ++zBlock )
+  for ( s32 zBlock = 1; zBlock < SrcChunkDim.z-1; ++zBlock )
   {
-    s32 z = zBlock;
-    for ( s32 yBlock = 1; yBlock < SrcChunkDim.y; ++yBlock )
+    s32 z = zBlock-1;
+    for ( s32 yBlock = 1; yBlock < SrcChunkDim.y-1; ++yBlock )
     {
-      s32 y = yBlock;
+      s32 y = yBlock-1;
       s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);
 
       u64 LeftFaces  = FaceMasks[(OccupancyIndex*6)+0];

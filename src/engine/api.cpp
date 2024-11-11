@@ -690,6 +690,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks, Thread->PermMemory);
       SynChunk->Flags = Chunk_Queued;
 
+      Assert(NoiseDim == V3i(66, 66, 66));
       Assert(SynChunk->Dim == V3i(64, 66, 66));
 
       v3i WorldBasis = {};
