@@ -4,6 +4,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 {
   TIMED_FUNCTION();
   if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
+  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
@@ -177,15 +178,20 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   Camera->Blend = Blend;
 
   Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 1.0f;
+  Camera->Frust.nearClip = 0.5f;
   Camera->Frust.width = 30.0f;
-  Camera->Frust.FOV = 45.0f;
+
+  // Someone already set FOV .. probably when deserializing stored runtime settings.
+  if (Camera->Frust.FOV == 0.f)
+  {
+    Camera->Frust.FOV = 45.0f;
+  }
 
   Camera->Up = WORLD_Z;
   Camera->Right = WORLD_X;
 
   Camera->TargetPitch = PI32 - (PI32*0.25f);
-  Camera->TargetYaw = -PI32*0.15f;
+  Camera->TargetYaw = PI32*0.125f;
 
   Camera->TargetDistanceFromTarget = DistanceFromTarget;
 
@@ -217,10 +223,19 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
 }
 
 link_internal bool
+IsInFrustum( world *World, camera *Camera, octree_node *Chunk )
+{
+  v3 ChunkMid = (Chunk->Resolution*World->ChunkDim)/2.f;
+  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  bool Result = IsInFrustum(World, Camera, P1);
+  return Result;
+}
+
+link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = World->ChunkDim/2.0f;
-  canonical_position P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
+  v3 ChunkMid = (Chunk->DimInChunks*World->ChunkDim)/2.f;
+  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
   bool Result = IsInFrustum(World, Camera, P1);
   return Result;
 }
@@ -246,16 +261,15 @@ Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
 //
 // NOTE(Jesse): Returns a sim-space ray
 link_internal maybe_ray
-ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
+ComputeCameraSpaceRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
 {
   platform *Plat = &Engine->Stdlib.Plat;
   world *World = Engine->World;
 
   maybe_ray Result = {};
 
-  m4 InverseViewProjection = {};
-  b32 Inverted = Inverse((r32*)ViewProjection, (r32*)&InverseViewProjection);
-  if (Inverted)
+  m4 InverseViewProjection;
+  if (Inverse(Cast(r32*, ViewProjection), Cast(r32*, &InverseViewProjection)))
   {
     v3 MouseMinWorldP = Unproject( Plat->MouseP,
                                    0.0f,
@@ -271,8 +285,10 @@ ComputeRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camer
 
     /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
     /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim); */
-    v3 CameraOffset = GetSimSpaceP(World, ComputeTarget(Camera));
-    /* v3 CameraOffset = V3(0); */
+    /* v3 CameraOffset = GetSimSpaceP(World, ComputeTarget(Camera)); */
+    /* v3 CameraOffset = GetSimSpaceP(World, Camera->CurrentP); */
+    /* v3 CameraOffset = Camera->RenderSpacePosition; */
+    v3 CameraOffset = V3(0);
     Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
     Result.Tag = Maybe_Yes;
   }

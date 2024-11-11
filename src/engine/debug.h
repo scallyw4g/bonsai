@@ -58,6 +58,20 @@ struct engine_debug
   b8 TriggerRuntimeBreak;
   b8 ResetAssetNodeView;
 
+  b8 DrawBranchNodesWithMeshes;
+  b8 DrawBranchNodes;
+  b8 DrawLeafNodes;
+  b8 DrawNodesWithChunks;
+  b8 DrawQueuedNodes;
+
+  b8 MarkChunkBorderVoxels;
+
+  b8 DrawGameCameraLocation;
+
+  r64 ChunkGenTimeElapsedMS;
+  u64 CellsGenerated;
+  r64 ChunkGenCyclesElapsed;
+
   u8 PickedChunkState;
   world_chunk *PickedChunk;
 
@@ -67,6 +81,10 @@ struct engine_debug
   u64 ModelIndex;
 
   entity_id SelectedEntity;
+
+  u32 OctreeDrawDepth = 0xFFFFFFFF;
+
+  octree_node *SelectedNode;
 
   // World Edit debug
   //

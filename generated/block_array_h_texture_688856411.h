@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/texture.h:45:0
+// external/bonsai_stdlib/src/texture.h:47:0
 
 struct texture_ptr_block
 {
@@ -107,6 +107,14 @@ AtElements(texture_ptr_block_array *Arr)
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
   }
+  return Result;
+}
+
+link_internal umm
+Count(texture_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
   return Result;
 }
 

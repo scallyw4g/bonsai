@@ -1,6 +1,8 @@
 struct world_chunk;
 
 
+#define GLOBAL_RENDER_SCALE_FACTOR (1.00f)
+
 // NOTE(Jesse): Must match defines in header.glsl
 #define VERTEX_POSITION_LAYOUT_LOCATION 0
 #define VERTEX_NORMAL_LAYOUT_LOCATION 1
@@ -86,7 +88,40 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
 }
 
 inline m4
-Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
+Perspective_infinite(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
+{
+
+#if 0
+//  https://chaosinmotion.com/2010/09/06/goodbye-far-clipping-plane/
+//
+// Projection
+//
+//   a 0 0 0
+//   0 b 0 0
+//   0 0 0 d
+//   0 0 e 0
+//
+#endif
+
+  r32 FocalLength = Tan(FOV/2.f);
+  r32 Aspect = WindowDim.x/WindowDim.y;
+
+  r32 a = FOV/Aspect;
+  r32 b = FOV;
+  r32 d = -NearClip;
+  r32 e = -1.f;
+
+  m4 Result = {
+    V4(a, 0, 0, 0),
+    V4(0, b, 0, 0),
+    V4(0, 0, 0, d),
+    V4(0, 0, e, 0),
+  };
+
+  return Result;
+}
+inline m4
+Perspective_clipped(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
 
 #if 0
@@ -145,11 +180,20 @@ Rads(degrees Degrees)
 inline m4
 ProjectionMatrix(camera *Camera, v2 ScreenDim)
 {
-  m4 Result = Perspective( Rads(Camera->Frust.FOV),
-                                ScreenDim,
-                                Camera->Frust.nearClip,
-                                Camera->Frust.farClip);
+  /* m4 Result = Perspective_infinite( Camera->Frust.FOV, */
+  /*                                   ScreenDim, */
+  /*                                   Camera->Frust.nearClip, */
+  /*                                   Camera->Frust.farClip); */
 
+  /* m4 Result = Perspective_infinite( Rads(Camera->Frust.FOV), */
+  /*                                        ScreenDim, */
+  /*                                        Camera->Frust.nearClip, */
+  /*                                        Camera->Frust.farClip); */
+
+  m4 Result = Perspective_clipped( Rads(Camera->Frust.FOV),
+                                        ScreenDim,
+                                        Camera->Frust.nearClip,
+                                        Camera->Frust.farClip);
   return Result;
 }
 
@@ -176,3 +220,5 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);
 
+link_internal b32
+SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);

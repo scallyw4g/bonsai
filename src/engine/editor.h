@@ -193,7 +193,13 @@ poof(
                       PushNewRow(Ui);
                       RangeIterator(ArrayIndex, member.array)
                       {
-                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        member.has_tag(custom_ui)?
+                        {
+                          member.tag_value(custom_ui);
+                        }
+                        {
+                          DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                        }
                         member.is_primitive?  { PushNewRow(Ui); }
                       }
                     CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -501,6 +507,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
   DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
+poof(string_and_value_tables(maybe_tag))
+#include <generated/string_and_value_tables_maybe_tag.h>
+poof(do_editor_ui_for_enum(maybe_tag))
+#include <generated/do_editor_ui_for_enum_maybe_tag.h>
+
 poof(string_and_value_tables(data_type))
 #include <generated/string_and_value_tables_data_type.h>
 poof(do_editor_ui_for_enum(data_type))
@@ -517,6 +528,12 @@ poof(do_editor_ui_for_compound_type(rect3cp))
 
 poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
+
+poof(do_editor_ui_for_compound_type(ray))
+#include <generated/do_editor_ui_for_compound_type_ray.h>
+
+poof(do_editor_ui_for_compound_type(maybe_ray))
+#include <generated/do_editor_ui_for_compound_type_maybe_ray.h>
 
 struct selection_modification_state
 {
@@ -631,15 +648,15 @@ struct generic_noise_params
 };
 
 // TODO(Jesse): Get rid of zMin
-#define UNPACK_NOISE_PARAMS(P)                                       \
-  v3i WorldChunkDim = GetWorldChunkDim();                            \
-  v3i Dim = Chunk->Dim;                                              \
-  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold;         \
-  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
-  v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
-  s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  v3  RGBColor      = Cast(generic_noise_params*, (P))->RGBColor;    \
-  v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
+#define UNPACK_NOISE_PARAMS(P)                                          \
+  v3i WorldChunkDim = GetWorldChunkDim();                               \
+  v3i           Dim = Chunk->Dim;                                       \
+  r32        Thresh = Cast(generic_noise_params*, (P))->Threshold;      \
+  s64          zMin = s64(Cast(generic_noise_params*, (P))->Threshold); \
+  v3         Period = Cast(generic_noise_params*, (P))->Period;         \
+  s32     Amplitude = s32(Cast(generic_noise_params*, (P))->Amplitude); \
+  v3       RGBColor = Cast(generic_noise_params*, (P))->RGBColor;       \
+  v3i     SrcToDest = {}
 
 
 struct white_noise_params

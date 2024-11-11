@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:328:0
+// src/engine/world_chunk.h:308:0
 
 struct entity_ptr_block
 {
@@ -110,6 +110,14 @@ AtElements(entity_ptr_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(entity_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal entity_ptr *
 GetPtr(entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
 {
@@ -192,17 +200,32 @@ RemoveUnordered(entity_ptr_block_array *Array, entity_ptr_block_array_index Inde
 
   if (Array->Current->At == 0)
   {
-    // Walk the chain till we get to the second-last one
-    entity_ptr_block *Current = Array->First;
-    entity_ptr_block *LastB = LastI.Block;
+    // TODO(Jesse): There's obviously a way better way to do this ..
+    auto AtE = AtElements(Array);
+    s32 Count = s32(GetIndex(&AtE));
 
-    while (Current->Next && Current->Next != LastB)
+    if (Count == 0)
     {
-      Current = Current->Next;
+      // Nothing to be done, we've popping the last thing off the array
+      Assert(Index.Block == Array->First);
+      Assert(Index.Block == Array->Current);
+      Assert(Index.BlockIndex == 0);
+      Assert(Index.ElementIndex == 0);
     }
+    else
+    {
+      // Walk the chain till we get to the second-last one
+      entity_ptr_block *Current = Array->First;
+      entity_ptr_block *LastB = LastI.Block;
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+      while (Current->Next && Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
+
+      Assert(Current->Next == LastB || Current->Next == 0);
+      Array->Current = Current;
+    }
   }
 }
 

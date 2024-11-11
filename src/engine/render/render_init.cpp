@@ -561,6 +561,9 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+
+#define RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH "runtime_settings/graphics_settings.bin"
+
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
@@ -568,57 +571,68 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.ToneMappingType = ToneMappingType_Exposure;
+  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
+  Result->Camera = &Result->GameCamera;
 
-  Result->Settings.UseSsao           = True;
+  if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
+  {
+    u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
+    Deserialize(&Bytes, &Result->Settings, GetTranArena());
+    FinalizeDeserialization(&Bytes);
+  }
+  else
+  {
+    Result->Settings.ToneMappingType = ToneMappingType_Exposure;
 
-  Result->Settings.BravoilMyersOIT   = True;
-  Result->Settings.BravoilMcGuireOIT = True;
+    Result->Settings.UseSsao           = True;
 
-  Result->Settings.UseShadowMapping = True;
-  Result->Settings.UseLightingBloom = True;
+    Result->Settings.BravoilMyersOIT   = True;
+    Result->Settings.BravoilMcGuireOIT = True;
 
-  Result->Settings.DrawMajorGrid = True;
-  Result->Settings.DrawMinorGrid = True;
-  Result->Settings.MajorGridDim = 8.f;
+    /* Result->Settings.UseShadowMapping = True; */
+    Result->Settings.UseLightingBloom = True;
+
+    /* Result->Settings.DrawMajorGrid = True; */
+    /* Result->Settings.DrawMinorGrid = True; */
+    Result->Settings.MajorGridDim = 16.f;
+
+    Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+    Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+    Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+    Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+    Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+    Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+
+    Result->Settings.GameCameraFOV = Result->GameCamera.Frust.FOV;
+
+    {
+      lighting_settings *Lighting = &Result->Settings.Lighting;
+
+      Lighting->tDay = 0.75f;
+
+      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
+      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
+      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
+      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+
+      Lighting->SunIntensity  = 1.10f;
+      Lighting->MoonIntensity = 0.10f;
+      Lighting->DawnIntensity = 0.70f;
+      Lighting->DuskIntensity = 0.50f;
+    }
+  }
+
+  Result->PrevSettings = Result->Settings;
 
   Result->Exposure = 1.5f;
-
-  Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-  Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-  Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
-
-  Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-  Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-  Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-
   Result->FogPower = 2.f;
 
   Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
-
-  {
-    lighting_settings *Lighting = &Result->Settings.Lighting;
-
-    Lighting->tDay = 0.75f;
-
-    Lighting->SunP = V3(-1.f, -1.f, 0.35f);
-
-    Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-    Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-    Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-    Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
-
-    Lighting->SunIntensity  = 1.10f;
-    Lighting->MoonIntensity = 0.10f;
-    Lighting->DawnIntensity = 0.70f;
-    Lighting->DuskIntensity = 0.50f;
-  }
-
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
-
-  Result->Camera = &Result->GameCamera;
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));
@@ -755,6 +769,38 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Settings.BravoilMcGuireOIT,
                                                         &Result->Settings.ToneMappingType
                                                        );
+  }
+
+
+  {
+
+    terrain_shader *TerrainShader = &Result->GpuNoise.TerrainShader;
+    v3 ChunkDim = V3(66, 66, 66);
+    InitializeTerrainShader(&Result->GpuNoise.TerrainShader, ChunkDim, {}, {});
+
+    Result->GpuNoise.FBO = GenFramebuffer();
+
+    /* GL.GenQueries(1, &Result->GpuNoise.GlTimerObject); */
+    /* Assert(Result->GpuNoise.GlTimerObject); */
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
+
+    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+    /* TerrainShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False); */
+
+    u32 Channels = 1;
+    u32 Slices = 1;
+    {
+      TerrainShader->ChunkTexture = GenTexture(TextureDim, CSz("PerlinNoiseTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
+      GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+      AssertNoGlErrors;
+      GL.BindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    FramebufferTexture(&Result->GpuNoise.FBO, &TerrainShader->ChunkTexture);
+    SetDrawBuffers(&Result->GpuNoise.FBO);
+
+    Ensure(CheckAndClearFramebuffer());
   }
 
   GL.Enable(GL_CULL_FACE);

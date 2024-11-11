@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:425:0
+// src/engine/editor.cpp:430:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -391,6 +391,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         RangeIterator(ArrayIndex, 512)
         {
           DoEditorUi(Ui, Window, Element->NewAssetFromSelectionFilename+ArrayIndex, FSz("NewAssetFromSelectionFilename[%d]", ArrayIndex), Params);
+
  PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();

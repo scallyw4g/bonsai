@@ -14,7 +14,10 @@ DoLevelWindow(engine_resources *Engine)
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
+
       u32 ChunkCount = 0;
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (World->ChunkHash[HashIndex])
@@ -22,6 +25,7 @@ DoLevelWindow(engine_resources *Engine)
           ++ChunkCount;
         }
       }
+#endif
 
       level_header Header = {};
       Header.ChunkCount = ChunkCount;
@@ -45,6 +49,9 @@ DoLevelWindow(engine_resources *Engine)
       Serialize(&OutputStream, &Header);
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+
+      NotImplemented;
+#if 0
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
@@ -52,6 +59,7 @@ DoLevelWindow(engine_resources *Engine)
           SerializeChunk(Chunk, &OutputStream);
         }
       }
+#endif
 
       Ensure(Serialize(&OutputStream, &Delimeter));
 
@@ -193,6 +201,8 @@ DoLevelWindow(engine_resources *Engine)
         }
 
 
+        NotImplemented;
+#if 0
         RangeIterator_t(u32, ChunkIndex, World->HashSize)
         {
           if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
@@ -206,6 +216,7 @@ DoLevelWindow(engine_resources *Engine)
             QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
           }
         }
+#endif
 
 #endif
 
@@ -382,11 +393,13 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
 }
 
 link_internal interactable_handle
-RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  SyncGpuBuffersAsync(Engine, Meshes);
+  // TODO(Jesse): Do we still do this here?
+  NotImplemented;
+  /* SyncGpuBuffersAsync(Engine, Mesh); */
 
   texture *Texture      = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
@@ -407,7 +420,7 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 
   if (Pressed(Ui, &B))
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
   }
 
   if (EngineDebug->ResetAssetNodeView)
@@ -419,14 +432,14 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
     f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
     Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
     UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
   }
 
   return B;
 }
 
 link_internal void
-RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+RenderMeshPreviewIntoWorld(engine_resources *Engine, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -453,7 +466,7 @@ RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes,
 
         v3 AssetHalfDim = Dim/2.f;
         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Meshes, 0.f, Basis, Quaternion(), V3(1));
+        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, 0.f, Basis, Quaternion(), V3(1));
 
         PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
       }
@@ -621,8 +634,8 @@ DoAssetWindow(engine_resources *Engine)
                   if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                   b32 Selected = True;
-                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
-                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Mesh, V3(Chunk->Dim), Selected);
+                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Mesh, V3(Chunk->Dim), Selected);
 
 
                 } break;
@@ -631,20 +644,22 @@ DoAssetWindow(engine_resources *Engine)
                 {
                   IterateOver(&Asset->Models, Model, ModelIndex)
                   {
-                    SyncGpuBuffersAsync(Engine, &Model->Meshes);
+                    // TODO(Jesse): Do we still do this here?
+                    NotImplemented;
+                    /* SyncGpuBuffersAsync(Engine, &Model->Mesh); */
 
                     asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
                     if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
 
-                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Mesh, V3(Model->Dim), Selected);
                     if (Pressed(Ui, &B))
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }
 
-                    RenderMeshPreviewIntoWorld(Engine, &Model->Meshes, V3(Model->Dim), Selected);
+                    RenderMeshPreviewIntoWorld(Engine, &Model->Mesh, V3(Model->Dim), Selected);
 
                     if ( (ModelIndex+1) % 4 == 0)
                     {
@@ -703,6 +718,26 @@ DoEngineDebug(engine_resources *Engine)
   ui_toggle_button_group EditorButtonGroup =
     ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
+  u64 CellsGenerated = EngineDebug->CellsGenerated;
+
+  if (CellsGenerated)
+  {
+    r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / CellsGenerated;
+    Text(Ui, CSz("CyclesPerCell : "));
+    Text(Ui, CS(CyclesPerCell));
+    PushNewRow(Ui);
+  }
+
+  r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
+  if (ChunkGenSeconds != 0.0)
+  {
+    r64 CellsPerSecond = (CellsGenerated/ChunkGenSeconds);
+
+    Text(Ui, CSz("CellsPerSecond : "));
+    Text(Ui, CS(CellsPerSecond));
+    PushNewRow(Ui);
+  }
+
   engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;
 
   /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
@@ -746,7 +781,7 @@ DoEngineDebug(engine_resources *Engine)
       {
         world_chunk *PickedChunk = EngineDebug->PickedChunk;
         /* MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim); */
-        MarkBoundaryVoxels_NoExteriorFaces(PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
+        MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
         QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
       }
       PushNewRow(Ui);

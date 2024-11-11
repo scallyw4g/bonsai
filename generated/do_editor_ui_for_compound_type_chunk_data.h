@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:252:0
+// src/engine/editor.cpp:251:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -56,6 +56,54 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->Occupancy),
+        CSz("Occupancy"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->xOccupancyBorder),
+        CSz("xOccupancyBorder"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->FaceMasks),
+        CSz("FaceMasks"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

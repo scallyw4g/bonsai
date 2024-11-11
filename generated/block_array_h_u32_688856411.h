@@ -110,6 +110,14 @@ AtElements(u32_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(u32_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal u32 *
 GetPtr(u32_block_array *Arr, u32_block_array_index Index)
 {

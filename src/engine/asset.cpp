@@ -15,7 +15,7 @@ MakeWorldChunkFileHeader_v2(world_chunk *Chunk)
   NotImplemented;
   /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
-    Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At;
+    /* Result.MeshElementCount       = Chunk->Meshes.E[MeshIndex_Lod0]->At; */
   }
 
   Result.VertexElementSize        = (u32)sizeof(v3);
@@ -69,7 +69,7 @@ MakeWorldChunkFileHeader_v1(world_chunk *Chunk)
   NotImplemented;
   /* if (HasMesh(&Chunk->Meshes, MeshBit_Lod0)) */
   {
-    Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At;
+    /* Result.MeshElementCount = Chunk->Meshes.E[MeshIndex_Lod0]->At; */
   }
 
 
@@ -607,7 +607,7 @@ InitAsset(asset *Asset, thread_local_state *Thread)
     // chunk is a weird one as the buffers can be of arbitrary size.
     Deserialize(&Bytes, Chunk, Thread->PermMemory, 1);
 
-    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
+    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Occupancy, Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
 
     FinalizeChunkInitialization(Chunk);
 

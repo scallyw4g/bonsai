@@ -1,6 +1,17 @@
 // src/engine/render_command.cpp:27:0
 
 link_internal void
+PushBonsaiRenderCommandInitializeNoiseBuffer(
+  work_queue *RenderQueue
+ , world_chunk* Chunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer( Chunk  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
 PushBonsaiRenderCommandClearAllFramebuffers(
   work_queue *RenderQueue
  , u32 Ignored = 0  
@@ -85,6 +96,39 @@ PushBonsaiRenderCommandDoStuff(
 {
   work_queue_entry Work = WorkQueueEntry(
     WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDoStuff( Ignored  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+  work_queue *RenderQueue
+ , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , world_chunk* SynChunk   , world_chunk* DestChunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer( Type , ElementCount , Dest , SynChunk , DestChunk  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandUnmapGpuElementBuffer(
+  work_queue *RenderQueue
+ , gpu_mapped_element_buffer* Buf   , world_chunk* Chunk  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer( Buf , Chunk  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandUnmapAndDeallocateBuffer(
+  work_queue *RenderQueue
+ , gpu_readback_buffer PBOBuf  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocateBuffer( PBOBuf  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -184,6 +228,17 @@ PushBonsaiRenderCommandGlTimerReadValueAndHistogram(
 {
   work_queue_entry Work = WorkQueueEntry(
     WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandGlTimerReadValueAndHistogram( GlTimerObject  )));
+
+  PushWorkQueueEntry(RenderQueue, &Work);
+}
+link_internal void
+PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
+  work_queue *RenderQueue
+  
+)
+{
+  work_queue_entry Work = WorkQueueEntry(
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

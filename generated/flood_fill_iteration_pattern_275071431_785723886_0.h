@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:844:0
+// src/engine/world_update.cpp:807:0
 
 random_series ColorEntropy = {4654376543246};
 
@@ -29,10 +29,12 @@ while (AtElements(&Stack))
     
           v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
           voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-          if ((V->Flags&Voxel_Filled))
+          NotImplemented;
+          /* if ((V->Flags&Voxel_Filled)) */
         
     {
-      if ( (V->Flags & Voxel_MarkBit) == 0)
+      NotImplemented;
+      /* if ( (V->Flags & Voxel_MarkBit) == 0) */
       {
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -44,10 +46,12 @@ while (AtElements(&Stack))
     }
 
     
-          if ( ((V->Flags&Voxel_Filled) == 0) && NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = *NewVoxelValue; }
+          NotImplemented;
+          /* if ( ((V->Flags&Voxel_Filled) == 0) && NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = *NewVoxelValue; } */
         
 
-    V->Flags |= Voxel_MarkBit;
+    NotImplemented;
+    /* V->Flags |= Voxel_MarkBit; */
 
     if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True))  )
@@ -81,7 +85,8 @@ while (AtElements(&Stack))
 
       
 
-      if ( (V->Flags&Voxel_MarkBit))
+      NotImplemented;
+      /* if ( (V->Flags&Voxel_MarkBit)) */
       {
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -91,7 +96,8 @@ while (AtElements(&Stack))
         Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
       }
 
-      V->Flags &= ~Voxel_MarkBit;
+      NotImplemented;
+      /* V->Flags &= ~Voxel_MarkBit; */
     }
   }
 }

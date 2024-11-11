@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:462:0
+// src/engine/world_chunk.h:451:0
 
 struct world_chunk_ptr_block
 {
@@ -107,6 +107,14 @@ AtElements(world_chunk_ptr_block_array *Arr)
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
   }
+  return Result;
+}
+
+link_internal umm
+Count(world_chunk_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
   return Result;
 }
 

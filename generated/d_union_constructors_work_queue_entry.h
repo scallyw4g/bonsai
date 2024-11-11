@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:325:0
+// src/engine/work_queue.h:268:0
 
 
 link_internal work_queue_entry
@@ -7,6 +7,32 @@ WorkQueueEntry( work_queue_entry_init_world_chunk A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_world_chunk,
     .work_queue_entry_init_world_chunk = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_finalize_noise_values A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_finalize_noise_values,
+    .work_queue_entry_finalize_noise_values = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_build_chunk_mesh A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_build_chunk_mesh,
+    .work_queue_entry_build_chunk_mesh = A,
 
     
 

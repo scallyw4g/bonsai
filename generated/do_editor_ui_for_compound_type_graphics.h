@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:410:0
+// src/engine/editor.cpp:415:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -57,6 +57,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         // Cast to remove const/volatile keywords if they're there
         Cast(render_settings*,&Element->Settings),
         CSz("Settings"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(render_settings*,&Element->PrevSettings),
+        CSz("PrevSettings"),
         Params
         );
 
@@ -354,6 +369,52 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
       
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_noise_render_group*,&Element->GpuNoise),
+        CSz("GpuNoise"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*,&Element->NoiseFinalizeJobsPending),
+        CSz("NoiseFinalizeJobsPending"),
+        Params
+        );
+
+
+
+
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(dummy_work_queue_entry_build_chunk_mesh_block_array*,&Element->NoiseReadbackJobs),
+        CSz("NoiseReadbackJobs"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       if (ToggleButton(Ui, CSz("v GpuBuffers[2]"), CSz("> GpuBuffers[2]"), UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
@@ -361,6 +422,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         RangeIterator(ArrayIndex, 2)
         {
           DoEditorUi(Ui, Window, Element->GpuBuffers+ArrayIndex, FSz("GpuBuffers[%d]", ArrayIndex), Params);
+
           
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -386,6 +448,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
       PushNewRow(Ui);
 
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_timer_block_array*,&Element->GpuTimers),
+        CSz("GpuTimers"),
+        Params
+        );
+
+
+
+
+
+
+
+      
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

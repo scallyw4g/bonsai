@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:267:0
+// src/engine/editor.cpp:266:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -46,6 +46,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
         // Cast to remove const/volatile keywords if they're there
         Cast(lod_element_buffer*,&Element->Meshes),
         CSz("Meshes"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+      DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(gpu_mapped_element_buffer*,&Element->Mesh),
+        CSz("Mesh"),
         Params
         );
 

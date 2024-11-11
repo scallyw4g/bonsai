@@ -110,6 +110,14 @@ AtElements(member_info_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count(member_info_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal member_info *
 GetPtr(member_info_block_array *Arr, member_info_block_array_index Index)
 {
@@ -192,17 +200,32 @@ RemoveUnordered(member_info_block_array *Array, member_info_block_array_index In
 
   if (Array->Current->At == 0)
   {
-    // Walk the chain till we get to the second-last one
-    member_info_block *Current = Array->First;
-    member_info_block *LastB = LastI.Block;
+    // TODO(Jesse): There's obviously a way better way to do this ..
+    auto AtE = AtElements(Array);
+    s32 Count = s32(GetIndex(&AtE));
 
-    while (Current->Next && Current->Next != LastB)
+    if (Count == 0)
     {
-      Current = Current->Next;
+      // Nothing to be done, we've popping the last thing off the array
+      Assert(Index.Block == Array->First);
+      Assert(Index.Block == Array->Current);
+      Assert(Index.BlockIndex == 0);
+      Assert(Index.ElementIndex == 0);
     }
+    else
+    {
+      // Walk the chain till we get to the second-last one
+      member_info_block *Current = Array->First;
+      member_info_block *LastB = LastI.Block;
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+      while (Current->Next && Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
+
+      Assert(Current->Next == LastB || Current->Next == 0);
+      Array->Current = Current;
+    }
   }
 }
 

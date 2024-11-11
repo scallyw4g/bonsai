@@ -1,4 +1,4 @@
-// src/engine/editor.h:518:0
+// src/engine/editor.h:529:0
 
 struct asset_thumbnail_block
 {
@@ -107,6 +107,14 @@ AtElements(asset_thumbnail_block_array *Arr)
     Result.BlockIndex = Arr->Current->Index;
     Result.ElementIndex = Arr->Current->At;
   }
+  return Result;
+}
+
+link_internal umm
+Count(asset_thumbnail_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
   return Result;
 }
 

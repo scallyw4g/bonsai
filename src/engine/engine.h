@@ -4,6 +4,7 @@
 #include <engine/serdes.h>
 #include <engine/serialize.h>
 
+
 #include <engine/api.h>
 #include <engine/thread.h>
 #include <engine/constants.h>
@@ -18,11 +19,13 @@ struct engine_resources;
 link_internal engine_resources *GetEngineResources();
 
 #include <engine/color.h>
+#include <engine/voxel.h>
 #include <engine/voxel_face.h>
 #include <engine/ray.h>
 #include <engine/mesh.h>
 #include <engine/world_chunk.h>
 
+#include <engine/render/gpu_timer.h>
 #include <engine/render/render_init.h>
 #include <engine/bloom.h>
 #include <engine/light.h>
