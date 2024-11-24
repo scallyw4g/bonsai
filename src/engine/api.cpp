@@ -589,11 +589,8 @@ Bonsai_Render(engine_resources *Engine)
 
   {
     layout DefaultLayout = {};
-    DefaultLayout.DrawBounds = InvertedInfinityRectangle();
-
     render_state RenderState = {};
     RenderState.Layout = &DefaultLayout;
-    RenderState.ClipRect = DISABLE_CLIPPING;
 
     SetWindowZDepths(Ui->CommandBuffer);
     FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
