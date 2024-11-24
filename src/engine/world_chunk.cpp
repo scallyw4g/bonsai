@@ -3608,8 +3608,6 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                                           b32  MakeExteriorFaces = False,
                                           v3i  NoiseBasisOffset  = {} )
 {
-  NotImplemented;
-#if 0
   /* HISTOGRAM_FUNCTION(); */
   /* TIMED_FUNCTION(); */
 
@@ -3652,94 +3650,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
 
   SyntheticChunk->FilledCount = s32(NoiseCallback( SyntheticChunk,
                                                    NoiseBasisOffset,
-                                                   NoiseParams,
-                                                   UserData ));
-
-#if 0
-#else
-  // If the chunk didn't have any voxels filled, we're done
-  if (SyntheticChunk->FilledCount)
-  {
-    Assert(SyntheticChunk->Dim == SynChunkDim);
-
-    /* MakeExteriorFaces = True; */
-    if (MakeExteriorFaces)
-    {
-      MarkBoundaryVoxels_MakeExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->Voxels, SynChunkDim, Global_ChunkApronMinDim, SynChunkDim-Global_ChunkApronMaxDim);
-    }
-    else
-    {
-      MarkBoundaryVoxels_NoExteriorFaces(SyntheticChunk->Occupancy, SyntheticChunk->xOccupancyBorder, SyntheticChunk->FaceMasks, SyntheticChunk->Voxels, SynChunkDim, {}, SynChunkDim);
-    }
-
-    Assert(DestChunk->FilledCount == 0);
-    Assert(DestChunk->Dim.x == 64);
-    Assert(DestChunk->Dim.y == 64);
-    Assert(DestChunk->Dim.z == 64);
-    RangeIterator(z, 64)
-    RangeIterator(y, 64)
-    {
-      u64 Occ = DestChunk->Occupancy[y + z*64];
-      DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
-    }
-
-    Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
-
-    // NOTE(Jesse): The DestChunk is finalized at the end of the routine
-    /* SetFlag(DestChunk, Chunk_VoxelsInitialized); */
-    FinalizeChunkInitialization(SyntheticChunk);
-
-    if (Flags & ChunkInitFlag_ComputeStandingSpots)
-    {
-      NotImplemented;
-      ComputeStandingSpots( SynChunkDim, SyntheticChunk, {{1,1,0}}, {{0,0,1}}, Global_StandingSpotDim,
-                            DestChunk->Dim, 0, &DestChunk->StandingSpots,
-                            Thread->TempMemory);
-    }
-
-    geo_u3d *TempMesh = AllocateTempMesh(Thread->TempMemory, DataType_v3_u8);
-
-    RebuildWorldChunkMesh(Thread, SyntheticChunk, {}, {}, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-    TempMesh->At = 0;
-
-    Assert( (Flags & ChunkInitFlag_GenLODs) == 0);
-
-#define FINALIZE_MESH_FOR_CHUNK(Src, Dest, Bit)                               \
-  {                                                                           \
-    auto *SrcMesh = (Src)->Meshes.E[ToIndex(Bit)];                            \
-    if (SrcMesh) {                                                            \
-      if (SrcMesh->At) {                                                      \
-        DestChunk->HasMesh = True;                                            \
-        AtomicReplaceMesh(&(Dest)->Meshes, Bit, SrcMesh, SrcMesh->Timestamp); \
-      } else {                                                                \
-        DeallocateMesh(EngineResources, SrcMesh);                             \
-      }                                                                       \
-    }                                                                         \
-  }
-
-  {
-    TIMED_NAMED_BLOCK(Chunk_Finalize);
-    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod0 );
-    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod1 );
-    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod2 );
-    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod3 );
-    FINALIZE_MESH_FOR_CHUNK(SyntheticChunk, DestChunk, MeshBit_Lod4 );
-#undef FINALIZE_MESH_FOR_CHUNK
-
-    Assert( (DestChunk->Flags & Chunk_VoxelsInitialized) == 0);
-    Assert( DestChunk->FilledCount <= s32(Volume(SyntheticChunk)));
-
-    /* if (DestChunk->WorldP == V3i(0))  { RuntimeBreak(); } */
-  }
-
-  }
-  FinalizeChunkInitialization(DestChunk);
-
-  auto Graphics = &EngineResources->Graphics;
-  Assert(Graphics->ChunksCurrentlyQueued > 0);
-  AtomicDecrement(&Graphics->ChunksCurrentlyQueued);
-#endif
-#endif
+                                                   NoiseParams, UserData ));
 }
 
 // TODO(Jesse): Remove this thnk

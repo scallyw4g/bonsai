@@ -456,6 +456,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               CompositeGameTexturesAndDisplay(Plat, Graphics);
 
+
               UiFrameEnd(&Engine->Ui);
 
 
@@ -482,8 +483,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   {
 #if BONSAI_DEBUG_SYSTEM_API
                     GetDebugState()->PushHistogramDataPoint(Timer->Ns);
-                    // NOTE(Jesse): This skips the next timer, but it'll get hit
-                    // on the next frame, so no worries ..
+                    // NOTE(Jesse): This skips the next timer, but it'll get
+                    // hit on the next frame, so no worries ..
                     RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
 #endif
                   }
