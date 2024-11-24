@@ -1349,7 +1349,7 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
 
   if (DoSelectionMasking)
   {
-    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    auto SelectionRegion = GetLevelEditor()->Selection.Region;
     SelectionRegion.Min.Offset += V3(0.0001f);
     SelectionRegion.Max.Offset -= V3(0.0001f);
     Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
@@ -1391,7 +1391,7 @@ SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectio
 
   if (DoSelectionMasking)
   {
-    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    auto SelectionRegion = GetLevelEditor()->Selection.Region;
     SelectionRegion.Min.Offset += V3(0.0001f);
     SelectionRegion.Max.Offset -= V3(0.0001f);
     Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);

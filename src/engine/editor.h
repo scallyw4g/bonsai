@@ -1116,6 +1116,24 @@ struct asset_brush_settings
 
 
 
+struct selection_region
+{
+  u32 Clicks;
+
+  // NOTE(Jesse): We need to save the first point we clicked such that we can
+  // synthetically construct the region and construct it while we're clicking
+  // on a second point.  The problem without this Base point is that we don't
+  // know if the point we clicked is the min or the max of the current box.
+  // There's probably a way to get around having this Base point, but it's not
+  // really a big deal.
+  cp Base;
+
+  rect3cp Region;
+  rect3cp PrevRegion; // Change detection
+  b32 Changed;
+
+  selection_modification_state ModState;
+};
 
 
 struct level_editor
@@ -1135,26 +1153,16 @@ struct level_editor
 
   b32 RootChunkNeedsNewMesh;
 
-  cp  MostRecentSelectionRegionMin;
-  cp  NextSelectionRegionMin;
-  cp  EditorPreviewRegionMin;
-
   u64 EngineDebugViewModeToggleBits;
 
-  /* u16 SelectedColorIndex; */
   u16 HoverColorIndex;
 
-  b32 SelectionChanged;
-  u32 SelectionClicks;
-  cp  SelectionBase;
+  selection_region Selection;
 
-  rect3cp SelectionRegion;
-  rect3cp PrevSelectionRegion; // Change detection
-                               //
   rect3cp CopyRegion;
 
   // Recorded when accel-clicking on the selection to manipulate it
-  selection_modification_state Selection;
+  /* selection_modification_state Selection; */
   selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
@@ -1185,22 +1193,20 @@ SelectionIncomplete(u32 SelectionClicks)
 link_internal void
 ResetSelection(level_editor *Editor)
 {
-  Editor->SelectionClicks = 0;
-  Editor->SelectionBase = {};
-  Editor->SelectionRegion = {};
+  Editor->Selection = {};
 }
 
 link_internal void
 ResetSelectionIfIncomplete(level_editor *Editor)
 {
-  if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
+  if (SelectionIncomplete(Editor->Selection.Clicks)) { ResetSelection(Editor); }
 }
 
 link_internal rect3
 GetSelectionRect(world *World, level_editor *Editor)
 {
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->Selection.Region.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->Selection.Region.Max);
 
   rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
   return Result;
@@ -1209,8 +1215,8 @@ GetSelectionRect(world *World, level_editor *Editor)
 link_internal v3i
 GetSelectionDim(world *World, level_editor *Editor)
 {
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->Selection.Region.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->Selection.Region.Max);
 
   v3i Result = V3i(SelectionMaxP - SelectionMinP);
   return Result;

@@ -1005,7 +1005,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
   v3i SelectionDim     = GetSelectionDim(World, Editor);
   v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
 
-  b32 ReallocChunk     = Editor->SelectionChanged || Preview->Chunk.Dim != RequiredLayerDim;
+  b32 ReallocChunk     = Editor->Selection.Changed || Preview->Chunk.Dim != RequiredLayerDim;
   b32 SettingsChanged  = !AreEqual(Settings, PrevSettings);
   b32 UpdateVoxels     = ReallocChunk || SettingsChanged;
 
@@ -1122,7 +1122,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
                                   ChunkInitFlag_Noop,
                                   UserData,
                                   True,
-                                  Settings->NoiseBasisOffset + V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())));
+                                  Settings->NoiseBasisOffset + V3i(GetAbsoluteP(Editor->Selection.Region.Min, GetWorldChunkDim())));
       } break;
     }
 
@@ -1170,7 +1170,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
   UNPACK_ENGINE_RESOURCES(Engine);
 
   PushTableStart(Ui);
-    if (SelectionComplete(Editor->SelectionClicks))
+    if (SelectionComplete(Editor->Selection.Clicks))
     {
       DoEditorUi(Ui, Window, &Layer->Type, CSz("NoiseType"), &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
@@ -1265,10 +1265,10 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
     PushNewRow(Ui);
   }
 
-  PushTableStart(Ui);
-    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Preview->Thumbnail);
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
+  /* PushTableStart(Ui); */
+    /* InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Preview->Thumbnail); */
+    /* PushNewRow(Ui); */
+  /* PushTableEnd(Ui); */
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
 }
 
@@ -1442,6 +1442,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     IsNewBrush = True;
   }
 
+  //
+  // Brush toolbar buttons
+  //
+#if 1
   {
     PushWindowStart(Ui, BrushSettingsWindow);
     memory_arena *Tran = GetTranArena();
@@ -1514,7 +1518,6 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     }
     else
     {
-
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
         NewBrush(LayeredBrush);
@@ -1557,10 +1560,117 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       }
     }
+
+    {
+      b32 ReorderUp         = False;
+      b32 ReorderDown       = False;
+      b32 Duplicate         = False;
+      b32 Delete            = False;
+      s32 EditLayerIndex = 0;
+      PushTableStart(Ui);
+      RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+      {
+        brush_layer *Layer = Layers + LayerIndex;
+        chunk_thumbnail *Preview = Previews + LayerIndex;
+
+        ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
+        if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
+        {
+          if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
+          {
+            ReorderUp = True;
+            EditLayerIndex = LayerIndex;
+          }
+
+          if (Button(Ui, CSz("Down"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
+          {
+            ReorderDown = True;
+            EditLayerIndex = LayerIndex;
+          }
+
+          if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
+          {
+            Duplicate = True;
+            EditLayerIndex = LayerIndex;
+          }
+
+          if (Button(Ui, CSz("Del"), UiId(BrushSettingsWindow, "layer_delete", Layer)))
+          {
+            Delete = True;
+            EditLayerIndex = LayerIndex;
+          }
+
+          DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
+        }
+
+        if (IsNewBrush && LayerIndex == 0)
+        {
+          SetToggleButton(Ui, ToggleId, True);
+        }
+
+        PushNewRow(Ui);
+      }
+      PushTableEnd(Ui);
+
+      if (ReorderUp)
+      {
+        if (EditLayerIndex > 0)
+        {
+          brush_layer *Layer = Layers + EditLayerIndex;
+          brush_layer Tmp = Layers[EditLayerIndex-1];
+          Layers[EditLayerIndex-1].Settings = Layer->Settings;
+          Layer->Settings = Tmp.Settings;
+        }
+      }
+
+      if (ReorderDown)
+      {
+        if (LayeredBrush->LayerCount)
+        {
+          if (EditLayerIndex < LayeredBrush->LayerCount-1)
+          {
+            brush_layer *Layer = Layers + EditLayerIndex;
+            brush_layer Tmp = Layers[EditLayerIndex+1];
+            Layers[EditLayerIndex+1].Settings = Layer->Settings;
+            Layer->Settings = Tmp.Settings;
+          }
+        }
+      }
+
+      if (Duplicate)
+      {
+        if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+        {
+          LayeredBrush->LayerCount += 1;
+
+          // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
+          RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+          {
+            Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
+          }
+        }
+      }
+
+      if (Delete)
+      {
+        if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+        {
+          // Shuffle layers backwards, overwriting EditLayerIndex
+          RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+          {
+            Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
+          }
+
+          LayeredBrush->LayerCount -= 1;
+        }
+      }
+    }
   }
+#endif
 
 
-  if (SelectionComplete(Editor->SelectionClicks))
+#if 0
+  if (SelectionComplete(Editor->Selection.Clicks))
   {
     b32 AnyChanges = False;
     RangeIterator(LayerIndex, LayeredBrush->LayerCount)
@@ -1576,6 +1686,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       Editor->MostRecentSelectionRegionMin = Editor->SelectionRegion.Min;
     }
   }
+#endif
 
 
 
@@ -1605,112 +1716,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
     }
 #endif
 
+    // NOTE(Jesse): This is old code for maintaining the world edit memory.  We
+    // no longer need this, but I'm keeping it around for a bit in case I want to
+    // read it for some reason..
+#if 0
     {
-
-      {
-        b32 ReorderUp         = False;
-        b32 ReorderDown       = False;
-        b32 Duplicate         = False;
-        b32 Delete            = False;
-        s32 EditLayerIndex = 0;
-        PushTableStart(Ui);
-        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-        {
-          brush_layer *Layer = Layers + LayerIndex;
-          chunk_thumbnail *Preview = Previews + LayerIndex;
-
-          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
-          if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
-          {
-            if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
-            {
-              ReorderUp = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Down"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
-            {
-              ReorderDown = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
-            {
-              Duplicate = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Del"), UiId(BrushSettingsWindow, "layer_delete", Layer)))
-            {
-              Delete = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
-          }
-
-          if (IsNewBrush && LayerIndex == 0)
-          {
-            SetToggleButton(Ui, ToggleId, True);
-          }
-
-          PushNewRow(Ui);
-        }
-        PushTableEnd(Ui);
-
-        if (ReorderUp)
-        {
-          if (EditLayerIndex > 0)
-          {
-            brush_layer *Layer = Layers + EditLayerIndex;
-            brush_layer Tmp = Layers[EditLayerIndex-1];
-            Layers[EditLayerIndex-1].Settings = Layer->Settings;
-            Layer->Settings = Tmp.Settings;
-          }
-        }
-
-        if (ReorderDown)
-        {
-          if (LayeredBrush->LayerCount)
-          {
-            if (EditLayerIndex < LayeredBrush->LayerCount-1)
-            {
-              brush_layer *Layer = Layers + EditLayerIndex;
-              brush_layer Tmp = Layers[EditLayerIndex+1];
-              Layers[EditLayerIndex+1].Settings = Layer->Settings;
-              Layer->Settings = Tmp.Settings;
-            }
-          }
-        }
-
-        if (Duplicate)
-        {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
-          {
-            LayeredBrush->LayerCount += 1;
-
-            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
-            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
-            {
-              Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
-            }
-          }
-        }
-
-        if (Delete)
-        {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
-          {
-            // Shuffle layers backwards, overwriting EditLayerIndex
-            RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
-            {
-              Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
-            }
-
-            LayeredBrush->LayerCount -= 1;
-          }
-        }
-      }
 
       {
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
@@ -1751,11 +1761,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
 
 
-#if 1
+#if 0
           auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
           if (LayeredBrush->SeedBrushWithSelection)
           {
-            if (SelectionComplete(Editor->SelectionClicks))
+            if (SelectionComplete(Editor->Selection.Clicks))
             {
               rect3cp GatherRegion = Editor->SelectionRegion;
               GatherRegion.Min.Offset -= V3(1);
@@ -1836,6 +1846,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 
       }
     }
+#endif
 
     PushWindowEnd(Ui, BrushSettingsWindow);
   }
@@ -1897,21 +1908,21 @@ EditWorldSelection(engine_resources *Engine)
 
   aabb_intersect_result AABBTest = {};
 
-  if (Editor->SelectionClicks)
+  if (Editor->Selection.Clicks)
   {
     r32 Thickness = 0.10f;
 
-    if (SelectionIncomplete(Editor->SelectionClicks))
+    if (SelectionIncomplete(Editor->Selection.Clicks))
     {
       if (Engine->MousedOverVoxel.Tag)
       {
         auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
         MouseP.Offset = Floor(MouseP.Offset);
 
-        cp MinP = Min(Editor->SelectionBase, MouseP);
-        cp MaxP = Max(Editor->SelectionBase, MouseP) + V3(1.f);
+        cp MinP = Min(Editor->Selection.Base, MouseP);
+        cp MaxP = Max(Editor->Selection.Base, MouseP) + V3(1.f);
         /* Assert(MinP <= MaxP); */
-        Editor->SelectionRegion = RectMinMax(MinP, MaxP);
+        Editor->Selection.Region = RectMinMax(MinP, MaxP);
       }
     }
     else
@@ -1928,23 +1939,23 @@ EditWorldSelection(engine_resources *Engine)
         {
           cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty);
 
-          v3 SelectionDim = GetDim(GetSimSpaceRect(World, Editor->SelectionRegion));
+          v3 SelectionDim = GetDim(GetSimSpaceRect(World, Editor->Selection.Region));
           v3 SelectionRad = SelectionDim / 2.f;
 
-          Editor->SelectionRegion.Min = MouseP - SelectionRad;
-          Editor->SelectionRegion.Max = MouseP + SelectionRad;
+          Editor->Selection.Region.Min = MouseP - SelectionRad;
+          Editor->Selection.Region.Max = MouseP + SelectionRad;
 
-          Canonicalize(World, &Editor->SelectionRegion.Min);
-          Canonicalize(World, &Editor->SelectionRegion.Max);
+          Canonicalize(World, &Editor->Selection.Region.Min);
+          Canonicalize(World, &Editor->Selection.Region.Max);
 
-          Truncate(&Editor->SelectionRegion.Min.Offset);
-          Truncate(&Editor->SelectionRegion.Max.Offset);
+          Truncate(&Editor->Selection.Region.Min.Offset);
+          Truncate(&Editor->Selection.Region.Max.Offset);
 
         }
       }
     }
 
-    aabb SelectionAABB = GetSimSpaceRect(World, Editor->SelectionRegion);
+    aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
     {
       if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
       {
@@ -1969,12 +1980,12 @@ EditWorldSelection(engine_resources *Engine)
           if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
           {
             v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->Selection.ClickedFace = Face;
-            Editor->Selection.ClickedP[0] = PlaneBaseP;
+            Editor->Selection.ModState.ClickedFace = Face;
+            Editor->Selection.ModState.ClickedP[0] = PlaneBaseP;
           }
         }
 
-        if (Editor->Selection.ClickedFace)
+        if (Editor->Selection.ModState.ClickedFace)
         {
           world_edit_selection_mode SelectionMode = {};
 
@@ -2007,7 +2018,7 @@ EditWorldSelection(engine_resources *Engine)
           /* Info("%S", ToString(SelectionMode)); */
           /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
 
-          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, SelectionAABB);
+          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
 
           if (!Input->LMB.Pressed)
           {
@@ -2015,8 +2026,8 @@ EditWorldSelection(engine_resources *Engine)
             rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
 
             // Make ModifiedSelection permanent
-            Editor->SelectionRegion = ProposedSelection;
-            Editor->Selection.ClickedFace = FaceIndex_None;
+            Editor->Selection.Region = ProposedSelection;
+            Editor->Selection.ModState.ClickedFace = FaceIndex_None;
           }
         }
       }
@@ -2031,17 +2042,17 @@ EditWorldSelection(engine_resources *Engine)
 
 
   // Don't fire selection changed event when dragging selection with selection edit tool
-  if (Editor->SelectionClicks != 1)
+  if (Editor->Selection.Clicks != 1)
   {
-    if (AreEqual(Editor->SelectionRegion, Editor->PrevSelectionRegion))
+    if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
     {
-      Editor->SelectionChanged = False;
+      Editor->Selection.Changed = False;
     }
     else
     {
-      Editor->SelectionChanged = True;
+      Editor->Selection.Changed = True;
     }
-    Editor->PrevSelectionRegion = Editor->SelectionRegion;
+    Editor->Selection.PrevRegion = Editor->Selection.Region;
   }
 
   return AABBTest;
@@ -2051,7 +2062,7 @@ link_internal cp
 GetSelectionCenterP(world *World, level_editor *Editor)
 {
   v3i Dim = GetSelectionDim(World, Editor);
-  cp Result = Canonicalize(World, Editor->SelectionRegion.Min + V3(Dim/2));
+  cp Result = Canonicalize(World, Editor->Selection.Region.Min + V3(Dim/2));
   return Result;
 }
 
@@ -2223,7 +2234,7 @@ DoWorldEditor(engine_resources *Engine)
   // @selection_changed_flag
   //
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
-  aabb SelectionAABB = GetSimSpaceRect(World, Editor->SelectionRegion);
+  aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
 
   ui_toggle_button_group WorldEditToolButtonGroup = {};
   ui_toggle_button_group WorldEditModeButtonGroup = {};
@@ -2441,7 +2452,7 @@ DoWorldEditor(engine_resources *Engine)
               }
 
               chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Occupancy, Chunk->xOccupancyBorder, Chunk->FaceMasks, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
+              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->Selection.Region.Min) - V3i(1) };
 
               world_edit_shape Shape =
               {
@@ -2458,22 +2469,22 @@ DoWorldEditor(engine_resources *Engine)
       case WorldEdit_Tool_Select:
       {
         if (Input->LMB.Clicked)
-        { switch (Editor->SelectionClicks)
+        { switch (Editor->Selection.Clicks)
           {
             case 0:
             {
               if (Engine->MousedOverVoxel.Tag)
               {
-                Editor->SelectionClicks += 1;
+                Editor->Selection.Clicks += 1;
                 auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
                 MouseP.Offset = Floor(MouseP.Offset);
-                Editor->SelectionBase = MouseP;
+                Editor->Selection.Base = MouseP;
               }
             } break;
 
             case 1:
             {
-              Editor->SelectionClicks += 1;
+              Editor->Selection.Clicks += 1;
 
               if (Editor->PreviousTool)
               {
@@ -2591,11 +2602,11 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
 
-  if (Editor->SelectionClicks == 2)
+  if (Editor->Selection.Clicks == 2)
   {
     if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
 
-    if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
+    if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->Selection.Region; }
 
     if (Input->Ctrl.Pressed && Input->V.Clicked)
     {
@@ -2612,7 +2623,7 @@ DoWorldEditor(engine_resources *Engine)
       D.Dim = V3i(CopyDim);
       D.Voxels = V;
 
-      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
+      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->Selection.Region.Min) };
 
       world_edit_shape Shape =
       {
@@ -2623,12 +2634,19 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
+  if (Editor->Selection.Changed)
+  {
+    Info("Changed");
+  }
+
+
+
 #if VOXEL_DEBUG_COLOR
   {
     cp DebugVoxel = {};
-    if (Editor->SelectionClicks > 0)
+    if (Editor->Selection.Clicks > 0)
     {
-      DebugVoxel = Editor->SelectionRegion.Min;
+      DebugVoxel = Editor->Selection.Region.Min;
     }
     else if (Engine->MousedOverVoxel.Tag)
     {
@@ -2668,7 +2686,7 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
           layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
           Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin) - V3i(1);
+          Basis = V3(SmallestMinOffset) - V3i(1);
         } break;
 
         default: {} break;

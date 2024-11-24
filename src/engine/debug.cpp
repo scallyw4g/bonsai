@@ -517,7 +517,7 @@ DoAssetWindow(engine_resources *Engine)
         cs NewAssetFromSelectionFilename = CS(Engine->Editor.NewAssetFromSelectionFilename);
         Engine->Editor.NewAssetFromSelection = False;
 
-        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->Selection.Region, GetTranArena());
 
         cs SaveName = {};
         if (EndsWith(NewAssetFromSelectionFilename, CSz(".chunk")))
