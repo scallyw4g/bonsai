@@ -563,11 +563,11 @@ poof(serdes_struct(brush_settings))
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 
-poof(serdes_struct(layered_brush_editor_0))
-#include <generated/serdes_struct_layered_brush_editor_0.h>
-poof(serdes_struct(layered_brush_editor_1))
-#include <generated/serdes_struct_layered_brush_editor_1.h>
-poof(serdes_struct(layered_brush_editor_2))
-#include <generated/serdes_struct_layered_brush_editor_2.h>
-poof(serdes_struct(layered_brush_editor))
-#include <generated/serdes_struct_layered_brush_editor.h>
+poof(serdes_struct(layered_brush_0))
+#include <generated/serdes_struct_layered_brush_0.h>
+poof(serdes_struct(layered_brush_1))
+#include <generated/serdes_struct_layered_brush_1.h>
+poof(serdes_struct(layered_brush_2))
+#include <generated/serdes_struct_layered_brush_2.h>
+poof(serdes_struct(layered_brush))
+#include <generated/serdes_struct_layered_brush.h>

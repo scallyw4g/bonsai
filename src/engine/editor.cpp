@@ -32,10 +32,10 @@ InitEditor(level_editor *Editor)
 
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
-    Editor->LayeredBrushEditor.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+    Editor->LayeredBrush.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
   }
-  Editor->LayeredBrushEditor.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
-  Editor->LayeredBrushEditor.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  Editor->LayeredBrush.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+  Editor->LayeredBrush.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
 
   return Result;
 }
@@ -349,8 +349,8 @@ poof(do_editor_ui_for_compound_type(noise_layer))
 poof(do_editor_ui_for_compound_type(brush_layer))
 #include <generated/do_editor_ui_for_compound_type_brush_layer.h>
 
-poof(do_editor_ui_for_compound_type(layered_brush_editor))
-#include <generated/do_editor_ui_for_compound_type_layered_brush_editor.h>
+poof(do_editor_ui_for_compound_type(layered_brush))
+#include <generated/do_editor_ui_for_compound_type_layered_brush.h>
 
 
 link_internal void
@@ -1348,7 +1348,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 }
 
 link_internal v3i
-GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim)
+GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim)
 {
   v3i SmallestMinOffset = V3i(s32_MAX);
 
@@ -1385,7 +1385,7 @@ GetFilenameForBrush(cs Name, s32 Version = 0)
 }
 
 link_internal void
-SaveBrush(layered_brush_editor *LayeredBrush, const char *FilenameZ)
+SaveBrush(layered_brush *LayeredBrush, const char *FilenameZ)
 {
   u8_cursor_block_array OutputStream = BeginSerialization();
   Serialize(&OutputStream, LayeredBrush);
@@ -1406,7 +1406,7 @@ SaveBrush(layered_brush_editor *LayeredBrush, const char *FilenameZ)
 
 
 link_internal void
-NewBrush(layered_brush_editor *LayeredBrush)
+NewBrush(layered_brush *LayeredBrush)
 {
   cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
   brush_layer *Layers =  LayeredBrush->Layers;
@@ -1429,7 +1429,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
+  layered_brush *LayeredBrush = &Editor->LayeredBrush;
   brush_layer          *Layers             =  LayeredBrush->Layers;
   chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
 
@@ -1501,10 +1501,10 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       {
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
+        if (Deserialize(&Bytes, &Editor->LayeredBrush, Tran) == False)
         {
           SoftError("While deserializing brush (%S).", Filename);
-          Editor->LayeredBrushEditor = {};
+          Editor->LayeredBrush = {};
         }
         FinalizeDeserialization(&Bytes);
 
@@ -1703,14 +1703,14 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
           world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
           chunk_thumbnail *SeedPreview = &LayeredBrush->SeedLayer;
         if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &SeedPreview->Thumbnail, &SeedChunk->Meshes, V3(SeedChunk->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
+        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "seed preview interaction", &Editor->LayeredBrush.SeedLayer.Thumbnail);
         PushNewRow(Ui);
       PushTableEnd(Ui);
 
       PushTableStart(Ui);
         world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
         if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, V3(Root_LayeredBrushPreview->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
+        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "root preview interaction", &Editor->LayeredBrush.Preview.Thumbnail);
         PushNewRow(Ui);
       PushTableEnd(Ui);
     }
@@ -1932,7 +1932,7 @@ EditWorldSelection(engine_resources *Engine)
 
     if (CurrentToolIs(Editor, WorldEdit_Tool_Brush, WorldEdit_BrushType_Layered))
     {
-      layered_brush_editor *Brush = &Editor->LayeredBrushEditor;
+      layered_brush *Brush = &Editor->LayeredBrush;
       if (Brush->BrushFollowsCursor)
       {
         if (Engine->MousedOverVoxel.Tag)
@@ -2094,7 +2094,7 @@ GetEditModeForSelectedTool(level_editor *Editor)
         case WorldEdit_BrushType_Entity:   {} break;
         case WorldEdit_BrushType_Single:   { Result = Editor->SingleBrush.Mode; } break;
         case WorldEdit_BrushType_Asset:    { Result = Editor->AssetBrush.Mode;  } break;
-        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrushEditor.Mode;} break;
+        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrush.Mode;} break;
       }
     } break;
   }
@@ -2442,12 +2442,12 @@ DoWorldEditor(engine_resources *Engine)
             if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
             {
               v3i Offset = V3i(s32_MAX);
-              world_chunk *Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
+              world_chunk *Chunk = &Editor->LayeredBrush.Preview.Chunk;
 
               // TODO(Jesse): Call GetSmallestMinOffset here
-              RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
+              RangeIterator(LayerIndex, Editor->LayeredBrush.LayerCount)
               {
-                brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
+                brush_layer *Layer = Editor->LayeredBrush.Layers + LayerIndex;
                 Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
@@ -2459,7 +2459,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrush.Mode, Editor->LayeredBrush.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrush.SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2683,9 +2683,9 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
       {
         case WorldEdit_BrushType_Layered:
         {
-          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
-          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
-          Chunk = &LayeredBrushEditor->Preview.Chunk;
+          layered_brush *LayeredBrush = &Editor->LayeredBrush;
+          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush);
+          Chunk = &LayeredBrush->Preview.Chunk;
           Basis = V3(SmallestMinOffset) - V3i(1);
         } break;
 

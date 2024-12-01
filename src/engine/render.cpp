@@ -1620,7 +1620,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   shadow_render_group *SG = Graphics->SG;
 
-  SetupShadowMapShader(Graphics, ShadowMapResolution, Editor->LayeredBrushEditor.SeedBrushWithSelection);
+  SetupShadowMapShader(Graphics, ShadowMapResolution, Editor->LayeredBrush.SeedBrushWithSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */

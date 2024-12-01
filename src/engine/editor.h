@@ -1009,7 +1009,7 @@ struct brush_layer
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
 #define BRUSH_PREVIEW_TEXTURE_DIM 256
-struct layered_brush_editor poof(@version(3))
+struct layered_brush poof(@version(3))
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
@@ -1019,7 +1019,7 @@ struct layered_brush_editor poof(@version(3))
   // because the deserialization code isn't smart enough to not stomp on the
   // texture handles when it marshals old types to the current one.
               s32 LayerCount;
-      brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+      brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
   chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
 
   chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value
@@ -1035,7 +1035,7 @@ struct layered_brush_editor poof(@version(3))
   chunk_thumbnail Preview; poof(@no_serialize)
 };
 
-struct layered_brush_editor_2
+struct layered_brush_2
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
@@ -1051,7 +1051,7 @@ struct layered_brush_editor_2
 };
 
 
-struct layered_brush_editor_1
+struct layered_brush_1
 {
   char NameBuf[NameBuf_Len];
 
@@ -1064,7 +1064,7 @@ struct layered_brush_editor_1
   chunk_thumbnail Preview; poof(@no_serialize)
 };
 
-struct layered_brush_editor_0
+struct layered_brush_0
 {
   s32 LayerCount = 1;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
@@ -1074,24 +1074,24 @@ struct layered_brush_editor_0
 };
 
 link_internal void
-Marshal(layered_brush_editor_2 *Stored, layered_brush_editor *Live)
+Marshal(layered_brush_2 *Stored, layered_brush *Live)
 {
-  poof(default_marshal(layered_brush_editor_2))
-#include <generated/default_marshal_layered_brush_editor_2.h>
+  poof(default_marshal(layered_brush_2))
+#include <generated/default_marshal_layered_brush_2.h>
 }
 
 link_internal void
-Marshal(layered_brush_editor_1 *Stored, layered_brush_editor *Live)
+Marshal(layered_brush_1 *Stored, layered_brush *Live)
 {
-  poof(default_marshal(layered_brush_editor_1))
-#include <generated/default_marshal_layered_brush_editor_1.h>
+  poof(default_marshal(layered_brush_1))
+#include <generated/default_marshal_layered_brush_1.h>
 }
 
 link_internal void
-Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
+Marshal(layered_brush_0 *Stored, layered_brush *Live)
 {
-  poof(default_marshal(layered_brush_editor_0))
-#include <generated/default_marshal_layered_brush_editor_0.h>
+  poof(default_marshal(layered_brush_0))
+#include <generated/default_marshal_layered_brush_0.h>
 }
 
 
@@ -1116,6 +1116,9 @@ struct asset_brush_settings
 
 
 
+// NOTE(Jesse): This isn't really meant to be used outside the the level_editor
+// I just packed all the things together such that it's a bit more obvious
+// they're all for doing the selection
 struct selection_region
 {
   u32 Clicks;
@@ -1135,6 +1138,15 @@ struct selection_region
   selection_modification_state ModState;
 };
 
+struct world_edit
+{
+  cs ShaderName;
+  rect3cp Region;
+};
+
+poof(block_array(world_edit, {128}))
+#include <generated/block_array_world_edit_688735882.h>
+
 
 struct level_editor
 {
@@ -1147,7 +1159,7 @@ struct level_editor
 
   single_brush_settings SingleBrush;
   asset_brush_settings  AssetBrush;
-  layered_brush_editor  LayeredBrushEditor;
+  layered_brush  LayeredBrush;
 
   b8 SelectionFollowsCursor;
 
@@ -1170,7 +1182,7 @@ struct level_editor
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
 
-  /* v3 HSVColorSelection = {{0.f, 0.8f, 0.5f}}; */
+  world_edit_block_array WorldEdits;
 };
 
 
@@ -1235,7 +1247,7 @@ link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);
 
 link_internal v3i
-GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
+GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);
 
 link_internal void
 DrawEditorPreview(engine_resources *Engine, shader *Shader);
