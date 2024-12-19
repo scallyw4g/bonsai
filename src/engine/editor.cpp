@@ -1500,14 +1500,15 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
       if (ClickedFileNode.Tag)
       {
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
-#if 1
+#if 0
         NotImplemented;
 #else
+        Assert(Editor->Brush.Type == WorldEdit_BrushType_Layered);
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->Brush, Tran) == False)
+        if (Deserialize(&Bytes, &Editor->Brush.Layered, Tran) == False)
         {
           SoftError("While deserializing brush (%S).", Filename);
-          Editor->LayeredBrush = {};
+          Editor->Brush = {};
         }
         FinalizeDeserialization(&Bytes);
 #endif
