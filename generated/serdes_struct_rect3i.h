@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, rect3i *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,13 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, rect3i *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     rect3i *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Min);
+    Result &= Serialize(Bytes, &Element->Min); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Max);
+
+    Result &= Serialize(Bytes, &Element->Max); // default
 
     
 

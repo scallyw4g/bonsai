@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, vertex_material *BaseElement, umm Count 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,19 +34,21 @@ Serialize(u8_cursor_block_array *Bytes, vertex_material *BaseElement, umm Count 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vertex_material *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->ColorIndex);
+    Result &= Serialize(Bytes, &Element->ColorIndex); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Transparency);
+
+    Result &= Serialize(Bytes, &Element->Transparency); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Emission);
+
+    Result &= Serialize(Bytes, &Element->Emission); // default
 
     
 

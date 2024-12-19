@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:519:0
+// src/engine/serdes.cpp:522:0
 
 link_internal bonsai_type_info
 TypeInfo(level_header *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -37,43 +37,49 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
   RangeIterator_t(umm, ElementIndex, Count)
   {
     level_header *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->ChunkCount);
+    Result &= Serialize(Bytes, &Element->ChunkCount); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->EntityCount);
+
+    Result &= Serialize(Bytes, &Element->EntityCount); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->WorldFlags);
+
+    Result &= Serialize(Bytes, &Element->WorldFlags); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->WorldCenter);
+
+    Result &= Serialize(Bytes, &Element->WorldCenter); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->VisibleRegion);
+
+    Result &= Serialize(Bytes, &Element->VisibleRegion); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Camera);
+
+    Result &= Serialize(Bytes, &Element->Camera); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->RenderSettings);
+
+    Result &= Serialize(Bytes, &Element->RenderSettings); // default
 
     
 

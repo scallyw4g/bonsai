@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:440:0
+// src/engine/serdes.cpp:443:0
 
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -37,126 +37,145 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     render_settings *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->UseSsao);
+    Result &= Serialize(Bytes, &Element->UseSsao); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->UseShadowMapping);
 
+    Result &= Serialize(Bytes, &Element->UseShadowMapping); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->UseLightingBloom);
 
 
+    Result &= Serialize(Bytes, &Element->UseLightingBloom); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->BravoilMyersOIT);
 
 
 
+    Result &= Serialize(Bytes, &Element->BravoilMyersOIT); // default
 
 
-    Result &= Serialize(Bytes, &Element->BravoilMcGuireOIT);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->BravoilMcGuireOIT); // default
 
-    Result &= Serialize(Bytes, &Element->DrawMajorGrid);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DrawMinorGrid);
+    Result &= Serialize(Bytes, &Element->DrawMajorGrid); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->MajorGridDim);
 
+    Result &= Serialize(Bytes, &Element->DrawMinorGrid); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DrawCameraGhost);
 
 
+    Result &= Serialize(Bytes, &Element->MajorGridDim); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->CameraGhostSize);
 
 
 
+    Result &= Serialize(Bytes, &Element->DrawCameraGhost); // default
 
 
-    Result &= Serialize(Bytes, &Element->OffsetOfWorldCenterToGrid);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->CameraGhostSize); // default
 
-    Result &= Serialize(Bytes, &Element->Headless);
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType);
+    Result &= Serialize(Bytes, &Element->OffsetOfWorldCenterToGrid); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->GameCameraFOV);
 
 
+    Result &= Serialize(Bytes, &Element->Headless); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->Lighting);
 
 
 
+    Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType); // enum
 
 
-    Result &= Serialize(Bytes, &Element->ApplicationResolution);
 
 
+    Result &= Serialize(Bytes, &Element->GameCameraFOV); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->ShadowMapResolution);
 
 
 
+    Result &= Serialize(Bytes, &Element->Lighting); // default
 
 
-    Result &= Serialize(Bytes, &Element->LuminanceMapResolution);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->ApplicationResolution); // default
 
-    Result &= Serialize(Bytes, &Element->iApplicationResolution);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->iShadowMapResolution);
+    Result &= Serialize(Bytes, &Element->ShadowMapResolution); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->iLuminanceMapResolution);
+
+    Result &= Serialize(Bytes, &Element->LuminanceMapResolution); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iApplicationResolution); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iShadowMapResolution); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->iLuminanceMapResolution); // default
 
     
 

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:352:0
+// src/engine/serdes.cpp:355:0
 
 link_internal bonsai_type_info
 TypeInfo(entity_1 *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,49 +34,57 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     entity_1 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Id);
+    Result &= Serialize(Bytes, &Element->Id); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->P);
+
+    Result &= Serialize(Bytes, &Element->P); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->EulerAngles);
+
+    Result &= Serialize(Bytes, &Element->EulerAngles); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Scale);
+
+    Result &= Serialize(Bytes, &Element->Scale); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius);
+
+    Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Physics);
+
+    Result &= Serialize(Bytes, &Element->Physics); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->AssetId);
+
+    Result &= Serialize(Bytes, &Element->AssetId); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ModelIndex);
+
+    Result &= Serialize(Bytes, &Element->ModelIndex); // default
+
 
 
 
@@ -87,23 +95,25 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->State);
+    Result &= Serialize(Bytes, (u32*)&Element->State); // enum
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Behavior);
+    Result &= Serialize(Bytes, (u32*)&Element->Behavior); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Carrying);
+    Result &= Serialize(Bytes, &Element->Carrying); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->UserType);
+
+    Result &= Serialize(Bytes, &Element->UserType); // default
+
 
 
 

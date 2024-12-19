@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:537:0
+// src/engine/serdes.cpp:540:0
 
 link_internal bonsai_type_info
 TypeInfo(white_noise_params *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Cou
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,7 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Cou
   RangeIterator_t(umm, ElementIndex, Count)
   {
     white_noise_params *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Threshold);
+    Result &= Serialize(Bytes, &Element->Threshold); // default
 
     
 

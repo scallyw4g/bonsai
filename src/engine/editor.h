@@ -775,7 +775,7 @@ struct world_edit_shape
   };
 };
 
-struct world_edit_brush
+struct world_edit_brush_constraints
 {
   world_edit_shape         Shape;
 
@@ -793,7 +793,7 @@ struct world_edit_brush
   /* v3 SimFloodOrigin; */
 };
 
-poof(do_editor_ui_for_compound_type(world_edit_brush))
+poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 #include <generated/do_editor_ui_for_compound_type_world_edit_brush.h>
 
 
@@ -1099,13 +1099,13 @@ Marshal(layered_brush_0 *Stored, layered_brush *Live)
 
 
 
-struct single_brush_settings
+struct single_brush
 {
   world_edit_mode Mode;
 };
 
 
-struct asset_brush_settings
+struct asset_brush
 {
   world_edit_mode Mode;
   world_edit_mode_modifier Modifier;
@@ -1138,10 +1138,23 @@ struct selection_region
   selection_modification_state ModState;
 };
 
+
+
 struct world_edit
 {
-  cs ShaderName;
   rect3cp Region;
+
+  world_edit_shape         Shape;
+  world_edit_mode          Mode;
+  world_edit_mode_modifier Modifier;
+
+  world_edit_brush_type Type;
+  union
+  {
+    single_brush  Single;
+    asset_brush   Asset;
+    layered_brush Layered;
+  };
 };
 
 poof(block_array(world_edit, {128}))
@@ -1152,14 +1165,10 @@ struct level_editor
 {
   memory_arena *Memory;
 
-  world_edit_tool       Tool;
-  world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
+  world_edit_tool Tool;
+  world_edit_tool PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
 
-  world_edit_brush_type BrushType;
-
-  single_brush_settings SingleBrush;
-  asset_brush_settings  AssetBrush;
-  layered_brush  LayeredBrush;
+  world_edit Brush;
 
   b8 SelectionFollowsCursor;
 
@@ -1181,6 +1190,8 @@ struct level_editor
 
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
+
+  b32 MaskSelection;
 
   world_edit_block_array WorldEdits;
 };

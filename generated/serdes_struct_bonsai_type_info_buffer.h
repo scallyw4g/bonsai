@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:451:0
+// src/engine/serdes.cpp:454:0
 
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, um
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,7 +34,8 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, um
   RangeIterator_t(umm, ElementIndex, Count)
   {
     bonsai_type_info_buffer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Count);
+    Result &= Serialize(Bytes, &Element->Count); // default
+
 
 
 

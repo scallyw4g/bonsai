@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:568:0
+// src/engine/serdes.cpp:571:0
 
 link_internal bonsai_type_info
 TypeInfo(layered_brush_1 *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_1 *BaseElement, umm Count 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -44,7 +44,8 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_1 *BaseElement, umm Count 
 
 
 
-    Result &= Serialize(Bytes, &Element->LayerCount);
+    Result &= Serialize(Bytes, &Element->LayerCount); // default
+
 
 
 
@@ -61,13 +62,15 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_1 *BaseElement, umm Count 
 
 
 
-    Result &= Serialize(Bytes, &Element->SeedBrushWithSelection);
+    Result &= Serialize(Bytes, &Element->SeedBrushWithSelection); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->BrushFollowsCursor);
+
+    Result &= Serialize(Bytes, &Element->BrushFollowsCursor); // default
+
 
 
 

@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,7 +34,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_chunk_0 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Dim);
+    Result &= Serialize(Bytes, &Element->Dim); // default
+
 
 
 
@@ -50,7 +51,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 
 
 
-    Result &= Serialize(Bytes, &Element->WorldP);
+    Result &= Serialize(Bytes, &Element->WorldP); // default
+
 
 
 

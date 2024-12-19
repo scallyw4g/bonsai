@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:290:0
+// src/engine/serdes.cpp:293:0
 
 link_internal bonsai_type_info
 TypeInfo(vox_data *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;

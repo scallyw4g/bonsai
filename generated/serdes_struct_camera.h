@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -37,73 +37,84 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     camera *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Frust);
+    Result &= Serialize(Bytes, &Element->Frust); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->CurrentP);
+
+    Result &= Serialize(Bytes, &Element->CurrentP); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->RenderSpacePosition);
+
+    Result &= Serialize(Bytes, &Element->RenderSpacePosition); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->TargetPitch);
+
+    Result &= Serialize(Bytes, &Element->TargetPitch); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->TargetRoll);
+
+    Result &= Serialize(Bytes, &Element->TargetRoll); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->TargetYaw);
+
+    Result &= Serialize(Bytes, &Element->TargetYaw); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->TargetDistanceFromTarget);
+
+    Result &= Serialize(Bytes, &Element->TargetDistanceFromTarget); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Blend);
+
+    Result &= Serialize(Bytes, &Element->Blend); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Front);
+
+    Result &= Serialize(Bytes, &Element->Front); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Right);
+
+    Result &= Serialize(Bytes, &Element->Right); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Up);
+
+    Result &= Serialize(Bytes, &Element->Up); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->GhostId);
+
+    Result &= Serialize(Bytes, &Element->GhostId); // default
 
     
 

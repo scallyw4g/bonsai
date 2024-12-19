@@ -271,6 +271,9 @@ poof(serdes_struct(rect3))
 poof(serdes_struct(rect3i))
 #include <generated/serdes_struct_rect3i.h>
 
+poof(serdes_struct(rect3cp))
+#include <generated/serdes_struct_rect3cp.h>
+
 poof(serdes_struct(random_series))
 #include <generated/serdes_struct_random_series.h>
 
@@ -571,3 +574,9 @@ poof(serdes_struct(layered_brush_2))
 #include <generated/serdes_struct_layered_brush_2.h>
 poof(serdes_struct(layered_brush))
 #include <generated/serdes_struct_layered_brush.h>
+
+/* poof(serdes_dunion(world_edit_shape)) */
+/* #include <generated/serdes_struct_world_edit_shape.h> */
+
+/* poof(serdes_struct(world_edit)) */
+/* #include <generated/serdes_struct_world_edit.h> */

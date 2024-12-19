@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:403:0
+// src/engine/serdes.cpp:406:0
 
 link_internal bonsai_type_info
 TypeInfo(lighting_settings *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -37,73 +37,84 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
   RangeIterator_t(umm, ElementIndex, Count)
   {
     lighting_settings *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->AutoDayNightCycle);
+    Result &= Serialize(Bytes, &Element->AutoDayNightCycle); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->tDay);
+
+    Result &= Serialize(Bytes, &Element->tDay); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SunP);
+
+    Result &= Serialize(Bytes, &Element->SunP); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DawnIntensity);
+
+    Result &= Serialize(Bytes, &Element->DawnIntensity); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DawnColor);
+
+    Result &= Serialize(Bytes, &Element->DawnColor); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SunIntensity);
+
+    Result &= Serialize(Bytes, &Element->SunIntensity); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SunColor);
+
+    Result &= Serialize(Bytes, &Element->SunColor); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DuskIntensity);
+
+    Result &= Serialize(Bytes, &Element->DuskIntensity); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->DuskColor);
+
+    Result &= Serialize(Bytes, &Element->DuskColor); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->MoonIntensity);
+
+    Result &= Serialize(Bytes, &Element->MoonIntensity); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->MoonColor);
+
+    Result &= Serialize(Bytes, &Element->MoonColor); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->CurrentSunColor);
+
+    Result &= Serialize(Bytes, &Element->CurrentSunColor); // default
 
     
 

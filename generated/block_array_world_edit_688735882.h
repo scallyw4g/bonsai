@@ -1,4 +1,4 @@
-// src/engine/editor.h:1147:0
+// src/engine/editor.h:1160:0
 
 struct world_edit_block
 {

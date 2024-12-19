@@ -74,53 +74,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
       DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_brush_type*,&Element->BrushType),
-        CSz("BrushType"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(single_brush_settings*,&Element->SingleBrush),
-        CSz("SingleBrush"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_brush_settings*,&Element->AssetBrush),
-        CSz("AssetBrush"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(layered_brush*,&Element->LayeredBrush),
-        CSz("LayeredBrush"),
+        Cast(world_edit*,&Element->Brush),
+        CSz("Brush"),
         Params
         );
 
@@ -278,6 +233,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
+
+
+
+      PushNewRow(Ui);
+
+      DoEditorUi(Ui,
+        Window,
+        Cast(b8*,&Element->MaskSelection),
+        CSz("MaskSelection"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
 
 
 

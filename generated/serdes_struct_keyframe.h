@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, keyframe *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,13 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, keyframe *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     keyframe *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->tEnd);
+    Result &= Serialize(Bytes, &Element->tEnd); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Value);
+
+    Result &= Serialize(Bytes, &Element->Value); // default
 
     
 

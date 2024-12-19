@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:299:0
+// src/engine/serdes.cpp:302:0
 
 link_internal bonsai_type_info
 TypeInfo(file_traversal_node *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, file_traversal_node *BaseElement, umm Co
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,18 +34,19 @@ Serialize(u8_cursor_block_array *Bytes, file_traversal_node *BaseElement, umm Co
   RangeIterator_t(umm, ElementIndex, Count)
   {
     file_traversal_node *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
+    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Dir);
+    Result &= Serialize(Bytes, &Element->Dir); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Name);
+
+    Result &= Serialize(Bytes, &Element->Name); // default
 
     
 

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:547:0
+// src/engine/serdes.cpp:550:0
 
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_rect *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,7 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_rect *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Region);
+    Result &= Serialize(Bytes, &Element->Region); // default
 
     
 

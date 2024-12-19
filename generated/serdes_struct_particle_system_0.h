@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:284:0
+// src/engine/serdes.cpp:287:0
 
 link_internal bonsai_type_info
 TypeInfo(particle_system_0 *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, particle_system_0 *BaseElement, umm Coun
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,126 +34,146 @@ Serialize(u8_cursor_block_array *Bytes, particle_system_0 *BaseElement, umm Coun
   RangeIterator_t(umm, ElementIndex, Count)
   {
     particle_system_0 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Entropy);
+    Result &= Serialize(Bytes, &Element->Entropy); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
 
+    Result &= Serialize(Bytes, (u32*)&Element->SpawnType); // enum
 
 
 
-    Result &= Serialize(Bytes, &Element->Drag);
 
+    Result &= Serialize(Bytes, &Element->Drag); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Lifetime);
 
 
+    Result &= Serialize(Bytes, &Element->Lifetime); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->EmissionDelay);
 
 
 
+    Result &= Serialize(Bytes, &Element->EmissionDelay); // default
 
 
-    Result &= Serialize(Bytes, &Element->EmissionLifespan);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->EmissionLifespan); // default
 
-    Result &= Serialize(Bytes, &Element->ActiveParticles);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->LifespanMod);
+    Result &= Serialize(Bytes, &Element->ActiveParticles); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLifespan);
 
+    Result &= Serialize(Bytes, &Element->LifespanMod); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
 
 
+    Result &= Serialize(Bytes, &Element->ParticleLifespan); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLightEmission);
 
 
 
+    Result &= Serialize(Bytes, &Element->ParticlesPerSecond); // default
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->ParticleLightEmission); // default
 
-    Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
+    Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleStartingDim);
 
+    Result &= Serialize(Bytes, &Element->ParticleStartingTransparency); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleEndingDim);
 
 
+    Result &= Serialize(Bytes, &Element->ParticleEndingTransparency); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleTurbMin);
 
 
 
+    Result &= Serialize(Bytes, &Element->ParticleStartingDim); // default
 
 
-    Result &= Serialize(Bytes, &Element->ParticleTurbMax);
 
 
 
 
+    Result &= Serialize(Bytes, &Element->ParticleEndingDim); // default
 
-    Result &= Serialize(Bytes, &Element->SpawnRegion);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
+    Result &= Serialize(Bytes, &Element->ParticleTurbMin); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
+
+    Result &= Serialize(Bytes, &Element->ParticleTurbMax); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->SpawnRegion); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->SystemMovementCoefficient); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission); // default
+
 
 
 

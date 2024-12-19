@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:543:0
+// src/engine/serdes.cpp:546:0
 
 link_internal bonsai_type_info
 TypeInfo(noise_layer_0 *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count = 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,18 +34,19 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count = 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     noise_layer_0 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
+    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Perlin);
+    Result &= Serialize(Bytes, &Element->Perlin); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Voronoi);
+
+    Result &= Serialize(Bytes, &Element->Voronoi); // default
 
     
 

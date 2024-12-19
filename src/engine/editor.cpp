@@ -30,12 +30,12 @@ InitEditor(level_editor *Editor)
 
   Editor->AssetThumbnails.Memory = Editor->Memory;
 
-  RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
-  {
-    Editor->LayeredBrush.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
-  }
-  Editor->LayeredBrush.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
-  Editor->LayeredBrush.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+/*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
+/*   { */
+/*     Editor->LayeredBrush.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
+/*   } */
+/*   Editor->LayeredBrush.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
+/*   Editor->LayeredBrush.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
 
   return Result;
 }
@@ -1425,11 +1425,11 @@ NewBrush(layered_brush *LayeredBrush)
 }
 
 link_internal void
-BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
+BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBrush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  layered_brush *LayeredBrush = &Editor->LayeredBrush;
+  /* layered_brush *LayeredBrush = &Editor->LayeredBrush; */
   brush_layer          *Layers             =  LayeredBrush->Layers;
   chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
 
@@ -1500,13 +1500,17 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
       if (ClickedFileNode.Tag)
       {
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
+#if 1
+        NotImplemented;
+#else
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->LayeredBrush, Tran) == False)
+        if (Deserialize(&Bytes, &Editor->Brush, Tran) == False)
         {
           SoftError("While deserializing brush (%S).", Filename);
           Editor->LayeredBrush = {};
         }
         FinalizeDeserialization(&Bytes);
+#endif
 
         // NOTE(Jesse): This has to happen after deserialization cause some
         // brushes got saved out with a name, which gets read back in..
@@ -1878,7 +1882,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
 
         case WorldEdit_BrushType_Layered:
         {
-          BrushSettingsForLayeredBrush(Engine, &Window);
+          BrushSettingsForLayeredBrush(Engine, &Engine->Editor.Brush.Layered, &Window);
         } break;
 
       }
@@ -1895,7 +1899,7 @@ CurrentToolIs(level_editor *Editor, world_edit_tool Tool, world_edit_brush_type 
     Result = True;
     if (Editor->Tool == WorldEdit_Tool_Brush)
     {
-      Result = (Editor->BrushType == BrushType);
+      Result = (Editor->Brush.Type == BrushType);
     }
   }
   return Result;
@@ -1932,7 +1936,7 @@ EditWorldSelection(engine_resources *Engine)
 
     if (CurrentToolIs(Editor, WorldEdit_Tool_Brush, WorldEdit_BrushType_Layered))
     {
-      layered_brush *Brush = &Editor->LayeredBrush;
+      layered_brush *Brush = &Editor->Brush.Layered;
       if (Brush->BrushFollowsCursor)
       {
         if (Engine->MousedOverVoxel.Tag)
@@ -2088,13 +2092,13 @@ GetEditModeForSelectedTool(level_editor *Editor)
 
     case WorldEdit_Tool_Brush:
     {
-      switch(Editor->BrushType)
+      switch(Editor->Brush.Type)
       {
         case WorldEdit_BrushType_Disabled: {} break;
         case WorldEdit_BrushType_Entity:   {} break;
-        case WorldEdit_BrushType_Single:   { Result = Editor->SingleBrush.Mode; } break;
-        case WorldEdit_BrushType_Asset:    { Result = Editor->AssetBrush.Mode;  } break;
-        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrush.Mode;} break;
+        case WorldEdit_BrushType_Single:   { Result = Editor->Brush.Single.Mode; } break;
+        case WorldEdit_BrushType_Asset:    { Result = Editor->Brush.Asset.Mode;  } break;
+        case WorldEdit_BrushType_Layered:  { Result = Editor->Brush.Layered.Mode;} break;
       }
     } break;
   }
@@ -2259,7 +2263,7 @@ DoWorldEditor(engine_resources *Engine)
       {
         Params.RelativePosition.Position   = Position_RightOf;
         Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->BrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
+        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Brush.Type, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
 
@@ -2316,7 +2320,7 @@ DoWorldEditor(engine_resources *Engine)
 
       case WorldEdit_Tool_Brush:
       {
-        switch (Editor->BrushType)
+        switch (Editor->Brush.Type)
         {
           case WorldEdit_BrushType_Disabled:
           {} break;
@@ -2355,16 +2359,16 @@ DoWorldEditor(engine_resources *Engine)
                           Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
                         };
 
-                        if (Editor->BrushType == WorldEdit_BrushType_Asset)
+                        if (Editor->Brush.Type == WorldEdit_BrushType_Asset)
                         {
                           world_edit_shape Shape =
                           {
                             type_world_update_op_shape_params_asset,
                             .world_update_op_shape_params_asset = AssetUpdateShape,
                           };
-                          QueueWorldUpdateForRegion(Engine, Editor->AssetBrush.Mode, Editor->AssetBrush.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
+                          QueueWorldUpdateForRegion(Engine, Editor->Brush.Asset.Mode, Editor->Brush.Asset.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
                         }
-                        else if (Editor->BrushType == WorldEdit_BrushType_Entity)
+                        else if (Editor->Brush.Type == WorldEdit_BrushType_Entity)
                         {
                           entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
                           if (E)
@@ -2439,15 +2443,16 @@ DoWorldEditor(engine_resources *Engine)
 
           case WorldEdit_BrushType_Layered:
           {
+            layered_brush *Layered = &Editor->Brush.Layered; 
             if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
             {
               v3i Offset = V3i(s32_MAX);
-              world_chunk *Chunk = &Editor->LayeredBrush.Preview.Chunk;
+              world_chunk *Chunk = &Layered->Preview.Chunk;
 
               // TODO(Jesse): Call GetSmallestMinOffset here
-              RangeIterator(LayerIndex, Editor->LayeredBrush.LayerCount)
+              RangeIterator(LayerIndex, Layered->LayerCount)
               {
-                brush_layer *Layer = Editor->LayeredBrush.Layers + LayerIndex;
+                brush_layer *Layer = Layered->Layers + LayerIndex;
                 Offset = Min(Layer->Settings.Offset.Min, Offset);
               }
 
@@ -2459,7 +2464,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_chunk_data,
                 .world_update_op_shape_params_chunk_data = ChunkDataShape,
               };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrush.Mode, Editor->LayeredBrush.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrush.SeedBrushWithSelection, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, Layered->Mode, Layered->Modifier, &Shape, DEFAULT_HSV_COLOR, Layered->SeedBrushWithSelection, Engine->WorldUpdateMemory);
             }
           } break;
 
@@ -2583,7 +2588,7 @@ DoWorldEditor(engine_resources *Engine)
   // the Select tool is active, doesn't update any of the brush stuff, then
   // the preview gets drawn because we pop back to the Layered brush tool and
   // there's a frame of lag.
-  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
+  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type);
 
 
 
@@ -2679,11 +2684,11 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
   {
     case WorldEdit_Tool_Brush:
     {
-      switch (Editor->BrushType)
+      switch (Editor->Brush.Type)
       {
         case WorldEdit_BrushType_Layered:
         {
-          layered_brush *LayeredBrush = &Editor->LayeredBrush;
+          layered_brush *LayeredBrush = &Editor->Brush.Layered;
           v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush);
           Chunk = &LayeredBrush->Preview.Chunk;
           Basis = V3(SmallestMinOffset) - V3i(1);

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:293:0
+// src/engine/serdes.cpp:296:0
 
 link_internal bonsai_type_info
 TypeInfo(physics *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,31 +34,35 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     physics *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Velocity);
+    Result &= Serialize(Bytes, &Element->Velocity); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Force);
+
+    Result &= Serialize(Bytes, &Element->Force); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Delta);
+
+    Result &= Serialize(Bytes, &Element->Delta); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Mass);
+
+    Result &= Serialize(Bytes, &Element->Mass); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Speed);
+
+    Result &= Serialize(Bytes, &Element->Speed); // default
 
     
 

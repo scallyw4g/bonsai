@@ -255,12 +255,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 case BonsaiRenderCommand_ShaderId_gBuffer:
                 {
-                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), Editor->LayeredBrush.SeedBrushWithSelection);
+                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), Editor->MaskSelection);
                 } break;
 
                 case BonsaiRenderCommand_ShaderId_ShadowMap:
                 {
-                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), Editor->LayeredBrush.SeedBrushWithSelection);
+                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), Editor->MaskSelection);
                 } break;
               }
             } break;

@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, plane *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,19 +34,22 @@ Serialize(u8_cursor_block_array *Bytes, plane *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     plane *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->P);
+    Result &= Serialize(Bytes, &Element->P); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Normal);
+
+    Result &= Serialize(Bytes, &Element->Normal); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->d);
+
+    Result &= Serialize(Bytes, &Element->d); // default
+
 
 
 

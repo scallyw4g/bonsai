@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:551:0
+// src/engine/serdes.cpp:554:0
 
 link_internal bonsai_type_info
 TypeInfo(shape_layer *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,18 +34,19 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     shape_layer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
+    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Sphere);
+    Result &= Serialize(Bytes, &Element->Sphere); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Rect);
+
+    Result &= Serialize(Bytes, &Element->Rect); // default
 
     
 

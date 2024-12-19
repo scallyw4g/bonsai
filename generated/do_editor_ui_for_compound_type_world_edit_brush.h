@@ -1,7 +1,7 @@
 // src/engine/editor.h:796:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_constraints *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush_constraints", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);

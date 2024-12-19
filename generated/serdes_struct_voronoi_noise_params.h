@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:541:0
+// src/engine/serdes.cpp:544:0
 
 link_internal bonsai_type_info
 TypeInfo(voronoi_noise_params *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, voronoi_noise_params *BaseElement, umm C
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,31 +34,35 @@ Serialize(u8_cursor_block_array *Bytes, voronoi_noise_params *BaseElement, umm C
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voronoi_noise_params *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Threshold);
+    Result &= Serialize(Bytes, &Element->Threshold); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Period);
+
+    Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Amplitude);
+
+    Result &= Serialize(Bytes, &Element->Amplitude); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Squareness);
+
+    Result &= Serialize(Bytes, &Element->Squareness); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->MaskChance);
+
+    Result &= Serialize(Bytes, &Element->MaskChance); // default
 
     
 

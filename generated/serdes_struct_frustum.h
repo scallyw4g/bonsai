@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,49 +34,56 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     frustum *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->farClip);
+    Result &= Serialize(Bytes, &Element->farClip); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->nearClip);
+
+    Result &= Serialize(Bytes, &Element->nearClip); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->width);
+
+    Result &= Serialize(Bytes, &Element->width); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->FOV);
+
+    Result &= Serialize(Bytes, &Element->FOV); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Top);
+
+    Result &= Serialize(Bytes, &Element->Top); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Bot);
+
+    Result &= Serialize(Bytes, &Element->Bot); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Left);
+
+    Result &= Serialize(Bytes, &Element->Left); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Right);
+
+    Result &= Serialize(Bytes, &Element->Right); // default
 
     
 

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:554:0
+// src/engine/serdes.cpp:557:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings_0 *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,46 +34,50 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     brush_settings_0 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
+    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Noise);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Shape);
+    Result &= Serialize(Bytes, &Element->Noise); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Mode);
 
-
-
-
-    Result &= Serialize(Bytes, (u32*)&Element->Modifier);
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Iterations);
+    Result &= Serialize(Bytes, &Element->Shape); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Offset);
+
+    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+
+
+
+
+    Result &= Serialize(Bytes, (u32*)&Element->Modifier); // enum
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Iterations); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Color);
+
+    Result &= Serialize(Bytes, &Element->Offset); // default
+
+
+
+
+
+
+    Result &= Serialize(Bytes, &Element->Color); // default
 
     
 

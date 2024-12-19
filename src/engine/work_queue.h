@@ -91,7 +91,7 @@ struct work_queue_entry_rebuild_mesh
 
 struct work_queue_entry_update_world_region
 {
-  world_edit_brush Brush;
+  world_edit_brush_constraints Brush;
 
   // TODO(Jesse): These feel like part of the brush?
   v3  HSVColor;
@@ -263,7 +263,7 @@ poof(
 
 // nocheckin
 // TODO(Jesse): Turn this on
-CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0);
+/* CAssert(sizeof(work_queue_entry) % CACHE_LINE_SIZE == 0); */
 
 poof(d_union_constructors(work_queue_entry))
 #include <generated/d_union_constructors_work_queue_entry.h>

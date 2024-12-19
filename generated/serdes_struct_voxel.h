@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,13 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voxel *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Transparency);
+    Result &= Serialize(Bytes, &Element->Transparency); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Color);
+
+    Result &= Serialize(Bytes, &Element->Color); // default
 
     
 

@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, canonical_position *BaseElement, umm Cou
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,13 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, canonical_position *BaseElement, umm Cou
   RangeIterator_t(umm, ElementIndex, Count)
   {
     canonical_position *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Offset);
+    Result &= Serialize(Bytes, &Element->Offset); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->WorldP);
+
+    Result &= Serialize(Bytes, &Element->WorldP); // default
 
     
 

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:539:0
+// src/engine/serdes.cpp:542:0
 
 link_internal bonsai_type_info
 TypeInfo(perlin_noise_params *Ignored)
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, perlin_noise_params *BaseElement, umm Co
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,19 +34,21 @@ Serialize(u8_cursor_block_array *Bytes, perlin_noise_params *BaseElement, umm Co
   RangeIterator_t(umm, ElementIndex, Count)
   {
     perlin_noise_params *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Threshold);
+    Result &= Serialize(Bytes, &Element->Threshold); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Period);
+
+    Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Amplitude);
+
+    Result &= Serialize(Bytes, &Element->Amplitude); // default
 
     
 
