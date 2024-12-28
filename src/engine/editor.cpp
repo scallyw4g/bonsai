@@ -1016,9 +1016,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
   world_chunk *Chunk = &Preview->Chunk;
   if (ReallocChunk)
   {
-    // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
-    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
-    // pool gets cleared on game reload
+    // TODO(Jesse)(leak, stability): Figure out exactly how this works.  We
+    // can't allocate from the Editor memory pool because the goemetry buffers
+    // get freed to a freelist, and the editor memory pool gets cleared on game reload
     //
     // @editor_chunk_memory_question
     //
@@ -1084,7 +1084,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         generic_noise_params NoiseParams = {};
         void *UserData = {};
 
-        NoiseParams.RGBColor     = HSVtoRGB(Settings->HSVColor);
+        NoiseParams.RGBColor      = HSVtoRGB(Settings->HSVColor);
         switch (Noise->Type)
         {
           case NoiseType_White:
@@ -2033,6 +2033,11 @@ EditWorldSelection(engine_resources *Engine)
             // Make ModifiedSelection permanent
             Editor->Selection.Region = ProposedSelection;
             Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+
+            if (Editor->CurrentEdit)
+            {
+              Editor->CurrentEdit->Region = ProposedSelection;
+            }
           }
         }
       }
@@ -2591,6 +2596,15 @@ DoWorldEditor(engine_resources *Engine)
   // there's a frame of lag.
   DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type);
 
+  IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+  {
+    auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+    random_series S = {u64(Edit)};
+    v3 BaseColor = RandomV3Unilateral(&S);
+
+    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f);
+  }
+
 
 
   //
@@ -2602,11 +2616,19 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
-
   if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
 
   if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
+
+  if (Input->Ctrl.Pressed && Input->S.Clicked)
+  {
+    Editor->PreviousTool = Editor->Tool;
+    Editor->Tool = WorldEdit_Tool_Select;
+    ResetSelection(Editor);
+
+    world_edit E = {};
+    Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
+  }
 
   if (Editor->Selection.Clicks == 2)
   {

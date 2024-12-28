@@ -1193,6 +1193,7 @@ struct level_editor
 
   b32 MaskSelection;
 
+  world_edit *CurrentEdit;
   world_edit_block_array WorldEdits;
 };
 
