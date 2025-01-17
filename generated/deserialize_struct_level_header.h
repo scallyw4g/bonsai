@@ -10,11 +10,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=4);
+  Assert(TypeInfo->Version <= 4);
 
   b32 Result = True;
 
-  if (TypeInfo->Version == 0)
+    if (TypeInfo->Version == 0)
   {
     level_header_0 T0 = {};
     Result &= Deserialize(Bytes, &T0, Memory);
@@ -40,7 +40,7 @@ DeserializeVersioned(u8_cursor *Bytes, level_header *Element, bonsai_type_info *
   }
 
 
-  if (TypeInfo->Version ==4)
+  if (TypeInfo->Version == 4)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -53,7 +53,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ChunkCount, Memory);
 
@@ -61,7 +61,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EntityCount, Memory);
 
@@ -69,7 +69,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->WorldFlags, Memory);
 
@@ -77,7 +77,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->WorldCenter, Memory);
 
@@ -85,7 +85,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->VisibleRegion, Memory);
 
@@ -93,7 +93,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Camera, Memory);
 
@@ -101,7 +101,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->RenderSettings, Memory);
 
@@ -119,7 +119,7 @@ Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory, umm C
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("level_header"));
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("level_header"));
 
     if (MaybeSerializedType.Tag)
     {

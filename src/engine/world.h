@@ -15,10 +15,9 @@ struct octree_node
   b32 HadNoVisibleSurface;
 
   v3i WorldP;
-  v3i Resolution; // in world-chunk space.  Resolution of V3i(2) means the chunk occupies 2x2x2 in world-space
+  v3i Resolution; // in world-chunk space.  Resolution of V3i(2) means the chunk occupies 2x2x2 chunks in world-space
 
-  // NOTE(Jesse): This is a pointer such that we can cull chunks that are
-  // empty, or completely full.
+  // NOTE(Jesse): This is a pointer such that we can cull chunks that are empty, or completely full.
   world_chunk *Chunk;
 
   // NOTE(Jesse): Took the union out because the UI doesn't know how to deal..
@@ -26,9 +25,14 @@ struct octree_node
     octree_node *Children[8]; poof(@custom_ui(if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);}))
     octree_node *Next; // NOTE(Jesse): Freelist Next
   /* }; */
+
+  world_edit_ptr_block_array Edits;
 };
 
 typedef octree_node* octree_node_ptr;
+
+poof(buffer(octree_node_ptr))
+#include <generated/buffer_octree_node_ptr.h>
 
 struct picked_octree_node
 {
@@ -238,6 +242,9 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node);
 
 link_internal u32
 MergeOctreeChildren(engine_resources *Engine, octree_node *Node);
+
+link_internal world_chunk_ptr_buffer
+GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
 
 link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks);

@@ -6,7 +6,7 @@ ToStringPrefixless(texture_storage_format Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
+        case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
     case TextureStorageFormat_R16I: { Result = CSz("R16I"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("R16F"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("R32F"); } break;
@@ -31,7 +31,7 @@ ToString(texture_storage_format Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TextureStorageFormat_Undefined: { Result = CSz("TextureStorageFormat_Undefined"); } break;
+        case TextureStorageFormat_Undefined: { Result = CSz("TextureStorageFormat_Undefined"); } break;
     case TextureStorageFormat_R16I: { Result = CSz("TextureStorageFormat_R16I"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("TextureStorageFormat_R16F"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("TextureStorageFormat_R32F"); } break;
@@ -55,7 +55,7 @@ TextureStorageFormat(counted_string S)
 {
   texture_storage_format Result = {};
 
-  if (StringsMatch(S, CSz("TextureStorageFormat_Undefined"))) { return TextureStorageFormat_Undefined; }
+    if (StringsMatch(S, CSz("TextureStorageFormat_Undefined"))) { return TextureStorageFormat_Undefined; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R16I"))) { return TextureStorageFormat_R16I; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R16F"))) { return TextureStorageFormat_R16F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R32F"))) { return TextureStorageFormat_R32F; }

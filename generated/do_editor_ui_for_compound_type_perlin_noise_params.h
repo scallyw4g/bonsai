@@ -26,13 +26,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Threshold),
+        Cast(r32*, &Element->Threshold),
         CSz("Threshold"),
         Params
-,0.1f, 20.f );
+        , 0.1f, 20.f );
 
 
 
@@ -40,15 +40,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->Period),
+        Cast(v3*, &Element->Period),
         CSz("Period"),
         Params
-,0.1f, 20.f );
+        , 0.1f, 20.f );
 
 
 
@@ -57,13 +57,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Amplitude),
+        Cast(r32*, &Element->Amplitude),
         CSz("Amplitude"),
         Params
-,0.1f, 20.f );
+        , 0.1f, 20.f );
 
 
 
@@ -71,7 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

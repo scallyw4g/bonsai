@@ -2034,10 +2034,6 @@ EditWorldSelection(engine_resources *Engine)
             Editor->Selection.Region = ProposedSelection;
             Editor->Selection.ModState.ClickedFace = FaceIndex_None;
 
-            if (Editor->CurrentEdit)
-            {
-              Editor->CurrentEdit->Region = ProposedSelection;
-            }
           }
         }
       }
@@ -2235,6 +2231,56 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
   }
 }
 
+
+link_internal void
+UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  // First, gather the currently edited nodes and remove the edit
+  {
+    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+
+    IterateOver(&Nodes, N, NodeIndex)
+    {
+      octree_node *Node = *N;
+
+      auto Index = Find(Node->Edits, Edit);
+      Assert(IsValid(Index)); // There shouldn't be a node that doesn't contain the edit
+      RemoveUnordered(Node->Edits, Index);
+    }
+  }
+
+  //
+  // Update the edit
+  //
+  Editor->CurrentEdit->Region = Region;
+
+  // Gather newly overlapping nodes and add the edit
+  {
+    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
+
+    IterateOver(&Nodes, N, NodeIndex)
+    {
+      octree_node *Node = *N;
+      /* auto EditAABB = GetSimSpaceAABB(World, Node); */
+      /* random_series S = {u64(Node)}; */
+      /* v3 BaseColor = RandomV3Unilateral(&S); */
+      /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
+
+      // Shouldn't have this edit already attached ..
+      Assert( IsValid(Find(Node->Edits, Node)) == False );
+
+      Push(&Node->Edits, Edit);
+    }
+  }
+
+  QueueChunkForInit(Plat->WorldUpdateQ, Node->Chunk, MeshBit_None);
+
+  VaporizeArena(Nodes.Memory);
+}
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -2664,7 +2710,10 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->Selection.Changed)
   {
-    Info("Changed");
+    if (Editor->CurrentEdit)
+    {
+      UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region);
+    }
   }
 
 

@@ -6,7 +6,7 @@ ToStringPrefixless(maybe_tag Type)
   counted_string Result = {};
   switch (Type)
   {
-    case Maybe_No: { Result = CSz("No"); } break;
+        case Maybe_No: { Result = CSz("No"); } break;
     case Maybe_Yes: { Result = CSz("Yes"); } break;
 
     
@@ -21,7 +21,7 @@ ToString(maybe_tag Type)
   counted_string Result = {};
   switch (Type)
   {
-    case Maybe_No: { Result = CSz("Maybe_No"); } break;
+        case Maybe_No: { Result = CSz("Maybe_No"); } break;
     case Maybe_Yes: { Result = CSz("Maybe_Yes"); } break;
 
     
@@ -35,7 +35,7 @@ MaybeTag(counted_string S)
 {
   maybe_tag Result = {};
 
-  if (StringsMatch(S, CSz("Maybe_No"))) { return Maybe_No; }
+    if (StringsMatch(S, CSz("Maybe_No"))) { return Maybe_No; }
   if (StringsMatch(S, CSz("Maybe_Yes"))) { return Maybe_Yes; }
 
   return Result;

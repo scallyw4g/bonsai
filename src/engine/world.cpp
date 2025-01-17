@@ -51,9 +51,13 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
 // TODO(Jesse): rect3cp should probably be a pointer..?
 //
+#if 1
 link_internal world_chunk_ptr_buffer
 GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
 {
+  NotImplemented;
+  return {};
+#if 0
   auto MinP = Region.Min;
   auto MaxP = Region.Max;
 
@@ -86,7 +90,53 @@ GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
 
   Result.Count = ChunkIndex;
   return Result;
+#endif
 }
+#else
+link_internal octree_node_ptr_buffer
+GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory)
+{
+  auto MinP = Region.Min;
+  auto MaxP = Region.Max;
+
+  Assert(MaxP.WorldP >= MinP.WorldP);
+  v3i Delta = MaxP.WorldP - MinP.WorldP + 1;
+  u32 TotalChunkCount = Abs(Volume(Delta));
+
+  world_chunk_ptr_buffer Result = {};
+
+  // NOTE(Jesse): These need to be aligned to the cache line size, so don't use the constructor fn
+  Result.Start = AllocateAligned(world_chunk*, Memory, TotalChunkCount, CACHE_LINE_SIZE);
+
+  u32 ChunkIndex = 0;
+  for (s32 zChunk = MinP.WorldP.z; zChunk <= MaxP.WorldP.z; ++zChunk)
+  {
+    for (s32 yChunk = MinP.WorldP.y; yChunk <= MaxP.WorldP.y; ++yChunk)
+    {
+      for (s32 xChunk = MinP.WorldP.x; xChunk <= MaxP.WorldP.x; ++xChunk)
+      {
+        world_position ChunkP = World_Position(xChunk, yChunk, zChunk);
+        if (octree_node *Node = GetWorldChunkFromOctree( World, P ))
+        {
+          b32 AlreadyAddedToSet = False;
+          for (u32 TestIndex = 0; TestIndex < ChunkIndex; ++TestIndex)
+          {
+            if (Result.Start[TestIndex] == Node) { AlreadyAddedToSet = True; break; }
+          }
+          Assert(ChunkIndex < TotalChunkCount);
+          if (AlreadyAddedToSet == False)
+          {
+            Result.Start[ChunkIndex++] = Chunk;
+          }
+        }
+      }
+    }
+  }
+
+  Result.Count = ChunkIndex;
+  return Result;
+}
+#endif
 
 
 link_internal void
@@ -961,14 +1011,14 @@ MaintainWorldOctree(engine_resources *Engine)
   u32 MaxToQueueThisFrame = Max(0u, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
 
-  DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued));
-  DEBUG_VALUE_u32(u32(MaxToQueueThisFrame));
+/*   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
+/*   DEBUG_VALUE_u32(u32(MaxToQueueThisFrame)); */
 
-  DEBUG_VALUE_u32(TotalWorldChunksAllocated);
-  DEBUG_VALUE_u32(FreedNodes);
-  DEBUG_VALUE_u32(DeferrFreedNodes);
+/*   DEBUG_VALUE_u32(TotalWorldChunksAllocated); */
+/*   DEBUG_VALUE_u32(FreedNodes); */
+/*   DEBUG_VALUE_u32(DeferrFreedNodes); */
 
-  DEBUG_VALUE_u32(TotalChunksQueued);
+/*   DEBUG_VALUE_u32(TotalChunksQueued); */
 
   /* DEBUG_VALUE_u32(ReusedNode); */
   /* DEBUG_VALUE_u32(AllocatedNode); */
@@ -1067,5 +1117,37 @@ GetWorldChunkFromOctree(world *World, v3i WorldP)
   }
 
   return Result;
+}
+
+link_internal void
+GatherOctreeNodesOverlapping_Recursive(world *World, octree_node *Current, rect3cp *Region, octree_node_ptr_block_array *Result)
+{
+  Assert(Current);
+
+  rect3cp Box = GetBoundingBox(World, Current);
+  if (Intersect(World, &Box, Region))
+  {
+    switch(Current->Type)
+    {
+      InvalidCase(OctreeNodeType_Undefined);
+
+      case OctreeNodeType_Leaf:
+      {
+        Push(Result, &Current);
+      } break;
+
+      case OctreeNodeType_Branch:
+      {
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[0], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[1], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[2], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[3], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[4], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[5], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[6], Region, Result);
+        GatherOctreeNodesOverlapping_Recursive(World, Current->Children[7], Region, Result);
+      } break;
+    }
+  }
 }
 

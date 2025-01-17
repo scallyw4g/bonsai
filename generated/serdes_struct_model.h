@@ -6,7 +6,7 @@ TypeInfo(model *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("model");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -34,28 +34,28 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     model *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Vox); // default
+                                Result &= Serialize(Bytes, &Element->Vox); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->TransparentMesh); // default
+                            Result &= Serialize(Bytes, &Element->TransparentMesh); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Animation); // default
+                            Result &= Serialize(Bytes, &Element->Animation); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Dim); // default
+                            Result &= Serialize(Bytes, &Element->Dim); // default
 
     
 
@@ -78,7 +78,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Vox, Memory);
 
@@ -86,7 +86,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->TransparentMesh, Memory);
 
@@ -94,7 +94,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Animation, Memory);
 
@@ -102,7 +102,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -120,7 +120,7 @@ Deserialize(u8_cursor *Bytes, model *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

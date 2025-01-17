@@ -1,22 +1,33 @@
 // src/engine/editor.cpp:80:0
 
 
-link_internal asset_thumbnail_block*
+
+
+
+link_internal asset_thumbnail_block_array
+AssetThumbnailBlockArray(memory_arena *Memory)
+{
+  asset_thumbnail_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal asset_thumbnail_block *
 Allocate_asset_thumbnail_block(memory_arena *Memory)
 {
-  asset_thumbnail_block *Result = Allocate(asset_thumbnail_block, Memory, 1);
-  Result->Elements = Allocate(asset_thumbnail, Memory, 8);
+  asset_thumbnail_block *Result = Allocate( asset_thumbnail_block, Memory, 1);
+  Result->Elements = Allocate( asset_thumbnail, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(asset_thumbnail_block_array_index Index)
+CS( asset_thumbnail_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
+RemoveUnordered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(asset_thumbnail_block_array *Array, asset_thumbnail_block_array_
   }
 }
 
+link_internal asset_thumbnail_block_array_index
+Find( asset_thumbnail_block_array *Array, asset_thumbnail *Query)
+{
+  asset_thumbnail_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(asset_thumbnail_block_array_index *Index)
+{
+  NotImplemented;
+  asset_thumbnail_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal asset_thumbnail *
-Push(asset_thumbnail_block_array *Array, asset_thumbnail *Element)
+Push( asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

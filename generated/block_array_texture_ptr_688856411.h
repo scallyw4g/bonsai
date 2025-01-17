@@ -1,22 +1,33 @@
 // external/bonsai_stdlib/src/texture.cpp:8:0
 
 
-link_internal texture_ptr_block*
+
+
+
+link_internal texture_ptr_block_array
+TexturePtrBlockArray(memory_arena *Memory)
+{
+  texture_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal texture_ptr_block *
 Allocate_texture_ptr_block(memory_arena *Memory)
 {
-  texture_ptr_block *Result = Allocate(texture_ptr_block, Memory, 1);
-  Result->Elements = Allocate(texture_ptr, Memory, 8);
+  texture_ptr_block *Result = Allocate( texture_ptr_block, Memory, 1);
+  Result->Elements = Allocate( texture_ptr, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(texture_ptr_block_array_index Index)
+CS( texture_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
+RemoveUnordered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
 {
   texture_ptr_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index In
   }
 }
 
+link_internal texture_ptr_block_array_index
+Find( texture_ptr_block_array *Array, texture_ptr *Query)
+{
+  texture_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(texture_ptr_block_array_index *Index)
+{
+  NotImplemented;
+  texture_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal texture_ptr *
-Push(texture_ptr_block_array *Array, texture_ptr *Element)
+Push( texture_ptr_block_array *Array, texture_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

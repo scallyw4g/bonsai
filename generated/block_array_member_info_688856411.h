@@ -171,22 +171,33 @@ AtElements(member_info_block *Block)
 }
 
 
-link_internal member_info_block*
+
+
+
+link_internal member_info_block_array
+MemberInfoBlockArray(memory_arena *Memory)
+{
+  member_info_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal member_info_block *
 Allocate_member_info_block(memory_arena *Memory)
 {
-  member_info_block *Result = Allocate(member_info_block, Memory, 1);
-  Result->Elements = Allocate(member_info, Memory, 8);
+  member_info_block *Result = Allocate( member_info_block, Memory, 1);
+  Result->Elements = Allocate( member_info, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(member_info_block_array_index Index)
+CS( member_info_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(member_info_block_array *Array, member_info_block_array_index Index)
+RemoveUnordered( member_info_block_array *Array, member_info_block_array_index Index)
 {
   member_info_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(member_info_block_array *Array, member_info_block_array_index In
   }
 }
 
+link_internal member_info_block_array_index
+Find( member_info_block_array *Array, member_info *Query)
+{
+  member_info_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(member_info_block_array_index *Index)
+{
+  NotImplemented;
+  member_info_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal member_info *
-Push(member_info_block_array *Array, member_info *Element)
+Push( member_info_block_array *Array, member_info *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

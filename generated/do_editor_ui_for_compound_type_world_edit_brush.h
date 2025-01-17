@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_constraints 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_shape*,&Element->Shape),
+        Cast(world_edit_shape*, &Element->Shape),
         CSz("Shape"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_constraints 
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode*,&Element->Mode),
+        Cast(world_edit_mode*, &Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_constraints 
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode_modifier*,&Element->Modifier),
+        Cast(world_edit_mode_modifier*, &Element->Modifier),
         CSz("Modifier"),
         Params
         );

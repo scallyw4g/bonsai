@@ -1,22 +1,33 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:2:0
 
 
-link_internal u32_block*
+
+
+
+link_internal u32_block_array
+U32BlockArray(memory_arena *Memory)
+{
+  u32_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal u32_block *
 Allocate_u32_block(memory_arena *Memory)
 {
-  u32_block *Result = Allocate(u32_block, Memory, 1);
-  Result->Elements = Allocate(u32, Memory, 8);
+  u32_block *Result = Allocate( u32_block, Memory, 1);
+  Result->Elements = Allocate( u32, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(u32_block_array_index Index)
+CS( u32_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
+RemoveUnordered( u32_block_array *Array, u32_block_array_index Index)
 {
   u32_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(u32_block_array *Array, u32_block_array_index Index)
   }
 }
 
+link_internal u32_block_array_index
+Find( u32_block_array *Array, u32 *Query)
+{
+  u32_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(u32_block_array_index *Index)
+{
+  NotImplemented;
+  u32_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal u32 *
-Push(u32_block_array *Array, u32 *Element)
+Push( u32_block_array *Array, u32 *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

@@ -304,12 +304,12 @@ poof(
     {
       struct struct_t.name;
       link_internal work_queue_entry
-      WorkQueueEntryAsyncFunction( (struct_t.type) *Params )
+      WorkQueueEntryAsyncFunction( (struct_t.name) *Params )
       {
         work_queue_entry Result = {};
         Result.Type = type_work_queue_entry_async_function_call;
-        Result.work_queue_entry_async_function_call.Type = type_(struct_t.type);
-        Result.work_queue_entry_async_function_call.(struct_t.type) = *Params;
+        Result.work_queue_entry_async_function_call.Type = type_(struct_t.name);
+        Result.work_queue_entry_async_function_call.(struct_t.name) = *Params;
         return Result;
       }
     }

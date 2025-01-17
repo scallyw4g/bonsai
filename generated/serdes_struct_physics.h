@@ -6,7 +6,7 @@ TypeInfo(physics *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("physics");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -34,35 +34,35 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     physics *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Velocity); // default
+                                Result &= Serialize(Bytes, &Element->Velocity); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Force); // default
+                            Result &= Serialize(Bytes, &Element->Force); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Delta); // default
+                            Result &= Serialize(Bytes, &Element->Delta); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Mass); // default
+                            Result &= Serialize(Bytes, &Element->Mass); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Speed); // default
+                            Result &= Serialize(Bytes, &Element->Speed); // default
 
     
 
@@ -85,7 +85,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Velocity, Memory);
 
@@ -93,7 +93,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Force, Memory);
 
@@ -101,7 +101,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Delta, Memory);
 
@@ -109,7 +109,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Mass, Memory);
 
@@ -117,7 +117,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
@@ -135,7 +135,7 @@ Deserialize(u8_cursor *Bytes, physics *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

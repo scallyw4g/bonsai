@@ -2,7 +2,7 @@
 
 struct tuple_cs_cs
 {
-  cs E0;
+    cs E0;
   cs E1;
 };
 
@@ -10,12 +10,12 @@ struct tuple_cs_cs
 /* gen_constructor(TupleType) */
 
 link_internal tuple_cs_cs
-Tuple( cs E0, cs E1 )
+Tuple(  cs E0, cs E1 )
 {
   /* TupleType Result = */
   tuple_cs_cs Result =
   {
-    .E0 = E0,
+        .E0 = E0,
     .E1 = E1,
   };
   return Result;

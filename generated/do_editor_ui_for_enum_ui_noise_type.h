@@ -10,10 +10,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Perlin"), UiId(Window, "enum NoiseType_Perlin", Element), Params))
     {
-      *Element = NoiseType_Perlin;
+            *Element = NoiseType_Perlin;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Voronoi"), UiId(Window, "enum NoiseType_Voronoi", Element), Params))
     {
-      *Element = NoiseType_Voronoi;
+            *Element = NoiseType_Voronoi;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -31,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("White"), UiId(Window, "enum NoiseType_White", Element), Params))
     {
-      *Element = NoiseType_White;
+            *Element = NoiseType_White;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

@@ -8,7 +8,7 @@ if (Input->Dot.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='.';
+    Cast(char*, Text.Start)[Text.Count] = '.';
   }
   Text.Count++;
 }
@@ -21,7 +21,7 @@ if (Input->Minus.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='-';
+    Cast(char*, Text.Start)[Text.Count] = '-';
   }
   Text.Count++;
 }
@@ -34,7 +34,7 @@ if (Input->FSlash.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='/';
+    Cast(char*, Text.Start)[Text.Count] = '/';
   }
   Text.Count++;
 }
@@ -47,7 +47,7 @@ if (Input->Space.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] =' ';
+    Cast(char*, Text.Start)[Text.Count] = ' ';
   }
   Text.Count++;
 }
@@ -60,7 +60,7 @@ if (Input->Underscore.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='_';
+    Cast(char*, Text.Start)[Text.Count] = '_';
   }
   Text.Count++;
 }
@@ -73,7 +73,7 @@ if (Input->N0.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='0';
+    Cast(char*, Text.Start)[Text.Count] = '0';
   }
   Text.Count++;
 }
@@ -86,7 +86,7 @@ if (Input->N1.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='1';
+    Cast(char*, Text.Start)[Text.Count] = '1';
   }
   Text.Count++;
 }
@@ -99,7 +99,7 @@ if (Input->N2.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='2';
+    Cast(char*, Text.Start)[Text.Count] = '2';
   }
   Text.Count++;
 }
@@ -112,7 +112,7 @@ if (Input->N3.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='3';
+    Cast(char*, Text.Start)[Text.Count] = '3';
   }
   Text.Count++;
 }
@@ -125,7 +125,7 @@ if (Input->N4.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='4';
+    Cast(char*, Text.Start)[Text.Count] = '4';
   }
   Text.Count++;
 }
@@ -138,7 +138,7 @@ if (Input->N5.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='5';
+    Cast(char*, Text.Start)[Text.Count] = '5';
   }
   Text.Count++;
 }
@@ -151,7 +151,7 @@ if (Input->N6.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='6';
+    Cast(char*, Text.Start)[Text.Count] = '6';
   }
   Text.Count++;
 }
@@ -164,7 +164,7 @@ if (Input->N7.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='7';
+    Cast(char*, Text.Start)[Text.Count] = '7';
   }
   Text.Count++;
 }
@@ -177,7 +177,7 @@ if (Input->N8.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='8';
+    Cast(char*, Text.Start)[Text.Count] = '8';
   }
   Text.Count++;
 }
@@ -190,7 +190,7 @@ if (Input->N9.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='9';
+    Cast(char*, Text.Start)[Text.Count] = '9';
   }
   Text.Count++;
 }
@@ -203,7 +203,7 @@ if (Input->A.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='a';
+    Cast(char*, Text.Start)[Text.Count] = 'a';
   }
   Text.Count++;
 }
@@ -216,7 +216,7 @@ if (Input->B.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='b';
+    Cast(char*, Text.Start)[Text.Count] = 'b';
   }
   Text.Count++;
 }
@@ -229,7 +229,7 @@ if (Input->C.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='c';
+    Cast(char*, Text.Start)[Text.Count] = 'c';
   }
   Text.Count++;
 }
@@ -242,7 +242,7 @@ if (Input->D.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='d';
+    Cast(char*, Text.Start)[Text.Count] = 'd';
   }
   Text.Count++;
 }
@@ -255,7 +255,7 @@ if (Input->E.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='e';
+    Cast(char*, Text.Start)[Text.Count] = 'e';
   }
   Text.Count++;
 }
@@ -268,7 +268,7 @@ if (Input->F.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='f';
+    Cast(char*, Text.Start)[Text.Count] = 'f';
   }
   Text.Count++;
 }
@@ -281,7 +281,7 @@ if (Input->G.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='g';
+    Cast(char*, Text.Start)[Text.Count] = 'g';
   }
   Text.Count++;
 }
@@ -294,7 +294,7 @@ if (Input->H.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='h';
+    Cast(char*, Text.Start)[Text.Count] = 'h';
   }
   Text.Count++;
 }
@@ -307,7 +307,7 @@ if (Input->I.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='i';
+    Cast(char*, Text.Start)[Text.Count] = 'i';
   }
   Text.Count++;
 }
@@ -320,7 +320,7 @@ if (Input->J.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='j';
+    Cast(char*, Text.Start)[Text.Count] = 'j';
   }
   Text.Count++;
 }
@@ -333,7 +333,7 @@ if (Input->K.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='k';
+    Cast(char*, Text.Start)[Text.Count] = 'k';
   }
   Text.Count++;
 }
@@ -346,7 +346,7 @@ if (Input->L.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='l';
+    Cast(char*, Text.Start)[Text.Count] = 'l';
   }
   Text.Count++;
 }
@@ -359,7 +359,7 @@ if (Input->M.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='m';
+    Cast(char*, Text.Start)[Text.Count] = 'm';
   }
   Text.Count++;
 }
@@ -372,7 +372,7 @@ if (Input->N.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='n';
+    Cast(char*, Text.Start)[Text.Count] = 'n';
   }
   Text.Count++;
 }
@@ -385,7 +385,7 @@ if (Input->O.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='o';
+    Cast(char*, Text.Start)[Text.Count] = 'o';
   }
   Text.Count++;
 }
@@ -398,7 +398,7 @@ if (Input->P.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='p';
+    Cast(char*, Text.Start)[Text.Count] = 'p';
   }
   Text.Count++;
 }
@@ -411,7 +411,7 @@ if (Input->Q.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='q';
+    Cast(char*, Text.Start)[Text.Count] = 'q';
   }
   Text.Count++;
 }
@@ -424,7 +424,7 @@ if (Input->R.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='r';
+    Cast(char*, Text.Start)[Text.Count] = 'r';
   }
   Text.Count++;
 }
@@ -437,7 +437,7 @@ if (Input->S.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='s';
+    Cast(char*, Text.Start)[Text.Count] = 's';
   }
   Text.Count++;
 }
@@ -450,7 +450,7 @@ if (Input->T.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='t';
+    Cast(char*, Text.Start)[Text.Count] = 't';
   }
   Text.Count++;
 }
@@ -463,7 +463,7 @@ if (Input->U.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='u';
+    Cast(char*, Text.Start)[Text.Count] = 'u';
   }
   Text.Count++;
 }
@@ -476,7 +476,7 @@ if (Input->V.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='v';
+    Cast(char*, Text.Start)[Text.Count] = 'v';
   }
   Text.Count++;
 }
@@ -489,7 +489,7 @@ if (Input->W.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='w';
+    Cast(char*, Text.Start)[Text.Count] = 'w';
   }
   Text.Count++;
 }
@@ -502,7 +502,7 @@ if (Input->X.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='x';
+    Cast(char*, Text.Start)[Text.Count] = 'x';
   }
   Text.Count++;
 }
@@ -515,7 +515,7 @@ if (Input->Y.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='y';
+    Cast(char*, Text.Start)[Text.Count] = 'y';
   }
   Text.Count++;
 }
@@ -528,7 +528,7 @@ if (Input->Z.Clicked)
   }
   else
   {
-    Cast(char*, Text.Start)[Text.Count] ='z';
+    Cast(char*, Text.Start)[Text.Count] = 'z';
   }
   Text.Count++;
 }

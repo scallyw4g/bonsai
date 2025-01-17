@@ -6,7 +6,7 @@ TypeInfo(entity_1 *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("entity_1");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -34,94 +34,94 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     entity_1 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Id); // default
+                                Result &= Serialize(Bytes, &Element->Id); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->P); // default
+                            Result &= Serialize(Bytes, &Element->P); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->EulerAngles); // default
+                            Result &= Serialize(Bytes, &Element->EulerAngles); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Scale); // default
+                            Result &= Serialize(Bytes, &Element->Scale); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius); // default
+                            Result &= Serialize(Bytes, &Element->_CollisionVolumeRadius); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Physics); // default
+                            Result &= Serialize(Bytes, &Element->Physics); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->AssetId); // default
+                            Result &= Serialize(Bytes, &Element->AssetId); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ModelIndex); // default
+                            Result &= Serialize(Bytes, &Element->ModelIndex); // default
 
 
 
 
 
 
-    if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->State); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->State); // enum
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Behavior); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->Behavior); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Carrying); // default
-
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->UserType); // default
+                            Result &= Serialize(Bytes, &Element->Carrying); // default
 
 
 
 
 
 
-  if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
+                            Result &= Serialize(Bytes, &Element->UserType); // default
 
-    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+
+
+
+
+
+              if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
+
+                    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
 
@@ -146,7 +146,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Id, Memory);
 
@@ -154,7 +154,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->P, Memory);
 
@@ -162,7 +162,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
@@ -170,7 +170,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Scale, Memory);
 
@@ -178,7 +178,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
@@ -186,7 +186,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
 
@@ -194,7 +194,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
 
@@ -202,7 +202,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
 
@@ -210,22 +210,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  b64 HadEmitterPointer = Read_u64(Bytes);
+        b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
 
 
-  Element->State = Cast(entity_state, Read_u32(Bytes));
+          Element->State = Cast(entity_state, Read_u32(Bytes));
 
 
 
 
-  Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
+          Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Carrying, Memory);
 
@@ -233,7 +233,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->UserType, Memory);
 
@@ -241,11 +241,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
+      if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
 
-  if (HadEmitterPointer)
+        if (HadEmitterPointer)
   {
-    umm Count = 1;
+        umm Count = 1;
 
 
     if (Element->Emitter == 0)
@@ -271,7 +271,7 @@ Deserialize(u8_cursor *Bytes, entity_1 *Element, memory_arena *Memory, umm Count
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

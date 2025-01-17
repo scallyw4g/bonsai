@@ -1,11 +1,11 @@
 // src/engine/work_queue.h:324:0
 
 link_internal void
-RenderToTexture_Async(work_queue *Queue,engine_resources *Engine ,asset_thumbnail *Thumb ,gpu_mapped_element_buffer *Meshes ,v3 Offset ,camera *Camera )
+RenderToTexture_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Meshes , v3 Offset , camera *Camera )
 {
   render_to_texture_async_params Params =
   {
- Engine,  Thumb,  Meshes,  Offset,  Camera, 
+     Engine,  Thumb,  Meshes,  Offset,  Camera, 
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);

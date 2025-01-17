@@ -6,7 +6,7 @@ ToStringPrefixless(c_token_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case CTokenType_Unknown: { Result = CSz("Unknown"); } break;
+        case CTokenType_Unknown: { Result = CSz("Unknown"); } break;
     case CT_ControlChar_Start_of_Heading: { Result = CSz("Heading"); } break;
     case CT_ControlChar_Start_of_Text: { Result = CSz("Text"); } break;
     case CT_ControlChar_End_of_Text: { Result = CSz("Text"); } break;
@@ -192,7 +192,7 @@ ToString(c_token_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
+        case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
     case CT_ControlChar_Start_of_Heading: { Result = CSz("CT_ControlChar_Start_of_Heading"); } break;
     case CT_ControlChar_Start_of_Text: { Result = CSz("CT_ControlChar_Start_of_Text"); } break;
     case CT_ControlChar_End_of_Text: { Result = CSz("CT_ControlChar_End_of_Text"); } break;

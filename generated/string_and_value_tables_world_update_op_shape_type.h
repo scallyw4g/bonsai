@@ -6,7 +6,7 @@ ToStringPrefixless(world_update_op_shape_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case type_world_update_op_shape_params_noop: { Result = CSz("noop"); } break;
+        case type_world_update_op_shape_params_noop: { Result = CSz("noop"); } break;
     case type_world_update_op_shape_params_sphere: { Result = CSz("sphere"); } break;
     case type_world_update_op_shape_params_rect: { Result = CSz("rect"); } break;
     case type_world_update_op_shape_params_asset: { Result = CSz("asset"); } break;
@@ -25,7 +25,7 @@ ToString(world_update_op_shape_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case type_world_update_op_shape_params_noop: { Result = CSz("type_world_update_op_shape_params_noop"); } break;
+        case type_world_update_op_shape_params_noop: { Result = CSz("type_world_update_op_shape_params_noop"); } break;
     case type_world_update_op_shape_params_sphere: { Result = CSz("type_world_update_op_shape_params_sphere"); } break;
     case type_world_update_op_shape_params_rect: { Result = CSz("type_world_update_op_shape_params_rect"); } break;
     case type_world_update_op_shape_params_asset: { Result = CSz("type_world_update_op_shape_params_asset"); } break;
@@ -43,7 +43,7 @@ WorldUpdateOpShapeType(counted_string S)
 {
   world_update_op_shape_type Result = {};
 
-  if (StringsMatch(S, CSz("type_world_update_op_shape_params_noop"))) { return type_world_update_op_shape_params_noop; }
+    if (StringsMatch(S, CSz("type_world_update_op_shape_params_noop"))) { return type_world_update_op_shape_params_noop; }
   if (StringsMatch(S, CSz("type_world_update_op_shape_params_sphere"))) { return type_world_update_op_shape_params_sphere; }
   if (StringsMatch(S, CSz("type_world_update_op_shape_params_rect"))) { return type_world_update_op_shape_params_rect; }
   if (StringsMatch(S, CSz("type_world_update_op_shape_params_asset"))) { return type_world_update_op_shape_params_asset; }

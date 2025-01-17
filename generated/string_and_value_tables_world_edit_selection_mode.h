@@ -6,7 +6,7 @@ ToStringPrefixless(world_edit_selection_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case SelectionMode_Noop: { Result = CSz("Noop"); } break;
+        case SelectionMode_Noop: { Result = CSz("Noop"); } break;
     case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("ResizeSingleLinearAxis"); } break;
     case SelectionMode_ResizeBothLinearAxies: { Result = CSz("ResizeBothLinearAxies"); } break;
     case SelectionMode_ResizeAllAxies: { Result = CSz("ResizeAllAxies"); } break;
@@ -25,7 +25,7 @@ ToString(world_edit_selection_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case SelectionMode_Noop: { Result = CSz("SelectionMode_Noop"); } break;
+        case SelectionMode_Noop: { Result = CSz("SelectionMode_Noop"); } break;
     case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("SelectionMode_ResizeSingleLinearAxis"); } break;
     case SelectionMode_ResizeBothLinearAxies: { Result = CSz("SelectionMode_ResizeBothLinearAxies"); } break;
     case SelectionMode_ResizeAllAxies: { Result = CSz("SelectionMode_ResizeAllAxies"); } break;
@@ -43,7 +43,7 @@ WorldEditSelectionMode(counted_string S)
 {
   world_edit_selection_mode Result = {};
 
-  if (StringsMatch(S, CSz("SelectionMode_Noop"))) { return SelectionMode_Noop; }
+    if (StringsMatch(S, CSz("SelectionMode_Noop"))) { return SelectionMode_Noop; }
   if (StringsMatch(S, CSz("SelectionMode_ResizeSingleLinearAxis"))) { return SelectionMode_ResizeSingleLinearAxis; }
   if (StringsMatch(S, CSz("SelectionMode_ResizeBothLinearAxies"))) { return SelectionMode_ResizeBothLinearAxies; }
   if (StringsMatch(S, CSz("SelectionMode_ResizeAllAxies"))) { return SelectionMode_ResizeAllAxies; }

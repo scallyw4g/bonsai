@@ -6,7 +6,7 @@ ToStringPrefixless(bitmap_compression_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case BitmapCompressionType_RGB: { Result = CSz("RGB"); } break;
+        case BitmapCompressionType_RGB: { Result = CSz("RGB"); } break;
     case BitmapCompressionType_RLE8: { Result = CSz("RLE8"); } break;
     case BitmapCompressionType_RLE4: { Result = CSz("RLE4"); } break;
     case BitmapCompressionType_BITFIELDS: { Result = CSz("BITFIELDS"); } break;
@@ -29,7 +29,7 @@ ToString(bitmap_compression_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case BitmapCompressionType_RGB: { Result = CSz("BitmapCompressionType_RGB"); } break;
+        case BitmapCompressionType_RGB: { Result = CSz("BitmapCompressionType_RGB"); } break;
     case BitmapCompressionType_RLE8: { Result = CSz("BitmapCompressionType_RLE8"); } break;
     case BitmapCompressionType_RLE4: { Result = CSz("BitmapCompressionType_RLE4"); } break;
     case BitmapCompressionType_BITFIELDS: { Result = CSz("BitmapCompressionType_BITFIELDS"); } break;
@@ -51,7 +51,7 @@ BitmapCompressionType(counted_string S)
 {
   bitmap_compression_type Result = {};
 
-  if (StringsMatch(S, CSz("BitmapCompressionType_RGB"))) { return BitmapCompressionType_RGB; }
+    if (StringsMatch(S, CSz("BitmapCompressionType_RGB"))) { return BitmapCompressionType_RGB; }
   if (StringsMatch(S, CSz("BitmapCompressionType_RLE8"))) { return BitmapCompressionType_RLE8; }
   if (StringsMatch(S, CSz("BitmapCompressionType_RLE4"))) { return BitmapCompressionType_RLE4; }
   if (StringsMatch(S, CSz("BitmapCompressionType_BITFIELDS"))) { return BitmapCompressionType_BITFIELDS; }

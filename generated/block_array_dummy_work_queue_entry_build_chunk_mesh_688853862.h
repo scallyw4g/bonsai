@@ -171,22 +171,33 @@ AtElements(dummy_work_queue_entry_build_chunk_mesh_block *Block)
 }
 
 
-link_internal dummy_work_queue_entry_build_chunk_mesh_block*
+
+
+
+link_internal dummy_work_queue_entry_build_chunk_mesh_block_array
+DummyWorkQueueEntryBuildChunkMeshBlockArray(memory_arena *Memory)
+{
+  dummy_work_queue_entry_build_chunk_mesh_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal dummy_work_queue_entry_build_chunk_mesh_block *
 Allocate_dummy_work_queue_entry_build_chunk_mesh_block(memory_arena *Memory)
 {
-  dummy_work_queue_entry_build_chunk_mesh_block *Result = Allocate(dummy_work_queue_entry_build_chunk_mesh_block, Memory, 1);
-  Result->Elements = Allocate(dummy_work_queue_entry_build_chunk_mesh, Memory, 8);
+  dummy_work_queue_entry_build_chunk_mesh_block *Result = Allocate( dummy_work_queue_entry_build_chunk_mesh_block, Memory, 1);
+  Result->Elements = Allocate( dummy_work_queue_entry_build_chunk_mesh, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
+CS( dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
+RemoveUnordered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dumm
   }
 }
 
+link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
+Find( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Query)
+{
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
+{
+  NotImplemented;
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal dummy_work_queue_entry_build_chunk_mesh *
-Push(dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Element)
+Push( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

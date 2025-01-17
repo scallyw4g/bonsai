@@ -6,7 +6,7 @@ ToStringPrefixless(ui_noise_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case NoiseType_Perlin: { Result = CSz("Perlin"); } break;
+        case NoiseType_Perlin: { Result = CSz("Perlin"); } break;
     case NoiseType_Voronoi: { Result = CSz("Voronoi"); } break;
     case NoiseType_White: { Result = CSz("White"); } break;
 
@@ -22,7 +22,7 @@ ToString(ui_noise_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case NoiseType_Perlin: { Result = CSz("NoiseType_Perlin"); } break;
+        case NoiseType_Perlin: { Result = CSz("NoiseType_Perlin"); } break;
     case NoiseType_Voronoi: { Result = CSz("NoiseType_Voronoi"); } break;
     case NoiseType_White: { Result = CSz("NoiseType_White"); } break;
 
@@ -37,7 +37,7 @@ UiNoiseType(counted_string S)
 {
   ui_noise_type Result = {};
 
-  if (StringsMatch(S, CSz("NoiseType_Perlin"))) { return NoiseType_Perlin; }
+    if (StringsMatch(S, CSz("NoiseType_Perlin"))) { return NoiseType_Perlin; }
   if (StringsMatch(S, CSz("NoiseType_Voronoi"))) { return NoiseType_Voronoi; }
   if (StringsMatch(S, CSz("NoiseType_White"))) { return NoiseType_White; }
 

@@ -1,22 +1,33 @@
 // external/bonsai_stdlib/src/ansi_stream.cpp:3:0
 
 
-link_internal u8_cursor_block*
+
+
+
+link_internal u8_cursor_block_array
+U8CursorBlockArray(memory_arena *Memory)
+{
+  u8_cursor_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal u8_cursor_block *
 Allocate_u8_cursor_block(memory_arena *Memory)
 {
-  u8_cursor_block *Result = Allocate(u8_cursor_block, Memory, 1);
-  Result->Elements = Allocate(u8_cursor, Memory, 8);
+  u8_cursor_block *Result = Allocate( u8_cursor_block, Memory, 1);
+  Result->Elements = Allocate( u8_cursor, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(u8_cursor_block_array_index Index)
+CS( u8_cursor_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
+RemoveUnordered( u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
 {
   u8_cursor_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
   }
 }
 
+link_internal u8_cursor_block_array_index
+Find( u8_cursor_block_array *Array, u8_cursor *Query)
+{
+  u8_cursor_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(u8_cursor_block_array_index *Index)
+{
+  NotImplemented;
+  u8_cursor_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal u8_cursor *
-Push(u8_cursor_block_array *Array, u8_cursor *Element)
+Push( u8_cursor_block_array *Array, u8_cursor *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

@@ -1148,6 +1148,8 @@ struct world_edit
   world_edit_mode          Mode;
   world_edit_mode_modifier Modifier;
 
+  u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
+
   world_edit_brush_type Type;
   union
   {
@@ -1157,8 +1159,9 @@ struct world_edit
   };
 };
 
-poof(block_array(world_edit, {128}))
-#include <generated/block_array_world_edit_688735882.h>
+typedef world_edit* world_edit_ptr;
+
+poof(block_array(world_edit_ptr, {128}))
 
 
 struct level_editor
@@ -1193,6 +1196,7 @@ struct level_editor
 
   b32 MaskSelection;
 
+  u32 NextEditOrdinal;
   world_edit *CurrentEdit;
   world_edit_block_array WorldEdits;
 };

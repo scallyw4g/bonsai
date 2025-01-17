@@ -6,14 +6,14 @@ ToStringPrefixless(chunk_flag Type)
   counted_string Result = {};
   switch (Type)
   {
-    case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
+        case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
     case Chunk_Queued: { Result = CSz("Queued"); } break;
     case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
     case Chunk_Garbage: { Result = CSz("Garbage"); } break;
     case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Freelist"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {
@@ -48,14 +48,14 @@ ToString(chunk_flag Type)
   counted_string Result = {};
   switch (Type)
   {
-    case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
+        case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
     case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
     case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
     case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
     case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {
@@ -82,7 +82,7 @@ ChunkFlag(counted_string S)
 {
   chunk_flag Result = {};
 
-  if (StringsMatch(S, CSz("Chunk_Uninitialized"))) { return Chunk_Uninitialized; }
+    if (StringsMatch(S, CSz("Chunk_Uninitialized"))) { return Chunk_Uninitialized; }
   if (StringsMatch(S, CSz("Chunk_Queued"))) { return Chunk_Queued; }
   if (StringsMatch(S, CSz("Chunk_VoxelsInitialized"))) { return Chunk_VoxelsInitialized; }
   if (StringsMatch(S, CSz("Chunk_Garbage"))) { return Chunk_Garbage; }

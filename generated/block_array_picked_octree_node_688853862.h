@@ -1,4 +1,4 @@
-// src/engine/world.h:56:0
+// src/engine/world.h:60:0
 
 struct picked_octree_node_block
 {
@@ -171,22 +171,33 @@ AtElements(picked_octree_node_block *Block)
 }
 
 
-link_internal picked_octree_node_block*
+
+
+
+link_internal picked_octree_node_block_array
+PickedOctreeNodeBlockArray(memory_arena *Memory)
+{
+  picked_octree_node_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal picked_octree_node_block *
 Allocate_picked_octree_node_block(memory_arena *Memory)
 {
-  picked_octree_node_block *Result = Allocate(picked_octree_node_block, Memory, 1);
-  Result->Elements = Allocate(picked_octree_node, Memory, 8);
+  picked_octree_node_block *Result = Allocate( picked_octree_node_block, Memory, 1);
+  Result->Elements = Allocate( picked_octree_node, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(picked_octree_node_block_array_index Index)
+CS( picked_octree_node_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(picked_octree_node_block_array *Array, picked_octree_node_block_array_index Index)
+RemoveUnordered( picked_octree_node_block_array *Array, picked_octree_node_block_array_index Index)
 {
   picked_octree_node_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(picked_octree_node_block_array *Array, picked_octree_node_block_
   }
 }
 
+link_internal picked_octree_node_block_array_index
+Find( picked_octree_node_block_array *Array, picked_octree_node *Query)
+{
+  picked_octree_node_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(picked_octree_node_block_array_index *Index)
+{
+  NotImplemented;
+  picked_octree_node_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal picked_octree_node *
-Push(picked_octree_node_block_array *Array, picked_octree_node *Element)
+Push( picked_octree_node_block_array *Array, picked_octree_node *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

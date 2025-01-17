@@ -1,4 +1,4 @@
-// src/engine/world.h:53:0
+// src/engine/world.h:57:0
 
 struct octree_node_ptr_block
 {
@@ -171,22 +171,33 @@ AtElements(octree_node_ptr_block *Block)
 }
 
 
-link_internal octree_node_ptr_block*
+
+
+
+link_internal octree_node_ptr_block_array
+OctreeNodePtrBlockArray(memory_arena *Memory)
+{
+  octree_node_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal octree_node_ptr_block *
 Allocate_octree_node_ptr_block(memory_arena *Memory)
 {
-  octree_node_ptr_block *Result = Allocate(octree_node_ptr_block, Memory, 1);
-  Result->Elements = Allocate(octree_node_ptr, Memory, 8);
+  octree_node_ptr_block *Result = Allocate( octree_node_ptr_block, Memory, 1);
+  Result->Elements = Allocate( octree_node_ptr, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(octree_node_ptr_block_array_index Index)
+CS( octree_node_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index Index)
+RemoveUnordered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index Index)
 {
   octree_node_ptr_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(octree_node_ptr_block_array *Array, octree_node_ptr_block_array_
   }
 }
 
+link_internal octree_node_ptr_block_array_index
+Find( octree_node_ptr_block_array *Array, octree_node_ptr *Query)
+{
+  octree_node_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(octree_node_ptr_block_array_index *Index)
+{
+  NotImplemented;
+  octree_node_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal octree_node_ptr *
-Push(octree_node_ptr_block_array *Array, octree_node_ptr *Element)
+Push( octree_node_ptr_block_array *Array, octree_node_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

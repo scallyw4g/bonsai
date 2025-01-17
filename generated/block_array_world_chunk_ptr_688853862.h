@@ -1,22 +1,33 @@
 // src/engine/world_chunk.cpp:2:0
 
 
-link_internal world_chunk_ptr_block*
+
+
+
+link_internal world_chunk_ptr_block_array
+WorldChunkPtrBlockArray(memory_arena *Memory)
+{
+  world_chunk_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal world_chunk_ptr_block *
 Allocate_world_chunk_ptr_block(memory_arena *Memory)
 {
-  world_chunk_ptr_block *Result = Allocate(world_chunk_ptr_block, Memory, 1);
-  Result->Elements = Allocate(world_chunk_ptr, Memory, 32);
+  world_chunk_ptr_block *Result = Allocate( world_chunk_ptr_block, Memory, 1);
+  Result->Elements = Allocate( world_chunk_ptr, Memory, 32);
   return Result;
 }
 
 link_internal cs
-CS(world_chunk_ptr_block_array_index Index)
+CS( world_chunk_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
+RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
 {
   world_chunk_ptr_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_
   }
 }
 
+link_internal world_chunk_ptr_block_array_index
+Find( world_chunk_ptr_block_array *Array, world_chunk_ptr *Query)
+{
+  world_chunk_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(world_chunk_ptr_block_array_index *Index)
+{
+  NotImplemented;
+  world_chunk_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal world_chunk_ptr *
-Push(world_chunk_ptr_block_array *Array, world_chunk_ptr *Element)
+Push( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

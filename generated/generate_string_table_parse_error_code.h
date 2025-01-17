@@ -6,7 +6,7 @@ ToStringPrefixless(parse_error_code Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ParseErrorCode_None: { Result = CSz("None"); } break;
+        case ParseErrorCode_None: { Result = CSz("None"); } break;
     case ParseErrorCode_ExpectedSemicolonOrEquals: { Result = CSz("ExpectedSemicolonOrEquals"); } break;
     case ParseErrorCode_StreamEndedUnexpectedly: { Result = CSz("StreamEndedUnexpectedly"); } break;
     case ParseErrorCode_RequireTokenFailed: { Result = CSz("RequireTokenFailed"); } break;
@@ -44,7 +44,7 @@ ToString(parse_error_code Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ParseErrorCode_None: { Result = CSz("ParseErrorCode_None"); } break;
+        case ParseErrorCode_None: { Result = CSz("ParseErrorCode_None"); } break;
     case ParseErrorCode_ExpectedSemicolonOrEquals: { Result = CSz("ParseErrorCode_ExpectedSemicolonOrEquals"); } break;
     case ParseErrorCode_StreamEndedUnexpectedly: { Result = CSz("ParseErrorCode_StreamEndedUnexpectedly"); } break;
     case ParseErrorCode_RequireTokenFailed: { Result = CSz("ParseErrorCode_RequireTokenFailed"); } break;

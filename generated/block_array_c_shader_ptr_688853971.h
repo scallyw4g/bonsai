@@ -1,22 +1,33 @@
 // external/bonsai_stdlib/src/shader.cpp:2:0
 
 
-link_internal shader_ptr_block*
+
+
+
+link_internal shader_ptr_block_array
+ShaderPtrBlockArray(memory_arena *Memory)
+{
+  shader_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal shader_ptr_block *
 Allocate_shader_ptr_block(memory_arena *Memory)
 {
-  shader_ptr_block *Result = Allocate(shader_ptr_block, Memory, 1);
-  Result->Elements = Allocate(shader_ptr, Memory, 64);
+  shader_ptr_block *Result = Allocate( shader_ptr_block, Memory, 1);
+  Result->Elements = Allocate( shader_ptr, Memory, 64);
   return Result;
 }
 
 link_internal cs
-CS(shader_ptr_block_array_index Index)
+CS( shader_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(shader_ptr_block_array *Array, shader_ptr_block_array_index Index)
+RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Index)
 {
   shader_ptr_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(shader_ptr_block_array *Array, shader_ptr_block_array_index Inde
   }
 }
 
+link_internal shader_ptr_block_array_index
+Find( shader_ptr_block_array *Array, shader_ptr *Query)
+{
+  shader_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(shader_ptr_block_array_index *Index)
+{
+  NotImplemented;
+  shader_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal shader_ptr *
-Push(shader_ptr_block_array *Array, shader_ptr *Element)
+Push( shader_ptr_block_array *Array, shader_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

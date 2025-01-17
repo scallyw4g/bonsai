@@ -6,7 +6,7 @@ ToStringPrefixless(data_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
+        case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
     case DataType_v3: { Result = CSz("v3"); } break;
     case DataType_v3_u8: { Result = CSz("u8"); } break;
 
@@ -22,7 +22,7 @@ ToString(data_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case DataType_Undefinded: { Result = CSz("DataType_Undefinded"); } break;
+        case DataType_Undefinded: { Result = CSz("DataType_Undefinded"); } break;
     case DataType_v3: { Result = CSz("DataType_v3"); } break;
     case DataType_v3_u8: { Result = CSz("DataType_v3_u8"); } break;
 
@@ -37,7 +37,7 @@ DataType(counted_string S)
 {
   data_type Result = {};
 
-  if (StringsMatch(S, CSz("DataType_Undefinded"))) { return DataType_Undefinded; }
+    if (StringsMatch(S, CSz("DataType_Undefinded"))) { return DataType_Undefinded; }
   if (StringsMatch(S, CSz("DataType_v3"))) { return DataType_v3; }
   if (StringsMatch(S, CSz("DataType_v3_u8"))) { return DataType_v3_u8; }
 

@@ -1,22 +1,33 @@
 // src/engine/render/gpu_timer.cpp:1:0
 
 
-link_internal gpu_timer_block*
+
+
+
+link_internal gpu_timer_block_array
+GpuTimerBlockArray(memory_arena *Memory)
+{
+  gpu_timer_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal gpu_timer_block *
 Allocate_gpu_timer_block(memory_arena *Memory)
 {
-  gpu_timer_block *Result = Allocate(gpu_timer_block, Memory, 1);
-  Result->Elements = Allocate(gpu_timer, Memory, 128);
+  gpu_timer_block *Result = Allocate( gpu_timer_block, Memory, 1);
+  Result->Elements = Allocate( gpu_timer, Memory, 128);
   return Result;
 }
 
 link_internal cs
-CS(gpu_timer_block_array_index Index)
+CS( gpu_timer_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
+RemoveUnordered( gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
 {
   gpu_timer_block_array_index LastI = LastIndex(Array);
 
@@ -59,8 +70,33 @@ RemoveUnordered(gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
   }
 }
 
+link_internal gpu_timer_block_array_index
+Find( gpu_timer_block_array *Array, gpu_timer *Query)
+{
+  gpu_timer_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(gpu_timer_block_array_index *Index)
+{
+  NotImplemented;
+  gpu_timer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal gpu_timer *
-Push(gpu_timer_block_array *Array, gpu_timer *Element)
+Push( gpu_timer_block_array *Array, gpu_timer *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

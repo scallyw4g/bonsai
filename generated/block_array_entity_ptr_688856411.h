@@ -171,22 +171,33 @@ AtElements(entity_ptr_block *Block)
 }
 
 
-link_internal entity_ptr_block*
+
+
+
+link_internal entity_ptr_block_array
+EntityPtrBlockArray(memory_arena *Memory)
+{
+  entity_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal entity_ptr_block *
 Allocate_entity_ptr_block(memory_arena *Memory)
 {
-  entity_ptr_block *Result = Allocate(entity_ptr_block, Memory, 1);
-  Result->Elements = Allocate(entity_ptr, Memory, 8);
+  entity_ptr_block *Result = Allocate( entity_ptr_block, Memory, 1);
+  Result->Elements = Allocate( entity_ptr, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(entity_ptr_block_array_index Index)
+CS( entity_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(entity_ptr_block_array *Array, entity_ptr_block_array_index Index)
+RemoveUnordered( entity_ptr_block_array *Array, entity_ptr_block_array_index Index)
 {
   entity_ptr_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(entity_ptr_block_array *Array, entity_ptr_block_array_index Inde
   }
 }
 
+link_internal entity_ptr_block_array_index
+Find( entity_ptr_block_array *Array, entity_ptr *Query)
+{
+  entity_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(entity_ptr_block_array_index *Index)
+{
+  NotImplemented;
+  entity_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal entity_ptr *
-Push(entity_ptr_block_array *Array, entity_ptr *Element)
+Push( entity_ptr_block_array *Array, entity_ptr *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

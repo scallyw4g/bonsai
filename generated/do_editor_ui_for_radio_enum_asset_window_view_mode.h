@@ -18,7 +18,7 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("AssetFiles"), UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
+        { CSz("AssetFiles"), UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
     { CSz("AssetTable"), UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
   };
 

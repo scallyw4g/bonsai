@@ -18,7 +18,7 @@ RadioButtonGroup_brush_layer_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Noise"), UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Noise")), BrushLayerType_Noise },
+        { CSz("Noise"), UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Noise")), BrushLayerType_Noise },
     { CSz("Shape"), UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Shape")), BrushLayerType_Shape },
   };
 

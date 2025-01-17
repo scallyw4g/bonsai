@@ -171,22 +171,33 @@ AtElements(gpu_readback_buffer_block *Block)
 }
 
 
-link_internal gpu_readback_buffer_block*
+
+
+
+link_internal gpu_readback_buffer_block_array
+GpuReadbackBufferBlockArray(memory_arena *Memory)
+{
+  gpu_readback_buffer_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal gpu_readback_buffer_block *
 Allocate_gpu_readback_buffer_block(memory_arena *Memory)
 {
-  gpu_readback_buffer_block *Result = Allocate(gpu_readback_buffer_block, Memory, 1);
-  Result->Elements = Allocate(gpu_readback_buffer, Memory, 8);
+  gpu_readback_buffer_block *Result = Allocate( gpu_readback_buffer_block, Memory, 1);
+  Result->Elements = Allocate( gpu_readback_buffer, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(gpu_readback_buffer_block_array_index Index)
+CS( gpu_readback_buffer_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
+RemoveUnordered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
 {
   gpu_readback_buffer_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(gpu_readback_buffer_block_array *Array, gpu_readback_buffer_bloc
   }
 }
 
+link_internal gpu_readback_buffer_block_array_index
+Find( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Query)
+{
+  gpu_readback_buffer_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(gpu_readback_buffer_block_array_index *Index)
+{
+  NotImplemented;
+  gpu_readback_buffer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal gpu_readback_buffer *
-Push(gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
+Push( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

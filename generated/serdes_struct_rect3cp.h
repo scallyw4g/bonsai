@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:452:0
+// src/engine/serdes.cpp:274:0
 
 link_internal bonsai_type_info
-TypeInfo(bonsai_type_info *Ignored)
+TypeInfo(rect3cp *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("bonsai_type_info");
+  Result.Name = CSz("rect3cp");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(bonsai_type_info *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, rect3cp *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,22 +33,15 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    bonsai_type_info *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Name); // default
+    rect3cp *Element = BaseElement + ElementIndex;
+                                Result &= Serialize(Bytes, &Element->Min); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Version); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->SizeOfInBytes); // default
+                            Result &= Serialize(Bytes, &Element->Max); // default
 
     
 
@@ -59,21 +52,21 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memory)
 {
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Name, Memory);
+  Result &= Deserialize(Bytes, &Element->Min, Memory);
 
 
 
@@ -81,15 +74,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Version, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->SizeOfInBytes, Memory);
+  Result &= Deserialize(Bytes, &Element->Max, Memory);
 
   
 
@@ -98,7 +83,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

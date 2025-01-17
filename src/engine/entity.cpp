@@ -1367,6 +1367,16 @@ Intersect(world *World, entity *First, aabb *Second)
   return Result;
 }
 
+// TODO(Jesse): There's probably a better way to do this ..
+inline b32
+Intersect(world *World, rect3cp *First, rect3cp *Second)
+{
+  rect3 R0  = GetSimSpaceAABB(World, First);
+  rect3 R1  = GetSimSpaceAABB(World, Second);
+  b32 Result = Intersect(&R0, &R1);
+  return Result;
+}
+
 inline b32
 Intersect(world *World, aabb *First, entity *Second)
 {

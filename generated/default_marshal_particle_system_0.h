@@ -86,7 +86,7 @@ Live->ElapsedSinceLastEmission = Stored->ElapsedSinceLastEmission;
 
 RangeIterator(Index, 6)
 {
- Live->PackedHSVColors[Index] = MagicaVoxelDefaultPaletteToPackedHSV(Stored->MCVColors[Index]);
+     Live->PackedHSVColors[Index] = MagicaVoxelDefaultPaletteToPackedHSV(Stored->MCVColors[Index]);
 
 }
 

@@ -612,8 +612,8 @@ MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpace
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P);
 
-link_internal world_chunk_ptr_buffer
-GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
+/* link_internal octree_node_ptr_buffer */
+/* GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory); */
 
 link_internal standing_spot_buffer
 GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_position P, r32 GatherRadius, v3 EntityRadius, memory_arena *Memory);

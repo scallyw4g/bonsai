@@ -10,7 +10,7 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Level"), UiId(Window, Cast(void*, Element), Cast(void*, "engine_debug_view_mode EngineDebugViewMode_Level")), EngineDebugViewMode_Level },
+        { CSz("Level"), UiId(Window, Cast(void*, Element), Cast(void*, "engine_debug_view_mode EngineDebugViewMode_Level")), EngineDebugViewMode_Level },
     { CSz("WorldEdit"), UiId(Window, Cast(void*, Element), Cast(void*, "engine_debug_view_mode EngineDebugViewMode_WorldEdit")), EngineDebugViewMode_WorldEdit },
     { CSz("Entities"), UiId(Window, Cast(void*, Element), Cast(void*, "engine_debug_view_mode EngineDebugViewMode_Entities")), EngineDebugViewMode_Entities },
     { CSz("Assets"), UiId(Window, Cast(void*, Element), Cast(void*, "engine_debug_view_mode EngineDebugViewMode_Assets")), EngineDebugViewMode_Assets },

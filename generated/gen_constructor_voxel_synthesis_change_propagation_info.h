@@ -1,14 +1,14 @@
 // src/engine/voxel_synthesis.h:309:0
 
 link_internal voxel_synthesis_change_propagation_info
-VoxelSynthesisChangePropagationInfo( tile_rule   PrevTileOptions , v3i   PrevTileP , v3i   DirOfTravel  )
+VoxelSynthesisChangePropagationInfo(  tile_rule   PrevTileOptions , v3i   PrevTileP , v3i   DirOfTravel  )
 {
   voxel_synthesis_change_propagation_info Reuslt = {
-    .PrevTileOptions = PrevTileOptions
+            .PrevTileOptions = PrevTileOptions
+
+,        .PrevTileP = PrevTileP
 ,
-    .PrevTileP = PrevTileP
-,
-    .DirOfTravel = DirOfTravel
+        .DirOfTravel = DirOfTravel
   };
 
   

@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_tag*,&Element->Tag),
+        Cast(maybe_tag*, &Element->Tag),
         CSz("Tag"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, 
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(ray*,&Element->Ray),
+        Cast(ray*, &Element->Ray),
         CSz("Ray"),
         Params
         );

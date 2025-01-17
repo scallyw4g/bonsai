@@ -171,22 +171,33 @@ AtElements(voxel_stack_element_block *Block)
 }
 
 
-link_internal voxel_stack_element_block*
+
+
+
+link_internal voxel_stack_element_block_array
+VoxelStackElementBlockArray(memory_arena *Memory)
+{
+  voxel_stack_element_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal voxel_stack_element_block *
 Allocate_voxel_stack_element_block(memory_arena *Memory)
 {
-  voxel_stack_element_block *Result = Allocate(voxel_stack_element_block, Memory, 1);
-  Result->Elements = Allocate(voxel_stack_element, Memory, 8);
+  voxel_stack_element_block *Result = Allocate( voxel_stack_element_block, Memory, 1);
+  Result->Elements = Allocate( voxel_stack_element, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(voxel_stack_element_block_array_index Index)
+CS( voxel_stack_element_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
+RemoveUnordered( voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(voxel_stack_element_block_array *Array, voxel_stack_element_bloc
   }
 }
 
+link_internal voxel_stack_element_block_array_index
+Find( voxel_stack_element_block_array *Array, voxel_stack_element *Query)
+{
+  voxel_stack_element_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(voxel_stack_element_block_array_index *Index)
+{
+  NotImplemented;
+  voxel_stack_element_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal voxel_stack_element *
-Push(voxel_stack_element_block_array *Array, voxel_stack_element *Element)
+Push( voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

@@ -171,22 +171,33 @@ AtElements(file_traversal_node_block *Block)
 }
 
 
-link_internal file_traversal_node_block*
+
+
+
+link_internal file_traversal_node_block_array
+FileTraversalNodeBlockArray(memory_arena *Memory)
+{
+  file_traversal_node_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal file_traversal_node_block *
 Allocate_file_traversal_node_block(memory_arena *Memory)
 {
-  file_traversal_node_block *Result = Allocate(file_traversal_node_block, Memory, 1);
-  Result->Elements = Allocate(file_traversal_node, Memory, 8);
+  file_traversal_node_block *Result = Allocate( file_traversal_node_block, Memory, 1);
+  Result->Elements = Allocate( file_traversal_node, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(file_traversal_node_block_array_index Index)
+CS( file_traversal_node_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
 link_internal void
-RemoveUnordered(file_traversal_node_block_array *Array, file_traversal_node_block_array_index Index)
+RemoveUnordered( file_traversal_node_block_array *Array, file_traversal_node_block_array_index Index)
 {
   file_traversal_node_block_array_index LastI = LastIndex(Array);
 
@@ -229,8 +240,33 @@ RemoveUnordered(file_traversal_node_block_array *Array, file_traversal_node_bloc
   }
 }
 
+link_internal file_traversal_node_block_array_index
+Find( file_traversal_node_block_array *Array, file_traversal_node *Query)
+{
+  file_traversal_node_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if (E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(file_traversal_node_block_array_index *Index)
+{
+  NotImplemented;
+  file_traversal_node_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  /* b32 Result = AreEqual(*Index, Test); */
+  b32 Result = False;
+  return Result;
+}
+
 link_internal file_traversal_node *
-Push(file_traversal_node_block_array *Array, file_traversal_node *Element)
+Push( file_traversal_node_block_array *Array, file_traversal_node *Element)
 {
   if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
 

@@ -224,6 +224,7 @@ FinalizeEntityUpdate(entity *Entity)
 #include <generated/anonymous_entity_position_info_ynGg9Dhj.h>
 }
 
+
 link_internal void
 DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
 {

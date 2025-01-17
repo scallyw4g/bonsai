@@ -6,7 +6,7 @@ TypeInfo(bonsai_type_info_buffer *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("bonsai_type_info_buffer");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -34,17 +34,21 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, um
   RangeIterator_t(umm, ElementIndex, Count)
   {
     bonsai_type_info_buffer *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Count); // default
+                                Result &= Serialize(Bytes, &Element->Count); // default
 
 
 
 
 
 
-    if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-    if (Element->Start) { Result &= Serialize(Bytes, Element->Start,Element->Count ); }
+                    if (Element->Start) { Result &= Serialize(Bytes, Element->Start, Element->Count ); }
+
+
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -65,7 +69,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Count, Memory);
 
@@ -73,12 +77,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, me
 
 
 
-  b64 HadStartPointer = Read_u64(Bytes);
+        b64 HadStartPointer = Read_u64(Bytes);
   Assert(HadStartPointer < 2); // Should be 0 or 1
 
-  if (HadStartPointer)
+        if (HadStartPointer)
   {
-    umm Count =Element->Count;
+        umm Count = Element->Count;
 
 
     if (Element->Start == 0)
@@ -88,6 +92,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, me
 
     Result &= Deserialize(Bytes, Element->Start, Memory, Count);
   }
+
+
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -101,7 +108,7 @@ Deserialize(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Me
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

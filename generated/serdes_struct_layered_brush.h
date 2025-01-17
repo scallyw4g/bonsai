@@ -6,7 +6,7 @@ TypeInfo(layered_brush *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("layered_brush");
-  Result.Version =3 ;
+  Result.Version =  3 ;
 
   /* type.map(member) */
   /* { */
@@ -29,23 +29,23 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count = 
 
   b32 Result = True;
 
-  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =3;
+    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber = 3;
   Serialize(Bytes, &VersionNumber);
 
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     layered_brush *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->LayerCount); // default
+                                Result &= Serialize(Bytes, &Element->LayerCount); // default
 
 
 
 
 
 
-    {
-      // TODO(Jesse): Should this really be a safe cast?
+                        {
+            // TODO(Jesse): Should this really be a safe cast?
       umm ThisCount = umm(Element->LayerCount);
 
       Result &= Serialize(Bytes, Element->Layers, ThisCount);
@@ -55,26 +55,26 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count = 
 
 
 
-    Result &= Serialize(Bytes, &Element->SeedBrushWithSelection); // default
+                            Result &= Serialize(Bytes, &Element->SeedBrushWithSelection); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->BrushFollowsCursor); // default
+                            Result &= Serialize(Bytes, &Element->BrushFollowsCursor); // default
 
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Modifier); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->Modifier); // enum
 
 
 
@@ -99,11 +99,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, layered_brush *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=3);
+  Assert(TypeInfo->Version <= 3);
 
   b32 Result = True;
 
-  if (TypeInfo->Version == 0)
+    if (TypeInfo->Version == 0)
   {
     layered_brush_0 T0 = {};
     Result &= Deserialize(Bytes, &T0, Memory);
@@ -123,7 +123,7 @@ DeserializeVersioned(u8_cursor *Bytes, layered_brush *Element, bonsai_type_info 
   }
 
 
-  if (TypeInfo->Version ==3)
+  if (TypeInfo->Version == 3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -136,7 +136,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
 
@@ -144,8 +144,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
 
 
-  {
-    // TODO(Jesse): Should this really be a safe cast?
+            {
+        // TODO(Jesse): Should this really be a safe cast?
     umm Count = umm(Element->LayerCount);
 
     Result &= Deserialize(Bytes, Element->Layers, Memory, Count);
@@ -155,7 +155,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SeedBrushWithSelection, Memory);
 
@@ -163,7 +163,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->BrushFollowsCursor, Memory);
 
@@ -171,12 +171,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
 
 
-  Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
+          Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
 
 
 
 
-  Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
+          Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
 
 
 
@@ -197,7 +197,7 @@ Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory, umm 
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("layered_brush"));
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("layered_brush"));
 
     if (MaybeSerializedType.Tag)
     {

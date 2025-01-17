@@ -6,7 +6,7 @@ ToStringPrefixless(world_edit_mode_modifier Type)
   counted_string Result = {};
   switch (Type)
   {
-    case WorldEdit_Modifier_Default: { Result = CSz("Default"); } break;
+        case WorldEdit_Modifier_Default: { Result = CSz("Default"); } break;
     case WorldEdit_Modifier_Flood: { Result = CSz("Flood"); } break;
     case WorldEdit_Modifier_Surface: { Result = CSz("Surface"); } break;
 
@@ -22,7 +22,7 @@ ToString(world_edit_mode_modifier Type)
   counted_string Result = {};
   switch (Type)
   {
-    case WorldEdit_Modifier_Default: { Result = CSz("WorldEdit_Modifier_Default"); } break;
+        case WorldEdit_Modifier_Default: { Result = CSz("WorldEdit_Modifier_Default"); } break;
     case WorldEdit_Modifier_Flood: { Result = CSz("WorldEdit_Modifier_Flood"); } break;
     case WorldEdit_Modifier_Surface: { Result = CSz("WorldEdit_Modifier_Surface"); } break;
 
@@ -37,7 +37,7 @@ WorldEditModeModifier(counted_string S)
 {
   world_edit_mode_modifier Result = {};
 
-  if (StringsMatch(S, CSz("WorldEdit_Modifier_Default"))) { return WorldEdit_Modifier_Default; }
+    if (StringsMatch(S, CSz("WorldEdit_Modifier_Default"))) { return WorldEdit_Modifier_Default; }
   if (StringsMatch(S, CSz("WorldEdit_Modifier_Flood"))) { return WorldEdit_Modifier_Flood; }
   if (StringsMatch(S, CSz("WorldEdit_Modifier_Surface"))) { return WorldEdit_Modifier_Surface; }
 
