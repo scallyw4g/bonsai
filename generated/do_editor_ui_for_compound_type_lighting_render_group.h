@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(game_lights*,&Element->Lights),
+        Cast(game_lights*, &Element->Lights),
         CSz("Lights"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*,&Element->FBO),
+        Cast(framebuffer*, &Element->FBO),
         CSz("FBO"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*,&Element->LuminanceTex),
+        Cast(texture*, &Element->LuminanceTex),
         CSz("LuminanceTex"),
         Params
         );
@@ -71,10 +71,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shader*,&Element->Shader),
+        Cast(shader*, &Element->Shader),
         CSz("Shader"),
         Params
         );
@@ -86,10 +86,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bloom_render_group*,&Element->Bloom),
+        Cast(bloom_render_group*, &Element->Bloom),
         CSz("Bloom"),
         Params
         );

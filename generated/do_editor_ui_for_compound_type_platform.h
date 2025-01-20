@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*,&Element->LowPriority),
+        Cast(work_queue*, &Element->LowPriority),
         CSz("LowPriority"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*,&Element->HighPriority),
+        Cast(work_queue*, &Element->HighPriority),
         CSz("HighPriority"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*,&Element->RenderQ),
+        Cast(work_queue*, &Element->RenderQ),
         CSz("RenderQ"),
         Params
         );
@@ -71,10 +71,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*,&Element->WorldUpdateQ),
+        Cast(work_queue*, &Element->WorldUpdateQ),
         CSz("WorldUpdateQ"),
         Params
         );
@@ -86,10 +86,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->HighPriorityWorkerCount),
+        Cast(u32*, &Element->HighPriorityWorkerCount),
         CSz("HighPriorityWorkerCount"),
         Params
         );
@@ -100,12 +100,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*,&Element->HighPriorityModeFutex),
+        Cast(bonsai_futex*, &Element->HighPriorityModeFutex),
         CSz("HighPriorityModeFutex"),
         Params
         );
@@ -117,10 +117,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*,&Element->WorkerThreadsSuspendFutex),
+        Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex),
         CSz("WorkerThreadsSuspendFutex"),
         Params
         );
@@ -132,10 +132,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*,&Element->WorkerThreadsExitFutex),
+        Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex),
         CSz("WorkerThreadsExitFutex"),
         Params
         );
@@ -147,7 +147,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(thread_startup_params*, Element->Threads),
@@ -162,10 +162,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v2*,&Element->MouseP),
+        Cast(v2*, &Element->MouseP),
         CSz("MouseP"),
         Params
         );
@@ -177,10 +177,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v2*,&Element->MouseDP),
+        Cast(v2*, &Element->MouseDP),
         CSz("MouseDP"),
         Params
         );
@@ -192,7 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->Memory),
@@ -207,10 +207,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->GameTime),
+        Cast(r32*, &Element->GameTime),
         CSz("GameTime"),
         Params
         );
@@ -221,12 +221,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->dt),
+        Cast(r32*, &Element->dt),
         CSz("dt"),
         Params
         );
@@ -237,12 +237,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v2*,&Element->ScreenDim),
+        Cast(v2*, &Element->ScreenDim),
         CSz("ScreenDim"),
         Params
         );
@@ -254,10 +254,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(input*,&Element->Input),
+        Cast(input*, &Element->Input),
         CSz("Input"),
         Params
         );
@@ -269,7 +269,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(server_state*, Element->ServerState),

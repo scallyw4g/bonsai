@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue_entry_type*,&Element->Type),
+        Cast(work_queue_entry_type*, &Element->Type),
         CSz("Type"),
         Params
         );

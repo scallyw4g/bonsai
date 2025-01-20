@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->BytesSolidGeoLastFrame),
+        Cast(u32*, &Element->BytesSolidGeoLastFrame),
         CSz("BytesSolidGeoLastFrame"),
         Params
         );
@@ -40,12 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->BytesTransGeoLastFrame),
+        Cast(u32*, &Element->BytesTransGeoLastFrame),
         CSz("BytesTransGeoLastFrame"),
         Params
         );
@@ -56,12 +56,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->VertsDrawnLastFrame),
+        Cast(u32*, &Element->VertsDrawnLastFrame),
         CSz("VertsDrawnLastFrame"),
         Params
         );
@@ -72,12 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->DrawCallsLastFrame),
+        Cast(u32*, &Element->DrawCallsLastFrame),
         CSz("DrawCallsLastFrame"),
         Params
         );
@@ -88,7 +88,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

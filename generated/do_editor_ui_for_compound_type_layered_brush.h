@@ -26,15 +26,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (ToggleButton(Ui, CSz("v NameBuf[(256) + 1]"), CSz("> NameBuf[(256) + 1]"), UiId(Window, "toggle layered_brush char  NameBuf", Element->NameBuf), Params ))
+                        if (ToggleButton(Ui, CSz("v NameBuf[(256) + 1]"), CSz("> NameBuf[(256) + 1]"), UiId(Window, "toggle layered_brush char  NameBuf", Element->NameBuf), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, (256) + 1)
         {
-          DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
+                    DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
 
- PushNewRow(Ui); 
+           PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
@@ -42,12 +42,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->LayerCount),
+        Cast(s32*, &Element->LayerCount),
         CSz("LayerCount"),
         Params
         );
@@ -58,15 +58,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers), Params ))
+                  if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 16)
         {
-          DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
+                    DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
 
           
         }
@@ -77,13 +77,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
       
-      if (ToggleButton(Ui, CSz("v LayerPreviews[16]"), CSz("> LayerPreviews[16]"), UiId(Window, "toggle layered_brush chunk_thumbnail LayerPreviews", Element->LayerPreviews), Params ))
+                  if (ToggleButton(Ui, CSz("v LayerPreviews[16]"), CSz("> LayerPreviews[16]"), UiId(Window, "toggle layered_brush chunk_thumbnail LayerPreviews", Element->LayerPreviews), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 16)
         {
-          DoEditorUi(Ui, Window, Element->LayerPreviews+ArrayIndex, FSz("LayerPreviews[%d]", ArrayIndex), Params);
+                    DoEditorUi(Ui, Window, Element->LayerPreviews+ArrayIndex, FSz("LayerPreviews[%d]", ArrayIndex), Params);
 
           
         }
@@ -94,10 +94,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(chunk_thumbnail*,&Element->SeedLayer),
+        Cast(chunk_thumbnail*, &Element->SeedLayer),
         CSz("SeedLayer"),
         Params
         );
@@ -109,10 +109,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->SeedBrushWithSelection),
+        Cast(b8*, &Element->SeedBrushWithSelection),
         CSz("SeedBrushWithSelection"),
         Params
         );
@@ -123,12 +123,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->BrushFollowsCursor),
+        Cast(b8*, &Element->BrushFollowsCursor),
         CSz("BrushFollowsCursor"),
         Params
         );
@@ -139,12 +139,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode*,&Element->Mode),
+        Cast(world_edit_mode*, &Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -156,10 +156,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode_modifier*,&Element->Modifier),
+        Cast(world_edit_mode_modifier*, &Element->Modifier),
         CSz("Modifier"),
         Params
         );
@@ -171,10 +171,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(chunk_thumbnail*,&Element->Preview),
+        Cast(chunk_thumbnail*, &Element->Preview),
         CSz("Preview"),
         Params
         );

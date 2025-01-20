@@ -10,10 +10,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name,
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Undefined"), UiId(Window, "enum AssetType_Undefined", Element), Params))
     {
-      *Element = AssetType_Undefined;
+            *Element = AssetType_Undefined;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Models"), UiId(Window, "enum AssetType_Models", Element), Params))
     {
-      *Element = AssetType_Models;
+            *Element = AssetType_Models;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -31,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldChunk"), UiId(Window, "enum AssetType_WorldChunk", Element), Params))
     {
-      *Element = AssetType_WorldChunk;
+            *Element = AssetType_WorldChunk;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

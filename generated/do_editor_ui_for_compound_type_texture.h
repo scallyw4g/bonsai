@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ID),
+        Cast(u32*, &Element->ID),
         CSz("ID"),
         Params
         );
@@ -40,12 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v2i*,&Element->Dim),
+        Cast(v2i*, &Element->Dim),
         CSz("Dim"),
         Params
         );
@@ -57,10 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->Slices),
+        Cast(u32*, &Element->Slices),
         CSz("Slices"),
         Params
         );
@@ -71,12 +71,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->Channels),
+        Cast(u32*, &Element->Channels),
         CSz("Channels"),
         Params
         );
@@ -87,11 +87,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                              DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->IsDepthTexture),
+        Cast(b8*, &Element->IsDepthTexture),
         CSz("IsDepthTexture"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -100,12 +100,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture_storage_format*,&Element->Format),
+        Cast(texture_storage_format*, &Element->Format),
         CSz("Format"),
         Params
         );
@@ -117,10 +117,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->DebugName),
+        Cast(cs*, &Element->DebugName),
         CSz("DebugName"),
         Params
         );
@@ -131,11 +131,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                              DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->Queued),
+        Cast(b8*, &Element->Queued),
         CSz("Queued"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -144,7 +144,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

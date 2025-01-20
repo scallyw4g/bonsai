@@ -26,13 +26,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(graphics_settings*,&Element->Graphics),
+        Cast(graphics_settings*, &Element->Graphics),
         CSz("Graphics"),
         Params
         );
+
+
+
+
+
+
+
+      
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -1162,6 +1162,7 @@ struct world_edit
 typedef world_edit* world_edit_ptr;
 
 poof(block_array(world_edit_ptr, {128}))
+#include <generated/block_array_world_edit_ptr_688735882.h>
 
 
 struct level_editor

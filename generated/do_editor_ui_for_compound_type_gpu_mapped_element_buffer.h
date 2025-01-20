@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *El
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(gpu_element_buffer_handles*,&Element->Handles),
+        Cast(gpu_element_buffer_handles*, &Element->Handles),
         CSz("Handles"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *El
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(untextured_3d_geometry_buffer*,&Element->Buffer),
+        Cast(untextured_3d_geometry_buffer*, &Element->Buffer),
         CSz("Buffer"),
         Params
         );

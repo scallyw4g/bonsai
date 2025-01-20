@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(engine_settings*,&Element->Settings),
+        Cast(engine_settings*, &Element->Settings),
         CSz("Settings"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_stdlib*,&Element->Stdlib),
+        Cast(bonsai_stdlib*, &Element->Stdlib),
         CSz("Stdlib"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(renderer_2d*,&Element->Ui),
+        Cast(renderer_2d*, &Element->Ui),
         CSz("Ui"),
         Params
         );
@@ -71,10 +71,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(application_api*,&Element->GameApi),
+        Cast(application_api*, &Element->GameApi),
         CSz("GameApi"),
         Params
         );
@@ -86,10 +86,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(hotkeys*,&Element->Hotkeys),
+        Cast(hotkeys*, &Element->Hotkeys),
         CSz("Hotkeys"),
         Params
         );
@@ -101,10 +101,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_ray*,&Element->MaybeMouseRay),
+        Cast(maybe_ray*, &Element->MaybeMouseRay),
         CSz("MaybeMouseRay"),
         Params
         );
@@ -116,7 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world*, Element->World),
@@ -131,7 +131,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(game_state*, Element->GameState),
@@ -146,10 +146,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(graphics*,&Element->Graphics),
+        Cast(graphics*, &Element->Graphics),
         CSz("Graphics"),
         Params
         );
@@ -161,10 +161,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(file_traversal_node*,&Element->RequestedGameLibReloadNode),
+        Cast(file_traversal_node*, &Element->RequestedGameLibReloadNode),
         CSz("RequestedGameLibReloadNode"),
         Params
         );
@@ -176,10 +176,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(game_lib_reload_behavior*,&Element->RequestedGameLibReloadBehavior),
+        Cast(game_lib_reload_behavior*, &Element->RequestedGameLibReloadBehavior),
         CSz("RequestedGameLibReloadBehavior"),
         Params
         );
@@ -191,10 +191,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(heap_allocator*,&Element->Heap),
+        Cast(heap_allocator*, &Element->Heap),
         CSz("Heap"),
         Params
         );
@@ -206,7 +206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->GameMemory),
@@ -221,7 +221,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->WorldUpdateMemory),
@@ -236,7 +236,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity*, Element->EntityTable),
@@ -251,10 +251,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(asset_system*,&Element->AssetSystem),
+        Cast(asset_system*, &Element->AssetSystem),
         CSz("AssetSystem"),
         Params
         );
@@ -266,10 +266,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->FrameIndex),
+        Cast(u32*, &Element->FrameIndex),
         CSz("FrameIndex"),
         Params
         );
@@ -280,12 +280,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(tiered_mesh_freelist*,&Element->geo_u3d_MeshFreelist),
+        Cast(tiered_mesh_freelist*, &Element->geo_u3d_MeshFreelist),
         CSz("geo_u3d_MeshFreelist"),
         Params
         );
@@ -297,10 +297,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(tiered_mesh_freelist*,&Element->world_chunk_MeshFreelist),
+        Cast(tiered_mesh_freelist*, &Element->world_chunk_MeshFreelist),
         CSz("world_chunk_MeshFreelist"),
         Params
         );
@@ -312,7 +312,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(debug_state*, Element->DebugState),
@@ -327,10 +327,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(engine_debug*,&Element->EngineDebug),
+        Cast(engine_debug*, &Element->EngineDebug),
         CSz("EngineDebug"),
         Params
         );
@@ -342,10 +342,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(level_editor*,&Element->Editor),
+        Cast(level_editor*, &Element->Editor),
         CSz("Editor"),
         Params
         );
@@ -357,10 +357,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_picked_voxel*,&Element->MousedOverVoxel),
+        Cast(maybe_picked_voxel*, &Element->MousedOverVoxel),
         CSz("MousedOverVoxel"),
         Params
         );
@@ -372,10 +372,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_standing_spot*,&Element->ClosestStandingSpotToCursor),
+        Cast(maybe_standing_spot*, &Element->ClosestStandingSpotToCursor),
         CSz("ClosestStandingSpotToCursor"),
         Params
         );
@@ -387,10 +387,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_entity_ptr*,&Element->HoverEntity),
+        Cast(maybe_entity_ptr*, &Element->HoverEntity),
         CSz("HoverEntity"),
         Params
         );
@@ -402,10 +402,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(render_entity_to_texture_group*,&Element->RTTGroup),
+        Cast(render_entity_to_texture_group*, &Element->RTTGroup),
         CSz("RTTGroup"),
         Params
         );

@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(resolution_setting*,&Element->Resolution),
+        Cast(resolution_setting*, &Element->Resolution),
         CSz("Resolution"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shadow_quality_setting*,&Element->ShadowQuality),
+        Cast(shadow_quality_setting*, &Element->ShadowQuality),
         CSz("ShadowQuality"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(lighting_quality_setting*,&Element->LightingQuality),
+        Cast(lighting_quality_setting*, &Element->LightingQuality),
         CSz("LightingQuality"),
         Params
         );
@@ -71,10 +71,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shader_language_setting*,&Element->ShaderLanguage),
+        Cast(shader_language_setting*, &Element->ShaderLanguage),
         CSz("ShaderLanguage"),
         Params
         );
@@ -86,10 +86,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(resolution_setting*,&Element->WindowStartingSize),
+        Cast(resolution_setting*, &Element->WindowStartingSize),
         CSz("WindowStartingSize"),
         Params
         );

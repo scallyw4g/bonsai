@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->AutoDayNightCycle),
+        Cast(b8*, &Element->AutoDayNightCycle),
         CSz("AutoDayNightCycle"),
         Params
         );
@@ -40,15 +40,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->tDay),
+        Cast(r32*, &Element->tDay),
         CSz("tDay"),
         Params
-,-PI32, PI32 );
+        , -PI32, PI32 );
 
 
 
@@ -56,15 +56,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(f32*,&Element->DawnIntensity),
+        Cast(f32*, &Element->DawnIntensity),
         CSz("DawnIntensity"),
         Params
-,0.f, 3.f );
+        , 0.f, 3.f );
 
 
 
@@ -72,12 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->DawnColor),
+        Cast(v3*, &Element->DawnColor),
         CSz("DawnColor"),
         Params
         );
@@ -89,13 +89,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(f32*,&Element->SunIntensity),
+        Cast(f32*, &Element->SunIntensity),
         CSz("SunIntensity"),
         Params
-,0.f, 3.f );
+        , 0.f, 3.f );
 
 
 
@@ -103,12 +103,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->SunColor),
+        Cast(v3*, &Element->SunColor),
         CSz("SunColor"),
         Params
         );
@@ -120,13 +120,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(f32*,&Element->DuskIntensity),
+        Cast(f32*, &Element->DuskIntensity),
         CSz("DuskIntensity"),
         Params
-,0.f, 3.f );
+        , 0.f, 3.f );
 
 
 
@@ -134,12 +134,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->DuskColor),
+        Cast(v3*, &Element->DuskColor),
         CSz("DuskColor"),
         Params
         );
@@ -151,13 +151,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(f32*,&Element->MoonIntensity),
+        Cast(f32*, &Element->MoonIntensity),
         CSz("MoonIntensity"),
         Params
-,0.f, 3.f );
+        , 0.f, 3.f );
 
 
 
@@ -165,12 +165,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->MoonColor),
+        Cast(v3*, &Element->MoonColor),
         CSz("MoonColor"),
         Params
         );
@@ -182,10 +182,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->CurrentSunColor),
+        Cast(v3*, &Element->CurrentSunColor),
         CSz("CurrentSunColor"),
         Params
         );

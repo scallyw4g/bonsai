@@ -10,10 +10,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, 
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("4096x2160"), UiId(Window, "enum ResolutionSetting_4096x2160", Element), Params))
     {
-      *Element = ResolutionSetting_4096x2160;
+            *Element = ResolutionSetting_4096x2160;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, 
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1920x1080"), UiId(Window, "enum ResolutionSetting_1920x1080", Element), Params))
     {
-      *Element = ResolutionSetting_1920x1080;
+            *Element = ResolutionSetting_1920x1080;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -31,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, resolution_setting *Element, 
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("1280x720"), UiId(Window, "enum ResolutionSetting_1280x720", Element), Params))
     {
-      *Element = ResolutionSetting_1280x720;
+            *Element = ResolutionSetting_1280x720;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

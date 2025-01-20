@@ -26,9 +26,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->Clicked),
+        Cast(b8*, &Element->Clicked),
         CSz("Clicked"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -37,11 +37,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                              DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->Pressed),
+        Cast(b8*, &Element->Pressed),
         CSz("Pressed"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -50,7 +50,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

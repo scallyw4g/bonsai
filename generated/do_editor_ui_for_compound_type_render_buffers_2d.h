@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SolidUIVertexBuffer),
+        Cast(u32*, &Element->SolidUIVertexBuffer),
         CSz("SolidUIVertexBuffer"),
         Params
         );
@@ -40,12 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SolidUIUVBuffer),
+        Cast(u32*, &Element->SolidUIUVBuffer),
         CSz("SolidUIUVBuffer"),
         Params
         );
@@ -56,12 +56,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SolidUIColorBuffer),
+        Cast(u32*, &Element->SolidUIColorBuffer),
         CSz("SolidUIColorBuffer"),
         Params
         );
@@ -72,12 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*,&Element->DebugTextureArray),
+        Cast(texture*, &Element->DebugTextureArray),
         CSz("DebugTextureArray"),
         Params
         );
@@ -89,10 +89,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->TextTextureUniform),
+        Cast(s32*, &Element->TextTextureUniform),
         CSz("TextTextureUniform"),
         Params
         );
@@ -103,12 +103,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shader*,&Element->Text2DShader),
+        Cast(shader*, &Element->Text2DShader),
         CSz("Text2DShader"),
         Params
         );
@@ -120,10 +120,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shader*,&Element->SolidUIShader),
+        Cast(shader*, &Element->SolidUIShader),
         CSz("SolidUIShader"),
         Params
         );
@@ -135,10 +135,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(textured_2d_geometry_buffer*,&Element->Geo),
+        Cast(textured_2d_geometry_buffer*, &Element->Geo),
         CSz("Geo"),
         Params
         );

@@ -10,7 +10,7 @@ RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Flat"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Flat")), TerrainGenType_Flat },
+        { CSz("Flat"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Flat")), TerrainGenType_Flat },
     { CSz("Checkerboard"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Checkerboard")), TerrainGenType_Checkerboard },
     { CSz("SinCos"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_SinCos")), TerrainGenType_SinCos },
     { CSz("Voronoi"), UiId(Window, Cast(void*, Element), Cast(void*, "terrain_gen_type TerrainGenType_Voronoi")), TerrainGenType_Voronoi },

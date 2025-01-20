@@ -10,10 +10,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum ToneMappingType_None", Element), Params))
     {
-      *Element = ToneMappingType_None;
+            *Element = ToneMappingType_None;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -22,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Reinhard"), UiId(Window, "enum ToneMappingType_Reinhard", Element), Params))
     {
-      *Element = ToneMappingType_Reinhard;
+            *Element = ToneMappingType_Reinhard;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -31,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Exposure"), UiId(Window, "enum ToneMappingType_Exposure", Element), Params))
     {
-      *Element = ToneMappingType_Exposure;
+            *Element = ToneMappingType_Exposure;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -40,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("AGX"), UiId(Window, "enum ToneMappingType_AGX", Element), Params))
     {
-      *Element = ToneMappingType_AGX;
+            *Element = ToneMappingType_AGX;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -49,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Sepia"), UiId(Window, "enum ToneMappingType_AGX_Sepia", Element), Params))
     {
-      *Element = ToneMappingType_AGX_Sepia;
+            *Element = ToneMappingType_AGX_Sepia;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
@@ -58,7 +58,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, tone_mapping_type *Element, c
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Punchy"), UiId(Window, "enum ToneMappingType_AGX_Punchy", Element), Params))
     {
-      *Element = ToneMappingType_AGX_Punchy;
+            *Element = ToneMappingType_AGX_Punchy;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

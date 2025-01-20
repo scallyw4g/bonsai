@@ -26,13 +26,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(chunk_data*, Element->ChunkData),
         CSz("ChunkData"),
         Params
         );
+
+
+
+
+
+
+
+      
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

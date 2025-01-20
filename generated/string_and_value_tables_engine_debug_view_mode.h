@@ -6,7 +6,7 @@ ToStringPrefixless(engine_debug_view_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
+        case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
     case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
     case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
     case EngineDebugViewMode_Assets: { Result = CSz("Assets"); } break;
@@ -15,7 +15,7 @@ ToStringPrefixless(engine_debug_view_mode Type)
     case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {
@@ -50,7 +50,7 @@ ToString(engine_debug_view_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-    case EngineDebugViewMode_Level: { Result = CSz("EngineDebugViewMode_Level"); } break;
+        case EngineDebugViewMode_Level: { Result = CSz("EngineDebugViewMode_Level"); } break;
     case EngineDebugViewMode_WorldEdit: { Result = CSz("EngineDebugViewMode_WorldEdit"); } break;
     case EngineDebugViewMode_Entities: { Result = CSz("EngineDebugViewMode_Entities"); } break;
     case EngineDebugViewMode_Assets: { Result = CSz("EngineDebugViewMode_Assets"); } break;
@@ -59,7 +59,7 @@ ToString(engine_debug_view_mode Type)
     case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {
@@ -86,7 +86,7 @@ EngineDebugViewMode(counted_string S)
 {
   engine_debug_view_mode Result = {};
 
-  if (StringsMatch(S, CSz("EngineDebugViewMode_Level"))) { return EngineDebugViewMode_Level; }
+    if (StringsMatch(S, CSz("EngineDebugViewMode_Level"))) { return EngineDebugViewMode_Level; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_WorldEdit"))) { return EngineDebugViewMode_WorldEdit; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_Entities"))) { return EngineDebugViewMode_Entities; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_Assets"))) { return EngineDebugViewMode_Assets; }

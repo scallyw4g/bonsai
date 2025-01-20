@@ -6,7 +6,7 @@ ToStringPrefixless(terrain_gen_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TerrainGenType_Flat: { Result = CSz("Flat"); } break;
+        case TerrainGenType_Flat: { Result = CSz("Flat"); } break;
     case TerrainGenType_Checkerboard: { Result = CSz("Checkerboard"); } break;
     case TerrainGenType_SinCos: { Result = CSz("SinCos"); } break;
     case TerrainGenType_Voronoi: { Result = CSz("Voronoi"); } break;
@@ -36,7 +36,7 @@ ToString(terrain_gen_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TerrainGenType_Flat: { Result = CSz("TerrainGenType_Flat"); } break;
+        case TerrainGenType_Flat: { Result = CSz("TerrainGenType_Flat"); } break;
     case TerrainGenType_Checkerboard: { Result = CSz("TerrainGenType_Checkerboard"); } break;
     case TerrainGenType_SinCos: { Result = CSz("TerrainGenType_SinCos"); } break;
     case TerrainGenType_Voronoi: { Result = CSz("TerrainGenType_Voronoi"); } break;
@@ -65,7 +65,7 @@ TerrainGenType(counted_string S)
 {
   terrain_gen_type Result = {};
 
-  if (StringsMatch(S, CSz("TerrainGenType_Flat"))) { return TerrainGenType_Flat; }
+    if (StringsMatch(S, CSz("TerrainGenType_Flat"))) { return TerrainGenType_Flat; }
   if (StringsMatch(S, CSz("TerrainGenType_Checkerboard"))) { return TerrainGenType_Checkerboard; }
   if (StringsMatch(S, CSz("TerrainGenType_SinCos"))) { return TerrainGenType_SinCos; }
   if (StringsMatch(S, CSz("TerrainGenType_Voronoi"))) { return TerrainGenType_Voronoi; }

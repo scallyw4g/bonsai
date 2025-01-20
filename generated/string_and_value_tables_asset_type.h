@@ -6,7 +6,7 @@ ToStringPrefixless(asset_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case AssetType_Undefined: { Result = CSz("Undefined"); } break;
+        case AssetType_Undefined: { Result = CSz("Undefined"); } break;
     case AssetType_Models: { Result = CSz("Models"); } break;
     case AssetType_WorldChunk: { Result = CSz("WorldChunk"); } break;
 
@@ -22,7 +22,7 @@ ToString(asset_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case AssetType_Undefined: { Result = CSz("AssetType_Undefined"); } break;
+        case AssetType_Undefined: { Result = CSz("AssetType_Undefined"); } break;
     case AssetType_Models: { Result = CSz("AssetType_Models"); } break;
     case AssetType_WorldChunk: { Result = CSz("AssetType_WorldChunk"); } break;
 
@@ -37,7 +37,7 @@ AssetType(counted_string S)
 {
   asset_type Result = {};
 
-  if (StringsMatch(S, CSz("AssetType_Undefined"))) { return AssetType_Undefined; }
+    if (StringsMatch(S, CSz("AssetType_Undefined"))) { return AssetType_Undefined; }
   if (StringsMatch(S, CSz("AssetType_Models"))) { return AssetType_Models; }
   if (StringsMatch(S, CSz("AssetType_WorldChunk"))) { return AssetType_WorldChunk; }
 

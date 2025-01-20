@@ -10,10 +10,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Uninitialized"), UiId(Window, "enum Chunk_Uninitialized", Element), Params))
     {
-      if (Chunk_Uninitialized == chunk_flag(0))
+            if (Chunk_Uninitialized == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }
@@ -36,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Queued"), UiId(Window, "enum Chunk_Queued", Element), Params))
     {
-      if (Chunk_Queued == chunk_flag(0))
+            if (Chunk_Queued == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }
@@ -59,7 +59,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("VoxelsInitialized"), UiId(Window, "enum Chunk_VoxelsInitialized", Element), Params))
     {
-      if (Chunk_VoxelsInitialized == chunk_flag(0))
+            if (Chunk_VoxelsInitialized == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }
@@ -82,7 +82,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Garbage"), UiId(Window, "enum Chunk_Garbage", Element), Params))
     {
-      if (Chunk_Garbage == chunk_flag(0))
+            if (Chunk_Garbage == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }
@@ -105,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Deallocate"), UiId(Window, "enum Chunk_Deallocate", Element), Params))
     {
-      if (Chunk_Deallocate == chunk_flag(0))
+            if (Chunk_Deallocate == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }
@@ -128,7 +128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Freelist"), UiId(Window, "enum Chunk_Freelist", Element), Params))
     {
-      if (Chunk_Freelist == chunk_flag(0))
+            if (Chunk_Freelist == chunk_flag(0))
       {
         *Element = chunk_flag(0);
       }

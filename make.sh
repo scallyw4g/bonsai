@@ -298,20 +298,13 @@ function RunPoofHelper {
    # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
    # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
 
-
    which poof > /dev/null 2>&1
    if [ $? -eq 0 ]; then
 
-    poof                    \
-     $COLOR_FLAG \
-     -D POOF_PREPROCESSOR   \
-     -D BONSAI_PREPROCESSOR \
-     -I src/                \
-     -I external/           \
-     $PLATFORM_DEFINES      \
-     $BONSAI_INTERNAL       \
-     -o generated           \
-     $1
+   cmd="poof -d $COLOR_FLAG -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL -o generated $1 "
+
+   echo "$cmd"
+   $cmd
 
    else
      echo "poof not found, skipping."
