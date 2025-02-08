@@ -1471,7 +1471,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
 
                 u32_8x AddMask = Diff > 0.f;
 
-                v3_8x AddVal = Select(AddMask, V3_8X(dx,dy,dz)*Diff.Sse, V3_8X(0.f));
+                v3_8x AddVal = Select(AddMask, V3_8X(dx,dy,dz)*Diff, V3_8X(0.f));
 
                 Normal.avx.x = Normal.avx.x + AddVal.avx.x;
                 Normal.avx.y = Normal.avx.y + AddVal.avx.y;
@@ -1487,7 +1487,7 @@ ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *N
           }
         }
 
-        v3_8x Result = Normalize(Normal) * F32_8X(-1.f).Sse;
+        v3_8x Result = Normalize(Normal) * F32_8X(-1.f);
         /* v3_8x Result = V3_8X(x/64.f, y/64.f, z/64.f); */
 
 
