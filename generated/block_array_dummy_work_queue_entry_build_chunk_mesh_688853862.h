@@ -1,5 +1,9 @@
 // src/engine/graphics.h:65:0
 
+
+
+
+
 struct dummy_work_queue_entry_build_chunk_mesh_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct dummy_work_queue_entry_build_chunk_mesh_block_array
   
 };
 
+link_internal b32
+AreEqual(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Thing1, dummy_work_queue_entry_build_chunk_mesh_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( dummy_work_queue_entry_build_chunk_mesh_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(dummy_work_queue_entry_build_chunk_mesh_block_array_index Thing1, dummy_work_queue_entry_build_chunk_mesh_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( dummy_work_queue_entry_build_chunk_mesh_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef dummy_work_queue_entry_build_chunk_mesh_block_array dummy_work_queue_entry_build_chunk_mesh_paged_list;
 
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
-operator++(dummy_work_queue_entry_build_chunk_mesh_block_array_index &I0)
+operator++( dummy_work_queue_entry_build_chunk_mesh_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(dummy_work_queue_entry_build_chunk_mesh_block_array_index &I0)
 }
 
 link_internal b32
-operator<(dummy_work_queue_entry_build_chunk_mesh_block_array_index I0, dummy_work_queue_entry_build_chunk_mesh_block_array_index I1)
+operator<( dummy_work_queue_entry_build_chunk_mesh_block_array_index I0, dummy_work_queue_entry_build_chunk_mesh_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
+GetIndex( dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
-ZerothIndex(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+ZerothIndex( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+TotalElements( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
-LastIndex(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+LastIndex( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
-AtElements(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+AtElements( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 }
 
 link_internal umm
-Count(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
+Count( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh *
+Set( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr,
+  dummy_work_queue_entry_build_chunk_mesh *Element,
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
+{
+  dummy_work_queue_entry_build_chunk_mesh *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal dummy_work_queue_entry_build_chunk_mesh *
 GetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {
   dummy_work_queue_entry_build_chunk_mesh *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 GetPtr(dummy_work_queue_entry_build_chunk_mesh_block *Block, umm Index)
 {
-  dummy_work_queue_entry_build_chunk_mesh *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  dummy_work_queue_entry_build_chunk_mesh *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  dummy_work_queue_entry_build_chunk_mesh *Result = Block->Elements+ElementIndex;
+  dummy_work_queue_entry_build_chunk_mesh *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dum
   dummy_work_queue_entry_build_chunk_mesh *Element = GetPtr(Array, Index);
   dummy_work_queue_entry_build_chunk_mesh *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_que
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_que
 link_internal b32
 IsValid(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
 {
-  NotImplemented;
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

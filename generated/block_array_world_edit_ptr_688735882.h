@@ -1,4 +1,8 @@
-// src/engine/editor.h:1164:0
+// src/engine/editor.h:1168:0
+
+
+
+
 
 struct world_edit_ptr_block
 {
@@ -23,10 +27,34 @@ struct world_edit_ptr_block_array
   
 };
 
+link_internal b32
+AreEqual(world_edit_ptr_block_array_index *Thing1, world_edit_ptr_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( world_edit_ptr_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(world_edit_ptr_block_array_index Thing1, world_edit_ptr_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( world_edit_ptr_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef world_edit_ptr_block_array world_edit_ptr_paged_list;
 
 link_internal world_edit_ptr_block_array_index
-operator++(world_edit_ptr_block_array_index &I0)
+operator++( world_edit_ptr_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(world_edit_ptr_block_array_index &I0)
 }
 
 link_internal b32
-operator<(world_edit_ptr_block_array_index I0, world_edit_ptr_block_array_index I1)
+operator<( world_edit_ptr_block_array_index I0, world_edit_ptr_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(world_edit_ptr_block_array_index *Index)
+GetIndex( world_edit_ptr_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal world_edit_ptr_block_array_index
-ZerothIndex(world_edit_ptr_block_array *Arr)
+ZerothIndex( world_edit_ptr_block_array *Arr)
 {
   world_edit_ptr_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(world_edit_ptr_block_array *Arr)
+TotalElements( world_edit_ptr_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(world_edit_ptr_block_array *Arr)
 }
 
 link_internal world_edit_ptr_block_array_index
-LastIndex(world_edit_ptr_block_array *Arr)
+LastIndex( world_edit_ptr_block_array *Arr)
 {
   world_edit_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(world_edit_ptr_block_array *Arr)
 }
 
 link_internal world_edit_ptr_block_array_index
-AtElements(world_edit_ptr_block_array *Arr)
+AtElements( world_edit_ptr_block_array *Arr)
 {
   world_edit_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -111,30 +138,45 @@ AtElements(world_edit_ptr_block_array *Arr)
 }
 
 link_internal umm
-Count(world_edit_ptr_block_array *Arr)
+Count( world_edit_ptr_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
   return Result;
 }
 
-link_internal world_edit_ptr *
+link_internal world_edit_ptr 
+Set( world_edit_ptr_block_array *Arr,
+  world_edit_ptr Element,
+  world_edit_ptr_block_array_index Index )
+{
+  world_edit_ptr Result = {};
+  if (Index.Block)
+  {
+    Result = Index.Block->Elements[Index.ElementIndex];
+    Result = Element;
+  }
+
+  return Result;
+}
+
+link_internal world_edit_ptr 
 GetPtr(world_edit_ptr_block_array *Arr, world_edit_ptr_block_array_index Index)
 {
-  world_edit_ptr *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  world_edit_ptr Result = {};
+  if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal world_edit_ptr *
+link_internal world_edit_ptr 
 GetPtr(world_edit_ptr_block *Block, umm Index)
 {
-  world_edit_ptr *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  world_edit_ptr Result = {};
+  if (Index < Block->At) { Result = *(Block->Elements + Index); }
   return Result;
 }
 
-link_internal world_edit_ptr *
+link_internal world_edit_ptr 
 GetPtr(world_edit_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
@@ -147,11 +189,11 @@ GetPtr(world_edit_ptr_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  world_edit_ptr *Result = Block->Elements+ElementIndex;
+  world_edit_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal world_edit_ptr *
+link_internal world_edit_ptr 
 TryGetPtr(world_edit_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
@@ -159,7 +201,7 @@ TryGetPtr(world_edit_ptr_block_array *Arr, umm Index)
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  world_edit_ptr *Result = {};
+  world_edit_ptr Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
@@ -201,10 +243,10 @@ RemoveUnordered( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_i
 {
   world_edit_ptr_block_array_index LastI = LastIndex(Array);
 
-  world_edit_ptr *Element = GetPtr(Array, Index);
-  world_edit_ptr *LastElement = GetPtr(Array, LastI);
+  world_edit_ptr Element = GetPtr(Array, Index);
+  world_edit_ptr LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -241,12 +283,12 @@ RemoveUnordered( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_i
 }
 
 link_internal world_edit_ptr_block_array_index
-Find( world_edit_ptr_block_array *Array, world_edit_ptr *Query)
+Find( world_edit_ptr_block_array *Array, world_edit_ptr Query)
 {
   world_edit_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( world_edit_ptr_block_array *Array, world_edit_ptr *Query)
 link_internal b32
 IsValid(world_edit_ptr_block_array_index *Index)
 {
-  NotImplemented;
   world_edit_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

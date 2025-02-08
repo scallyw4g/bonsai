@@ -1,4 +1,8 @@
-// src/engine/world.h:57:0
+// src/engine/world.h:58:0
+
+
+
+
 
 struct octree_node_ptr_block
 {
@@ -23,10 +27,34 @@ struct octree_node_ptr_block_array
   
 };
 
+link_internal b32
+AreEqual(octree_node_ptr_block_array_index *Thing1, octree_node_ptr_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( octree_node_ptr_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(octree_node_ptr_block_array_index Thing1, octree_node_ptr_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( octree_node_ptr_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef octree_node_ptr_block_array octree_node_ptr_paged_list;
 
 link_internal octree_node_ptr_block_array_index
-operator++(octree_node_ptr_block_array_index &I0)
+operator++( octree_node_ptr_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(octree_node_ptr_block_array_index &I0)
 }
 
 link_internal b32
-operator<(octree_node_ptr_block_array_index I0, octree_node_ptr_block_array_index I1)
+operator<( octree_node_ptr_block_array_index I0, octree_node_ptr_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(octree_node_ptr_block_array_index *Index)
+GetIndex( octree_node_ptr_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal octree_node_ptr_block_array_index
-ZerothIndex(octree_node_ptr_block_array *Arr)
+ZerothIndex( octree_node_ptr_block_array *Arr)
 {
   octree_node_ptr_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(octree_node_ptr_block_array *Arr)
+TotalElements( octree_node_ptr_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(octree_node_ptr_block_array *Arr)
 }
 
 link_internal octree_node_ptr_block_array_index
-LastIndex(octree_node_ptr_block_array *Arr)
+LastIndex( octree_node_ptr_block_array *Arr)
 {
   octree_node_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(octree_node_ptr_block_array *Arr)
 }
 
 link_internal octree_node_ptr_block_array_index
-AtElements(octree_node_ptr_block_array *Arr)
+AtElements( octree_node_ptr_block_array *Arr)
 {
   octree_node_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -111,30 +138,45 @@ AtElements(octree_node_ptr_block_array *Arr)
 }
 
 link_internal umm
-Count(octree_node_ptr_block_array *Arr)
+Count( octree_node_ptr_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
   return Result;
 }
 
-link_internal octree_node_ptr *
+link_internal octree_node_ptr 
+Set( octree_node_ptr_block_array *Arr,
+  octree_node_ptr Element,
+  octree_node_ptr_block_array_index Index )
+{
+  octree_node_ptr Result = {};
+  if (Index.Block)
+  {
+    Result = Index.Block->Elements[Index.ElementIndex];
+    Result = Element;
+  }
+
+  return Result;
+}
+
+link_internal octree_node_ptr 
 GetPtr(octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index)
 {
-  octree_node_ptr *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  octree_node_ptr Result = {};
+  if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal octree_node_ptr *
+link_internal octree_node_ptr 
 GetPtr(octree_node_ptr_block *Block, umm Index)
 {
-  octree_node_ptr *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  octree_node_ptr Result = {};
+  if (Index < Block->At) { Result = *(Block->Elements + Index); }
   return Result;
 }
 
-link_internal octree_node_ptr *
+link_internal octree_node_ptr 
 GetPtr(octree_node_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
@@ -147,11 +189,11 @@ GetPtr(octree_node_ptr_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  octree_node_ptr *Result = Block->Elements+ElementIndex;
+  octree_node_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal octree_node_ptr *
+link_internal octree_node_ptr 
 TryGetPtr(octree_node_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
@@ -159,7 +201,7 @@ TryGetPtr(octree_node_ptr_block_array *Arr, umm Index)
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  octree_node_ptr *Result = {};
+  octree_node_ptr Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
@@ -201,10 +243,10 @@ RemoveUnordered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array
 {
   octree_node_ptr_block_array_index LastI = LastIndex(Array);
 
-  octree_node_ptr *Element = GetPtr(Array, Index);
-  octree_node_ptr *LastElement = GetPtr(Array, LastI);
+  octree_node_ptr Element = GetPtr(Array, Index);
+  octree_node_ptr LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -241,12 +283,12 @@ RemoveUnordered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array
 }
 
 link_internal octree_node_ptr_block_array_index
-Find( octree_node_ptr_block_array *Array, octree_node_ptr *Query)
+Find( octree_node_ptr_block_array *Array, octree_node_ptr Query)
 {
   octree_node_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( octree_node_ptr_block_array *Array, octree_node_ptr *Query)
 link_internal b32
 IsValid(octree_node_ptr_block_array_index *Index)
 {
-  NotImplemented;
   octree_node_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

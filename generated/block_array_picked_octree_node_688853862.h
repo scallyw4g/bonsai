@@ -1,4 +1,8 @@
-// src/engine/world.h:60:0
+// src/engine/world.h:61:0
+
+
+
+
 
 struct picked_octree_node_block
 {
@@ -23,10 +27,34 @@ struct picked_octree_node_block_array
   
 };
 
+link_internal b32
+AreEqual(picked_octree_node_block_array_index *Thing1, picked_octree_node_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( picked_octree_node_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(picked_octree_node_block_array_index Thing1, picked_octree_node_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( picked_octree_node_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef picked_octree_node_block_array picked_octree_node_paged_list;
 
 link_internal picked_octree_node_block_array_index
-operator++(picked_octree_node_block_array_index &I0)
+operator++( picked_octree_node_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(picked_octree_node_block_array_index &I0)
 }
 
 link_internal b32
-operator<(picked_octree_node_block_array_index I0, picked_octree_node_block_array_index I1)
+operator<( picked_octree_node_block_array_index I0, picked_octree_node_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(picked_octree_node_block_array_index *Index)
+GetIndex( picked_octree_node_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal picked_octree_node_block_array_index
-ZerothIndex(picked_octree_node_block_array *Arr)
+ZerothIndex( picked_octree_node_block_array *Arr)
 {
   picked_octree_node_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(picked_octree_node_block_array *Arr)
+TotalElements( picked_octree_node_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(picked_octree_node_block_array *Arr)
 }
 
 link_internal picked_octree_node_block_array_index
-LastIndex(picked_octree_node_block_array *Arr)
+LastIndex( picked_octree_node_block_array *Arr)
 {
   picked_octree_node_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(picked_octree_node_block_array *Arr)
 }
 
 link_internal picked_octree_node_block_array_index
-AtElements(picked_octree_node_block_array *Arr)
+AtElements( picked_octree_node_block_array *Arr)
 {
   picked_octree_node_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(picked_octree_node_block_array *Arr)
 }
 
 link_internal umm
-Count(picked_octree_node_block_array *Arr)
+Count( picked_octree_node_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(picked_octree_node_block_array *Arr)
 }
 
 link_internal picked_octree_node *
+Set( picked_octree_node_block_array *Arr,
+  picked_octree_node *Element,
+  picked_octree_node_block_array_index Index )
+{
+  picked_octree_node *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal picked_octree_node *
 GetPtr(picked_octree_node_block_array *Arr, picked_octree_node_block_array_index Index)
 {
   picked_octree_node *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal picked_octree_node *
 GetPtr(picked_octree_node_block *Block, umm Index)
 {
-  picked_octree_node *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  picked_octree_node *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(picked_octree_node_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  picked_octree_node *Result = Block->Elements+ElementIndex;
+  picked_octree_node *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( picked_octree_node_block_array *Array, picked_octree_node_block
   picked_octree_node *Element = GetPtr(Array, Index);
   picked_octree_node *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( picked_octree_node_block_array *Array, picked_octree_node *Query)
   picked_octree_node_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( picked_octree_node_block_array *Array, picked_octree_node *Query)
 link_internal b32
 IsValid(picked_octree_node_block_array_index *Index)
 {
-  NotImplemented;
   picked_octree_node_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

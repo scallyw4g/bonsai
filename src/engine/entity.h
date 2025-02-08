@@ -247,7 +247,7 @@ DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_aren
       b32 Got = False;
       IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
       {
-        if (*TestEntity == Entity)
+        if (TestEntity == Entity)
         {
           RemoveUnordered(&Chunk->Entities, TestEntityIndex);
           Got = True;

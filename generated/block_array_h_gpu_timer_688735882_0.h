@@ -1,5 +1,9 @@
 // src/engine/render/gpu_timer.h:9:0
 
+
+
+
+
 struct gpu_timer_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct gpu_timer_block_array
   
 };
 
+link_internal b32
+AreEqual(gpu_timer_block_array_index *Thing1, gpu_timer_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( gpu_timer_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(gpu_timer_block_array_index Thing1, gpu_timer_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( gpu_timer_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef gpu_timer_block_array gpu_timer_paged_list;
 
 link_internal gpu_timer_block_array_index
-operator++(gpu_timer_block_array_index &I0)
+operator++( gpu_timer_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(gpu_timer_block_array_index &I0)
 }
 
 link_internal b32
-operator<(gpu_timer_block_array_index I0, gpu_timer_block_array_index I1)
+operator<( gpu_timer_block_array_index I0, gpu_timer_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(gpu_timer_block_array_index *Index)
+GetIndex( gpu_timer_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*128);
   return Result;
 }
 
 link_internal gpu_timer_block_array_index
-ZerothIndex(gpu_timer_block_array *Arr)
+ZerothIndex( gpu_timer_block_array *Arr)
 {
   gpu_timer_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(gpu_timer_block_array *Arr)
+TotalElements( gpu_timer_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(gpu_timer_block_array *Arr)
 }
 
 link_internal gpu_timer_block_array_index
-LastIndex(gpu_timer_block_array *Arr)
+LastIndex( gpu_timer_block_array *Arr)
 {
   gpu_timer_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(gpu_timer_block_array *Arr)
 }
 
 link_internal gpu_timer_block_array_index
-AtElements(gpu_timer_block_array *Arr)
+AtElements( gpu_timer_block_array *Arr)
 {
   gpu_timer_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(gpu_timer_block_array *Arr)
 }
 
 link_internal umm
-Count(gpu_timer_block_array *Arr)
+Count( gpu_timer_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(gpu_timer_block_array *Arr)
 }
 
 link_internal gpu_timer *
+Set( gpu_timer_block_array *Arr,
+  gpu_timer *Element,
+  gpu_timer_block_array_index Index )
+{
+  gpu_timer *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal gpu_timer *
 GetPtr(gpu_timer_block_array *Arr, gpu_timer_block_array_index Index)
 {
   gpu_timer *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal gpu_timer *
 GetPtr(gpu_timer_block *Block, umm Index)
 {
-  gpu_timer *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  gpu_timer *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(gpu_timer_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  gpu_timer *Result = Block->Elements+ElementIndex;
+  gpu_timer *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 

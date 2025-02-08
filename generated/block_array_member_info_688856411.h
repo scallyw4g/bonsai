@@ -1,5 +1,9 @@
 // src/engine/bonsai_type_info.h:11:0
 
+
+
+
+
 struct member_info_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct member_info_block_array
   
 };
 
+link_internal b32
+AreEqual(member_info_block_array_index *Thing1, member_info_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( member_info_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(member_info_block_array_index Thing1, member_info_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( member_info_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef member_info_block_array member_info_paged_list;
 
 link_internal member_info_block_array_index
-operator++(member_info_block_array_index &I0)
+operator++( member_info_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(member_info_block_array_index &I0)
 }
 
 link_internal b32
-operator<(member_info_block_array_index I0, member_info_block_array_index I1)
+operator<( member_info_block_array_index I0, member_info_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(member_info_block_array_index *Index)
+GetIndex( member_info_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal member_info_block_array_index
-ZerothIndex(member_info_block_array *Arr)
+ZerothIndex( member_info_block_array *Arr)
 {
   member_info_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(member_info_block_array *Arr)
+TotalElements( member_info_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(member_info_block_array *Arr)
 }
 
 link_internal member_info_block_array_index
-LastIndex(member_info_block_array *Arr)
+LastIndex( member_info_block_array *Arr)
 {
   member_info_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(member_info_block_array *Arr)
 }
 
 link_internal member_info_block_array_index
-AtElements(member_info_block_array *Arr)
+AtElements( member_info_block_array *Arr)
 {
   member_info_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(member_info_block_array *Arr)
 }
 
 link_internal umm
-Count(member_info_block_array *Arr)
+Count( member_info_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(member_info_block_array *Arr)
 }
 
 link_internal member_info *
+Set( member_info_block_array *Arr,
+  member_info *Element,
+  member_info_block_array_index Index )
+{
+  member_info *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal member_info *
 GetPtr(member_info_block_array *Arr, member_info_block_array_index Index)
 {
   member_info *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal member_info *
 GetPtr(member_info_block *Block, umm Index)
 {
-  member_info *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  member_info *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(member_info_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  member_info *Result = Block->Elements+ElementIndex;
+  member_info *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( member_info_block_array *Array, member_info_block_array_index I
   member_info *Element = GetPtr(Array, Index);
   member_info *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( member_info_block_array *Array, member_info *Query)
   member_info_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( member_info_block_array *Array, member_info *Query)
 link_internal b32
 IsValid(member_info_block_array_index *Index)
 {
-  NotImplemented;
   member_info_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

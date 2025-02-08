@@ -31,10 +31,10 @@ RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array
 {
   world_chunk_ptr_block_array_index LastI = LastIndex(Array);
 
-  world_chunk_ptr *Element = GetPtr(Array, Index);
-  world_chunk_ptr *LastElement = GetPtr(Array, LastI);
+  world_chunk_ptr Element = GetPtr(Array, Index);
+  world_chunk_ptr LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -71,12 +71,12 @@ RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array
 }
 
 link_internal world_chunk_ptr_block_array_index
-Find( world_chunk_ptr_block_array *Array, world_chunk_ptr *Query)
+Find( world_chunk_ptr_block_array *Array, world_chunk_ptr Query)
 {
   world_chunk_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -88,10 +88,9 @@ Find( world_chunk_ptr_block_array *Array, world_chunk_ptr *Query)
 link_internal b32
 IsValid(world_chunk_ptr_block_array_index *Index)
 {
-  NotImplemented;
   world_chunk_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

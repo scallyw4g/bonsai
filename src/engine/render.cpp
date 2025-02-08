@@ -1540,9 +1540,8 @@ link_internal void
 RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  IterateOver(DrawList, ChunkPtrPtr, ChunkIndex)
+  IterateOver(DrawList, Chunk, ChunkIndex)
   {
-    world_chunk *Chunk = *ChunkPtrPtr;
 
     // In case gpu meshes got deallocated after the chunk was added to the draw list
     if (HasGpuMesh(&Chunk->Mesh))

@@ -40,6 +40,8 @@ enum engine_debug_view_mode poof(@bitfield)
   EngineDebugViewMode_EngineDebug    = (1 << 7),
 };
 
+struct octree_node;
+
 struct engine_debug
 {
   memory_arena *Memory;

@@ -1,4 +1,4 @@
-// src/engine/world.h:48:0
+// src/engine/world.h:49:0
 
 struct octree_node_freelist
 {

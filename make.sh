@@ -301,7 +301,7 @@ function RunPoofHelper {
    which poof > /dev/null 2>&1
    if [ $? -eq 0 ]; then
 
-   cmd="poof -d $COLOR_FLAG -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL -o generated $1 "
+   cmd="poof $COLOR_FLAG -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL -o generated $1 "
 
    echo "$cmd"
    $cmd

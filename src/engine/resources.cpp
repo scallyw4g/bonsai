@@ -547,6 +547,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
       TIMED_NAMED_BLOCK(CheckReadbackJobs);
       IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
       {
+        /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
         u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
         AssertNoGlErrors;
         switch(SyncStatus)

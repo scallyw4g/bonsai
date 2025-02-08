@@ -34,7 +34,7 @@ RemoveUnordered( texture_block_array *Array, texture_block_array_index Index)
   texture *Element = GetPtr(Array, Index);
   texture *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -76,7 +76,7 @@ Find( texture_block_array *Array, texture *Query)
   texture_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -88,10 +88,9 @@ Find( texture_block_array *Array, texture *Query)
 link_internal b32
 IsValid(texture_block_array_index *Index)
 {
-  NotImplemented;
   texture_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

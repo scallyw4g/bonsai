@@ -95,9 +95,9 @@ GetCollision_Entities( world *World, entity *ThisEntity, cp TestP, v3 CollisionD
   {
     IterateOver(&(*Chunk)->Entities, Entity, EntityIndex)
     {
-      if (*Entity == ThisEntity) continue;
+      if (Entity == ThisEntity) continue;
 
-      Hit = GetCollision(World, *Entity, AABBMinDim(SimP, CollisionDim));
+      Hit = GetCollision(World, Entity, AABBMinDim(SimP, CollisionDim));
       if (Hit) break;
     }
     if (Hit) break;

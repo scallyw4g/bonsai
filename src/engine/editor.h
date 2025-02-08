@@ -1,3 +1,5 @@
+struct world;
+
 #define EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS r32 MinValue = 0.f, r32 MaxValue = 1.f
 #define EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES MinValue, MaxValue
 
@@ -1161,6 +1163,8 @@ struct world_edit
 
 typedef world_edit* world_edit_ptr;
 
+poof(block_array(world_edit, {128}))
+#include <generated/block_array_struct_688735882.h>
 poof(block_array(world_edit_ptr, {128}))
 #include <generated/block_array_world_edit_ptr_688735882.h>
 

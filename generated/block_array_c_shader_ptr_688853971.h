@@ -31,10 +31,10 @@ RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Ind
 {
   shader_ptr_block_array_index LastI = LastIndex(Array);
 
-  shader_ptr *Element = GetPtr(Array, Index);
-  shader_ptr *LastElement = GetPtr(Array, LastI);
+  shader_ptr Element = GetPtr(Array, Index);
+  shader_ptr LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -71,12 +71,12 @@ RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Ind
 }
 
 link_internal shader_ptr_block_array_index
-Find( shader_ptr_block_array *Array, shader_ptr *Query)
+Find( shader_ptr_block_array *Array, shader_ptr Query)
 {
   shader_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -88,10 +88,9 @@ Find( shader_ptr_block_array *Array, shader_ptr *Query)
 link_internal b32
 IsValid(shader_ptr_block_array_index *Index)
 {
-  NotImplemented;
   shader_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

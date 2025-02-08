@@ -7,6 +7,7 @@ enum octree_node_type
   OctreeNodeType_Leaf,   // .. leaf
 };
 
+struct world_edit_ptr_block_array;
 struct octree_node
 {
   octree_node_type Type;

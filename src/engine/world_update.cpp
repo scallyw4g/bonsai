@@ -68,7 +68,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
     IterateOver(&UpdatedChunks, Chunk, ChunkIndex)
     {
-      QueueChunkForMeshRebuild(&Plat->LowPriority, *Chunk);
+      QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
     }
 
     // NOTE(Jesse): This is intentionally after all the updates have completed

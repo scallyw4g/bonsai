@@ -1,5 +1,9 @@
 // src/engine/world_update.h:35:0
 
+
+
+
+
 struct voxel_stack_element_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct voxel_stack_element_block_array
   
 };
 
+link_internal b32
+AreEqual(voxel_stack_element_block_array_index *Thing1, voxel_stack_element_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( voxel_stack_element_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(voxel_stack_element_block_array_index Thing1, voxel_stack_element_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( voxel_stack_element_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef voxel_stack_element_block_array voxel_stack_element_paged_list;
 
 link_internal voxel_stack_element_block_array_index
-operator++(voxel_stack_element_block_array_index &I0)
+operator++( voxel_stack_element_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(voxel_stack_element_block_array_index &I0)
 }
 
 link_internal b32
-operator<(voxel_stack_element_block_array_index I0, voxel_stack_element_block_array_index I1)
+operator<( voxel_stack_element_block_array_index I0, voxel_stack_element_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(voxel_stack_element_block_array_index *Index)
+GetIndex( voxel_stack_element_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal voxel_stack_element_block_array_index
-ZerothIndex(voxel_stack_element_block_array *Arr)
+ZerothIndex( voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(voxel_stack_element_block_array *Arr)
+TotalElements( voxel_stack_element_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element_block_array_index
-LastIndex(voxel_stack_element_block_array *Arr)
+LastIndex( voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element_block_array_index
-AtElements(voxel_stack_element_block_array *Arr)
+AtElements( voxel_stack_element_block_array *Arr)
 {
   voxel_stack_element_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(voxel_stack_element_block_array *Arr)
 }
 
 link_internal umm
-Count(voxel_stack_element_block_array *Arr)
+Count( voxel_stack_element_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element *
+Set( voxel_stack_element_block_array *Arr,
+  voxel_stack_element *Element,
+  voxel_stack_element_block_array_index Index )
+{
+  voxel_stack_element *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block *Block, umm Index)
 {
-  voxel_stack_element *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  voxel_stack_element *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(voxel_stack_element_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  voxel_stack_element *Result = Block->Elements+ElementIndex;
+  voxel_stack_element *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( voxel_stack_element_block_array *Array, voxel_stack_element_blo
   voxel_stack_element *Element = GetPtr(Array, Index);
   voxel_stack_element *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( voxel_stack_element_block_array *Array, voxel_stack_element *Query)
   voxel_stack_element_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( voxel_stack_element_block_array *Array, voxel_stack_element *Query)
 link_internal b32
 IsValid(voxel_stack_element_block_array_index *Index)
 {
-  NotImplemented;
   voxel_stack_element_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

@@ -1,5 +1,9 @@
 // external/bonsai_stdlib/src/bitmap.cpp:182:0
 
+
+
+
+
 struct bitmap_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct bitmap_block_array
   
 };
 
+link_internal b32
+AreEqual(bitmap_block_array_index *Thing1, bitmap_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( bitmap_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(bitmap_block_array_index Thing1, bitmap_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( bitmap_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef bitmap_block_array bitmap_paged_list;
 
 link_internal bitmap_block_array_index
-operator++(bitmap_block_array_index &I0)
+operator++( bitmap_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(bitmap_block_array_index &I0)
 }
 
 link_internal b32
-operator<(bitmap_block_array_index I0, bitmap_block_array_index I1)
+operator<( bitmap_block_array_index I0, bitmap_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(bitmap_block_array_index *Index)
+GetIndex( bitmap_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal bitmap_block_array_index
-ZerothIndex(bitmap_block_array *Arr)
+ZerothIndex( bitmap_block_array *Arr)
 {
   bitmap_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(bitmap_block_array *Arr)
+TotalElements( bitmap_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(bitmap_block_array *Arr)
 }
 
 link_internal bitmap_block_array_index
-LastIndex(bitmap_block_array *Arr)
+LastIndex( bitmap_block_array *Arr)
 {
   bitmap_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(bitmap_block_array *Arr)
 }
 
 link_internal bitmap_block_array_index
-AtElements(bitmap_block_array *Arr)
+AtElements( bitmap_block_array *Arr)
 {
   bitmap_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(bitmap_block_array *Arr)
 }
 
 link_internal umm
-Count(bitmap_block_array *Arr)
+Count( bitmap_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(bitmap_block_array *Arr)
 }
 
 link_internal bitmap *
+Set( bitmap_block_array *Arr,
+  bitmap *Element,
+  bitmap_block_array_index Index )
+{
+  bitmap *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal bitmap *
 GetPtr(bitmap_block_array *Arr, bitmap_block_array_index Index)
 {
   bitmap *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal bitmap *
 GetPtr(bitmap_block *Block, umm Index)
 {
-  bitmap *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  bitmap *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(bitmap_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  bitmap *Result = Block->Elements+ElementIndex;
+  bitmap *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( bitmap_block_array *Array, bitmap_block_array_index Index)
   bitmap *Element = GetPtr(Array, Index);
   bitmap *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( bitmap_block_array *Array, bitmap *Query)
   bitmap_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( bitmap_block_array *Array, bitmap *Query)
 link_internal b32
 IsValid(bitmap_block_array_index *Index)
 {
-  NotImplemented;
   bitmap_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

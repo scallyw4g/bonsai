@@ -33,18 +33,18 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/render.h>
 #include <engine/render_settings.h>
 
+#include <engine/ui.h>
 
 #include <engine/animation.h>
 #include <engine/model.h>
 #include <engine/asset.h>
 #include <engine/particle.h>
-#include <engine/world.h>
-
-#include <engine/ui.h>
-#include <engine/entity.h>
-
 #include <engine/debug.h>
 #include <engine/editor.h>
+#include <engine/world.h>
+
+#include <engine/entity.h>
+
 #include <engine/world_update.h>
 #include <engine/settings.h>
 #include <engine/graphics.h>

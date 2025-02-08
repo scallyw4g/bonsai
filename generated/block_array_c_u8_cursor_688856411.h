@@ -34,7 +34,7 @@ RemoveUnordered( u8_cursor_block_array *Array, u8_cursor_block_array_index Index
   u8_cursor *Element = GetPtr(Array, Index);
   u8_cursor *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -76,7 +76,7 @@ Find( u8_cursor_block_array *Array, u8_cursor *Query)
   u8_cursor_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -88,10 +88,9 @@ Find( u8_cursor_block_array *Array, u8_cursor *Query)
 link_internal b32
 IsValid(u8_cursor_block_array_index *Index)
 {
-  NotImplemented;
   u8_cursor_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

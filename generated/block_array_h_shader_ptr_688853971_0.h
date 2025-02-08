@@ -1,5 +1,9 @@
 // external/bonsai_stdlib/src/shader.h:130:0
 
+
+
+
+
 struct shader_ptr_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct shader_ptr_block_array
   
 };
 
+link_internal b32
+AreEqual(shader_ptr_block_array_index *Thing1, shader_ptr_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( shader_ptr_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(shader_ptr_block_array_index Thing1, shader_ptr_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( shader_ptr_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef shader_ptr_block_array shader_ptr_paged_list;
 
 link_internal shader_ptr_block_array_index
-operator++(shader_ptr_block_array_index &I0)
+operator++( shader_ptr_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(shader_ptr_block_array_index &I0)
 }
 
 link_internal b32
-operator<(shader_ptr_block_array_index I0, shader_ptr_block_array_index I1)
+operator<( shader_ptr_block_array_index I0, shader_ptr_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(shader_ptr_block_array_index *Index)
+GetIndex( shader_ptr_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*64);
   return Result;
 }
 
 link_internal shader_ptr_block_array_index
-ZerothIndex(shader_ptr_block_array *Arr)
+ZerothIndex( shader_ptr_block_array *Arr)
 {
   shader_ptr_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(shader_ptr_block_array *Arr)
+TotalElements( shader_ptr_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(shader_ptr_block_array *Arr)
 }
 
 link_internal shader_ptr_block_array_index
-LastIndex(shader_ptr_block_array *Arr)
+LastIndex( shader_ptr_block_array *Arr)
 {
   shader_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(shader_ptr_block_array *Arr)
 }
 
 link_internal shader_ptr_block_array_index
-AtElements(shader_ptr_block_array *Arr)
+AtElements( shader_ptr_block_array *Arr)
 {
   shader_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -111,30 +138,45 @@ AtElements(shader_ptr_block_array *Arr)
 }
 
 link_internal umm
-Count(shader_ptr_block_array *Arr)
+Count( shader_ptr_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
   return Result;
 }
 
-link_internal shader_ptr *
+link_internal shader_ptr 
+Set( shader_ptr_block_array *Arr,
+  shader_ptr Element,
+  shader_ptr_block_array_index Index )
+{
+  shader_ptr Result = {};
+  if (Index.Block)
+  {
+    Result = Index.Block->Elements[Index.ElementIndex];
+    Result = Element;
+  }
+
+  return Result;
+}
+
+link_internal shader_ptr 
 GetPtr(shader_ptr_block_array *Arr, shader_ptr_block_array_index Index)
 {
-  shader_ptr *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  shader_ptr Result = {};
+  if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal shader_ptr *
+link_internal shader_ptr 
 GetPtr(shader_ptr_block *Block, umm Index)
 {
-  shader_ptr *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  shader_ptr Result = {};
+  if (Index < Block->At) { Result = *(Block->Elements + Index); }
   return Result;
 }
 
-link_internal shader_ptr *
+link_internal shader_ptr 
 GetPtr(shader_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 64;
@@ -147,11 +189,11 @@ GetPtr(shader_ptr_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  shader_ptr *Result = Block->Elements+ElementIndex;
+  shader_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal shader_ptr *
+link_internal shader_ptr 
 TryGetPtr(shader_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 64;
@@ -159,7 +201,7 @@ TryGetPtr(shader_ptr_block_array *Arr, umm Index)
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  shader_ptr *Result = {};
+  shader_ptr Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }

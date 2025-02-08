@@ -1,5 +1,9 @@
 // src/engine/world_chunk.h:492:0
 
+
+
+
+
 struct standing_spot_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct standing_spot_block_array
   
 };
 
+link_internal b32
+AreEqual(standing_spot_block_array_index *Thing1, standing_spot_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( standing_spot_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(standing_spot_block_array_index Thing1, standing_spot_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( standing_spot_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef standing_spot_block_array standing_spot_paged_list;
 
 link_internal standing_spot_block_array_index
-operator++(standing_spot_block_array_index &I0)
+operator++( standing_spot_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(standing_spot_block_array_index &I0)
 }
 
 link_internal b32
-operator<(standing_spot_block_array_index I0, standing_spot_block_array_index I1)
+operator<( standing_spot_block_array_index I0, standing_spot_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(standing_spot_block_array_index *Index)
+GetIndex( standing_spot_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal standing_spot_block_array_index
-ZerothIndex(standing_spot_block_array *Arr)
+ZerothIndex( standing_spot_block_array *Arr)
 {
   standing_spot_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(standing_spot_block_array *Arr)
+TotalElements( standing_spot_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(standing_spot_block_array *Arr)
 }
 
 link_internal standing_spot_block_array_index
-LastIndex(standing_spot_block_array *Arr)
+LastIndex( standing_spot_block_array *Arr)
 {
   standing_spot_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(standing_spot_block_array *Arr)
 }
 
 link_internal standing_spot_block_array_index
-AtElements(standing_spot_block_array *Arr)
+AtElements( standing_spot_block_array *Arr)
 {
   standing_spot_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(standing_spot_block_array *Arr)
 }
 
 link_internal umm
-Count(standing_spot_block_array *Arr)
+Count( standing_spot_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(standing_spot_block_array *Arr)
 }
 
 link_internal standing_spot *
+Set( standing_spot_block_array *Arr,
+  standing_spot *Element,
+  standing_spot_block_array_index Index )
+{
+  standing_spot *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal standing_spot *
 GetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
 {
   standing_spot *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal standing_spot *
 GetPtr(standing_spot_block *Block, umm Index)
 {
-  standing_spot *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  standing_spot *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(standing_spot_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  standing_spot *Result = Block->Elements+ElementIndex;
+  standing_spot *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -204,7 +246,7 @@ RemoveUnordered( standing_spot_block_array *Array, standing_spot_block_array_ind
   standing_spot *Element = GetPtr(Array, Index);
   standing_spot *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
@@ -246,7 +288,7 @@ Find( standing_spot_block_array *Array, standing_spot *Query)
   standing_spot_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
-    if (E == Query)
+    if ( E == Query)
     {
       Result = Index;
       break;
@@ -258,10 +300,9 @@ Find( standing_spot_block_array *Array, standing_spot *Query)
 link_internal b32
 IsValid(standing_spot_block_array_index *Index)
 {
-  NotImplemented;
   standing_spot_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  /* b32 Result = AreEqual(*Index, Test); */
-  b32 Result = False;
+  b32 Result = AreEqual(Index, &Test);
+  /* b32 Result = False; */
   return Result;
 }
 

@@ -2237,18 +2237,17 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+
   // First, gather the currently edited nodes and remove the edit
   {
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
     GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
 
-    IterateOver(&Nodes, N, NodeIndex)
+    IterateOver(&Nodes, Node, NodeIndex)
     {
-      octree_node *Node = *N;
-
-      auto Index = Find(Node->Edits, Edit);
-      Assert(IsValid(Index)); // There shouldn't be a node that doesn't contain the edit
-      RemoveUnordered(Node->Edits, Index);
+      auto Index = Find(&Node->Edits, Edit);
+      Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
+      RemoveUnordered(&Node->Edits, Index);
     }
   }
 
@@ -2262,24 +2261,23 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
     GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
 
-    IterateOver(&Nodes, N, NodeIndex)
+    IterateOver(&Nodes, Node, NodeIndex)
     {
-      octree_node *Node = *N;
       /* auto EditAABB = GetSimSpaceAABB(World, Node); */
       /* random_series S = {u64(Node)}; */
       /* v3 BaseColor = RandomV3Unilateral(&S); */
       /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
 
-      // Shouldn't have this edit already attached ..
-      Assert( IsValid(Find(Node->Edits, Node)) == False );
+      {
+        // Shouldn't have this edit already attached ..
+        world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
+        Assert( IsValid(&Index) == False );
+      }
 
-      Push(&Node->Edits, Edit);
+      Push(&Node->Edits, &Edit);
+      QueueChunkForInit(&Plat->WorldUpdateQ, Node->Chunk, MeshBit_None);
     }
   }
-
-  QueueChunkForInit(Plat->WorldUpdateQ, Node->Chunk, MeshBit_None);
-
-  VaporizeArena(Nodes.Memory);
 }
 
 link_internal void
@@ -2712,7 +2710,7 @@ DoWorldEditor(engine_resources *Engine)
   {
     if (Editor->CurrentEdit)
     {
-      UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region);
+      UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
     }
   }
 

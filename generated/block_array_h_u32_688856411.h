@@ -1,5 +1,9 @@
 // external/bonsai_stdlib/src/primitive_containers.h:2:0
 
+
+
+
+
 struct u32_block
 {
   u32 Index;
@@ -23,10 +27,34 @@ struct u32_block_array
   
 };
 
+link_internal b32
+AreEqual(u32_block_array_index *Thing1, u32_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( u32_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(u32_block_array_index Thing1, u32_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( u32_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef u32_block_array u32_paged_list;
 
 link_internal u32_block_array_index
-operator++(u32_block_array_index &I0)
+operator++( u32_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +77,29 @@ operator++(u32_block_array_index &I0)
 }
 
 link_internal b32
-operator<(u32_block_array_index I0, u32_block_array_index I1)
+operator<( u32_block_array_index I0, u32_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(u32_block_array_index *Index)
+GetIndex( u32_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal u32_block_array_index
-ZerothIndex(u32_block_array *Arr)
+ZerothIndex( u32_block_array *Arr)
 {
   u32_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(u32_block_array *Arr)
+TotalElements( u32_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +110,7 @@ TotalElements(u32_block_array *Arr)
 }
 
 link_internal u32_block_array_index
-LastIndex(u32_block_array *Arr)
+LastIndex( u32_block_array *Arr)
 {
   u32_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +125,7 @@ LastIndex(u32_block_array *Arr)
 }
 
 link_internal u32_block_array_index
-AtElements(u32_block_array *Arr)
+AtElements( u32_block_array *Arr)
 {
   u32_block_array_index Result = {};
   if (Arr->Current)
@@ -111,7 +138,7 @@ AtElements(u32_block_array *Arr)
 }
 
 link_internal umm
-Count(u32_block_array *Arr)
+Count( u32_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
@@ -119,18 +146,33 @@ Count(u32_block_array *Arr)
 }
 
 link_internal u32 *
+Set( u32_block_array *Arr,
+  u32 *Element,
+  u32_block_array_index Index )
+{
+  u32 *Result = {};
+  if (Index.Block)
+  {
+    Result = &Index.Block->Elements[Index.ElementIndex];
+    *Result = *Element;
+  }
+
+  return Result;
+}
+
+link_internal u32 *
 GetPtr(u32_block_array *Arr, u32_block_array_index Index)
 {
   u32 *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal u32 *
 GetPtr(u32_block *Block, umm Index)
 {
-  u32 *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  u32 *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -147,7 +189,7 @@ GetPtr(u32_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  u32 *Result = Block->Elements+ElementIndex;
+  u32 *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
