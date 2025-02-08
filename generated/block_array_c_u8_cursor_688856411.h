@@ -97,7 +97,7 @@ IsValid(u8_cursor_block_array_index *Index)
 link_internal u8_cursor *
 Push( u8_cursor_block_array *Array, u8_cursor *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_u8_cursor_block(Array->Memory); Array->Current = Array->First; }
 

@@ -97,7 +97,7 @@ IsValid(world_chunk_ptr_block_array_index *Index)
 link_internal world_chunk_ptr *
 Push( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_world_chunk_ptr_block(Array->Memory); Array->Current = Array->First; }
 

@@ -309,7 +309,7 @@ IsValid(voxel_stack_element_block_array_index *Index)
 link_internal voxel_stack_element *
 Push( voxel_stack_element_block_array *Array, voxel_stack_element *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_voxel_stack_element_block(Array->Memory); Array->Current = Array->First; }
 

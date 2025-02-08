@@ -97,7 +97,7 @@ IsValid(texture_block_array_index *Index)
 link_internal texture *
 Push( texture_block_array *Array, texture *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_texture_block(Array->Memory); Array->Current = Array->First; }
 

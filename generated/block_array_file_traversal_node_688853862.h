@@ -309,7 +309,7 @@ IsValid(file_traversal_node_block_array_index *Index)
 link_internal file_traversal_node *
 Push( file_traversal_node_block_array *Array, file_traversal_node *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_file_traversal_node_block(Array->Memory); Array->Current = Array->First; }
 

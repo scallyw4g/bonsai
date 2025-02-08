@@ -309,7 +309,7 @@ IsValid(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 Push( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_dummy_work_queue_entry_build_chunk_mesh_block(Array->Memory); Array->Current = Array->First; }
 

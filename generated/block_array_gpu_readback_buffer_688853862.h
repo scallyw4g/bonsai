@@ -309,7 +309,7 @@ IsValid(gpu_readback_buffer_block_array_index *Index)
 link_internal gpu_readback_buffer *
 Push( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_gpu_readback_buffer_block(Array->Memory); Array->Current = Array->First; }
 

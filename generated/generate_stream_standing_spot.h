@@ -14,6 +14,14 @@ struct standing_spot_stream
   umm ChunkCount;
 };
 
+link_internal standing_spot_stream
+StandingSpotStream(memory_arena *Memory)
+{
+  standing_spot_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(standing_spot_stream *Stream)
 {
@@ -62,10 +70,7 @@ IsLastElement(standing_spot_iterator* Iter)
 link_internal standing_spot *
 Push(standing_spot_stream* Stream, standing_spot Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   standing_spot_stream_chunk* NextChunk = (standing_spot_stream_chunk*)PushStruct(Stream->Memory, sizeof(standing_spot_stream_chunk), 1, 0);

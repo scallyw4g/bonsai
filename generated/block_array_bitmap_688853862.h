@@ -309,7 +309,7 @@ IsValid(bitmap_block_array_index *Index)
 link_internal bitmap *
 Push( bitmap_block_array *Array, bitmap *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_bitmap_block(Array->Memory); Array->Current = Array->First; }
 

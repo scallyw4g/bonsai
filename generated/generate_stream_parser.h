@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/c_parser.h:95:0
+// external/bonsai_stdlib/src/c_parser.h:96:0
 
 struct parser_stream_chunk
 {
@@ -13,6 +13,14 @@ struct parser_stream
   parser_stream_chunk* LastChunk;
   umm ChunkCount;
 };
+
+link_internal parser_stream
+ParserStream(memory_arena *Memory)
+{
+  parser_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
 
 link_internal void
 Deallocate(parser_stream *Stream)
@@ -62,10 +70,7 @@ IsLastElement(parser_iterator* Iter)
 link_internal parser *
 Push(parser_stream* Stream, parser Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   parser_stream_chunk* NextChunk = (parser_stream_chunk*)PushStruct(Stream->Memory, sizeof(parser_stream_chunk), 1, 0);

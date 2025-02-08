@@ -309,7 +309,7 @@ IsValid(picked_octree_node_block_array_index *Index)
 link_internal picked_octree_node *
 Push( picked_octree_node_block_array *Array, picked_octree_node *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_picked_octree_node_block(Array->Memory); Array->Current = Array->First; }
 

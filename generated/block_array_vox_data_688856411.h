@@ -309,7 +309,7 @@ IsValid(vox_data_block_array_index *Index)
 link_internal vox_data *
 Push( vox_data_block_array *Array, vox_data *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_vox_data_block(Array->Memory); Array->Current = Array->First; }
 

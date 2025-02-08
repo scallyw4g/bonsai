@@ -192,6 +192,14 @@ struct s32_stream
   umm ChunkCount;
 };
 
+link_internal s32_stream
+S32Stream(memory_arena *Memory)
+{
+  s32_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(s32_stream *Stream)
 {
@@ -240,10 +248,7 @@ IsLastElement(s32_iterator* Iter)
 link_internal s32 *
 Push(s32_stream* Stream, s32 Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   s32_stream_chunk* NextChunk = (s32_stream_chunk*)PushStruct(Stream->Memory, sizeof(s32_stream_chunk), 1, 0);

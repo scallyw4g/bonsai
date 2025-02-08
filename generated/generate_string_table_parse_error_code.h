@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/c_parser.h:61:0
+// external/bonsai_stdlib/src/c_parser.h:62:0
 
 link_internal counted_string
 ToStringPrefixless(parse_error_code Type)
@@ -16,6 +16,7 @@ ToStringPrefixless(parse_error_code Type)
     case ParseErrorCode_PoofTypeError: { Result = CSz("PoofTypeError"); } break;
     case ParseErrorCode_DUnionParse: { Result = CSz("DUnionParse"); } break;
     case ParseErrorCode_UndefinedDatatype: { Result = CSz("UndefinedDatatype"); } break;
+    case ParseErrorCode_InvalidKeyword: { Result = CSz("InvalidKeyword"); } break;
     case ParseErrorCode_InvalidDirective: { Result = CSz("InvalidDirective"); } break;
     case ParseErrorCode_InvalidOperator: { Result = CSz("InvalidOperator"); } break;
     case ParseErrorCode_InvalidMetaTransformOp: { Result = CSz("InvalidMetaTransformOp"); } break;
@@ -54,6 +55,7 @@ ToString(parse_error_code Type)
     case ParseErrorCode_PoofTypeError: { Result = CSz("ParseErrorCode_PoofTypeError"); } break;
     case ParseErrorCode_DUnionParse: { Result = CSz("ParseErrorCode_DUnionParse"); } break;
     case ParseErrorCode_UndefinedDatatype: { Result = CSz("ParseErrorCode_UndefinedDatatype"); } break;
+    case ParseErrorCode_InvalidKeyword: { Result = CSz("ParseErrorCode_InvalidKeyword"); } break;
     case ParseErrorCode_InvalidDirective: { Result = CSz("ParseErrorCode_InvalidDirective"); } break;
     case ParseErrorCode_InvalidOperator: { Result = CSz("ParseErrorCode_InvalidOperator"); } break;
     case ParseErrorCode_InvalidMetaTransformOp: { Result = CSz("ParseErrorCode_InvalidMetaTransformOp"); } break;

@@ -97,7 +97,7 @@ IsValid(shader_ptr_block_array_index *Index)
 link_internal shader_ptr *
 Push( shader_ptr_block_array *Array, shader_ptr *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_shader_ptr_block(Array->Memory); Array->Current = Array->First; }
 

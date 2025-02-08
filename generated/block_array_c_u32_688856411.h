@@ -97,7 +97,7 @@ IsValid(u32_block_array_index *Index)
 link_internal u32 *
 Push( u32_block_array *Array, u32 *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_u32_block(Array->Memory); Array->Current = Array->First; }
 

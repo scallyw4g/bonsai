@@ -309,7 +309,7 @@ IsValid(octree_node_ptr_block_array_index *Index)
 link_internal octree_node_ptr *
 Push( octree_node_ptr_block_array *Array, octree_node_ptr *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_octree_node_ptr_block(Array->Memory); Array->Current = Array->First; }
 

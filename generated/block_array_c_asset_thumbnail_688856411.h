@@ -97,7 +97,7 @@ IsValid(asset_thumbnail_block_array_index *Index)
 link_internal asset_thumbnail *
 Push( asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_asset_thumbnail_block(Array->Memory); Array->Current = Array->First; }
 
