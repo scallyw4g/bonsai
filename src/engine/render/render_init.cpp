@@ -567,6 +567,8 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
+  Assert(Result->Initialized == False);
+
   Init_Global_QuadVertexBuffer();
 
   Result->Memory = GraphicsMemory;

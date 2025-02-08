@@ -600,7 +600,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 link_export THREAD_MAIN_RETURN
 RenderThread_Main(void *ThreadStartupParams)
 {
-  b32 InitResult = True;
   thread_startup_params *ThreadParams = Cast(thread_startup_params*, ThreadStartupParams);
 
   Global_EngineResources = (engine_resources*)ThreadParams->EngineResources;
@@ -619,11 +618,12 @@ RenderThread_Main(void *ThreadStartupParams)
 
   PlatformMakeRenderContextCurrent(Os);
 
+  // NOTE(Jesse): This now happens in stdlib startup
   /* s32 VSyncFrames = 0; */
   /* InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames); */
+  /* if (InitResult) { InitResult &= InitializeOpenglFunctions(); } */
 
-  if (InitResult) { InitResult &= InitializeOpenglFunctions(); }
-
+  b32 InitResult = True;
   if (InitResult) { InitResult &= GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena()); }
 
   if (InitResult)
@@ -648,7 +648,7 @@ RenderThread_Main(void *ThreadStartupParams)
   }
   else
   {
-    SoftError("Render thread initiailization failed.");
+    Error("Render thread initiailization failed.");
   }
 
   THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, InitResult);
