@@ -27,6 +27,14 @@ struct texture_ptr_block_array
   
 };
 
+link_internal texture_ptr_block_array
+TexturePtrBlockArray(memory_arena *Memory)
+{
+  texture_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(texture_ptr_block_array_index *Thing1, texture_ptr_block_array_index *Thing2)
 {

@@ -27,6 +27,14 @@ struct entity_block_array
   
 };
 
+link_internal entity_block_array
+EntityBlockArray(memory_arena *Memory)
+{
+  entity_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(entity_block_array_index *Thing1, entity_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(entity_block *Block)
 
 
 
-link_internal entity_block_array
-EntityBlockArray(memory_arena *Memory)
-{
-  entity_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal entity_block *
 Allocate_entity_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(entity_block_array_index *Index)
 {
   entity_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

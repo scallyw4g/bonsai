@@ -27,6 +27,14 @@ struct member_info_block_array
   
 };
 
+link_internal member_info_block_array
+MemberInfoBlockArray(memory_arena *Memory)
+{
+  member_info_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(member_info_block_array_index *Thing1, member_info_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(member_info_block *Block)
 
 
 
-link_internal member_info_block_array
-MemberInfoBlockArray(memory_arena *Memory)
-{
-  member_info_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal member_info_block *
 Allocate_member_info_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(member_info_block_array_index *Index)
 {
   member_info_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

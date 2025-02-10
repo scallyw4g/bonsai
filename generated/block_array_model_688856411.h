@@ -27,6 +27,14 @@ struct model_block_array
   
 };
 
+link_internal model_block_array
+ModelBlockArray(memory_arena *Memory)
+{
+  model_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(model_block_array_index *Thing1, model_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(model_block *Block)
 
 
 
-link_internal model_block_array
-ModelBlockArray(memory_arena *Memory)
-{
-  model_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal model_block *
 Allocate_model_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(model_block_array_index *Index)
 {
   model_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

@@ -28,7 +28,8 @@ InitEditor(level_editor *Editor)
   b32 Result = True;
   Editor->Memory = AllocateArena();
 
-  Editor->AssetThumbnails.Memory = Editor->Memory;
+  Editor->WorldEdits = WorldEditBlockArray(Editor->Memory);
+  Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
 /*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
 /*   { */
@@ -2274,8 +2275,13 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
         Assert( IsValid(&Index) == False );
       }
 
+      if (Node->Edits.Memory == 0)
+      {
+        Node->Edits = WorldEditPtrBlockArray(Editor->Memory);
+      }
+
       Push(&Node->Edits, &Edit);
-      QueueChunkForInit(&Plat->WorldUpdateQ, Node->Chunk, MeshBit_None);
+      QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_None);
     }
   }
 }

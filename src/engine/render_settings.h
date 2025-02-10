@@ -67,14 +67,14 @@ struct render_settings poof(@version(2))
 
   b32 DrawMajorGrid;
   b32 DrawMinorGrid;
-  r32 MajorGridDim;             poof(@ui_value_range(0, 32))
+  r32 MajorGridDim;          poof(@ui_value_range(0, 32))
 
   b32 DrawCameraGhost;
   r32 CameraGhostSize = 1.f; poof(@ui_value_range(1, 100))
 
-  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
-  b32 Headless;                 poof(@ui_skip)
-
+  // Moved OffsetOfWorldCenterToGrid to graphics
+  v3 Ignored;   poof(@ui_skip)
+  b32 Headless; poof(@ui_skip)
 
   tone_mapping_type ToneMappingType;
 
@@ -109,8 +109,8 @@ struct render_settings_1
   b32 DrawMinorGrid;
   r32 MajorGridDim;             poof(@ui_value_range(0, 32))
 
-  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
-  b32 Headless;                 poof(@ui_skip)
+  v3 Ignored;   poof(@ui_skip)
+  b32 Headless; poof(@ui_skip)
 
 
   tone_mapping_type ToneMappingType;
@@ -141,7 +141,7 @@ struct render_settings_0
   b32 DrawMinorGrid;
   r32 MajorGridDim;             poof(@ui_value_range(0, 32))
 
-  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
+  v3 Ignored; poof(@ui_skip)
   b32 Headless;                 poof(@ui_skip)
 
   tone_mapping_type ToneMappingType;

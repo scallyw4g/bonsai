@@ -36,6 +36,7 @@
 #include <engine/async_texture.cpp>
 #include <engine/render.cpp> // TODO(Jesse): Probably time to split this up?
 #include <engine/settings.cpp>
+#include <engine/render_loop.cpp>
 #include <engine/resources.cpp>
 
 #include <engine/world.cpp>

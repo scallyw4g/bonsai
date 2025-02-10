@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:415:0
+// src/engine/editor.cpp:416:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -72,6 +72,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         // Cast to remove const/volatile keywords if they're there
         Cast(render_settings*, &Element->PrevSettings),
         CSz("PrevSettings"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(v3*, &Element->OffsetOfWorldCenterToGrid),
+        CSz("OffsetOfWorldCenterToGrid"),
         Params
         );
 

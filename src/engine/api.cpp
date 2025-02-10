@@ -42,7 +42,7 @@ SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
     SimulateEntity(Engine, CameraGhost, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
 
     v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->Settings.OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
+    Graphics->OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
   }
 }
 

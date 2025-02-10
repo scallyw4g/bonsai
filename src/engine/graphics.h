@@ -74,6 +74,8 @@ struct graphics
   render_settings Settings;
   render_settings PrevSettings;
 
+  v3 OffsetOfWorldCenterToGrid;
+
   v3 SunBasis;
 
   r32 FogPower;
@@ -128,12 +130,12 @@ struct graphics
   // tracks this third stage.
   //
   volatile u32 NoiseFinalizeJobsPending;
-  dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs;
+  dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 
   gpu_mapped_element_buffer GpuBuffers[2];
   u32 GpuBufferWriteIndex;
 
-  gpu_timer_block_array GpuTimers;
+  gpu_timer_block_array GpuTimers = GpuTimerBlockArray(&Global_PermMemory);
 
   memory_arena *Memory;
 };

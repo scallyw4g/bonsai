@@ -27,6 +27,14 @@ struct voxel_stack_element_block_array
   
 };
 
+link_internal voxel_stack_element_block_array
+VoxelStackElementBlockArray(memory_arena *Memory)
+{
+  voxel_stack_element_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(voxel_stack_element_block_array_index *Thing1, voxel_stack_element_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(voxel_stack_element_block *Block)
 
 
 
-link_internal voxel_stack_element_block_array
-VoxelStackElementBlockArray(memory_arena *Memory)
-{
-  voxel_stack_element_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal voxel_stack_element_block *
 Allocate_voxel_stack_element_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(voxel_stack_element_block_array_index *Index)
 {
   voxel_stack_element_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

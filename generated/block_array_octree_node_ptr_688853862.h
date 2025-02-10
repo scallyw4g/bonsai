@@ -27,6 +27,14 @@ struct octree_node_ptr_block_array
   
 };
 
+link_internal octree_node_ptr_block_array
+OctreeNodePtrBlockArray(memory_arena *Memory)
+{
+  octree_node_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(octree_node_ptr_block_array_index *Thing1, octree_node_ptr_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(octree_node_ptr_block *Block)
 
 
 
-link_internal octree_node_ptr_block_array
-OctreeNodePtrBlockArray(memory_arena *Memory)
-{
-  octree_node_ptr_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal octree_node_ptr_block *
 Allocate_octree_node_ptr_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(octree_node_ptr_block_array_index *Index)
 {
   octree_node_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

@@ -4,14 +4,6 @@
 
 
 
-link_internal gpu_timer_block_array
-GpuTimerBlockArray(memory_arena *Memory)
-{
-  gpu_timer_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal gpu_timer_block *
 Allocate_gpu_timer_block(memory_arena *Memory)
 {
@@ -89,8 +81,7 @@ link_internal b32
 IsValid(gpu_timer_block_array_index *Index)
 {
   gpu_timer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

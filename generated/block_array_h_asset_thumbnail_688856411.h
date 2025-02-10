@@ -27,6 +27,14 @@ struct asset_thumbnail_block_array
   
 };
 
+link_internal asset_thumbnail_block_array
+AssetThumbnailBlockArray(memory_arena *Memory)
+{
+  asset_thumbnail_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(asset_thumbnail_block_array_index *Thing1, asset_thumbnail_block_array_index *Thing2)
 {

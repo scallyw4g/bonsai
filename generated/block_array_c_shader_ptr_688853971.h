@@ -4,14 +4,6 @@
 
 
 
-link_internal shader_ptr_block_array
-ShaderPtrBlockArray(memory_arena *Memory)
-{
-  shader_ptr_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal shader_ptr_block *
 Allocate_shader_ptr_block(memory_arena *Memory)
 {
@@ -89,8 +81,7 @@ link_internal b32
 IsValid(shader_ptr_block_array_index *Index)
 {
   shader_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

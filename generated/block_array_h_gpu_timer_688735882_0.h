@@ -27,6 +27,14 @@ struct gpu_timer_block_array
   
 };
 
+link_internal gpu_timer_block_array
+GpuTimerBlockArray(memory_arena *Memory)
+{
+  gpu_timer_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(gpu_timer_block_array_index *Thing1, gpu_timer_block_array_index *Thing2)
 {

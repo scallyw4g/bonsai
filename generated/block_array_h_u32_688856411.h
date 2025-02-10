@@ -27,6 +27,14 @@ struct u32_block_array
   
 };
 
+link_internal u32_block_array
+U32BlockArray(memory_arena *Memory)
+{
+  u32_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(u32_block_array_index *Thing1, u32_block_array_index *Thing2)
 {

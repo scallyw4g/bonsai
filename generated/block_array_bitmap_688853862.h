@@ -27,6 +27,14 @@ struct bitmap_block_array
   
 };
 
+link_internal bitmap_block_array
+BitmapBlockArray(memory_arena *Memory)
+{
+  bitmap_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(bitmap_block_array_index *Thing1, bitmap_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(bitmap_block *Block)
 
 
 
-link_internal bitmap_block_array
-BitmapBlockArray(memory_arena *Memory)
-{
-  bitmap_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal bitmap_block *
 Allocate_bitmap_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(bitmap_block_array_index *Index)
 {
   bitmap_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

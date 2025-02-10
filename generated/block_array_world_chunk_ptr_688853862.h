@@ -4,14 +4,6 @@
 
 
 
-link_internal world_chunk_ptr_block_array
-WorldChunkPtrBlockArray(memory_arena *Memory)
-{
-  world_chunk_ptr_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal world_chunk_ptr_block *
 Allocate_world_chunk_ptr_block(memory_arena *Memory)
 {
@@ -89,8 +81,7 @@ link_internal b32
 IsValid(world_chunk_ptr_block_array_index *Index)
 {
   world_chunk_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

@@ -4,14 +4,6 @@
 
 
 
-link_internal u8_cursor_block_array
-U8CursorBlockArray(memory_arena *Memory)
-{
-  u8_cursor_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal u8_cursor_block *
 Allocate_u8_cursor_block(memory_arena *Memory)
 {
@@ -89,8 +81,7 @@ link_internal b32
 IsValid(u8_cursor_block_array_index *Index)
 {
   u8_cursor_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

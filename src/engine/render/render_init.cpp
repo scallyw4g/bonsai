@@ -370,7 +370,7 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinCli
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->RenderSpacePosition, "CameraToWorld");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");

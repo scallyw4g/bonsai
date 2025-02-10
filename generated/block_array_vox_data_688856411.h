@@ -27,6 +27,14 @@ struct vox_data_block_array
   
 };
 
+link_internal vox_data_block_array
+VoxDataBlockArray(memory_arena *Memory)
+{
+  vox_data_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(vox_data_block_array_index *Thing1, vox_data_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(vox_data_block *Block)
 
 
 
-link_internal vox_data_block_array
-VoxDataBlockArray(memory_arena *Memory)
-{
-  vox_data_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal vox_data_block *
 Allocate_vox_data_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(vox_data_block_array_index *Index)
 {
   vox_data_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

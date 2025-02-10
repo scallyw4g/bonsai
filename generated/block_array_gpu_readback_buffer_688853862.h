@@ -27,6 +27,14 @@ struct gpu_readback_buffer_block_array
   
 };
 
+link_internal gpu_readback_buffer_block_array
+GpuReadbackBufferBlockArray(memory_arena *Memory)
+{
+  gpu_readback_buffer_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(gpu_readback_buffer_block_array_index *Thing1, gpu_readback_buffer_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(gpu_readback_buffer_block *Block)
 
 
 
-link_internal gpu_readback_buffer_block_array
-GpuReadbackBufferBlockArray(memory_arena *Memory)
-{
-  gpu_readback_buffer_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal gpu_readback_buffer_block *
 Allocate_gpu_readback_buffer_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(gpu_readback_buffer_block_array_index *Index)
 {
   gpu_readback_buffer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

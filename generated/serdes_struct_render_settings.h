@@ -107,7 +107,7 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
 
 
-                            Result &= Serialize(Bytes, &Element->OffsetOfWorldCenterToGrid); // default
+                            Result &= Serialize(Bytes, &Element->Ignored); // default
 
 
 
@@ -308,7 +308,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->OffsetOfWorldCenterToGrid, Memory);
+  Result &= Deserialize(Bytes, &Element->Ignored, Memory);
 
 
 

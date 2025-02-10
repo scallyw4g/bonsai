@@ -27,6 +27,14 @@ struct world_chunk_ptr_block_array
   
 };
 
+link_internal world_chunk_ptr_block_array
+WorldChunkPtrBlockArray(memory_arena *Memory)
+{
+  world_chunk_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(world_chunk_ptr_block_array_index *Thing1, world_chunk_ptr_block_array_index *Thing2)
 {

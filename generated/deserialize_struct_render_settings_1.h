@@ -79,7 +79,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings_1 *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->OffsetOfWorldCenterToGrid, Memory);
+  Result &= Deserialize(Bytes, &Element->Ignored, Memory);
 
 
 

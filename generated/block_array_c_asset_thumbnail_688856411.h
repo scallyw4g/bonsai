@@ -1,16 +1,8 @@
-// src/engine/editor.cpp:80:0
+// src/engine/editor.cpp:81:0
 
 
 
 
-
-link_internal asset_thumbnail_block_array
-AssetThumbnailBlockArray(memory_arena *Memory)
-{
-  asset_thumbnail_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
 
 link_internal asset_thumbnail_block *
 Allocate_asset_thumbnail_block(memory_arena *Memory)
@@ -89,8 +81,7 @@ link_internal b32
 IsValid(asset_thumbnail_block_array_index *Index)
 {
   asset_thumbnail_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

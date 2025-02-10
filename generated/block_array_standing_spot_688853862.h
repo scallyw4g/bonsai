@@ -27,6 +27,14 @@ struct standing_spot_block_array
   
 };
 
+link_internal standing_spot_block_array
+StandingSpotBlockArray(memory_arena *Memory)
+{
+  standing_spot_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(standing_spot_block_array_index *Thing1, standing_spot_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(standing_spot_block *Block)
 
 
 
-link_internal standing_spot_block_array
-StandingSpotBlockArray(memory_arena *Memory)
-{
-  standing_spot_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal standing_spot_block *
 Allocate_standing_spot_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(standing_spot_block_array_index *Index)
 {
   standing_spot_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

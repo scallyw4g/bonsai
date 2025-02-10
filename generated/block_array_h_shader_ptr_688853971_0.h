@@ -27,6 +27,14 @@ struct shader_ptr_block_array
   
 };
 
+link_internal shader_ptr_block_array
+ShaderPtrBlockArray(memory_arena *Memory)
+{
+  shader_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(shader_ptr_block_array_index *Thing1, shader_ptr_block_array_index *Thing2)
 {

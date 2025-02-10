@@ -27,6 +27,14 @@ struct world_edit_block_array
   
 };
 
+link_internal world_edit_block_array
+WorldEditBlockArray(memory_arena *Memory)
+{
+  world_edit_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(world_edit_block_array_index *Thing1, world_edit_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(world_edit_block *Block)
 
 
 
-link_internal world_edit_block_array
-WorldEditBlockArray(memory_arena *Memory)
-{
-  world_edit_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal world_edit_block *
 Allocate_world_edit_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(world_edit_block_array_index *Index)
 {
   world_edit_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 

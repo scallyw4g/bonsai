@@ -27,6 +27,14 @@ struct u8_cursor_block_array
   u64 BlockSize;
 };
 
+link_internal u8_cursor_block_array
+U8CursorBlockArray(memory_arena *Memory)
+{
+  u8_cursor_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(u8_cursor_block_array_index *Thing1, u8_cursor_block_array_index *Thing2)
 {

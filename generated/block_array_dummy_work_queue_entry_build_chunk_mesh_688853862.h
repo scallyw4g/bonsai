@@ -27,6 +27,14 @@ struct dummy_work_queue_entry_build_chunk_mesh_block_array
   
 };
 
+link_internal dummy_work_queue_entry_build_chunk_mesh_block_array
+DummyWorkQueueEntryBuildChunkMeshBlockArray(memory_arena *Memory)
+{
+  dummy_work_queue_entry_build_chunk_mesh_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal b32
 AreEqual(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Thing1, dummy_work_queue_entry_build_chunk_mesh_block_array_index *Thing2)
 {
@@ -216,14 +224,6 @@ AtElements(dummy_work_queue_entry_build_chunk_mesh_block *Block)
 
 
 
-link_internal dummy_work_queue_entry_build_chunk_mesh_block_array
-DummyWorkQueueEntryBuildChunkMeshBlockArray(memory_arena *Memory)
-{
-  dummy_work_queue_entry_build_chunk_mesh_block_array Result = {};
-  Result.Memory = Memory;
-  return Result;
-}
-
 link_internal dummy_work_queue_entry_build_chunk_mesh_block *
 Allocate_dummy_work_queue_entry_build_chunk_mesh_block(memory_arena *Memory)
 {
@@ -301,8 +301,7 @@ link_internal b32
 IsValid(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
-  b32 Result = AreEqual(Index, &Test);
-  /* b32 Result = False; */
+  b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
