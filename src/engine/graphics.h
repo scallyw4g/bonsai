@@ -8,7 +8,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
   shader_uniform  Uniforms[3];
          texture  ChunkTexture;
 
-              v3  ChunkDim; poof(@uniform)
+              v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
               v3  ChunkResolution; poof(@uniform)
 };

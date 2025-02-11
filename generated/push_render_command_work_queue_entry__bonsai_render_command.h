@@ -3,11 +3,11 @@
 link_internal void
 PushBonsaiRenderCommandInitializeNoiseBuffer(
   work_queue *RenderQueue
-   , world_chunk* Chunk  
+   , octree_node* Node  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  Chunk  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  Node  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

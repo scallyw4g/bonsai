@@ -3476,10 +3476,10 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 debug_global u32 TotalChunksQueued;
 
 inline void
-QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit)
+QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
 {
   TIMED_FUNCTION();
-  Assert( NotSet(Chunk->Flags, Chunk_Queued) );
+  Assert( NotSet(Node->Chunk->Flags, Chunk_Queued) );
 
   ++TotalChunksQueued;
 
@@ -3496,11 +3496,11 @@ QueueChunkForInit(work_queue *Queue, world_chunk *Chunk, world_chunk_mesh_bitfie
 
   PushWorkQueueEntry(Queue, &Entry);
 #else
-  PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Chunk);
+  PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node);
 #endif
 
-  Assert( NotSet(Chunk->Flags, Chunk_Queued) );
-  SetFlag(&Chunk->Flags, Chunk_Queued);
+  Assert( NotSet(Node->Chunk->Flags, Chunk_Queued) );
+  SetFlag(&Node->Chunk->Flags, Chunk_Queued);
 }
 
 #if 1
@@ -4163,6 +4163,7 @@ GetChunksFromMouseP(engine_resources *Engine, picked_world_chunk_static_buffer *
 link_internal aabb
 WorldChunkAABB(world_chunk *Chunk, v3 WorldChunkDim)
 {
+  NotImplemented; // NOTE(Jesse): Buggy, needs to account for chunk resolution
   v3 MinP = V3(Chunk->WorldP) * WorldChunkDim;
   v3 MaxP = MinP + WorldChunkDim;
   aabb Result = AABBMinMax(MinP, MaxP);

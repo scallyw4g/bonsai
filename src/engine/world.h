@@ -242,7 +242,7 @@ link_internal b32
 OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node);
 
 link_internal u32
-MergeOctreeChildren(engine_resources *Engine, octree_node *Node);
+FreeOctreeChildren(engine_resources *Engine, octree_node *Node);
 
 link_internal world_chunk_ptr_buffer
 GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);

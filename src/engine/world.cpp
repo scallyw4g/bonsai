@@ -626,7 +626,7 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
 
 
 link_internal void
-CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
+FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
 {
   octree_node *Node = *Bucket;
   *Bucket = 0;
@@ -641,7 +641,7 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 
     case OctreeNodeType_Branch:
     {
-      MergeOctreeChildren(Engine, Node);
+      FreeOctreeChildren(Engine, Node);
     } break;
 
   }
@@ -689,7 +689,7 @@ CheckedDeallocateChildNode(engine_resources *Engine, octree_node **Bucket)
 
 #if 1
 link_internal u32
-MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
+FreeOctreeChildren(engine_resources *Engine, octree_node *Node)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -697,14 +697,14 @@ MergeOctreeChildren(engine_resources *Engine, octree_node *Node)
   Assert(Node->Type == OctreeNodeType_Branch);
   Node->Type = OctreeNodeType_Leaf;
 
-  CheckedDeallocateChildNode(Engine, Node->Children+0);
-  CheckedDeallocateChildNode(Engine, Node->Children+1);
-  CheckedDeallocateChildNode(Engine, Node->Children+2);
-  CheckedDeallocateChildNode(Engine, Node->Children+3);
-  CheckedDeallocateChildNode(Engine, Node->Children+4);
-  CheckedDeallocateChildNode(Engine, Node->Children+5);
-  CheckedDeallocateChildNode(Engine, Node->Children+6);
-  CheckedDeallocateChildNode(Engine, Node->Children+7);
+  FreeOctreeNode(Engine, Node->Children+0);
+  FreeOctreeNode(Engine, Node->Children+1);
+  FreeOctreeNode(Engine, Node->Children+2);
+  FreeOctreeNode(Engine, Node->Children+3);
+  FreeOctreeNode(Engine, Node->Children+4);
+  FreeOctreeNode(Engine, Node->Children+5);
+  FreeOctreeNode(Engine, Node->Children+6);
+  FreeOctreeNode(Engine, Node->Children+7);
 
   /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
 
@@ -774,9 +774,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
       {
         if (OctreeBranchShouldCollapse(Engine, NodeToSplit))
         {
-          octree_node *Tmp = NodeToSplit;
-          /* CheckedDeallocateChildNode(Engine, &Tmp); */
-          MergeOctreeChildren(Engine, NodeToSplit);
+          FreeOctreeChildren(Engine, NodeToSplit);
         }
         else
         {
@@ -1006,9 +1004,11 @@ MaintainWorldOctree(engine_resources *Engine)
   octree_stats Stats = {};
 
   /* u32 ChunksCurrentlyQueued = u32(Count(&Graphics->NoiseReadbackJobs)); */
-  u32 ChunksCurrentlyQueued = u32(Graphics->NoiseFinalizeJobsPending);
+  s32 ChunksCurrentlyQueued = s32(Graphics->NoiseFinalizeJobsPending);
 
-  u32 MaxToQueueThisFrame = Max(0u, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
+  // NOTE(Jesse): Must be signed because we can force queue chunks in different
+  // ways (editing), which can cause (MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued) to be negative
+  s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
 
 /*   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
@@ -1023,7 +1023,7 @@ MaintainWorldOctree(engine_resources *Engine)
   /* DEBUG_VALUE_u32(ReusedNode); */
   /* DEBUG_VALUE_u32(AllocatedNode); */
 
-  u32 NumQueuedThisFrame = 0;
+  s32 NumQueuedThisFrame = 0;
   if (MaxToQueueThisFrame)
   {
     RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
@@ -1053,7 +1053,7 @@ MaintainWorldOctree(engine_resources *Engine)
             }
 
             /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
-            QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_Lod0);
+            QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
             ++Stats.NewQueues;
             if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
           }

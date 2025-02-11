@@ -260,8 +260,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
 
-              world_chunk **Chunk2 = &C.Chunk;
-              world_chunk *Chunk1 = C.Chunk;
+              world_chunk **Chunk2 = &C.Node->Chunk;
+              world_chunk *Chunk1 = C.Node->Chunk;
               world_chunk *Chunk = Chunk1;
 
               Assert(s64(Chunk) == s64(Chunk1));

@@ -1,4 +1,4 @@
-// src/engine/render_command.h:218:0
+// src/engine/render_command.h:219:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -291,10 +291,10 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_cancel_all_noise_readba
 
 
 link_internal bonsai_render_command_initialize_noise_buffer
-BonsaiRenderCommandInitializeNoiseBuffer(  world_chunk *  Chunk  )
+BonsaiRenderCommandInitializeNoiseBuffer(  octree_node *  Node  )
 {
   bonsai_render_command_initialize_noise_buffer Reuslt = {
-            .Chunk = Chunk
+            .Node = Node
 
 
   };

@@ -2281,7 +2281,17 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
       }
 
       Push(&Node->Edits, &Edit);
-      QueueChunkForInit(&Plat->RenderQ, Node->Chunk, MeshBit_None);
+
+      if (Node->Chunk)
+      {
+        Assert(Node->Type == OctreeNodeType_Leaf);
+
+        world_chunk *Chunk = Node->Chunk;
+
+        DeallocateAndClearWorldChunk(Engine, Chunk);
+        Chunk->DimInChunks = Node->Resolution;
+        Chunk->WorldP      = Node->WorldP;
+      }
     }
   }
 }

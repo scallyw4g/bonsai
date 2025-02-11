@@ -110,9 +110,10 @@ struct bonsai_render_command_do_stuff
   u32 Ignored = 0;
 };
 
+struct octree_node;
 struct bonsai_render_command_initialize_noise_buffer
 {
-  world_chunk *Chunk;
+  octree_node *Node;
 };
 
 struct bonsai_render_command_gl_timer_init
@@ -245,4 +246,4 @@ link_internal void
 PushBonsaiRenderCommandAllocateTexture(work_queue *, texture *, void *);
 
 link_internal void
-PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *RenderQueue , world_chunk* Chunk  );
+PushBonsaiRenderCommandInitializeNoiseBuffer( work_queue *, octree_node *);
