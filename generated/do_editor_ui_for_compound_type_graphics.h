@@ -387,8 +387,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(gpu_noise_render_group*, &Element->GpuNoise),
-        CSz("GpuNoise"),
+        Cast(terrain_shader*, &Element->TerrainRenderContext),
+        CSz("TerrainRenderContext"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_shader*, &Element->WorldEditRenderContext),
+        CSz("WorldEditRenderContext"),
         Params
         );
 

@@ -2255,7 +2255,11 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   //
   // Update the edit
   //
-  Editor->CurrentEdit->Region = Region;
+
+  Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered;
+  NewBrush(&Editor->CurrentEdit->Layered);
+
+  Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
   // Gather newly overlapping nodes and add the edit
   {

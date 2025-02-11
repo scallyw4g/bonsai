@@ -19,7 +19,7 @@ InitializeTerrainShader( terrain_shader *Struct    , v3 ChunkDim     , v3 Worlds
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->ChunkResolution, "ChunkResolution");
   ++UniformIndex;
 
-  if (UniformIndex !=  )
+  if (UniformIndex !=  3  )
   {
     Error("Shader (terrain_shader) had an incorrect number of uniform slots!");
   }
@@ -45,7 +45,7 @@ UseShader( terrain_shader *Struct )
     BindUnifromById(Struct->Uniforms+UniformIndex, &TextureUnit);
   ++UniformIndex;
 
-  if (UniformIndex !=  )
+  if (UniformIndex !=  3  )
   {
     Error("Shader (terrain_shader) had an incorrect number of uniform slots!");
   }

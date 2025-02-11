@@ -7,6 +7,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
           shader  Program;
   shader_uniform  Uniforms[3];
          texture  ChunkTexture;
+     framebuffer  FBO;
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
@@ -14,13 +15,25 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 };
 
 poof(shader_magic(terrain_shader))
-#include <generated/shader_magic_terrain_shader.h>
+#include <generated/shader_magic_struct_terrain_shader.h>
 
-struct gpu_noise_render_group
+
+struct world_edit_shader
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/default.fragmentshader") )
 {
-  framebuffer FBO;
-  terrain_shader TerrainShader;
+          shader  Program;
+  shader_uniform  Uniforms[3];
+         texture  ChunkTexture;
+     framebuffer  FBO;
+
+              v3  ChunkDim;        poof(@uniform)
+              v3  WorldspaceBasis; poof(@uniform)
+              v3  ChunkResolution; poof(@uniform)
 };
+
+poof(shader_magic(world_edit_shader))
+#include <generated/shader_magic_struct_world_edit_shader.h>
 
 struct composite_render_group
 {
@@ -121,7 +134,8 @@ struct graphics
   lighting_render_group     Lighting;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
-  gpu_noise_render_group    GpuNoise;
+  terrain_shader            TerrainRenderContext;
+  world_edit_shader         WorldEditRenderContext;
 
   // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
   // step process going on.  First, the job is dispatched (copy values into PBO)

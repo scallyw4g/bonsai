@@ -776,16 +776,16 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
 
-    terrain_shader *TerrainShader = &Result->GpuNoise.TerrainShader;
+    terrain_shader *TerrainShader = &Result->TerrainRenderContext;
     v3 ChunkDim = V3(66, 66, 66);
-    InitializeTerrainShader(&Result->GpuNoise.TerrainShader, ChunkDim, {}, {});
+    InitializeTerrainShader(TerrainShader, ChunkDim, {}, {});
 
-    Result->GpuNoise.FBO = GenFramebuffer();
+    Result->TerrainRenderContext.FBO = GenFramebuffer();
 
-    /* GL.GenQueries(1, &Result->GpuNoise.GlTimerObject); */
-    /* Assert(Result->GpuNoise.GlTimerObject); */
+    /* GL.GenQueries(1, &Result->TerrainRenderContext.GlTimerObject); */
+    /* Assert(Result->TerrainRenderContext.GlTimerObject); */
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->GpuNoise.FBO.ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainRenderContext.FBO.ID);
 
     v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
     /* TerrainShader->ChunkTexture = MakeTexture_SingleChannel(TextureDim, CSz("PerlinNoiseTexture"), False); */
@@ -799,8 +799,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       GL.BindTexture(GL_TEXTURE_2D, 0);
     }
 
-    FramebufferTexture(&Result->GpuNoise.FBO, &TerrainShader->ChunkTexture);
-    SetDrawBuffers(&Result->GpuNoise.FBO);
+    FramebufferTexture(&Result->TerrainRenderContext.FBO, &TerrainShader->ChunkTexture);
+    SetDrawBuffers(&Result->TerrainRenderContext.FBO);
 
     Ensure(CheckAndClearFramebuffer());
   }

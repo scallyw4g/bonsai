@@ -260,43 +260,77 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
 
+              octree_node *Node = C.Node;
               world_chunk **Chunk2 = &C.Node->Chunk;
               world_chunk *Chunk1 = C.Node->Chunk;
               world_chunk *Chunk = Chunk1;
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              auto *Shader = &Graphics->GpuNoise.TerrainShader;
-
-              v3i Apron = V3i(2, 2, 2);
-              v3 NoiseDim = V3(Shader->ChunkDim);
-              Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
-
-              Shader->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
-              Shader->ChunkResolution = V3(Chunk->DimInChunks);
+              auto *TerrainShader = &Graphics->TerrainRenderContext;
+              v3 NoiseDim = V3(TerrainShader->ChunkDim);
               v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
 
               {
-                TIMED_NAMED_BLOCK(Draw);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->GpuNoise.FBO.ID);
+
+                v3i Apron = V3i(2, 2, 2);
+                Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
+
+                TerrainShader->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                TerrainShader->ChunkResolution = V3(Chunk->DimInChunks);
+
+                TIMED_NAMED_BLOCK(TerrainDrawCall);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainRenderContext.FBO.ID);
 
                 SetViewport(ViewportSize);
-                UseShader(Shader);
+                UseShader(TerrainShader);
 
-                gpu_timer NoiseShaderTimer = StartGpuTimer();
+                gpu_timer Timer = StartGpuTimer();
                 RenderQuad();
-                EndGpuTimer(&NoiseShaderTimer);
+                EndGpuTimer(&Timer);
 
-                Push(&Graphics->GpuTimers, &NoiseShaderTimer);
+                Push(&Graphics->GpuTimers, &Timer);
 
                 AssertNoGlErrors;
               }
+
+              {
+                UseShader(&Graphics->WorldEditRenderContext);
+                IterateOver(&Node->Edits, Edit, EditIndex)
+                {
+                  Edit->Type = WorldEdit_BrushType_Layered;
+                  switch (Edit->Type)
+                  {
+                    case WorldEdit_BrushType_Disabled:
+                    case WorldEdit_BrushType_Single:
+                    case WorldEdit_BrushType_Asset:
+                    case WorldEdit_BrushType_Entity:
+                    {
+                      NotImplemented;
+                    } break;
+
+                    case WorldEdit_BrushType_Layered:
+                    {
+                      TIMED_NAMED_BLOCK(WorldEditDrawCall);
+
+                      gpu_timer Timer = StartGpuTimer();
+                      RenderQuad();
+                      EndGpuTimer(&Timer);
+
+                      Push(&Graphics->GpuTimers, &Timer);
+
+                      AssertNoGlErrors;
+                    } break;
+
+                  }
+                }
+              }
+
 
               Assert(Chunk1->Dim == V3i(64));
               Assert(NoiseDim == V3(66));
 
               s32 NoiseElementCount = s32(Volume(NoiseDim));
-              r32 *NoiseValues;
               s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
 
               {
