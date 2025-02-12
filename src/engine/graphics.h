@@ -20,16 +20,15 @@ poof(shader_magic(terrain_shader))
 
 struct world_edit_shader
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/terrain/default.fragmentshader") )
+      @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
 {
           shader  Program;
-  shader_uniform  Uniforms[3];
-         texture  ChunkTexture;
-     framebuffer  FBO;
+  shader_uniform  Uniforms[4];
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
               v3  ChunkResolution; poof(@uniform)
+              s32 Type;            poof(@uniform)
 };
 
 poof(shader_magic(world_edit_shader))

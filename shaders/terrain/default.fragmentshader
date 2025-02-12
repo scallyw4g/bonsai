@@ -245,6 +245,7 @@ void main()
     {
       v3 xyz = Basis / (Period/Octave);
 
+      /* f32 gn = white_noise(Basis); */
       v4 gn = value_noise_derivs(xyz+warp);
       /* v4 gn = gradient_noise_derivs(xyz+warp); */
       /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
@@ -252,8 +253,10 @@ void main()
 
       // NOTE(Jesse): yzw is not derivitives for voronoi_noise
       deriv += gn.yzw;
+      /* deriv += v3(gn); */
 
       NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+      /* NoiseValue = NoiseValue + (gn * (Amplitude/Octave)); */
     }
 
     deriv = normalize(deriv);

@@ -285,43 +285,50 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 SetViewport(ViewportSize);
                 UseShader(TerrainShader);
 
-                gpu_timer Timer = StartGpuTimer();
+                /* gpu_timer Timer = StartGpuTimer(); */
                 RenderQuad();
-                EndGpuTimer(&Timer);
-
-                Push(&Graphics->GpuTimers, &Timer);
+                /* EndGpuTimer(&Timer); */
+                /* Push(&Graphics->GpuTimers, &Timer); */
 
                 AssertNoGlErrors;
               }
 
               {
-                UseShader(&Graphics->WorldEditRenderContext);
-                IterateOver(&Node->Edits, Edit, EditIndex)
+                if (TotalElements(&Node->Edits))
                 {
-                  Edit->Type = WorldEdit_BrushType_Layered;
-                  switch (Edit->Type)
+                  world_edit_shader *EditShader = &Graphics->WorldEditRenderContext;
+                AssertNoGlErrors;
+                  UseShader(EditShader);
+                AssertNoGlErrors;
+                  IterateOver(&Node->Edits, Edit, EditIndex)
                   {
-                    case WorldEdit_BrushType_Disabled:
-                    case WorldEdit_BrushType_Single:
-                    case WorldEdit_BrushType_Asset:
-                    case WorldEdit_BrushType_Entity:
+                    Edit->Type = WorldEdit_BrushType_Layered;
+                    switch (Edit->Type)
                     {
-                      NotImplemented;
-                    } break;
+                      case WorldEdit_BrushType_Disabled:
+                      case WorldEdit_BrushType_Single:
+                      case WorldEdit_BrushType_Asset:
+                      case WorldEdit_BrushType_Entity:
+                      {
+                        NotImplemented;
+                      } break;
 
-                    case WorldEdit_BrushType_Layered:
-                    {
-                      TIMED_NAMED_BLOCK(WorldEditDrawCall);
+                      case WorldEdit_BrushType_Layered:
+                      {
+                        TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                      gpu_timer Timer = StartGpuTimer();
-                      RenderQuad();
-                      EndGpuTimer(&Timer);
+                        BindUniformByName(&EditShader->Program, "Type", Edit->Type);
+                AssertNoGlErrors;
 
-                      Push(&Graphics->GpuTimers, &Timer);
+                        /* gpu_timer Timer = StartGpuTimer(); */
+                        RenderQuad();
+                        /* EndGpuTimer(&Timer); */
+                        /* Push(&Graphics->GpuTimers, &Timer); */
 
-                      AssertNoGlErrors;
-                    } break;
+                        AssertNoGlErrors;
+                      } break;
 
+                    }
                   }
                 }
               }
