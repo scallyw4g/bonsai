@@ -826,8 +826,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
         {
           // Force engine to reload new shader
-          Resources->Graphics.TerrainRenderContext.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
-          Resources->Graphics.TerrainRenderContext.Program.FragmentTimeModifiedWhenLoaded = 0;
+          Resources->Graphics.TerrainGenRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+          Resources->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0;
         }
         PushNewRow(Ui);
       }

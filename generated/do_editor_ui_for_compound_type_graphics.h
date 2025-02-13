@@ -387,8 +387,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(terrain_shader*, &Element->TerrainRenderContext),
-        CSz("TerrainRenderContext"),
+        Cast(terrain_gen_render_context*, &Element->TerrainGenRC),
+        CSz("TerrainGenRC"),
         Params
         );
 
@@ -402,8 +402,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_shader*, &Element->WorldEditRenderContext),
-        CSz("WorldEditRenderContext"),
+        Cast(terrain_finalize_render_context*, &Element->TerrainFinalizeRC),
+        CSz("TerrainFinalizeRC"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_render_context*, &Element->WorldEditRC),
+        CSz("WorldEditRC"),
         Params
         );
 

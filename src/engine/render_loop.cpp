@@ -267,23 +267,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              auto *TerrainShader = &Graphics->TerrainRenderContext;
-              v3 NoiseDim = V3(TerrainShader->ChunkDim);
+              v3 NoiseDim = Graphics->TerrainGenRC.ChunkDim;
               v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
 
               {
-
+                auto *TerrainGenRC = &Graphics->TerrainGenRC;
                 v3i Apron = V3i(2, 2, 2);
                 Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
 
-                TerrainShader->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
-                TerrainShader->ChunkResolution = V3(Chunk->DimInChunks);
+                TerrainGenRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                TerrainGenRC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainRenderContext.FBO.ID);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainGenRC->FBO.ID);
 
                 SetViewport(ViewportSize);
-                UseShader(TerrainShader);
+                UseShader(TerrainGenRC);
 
                 /* gpu_timer Timer = StartGpuTimer(); */
                 RenderQuad();
@@ -293,6 +292,25 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
+              //
+              // Terrain Finalize
+              //
+              {
+                TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
+
+                SetViewport(ViewportSize);
+                UseShader(&Graphics->TerrainFinalizeRC);
+
+                /* gpu_timer Timer = StartGpuTimer(); */
+                RenderQuad();
+                /* EndGpuTimer(&Timer); */
+                /* Push(&Graphics->GpuTimers, &Timer); */
+
+                AssertNoGlErrors;
+              }
+
+#if 0
               {
                 if (TotalElements(&Node->Edits))
                 {
@@ -332,6 +350,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   }
                 }
               }
+#endif
 
 
               Assert(Chunk1->Dim == V3i(64));

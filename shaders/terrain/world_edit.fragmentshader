@@ -1,8 +1,9 @@
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
+uniform int Type;
 
 in vec2 UV;
-out v4 Output;
+out uint Output;
 /* layout (location = 0) out float Output; */
 
 
@@ -229,55 +230,40 @@ void main()
   // -- user code -- 
   //
   {
-    v3 Period = V3(100.f);
-    float Amplitude = 200.f;
-    f32 StartingZDepth = 400.f;
-    s32 Octaves = 1;
 
-    NoiseValue = StartingZDepth;
+    NoiseValue = white_noise(Basis);
+    /* switch (Type) */
+    /* { */
+    /*   case 4: // WorldEdit_BrushType_Layered */
+    /*   { */
+    /*     v3 Period = V3(100.f); */
+    /*     float Amplitude = 200.f; */
+    /*     s32 Octaves = 1; */
 
+    /*     v3 deriv = v3(0.f); */
+    /*     f32 warp = 0.f; */
 
-    v3 deriv = v3(0.f);
-    /* f32 warp = gradient_noise(Basis*1.001); */
-    f32 warp = 0.f;
+    /*     for (s32 Octave = 1; Octave <= Octaves; ++Octave) */
+    /*     { */
+    /*       v3 xyz = Basis / (Period/Octave); */
+    /*       f32 gn = gradient_noise(xyz+warp); */
+    /*       NoiseValue = NoiseValue + (gn * (Amplitude/Octave)); */
+    /*     } */
 
-    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
-    {
-      v3 xyz = Basis / (Period/Octave);
+    /*     break; */
+    /*   } */
 
-      /* f32 gn = white_noise(Basis); */
-      v4 gn = value_noise_derivs(xyz+warp);
-      /* v4 gn = gradient_noise_derivs(xyz+warp); */
-      /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
-      /* v4 gn = V4(0); */
-
-      // NOTE(Jesse): yzw is not derivitives for voronoi_noise
-      deriv += gn.yzw;
-      /* deriv += v3(gn); */
-
-      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
-      /* NoiseValue = NoiseValue + (gn * (Amplitude/Octave)); */
-    }
-
-    deriv = normalize(deriv);
-    ColorValue = abs(deriv);
-    /* ColorValue = v3(0.75f); */
-
-    // Bias noise value to lower values as we get higher in z.
-    // This creates a "plane" of terrain
-    NoiseValue = NoiseValue - Basis.z;
+    /*   default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break; */
+    /* } */
   }
 
   //
   // -- end user code --
   //
 
-  Output.rgb = ColorValue;
-  Output.a = NoiseValue;
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+  uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = 3543u; */
 
-  /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
-  /* uint PackedColor = PackRGB(ColorValue); */
-  /* /1* uint PackedColor = 3543u; *1/ */
-
-  /* Output = (SolidBit << 15) | PackedColor; */
+  Output = (SolidBit << 15) | PackedColor;
 }

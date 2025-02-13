@@ -1,12 +1,12 @@
 
 
-struct terrain_shader
+struct terrain_gen_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/default.fragmentshader") )
 {
           shader  Program;
   shader_uniform  Uniforms[3];
-         texture  ChunkTexture;
+         texture  NoiseTexture;
      framebuffer  FBO;
 
               v3  ChunkDim;        poof(@uniform)
@@ -14,11 +14,13 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
               v3  ChunkResolution; poof(@uniform)
 };
 
-poof(shader_magic(terrain_shader))
+
+
+poof(shader_magic(terrain_gen_render_context))
 #include <generated/shader_magic_struct_terrain_shader.h>
 
 
-struct world_edit_shader
+struct world_edit_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
 {
@@ -28,11 +30,27 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
               v3  ChunkResolution; poof(@uniform)
-              s32 Type;            poof(@uniform)
+             s32  Type;            poof(@uniform)
 };
 
-poof(shader_magic(world_edit_shader))
+poof(shader_magic(world_edit_render_context))
 #include <generated/shader_magic_struct_world_edit_shader.h>
+
+struct terrain_finalize_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/TerrainFinalize.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[1];
+         texture  DestTexture;
+     framebuffer  FBO;
+
+         texture *InputTex; poof(@uniform)
+};
+
+poof(shader_magic(terrain_finalize_render_context))
+#include <generated/shader_magic_struct_terrain_finalize_render_context.h>
+
 
 struct composite_render_group
 {
@@ -133,8 +151,10 @@ struct graphics
   lighting_render_group     Lighting;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
-  terrain_shader            TerrainRenderContext;
-  world_edit_shader         WorldEditRenderContext;
+
+  terrain_gen_render_context      TerrainGenRC;
+  terrain_finalize_render_context TerrainFinalizeRC;
+  world_edit_render_context       WorldEditRC;
 
   // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
   // step process going on.  First, the job is dispatched (copy values into PBO)

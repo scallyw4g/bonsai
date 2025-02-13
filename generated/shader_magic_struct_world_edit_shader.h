@@ -1,7 +1,7 @@
-// src/engine/graphics.h:34:0
+// src/engine/graphics.h:36:0
 
 link_internal void
-InitializeWorldEditShader( world_edit_shader *Struct    , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution     , s32 Type  )
+InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution     , s32 Type  )
 {
       Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
 
@@ -25,7 +25,7 @@ InitializeWorldEditShader( world_edit_shader *Struct    , v3 ChunkDim     , v3 W
 
   if (UniformIndex !=  4  )
   {
-    Error("Shader (world_edit_shader) had an incorrect number of uniform slots!");
+    Error("Shader (world_edit_render_context) had an incorrect number of uniform slots!");
   }
 
 
@@ -34,7 +34,7 @@ InitializeWorldEditShader( world_edit_shader *Struct    , v3 ChunkDim     , v3 W
 }
 
 link_internal void
-UseShader( world_edit_shader *Struct )
+UseShader( world_edit_render_context *Struct )
 {
   GL.UseProgram(Struct->Program.ID);
 
@@ -54,7 +54,7 @@ UseShader( world_edit_shader *Struct )
 
   if (UniformIndex !=  4  )
   {
-    Error("Shader (world_edit_shader) had an incorrect number of uniform slots!");
+    Error("Shader (world_edit_render_context) had an incorrect number of uniform slots!");
   }
 }
 

@@ -1,0 +1,20 @@
+uniform sampler2D InputTex;
+
+in vec2 UV;
+out layout(location = 0) uint Output;
+
+
+void main()
+{
+  v4 TexLookup = texture(InputTex, UV);
+
+  f32 NoiseValue = TexLookup.a;
+  v3 ColorValue = TexLookup.rgb;
+
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+  uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = 3543u; */
+
+  Output = (SolidBit << 15) | PackedColor;
+  /* Output = uint(white_noise(v3(gl_FragCoord.xy, 1.f))*100000.f); */
+}
