@@ -292,32 +292,19 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
-              //
-              // Terrain Finalize
-              //
+
+              texture *InputTex = &Graphics->TerrainGenRC.NoiseTexture;
+#if 1
               {
-                TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
-
-                SetViewport(ViewportSize);
-                UseShader(&Graphics->TerrainFinalizeRC);
-
-                /* gpu_timer Timer = StartGpuTimer(); */
-                RenderQuad();
-                /* EndGpuTimer(&Timer); */
-                /* Push(&Graphics->GpuTimers, &Timer); */
-
-                AssertNoGlErrors;
-              }
-
-#if 0
-              {
+                s32 PingPongIndex = 0;
                 if (TotalElements(&Node->Edits))
                 {
-                  world_edit_shader *EditShader = &Graphics->WorldEditRenderContext;
-                AssertNoGlErrors;
-                  UseShader(EditShader);
-                AssertNoGlErrors;
+                  world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
+                  AssertNoGlErrors;
+
+                  UseShader(WorldEditRC);
+                  AssertNoGlErrors;
+
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
                     Edit->Type = WorldEdit_BrushType_Layered;
@@ -335,8 +322,38 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                       {
                         TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                        BindUniformByName(&EditShader->Program, "Type", Edit->Type);
-                AssertNoGlErrors;
+                        GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
+
+                        BindUniformByName(&WorldEditRC->Program, "Type", Edit->Type);
+                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
+
+
+                        /* v3 Mn = V3(4); */
+                        /* BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn); */
+
+                        /* v3 Mx = V3(40); */
+                        /* BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx); */
+
+
+                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+
+                        /* WorldEditRC->ChunkRelEditMin = SimEditRect.Min - SimChunkMin; */
+                        /* WorldEditRC->ChunkRelEditMax = SimEditRect.Max - SimChunkMin; */
+
+                        // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
+                        // these values otherwise .. it just reads then whenever it wants through
+                        // the pointer..
+                        v3 Mn = SimEditRect.Min - SimChunkMin;
+                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
+
+                        v3 Mx = SimEditRect.Max - SimChunkMin;
+                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
+
+
+                        InputTex          = &WorldEditRC->PingPongTextures[PingPongIndex];
+
+                        AssertNoGlErrors;
 
                         /* gpu_timer Timer = StartGpuTimer(); */
                         RenderQuad();
@@ -347,10 +364,33 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                       } break;
 
                     }
+
+                    PingPongIndex = (PingPongIndex + 1) & 1;
                   }
                 }
               }
 #endif
+
+
+              //
+              // Terrain Finalize
+              //
+              {
+                TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
+
+                SetViewport(ViewportSize);
+                UseShader(&Graphics->TerrainFinalizeRC);
+
+                BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", InputTex, 0);
+
+                /* gpu_timer Timer = StartGpuTimer(); */
+                RenderQuad();
+                /* EndGpuTimer(&Timer); */
+                /* Push(&Graphics->GpuTimers, &Timer); */
+
+                AssertNoGlErrors;
+              }
 
 
               Assert(Chunk1->Dim == V3i(64));

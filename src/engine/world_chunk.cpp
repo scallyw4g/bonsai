@@ -450,6 +450,18 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   ReleaseFutex(&World->ChunkFreelistFutex);
 }
 
+link_internal void
+ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
+{
+  Node->HadNoVisibleSurface = False;
+  if (Node->Chunk)
+  {
+    DeallocateAndClearWorldChunk(Engine, Node->Chunk);
+    Node->Chunk->DimInChunks = Node->Resolution;
+    Node->Chunk->WorldP      = Node->WorldP;
+  }
+}
+
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P)
 {

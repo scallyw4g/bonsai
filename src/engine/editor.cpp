@@ -2249,6 +2249,10 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
       auto Index = Find(&Node->Edits, Edit);
       Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
       RemoveUnordered(&Node->Edits, Index);
+
+      // Need to reinitialize chunks that no longer have the edit so that it
+      // doesn't stay intact in chunks that lose it entirely
+      ForceOctreeNodeReinitialization(Engine, Node);
     }
   }
 
@@ -2286,15 +2290,14 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
       Push(&Node->Edits, &Edit);
 
-      if (Node->Chunk)
+      Assert(Node->Type == OctreeNodeType_Leaf);
+
+      // We need to call ForceOctreeNodeReinitialization on nodes that don't
+      // have a chunk because they could now contain geometry from the edit.
+      // And only call it on chunks that haven't already had it called (it asserts otherwise)
+      if (Node->Chunk == 0 || Node->Chunk->Flags)
       {
-        Assert(Node->Type == OctreeNodeType_Leaf);
-
-        world_chunk *Chunk = Node->Chunk;
-
-        DeallocateAndClearWorldChunk(Engine, Chunk);
-        Chunk->DimInChunks = Node->Resolution;
-        Chunk->WorldP      = Node->WorldP;
+        ForceOctreeNodeReinitialization(Engine, Node);
       }
     }
   }

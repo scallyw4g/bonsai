@@ -2,268 +2,77 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 uniform int Type;
 
+uniform v3 ChunkRelEditMin;
+uniform v3 ChunkRelEditMax;
+
+uniform sampler2D InputTex;
+
 in vec2 UV;
-out uint Output;
-/* layout (location = 0) out float Output; */
-
-
-// https://www.shadertoy.com/view/4dffRH
-//
-//
-//
-// The MIT License
-// Copyright © 2017 Inigo Quilez
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to
-// deal in the Software without restriction, including without limitation the
-// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-// sell copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions: The above copyright
-// notice and this permission notice shall be included in all copies or
-// substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS",
-// WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-// TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-// CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-// https://www.youtube.com/c/InigoQuilez
-// https://iquilezles.org/
-
-// Computes the analytic derivatives of a 3D Gradient Noise. This can be used for example to compute normals to a
-// 3d rocks based on Gradient Noise without approximating the gradient by having to take central differences.
-//
-// More info here: https://iquilezles.org/articles/gradientnoise
-
-// All noise functions here:
-//
-// https://www.shadertoy.com/playlist/fXlXzf&from=0&num=12
-
-
-// 0: integer hash
-// 1: float hash (aliasing based)
-#define METHOD 1
-
-// 0: cubic
-// 1: quintic
-#define INTERPOLANT 1
-
-
-#if METHOD==0
-vec3 hash( ivec3 p )     // this hash is not production ready, please
-{                        // replace this by something better
-  ivec3 n = ivec3( p.x*127 + p.y*311 + p.z*74,
-                   p.x*269 + p.y*183 + p.z*246,
-                   p.x*113 + p.y*271 + p.z*124);
-
-  // 1D hash by Hugo Elias
-  n = (n << 13) ^ n;
-  n = n * (n * n * 15731 + 789221) + 1376312589;
-  return -1.0+2.0*vec3( n & ivec3(0x0fffffff))/float(0x0fffffff);
-}
-
-#else
-vec3 hash( vec3 p )      // this hash is not production ready, please
-{                        // replace this by something better
-  p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
-            dot(p,vec3(269.5,183.3,246.1)),
-            dot(p,vec3(113.5,271.9,124.6)));
-
-  return -1.0 + 2.0*fract(sin(p)*43758.5453123);
-}
-#endif
-
-vec4 gradient_noise_derivs( in vec3 x )
-{
-  // grid
-  #if METHOD==0
-  ivec3 i = ivec3(floor(x));
-  #else
-  vec3 i = floor(x);
-  #endif
-  vec3 f = fract(x);
-  
-  #if INTERPOLANT==1
-  // quintic interpolant
-  vec3 u = f*f*f*(f*(f*6.0-15.0)+10.0);
-  vec3 du = 30.0*f*f*(f*(f-2.0)+1.0);
-  #else
-  // cubic interpolant
-  vec3 u = f*f*(3.0-2.0*f);
-  vec3 du = 6.0*f*(1.0-f);
-  #endif    
-  
-  // gradients
-  #if METHOD==0
-  vec3 ga = hash( i+ivec3(0,0,0) );
-  vec3 gb = hash( i+ivec3(1,0,0) );
-  vec3 gc = hash( i+ivec3(0,1,0) );
-  vec3 gd = hash( i+ivec3(1,1,0) );
-  vec3 ge = hash( i+ivec3(0,0,1) );
-  vec3 gf = hash( i+ivec3(1,0,1) );
-  vec3 gg = hash( i+ivec3(0,1,1) );
-  vec3 gh = hash( i+ivec3(1,1,1) );
-  #else
-  vec3 ga = hash( i+vec3(0.0,0.0,0.0) );
-  vec3 gb = hash( i+vec3(1.0,0.0,0.0) );
-  vec3 gc = hash( i+vec3(0.0,1.0,0.0) );
-  vec3 gd = hash( i+vec3(1.0,1.0,0.0) );
-  vec3 ge = hash( i+vec3(0.0,0.0,1.0) );
-  vec3 gf = hash( i+vec3(1.0,0.0,1.0) );
-  vec3 gg = hash( i+vec3(0.0,1.0,1.0) );
-  vec3 gh = hash( i+vec3(1.0,1.0,1.0) );
-  #endif
-  
-  // projections
-  float va = dot( ga, f-vec3(0.0,0.0,0.0) );
-  float vb = dot( gb, f-vec3(1.0,0.0,0.0) );
-  float vc = dot( gc, f-vec3(0.0,1.0,0.0) );
-  float vd = dot( gd, f-vec3(1.0,1.0,0.0) );
-  float ve = dot( ge, f-vec3(0.0,0.0,1.0) );
-  float vf = dot( gf, f-vec3(1.0,0.0,1.0) );
-  float vg = dot( gg, f-vec3(0.0,1.0,1.0) );
-  float vh = dot( gh, f-vec3(1.0,1.0,1.0) );
-
-  // interpolations
-  return vec4( va + u.x*(vb-va) + u.y*(vc-va) + u.z*(ve-va) + u.x*u.y*(va-vb-vc+vd) + u.y*u.z*(va-vc-ve+vg) + u.z*u.x*(va-vb-ve+vf) + (-va+vb+vc-vd+ve-vf-vg+vh)*u.x*u.y*u.z,    // value
-               ga + u.x*(gb-ga) + u.y*(gc-ga) + u.z*(ge-ga) + u.x*u.y*(ga-gb-gc+gd) + u.y*u.z*(ga-gc-ge+gg) + u.z*u.x*(ga-gb-ge+gf) + (-ga+gb+gc-gd+ge-gf-gg+gh)*u.x*u.y*u.z +   // derivatives
-               du * (vec3(vb,vc,ve) - va + u.yzx*vec3(va-vb-vc+vd,va-vc-ve+vg,va-vb-ve+vf) + u.zxy*vec3(va-vb-ve+vf,va-vb-vc+vd,va-vc-ve+vg) + u.yzx*u.zxy*(-va+vb+vc-vd+ve-vf-vg+vh) ));
-}
-
-// Doesn't support integer hashing
-#if METHOD == 1
-float gradient_noise( in vec3 p )
-{
-    vec3 i = floor( p );
-    vec3 f = fract( p );
-
-    #if INTERPOLANT==1
-    // quintic interpolant
-    vec3 u = f*f*f*(f*(f*6.0-15.0)+10.0);
-    #else
-    // cubic interpolant
-    vec3 u = f*f*(3.0-2.0*f);
-    #endif    
-
-    return mix( mix( mix( dot( hash( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
-                          dot( hash( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
-                     mix( dot( hash( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
-                          dot( hash( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
-                mix( mix( dot( hash( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
-                          dot( hash( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
-                     mix( dot( hash( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
-                          dot( hash( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
-}
-#endif
-
-vec3 vhash(vec3 UV, vec3 offset)
-{
-	mat3 m = mat3(127.1,311.7, 74.7,269.5,183.3,246.1,113.5,271.9,124.6);
-	UV = fract(sin(UV* m) * 46839.32);
-	return vec3(sin(UV.z * +offset.x) * 0.5 + 0.5, cos(UV.x* offset.y) * 0.5 + 0.5,tan(UV.y * offset.z) * 0.5 + 0.5);
-}
-
-vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
-{
-  vec3 g = floor(p * CellDensity);
-  vec3 f = fract(p * CellDensity);	
-  float res = 8.0;
-  float md=8.0;
-  vec3 mr;
-  vec4 Out;
-  for( int z=-1; z<=1; z++ )
-  for( int y=-1; y<=1; y++ )
-  for( int x=-1; x<=1; x++ )
-  {
-    vec3 lattice = vec3(x,y,z);
-    vec3 offset=vhash(lattice + g ,AngleOffset);
-    vec3 r = lattice +offset -f;
-    float d = dot( r, r );
-    if (d < res)
-    {
-      res=d;
-      mr=r;
-    }
-  }
-
-  res = 8.0;
-  for( int z=-1; z<=1; z++ )
-  for( int y=-1; y<=1; y++ )
-  for( int x=-1; x<=1; x++ )
-  {
-    vec3 lattice = vec3(x,y,z);
-    vec3 offset=vhash(lattice + g ,AngleOffset);
-    vec3 r = lattice +offset -f;
-    float d = dot( r, r );
-    if( d < res )
-    {
-      res = d;
-      Out.x= offset.x;
-      Out.y =  d;
-    }
-    if( dot(mr-r,mr-r)>0.00001)
-    {
-      md = min( md, dot( 0.5*(mr+r), normalize(r-mr) ) );
-    }
-  }
-  Out.z = mix(1.0, 0.0, smoothstep( 0.0, 0.1, md ));
-  Out.w = 1.0-smoothstep( 0.0, 0.1, res);
-  return Out;
-}
-
+out layout(location = 0) vec4 Output;
 
 void main()
 {
+  v4 TexLookup = texture(InputTex, UV);
+  // NOTE(Jesse): Set these in the -- user code -- section
+  vec3 ColorValue = TexLookup.rgb;
+  f32 NoiseValue = TexLookup.a;
+
+
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
 
-  v3 Offset = V3(-1, -1, -1);
-  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+  v3 xyz = V3(x,y,z) * ChunkResolution;
 
-  // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.f);
-  f32 NoiseValue = 0.f;
+  if (
+      xyz.x >= ChunkRelEditMin.x &&
+      xyz.y >= ChunkRelEditMin.y &&
+      xyz.z >= ChunkRelEditMin.z &&
 
-  //
-  // -- user code -- 
-  //
+      xyz.x <= ChunkRelEditMax.x &&
+      xyz.y <= ChunkRelEditMax.y &&
+      xyz.z <= ChunkRelEditMax.z  )
   {
+    v3 Offset = V3(-1, -1, -1);
+    v3 Basis = Offset + WorldspaceBasis + xyz;
 
-    NoiseValue = white_noise(Basis);
-    /* switch (Type) */
-    /* { */
-    /*   case 4: // WorldEdit_BrushType_Layered */
-    /*   { */
-    /*     v3 Period = V3(100.f); */
-    /*     float Amplitude = 200.f; */
-    /*     s32 Octaves = 1; */
 
-    /*     v3 deriv = v3(0.f); */
-    /*     f32 warp = 0.f; */
+    //
+    // -- user code -- 
+    //
+    {
 
-    /*     for (s32 Octave = 1; Octave <= Octaves; ++Octave) */
-    /*     { */
-    /*       v3 xyz = Basis / (Period/Octave); */
-    /*       f32 gn = gradient_noise(xyz+warp); */
-    /*       NoiseValue = NoiseValue + (gn * (Amplitude/Octave)); */
-    /*     } */
+      /* NoiseValue += white_noise(Basis)*100.f; */
+      /* switch (Type) */
+      /* { */
+      /*   case 4: // WorldEdit_BrushType_Layered */
+      /*   { */
+          v3 Period = V3(10.f);
+          float Amplitude = 20.f;
+          s32 Octaves = 1;
 
-    /*     break; */
-    /*   } */
+          v3 deriv = v3(0.f);
+          f32 warp = 0.f;
 
-    /*   default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break; */
-    /* } */
+          for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+          {
+            v3 xyz = Basis / (Period/Octave);
+            f32 gn = value_noise_derivs(xyz+warp+10.f).x;
+            NoiseValue = NoiseValue + (gn * (Amplitude/Octave));
+          }
+
+      /*     break; */
+      /*   } */
+
+      /*   default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break; */
+      /* } */
+    }
+
   }
-
   //
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = PackRGB(ColorValue);
-  /* uint PackedColor = 3543u; */
-
-  Output = (SolidBit << 15) | PackedColor;
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
 }
