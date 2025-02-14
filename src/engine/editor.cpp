@@ -2241,12 +2241,11 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
 link_internal b32
 CheckSettingsChanged(layered_brush *Brush)
 {
-  // Seed true if we have layers, false otherwise
-  b32 Result = Brush->LayerCount > 0;
+  b32 Result = False;
   RangeIterator(LayerIndex, Brush->LayerCount)
   {
     brush_layer *Layer = Brush->Layers + LayerIndex;
-    Result &= !AreEqual(&Layer->Settings, &Layer->PrevSettings);
+    Result |= !AreEqual(&Layer->Settings, &Layer->PrevSettings);
     Layer->PrevSettings = Layer->Settings;
   }
   return Result;
@@ -2303,9 +2302,6 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   //
   // Update the edit
   //
-
-  /* Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered; */
-  /* NewBrush(&Editor->CurrentEdit->Layered); */
 
   Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
@@ -2743,9 +2739,7 @@ DoWorldEditor(engine_resources *Engine)
 
     world_edit E = {};
     Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
-
     Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered;
-    NewBrush(&Editor->CurrentEdit->Layered);
   }
 
   if (Editor->Selection.Clicks == 2)
@@ -2780,27 +2774,6 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  /* brush_settings *Settings     = &Layer->Settings; */
-  /* brush_settings *PrevSettings = &Layer->PrevSettings; */
-
-  /* v3i SelectionDim     = GetSelectionDim(World, Editor); */
-  /* v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer); */
-
-  /* b32 ReallocChunk     = Editor->Selection.Changed || Preview->Chunk.Dim != RequiredLayerDim; */
-  /* b32 SettingsChanged  = !AreEqual(Settings, PrevSettings); */
-  /* b32 UpdateVoxels     = ReallocChunk || SettingsChanged; */
-
-  /* *PrevSettings = *Settings; */
-
-  if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
-  {
-    b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
-    if (SettingsChanged || Editor->Selection.Changed)
-    {
-      UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
-    }
-  }
-
   {
     if (Editor->CurrentEdit)
     {
@@ -2818,6 +2791,18 @@ DoWorldEditor(engine_resources *Engine)
         } break;
       }
     }
+
+    // NOTE(Jesse): Must come after the settings window draws because the
+    // settings window detects and initializes new brushes
+    if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
+    {
+      b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
+      if (SettingsChanged || Editor->Selection.Changed)
+      {
+        UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+      }
+    }
+
   }
 
 
