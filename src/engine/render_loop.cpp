@@ -339,12 +339,15 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
 
                           brush_layer *Layer = Brush->Layers + LayerIndex;
+                          v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+                          BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
 
                           switch (Layer->Settings.Type)
                           {
                             case BrushLayerType_Noise:
                             {
                               noise_layer *Noise = &Layer->Settings.Noise;
+
 
                               switch (Noise->Type)
                               {

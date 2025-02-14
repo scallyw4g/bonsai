@@ -11,8 +11,11 @@ uniform v3 ChunkRelEditMax;
 //
 // Noise params
 //
+uniform v3 RGBColor;
 uniform v3 Period;
 uniform f32 Amplitude;
+
+
 
 uniform sampler2D InputTex;
 
@@ -65,8 +68,15 @@ void main()
           for (s32 Octave = 1; Octave <= Octaves; ++Octave)
           {
             v3 xyz = Basis / (Period/Octave);
-            f32 gn = max(0.f, value_noise_derivs(xyz+warp+10.f).x);
-            NoiseValue = NoiseValue + (gn * (Amplitude/Octave));
+            f32 gn = max(0.f, value_noise_derivs(xyz+warp+10.f).x) * (Amplitude/Octave);
+
+            if (NoiseValue < 0.f && gn+NoiseValue > 0.f)
+            {
+              ColorValue = RGBColor;
+            }
+
+            NoiseValue = NoiseValue + gn;
+
           }
 
           break;
