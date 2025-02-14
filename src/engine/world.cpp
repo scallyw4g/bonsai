@@ -877,11 +877,9 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
           DrawOctreeRecursive(Engine, Node->Children[7], MainDrawList, ShadowMapDrawList, Depth+1);
         }
         else
-        {
-          
+        { // Draw ourselves; the mesh composed of the children has a hole.
           if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
           {
-            // Draw ourselves; the mesh composed of the children has a hole.
             if (Chunk)
             {
               if (ContainsCameraGhost(World, EntityTable, Node, GameCamera))
@@ -896,8 +894,17 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
               if (HasGpuMesh(&Chunk->Mesh))
               {
-                Push(MainDrawList, &Chunk);
-                Push(ShadowMapDrawList, &Chunk);
+                if (Node->Dirty)
+                {
+                  AcquireFutex(&Node->Lock);
+                  ForceOctreeNodeReinitialization(Engine, Node);
+                  ReleaseFutex(&Node->Lock);
+                }
+                else
+                {
+                  Push(MainDrawList, &Chunk);
+                  Push(ShadowMapDrawList, &Chunk);
+                }
               }
             }
           }
@@ -922,9 +929,17 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
             if (HasGpuMesh(&Chunk->Mesh))
             {
-              Push(MainDrawList, &Chunk);
-              Push(ShadowMapDrawList, &Chunk);
-              /* Assert(Chunk->FilledCount); */
+              if (Node->Dirty)
+              {
+                AcquireFutex(&Node->Lock);
+                ForceOctreeNodeReinitialization(Engine, Node);
+                ReleaseFutex(&Node->Lock);
+              }
+              else
+              {
+                Push(MainDrawList, &Chunk);
+                Push(ShadowMapDrawList, &Chunk);
+              }
             }
           }
         }
@@ -1127,13 +1142,13 @@ GatherOctreeNodesOverlapping_Recursive(world *World, octree_node *Current, rect3
   rect3cp Box = GetBoundingBox(World, Current);
   if (Intersect(World, &Box, Region))
   {
+    Push(Result, &Current);
     switch(Current->Type)
     {
       InvalidCase(OctreeNodeType_Undefined);
 
       case OctreeNodeType_Leaf:
       {
-        Push(Result, &Current);
       } break;
 
       case OctreeNodeType_Branch:

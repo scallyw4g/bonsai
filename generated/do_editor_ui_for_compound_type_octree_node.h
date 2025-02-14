@@ -54,6 +54,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
             PushNewRow(Ui);
 
+                              DoEditorUi(Ui,
+        Window,
+        Cast(b8*, &Element->Dirty),
+        CSz("Dirty"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+            PushNewRow(Ui);
+
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there

@@ -14,6 +14,7 @@ struct octree_node
 
   // TODO(Jesse): Pack into something else
   b32 HadNoVisibleSurface;
+  b32 Dirty;
 
   v3i WorldP;
   v3i Resolution; // in world-chunk space.  Resolution of V3i(2) means the chunk occupies 2x2x2 chunks in world-space

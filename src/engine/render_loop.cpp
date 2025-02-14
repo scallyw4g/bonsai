@@ -256,6 +256,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
               /* Command = 0; */
 
+
               AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
               bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;

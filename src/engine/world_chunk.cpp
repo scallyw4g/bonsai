@@ -465,6 +465,8 @@ ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
       Node->Chunk->WorldP      = Node->WorldP;
     }
   }
+
+  Node->Dirty = 0;
 }
 
 link_internal world_chunk*

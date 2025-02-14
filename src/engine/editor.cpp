@@ -2299,7 +2299,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
       // Need to reinitialize chunks that no longer have the edit so that it
       // doesn't stay intact in chunks that lose it entirely
-      ForceOctreeNodeReinitialization(Engine, Node);
+      Node->Dirty = True;;
       ReleaseFutex(&Node->Lock);
     }
   }
@@ -2336,15 +2336,9 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
       Push(&Node->Edits, &Edit);
 
-      Assert(Node->Type == OctreeNodeType_Leaf);
+      /* Assert(Node->Type == OctreeNodeType_Leaf); */
 
-      // We need to call ForceOctreeNodeReinitialization on nodes that don't
-      // have a chunk because they could now contain geometry from the edit.
-      // And only call it on chunks that haven't already had it called (it asserts otherwise)
-      if (Node->Chunk == 0 || Node->Chunk->Flags)
-      {
-        ForceOctreeNodeReinitialization(Engine, Node);
-      }
+      Node->Dirty = True;;
       ReleaseFutex(&Node->Lock);
     }
   }
