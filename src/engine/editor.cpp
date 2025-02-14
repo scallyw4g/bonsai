@@ -2829,6 +2829,44 @@ DoWorldEditor(engine_resources *Engine)
 
   }
 
+  {
+    local_persist window_layout AllEditsWindow = WindowLayout("All Edits", WindowLayoutFlag_Align_Bottom);
+    PushWindowStart(Ui, &AllEditsWindow);
+    IterateOver(&Editor->WorldEdits, Edit, BrushIndex)
+    {
+      umm I = GetIndex(&BrushIndex);
+      const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
+
+      if (Edit == Editor->CurrentEdit)
+      {
+        PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
+      }
+      else
+      {
+        PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
+      }
+
+      if (Button(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit)))
+      {
+        Editor->CurrentEdit = Edit;
+        if (Edit->Brush)
+        {
+          Editor->CurrentBrush = Edit->Brush;
+        }
+      }
+
+      if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
+      {
+        Edit->Brush = Editor->CurrentBrush;
+      }
+
+      PushNewRow(Ui);
+
+    }
+    PushWindowEnd(Ui, &AllEditsWindow);
+
+  }
+
 
 
 #if VOXEL_DEBUG_COLOR
