@@ -458,7 +458,8 @@ ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
   Node->HadNoVisibleSurface = False;
   if (Node->Chunk)
   {
-    if (Node->Chunk->Flags && (Node->Chunk->Flags & Chunk_Queued) == 0)
+    if ( Node->Chunk->Flags &&
+        (Node->Chunk->Flags & Chunk_Queued) == 0)
     {
       DeallocateAndClearWorldChunk(Engine, Node->Chunk);
       Node->Chunk->DimInChunks = Node->Resolution;

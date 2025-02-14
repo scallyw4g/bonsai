@@ -601,14 +601,15 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
   }
 
   s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1,
-                           Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
+                           2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
 
+  // Flip such that the larger a node was in world space, the higher it is in the priority list
   IdealListIndex = (OCTREE_PRIORITY_QUEUE_LIST_COUNT-1)-IdealListIndex;
 
   // Penalize nodes not in the frustum
   if (IsInFrustum(World, GameCamera, Node) == False)
   {
-    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+5);
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+15);
   }
 
   // Prefer chunks who have a higher chance of having geometry
