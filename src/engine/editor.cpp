@@ -2266,7 +2266,11 @@ CheckSettingsChanged(layered_brush *Brush)
 link_internal b32
 CheckSettingsChanged(world_edit *Edit)
 {
-  b32 Result = CheckSettingsChanged(&Edit->Brush->Layered);
+  b32 Result = False;
+  if (Edit->Brush)
+  {
+    Result = CheckSettingsChanged(&Edit->Brush->Layered);
+  }
   return Result;
 }
 
@@ -2768,25 +2772,52 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    if (Editor->CurrentEdit && Editor->CurrentEdit->Brush)
-    {
-      /* switch (Editor->CurrentEdit->Type) */
-      /* { */
-      /*   case WorldEdit_BrushType_Disabled: */
-      /*   case WorldEdit_BrushType_Single: */
-      /*   case WorldEdit_BrushType_Asset: */
-      /*   case WorldEdit_BrushType_Entity: { } break; */
+    local_persist window_layout BrushSettingsWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, &BrushSettingsWindow);
 
-      /*   case WorldEdit_BrushType_Layered: */
-        /* { */
-          local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-          DoWorldEditSettingsWindow(Engine, Editor->CurrentEdit->Brush, &BrushSettingsWindow);
-        /* } break; */
-      /* } */
+    if (Editor->LoadedBrushes.Elements == 0)
+    {
+      Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
+    }
+
+    if (Button(Ui, CSz("New"), UiId(&BrushSettingsWindow, "brush new", 0u)))
+    {
+      world_edit_brush Brush = {};
+      NewBrush(&Brush);
+      Editor->CurrentBrush = Insert(Brush, &Editor->LoadedBrushes, Editor->Memory);
+    }
+    PushNewRow(Ui);
+
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+    {
+      if (Brush)
+      {
+        if (Brush == Editor->CurrentBrush)
+        {
+          PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
+        }
+        else
+        {
+          PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
+        }
+
+        if (Button(Ui, CS(Brush->NameBuf), UiId(&BrushSettingsWindow, "brush select", Brush)))
+        {
+          Editor->CurrentBrush = Brush;
+        }
+        PushNewRow(Ui);
+      }
+    }
+    PushWindowEnd(Ui, &BrushSettingsWindow);
+
+    if (Editor->CurrentBrush)
+    {
+      local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
+      DoWorldEditSettingsWindow(Engine, Editor->CurrentBrush, &BrushSettingsWindow);
 
       // NOTE(Jesse): Must come after the settings window draws because the
       // settings window detects and initializes new brushes
-      if (SelectionComplete(Editor->Selection.Clicks))
+      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
       {
         b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
         if (SettingsChanged || Editor->Selection.Changed)
