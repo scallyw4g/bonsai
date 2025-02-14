@@ -600,7 +600,7 @@ enum world_edit_tool
 {
   WorldEdit_Tool_Disabled,      // poof(@ui_skip)
   WorldEdit_Tool_Select,        // world_edit_selection_mode
-  WorldEdit_Tool_Brush,         // world_edit_brush_type
+  /* WorldEdit_Tool_Brush,         // world_edit_brush_type */
   WorldEdit_Tool_Eyedropper,
   WorldEdit_Tool_BlitEntity,
   /* WorldEdit_Tool_StandingSpots, // Recomputes standing spots for an area */
@@ -1032,24 +1032,19 @@ struct brush_layer
 
 
 
-#define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
 #define BRUSH_PREVIEW_TEXTURE_DIM 256
-struct layered_brush poof(@version(3))
+struct layered_brush
 {
-  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
-  // not fuck around with allocating a single string when we load these in.
-  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
-
   // NOTE(Jesse): The layer previews have to be seperate from the brush_layer
   // because the deserialization code isn't smart enough to not stomp on the
   // texture handles when it marshals old types to the current one.
               s32 LayerCount;
       brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-  chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
 
-  chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value
+  /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
+  /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */
 
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
@@ -1059,67 +1054,8 @@ struct layered_brush poof(@version(3))
   world_edit_blend_mode_modifier Modifier;
 
   // NOTE(Jesse): This is actually just using the chunk .. should probably change it
-  chunk_thumbnail Preview; poof(@no_serialize)
+  /* chunk_thumbnail Preview; poof(@no_serialize) */
 };
-
-struct layered_brush_2
-{
-  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
-  // not fuck around with allocating a single string when we load these in.
-  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
-
-  s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS];  poof(@array_length(LayerCount))
-
-  b8 SeedBrushWithSelection;
-  b8 BrushFollowsCursor;
-
-  chunk_thumbnail Preview; poof(@no_serialize)
-};
-
-
-struct layered_brush_1
-{
-  char NameBuf[NameBuf_Len];
-
-  s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-
-  b8 SeedBrushWithSelection;
-  b8 BrushFollowsCursor;
-
-  chunk_thumbnail Preview; poof(@no_serialize)
-};
-
-struct layered_brush_0
-{
-  s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-
-  chunk_thumbnail Preview; poof(@no_serialize)
-  b8 SeedBrushWithSelection; poof(@no_serialize)
-};
-
-link_internal void
-Marshal(layered_brush_2 *Stored, layered_brush *Live)
-{
-  poof(default_marshal(layered_brush_2))
-#include <generated/default_marshal_layered_brush_2.h>
-}
-
-link_internal void
-Marshal(layered_brush_1 *Stored, layered_brush *Live)
-{
-  poof(default_marshal(layered_brush_1))
-#include <generated/default_marshal_layered_brush_1.h>
-}
-
-link_internal void
-Marshal(layered_brush_0 *Stored, layered_brush *Live)
-{
-  poof(default_marshal(layered_brush_0))
-#include <generated/default_marshal_layered_brush_0.h>
-}
 
 
 
@@ -1167,23 +1103,46 @@ struct selection_region
 
 
 
-struct world_edit
+struct world_edit_brush
 {
-  rect3cp Region;
+  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
+  // not fuck around with allocating a single string when we load these in.
+#define NameBuf_Len (256)
+  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
-  world_edit_shape         Shape;
+  world_edit_shape               Shape;
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
 
   u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
 
-  world_edit_brush_type Type;
-  union
-  {
-    single_brush  Single;
-    asset_brush   Asset;
+  /* world_edit_brush_type Type; */
+  /* union */
+  /* { */
+  /*   single_brush  Single; */
+  /*   asset_brush   Asset; */
     layered_brush Layered;
-  };
+  /* }; */
+};
+
+link_internal umm
+Hash(world_edit_brush *Brush)
+{
+  umm Result = Hash(CS(Brush->NameBuf));
+  return Result;
+}
+
+
+poof(are_equal(world_edit_brush))
+#include <generated/are_equal_struct.h>
+
+poof(hashtable(world_edit_brush))
+#include <generated/hashtable_struct.h>
+
+struct world_edit
+{
+  rect3cp Region;
+  world_edit_brush *Brush;
 };
 
 typedef world_edit* world_edit_ptr;
@@ -1200,8 +1159,6 @@ struct level_editor
 
   world_edit_tool Tool;
   world_edit_tool PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
-
-  world_edit Brush;
 
   b8 SelectionFollowsCursor;
 
@@ -1227,8 +1184,11 @@ struct level_editor
   b32 MaskSelection;
 
   u32 NextEditOrdinal;
-  world_edit *CurrentEdit;
   world_edit_block_array WorldEdits;
+  world_edit_brush_hashtable LoadedBrushes;
+
+  world_edit *CurrentEdit;
+  world_edit_brush *CurrentBrush;
 };
 
 
@@ -1301,8 +1261,8 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 link_internal v3i
 GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);
 
-link_internal void
-DrawEditorPreview(engine_resources *Engine, shader *Shader);
+/* link_internal void */
+/* DrawEditorPreview(engine_resources *Engine, shader *Shader); */
 
 link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);

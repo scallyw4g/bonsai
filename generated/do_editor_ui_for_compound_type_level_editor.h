@@ -74,21 +74,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit*, &Element->Brush),
-        CSz("Brush"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-                                          DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->SelectionFollowsCursor),
         CSz("SelectionFollowsCursor"),
         Params
@@ -270,6 +255,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_block_array*, &Element->WorldEdits),
+        CSz("WorldEdits"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_brush_hashtable*, &Element->LoadedBrushes),
+        CSz("LoadedBrushes"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(world_edit*, Element->CurrentEdit),
         CSz("CurrentEdit"),
         Params
@@ -285,8 +300,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_block_array*, &Element->WorldEdits),
-        CSz("WorldEdits"),
+        Cast(world_edit_brush*, Element->CurrentBrush),
+        CSz("CurrentBrush"),
         Params
         );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

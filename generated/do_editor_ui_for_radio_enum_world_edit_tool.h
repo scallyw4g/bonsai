@@ -20,7 +20,6 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
   {
         { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
     { CSz("Select"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Select")), WorldEdit_Tool_Select },
-    { CSz("Brush"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Brush")), WorldEdit_Tool_Brush },
     { CSz("Eyedropper"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
     { CSz("BlitEntity"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
   };

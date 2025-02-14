@@ -310,105 +310,83 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
-                    Edit->Type = WorldEdit_BrushType_Layered;
-                    BindUniformByName(&WorldEditRC->Program, "BrushType", Edit->Type);
+                    /* Edit->Type = WorldEdit_BrushType_Layered; */
+                    /* BindUniformByName(&WorldEditRC->Program, "BrushType", Edit->Type); */
+                    TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                    switch (Edit->Type)
+                    layered_brush *Brush = &Edit->Brush->Layered;
+                    RangeIterator(LayerIndex, Brush->LayerCount)
                     {
-                      case WorldEdit_BrushType_Disabled:
-                      case WorldEdit_BrushType_Single:
-                      case WorldEdit_BrushType_Asset:
-                      case WorldEdit_BrushType_Entity:
+                      GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
+
+                      BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
+
+                      brush_layer *Layer = Brush->Layers + LayerIndex;
+
                       {
-                        NotImplemented;
+                        v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+                        BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+                      }
 
-                        // NOTE(Jesse): Can't do this globally for each path because
-                        // the layered brush updates the texture every time it does a layer..
-                        InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
-                        PingPongIndex = (PingPongIndex + 1) & 1;
-                      } break;
+                      BindUniformByName(&WorldEditRC->Program, "BlendMode", Layer->Settings.Mode);
+                      BindUniformByName(&WorldEditRC->Program, "Modifiers", Layer->Settings.Modifier);
+                      BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
 
-                      case WorldEdit_BrushType_Layered:
+                      switch (Layer->Settings.Type)
                       {
-                        TIMED_NAMED_BLOCK(WorldEditDrawCall);
-
-                        layered_brush *Brush = &Edit->Layered;
-                        RangeIterator(LayerIndex, Brush->LayerCount)
+                        case BrushLayerType_Noise:
                         {
-                          GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
+                          noise_layer *Noise = &Layer->Settings.Noise;
 
-                          BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
-
-                          brush_layer *Layer = Brush->Layers + LayerIndex;
-
+                          switch (Noise->Type)
                           {
-                            v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-                            BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
-                          }
-
-                          BindUniformByName(&WorldEditRC->Program, "BlendMode", Layer->Settings.Mode);
-                          BindUniformByName(&WorldEditRC->Program, "Modifiers", Layer->Settings.Modifier);
-                          BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
-
-                          switch (Layer->Settings.Type)
-                          {
-                            case BrushLayerType_Noise:
+                            case NoiseType_Perlin:
                             {
-                              noise_layer *Noise = &Layer->Settings.Noise;
-
-                              switch (Noise->Type)
-                              {
-                                case NoiseType_Perlin:
-                                {
-                                  perlin_noise_params *Perlin = &Noise->Perlin;
-                                  BindUniformByName(&WorldEditRC->Program, "Threshold", Perlin->Threshold);
-                                  BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
-                                  BindUniformByName(&WorldEditRC->Program, "Amplitude", Perlin->Amplitude);
-                                } break;
-
-                                case NoiseType_Voronoi:
-                                {} break;
-
-                                case NoiseType_White:
-                                {} break;
-                              }
-
+                              perlin_noise_params *Perlin = &Noise->Perlin;
+                              BindUniformByName(&WorldEditRC->Program, "Threshold", Perlin->Threshold);
+                              BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+                              BindUniformByName(&WorldEditRC->Program, "Amplitude", Perlin->Amplitude);
                             } break;
 
-                            case BrushLayerType_Shape:
-                            {
-                              /* shape_layer *Shape = &Layer->Shape; */
-                            } break;
+                            case NoiseType_Voronoi:
+                            {} break;
+
+                            case NoiseType_White:
+                            {} break;
                           }
 
-                          rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
-                             v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+                        } break;
 
-                          // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
-                          // these values otherwise .. it just reads then whenever it wants through
-                          // the pointer..
-                          v3 Mn = SimEditRect.Min - SimChunkMin;
-                          BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
-                          AssertNoGlErrors;
+                        case BrushLayerType_Shape:
+                        {
+                          NotImplemented;
+                        } break;
+                      }
 
-                          v3 Mx = SimEditRect.Max - SimChunkMin;
-                          BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
-                          AssertNoGlErrors;
+                      rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                         v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
 
-                          /* gpu_timer Timer = StartGpuTimer(); */
-                          RenderQuad();
-                          /* EndGpuTimer(&Timer); */
-                          /* Push(&Graphics->GpuTimers, &Timer); */
+                      // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
+                      // these values otherwise .. it just reads then whenever it wants through
+                      // the pointer..
+                      v3 Mn = SimEditRect.Min - SimChunkMin;
+                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
+                      AssertNoGlErrors;
 
-                          InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
-                          PingPongIndex = (PingPongIndex + 1) & 1;
-                        }
+                      v3 Mx = SimEditRect.Max - SimChunkMin;
+                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
+                      AssertNoGlErrors;
 
-                        AssertNoGlErrors;
-                      } break;
+                      /* gpu_timer Timer = StartGpuTimer(); */
+                      RenderQuad();
+                      /* EndGpuTimer(&Timer); */
+                      /* Push(&Graphics->GpuTimers, &Timer); */
 
-                    } // switch
+                      InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
+                      PingPongIndex = (PingPongIndex + 1) & 1;
+                    }
 
+                    AssertNoGlErrors;
                   }
                 }
                 ReleaseFutex(&Node->Lock);
@@ -488,6 +466,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 Graphics->ColorPaletteTexture =
                   MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
               }
+
+
+#if 0
               //
               // Editor preview
               /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
@@ -506,6 +487,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 DrawEditorPreview(Engine, Shader);
                 TeardownShadowMapShader(Graphics);
               }
+#endif
 
               /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
 

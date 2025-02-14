@@ -57,9 +57,9 @@ void main()
     {
       v3 ColorSample = RGBColor;
       f32 NoiseSample = 0.f;
-      switch (BrushType)
+      /* switch (BrushType) */
       {
-        case 4: // WorldEdit_BrushType_Layered
+        /* case 4: // WorldEdit_BrushType_Layered */
         {
           s32 Octaves = 1;
 
@@ -72,10 +72,10 @@ void main()
             NoiseSample = value_noise_derivs(xyz+warp+10.f).x * (Amplitude/Octave);
           }
 
-          break;
+          /* break; */
         }
 
-        default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
+        /* default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break; */
       }
 
       // TODO(Jesse): This is buggy; it generates extra geometry on the edges

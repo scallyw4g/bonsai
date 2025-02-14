@@ -1173,7 +1173,7 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 }
 
 link_internal void
-BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer, chunk_thumbnail *Preview)
+BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1210,7 +1210,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
 }
 
 link_internal void
-DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, window_layout *Window)
+DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_layout *Window)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1226,7 +1226,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   {
     case BrushLayerType_Noise:
     {
-      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, Preview);
+      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise);
     } break;
 
     case BrushLayerType_Shape:
@@ -1394,19 +1394,19 @@ GetFilenameForBrush(cs Name, s32 Version = 0)
 }
 
 link_internal void
-SaveBrush(layered_brush *LayeredBrush, const char *FilenameZ)
+SaveBrush(world_edit_brush *Brush, const char *FilenameZ)
 {
   u8_cursor_block_array OutputStream = BeginSerialization();
-  Serialize(&OutputStream, LayeredBrush);
+  Serialize(&OutputStream, Brush);
 
   if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
   {
-    SoftError("Unable to serialize brush (%s) to file (%s).", LayeredBrush->NameBuf, FilenameZ);
+    SoftError("Unable to serialize brush (%s) to file (%s).", Brush->NameBuf, FilenameZ);
   }
   else
   {
-    ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-    cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
+    ZeroMemory(Brush->NameBuf, NameBuf_Len);
+    cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
 
     cs BrushBasename = Basename(CS(FilenameZ));
     CopyString(&BrushBasename, &BrushNameBuf);
@@ -1415,44 +1415,43 @@ SaveBrush(layered_brush *LayeredBrush, const char *FilenameZ)
 
 
 link_internal void
-NewBrush(layered_brush *LayeredBrush)
+NewBrush(world_edit_brush *Brush)
 {
-  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-  brush_layer *Layers =  LayeredBrush->Layers;
+  cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
 
-  ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+  ZeroMemory(Brush->NameBuf, NameBuf_Len);
 
   cs Src = CSz("_untitled.brush");
   CopyString(&Src, &BrushNameBuf);
 
-  LayeredBrush->LayerCount = 1;
+  brush_layer *Layers =  Brush->Layered.Layers;
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
     brush_layer *Layer = Layers + LayerIndex;
     Layer->Settings = {};
   }
 
+  Brush->Layered.LayerCount = 1;
+
   // Initialize PrevSettings so we don't fire a changed event straight away..
-  CheckSettingsChanged(LayeredBrush);
+  CheckSettingsChanged(&Brush->Layered);
 }
 
 link_internal void
-BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBrush, window_layout *BrushSettingsWindow)
+DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  /* layered_brush *LayeredBrush = &Editor->LayeredBrush; */
-  brush_layer          *Layers             =  LayeredBrush->Layers;
-  chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
-
-  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-
+  layered_brush *LayeredBrush = &Brush->Layered;
+#if 1
+  cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
   b32 IsNewBrush = False;
-  if (LayeredBrush->NameBuf[0] == 0 && LayeredBrush->LayerCount == 0)
+  if (Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0)
   {
-    NewBrush(LayeredBrush);
+    NewBrush(Brush);
     IsNewBrush = True;
   }
+#endif
 
   //
   // Brush toolbar buttons
@@ -1466,13 +1465,13 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
     {
       if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
       {
-        cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf));
-        SaveBrush(LayeredBrush, BrushFilepath.Start);
+        cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
+        SaveBrush(Brush, BrushFilepath.Start);
       }
 
       if (Button(Ui, CSz("Duplicate"), UiId(BrushSettingsWindow, "brush dup", 0u)))
       {
-        cs_buffer Pieces = Split( CS(LayeredBrush->NameBuf), '.', Tran);
+        cs_buffer Pieces = Split( CS(Brush->NameBuf), '.', Tran);
 
         if (Pieces.Count > 2)
         {
@@ -1489,13 +1488,13 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
               BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
             }
 
-            SaveBrush(LayeredBrush, BrushFilepath.Start);
+            SaveBrush(Brush, BrushFilepath.Start);
           }
         }
         else
         {
-          cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf), 1);
-          SaveBrush(LayeredBrush, BrushFilepath.Start);
+          cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf), 1);
+          SaveBrush(Brush, BrushFilepath.Start);
         }
       }
     }
@@ -1512,7 +1511,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
       if (ClickedFileNode.Tag)
       {
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
-#if 0
+#if 1
         NotImplemented;
 #else
         Assert(Editor->Brush.Type == WorldEdit_BrushType_Layered);
@@ -1527,7 +1526,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
 
         // NOTE(Jesse): This has to happen after deserialization cause some
         // brushes got saved out with a name, which gets read back in..
-        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+        ZeroMemory(Brush->NameBuf, NameBuf_Len);
         CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
 
         SetToggleButton(Ui, ImportToggleId, False);
@@ -1537,7 +1536,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
     {
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
-        NewBrush(LayeredBrush);
+        NewBrush(Brush);
         IsNewBrush = True;
       }
 
@@ -1547,8 +1546,8 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
         PushNewRow(Ui);
 
         {
-          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", LayeredBrush->NameBuf);
-          cs NameBuf = CS(LayeredBrush->NameBuf);
+          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
+          cs NameBuf = CS(Brush->NameBuf);
           TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
           PushNewRow(Ui);
 
@@ -1585,10 +1584,11 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
       b32 Delete            = False;
       s32 EditLayerIndex = 0;
       PushTableStart(Ui);
+
+      brush_layer *Layers = Brush->Layered.Layers;
       RangeIterator(LayerIndex, LayeredBrush->LayerCount)
       {
         brush_layer *Layer = Layers + LayerIndex;
-        chunk_thumbnail *Preview = Previews + LayerIndex;
 
         ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
         if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
@@ -1617,7 +1617,7 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
             EditLayerIndex = LayerIndex;
           }
 
-          DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
+          DoSettingsForBrushLayer(Engine, Layer, BrushSettingsWindow);
         }
 
         if (IsNewBrush && LayerIndex == 0)
@@ -1869,8 +1869,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, layered_brush *LayeredBru
   }
 }
 
+#if 0
 link_internal void
-DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
+DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1895,26 +1896,28 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, w
 
         case WorldEdit_BrushType_Layered:
         {
-          BrushSettingsForLayeredBrush(Engine, &Engine->Editor.Brush.Layered, &Window);
+          DoWorldEditSettingsWindow(Engine, &Engine->Editor.Brush.Layered, &Window);
         } break;
 
       }
     } break;
   }
 }
+#endif
 
 link_internal b32
 CurrentToolIs(level_editor *Editor, world_edit_tool Tool, world_edit_brush_type BrushType)
 {
   b32 Result = False;
-  if (Editor->Tool == Tool)
-  {
-    Result = True;
-    if (Editor->Tool == WorldEdit_Tool_Brush)
-    {
-      Result = (Editor->Brush.Type == BrushType);
-    }
-  }
+  NotImplemented;
+  /* if (Editor->Tool == Tool) */
+  /* { */
+  /*   Result = True; */
+  /*   if (Editor->Tool == WorldEdit_Tool_Brush) */
+  /*   { */
+  /*     Result = (Editor->Brush.Type == BrushType); */
+  /*   } */
+  /* } */
   return Result;
 }
 
@@ -1947,6 +1950,7 @@ EditWorldSelection(engine_resources *Engine)
       Thickness = 0.20f;
     }
 
+#if 0
     if (CurrentToolIs(Editor, WorldEdit_Tool_Brush, WorldEdit_BrushType_Layered))
     {
       layered_brush *Brush = &Editor->Brush.Layered;
@@ -1971,6 +1975,7 @@ EditWorldSelection(engine_resources *Engine)
         }
       }
     }
+#endif
 
     aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
     {
@@ -2091,6 +2096,7 @@ InputStateIsValidToApplyEdit(input *Input)
   return Result;
 }
 
+#if 0
 link_internal world_edit_blend_mode
 GetEditModeForSelectedTool(level_editor *Editor)
 {
@@ -2119,6 +2125,7 @@ GetEditModeForSelectedTool(level_editor *Editor)
 
   return Result;
 }
+#endif
 
 link_internal v3 
 ColorIndexToV3(u16 ColorIndex)
@@ -2259,24 +2266,7 @@ CheckSettingsChanged(layered_brush *Brush)
 link_internal b32
 CheckSettingsChanged(world_edit *Edit)
 {
-  b32 Result = False;
-
-  switch (Edit->Type)
-  {
-    case WorldEdit_BrushType_Disabled:
-    case WorldEdit_BrushType_Single:
-    case WorldEdit_BrushType_Asset:
-    case WorldEdit_BrushType_Entity:
-    {
-      NotImplemented;
-    } break;
-
-    case WorldEdit_BrushType_Layered:
-    {
-      Result = CheckSettingsChanged(&Edit->Layered);
-    } break;
-  }
-
+  b32 Result = CheckSettingsChanged(&Edit->Brush->Layered);
   return Result;
 }
 
@@ -2373,6 +2363,7 @@ DoWorldEditor(engine_resources *Engine)
         CurrentRef = WorldEditToolButtonGroup.UiRef;
       }
 
+#if 0
       if (Editor->Tool == WorldEdit_Tool_Brush)
       {
         Params.RelativePosition.Position   = Position_RightOf;
@@ -2380,6 +2371,7 @@ DoWorldEditor(engine_resources *Engine)
         WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->Brush.Type, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
         CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
       }
+#endif
 
     PushTableEnd(Ui);
 
@@ -2406,7 +2398,7 @@ DoWorldEditor(engine_resources *Engine)
     switch (Editor->Tool)
     {
       case WorldEdit_Tool_Disabled:
-      case WorldEdit_Tool_Brush:
+      /* case WorldEdit_Tool_Brush: */
       case WorldEdit_Tool_Eyedropper:
       case WorldEdit_Tool_BlitEntity:
       /* case WorldEdit_Tool_StandingSpots: */
@@ -2433,6 +2425,7 @@ DoWorldEditor(engine_resources *Engine)
     {
       case WorldEdit_Tool_Disabled:
 
+#if 0
       case WorldEdit_Tool_Brush:
       {
         switch (Editor->Brush.Type)
@@ -2585,6 +2578,7 @@ DoWorldEditor(engine_resources *Engine)
 
         }
       } break;
+#endif
 
       case WorldEdit_Tool_Select:
       {
@@ -2704,7 +2698,7 @@ DoWorldEditor(engine_resources *Engine)
   // the Select tool is active, doesn't update any of the brush stuff, then
   // the preview gets drawn because we pop back to the Layered brush tool and
   // there's a frame of lag.
-  /* DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
+  /* DoWorldEditSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
 
   IterateOver(&Editor->WorldEdits, Edit, EditIndex)
   {
@@ -2738,7 +2732,7 @@ DoWorldEditor(engine_resources *Engine)
 
     world_edit E = {};
     Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
-    Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered;
+    Editor->CurrentEdit->Brush = Editor->CurrentBrush;
   }
 
   if (Editor->Selection.Clicks == 2)
@@ -2774,31 +2768,31 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    if (Editor->CurrentEdit)
+    if (Editor->CurrentEdit && Editor->CurrentEdit->Brush)
     {
-      switch (Editor->CurrentEdit->Type)
-      {
-        case WorldEdit_BrushType_Disabled:
-        case WorldEdit_BrushType_Single:
-        case WorldEdit_BrushType_Asset:
-        case WorldEdit_BrushType_Entity: { } break;
+      /* switch (Editor->CurrentEdit->Type) */
+      /* { */
+      /*   case WorldEdit_BrushType_Disabled: */
+      /*   case WorldEdit_BrushType_Single: */
+      /*   case WorldEdit_BrushType_Asset: */
+      /*   case WorldEdit_BrushType_Entity: { } break; */
 
-        case WorldEdit_BrushType_Layered:
-        {
+      /*   case WorldEdit_BrushType_Layered: */
+        /* { */
           local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-          BrushSettingsForLayeredBrush(Engine, &Editor->CurrentEdit->Layered, &BrushSettingsWindow);
-        } break;
-      }
-    }
+          DoWorldEditSettingsWindow(Engine, Editor->CurrentEdit->Brush, &BrushSettingsWindow);
+        /* } break; */
+      /* } */
 
-    // NOTE(Jesse): Must come after the settings window draws because the
-    // settings window detects and initializes new brushes
-    if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
-    {
-      b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
-      if (SettingsChanged || Editor->Selection.Changed)
+      // NOTE(Jesse): Must come after the settings window draws because the
+      // settings window detects and initializes new brushes
+      if (SelectionComplete(Editor->Selection.Clicks))
       {
-        UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+        b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
+        if (SettingsChanged || Editor->Selection.Changed)
+        {
+          UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+        }
       }
     }
 
@@ -2824,7 +2818,8 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Engine->MousedOverVoxel.Tag)
   {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) );
+    /* v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) ); */
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Additive );
     DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
   }
 }
@@ -2832,6 +2827,7 @@ DoWorldEditor(engine_resources *Engine)
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale );
 
+#if 0
 link_internal void
 DrawEditorPreview(engine_resources *Engine, shader *Shader)
 {
@@ -2866,4 +2862,5 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
     DrawLod(Engine, Shader, &Chunk->Mesh, 0.f, Basis, Quaternion(), V3(1.f));
   }
 }
+#endif
 

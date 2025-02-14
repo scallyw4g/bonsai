@@ -35,7 +35,7 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush_1 *BaseElement, umm Count 
   {
     layered_brush_1 *Element = BaseElement + ElementIndex;
                             {
-            umm ThisCount = (256);
+            umm ThisCount = NameBuf_Len;
 
       Result &= Serialize(Bytes, Element->NameBuf, ThisCount);
     }
@@ -100,7 +100,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush_1 *Element, memory_are
 {
   b32 Result = True;
               {
-        umm Count = (256);
+        umm Count = NameBuf_Len;
 
     Result &= Deserialize(Bytes, Element->NameBuf, Memory, Count);
   }

@@ -469,7 +469,19 @@ poof(
 poof(
   func serdes_dunion(type)
   {
-    serialize_dunion(type)
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count = 1)
+    {
+      NotImplemented;
+      return False;
+    }
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count = 1)
+    {
+      NotImplemented;
+      return False;
+    }
   }
 )
 

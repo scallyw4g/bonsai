@@ -1,6 +1,6 @@
-// src/engine/editor.h:1113:0
+// src/engine/editor.h:1108:0
 
-RangeIterator(Index, (256))
+RangeIterator(Index, NameBuf_Len)
 {
     Live->NameBuf[Index] = Stored->NameBuf[Index];
 
