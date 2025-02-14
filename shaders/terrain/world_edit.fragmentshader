@@ -1,6 +1,10 @@
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
+
 uniform int BrushType;
+uniform int BlendMode;
+uniform int ColorMode;
+uniform int Modifiers;
 
 //
 // Clipping params
@@ -50,12 +54,8 @@ void main()
     v3 Basis = Offset + WorldspaceBasis + xyz;
 
 
-    //
-    // -- user code -- 
-    //
     {
-
-      /* NoiseValue += white_noise(Basis)*100.f; */
+      f32 NoiseSample = 0.f;
       switch (BrushType)
       {
         case 4: // WorldEdit_BrushType_Layered
@@ -68,15 +68,7 @@ void main()
           for (s32 Octave = 1; Octave <= Octaves; ++Octave)
           {
             v3 xyz = Basis / (Period/Octave);
-            f32 gn = max(0.f, value_noise_derivs(xyz+warp+10.f).x) * (Amplitude/Octave);
-
-            if (NoiseValue < 0.f && gn+NoiseValue > 0.f)
-            {
-              ColorValue = RGBColor;
-            }
-
-            NoiseValue = NoiseValue + gn;
-
+            NoiseSample = value_noise_derivs(xyz+warp+10.f).x * (Amplitude/Octave);
           }
 
           break;
@@ -84,12 +76,49 @@ void main()
 
         default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
       }
+
+  /* WorldEdit_ValueModifier_Surface  = (1<<0), */
+  /* WorldEdit_ValueModifier_ClampPos = (1<<1), */
+  /* WorldEdit_ValueModifier_ClampNeg = (1<<2), */
+  /* WorldEdit_ColorModifier_ColorDiscard = (1<<3), */
+
+      if ( (Modifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
+      {
+        // TODO(Jesse): Check if it's a surface voxel here
+      }
+
+      if ( (Modifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+      {
+        NoiseSample = max(0.f, NoiseSample);
+      }
+
+      if ( (Modifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+      {
+        NoiseSample = min(0.f, NoiseSample);
+      }
+
+
+      switch (BlendMode)
+      {
+        case 0: // Addative
+        { NoiseValue = NoiseValue + NoiseSample; } break;
+
+        case 1: // Subtractive
+        { NoiseValue = NoiseValue - NoiseSample; } break;
+      }
+
+      switch (ColorMode)
+      {
+        case 0: // Addative
+        { if (NoiseSample > 0.f) { ColorValue = ColorValue + RGBColor; } } break;
+
+        case 1: // Subtractive
+        { if (NoiseSample < 0.f) { ColorValue = ColorValue - RGBColor; } } break;
+      }
+
     }
 
   }
-  //
-  // -- end user code --
-  //
 
   Output.rgb = ColorValue;
   Output.a = NoiseValue;

@@ -339,8 +339,15 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
 
                           brush_layer *Layer = Brush->Layers + LayerIndex;
-                          v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-                          BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+
+                          {
+                            v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+                            BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+                          }
+
+                          BindUniformByName(&WorldEditRC->Program, "BlendMode", Layer->Settings.Mode);
+                          BindUniformByName(&WorldEditRC->Program, "Modifiers", Layer->Settings.Modifier);
+                          BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
 
                           switch (Layer->Settings.Type)
                           {

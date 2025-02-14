@@ -615,13 +615,20 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Layered,
 };
 
-// TODO(Jesse): Rename to .. something something behavior ?
 enum world_edit_blend_mode
 {
   WorldEdit_Mode_Additive,
   WorldEdit_Mode_Subtractive,
 
   WorldEdit_Mode_Disabled, // Useful for turning the layer off
+};
+
+enum world_edit_color_blend_mode
+{
+  WorldEdit_ColorBlendMode_Additive,
+  WorldEdit_ColorBlendMode_Subtractive,
+
+  WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
 };
 
 enum world_edit_blend_mode_modifier poof(@bitfield)
@@ -690,6 +697,7 @@ struct voronoi_noise_params
   r32 MaskChance;
 };
 
+
 poof(string_and_value_tables(world_edit_blend_mode_modifier))
 #include <generated/string_and_value_tables_world_edit_blend_mode_modifier.h>
 
@@ -709,11 +717,15 @@ poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 
 poof(string_and_value_tables(world_edit_blend_mode))
 #include <generated/string_and_value_tables_world_edit_blend_mode.h>
-/* poof(radio_button_group_for_bitfield_enum(world_edit_blend_mode)); */
-/* #include <generated/radio_button_group_for_bitfield_enum_world_edit_blend_mode.h> */
 
 poof(do_editor_ui_for_radio_enum(world_edit_blend_mode))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode.h>
+
+poof(string_and_value_tables(world_edit_color_blend_mode))
+#include <generated/string_and_value_tables_world_edit_color_blend_mode.h>
+poof(do_editor_ui_for_enum(world_edit_color_blend_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_color_blend_mode.h>
+
 
 poof(do_editor_ui_for_radio_enum(world_edit_tool))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_tool.h>
@@ -892,6 +904,7 @@ struct brush_settings poof(@version(3))
   //
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
+  world_edit_color_blend_mode    ColorMode;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.

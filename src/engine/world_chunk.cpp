@@ -3737,7 +3737,6 @@ WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
       *Shape,
       Mode,
       Modifier,
-      /* SimFloodOrigin, */
     },
     RGBColor,
     {},

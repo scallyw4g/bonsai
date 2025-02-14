@@ -104,6 +104,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_color_blend_mode*, &Element->ColorMode),
+        CSz("ColorMode"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->Iterations),
         CSz("Iterations"),
         Params

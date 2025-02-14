@@ -1239,6 +1239,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   // TODO(Jesse): do enum selector for Mode/Modifier/iterations
   DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
   DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
+  DoEditorUi(Ui, Window, &Settings->ColorMode,   CSz("ColorMode"));
   if (Settings->Modifier == WorldEdit_ValueModifier_Surface) // || Settings->Modifier == WorldEdit_Modifier_Flood)
   {
     DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
