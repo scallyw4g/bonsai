@@ -1000,6 +1000,9 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  // Leaving this function here as a reference for what used to happen, but migrating the functionality
+  NotImplemented;
+
   brush_settings *Settings     = &Layer->Settings;
   brush_settings *PrevSettings = &Layer->PrevSettings;
 
@@ -1423,6 +1426,9 @@ NewBrush(layered_brush *LayeredBrush)
     brush_layer *Layer = Layers + LayerIndex;
     Layer->Settings = {};
   }
+
+  // Initialize PrevSettings so we don't fire a changed event straight away..
+  CheckSettingsChanged(LayeredBrush);
 }
 
 link_internal void
@@ -2232,12 +2238,48 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
   }
 }
 
+link_internal b32
+CheckSettingsChanged(layered_brush *Brush)
+{
+  // Seed true if we have layers, false otherwise
+  b32 Result = Brush->LayerCount > 0;
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+    Result &= !AreEqual(&Layer->Settings, &Layer->PrevSettings);
+    Layer->PrevSettings = Layer->Settings;
+  }
+  return Result;
+}
+
+link_internal b32
+CheckSettingsChanged(world_edit *Edit)
+{
+  b32 Result = False;
+
+  switch (Edit->Type)
+  {
+    case WorldEdit_BrushType_Disabled:
+    case WorldEdit_BrushType_Single:
+    case WorldEdit_BrushType_Asset:
+    case WorldEdit_BrushType_Entity:
+    {
+      NotImplemented;
+    } break;
+
+    case WorldEdit_BrushType_Layered:
+    {
+      Result = CheckSettingsChanged(&Edit->Layered);
+    } break;
+  }
+
+  return Result;
+}
 
 link_internal void
 UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
 
   // First, gather the currently edited nodes and remove the edit
   {
@@ -2246,6 +2288,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
+      AcquireFutex(&Node->Lock);
       auto Index = Find(&Node->Edits, Edit);
       Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
       RemoveUnordered(&Node->Edits, Index);
@@ -2253,6 +2296,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
       // Need to reinitialize chunks that no longer have the edit so that it
       // doesn't stay intact in chunks that lose it entirely
       ForceOctreeNodeReinitialization(Engine, Node);
+      ReleaseFutex(&Node->Lock);
     }
   }
 
@@ -2260,8 +2304,8 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   // Update the edit
   //
 
-  Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered;
-  NewBrush(&Editor->CurrentEdit->Layered);
+  /* Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered; */
+  /* NewBrush(&Editor->CurrentEdit->Layered); */
 
   Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
@@ -2272,6 +2316,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
+      AcquireFutex(&Node->Lock);
       /* auto EditAABB = GetSimSpaceAABB(World, Node); */
       /* random_series S = {u64(Node)}; */
       /* v3 BaseColor = RandomV3Unilateral(&S); */
@@ -2299,6 +2344,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
       {
         ForceOctreeNodeReinitialization(Engine, Node);
       }
+      ReleaseFutex(&Node->Lock);
     }
   }
 }
@@ -2697,6 +2743,9 @@ DoWorldEditor(engine_resources *Engine)
 
     world_edit E = {};
     Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
+
+    Editor->CurrentEdit->Type = WorldEdit_BrushType_Layered;
+    NewBrush(&Editor->CurrentEdit->Layered);
   }
 
   if (Editor->Selection.Clicks == 2)
@@ -2731,14 +2780,26 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  if (Editor->Selection.Changed)
+  /* brush_settings *Settings     = &Layer->Settings; */
+  /* brush_settings *PrevSettings = &Layer->PrevSettings; */
+
+  /* v3i SelectionDim     = GetSelectionDim(World, Editor); */
+  /* v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer); */
+
+  /* b32 ReallocChunk     = Editor->Selection.Changed || Preview->Chunk.Dim != RequiredLayerDim; */
+  /* b32 SettingsChanged  = !AreEqual(Settings, PrevSettings); */
+  /* b32 UpdateVoxels     = ReallocChunk || SettingsChanged; */
+
+  /* *PrevSettings = *Settings; */
+
+  if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
   {
-    if (Editor->CurrentEdit)
+    b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
+    if (SettingsChanged || Editor->Selection.Changed)
     {
       UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
     }
   }
-
 
   {
     if (Editor->CurrentEdit)

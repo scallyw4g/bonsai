@@ -453,12 +453,17 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 link_internal void
 ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
 {
+  Assert(FutexIsSignaled(&Node->Lock));
+
   Node->HadNoVisibleSurface = False;
   if (Node->Chunk)
   {
-    DeallocateAndClearWorldChunk(Engine, Node->Chunk);
-    Node->Chunk->DimInChunks = Node->Resolution;
-    Node->Chunk->WorldP      = Node->WorldP;
+    if (Node->Chunk->Flags && (Node->Chunk->Flags & Chunk_Queued) == 0)
+    {
+      DeallocateAndClearWorldChunk(Engine, Node->Chunk);
+      Node->Chunk->DimInChunks = Node->Resolution;
+      Node->Chunk->WorldP      = Node->WorldP;
+    }
   }
 }
 

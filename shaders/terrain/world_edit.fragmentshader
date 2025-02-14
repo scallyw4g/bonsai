@@ -1,9 +1,18 @@
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
-uniform int Type;
+uniform int BrushType;
 
+//
+// Clipping params
+//
 uniform v3 ChunkRelEditMin;
 uniform v3 ChunkRelEditMax;
+
+//
+// Noise params
+//
+uniform v3 Period;
+uniform f32 Amplitude;
 
 uniform sampler2D InputTex;
 
@@ -13,6 +22,7 @@ out layout(location = 0) vec4 Output;
 void main()
 {
   v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
   f32 NoiseValue = TexLookup.a;
@@ -43,12 +53,10 @@ void main()
     {
 
       /* NoiseValue += white_noise(Basis)*100.f; */
-      switch (Type)
+      switch (BrushType)
       {
         case 4: // WorldEdit_BrushType_Layered
         {
-          v3 Period = V3(10.f);
-          float Amplitude = 20.f;
           s32 Octaves = 1;
 
           v3 deriv = v3(0.f);

@@ -28,6 +28,8 @@ struct octree_node
   /* }; */
 
   world_edit_ptr_block_array Edits;
+
+  bonsai_futex Lock;
 };
 
 typedef octree_node* octree_node_ptr;

@@ -138,6 +138,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         CSz("Edits"),
         Params
         );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(bonsai_futex*, &Element->Lock),
+        CSz("Lock"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -296,6 +296,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               texture *InputTex = &Graphics->TerrainGenRC.NoiseTexture;
 #if 1
               {
+                AcquireFutex(&Node->Lock);
                 s32 PingPongIndex = 0;
                 if (TotalElements(&Node->Edits))
                 {
@@ -305,9 +306,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   UseShader(WorldEditRC);
                   AssertNoGlErrors;
 
+
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
                     Edit->Type = WorldEdit_BrushType_Layered;
+                    BindUniformByName(&WorldEditRC->Program, "BrushType", Edit->Type);
+
                     switch (Edit->Type)
                     {
                       case WorldEdit_BrushType_Disabled:
@@ -316,46 +320,88 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                       case WorldEdit_BrushType_Entity:
                       {
                         NotImplemented;
+
+                        // NOTE(Jesse): Can't do this globally for each path because
+                        // the layered brush updates the texture every time it does a layer..
+                        InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
+                        PingPongIndex = (PingPongIndex + 1) & 1;
                       } break;
 
                       case WorldEdit_BrushType_Layered:
                       {
                         TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                        GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
+                        layered_brush *Brush = &Edit->Layered;
+                        RangeIterator(LayerIndex, Brush->LayerCount)
+                        {
+                          GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
 
-                        BindUniformByName(&WorldEditRC->Program, "Type", Edit->Type);
-                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
+                          BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
 
-                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
-                           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+                          brush_layer *Layer = Brush->Layers + LayerIndex;
 
-                        // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
-                        // these values otherwise .. it just reads then whenever it wants through
-                        // the pointer..
-                        v3 Mn = SimEditRect.Min - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
-                        AssertNoGlErrors;
+                          switch (Layer->Settings.Type)
+                          {
+                            case BrushLayerType_Noise:
+                            {
+                              noise_layer *Noise = &Layer->Settings.Noise;
 
-                        v3 Mx = SimEditRect.Max - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
-                        AssertNoGlErrors;
+                              switch (Noise->Type)
+                              {
+                                case NoiseType_Perlin:
+                                {
+                                  perlin_noise_params *Perlin = &Noise->Perlin;
+                                  BindUniformByName(&WorldEditRC->Program, "Threshold", Perlin->Threshold);
+                                  BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+                                  BindUniformByName(&WorldEditRC->Program, "Amplitude", Perlin->Amplitude);
+                                } break;
 
-                        /* gpu_timer Timer = StartGpuTimer(); */
-                        RenderQuad();
-                        /* EndGpuTimer(&Timer); */
-                        /* Push(&Graphics->GpuTimers, &Timer); */
+                                case NoiseType_Voronoi:
+                                {} break;
 
-                        InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
+                                case NoiseType_White:
+                                {} break;
+                              }
+
+                            } break;
+
+                            case BrushLayerType_Shape:
+                            {
+                              /* shape_layer *Shape = &Layer->Shape; */
+                            } break;
+                          }
+
+                          rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                             v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+
+                          // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
+                          // these values otherwise .. it just reads then whenever it wants through
+                          // the pointer..
+                          v3 Mn = SimEditRect.Min - SimChunkMin;
+                          BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
+                          AssertNoGlErrors;
+
+                          v3 Mx = SimEditRect.Max - SimChunkMin;
+                          BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
+                          AssertNoGlErrors;
+
+                          /* gpu_timer Timer = StartGpuTimer(); */
+                          RenderQuad();
+                          /* EndGpuTimer(&Timer); */
+                          /* Push(&Graphics->GpuTimers, &Timer); */
+
+                          InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
+                          PingPongIndex = (PingPongIndex + 1) & 1;
+                        }
 
                         AssertNoGlErrors;
                       } break;
 
-                    }
+                    } // switch
 
-                    PingPongIndex = (PingPongIndex + 1) & 1;
                   }
                 }
+                ReleaseFutex(&Node->Lock);
               }
 #endif
 

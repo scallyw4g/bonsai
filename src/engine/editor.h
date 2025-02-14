@@ -1256,6 +1256,12 @@ GetSelectionDim(world *World, level_editor *Editor)
 }
 
 
+link_internal b32
+CheckSettingsChanged(layered_brush *);
+
+link_internal b32
+CheckSettingsChanged(world_edit *);
+
 link_internal b32 HardResetEditor(level_editor *Editor);
 
 link_internal v3
