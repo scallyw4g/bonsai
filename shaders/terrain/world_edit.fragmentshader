@@ -12,7 +12,7 @@ out layout(location = 0) vec4 Output;
 
 void main()
 {
-  v4 TexLookup = texture(InputTex, UV);
+  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
   f32 NoiseValue = TexLookup.a;
@@ -43,10 +43,10 @@ void main()
     {
 
       /* NoiseValue += white_noise(Basis)*100.f; */
-      /* switch (Type) */
-      /* { */
-      /*   case 4: // WorldEdit_BrushType_Layered */
-      /*   { */
+      switch (Type)
+      {
+        case 4: // WorldEdit_BrushType_Layered
+        {
           v3 Period = V3(10.f);
           float Amplitude = 20.f;
           s32 Octaves = 1;
@@ -57,15 +57,15 @@ void main()
           for (s32 Octave = 1; Octave <= Octaves; ++Octave)
           {
             v3 xyz = Basis / (Period/Octave);
-            f32 gn = value_noise_derivs(xyz+warp+10.f).x;
+            f32 gn = max(0.f, value_noise_derivs(xyz+warp+10.f).x);
             NoiseValue = NoiseValue + (gn * (Amplitude/Octave));
           }
 
-      /*     break; */
-      /*   } */
+          break;
+        }
 
-      /*   default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break; */
-      /* } */
+        default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
+      }
     }
 
   }

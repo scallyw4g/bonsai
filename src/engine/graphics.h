@@ -25,7 +25,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
       @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
 {
           shader  Program;
-  shader_uniform  Uniforms[6];
+  shader_uniform  Uniforms[4];
      framebuffer  PingPongFBOs[2];
          texture  PingPongTextures[2];
 
@@ -34,8 +34,6 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
               v3 *ChunkResolution; poof(@uniform)
 
              s32  Type;            poof(@uniform)
-              v3  ChunkRelEditMin; poof(@uniform)
-              v3  ChunkRelEditMax; poof(@uniform)
 };
 
 poof(shader_magic(world_edit_render_context))

@@ -1,4 +1,4 @@
-// src/engine/graphics.h:56:0
+// src/engine/graphics.h:54:0
 
 link_internal void
 InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct    , texture *InputTex  )

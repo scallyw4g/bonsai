@@ -327,38 +327,26 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "Type", Edit->Type);
                         BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
 
-
-                        /* v3 Mn = V3(4); */
-                        /* BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn); */
-
-                        /* v3 Mx = V3(40); */
-                        /* BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx); */
-
-
                         rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-
-                        /* WorldEditRC->ChunkRelEditMin = SimEditRect.Min - SimChunkMin; */
-                        /* WorldEditRC->ChunkRelEditMax = SimEditRect.Max - SimChunkMin; */
 
                         // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
                         // these values otherwise .. it just reads then whenever it wants through
                         // the pointer..
                         v3 Mn = SimEditRect.Min - SimChunkMin;
                         BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
+                        AssertNoGlErrors;
 
                         v3 Mx = SimEditRect.Max - SimChunkMin;
                         BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
-
-
-                        InputTex          = &WorldEditRC->PingPongTextures[PingPongIndex];
-
                         AssertNoGlErrors;
 
                         /* gpu_timer Timer = StartGpuTimer(); */
                         RenderQuad();
                         /* EndGpuTimer(&Timer); */
                         /* Push(&Graphics->GpuTimers, &Timer); */
+
+                        InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
 
                         AssertNoGlErrors;
                       } break;

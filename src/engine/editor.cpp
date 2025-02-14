@@ -2378,6 +2378,7 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
+
   //
   //
   // Edit tool interactions in the world
@@ -2573,6 +2574,7 @@ DoWorldEditor(engine_resources *Engine)
 
           }
         }
+
       } break;
 
       case WorldEdit_Tool_Eyedropper:
@@ -2661,7 +2663,7 @@ DoWorldEditor(engine_resources *Engine)
   // the Select tool is active, doesn't update any of the brush stuff, then
   // the preview gets drawn because we pop back to the Layered brush tool and
   // there's a frame of lag.
-  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type);
+  /* DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
 
   IterateOver(&Editor->WorldEdits, Edit, EditIndex)
   {
@@ -2734,6 +2736,26 @@ DoWorldEditor(engine_resources *Engine)
     if (Editor->CurrentEdit)
     {
       UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+    }
+  }
+
+
+  {
+    if (Editor->CurrentEdit)
+    {
+      switch (Editor->CurrentEdit->Type)
+      {
+        case WorldEdit_BrushType_Disabled:
+        case WorldEdit_BrushType_Single:
+        case WorldEdit_BrushType_Asset:
+        case WorldEdit_BrushType_Entity: { } break;
+
+        case WorldEdit_BrushType_Layered:
+        {
+          local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
+          BrushSettingsForLayeredBrush(Engine, &Editor->CurrentEdit->Layered, &BrushSettingsWindow);
+        } break;
+      }
     }
   }
 

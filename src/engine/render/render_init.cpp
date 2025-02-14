@@ -803,7 +803,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     {
       terrain_gen_render_context *TerrainGenRC = &Result->TerrainGenRC;
-      InitializeWorldEditRenderContext(WorldEditRC, &TerrainGenRC->ChunkDim, &TerrainGenRC->WorldspaceBasis, &TerrainGenRC->ChunkResolution, {}, {}, {}); 
+      InitializeWorldEditRenderContext(WorldEditRC, &TerrainGenRC->ChunkDim, &TerrainGenRC->WorldspaceBasis, &TerrainGenRC->ChunkResolution, {});
     }
 
     RangeIterator(Index, 2)
