@@ -348,7 +348,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                             {
                               noise_layer *Noise = &Layer->Settings.Noise;
 
-
                               switch (Noise->Type)
                               {
                                 case NoiseType_Perlin:

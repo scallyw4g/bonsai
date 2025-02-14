@@ -55,11 +55,11 @@ while (AtElements(&Stack))
     if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True))  )
     {
-      if (Mode == WorldEdit_Mode_Paint)
-      {
-        V->Color = NewVoxelValue->Color;
-      }
-      else
+      /* if (Mode == WorldEdit_Mode_Paint) */
+      /* { */
+      /*   V->Color = NewVoxelValue->Color; */
+      /* } */
+      /* else */
       {
         *V = *NewVoxelValue;
       }

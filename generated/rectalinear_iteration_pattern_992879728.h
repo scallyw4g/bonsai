@@ -26,13 +26,13 @@ DimIterator(x, y, z, UpdateDim)
     if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True ))  )
     {
-      if (Mode == WorldEdit_Mode_Paint)
+      /* if (Mode == WorldEdit_Mode_Paint) */
+      /* { */
+      /*   V->Color = NewVoxelValue->Color; */
+      /* } */
+      /* else */
       {
-        V->Color = NewVoxelValue->Color;
-      }
-      else
-      {
-        if (Mode == WorldEdit_Mode_Remove) { *V = {}; }
+        if (Mode == WorldEdit_Mode_Subtractive) { *V = {}; }
         else { *V = *NewVoxelValue; }
       }
 

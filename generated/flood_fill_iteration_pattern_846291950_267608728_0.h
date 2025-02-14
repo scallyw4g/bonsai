@@ -28,7 +28,7 @@ while (AtElements(&Stack))
 
     
           NotImplemented;
-          /* { if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)) ) }, */
+          /* { if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Additive)) ) }, */
         
     {
       NotImplemented;
@@ -45,7 +45,7 @@ while (AtElements(&Stack))
 
     
           NotImplemented;
-          /* if ( Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) ) */
+          /* if ( Mode == WorldEdit_Mode_Additive && (V->Flags&Voxel_Filled) ) */
           /* { } */
           /* else */
           {
@@ -59,11 +59,11 @@ while (AtElements(&Stack))
     if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True))  )
     {
-      if (Mode == WorldEdit_Mode_Paint)
-      {
-        V->Color = NewVoxelValue->Color;
-      }
-      else
+      /* if (Mode == WorldEdit_Mode_Paint) */
+      /* { */
+      /*   V->Color = NewVoxelValue->Color; */
+      /* } */
+      /* else */
       {
         *V = *NewVoxelValue;
       }

@@ -299,7 +299,8 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, {}, {}, Resources->WorldUpdateMemory);
+  NotImplemented;
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, {}, {}, Resources->WorldUpdateMemory); */
 }
 
 link_internal void
@@ -314,7 +315,8 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, HSV_ICE_BLUE, {}, Resources->WorldUpdateMemory);
+  NotImplemented;
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, HSV_ICE_BLUE, {}, Resources->WorldUpdateMemory); */
 }
 
 link_internal void
@@ -327,7 +329,8 @@ DoSplotion( engine_resources *Resources, cp PickCP, f32 Radius, random_series *E
     .world_update_op_shape_params_sphere.Radius = Radius,
     .world_update_op_shape_params_sphere.Location = PickCP,
   };
-  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Flood, &Shape, HSV_DARK_GREY, {}, Resources->WorldUpdateMemory);
+  NotImplemented;
+  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Flood, &Shape, HSV_DARK_GREY, {}, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldUpdatenModeModifier_Flood, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */

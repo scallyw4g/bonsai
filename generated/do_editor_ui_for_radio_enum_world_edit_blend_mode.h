@@ -1,7 +1,7 @@
-// src/engine/editor.h:718:0
+// src/engine/editor.h:715:0
 
 link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
+RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_blend_mode Selection)
 {
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
@@ -9,20 +9,18 @@ RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
+RadioButtonGroup_world_edit_blend_mode( renderer_2d *Ui,
   window_layout *Window,
   cs  GroupName,
-  world_edit_tool *Element,
+  world_edit_blend_mode *Element,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
-    { CSz("Select"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Select")), WorldEdit_Tool_Select },
-    { CSz("Brush"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Brush")), WorldEdit_Tool_Brush },
-    { CSz("Eyedropper"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
-    { CSz("BlitEntity"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
+        { CSz("Additive"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Additive")), WorldEdit_Mode_Additive },
+    { CSz("Subtractive"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Subtractive")), WorldEdit_Mode_Subtractive },
+    { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Disabled")), WorldEdit_Mode_Disabled },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -40,12 +38,12 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
 link_internal ui_toggle_button_group
 DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
-  world_edit_tool *Element,
+  world_edit_blend_mode *Element,
   cs GroupName,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
-  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_tool(Ui, Window, GroupName, Element, Params, ExtraFlags);
+  ui_toggle_button_group RadioGroup = RadioButtonGroup_world_edit_blend_mode(Ui, Window, GroupName, Element, Params, ExtraFlags);
   return RadioGroup;
 }
 

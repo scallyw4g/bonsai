@@ -618,18 +618,22 @@ enum world_edit_brush_type
 // TODO(Jesse): Rename to .. something something behavior ?
 enum world_edit_blend_mode
 {
-  WorldEdit_Mode_Attach,
-  WorldEdit_Mode_Remove,
-  WorldEdit_Mode_Paint,
+  WorldEdit_Mode_Additive,
+  WorldEdit_Mode_Subtractive,
+
   WorldEdit_Mode_Disabled, // Useful for turning the layer off
 };
 
-// TODO(Jesse): Rename to reflect that it's the iteration pattern ..?
-enum world_edit_blend_mode_modifier
+enum world_edit_blend_mode_modifier poof(@bitfield)
 {
   WorldEdit_Modifier_Default  =     0,
-  WorldEdit_Modifier_Flood    = (1<<0),
-  WorldEdit_Modifier_Surface  = (1<<1),
+  WorldEdit_ValueModifier_Surface  = (1<<0),
+  WorldEdit_ValueModifier_ClampPos = (1<<1),
+  WorldEdit_ValueModifier_ClampNeg = (1<<2),
+
+  WorldEdit_ColorModifier_Discard  = (1<<3),
+  // NOTE(Jesse): Unsupported for now, unclear if it will be again ..
+  // WorldEdit_Modifier_Flood    = xxxx,
 };
 
 
@@ -686,11 +690,12 @@ struct voronoi_noise_params
   r32 MaskChance;
 };
 
-poof(do_editor_ui_for_radio_enum(world_edit_blend_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode_modifier.h>
-
 poof(string_and_value_tables(world_edit_blend_mode_modifier))
 #include <generated/string_and_value_tables_world_edit_blend_mode_modifier.h>
+
+poof(do_editor_ui_for_enum(world_edit_blend_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode_modifier.h>
+
 
 
 

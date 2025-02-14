@@ -872,13 +872,13 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
   switch (WorldEditMode)
   {
     case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Additive:
     {
       Pos = PickedVoxel_LastEmpty;
     } break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Subtractive:
     {
       Pos = PickedVoxel_FirstFilled;
     } break;
@@ -894,18 +894,21 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMod
   v3 Result = {};
   picked_voxel_position Pos = {};
 
+  NotImplemented;
+
+#if 0
   if (Modifier == WorldEdit_Modifier_Flood)
   {
     switch (WorldEditMode)
     {
       case WorldEdit_Mode_Disabled: {} break;
-      case WorldEdit_Mode_Attach:
+      case WorldEdit_Mode_Additive:
       {
         Pos = PickedVoxel_FirstFilled;
       } break;
 
-      case WorldEdit_Mode_Paint:
-      case WorldEdit_Mode_Remove:
+      /* case WorldEdit_Mode_Paint: */
+      case WorldEdit_Mode_Subtractive:
       {
         Pos = PickedVoxel_LastEmpty;
       } break;
@@ -913,6 +916,7 @@ GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMod
 
     Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
   }
+#endif
 
   return Result;
 }
@@ -1235,7 +1239,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thum
   // TODO(Jesse): do enum selector for Mode/Modifier/iterations
   DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
   DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
-  if (Settings->Modifier == WorldEdit_Modifier_Surface || Settings->Modifier == WorldEdit_Modifier_Flood)
+  if (Settings->Modifier == WorldEdit_ValueModifier_Surface) // || Settings->Modifier == WorldEdit_Modifier_Flood)
   {
     DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
     PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
@@ -2090,7 +2094,7 @@ link_internal world_edit_blend_mode
 GetEditModeForSelectedTool(level_editor *Editor)
 {
   // Default is attach for tools/brushes that don't have a mode in their settings
-  world_edit_blend_mode Result = WorldEdit_Mode_Attach;
+  world_edit_blend_mode Result = WorldEdit_Mode_Additive;
 
   switch(Editor->Tool)
   {
@@ -2671,7 +2675,7 @@ DoWorldEditor(engine_resources *Engine)
                 type_world_update_op_shape_params_asset,
                 .world_update_op_shape_params_asset = AssetUpdateShape,
               };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
+              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Additive, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
 #endif
             }
           }
@@ -2744,7 +2748,7 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Editor->Selection.Clicks == 2)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
+    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Subtractive, WorldEdit_Modifier_Default); }
 
     if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->Selection.Region; }
 
@@ -2770,7 +2774,7 @@ DoWorldEditor(engine_resources *Engine)
         type_world_update_op_shape_params_chunk_data,
         .world_update_op_shape_params_chunk_data = ChunkDataShape,
       };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
+      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Additive, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
     }
   }
 
