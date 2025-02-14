@@ -55,6 +55,7 @@ void main()
 
 
     {
+      v3 ColorSample = RGBColor;
       f32 NoiseSample = 0.f;
       switch (BrushType)
       {
@@ -77,14 +78,42 @@ void main()
         default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
       }
 
-  /* WorldEdit_ValueModifier_Surface  = (1<<0), */
-  /* WorldEdit_ValueModifier_ClampPos = (1<<1), */
-  /* WorldEdit_ValueModifier_ClampNeg = (1<<2), */
-  /* WorldEdit_ColorModifier_ColorDiscard = (1<<3), */
-
+      // TODO(Jesse): This is buggy; it generates extra geometry on the edges
+      // of chunks for some reason.  At the moment it's a non-issue because the
+      // additional geometry is always below the ground, and doesn't cause
+      // visible artifacts.  At the moment I just want anything 'working', but
+      // this should definitely be improved in the future.
+      //
       if ( (Modifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
       {
-        // TODO(Jesse): Check if it's a surface voxel here
+        if (x > 0 && x < 65 &&
+            y > 0 && y < 65 &&
+            z > 0 && z < 65)
+        {
+          f32 ThisCell = sign(TexLookup.a);
+          if (ThisCell < 0.f)
+          {
+            // only consider cells that are air
+            s32 IsSurface  = s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a));
+
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a));
+
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a));
+
+            if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
+          }
+          else
+          {
+            NoiseSample = 0.f; ColorSample = V3(0,0,0);
+          }
+        }
+        else
+        {
+          NoiseSample = 0.f; ColorSample = V3(0,0,0);
+        }
       }
 
       if ( (Modifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
@@ -107,13 +136,30 @@ void main()
         { NoiseValue = NoiseValue - NoiseSample; } break;
       }
 
+
       switch (ColorMode)
       {
-        case 0: // Addative
-        { if (NoiseSample > 0.f) { ColorValue = ColorValue + RGBColor; } } break;
+        case 0: // ThresholdPositive
+        { if (NoiseSample > 0.f) { ColorValue = ColorSample; } } break;
 
-        case 1: // Subtractive
-        { if (NoiseSample < 0.f) { ColorValue = ColorValue - RGBColor; } } break;
+        case 1: // ThresholdNegative
+        { if (NoiseSample < 0.f) { ColorValue = ColorSample; } } break;
+
+        case 2: // Addative
+        { ColorValue = ColorValue + ColorSample; } break;
+
+        case 3: // Subtractive
+        { ColorValue = ColorValue - ColorSample; } break;
+
+        case 4: // Multiply
+        { ColorValue = ColorValue - ColorSample; } break;
+
+        case 5: // Divide
+        { ColorValue = ColorValue - ColorSample; } break;
+
+        case 6: // Average
+        { f32 StartingIntensity = length(ColorValue);
+          ColorValue = (ColorValue + ColorSample)/StartingIntensity; } break;
       }
 
     }

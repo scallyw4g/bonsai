@@ -625,8 +625,15 @@ enum world_edit_blend_mode
 
 enum world_edit_color_blend_mode
 {
+  WorldEdit_ColorBlendMode_ThresholdPositive,
+  WorldEdit_ColorBlendMode_ThresholdNegative,
+
   WorldEdit_ColorBlendMode_Additive,
   WorldEdit_ColorBlendMode_Subtractive,
+  WorldEdit_ColorBlendMode_Multiply,
+  WorldEdit_ColorBlendMode_Divide,
+
+  WorldEdit_ColorBlendMode_Average,
 
   WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
 };
