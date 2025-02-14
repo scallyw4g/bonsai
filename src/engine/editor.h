@@ -616,7 +616,7 @@ enum world_edit_brush_type
 };
 
 // TODO(Jesse): Rename to .. something something behavior ?
-enum world_edit_mode
+enum world_edit_blend_mode
 {
   WorldEdit_Mode_Attach,
   WorldEdit_Mode_Remove,
@@ -625,7 +625,7 @@ enum world_edit_mode
 };
 
 // TODO(Jesse): Rename to reflect that it's the iteration pattern ..?
-enum world_edit_mode_modifier
+enum world_edit_blend_mode_modifier
 {
   WorldEdit_Modifier_Default  =     0,
   WorldEdit_Modifier_Flood    = (1<<0),
@@ -686,11 +686,11 @@ struct voronoi_noise_params
   r32 MaskChance;
 };
 
-poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
+poof(do_editor_ui_for_radio_enum(world_edit_blend_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode_modifier.h>
 
-poof(string_and_value_tables(world_edit_mode_modifier))
-#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
+poof(string_and_value_tables(world_edit_blend_mode_modifier))
+#include <generated/string_and_value_tables_world_edit_blend_mode_modifier.h>
 
 
 
@@ -702,13 +702,13 @@ poof(toggle_button_group_for_enum(engine_debug_view_mode))
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 #include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
 
-poof(string_and_value_tables(world_edit_mode))
-#include <generated/string_and_value_tables_world_edit_mode.h>
-/* poof(radio_button_group_for_bitfield_enum(world_edit_mode)); */
-/* #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h> */
+poof(string_and_value_tables(world_edit_blend_mode))
+#include <generated/string_and_value_tables_world_edit_blend_mode.h>
+/* poof(radio_button_group_for_bitfield_enum(world_edit_blend_mode)); */
+/* #include <generated/radio_button_group_for_bitfield_enum_world_edit_blend_mode.h> */
 
-poof(do_editor_ui_for_radio_enum(world_edit_mode))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode.h>
+poof(do_editor_ui_for_radio_enum(world_edit_blend_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode.h>
 
 poof(do_editor_ui_for_radio_enum(world_edit_tool))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_tool.h>
@@ -781,8 +781,8 @@ struct world_edit_brush_constraints
 {
   world_edit_shape         Shape;
 
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
   // NOTE(Jesse): If Modifier is Flood, this is set to where the flood should start
   //
@@ -885,8 +885,8 @@ struct brush_settings poof(@version(3))
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -914,8 +914,8 @@ struct brush_settings_2
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -943,8 +943,8 @@ struct brush_settings_1
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -966,8 +966,8 @@ struct brush_settings_0
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -1030,8 +1030,8 @@ struct layered_brush poof(@version(3))
   b8 BrushFollowsCursor;
 
   // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
   // NOTE(Jesse): This is actually just using the chunk .. should probably change it
   chunk_thumbnail Preview; poof(@no_serialize)
@@ -1103,14 +1103,14 @@ Marshal(layered_brush_0 *Stored, layered_brush *Live)
 
 struct single_brush
 {
-  world_edit_mode Mode;
+  world_edit_blend_mode Mode;
 };
 
 
 struct asset_brush
 {
-  world_edit_mode Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode Mode;
+  world_edit_blend_mode_modifier Modifier;
 };
 
 
@@ -1147,8 +1147,8 @@ struct world_edit
   rect3cp Region;
 
   world_edit_shape         Shape;
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
   u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
 
@@ -1265,10 +1265,10 @@ CheckSettingsChanged(world_edit *);
 link_internal b32 HardResetEditor(level_editor *Editor);
 
 link_internal v3
-GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode);
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode);
 
 link_internal v3
-GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);
+GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier);
 
 link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);

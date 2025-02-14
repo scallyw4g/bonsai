@@ -523,7 +523,7 @@ GetMax(v3 *SelectionRegion)
 }
 
 link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier)
 {
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
@@ -865,7 +865,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
 
 
 link_internal v3
-GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode)
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode)
 {
   picked_voxel_position Pos = PickedVoxel_FirstFilled;
 
@@ -889,7 +889,7 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode)
 }
 
 link_internal v3
-GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
+GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier)
 {
   v3 Result = {};
   picked_voxel_position Pos = {};
@@ -1285,8 +1285,8 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
   {
     brush_settings *Settings = &Layer->Settings;
 
-    world_edit_mode              Mode = Settings->Mode;
-    world_edit_mode_modifier Modifier = Settings->Modifier;
+    world_edit_blend_mode              Mode = Settings->Mode;
+    world_edit_blend_mode_modifier Modifier = Settings->Modifier;
 
 
     rect3i UpdateBounds = {{}, DestChunk->Dim};
@@ -2086,11 +2086,11 @@ InputStateIsValidToApplyEdit(input *Input)
   return Result;
 }
 
-link_internal world_edit_mode
+link_internal world_edit_blend_mode
 GetEditModeForSelectedTool(level_editor *Editor)
 {
   // Default is attach for tools/brushes that don't have a mode in their settings
-  world_edit_mode Result = WorldEdit_Mode_Attach;
+  world_edit_blend_mode Result = WorldEdit_Mode_Attach;
 
   switch(Editor->Tool)
   {

@@ -3720,8 +3720,8 @@ WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u16 *NoiseData, v3
 
 
 link_internal work_queue_entry_update_world_region
-WorkQueueEntryUpdateWorldRegion(world_edit_mode Mode,
-                                world_edit_mode_modifier Modifier,
+WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
+                                world_edit_blend_mode_modifier Modifier,
                                 v3 SimFloodOrigin,
                                 world_edit_shape *Shape,
                                 v3  RGBColor,

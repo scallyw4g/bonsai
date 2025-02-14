@@ -93,8 +93,8 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
 link_internal void
 QueueWorldUpdateForRegion( engine_resources *Engine,
-                            world_edit_mode  Mode,
-                   world_edit_mode_modifier  Modifier,
+                            world_edit_blend_mode  Mode,
+                   world_edit_blend_mode_modifier  Modifier,
                            world_edit_shape *Shape,
                                          v3  HSVColor,
                                         b32  PersistWhitespace,
@@ -896,8 +896,8 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   v3i UpdateDim = GetDim(SimSpaceUpdateBounds);
   s32 TotalVoxels = Volume(UpdateDim);
 
-  world_edit_mode              Mode =     Job->Brush.Mode;
-  world_edit_mode_modifier Modifier =     Job->Brush.Modifier;
+  world_edit_blend_mode              Mode =     Job->Brush.Mode;
+  world_edit_blend_mode_modifier Modifier =     Job->Brush.Modifier;
   world_edit_shape            Shape =     Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
@@ -1047,8 +1047,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 {
   TIMED_FUNCTION();
 
-  world_edit_mode              Mode = Job->Brush.Mode;
-  world_edit_mode_modifier Modifier = Job->Brush.Modifier;
+  world_edit_blend_mode              Mode = Job->Brush.Mode;
+  world_edit_blend_mode_modifier Modifier = Job->Brush.Modifier;
   world_edit_shape            Shape = Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 

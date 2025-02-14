@@ -74,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode*, &Element->Mode),
+        Cast(world_edit_blend_mode*, &Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -89,7 +89,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode_modifier*, &Element->Modifier),
+        Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
         CSz("Modifier"),
         Params
         );

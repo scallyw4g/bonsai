@@ -135,12 +135,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_2 *Element, memory_ar
 
 
 
-          Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
+          Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 
 
-          Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
+          Element->Modifier = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
 
 
 

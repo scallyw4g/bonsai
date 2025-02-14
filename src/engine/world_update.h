@@ -41,7 +41,7 @@ poof(generate_cursor(voxel_stack_element))
 
 struct apply_world_edit_params
 {
-  world_edit_mode Mode;
+  world_edit_blend_mode Mode;
   rect3i SSRect;
   rect3i SimSpaceUpdateBounds;
   world_chunk *CopiedChunk;
@@ -53,7 +53,7 @@ struct apply_world_edit_params
 
 
 #define UNPACK_APPLY_WORLD_EDIT_PARAMS(P)                \
-  world_edit_mode Mode = P->Mode;                        \
+  world_edit_blend_mode Mode = P->Mode;                        \
   rect3i SSRect = P->SSRect;                             \
   rect3i SimSpaceUpdateBounds = P->SimSpaceUpdateBounds; \
   world_chunk *CopiedChunk = P->CopiedChunk;             \
@@ -78,7 +78,7 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 struct work_queue_entry_update_world_region;
 
 link_internal void
-QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_mode  Mode, world_edit_mode_modifier  Modifier, world_edit_shape *Shape, v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory );
+QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_blend_mode  Mode, world_edit_blend_mode_modifier  Modifier, world_edit_shape *Shape, v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory );
 
 link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False);
