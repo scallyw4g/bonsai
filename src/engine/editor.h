@@ -792,8 +792,8 @@ struct world_update_op_shape_params_sphere
 struct world_edit_shape
 {
   world_update_op_shape_type Type;
-
-  union {
+  union poof(@d_union_type_target)
+  {
     world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
     world_update_op_shape_params_rect       world_update_op_shape_params_rect;
     world_update_op_shape_params_asset      world_update_op_shape_params_asset;
@@ -1110,7 +1110,7 @@ struct world_edit_brush
 #define NameBuf_Len (256)
   char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
 
-  world_edit_shape               Shape;
+  /* world_edit_shape               Shape; */
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
 

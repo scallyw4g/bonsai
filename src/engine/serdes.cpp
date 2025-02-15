@@ -551,6 +551,11 @@ poof(serdes_struct(world_update_op_shape_params_rect))
 #include <generated/serdes_struct_world_update_op_shape_params_rect.h>
 poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
+poof(serdes_struct(world_update_op_shape_params_asset))
+#include <generated/serdes_struct_world_update_op_shape_params_asset.h>
+poof(serdes_struct(world_update_op_shape_params_chunk_data))
+#include <generated/serdes_struct_world_update_op_shape_params_chunk_data.h>
+
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
 

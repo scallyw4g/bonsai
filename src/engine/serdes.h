@@ -472,7 +472,25 @@ poof(
     link_internal b32
     Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count = 1)
     {
-      NotImplemented;
+      switch (BaseElement->Type)
+      {
+        type.map_members(union_member)
+        {
+          union_member.has_tag(d_union_type_target)?
+          {
+            union_member.map(variant)
+            {
+              case type_(variant.name):
+              {
+                Serialize(Bytes, &BaseElement->(variant.name));
+              } break;
+            }
+          }
+        }
+
+        InvalidDefaultCase;
+      }
+
       return False;
     }
 

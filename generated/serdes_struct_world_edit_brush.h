@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:575:0
+// src/engine/serdes.cpp:580:0
 
 link_internal bonsai_type_info
 TypeInfo(world_edit_brush *Ignored)
@@ -34,14 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_edit_brush *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Shape); // default
-
-
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+                        Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
 
 
 
@@ -81,15 +74,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Shape, Memory);
-
-
-
-
-
-          Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+            Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 

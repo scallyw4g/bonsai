@@ -6,7 +6,7 @@ BeginSerialization()
   Global_SerializeTypeTableArena = AllocateArena();
   Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
 
-  u8_cursor_block_array Blocks = {};
+  u8_cursor_block_array Blocks = U8CursorBlockArray(Global_SerializeTypeTableArena);
   {
     Blocks.BlockSize = Megabytes(32);
     u8_cursor First = U8Cursor(Blocks.BlockSize, Global_SerializeTypeTableArena);
@@ -19,7 +19,7 @@ BeginSerialization()
 link_internal b32
 FinalizeSerialization(u8_cursor_block_array *Blocks, const char *Filename)
 {
-  u8_cursor_block_array TypeBufferOutputStream = {};
+  u8_cursor_block_array TypeBufferOutputStream = U8CursorBlockArray(Global_SerializeTypeTableArena);
   {
     TypeBufferOutputStream.BlockSize = Megabytes(32);
 

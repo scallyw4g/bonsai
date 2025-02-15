@@ -1511,23 +1511,24 @@ DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, win
       if (ClickedFileNode.Tag)
       {
         cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
-#if 1
-        NotImplemented;
-#else
-        Assert(Editor->Brush.Type == WorldEdit_BrushType_Layered);
+
         u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->Brush.Layered, Tran) == False)
+
+        world_edit_brush B = {};
+        CopyString( ClickedFileNode.Value.Name.Start, B.NameBuf, Min(umm(ClickedFileNode.Value.Name.Count), umm(NameBuf_Len)));
+        Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
+
+        if (Deserialize(&Bytes, Editor->CurrentBrush, Tran) == False)
         {
           SoftError("While deserializing brush (%S).", Filename);
-          Editor->Brush = {};
+          *Editor->CurrentBrush = {};
         }
         FinalizeDeserialization(&Bytes);
-#endif
 
         // NOTE(Jesse): This has to happen after deserialization cause some
         // brushes got saved out with a name, which gets read back in..
-        ZeroMemory(Brush->NameBuf, NameBuf_Len);
-        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
+        /* ZeroMemory(Brush->NameBuf, NameBuf_Len); */
+        /* CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf); */
 
         SetToggleButton(Ui, ImportToggleId, False);
       }
