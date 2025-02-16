@@ -2946,21 +2946,7 @@ DoLevelWindow(engine_resources *Engine)
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
-
-      u32 ChunkCount = 0;
-      NotImplemented;
-#if 0
-      RangeIterator(HashIndex, s32(World->HashSize))
-      {
-        if (World->ChunkHash[HashIndex])
-        {
-          ++ChunkCount;
-        }
-      }
-#endif
-
       level_header Header = {};
-      Header.ChunkCount = ChunkCount;
 
       Header.WorldFlags    = Cast(u32, World->Flags);
       Header.WorldCenter   = World->Center;
@@ -3064,7 +3050,9 @@ DoLevelWindow(engine_resources *Engine)
         *Graphics->Camera = LevelHeader.Camera;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
-        s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
+        /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
+        s32 ChunkCount = 0;
+        NotImplemented;
         /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
 
         RangeIterator(ChunkIndex, ChunkCount)

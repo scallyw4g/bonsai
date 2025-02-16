@@ -1,4 +1,4 @@
-// src/engine/render_settings.h:94:0
+// src/engine/render_settings.h:72:0
 
 link_internal b32
 AreEqual(render_settings *Thing1, render_settings *Thing2)

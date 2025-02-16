@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:443:0
+// src/engine/serdes.cpp:375:0
 
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(render_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("render_settings");
-  Result.Version =  2 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -29,10 +29,7 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 
   b32 Result = True;
 
-    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber = 2;
-  Serialize(Bytes, &VersionNumber);
-
+  
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
@@ -192,34 +189,6 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory);
 
 
-link_internal b32
-DeserializeVersioned(u8_cursor *Bytes, render_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
-{
-  Assert(TypeInfo->Version <= 2);
-
-  b32 Result = True;
-
-    if (TypeInfo->Version == 0)
-  {
-    render_settings_0 T0 = {};
-    Result &= Deserialize(Bytes, &T0, Memory);
-    Marshal(&T0, Element);
-  }
-  if (TypeInfo->Version == 1)
-  {
-    render_settings_1 T1 = {};
-    Result &= Deserialize(Bytes, &T1, Memory);
-    Marshal(&T1, Element);
-  }
-
-
-  if (TypeInfo->Version == 2)
-  {
-    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
-  }
-
-  return Result;
-}
 
 
 link_internal b32
@@ -401,22 +370,7 @@ Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, um
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("render_settings"));
-
-    if (MaybeSerializedType.Tag)
-    {
-      u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
-      {
-        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
-      }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
-    }
-    else
-    {
-      bonsai_type_info T0TypeInfo = {};
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
-    }
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 
