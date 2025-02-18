@@ -34,7 +34,17 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_edit_brush *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+                            {
+            umm ThisCount = (256) + 1;
+
+      Result &= Serialize(Bytes, Element->NameBuf, ThisCount);
+    }
+
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
 
 
 
@@ -74,7 +84,17 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+              {
+        umm Count = (256) + 1;
+
+    Result &= Deserialize(Bytes, Element->NameBuf, Memory, Count);
+  }
+
+
+
+
+
+          Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 

@@ -1108,7 +1108,7 @@ struct world_edit_brush
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
 #define NameBuf_Len (256)
-  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
+  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box)
 
   /* world_edit_shape               Shape; */
   world_edit_blend_mode          Mode;

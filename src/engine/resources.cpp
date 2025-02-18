@@ -156,21 +156,9 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   CancelAllWorkQueueJobs(Engine);
 
-  // TODO(Jesse): Free octree here.
-  NotImplemented;
-#if 0
-  u32 ChunksFreed = 0;
-  RangeIterator(HashIndex, s32(World->HashSize))
-  {
-    if (world_chunk *Chunk = World->ChunkHash[HashIndex])
-    {
-      Chunk->Flags = Chunk_VoxelsInitialized;
-      FreeWorldChunk(Engine, Chunk);
-      World->ChunkHash[HashIndex] = 0;
-      ++ChunksFreed;
-    }
-  }
-#endif
+  FreeOctreeChildren(Engine, &World->Root);
+  if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); }
+  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion);
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {

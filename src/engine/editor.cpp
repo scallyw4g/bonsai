@@ -31,6 +31,8 @@ InitEditor(level_editor *Editor)
   Editor->WorldEdits = WorldEditBlockArray(Editor->Memory);
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
+  Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
+
 /*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
 /*   { */
 /*     Editor->LayeredBrush.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
@@ -2273,6 +2275,44 @@ CheckSettingsChanged(world_edit *Edit)
 }
 
 link_internal void
+ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  // Gather newly overlapping nodes and add the edit
+  {
+    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      AcquireFutex(&Node->Lock);
+      /* auto EditAABB = GetSimSpaceAABB(World, Node); */
+      /* random_series S = {u64(Node)}; */
+      /* v3 BaseColor = RandomV3Unilateral(&S); */
+      /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
+
+      {
+        // Shouldn't have this edit already attached ..
+        world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
+        Assert( IsValid(&Index) == False );
+      }
+
+      if (Node->Edits.Memory == 0)
+      {
+        Node->Edits = WorldEditPtrBlockArray(Editor->Memory);
+      }
+
+      Push(&Node->Edits, &Edit);
+
+      /* Assert(Node->Type == OctreeNodeType_Leaf); */
+
+      Node->Dirty = True;;
+      ReleaseFutex(&Node->Lock);
+    }
+  }
+}
+
+link_internal void
 UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2302,38 +2342,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
   Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
-  // Gather newly overlapping nodes and add the edit
-  {
-    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
-    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
-
-    IterateOver(&Nodes, Node, NodeIndex)
-    {
-      AcquireFutex(&Node->Lock);
-      /* auto EditAABB = GetSimSpaceAABB(World, Node); */
-      /* random_series S = {u64(Node)}; */
-      /* v3 BaseColor = RandomV3Unilateral(&S); */
-      /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
-
-      {
-        // Shouldn't have this edit already attached ..
-        world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
-        Assert( IsValid(&Index) == False );
-      }
-
-      if (Node->Edits.Memory == 0)
-      {
-        Node->Edits = WorldEditPtrBlockArray(Editor->Memory);
-      }
-
-      Push(&Node->Edits, &Edit);
-
-      /* Assert(Node->Type == OctreeNodeType_Leaf); */
-
-      Node->Dirty = True;;
-      ReleaseFutex(&Node->Lock);
-    }
-  }
+  ApplyEditToOctree(Engine, Edit, TempMemory);
 }
 
 link_internal void
@@ -2773,11 +2782,6 @@ DoWorldEditor(engine_resources *Engine)
     local_persist window_layout BrushSettingsWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
     PushWindowStart(Ui, &BrushSettingsWindow);
 
-    if (Editor->LoadedBrushes.Elements == 0)
-    {
-      Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
-    }
-
     if (Button(Ui, CSz("New"), UiId(&BrushSettingsWindow, "brush new", 0u)))
     {
       world_edit_brush Brush = {};
@@ -2856,6 +2860,7 @@ DoWorldEditor(engine_resources *Engine)
       if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
       {
         Edit->Brush = Editor->CurrentBrush;
+        UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
       }
 
       PushNewRow(Ui);
@@ -2946,30 +2951,32 @@ DoLevelWindow(engine_resources *Engine)
     {
       u8_cursor_block_array OutputStream = BeginSerialization();
 
-      level_header Header = {};
-
-      Header.WorldFlags    = Cast(u32, World->Flags);
-      Header.WorldCenter   = World->Center;
-      Header.VisibleRegion = World->VisibleRegion;
-      Header.Camera = *Camera;
-
-      Header.RenderSettings = Graphics->Settings;
-
       u32 EntityCount = 0;
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
         entity *E = EntityTable[EntityIndex];
         if (Spawned(E)) { ++EntityCount; }
       }
-      Header.EntityCount = EntityCount;
 
+      level_header Header = {};
+      Header.WorldCenter   = World->Center;
+      Header.VisibleRegion = World->VisibleRegion;
+      Header.Camera = *Camera;
+      Header.RenderSettings = Graphics->Settings;
+      Header.EntityCount = EntityCount;
+      Header.EditCount = u32(TotalElements(&Editor->WorldEdits));
 
       Serialize(&OutputStream, &Header);
 
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+      Ensure(Serialize(&OutputStream, &Delimeter));
 
-      NotImplemented;
-#if 0
+#if 1
+      IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+      {
+        Serialize(&OutputStream, Edit);
+      }
+#else
       RangeIterator(HashIndex, s32(World->HashSize))
       {
         if (world_chunk *Chunk = World->ChunkHash[HashIndex])
@@ -2990,8 +2997,7 @@ DoLevelWindow(engine_resources *Engine)
         }
       }
 
-      v3_cursor *Palette = GetColorPalette();
-      Serialize(&OutputStream, Palette);
+      Ensure(Serialize(&OutputStream, &Delimeter));
 
       const char *Filename = "../bonsai_levels/test.level";
       if (FinalizeSerialization(&OutputStream, Filename) == False)
@@ -3020,6 +3026,9 @@ DoLevelWindow(engine_resources *Engine)
 
       if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
       {
+        u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
+
         {
           engine_settings *EngineSettings = &GetEngineResources()->Settings;
           LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
@@ -3035,49 +3044,31 @@ DoLevelWindow(engine_resources *Engine)
 
         SoftResetEngine(Engine);
 
-        /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
         World->Center = LevelHeader.WorldCenter;
 
-        maybe_bonsai_type_info MaybeLevelHeaderTypeInfo = GetByName(&Global_SerializeTypeTable, CSz("level_header"));
-        if (MaybeLevelHeaderTypeInfo.Tag)
-        {
-          if (MaybeLevelHeaderTypeInfo.Value.Version > 2)
-          {
-            Graphics->Settings = LevelHeader.RenderSettings;
-          }
-        }
-
+        Graphics->Settings = LevelHeader.RenderSettings;
         *Graphics->Camera = LevelHeader.Camera;
         /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
         /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
         s32 ChunkCount = 0;
-        NotImplemented;
         /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
 
-        RangeIterator(ChunkIndex, ChunkCount)
+        RangeIterator_t(u32, EditIndex, LevelHeader.EditCount)
         {
-          world_chunk *Chunk = GetFreeWorldChunk(World);
-          DeserializeChunk(&LevelBytes, Chunk, World->ChunkMemory);
+          world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this?
+          Deserialize(&LevelBytes, &DeserEdit, GetTranArena());
 
-          if (IsInsideVisibleRegion(World, Chunk->WorldP))
+          world_edit *FinalEdit = Push(&Editor->WorldEdits, &DeserEdit);
+
+          if (FinalEdit->Brush)
           {
-#if 0
-            if (Editor->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad)
-            {
-              Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
-              Flags = ChunkInitFlag_ComputeStandingSpots;
-            }
-#endif
-
-            InsertChunkIntoWorld(World, Chunk);
+            FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
           }
+          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
         }
 
-        u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
         Ensure(Read_u64(&LevelBytes) == Delimeter);
-
-#if 1
 
         b32 Error = False;
         u32 EntityCount = LevelHeader.EntityCount;
@@ -3093,52 +3084,7 @@ DoLevelWindow(engine_resources *Engine)
           E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
         }
 
-        if (Error == False)
-        {
-          v3_cursor *Palette = GetColorPalette();
-          Palette->At = Palette->Start;
-          Deserialize(&LevelBytes, Palette, Thread->PermMemory);
-          Assert(LevelBytes.At == LevelBytes.End);
-
-          b32 NormalizePalette = False;
-          RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
-          {
-            v3 *C = Palette->Start+ColorIndex;
-
-            // If any components are > 1.f we must have loaded a palette with values in the 0-255 range
-            if (C->E[0] > 1.f || C->E[1] > 1.f || C->E[2] > 1.f) { NormalizePalette = True; break; }
-          }
-
-          if (NormalizePalette)
-          {
-            RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
-            {
-              v3 *C = Palette->Start+ColorIndex;
-              *C /= 255.f;
-              Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
-            }
-          }
-        }
-
-
-        NotImplemented;
-#if 0
-        RangeIterator_t(u32, ChunkIndex, World->HashSize)
-        {
-          if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
-          {
-            if (MaybeLevelHeaderTypeInfo.Value.Version < 4)
-            {
-              MarshalMagicaVoxelEncodedColors(Chunk->Voxels, Chunk->Voxels, Chunk->Dim);
-            }
-
-            chunk_init_flags Flags = ChunkInitFlag_Noop;
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
-          }
-        }
-#endif
-
-#endif
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
 
         Assert(ThreadLocal_ThreadIndex == 0);
         if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }

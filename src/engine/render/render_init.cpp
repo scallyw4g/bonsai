@@ -564,6 +564,52 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
 
 #define RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH "runtime_settings/graphics_settings.bin"
 
+link_internal void
+DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings, r32 GameCameraFOV)
+{
+    Settings->ToneMappingType = ToneMappingType_Exposure;
+
+    Settings->UseSsao           = True;
+
+    Settings->BravoilMyersOIT   = True;
+    Settings->BravoilMcGuireOIT = True;
+
+    /* Settings->UseShadowMapping = True; */
+    Settings->UseLightingBloom = True;
+
+    /* Settings->DrawMajorGrid = True; */
+    /* Settings->DrawMinorGrid = True; */
+    Settings->MajorGridDim = 16.f;
+
+    Settings->ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+    Settings->ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+    Settings->LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+    Settings->iApplicationResolution  = GetApplicationResolution(EngineSettings);
+    Settings->iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+    Settings->iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+
+    Settings->GameCameraFOV = GameCameraFOV;
+
+    {
+      lighting_settings *Lighting = &Settings->Lighting;
+
+      Lighting->tDay = 0.75f;
+
+      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
+      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
+      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
+      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+
+      Lighting->SunIntensity  = 1.10f;
+      Lighting->MoonIntensity = 0.10f;
+      Lighting->DawnIntensity = 0.70f;
+      Lighting->DuskIntensity = 0.50f;
+    }
+}
+
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
@@ -580,52 +626,17 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
   {
     u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
-    Deserialize(&Bytes, &Result->Settings, GetTranArena());
+    if (Deserialize(&Bytes, &Result->Settings, GetTranArena()) == False)
+    {
+      Result->Settings = {};
+      Remove(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH));
+      DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
+    }
     FinalizeDeserialization(&Bytes);
   }
   else
   {
-    Result->Settings.ToneMappingType = ToneMappingType_Exposure;
-
-    Result->Settings.UseSsao           = True;
-
-    Result->Settings.BravoilMyersOIT   = True;
-    Result->Settings.BravoilMcGuireOIT = True;
-
-    /* Result->Settings.UseShadowMapping = True; */
-    Result->Settings.UseLightingBloom = True;
-
-    /* Result->Settings.DrawMajorGrid = True; */
-    /* Result->Settings.DrawMinorGrid = True; */
-    Result->Settings.MajorGridDim = 16.f;
-
-    Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-    Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-    Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
-
-    Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-    Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-    Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-
-    Result->Settings.GameCameraFOV = Result->GameCamera.Frust.FOV;
-
-    {
-      lighting_settings *Lighting = &Result->Settings.Lighting;
-
-      Lighting->tDay = 0.75f;
-
-      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
-
-      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
-
-      Lighting->SunIntensity  = 1.10f;
-      Lighting->MoonIntensity = 0.10f;
-      Lighting->DawnIntensity = 0.70f;
-      Lighting->DuskIntensity = 0.50f;
-    }
+    DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
   }
 
   Result->PrevSettings = Result->Settings;

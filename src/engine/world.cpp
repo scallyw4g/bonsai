@@ -329,6 +329,7 @@ ContainsCameraGhost(world *World, entity **EntityTable, octree_node *Node, camer
 link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks)
 {
+  *Node = {};
   Node->Type = OctreeNodeType_Leaf;
   Node->WorldP = WorldP;
   Node->Resolution = DimInChunks;

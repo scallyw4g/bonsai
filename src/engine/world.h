@@ -86,7 +86,6 @@ struct world
 
   v3i ChunkDim;                      poof(@ui_skip)
   memory_arena *ChunkMemory;         poof(@ui_skip)
-  world_flag Flags;                  poof(@ui_skip)
 };
 
 

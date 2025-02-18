@@ -34,14 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
   RangeIterator_t(umm, ElementIndex, Count)
   {
     level_header *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->EntityCount); // default
+                                Result &= Serialize(Bytes, &Element->EditCount); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->WorldFlags); // default
+                            Result &= Serialize(Bytes, &Element->EntityCount); // default
 
 
 

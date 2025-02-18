@@ -2,10 +2,10 @@
 
 struct level_header
 {
+  u32 EditCount;
   u32 EntityCount;
 
   // World Params
-  u32 WorldFlags; // world_flag
   v3i WorldCenter;
   v3i VisibleRegion;
 

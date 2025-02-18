@@ -184,13 +184,13 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
     ray *Ray = &Resources->MaybeMouseRay.Ray;
 
-    DEBUG_VALUE_r32(Ray->Origin.x);
-    DEBUG_VALUE_r32(Ray->Origin.y);
-    DEBUG_VALUE_r32(Ray->Origin.z);
+    /* DEBUG_VALUE_r32(Ray->Origin.x); */
+    /* DEBUG_VALUE_r32(Ray->Origin.y); */
+    /* DEBUG_VALUE_r32(Ray->Origin.z); */
 
-    DEBUG_VALUE_r32(Ray->Dir.x);
-    DEBUG_VALUE_r32(Ray->Dir.y);
-    DEBUG_VALUE_r32(Ray->Dir.z);
+    /* DEBUG_VALUE_r32(Ray->Dir.x); */
+    /* DEBUG_VALUE_r32(Ray->Dir.y); */
+    /* DEBUG_VALUE_r32(Ray->Dir.z); */
 
     Resources->MousedOverVoxel = MousePickVoxel(Resources, Ray);
     Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);

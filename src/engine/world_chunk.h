@@ -471,12 +471,6 @@ Volume(world_chunk* Chunk)
   return Result;
 }
 
-enum world_flag
-{
-  WorldFlag_noop,
-  /* WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0), */
-};
-
 struct standing_spot
 {
   b32 CanStand;

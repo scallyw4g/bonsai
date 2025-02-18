@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:170:0
+// src/engine/editor.cpp:172:0
 
 link_internal counted_string
 ToStringPrefixless(file_traversal_type Type)
