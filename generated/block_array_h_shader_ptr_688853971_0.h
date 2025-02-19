@@ -154,21 +154,6 @@ Count( shader_ptr_block_array *Arr)
 }
 
 link_internal shader_ptr 
-Set( shader_ptr_block_array *Arr,
-  shader_ptr Element,
-  shader_ptr_block_array_index Index )
-{
-  shader_ptr Result = {};
-  if (Index.Block)
-  {
-    Result = Index.Block->Elements[Index.ElementIndex];
-    Result = Element;
-  }
-
-  return Result;
-}
-
-link_internal shader_ptr 
 GetPtr(shader_ptr_block_array *Arr, shader_ptr_block_array_index Index)
 {
   shader_ptr Result = {};

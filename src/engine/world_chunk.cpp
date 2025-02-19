@@ -1,3 +1,5 @@
+poof( block_array_c(entity_ptr, {8}) )
+#include <generated/block_array_c_entity_ptr_688856411_struct_struct_struct.h>
 
 poof(block_array_c(world_chunk_ptr, {32}))
 #include <generated/block_array_world_chunk_ptr_688853862.h>

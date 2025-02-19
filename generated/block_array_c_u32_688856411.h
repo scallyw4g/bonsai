@@ -18,6 +18,23 @@ CS( u32_block_array_index Index )
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal u32 *
+Set( u32_block_array *Arr,
+  u32 *Element,
+  u32_block_array_index Index )
+{
+  u32 *Result = {};
+  if (Index.Block)
+  {
+    u32 *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
 RemoveUnordered( u32_block_array *Array, u32_block_array_index Index)
 {

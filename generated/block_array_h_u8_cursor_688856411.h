@@ -154,21 +154,6 @@ Count( u8_cursor_block_array *Arr)
 }
 
 link_internal u8_cursor *
-Set( u8_cursor_block_array *Arr,
-  u8_cursor *Element,
-  u8_cursor_block_array_index Index )
-{
-  u8_cursor *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal u8_cursor *
 GetPtr(u8_cursor_block_array *Arr, u8_cursor_block_array_index Index)
 {
   u8_cursor *Result = {};

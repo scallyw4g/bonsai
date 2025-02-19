@@ -18,6 +18,23 @@ CS( texture_ptr_block_array_index Index )
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal texture_ptr 
+Set( texture_ptr_block_array *Arr,
+  texture_ptr Element,
+  texture_ptr_block_array_index Index )
+{
+  texture_ptr Result = {};
+  if (Index.Block)
+  {
+    texture_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = Element;
+
+    Result = *Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
 RemoveUnordered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
 {

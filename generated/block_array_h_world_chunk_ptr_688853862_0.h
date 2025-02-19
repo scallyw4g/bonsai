@@ -154,21 +154,6 @@ Count( world_chunk_ptr_block_array *Arr)
 }
 
 link_internal world_chunk_ptr 
-Set( world_chunk_ptr_block_array *Arr,
-  world_chunk_ptr Element,
-  world_chunk_ptr_block_array_index Index )
-{
-  world_chunk_ptr Result = {};
-  if (Index.Block)
-  {
-    Result = Index.Block->Elements[Index.ElementIndex];
-    Result = Element;
-  }
-
-  return Result;
-}
-
-link_internal world_chunk_ptr 
 GetPtr(world_chunk_ptr_block_array *Arr, world_chunk_ptr_block_array_index Index)
 {
   world_chunk_ptr Result = {};

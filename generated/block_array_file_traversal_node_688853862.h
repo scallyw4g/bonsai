@@ -154,21 +154,6 @@ Count( file_traversal_node_block_array *Arr)
 }
 
 link_internal file_traversal_node *
-Set( file_traversal_node_block_array *Arr,
-  file_traversal_node *Element,
-  file_traversal_node_block_array_index Index )
-{
-  file_traversal_node *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal file_traversal_node *
 GetPtr(file_traversal_node_block_array *Arr, file_traversal_node_block_array_index Index)
 {
   file_traversal_node *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( file_traversal_node_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal file_traversal_node *
+Set( file_traversal_node_block_array *Arr,
+  file_traversal_node *Element,
+  file_traversal_node_block_array_index Index )
+{
+  file_traversal_node *Result = {};
+  if (Index.Block)
+  {
+    file_traversal_node *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

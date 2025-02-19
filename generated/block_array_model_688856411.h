@@ -154,21 +154,6 @@ Count( model_block_array *Arr)
 }
 
 link_internal model *
-Set( model_block_array *Arr,
-  model *Element,
-  model_block_array_index Index )
-{
-  model *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal model *
 GetPtr(model_block_array *Arr, model_block_array_index Index)
 {
   model *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( model_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal model *
+Set( model_block_array *Arr,
+  model *Element,
+  model_block_array_index Index )
+{
+  model *Result = {};
+  if (Index.Block)
+  {
+    model *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

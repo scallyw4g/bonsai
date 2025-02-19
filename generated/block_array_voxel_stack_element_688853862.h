@@ -154,21 +154,6 @@ Count( voxel_stack_element_block_array *Arr)
 }
 
 link_internal voxel_stack_element *
-Set( voxel_stack_element_block_array *Arr,
-  voxel_stack_element *Element,
-  voxel_stack_element_block_array_index Index )
-{
-  voxel_stack_element *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal voxel_stack_element *
 GetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( voxel_stack_element_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal voxel_stack_element *
+Set( voxel_stack_element_block_array *Arr,
+  voxel_stack_element *Element,
+  voxel_stack_element_block_array_index Index )
+{
+  voxel_stack_element *Result = {};
+  if (Index.Block)
+  {
+    voxel_stack_element *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

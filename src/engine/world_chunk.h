@@ -302,8 +302,8 @@ poof(
 
 struct entity;
 typedef entity* entity_ptr;
-poof( block_array(entity_ptr, {8}) )
-#include <generated/block_array_entity_ptr_688856411.h>
+poof( block_array_h(entity_ptr, {8}, {}) )
+#include <generated/block_array_entity_ptr_688856411_h.h>
 
 
 

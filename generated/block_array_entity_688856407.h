@@ -154,21 +154,6 @@ Count( entity_block_array *Arr)
 }
 
 link_internal entity *
-Set( entity_block_array *Arr,
-  entity *Element,
-  entity_block_array_index Index )
-{
-  entity *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal entity *
 GetPtr(entity_block_array *Arr, entity_block_array_index Index)
 {
   entity *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( entity_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal entity *
+Set( entity_block_array *Arr,
+  entity *Element,
+  entity_block_array_index Index )
+{
+  entity *Result = {};
+  if (Index.Block)
+  {
+    entity *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

@@ -3,6 +3,10 @@
 #include <bonsai_stdlib/bonsai_stdlib.cpp>
 #include <bonsai_stdlib/test/utils.h>
 
+global_variable memory_arena _Memory;
+
+global_variable memory_arena *Memory = &_Memory;
+
 
 link_internal void
 Print(u32_block_array *Array)
@@ -16,7 +20,7 @@ Print(u32_block_array *Array)
 link_internal u32_block_array
 MakeOrderedBlockArray(u32 Count)
 {
-  u32_block_array Array = {};
+  u32_block_array Array = U32BlockArray(Memory);
 
   // Insert 8 elements
   RangeIterator_t(u32, Index, Count)
@@ -30,7 +34,7 @@ MakeOrderedBlockArray(u32 Count)
 link_internal void
 TrivialAddRemove()
 {
-  u32_block_array Array = {};
+  u32_block_array Array = U32BlockArray(Memory);
 
   u32 Element = 69;
 
@@ -56,7 +60,7 @@ TrivialAddRemove()
 link_internal void
 TwoBlocksRemoveFromEnd()
 {
-  u32_block_array Array = {};
+  u32_block_array Array = U32BlockArray(Memory);
 
   // Insert 8 elements
   RangeIterator_t(u32, Index, 8)
@@ -130,7 +134,7 @@ TwoBlocksRemoveFromEnd()
 link_internal void
 TwoBlocksRemoveFromFront()
 {
-  u32_block_array Array = {};
+  u32_block_array Array = U32BlockArray(Memory);
 
   // Insert 8 elements
   RangeIterator_t(u32, Index, 8)
@@ -265,6 +269,16 @@ RemoveAllBlocks()
 
 }
 
+link_internal void
+Remove0thElementInTwoElementList()
+{
+  auto Array = MakeOrderedBlockArray(2);
+
+  auto Z = ZerothIndex(&Array);
+
+  RemoveUnordered(&Array, Z);
+}
+
 s32
 main(s32 ArgCount, const char** Args)
 {
@@ -279,6 +293,8 @@ main(s32 ArgCount, const char** Args)
   PrintThreeBlocksRemoveFromMiddle();
 
   RemoveAllBlocks();
+
+  Remove0thElementInTwoElementList();
 
   TestSuiteEnd();
   exit(TestsFailed);

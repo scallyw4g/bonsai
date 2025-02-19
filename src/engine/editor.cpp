@@ -2322,6 +2322,7 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   // Update the edit
   //
 
+  auto OldEditRegion = Editor->CurrentEdit->Region; // NOTE(Jesse): Debug
   Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
   ApplyEditToOctree(Engine, Edit, TempMemory);
@@ -2699,7 +2700,13 @@ DoWorldEditor(engine_resources *Engine)
     random_series S = {u64(Edit)};
     v3 BaseColor = RandomV3Unilateral(&S);
 
-    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f);
+    f32 Size = 1.f;
+    if (Edit == Editor->CurrentEdit)
+    {
+      Size = 3.f;
+    }
+
+    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
   }
 
 
@@ -2728,6 +2735,7 @@ DoWorldEditor(engine_resources *Engine)
     Editor->CurrentEdit->Brush = Editor->CurrentBrush;
   }
 
+#if 0
   if (Editor->Selection.Clicks == 2)
   {
     if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Subtractive, WorldEdit_Modifier_Default); }
@@ -2759,8 +2767,9 @@ DoWorldEditor(engine_resources *Engine)
       QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Additive, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
     }
   }
+#endif
 
-  {
+  { // All Brushes Window
     local_persist window_layout BrushSettingsWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
     PushWindowStart(Ui, &BrushSettingsWindow);
 
@@ -2832,7 +2841,11 @@ DoWorldEditor(engine_resources *Engine)
 
       if (Button(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit)))
       {
+        Editor->Selection.Clicks = 2;
+        Editor->Selection.Region = Edit->Region;
+
         Editor->CurrentEdit = Edit;
+
         if (Edit->Brush)
         {
           Editor->CurrentBrush = Edit->Brush;

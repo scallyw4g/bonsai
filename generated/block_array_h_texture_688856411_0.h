@@ -154,21 +154,6 @@ Count( texture_block_array *Arr)
 }
 
 link_internal texture *
-Set( texture_block_array *Arr,
-  texture *Element,
-  texture_block_array_index Index )
-{
-  texture *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal texture *
 GetPtr(texture_block_array *Arr, texture_block_array_index Index)
 {
   texture *Result = {};

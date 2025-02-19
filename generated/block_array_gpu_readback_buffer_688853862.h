@@ -154,21 +154,6 @@ Count( gpu_readback_buffer_block_array *Arr)
 }
 
 link_internal gpu_readback_buffer *
-Set( gpu_readback_buffer_block_array *Arr,
-  gpu_readback_buffer *Element,
-  gpu_readback_buffer_block_array_index Index )
-{
-  gpu_readback_buffer *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal gpu_readback_buffer *
 GetPtr(gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
 {
   gpu_readback_buffer *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( gpu_readback_buffer_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal gpu_readback_buffer *
+Set( gpu_readback_buffer_block_array *Arr,
+  gpu_readback_buffer *Element,
+  gpu_readback_buffer_block_array_index Index )
+{
+  gpu_readback_buffer *Result = {};
+  if (Index.Block)
+  {
+    gpu_readback_buffer *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

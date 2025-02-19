@@ -18,6 +18,23 @@ CS( asset_thumbnail_block_array_index Index )
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal asset_thumbnail *
+Set( asset_thumbnail_block_array *Arr,
+  asset_thumbnail *Element,
+  asset_thumbnail_block_array_index Index )
+{
+  asset_thumbnail *Result = {};
+  if (Index.Block)
+  {
+    asset_thumbnail *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
 RemoveUnordered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {

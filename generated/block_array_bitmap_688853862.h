@@ -154,21 +154,6 @@ Count( bitmap_block_array *Arr)
 }
 
 link_internal bitmap *
-Set( bitmap_block_array *Arr,
-  bitmap *Element,
-  bitmap_block_array_index Index )
-{
-  bitmap *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal bitmap *
 GetPtr(bitmap_block_array *Arr, bitmap_block_array_index Index)
 {
   bitmap *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( bitmap_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal bitmap *
+Set( bitmap_block_array *Arr,
+  bitmap *Element,
+  bitmap_block_array_index Index )
+{
+  bitmap *Result = {};
+  if (Index.Block)
+  {
+    bitmap *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

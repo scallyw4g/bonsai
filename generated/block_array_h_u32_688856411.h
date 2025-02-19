@@ -154,21 +154,6 @@ Count( u32_block_array *Arr)
 }
 
 link_internal u32 *
-Set( u32_block_array *Arr,
-  u32 *Element,
-  u32_block_array_index Index )
-{
-  u32 *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal u32 *
 GetPtr(u32_block_array *Arr, u32_block_array_index Index)
 {
   u32 *Result = {};

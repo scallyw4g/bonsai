@@ -154,21 +154,6 @@ Count( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr)
 }
 
 link_internal dummy_work_queue_entry_build_chunk_mesh *
-Set( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr,
-  dummy_work_queue_entry_build_chunk_mesh *Element,
-  dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
-{
-  dummy_work_queue_entry_build_chunk_mesh *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal dummy_work_queue_entry_build_chunk_mesh *
 GetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {
   dummy_work_queue_entry_build_chunk_mesh *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal dummy_work_queue_entry_build_chunk_mesh *
+Set( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr,
+  dummy_work_queue_entry_build_chunk_mesh *Element,
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Index )
+{
+  dummy_work_queue_entry_build_chunk_mesh *Result = {};
+  if (Index.Block)
+  {
+    dummy_work_queue_entry_build_chunk_mesh *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

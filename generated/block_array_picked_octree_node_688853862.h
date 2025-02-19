@@ -154,21 +154,6 @@ Count( picked_octree_node_block_array *Arr)
 }
 
 link_internal picked_octree_node *
-Set( picked_octree_node_block_array *Arr,
-  picked_octree_node *Element,
-  picked_octree_node_block_array_index Index )
-{
-  picked_octree_node *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal picked_octree_node *
 GetPtr(picked_octree_node_block_array *Arr, picked_octree_node_block_array_index Index)
 {
   picked_octree_node *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( picked_octree_node_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal picked_octree_node *
+Set( picked_octree_node_block_array *Arr,
+  picked_octree_node *Element,
+  picked_octree_node_block_array_index Index )
+{
+  picked_octree_node *Result = {};
+  if (Index.Block)
+  {
+    picked_octree_node *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

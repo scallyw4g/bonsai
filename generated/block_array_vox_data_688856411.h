@@ -154,21 +154,6 @@ Count( vox_data_block_array *Arr)
 }
 
 link_internal vox_data *
-Set( vox_data_block_array *Arr,
-  vox_data *Element,
-  vox_data_block_array_index Index )
-{
-  vox_data *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal vox_data *
 GetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
 {
   vox_data *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( vox_data_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal vox_data *
+Set( vox_data_block_array *Arr,
+  vox_data *Element,
+  vox_data_block_array_index Index )
+{
+  vox_data *Result = {};
+  if (Index.Block)
+  {
+    vox_data *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

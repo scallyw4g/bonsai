@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:2:0
+// src/engine/world_chunk.cpp:4:0
 
 
 
@@ -16,6 +16,23 @@ link_internal cs
 CS( world_chunk_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal world_chunk_ptr 
+Set( world_chunk_ptr_block_array *Arr,
+  world_chunk_ptr Element,
+  world_chunk_ptr_block_array_index Index )
+{
+  world_chunk_ptr Result = {};
+  if (Index.Block)
+  {
+    world_chunk_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = Element;
+
+    Result = *Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

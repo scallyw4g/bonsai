@@ -1,46 +1,46 @@
-// external/bonsai_stdlib/src/texture.h:47:0
+// src/engine/world_chunk.h:305:0
 
 
 
 
 
-struct texture_ptr_block
+struct entity_ptr_block
 {
   u32 Index;
   u32 At;
-  texture_ptr *Elements;
-  texture_ptr_block *Next;
+  entity_ptr *Elements;
+  entity_ptr_block *Next;
 };
 
-struct texture_ptr_block_array_index
+struct entity_ptr_block_array_index
 {
-  texture_ptr_block *Block;
+  entity_ptr_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
-struct texture_ptr_block_array
+struct entity_ptr_block_array
 {
-  texture_ptr_block *First;
-  texture_ptr_block *Current;
+  entity_ptr_block *First;
+  entity_ptr_block *Current;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-link_internal texture_ptr_block_array
-TexturePtrBlockArray(memory_arena *Memory)
+link_internal entity_ptr_block_array
+EntityPtrBlockArray(memory_arena *Memory)
 {
-  texture_ptr_block_array Result = {};
+  entity_ptr_block_array Result = {};
   Result.Memory = Memory;
   return Result;
 }
 
 link_internal b32
-AreEqual(texture_ptr_block_array_index *Thing1, texture_ptr_block_array_index *Thing2)
+AreEqual(entity_ptr_block_array_index *Thing1, entity_ptr_block_array_index *Thing2)
 {
   if (Thing1 && Thing2)
   {
-        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( texture_ptr_block_array_index ) );
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( entity_ptr_block_array_index ) );
 
     return Result;
   }
@@ -51,18 +51,18 @@ AreEqual(texture_ptr_block_array_index *Thing1, texture_ptr_block_array_index *T
 }
 
 link_internal b32
-AreEqual(texture_ptr_block_array_index Thing1, texture_ptr_block_array_index Thing2)
+AreEqual(entity_ptr_block_array_index Thing1, entity_ptr_block_array_index Thing2)
 {
-    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( texture_ptr_block_array_index ) );
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( entity_ptr_block_array_index ) );
 
   return Result;
 }
 
 
-typedef texture_ptr_block_array texture_ptr_paged_list;
+typedef entity_ptr_block_array entity_ptr_paged_list;
 
-link_internal texture_ptr_block_array_index
-operator++( texture_ptr_block_array_index &I0 )
+link_internal entity_ptr_block_array_index
+operator++( entity_ptr_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -85,29 +85,29 @@ operator++( texture_ptr_block_array_index &I0 )
 }
 
 link_internal b32
-operator<( texture_ptr_block_array_index I0, texture_ptr_block_array_index I1 )
+operator<( entity_ptr_block_array_index I0, entity_ptr_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex( texture_ptr_block_array_index *Index)
+GetIndex( entity_ptr_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
-link_internal texture_ptr_block_array_index
-ZerothIndex( texture_ptr_block_array *Arr)
+link_internal entity_ptr_block_array_index
+ZerothIndex( entity_ptr_block_array *Arr)
 {
-  texture_ptr_block_array_index Result = {};
+  entity_ptr_block_array_index Result = {};
   Result.Block = Arr->First;
   return Result;
 }
 
 link_internal umm
-TotalElements( texture_ptr_block_array *Arr)
+TotalElements( entity_ptr_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -117,10 +117,10 @@ TotalElements( texture_ptr_block_array *Arr)
   return Result;
 }
 
-link_internal texture_ptr_block_array_index
-LastIndex( texture_ptr_block_array *Arr)
+link_internal entity_ptr_block_array_index
+LastIndex( entity_ptr_block_array *Arr)
 {
-  texture_ptr_block_array_index Result = {};
+  entity_ptr_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -132,10 +132,10 @@ LastIndex( texture_ptr_block_array *Arr)
   return Result;
 }
 
-link_internal texture_ptr_block_array_index
-AtElements( texture_ptr_block_array *Arr)
+link_internal entity_ptr_block_array_index
+AtElements( entity_ptr_block_array *Arr)
 {
-  texture_ptr_block_array_index Result = {};
+  entity_ptr_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -146,61 +146,61 @@ AtElements( texture_ptr_block_array *Arr)
 }
 
 link_internal umm
-Count( texture_ptr_block_array *Arr)
+Count( entity_ptr_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
   return Result;
 }
 
-link_internal texture_ptr 
-GetPtr(texture_ptr_block_array *Arr, texture_ptr_block_array_index Index)
+link_internal entity_ptr 
+GetPtr(entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
 {
-  texture_ptr Result = {};
+  entity_ptr Result = {};
   if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal texture_ptr 
-GetPtr(texture_ptr_block *Block, umm Index)
+link_internal entity_ptr 
+GetPtr(entity_ptr_block *Block, umm Index)
 {
-  texture_ptr Result = {};
+  entity_ptr Result = {};
   if (Index < Block->At) { Result = *(Block->Elements + Index); }
   return Result;
 }
 
-link_internal texture_ptr 
-GetPtr(texture_ptr_block_array *Arr, umm Index)
+link_internal entity_ptr 
+GetPtr(entity_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  texture_ptr_block *Block = Arr->First;
+  entity_ptr_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
   }
 
-  texture_ptr Result = *(Block->Elements+ElementIndex);
+  entity_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal texture_ptr 
-TryGetPtr(texture_ptr_block_array *Arr, umm Index)
+link_internal entity_ptr 
+TryGetPtr(entity_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  texture_ptr Result = {};
+  entity_ptr Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 
 link_internal u32
-AtElements(texture_ptr_block *Block)
+AtElements(entity_ptr_block *Block)
 {
   return Block->At;
 }

@@ -154,21 +154,6 @@ Count( asset_thumbnail_block_array *Arr)
 }
 
 link_internal asset_thumbnail *
-Set( asset_thumbnail_block_array *Arr,
-  asset_thumbnail *Element,
-  asset_thumbnail_block_array_index Index )
-{
-  asset_thumbnail *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail *Result = {};

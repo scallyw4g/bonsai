@@ -1,32 +1,32 @@
-// external/bonsai_stdlib/src/shader.cpp:2:0
+// src/engine/world_chunk.cpp:1:0
 
 
 
 
 
-link_internal shader_ptr_block *
-Allocate_shader_ptr_block(memory_arena *Memory)
+link_internal entity_ptr_block *
+Allocate_entity_ptr_block(memory_arena *Memory)
 {
-  shader_ptr_block *Result = Allocate( shader_ptr_block, Memory, 1);
-  Result->Elements = Allocate( shader_ptr, Memory, 64);
+  entity_ptr_block *Result = Allocate( entity_ptr_block, Memory, 1);
+  Result->Elements = Allocate( entity_ptr, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS( shader_ptr_block_array_index Index )
+CS( entity_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
-link_internal shader_ptr 
-Set( shader_ptr_block_array *Arr,
-  shader_ptr Element,
-  shader_ptr_block_array_index Index )
+link_internal entity_ptr 
+Set( entity_ptr_block_array *Arr,
+  entity_ptr Element,
+  entity_ptr_block_array_index Index )
 {
-  shader_ptr Result = {};
+  entity_ptr Result = {};
   if (Index.Block)
   {
-    shader_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
+    entity_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
     *Slot = Element;
 
     Result = *Slot;
@@ -36,12 +36,12 @@ Set( shader_ptr_block_array *Arr,
 }
 
 link_internal void
-RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Index)
+RemoveUnordered( entity_ptr_block_array *Array, entity_ptr_block_array_index Index)
 {
-  shader_ptr_block_array_index LastI = LastIndex(Array);
+  entity_ptr_block_array_index LastI = LastIndex(Array);
 
-  shader_ptr Element = GetPtr(Array, Index);
-  shader_ptr LastElement = GetPtr(Array, LastI);
+  entity_ptr Element = GetPtr(Array, Index);
+  entity_ptr LastElement = GetPtr(Array, LastI);
 
   Set(Array, LastElement, Index);
 
@@ -65,8 +65,8 @@ RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Ind
     else
     {
       // Walk the chain till we get to the second-last one
-      shader_ptr_block *Current = Array->First;
-      shader_ptr_block *LastB = LastI.Block;
+      entity_ptr_block *Current = Array->First;
+      entity_ptr_block *LastB = LastI.Block;
 
       while (Current->Next && Current->Next != LastB)
       {
@@ -79,10 +79,10 @@ RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Ind
   }
 }
 
-link_internal shader_ptr_block_array_index
-Find( shader_ptr_block_array *Array, shader_ptr Query)
+link_internal entity_ptr_block_array_index
+Find( entity_ptr_block_array *Array, entity_ptr Query)
 {
-  shader_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  entity_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -95,21 +95,21 @@ Find( shader_ptr_block_array *Array, shader_ptr Query)
 }
 
 link_internal b32
-IsValid(shader_ptr_block_array_index *Index)
+IsValid(entity_ptr_block_array_index *Index)
 {
-  shader_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  entity_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal shader_ptr *
-Push( shader_ptr_block_array *Array, shader_ptr *Element)
+link_internal entity_ptr *
+Push( entity_ptr_block_array *Array, entity_ptr *Element)
 {
   Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_shader_ptr_block(Array->Memory); Array->Current = Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_entity_ptr_block(Array->Memory); Array->Current = Array->First; }
 
-  if (Array->Current->At == 64)
+  if (Array->Current->At == 8)
   {
     if (Array->Current->Next)
     {
@@ -118,7 +118,7 @@ Push( shader_ptr_block_array *Array, shader_ptr *Element)
     }
     else
     {
-      shader_ptr_block *Next = Allocate_shader_ptr_block(Array->Memory);
+      entity_ptr_block *Next = Allocate_entity_ptr_block(Array->Memory);
       Next->Index = Array->Current->Index + 1;
 
       Array->Current->Next = Next;
@@ -126,7 +126,7 @@ Push( shader_ptr_block_array *Array, shader_ptr *Element)
     }
   }
 
-  shader_ptr *Result = Array->Current->Elements + Array->Current->At;
+  entity_ptr *Result = Array->Current->Elements + Array->Current->At;
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 

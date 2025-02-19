@@ -154,21 +154,6 @@ Count( standing_spot_block_array *Arr)
 }
 
 link_internal standing_spot *
-Set( standing_spot_block_array *Arr,
-  standing_spot *Element,
-  standing_spot_block_array_index Index )
-{
-  standing_spot *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal standing_spot *
 GetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
 {
   standing_spot *Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( standing_spot_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal standing_spot *
+Set( standing_spot_block_array *Arr,
+  standing_spot *Element,
+  standing_spot_block_array_index Index )
+{
+  standing_spot *Result = {};
+  if (Index.Block)
+  {
+    standing_spot *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

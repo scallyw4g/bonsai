@@ -154,21 +154,6 @@ Count( gpu_timer_block_array *Arr)
 }
 
 link_internal gpu_timer *
-Set( gpu_timer_block_array *Arr,
-  gpu_timer *Element,
-  gpu_timer_block_array_index Index )
-{
-  gpu_timer *Result = {};
-  if (Index.Block)
-  {
-    Result = &Index.Block->Elements[Index.ElementIndex];
-    *Result = *Element;
-  }
-
-  return Result;
-}
-
-link_internal gpu_timer *
 GetPtr(gpu_timer_block_array *Arr, gpu_timer_block_array_index Index)
 {
   gpu_timer *Result = {};

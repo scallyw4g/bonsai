@@ -154,21 +154,6 @@ Count( world_edit_ptr_block_array *Arr)
 }
 
 link_internal world_edit_ptr 
-Set( world_edit_ptr_block_array *Arr,
-  world_edit_ptr Element,
-  world_edit_ptr_block_array_index Index )
-{
-  world_edit_ptr Result = {};
-  if (Index.Block)
-  {
-    Result = Index.Block->Elements[Index.ElementIndex];
-    Result = Element;
-  }
-
-  return Result;
-}
-
-link_internal world_edit_ptr 
 GetPtr(world_edit_ptr_block_array *Arr, world_edit_ptr_block_array_index Index)
 {
   world_edit_ptr Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( world_edit_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal world_edit_ptr 
+Set( world_edit_ptr_block_array *Arr,
+  world_edit_ptr Element,
+  world_edit_ptr_block_array_index Index )
+{
+  world_edit_ptr Result = {};
+  if (Index.Block)
+  {
+    world_edit_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = Element;
+
+    Result = *Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

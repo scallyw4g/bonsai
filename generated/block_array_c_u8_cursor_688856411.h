@@ -18,6 +18,23 @@ CS( u8_cursor_block_array_index Index )
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal u8_cursor *
+Set( u8_cursor_block_array *Arr,
+  u8_cursor *Element,
+  u8_cursor_block_array_index Index )
+{
+  u8_cursor *Result = {};
+  if (Index.Block)
+  {
+    u8_cursor *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
 RemoveUnordered( u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
 {

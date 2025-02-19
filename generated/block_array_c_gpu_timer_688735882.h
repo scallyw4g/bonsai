@@ -18,6 +18,23 @@ CS( gpu_timer_block_array_index Index )
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal gpu_timer *
+Set( gpu_timer_block_array *Arr,
+  gpu_timer *Element,
+  gpu_timer_block_array_index Index )
+{
+  gpu_timer *Result = {};
+  if (Index.Block)
+  {
+    gpu_timer *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
 RemoveUnordered( gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
 {

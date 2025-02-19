@@ -154,21 +154,6 @@ Count( octree_node_ptr_block_array *Arr)
 }
 
 link_internal octree_node_ptr 
-Set( octree_node_ptr_block_array *Arr,
-  octree_node_ptr Element,
-  octree_node_ptr_block_array_index Index )
-{
-  octree_node_ptr Result = {};
-  if (Index.Block)
-  {
-    Result = Index.Block->Elements[Index.ElementIndex];
-    Result = Element;
-  }
-
-  return Result;
-}
-
-link_internal octree_node_ptr 
 GetPtr(octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index)
 {
   octree_node_ptr Result = {};
@@ -236,6 +221,23 @@ link_internal cs
 CS( octree_node_ptr_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+}
+
+link_internal octree_node_ptr 
+Set( octree_node_ptr_block_array *Arr,
+  octree_node_ptr Element,
+  octree_node_ptr_block_array_index Index )
+{
+  octree_node_ptr Result = {};
+  if (Index.Block)
+  {
+    octree_node_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = Element;
+
+    Result = *Slot;
+  }
+
+  return Result;
 }
 
 link_internal void

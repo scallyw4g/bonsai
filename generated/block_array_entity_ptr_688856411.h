@@ -162,7 +162,7 @@ Set( entity_ptr_block_array *Arr,
   if (Index.Block)
   {
     Result = Index.Block->Elements[Index.ElementIndex];
-    Result = Element;
+    *Result = *Element;
   }
 
   return Result;
