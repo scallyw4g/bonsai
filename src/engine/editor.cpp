@@ -1,26 +1,3 @@
-// TODO(Jesse): Should these live somewhere else?  @engine_draw_file_nodes_helpers
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesFilteredHelper(file_traversal_node Node, u64 Params)
-{
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params *HelperParams = ReinterpretCast(filtered_file_traversal_helper_params*, Params);
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, HelperParams);
-  return Result;
-}
-
-// @engine_draw_file_nodes_helpers
-link_internal b32 DefaultFileFilter(file_traversal_node *Node) { return True; }
-
-// @engine_draw_file_nodes_helpers
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesHelper(file_traversal_node Node, u64 Window)
-{
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params HelperParams = {(window_layout*)Window, DefaultFileFilter};
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, &HelperParams);
-  return Result;
-}
-
 
 link_internal b32
 InitEditor(level_editor *Editor)
@@ -355,6 +332,11 @@ poof(do_editor_ui_for_compound_type(brush_layer))
 poof(do_editor_ui_for_compound_type(layered_brush))
 #include <generated/do_editor_ui_for_compound_type_layered_brush.h>
 
+poof(do_editor_ui_for_compound_type(world_edit_brush))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
+
+poof(do_editor_ui_for_compound_type(world_edit))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -2862,10 +2844,12 @@ DoWorldEditor(engine_resources *Engine)
         Edit->Brush = Editor->CurrentBrush;
         UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
       }
-
       PushNewRow(Ui);
 
+      DoEditorUi(Ui, &AllEditsWindow, Edit, {});
+      PushNewRow(Ui);
     }
+
     PushWindowEnd(Ui, &AllEditsWindow);
 
   }

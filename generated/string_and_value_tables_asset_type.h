@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:316:0
+// src/engine/editor.cpp:293:0
 
 link_internal counted_string
 ToStringPrefixless(asset_type Type)

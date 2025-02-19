@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:78:0
+// src/engine/editor.cpp:335:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle voronoi_noise_params", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -26,17 +26,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Threshold),
-        CSz("Threshold"),
-        Params
-        , 0.1f, 20.f );
+                        if (ToggleButton(Ui, CSz("v NameBuf[(256) + 1]"), CSz("> NameBuf[(256) + 1]"), UiId(Window, "toggle world_edit_brush char  NameBuf", Element->NameBuf), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, (256) + 1)
+        {
+                    DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
 
-
-
-
+           PushNewRow(Ui); 
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
 
 
 
@@ -45,10 +47,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->Period),
-        CSz("Period"),
+        Cast(world_edit_blend_mode*, &Element->Mode),
+        CSz("Mode"),
         Params
-        , 0.1f, 20.f );
+        );
 
 
 
@@ -60,10 +62,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Amplitude),
-        CSz("Amplitude"),
+        Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
+        CSz("Modifier"),
         Params
-        , 0.1f, 20.f );
+        );
 
 
 
@@ -71,13 +73,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
-            PushNewRow(Ui);
-
+      
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Squareness),
-        CSz("Squareness"),
+        Cast(u32*, &Element->Ordinal),
+        CSz("Ordinal"),
         Params
         );
 
@@ -92,18 +93,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->MaskChance),
-        CSz("MaskChance"),
+        Cast(layered_brush*, &Element->Layered),
+        CSz("Layered"),
         Params
         );
-
-
-
-
-
-
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

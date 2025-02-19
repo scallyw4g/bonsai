@@ -62,3 +62,4 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/terrain.h>
 #include <engine/level.h>
 
+#include <engine/util.h>
