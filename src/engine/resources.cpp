@@ -125,12 +125,18 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
+  CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ);
 
-  // NOTE(Jesse): The RendeQ flushes before it suspends, and at the time of this
-  // writing the application depends on this behavior.  Some render queue jobs
-  // have knowledge of who to call next (because we don't have a way of specifying
-  // the next next job when we submit one).  This makes it difficult to 
+  // NOTE(Jesse): The RendeQ flushes before it suspends, and at the time of
+  // this writing the application depends on this behavior.  Some render queue
+  // jobs have knowledge of who to call next (because we don't have a way of
+  // specifying the next next job when we submit one).  This makes it difficult
+  // to free resources that are only known to the jobs..
   CancelAllWorkQueueJobs(Plat, &Plat->RenderQ);
+
+  Assert(QueueIsEmpty(&Plat->HighPriority));
+  Assert(QueueIsEmpty(&Plat->LowPriority));
+  Assert(QueueIsEmpty(&Plat->WorldUpdateQ));
   Assert(QueueIsEmpty(&Plat->RenderQ));
 }
 
@@ -149,6 +155,7 @@ HardResetAssets(engine_resources *Engine)
 // NOTE(Jesse): This function soft-resets the engine to a state similar to that
 // at which it was when the game init routine was called.  This is useful when
 // resetting the game state.  For a more invasive 
+#if 0
 link_internal void
 SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
 {
@@ -158,7 +165,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   FreeOctreeChildren(Engine, &World->Root);
   if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); }
-  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion);
+  InitOctreeNode(World, &World->Root, {}, World->VisibleRegion, {});
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
@@ -168,6 +175,7 @@ SoftResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   HardResetAssets(Engine);
 }
+#endif
 
 
 
@@ -193,6 +201,11 @@ link_internal void
 HardResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
+
+  /* FreeOctreeChildren(Engine, &World->Root); */
+  /* if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); } */
+  /* InitOctreeNode(World, &World->Root, {}, World->VisibleRegion, {}); */
+
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);
 
@@ -205,13 +218,17 @@ HardResetWorld(engine_resources *Engine)
 }
 
 link_internal void
-HardResetEngine(engine_resources *Engine)
+HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  Info("Hard Reset Begin");
+
   CancelAllWorkQueueJobs(Engine);
 
   RangeIterator_t(u32, EntityIndex, TOTAL_ENTITY_COUNT)
   {
+    if ( (Flags&HardResetFlag_NoResetCamera) && Graphics->GameCamera.GhostId.Index == EntityIndex ) { continue; }
     Unspawn(EntityTable[EntityIndex]);
   }
 
@@ -223,10 +240,20 @@ HardResetEngine(engine_resources *Engine)
   HardResetWorld(Engine);
 
   // TODO(Jesse)(leak): This leaks the texture handles; make a HardResetEngineDebug()
+  Leak("?");
   VaporizeArena(Engine->EngineDebug.Memory);
   Engine->EngineDebug = {};
   Engine->EngineDebug.Memory = AllocateArena();
 
   HardResetAssets(Engine);
+
+  umm ReadbackJobCount = TotalElements(&Graphics->NoiseReadbackJobs);
+  RangeIterator_t(umm, JobIndex, ReadbackJobCount)
+  {
+    dummy_work_queue_entry_build_chunk_mesh_block_array_index I = ZerothIndex(&Graphics->NoiseReadbackJobs);
+    RemoveUnordered(&Graphics->NoiseReadbackJobs, I);
+  }
+
+  Info("Hard Reset End");
 }
 

@@ -73,8 +73,8 @@ HardResetEditor(level_editor *Editor)
   VaporizeArena(Editor->Memory);
 
   // NOTE(Jesse): There are some default values in noise params that we want to reset to
-  *Editor = {};
   /* Clear(Editor); */
+  *Editor = {};
 
   b32 Result = InitEditor(Editor);
   return Result;
@@ -3042,7 +3042,8 @@ DoLevelWindow(engine_resources *Engine)
 
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
-        SoftResetEngine(Engine);
+        /* SoftResetEngine(Engine); */
+        HardResetEngine(Engine);
 
         World->Center = LevelHeader.WorldCenter;
 

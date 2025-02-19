@@ -1141,7 +1141,7 @@ poof(hashtable(world_edit_brush))
 
 struct world_edit
 {
-  rect3cp Region;
+  rect3cp Region; // TODO(Jesse): Rename to bounds
   world_edit_brush *Brush;
 };
 

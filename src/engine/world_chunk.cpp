@@ -3499,11 +3499,26 @@ inline void
 QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit)
 {
   TIMED_FUNCTION();
+
+  Assert(Node->Chunk);
+  Assert(Node->Chunk->Dim.x);
   Assert( NotSet(Node->Chunk->Flags, Chunk_Queued) );
 
   ++TotalChunksQueued;
 
-/*   DebugLine("Queuing Chunk (%p)(%d, %d, %d)", Chunk, Chunk->WorldP.x, Chunk->WorldP.y, Chunk->WorldP.z); */
+  {
+    Assert(Node->Chunk->Dim.x == 64);
+    DebugLine("Queuing Chunk (%p)(%d) WorldP(%d, %d, %d) DimInChunks(%d, %d, %d) Dim(%d, %d, %d)", Node->Chunk, Node->Chunk->Flags,
+        Node->Chunk->WorldP.x,
+        Node->Chunk->WorldP.y,
+        Node->Chunk->WorldP.z,
+        Node->Chunk->DimInChunks.x,
+        Node->Chunk->DimInChunks.y,
+        Node->Chunk->DimInChunks.z,
+        Node->Chunk->Dim.x,
+        Node->Chunk->Dim.y,
+        Node->Chunk->Dim.z);
+  }
 
 #if 0
   work_queue_entry Entry = {};

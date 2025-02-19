@@ -13,7 +13,7 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
 
   memory_arena *OctreeMemory = AllocateArena(Megabytes(8));
   World->OctreeMemory = OctreeMemory;
-  DEBUG_REGISTER_ARENA(World->ChunkMemory, 0);
+  DEBUG_REGISTER_ARENA(World->OctreeMemory, 0);
 
   /* World->HashSize = (u32)(Volume(VisibleRegion)*4); */
   /* World->HashSize = WorldHashSize; */
@@ -30,20 +30,20 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   Assert(WorldChunkDim.y == WorldChunkDim.z);
 
 
-  InitOctreeNode(World, &World->Root, {}, VisibleRegion);
-  World->Root.Chunk = AllocateWorldChunk( {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
-  auto Engine = GetEngineResources();
-
   World->OctreeNodeFreelist.Memory = World->OctreeMemory;
 
   World->ChunkDim = WorldChunkDim;
   World->VisibleRegion = VisibleRegion;
   World->Center = Center;
 
+  // NOTE(Jesse): Has to come after World->ChunkDim is set
+  InitOctreeNode(World, &World->Root, {}, VisibleRegion, {});
+  World->Root.Chunk = AllocateWorldChunk( {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
+
   // NOTE(Jesse): We can use an unallocated queue here because we're not actually
   // gonna do anything with the results.. we just want to initialize the tree
   octree_node_priority_queue Queue = {};
-  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0,  World->OctreeMemory);
+  SplitOctreeNode_Recursive(GetEngineResources(), &Queue, &World->Root, 0,  World->OctreeMemory);
 
   return World;
 }
@@ -327,12 +327,26 @@ ContainsCameraGhost(world *World, entity **EntityTable, octree_node *Node, camer
 
 
 link_internal void
-InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks)
+InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_paged_list *PotentialEdits)
 {
   *Node = {};
   Node->Type = OctreeNodeType_Leaf;
   Node->WorldP = WorldP;
   Node->Resolution = DimInChunks;
+
+  rect3cp NodeBounds = GetBoundingBox(World, Node);
+
+  if (PotentialEdits)
+  {
+    Node->Edits.Memory = PotentialEdits->Memory;
+    IterateOver(PotentialEdits, Edit, EditIndex)
+    {
+      if (Intersect(World, &NodeBounds, &Edit->Region))
+      {
+        Push(&Node->Edits, &Edit);
+      }
+    }
+  }
 
   Assert(DimInChunks > V3i(0));
 }
@@ -812,7 +826,8 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
             octree_node *Child = GetOrAllocate(&World->OctreeNodeFreelist);
             NodeToSplit->Children[Index] = Child;
-            InitOctreeNode(World, Child, NodeToSplit->WorldP + RelWorldP, ChildDimInChunks);
+
+            InitOctreeNode(World, Child, NodeToSplit->WorldP + RelWorldP, ChildDimInChunks, &NodeToSplit->Edits);
           }
         }
 
