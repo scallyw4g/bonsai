@@ -287,6 +287,7 @@ main( s32 ArgCount, const char ** Args )
         EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
 
         HardResetEngine(EngineResources);
+        /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
 
         EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
         if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }

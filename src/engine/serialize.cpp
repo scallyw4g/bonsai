@@ -3,6 +3,8 @@
 link_internal u8_cursor_block_array
 BeginSerialization()
 {
+  Assert(Global_SerializeTypeTableArena == 0);
+
   Global_SerializeTypeTableArena = AllocateArena();
   Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
 

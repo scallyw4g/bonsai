@@ -202,9 +202,7 @@ HardResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
 
-  /* FreeOctreeChildren(Engine, &World->Root); */
-  /* if (World->Root.Chunk) { FreeWorldChunk(Engine, World->Root.Chunk); } */
-  /* InitOctreeNode(World, &World->Root, {}, World->VisibleRegion, {}); */
+  Engine->Graphics.NoiseFinalizeJobsPending = 0;
 
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);

@@ -2,7 +2,7 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out uint Output;
+out v4 Output;
 
 ///
 //
@@ -680,19 +680,19 @@ void main()
       NoiseValue += NoiseToTile;
     }
 #endif
-
-
-
   }
 
   //
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  ColorValue = min(ColorValue, v3(1.f));
-  uint PackedColor = PackRGB(ColorValue);
-  /* uint PackedColor = 3543u; */
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
 
-  Output = (SolidBit << 15) | PackedColor;
+  /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
+  /* ColorValue = min(ColorValue, v3(1.f)); */
+  /* uint PackedColor = PackRGB(ColorValue); */
+  /* /1* uint PackedColor = 3543u; *1/ */
+
+  /* Output = (SolidBit << 15) | PackedColor; */
 }

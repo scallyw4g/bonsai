@@ -2,7 +2,7 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out uint Output;
+out v4 Output;
 /* layout (location = 0) out float Output; */
 
 
@@ -182,9 +182,6 @@ void main()
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = PackRGB(ColorValue);
-  /* uint PackedColor = 3543u; */
-
-  Output = (SolidBit << 15) | PackedColor;
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
 }

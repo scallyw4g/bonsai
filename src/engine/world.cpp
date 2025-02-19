@@ -1042,6 +1042,7 @@ MaintainWorldOctree(engine_resources *Engine)
   // ways (editing), which can cause (MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued) to be negative
   s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
   Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
+  /* DEBUG_VALUE_u32(MaxToQueueThisFrame); */
 
 /*   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
 /*   DEBUG_VALUE_u32(u32(MaxToQueueThisFrame)); */

@@ -98,8 +98,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
     CancelAllWorkQueueJobs(Resources);
     Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
 
-    Resources->Graphics.NoiseFinalizeJobsPending = 0;
-
     HardResetWorld(Resources);
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }

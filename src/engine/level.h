@@ -12,4 +12,6 @@ struct level_header
   camera Camera;
 
   render_settings RenderSettings;
+
+  char TerrainGenShader[NameBuf_Len];
 };

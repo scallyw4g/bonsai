@@ -57,6 +57,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->RenderSettings, Memory);
 
+
+
+
+
+            {
+        umm Count = (256);
+
+    Result &= Deserialize(Bytes, Element->TerrainGenShader, Memory, Count);
+  }
+
   
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

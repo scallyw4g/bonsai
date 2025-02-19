@@ -23,19 +23,6 @@ InitEditor(level_editor *Editor)
 link_internal b32
 HardResetEditor(level_editor *Editor)
 {
-  // TODO(Jesse)(leak): Delete textures allocated to visualize layered noise brushes?
-  // @hard_reset_texture_memory
-
-  /* if (Editor->Shape.Preview.Thumbnail.Texture.ID) */
-  /* { */
-  /*   DeleteTexture(&Editor->Shape.Preview.Thumbnail.Texture); */
-  /* } */
-
-  /* if (Editor->Noise.Preview.Thumbnail.Texture.ID) */
-  /* { */
-  /*   DeleteTexture(&Editor->Noise.Preview.Thumbnail.Texture); */
-  /* } */
-
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
   {
     DeleteTexture(&Thumb->Texture);
@@ -397,6 +384,15 @@ poof(do_editor_ui_for_compound_type(lighting_render_group))
 poof(do_editor_ui_for_compound_type(g_buffer_render_group))
 #include <generated/do_editor_ui_for_compound_type_g_buffer_render_group.h>
 
+poof(do_editor_ui_for_compound_type(terrain_gen_render_context))
+#include <generated/do_editor_ui_for_compound_type_struct_terrain_gen_render_context.h>
+
+poof(do_editor_ui_for_compound_type(terrain_finalize_render_context))
+#include <generated/do_editor_ui_for_compound_type_struct_terrain_finalize_render_context.h>
+  
+poof(do_editor_ui_for_compound_type(world_edit_render_context))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit_render_context.h>
+
 poof(do_editor_ui_for_compound_type(graphics))
 #include <generated/do_editor_ui_for_compound_type_graphics.h>
 
@@ -426,7 +422,6 @@ poof(do_editor_ui_for_compound_type(graphics_settings))
 
 poof(do_editor_ui_for_compound_type(engine_settings))
 #include <generated/do_editor_ui_for_compound_type_engine_settings.h>
-
 
 poof(do_editor_ui_for_compound_type(engine_resources))
 #include <generated/do_editor_ui_for_compound_type_engine_resources.h>
@@ -2942,6 +2937,9 @@ DoLevelWindow(engine_resources *Engine)
 
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
+  //
+  // Level Export
+  //
   PushWindowStart(Ui, &Window);
   PushTableStart(Ui);
     if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
@@ -2956,12 +2954,17 @@ DoLevelWindow(engine_resources *Engine)
       }
 
       level_header Header = {};
+
       Header.WorldCenter   = World->Center;
       Header.VisibleRegion = World->VisibleRegion;
       Header.Camera = *Camera;
       Header.RenderSettings = Graphics->Settings;
       Header.EntityCount = EntityCount;
       Header.EditCount = u32(TotalElements(&Editor->WorldEdits));
+
+      cs TerrainFragShaderFilename = Engine->Graphics.TerrainGenRC.Program.FragSourceFilename;
+      cs Dest = CS(Header.TerrainGenShader, NameBuf_Len);
+      CopyString(&TerrainFragShaderFilename, &Dest);
 
       Serialize(&OutputStream, &Header);
 
@@ -3010,7 +3013,9 @@ DoLevelWindow(engine_resources *Engine)
   PushTableEnd(Ui);
   PushNewRow(Ui);
 
-  // Import
+  //
+  // Level Import
+  //
   if (ClickedNode.Tag)
   {
     cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
@@ -3020,7 +3025,7 @@ DoLevelWindow(engine_resources *Engine)
     {
       level_header LevelHeader = {};
 
-
+      Leak("Leaking level_header because we need to hold the level_header::TerrainGenShader such that we can reload the shader next frame ..");
       if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
       {
         u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
@@ -3039,14 +3044,20 @@ DoLevelWindow(engine_resources *Engine)
 
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
-        /* SoftResetEngine(Engine); */
+
+        Graphics->Settings   = LevelHeader.RenderSettings;
+       *Graphics->Camera     = LevelHeader.Camera;
+        World->VisibleRegion = LevelHeader.VisibleRegion;
+        World->Center        = LevelHeader.WorldCenter;
+
+        /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
+
+        Engine->Graphics.TerrainGenRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainGenShader, Thread->PermMemory);
+        Engine->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+
+        // Must come after we fill out the VisibleRegion so the root octree node
+        // gets initialized to the correct size
         HardResetEngine(Engine);
-
-        World->Center = LevelHeader.WorldCenter;
-
-        Graphics->Settings = LevelHeader.RenderSettings;
-        *Graphics->Camera = LevelHeader.Camera;
-        /* World->VisibleRegion = LevelHeader.VisibleRegion; */
 
         /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
         s32 ChunkCount = 0;
@@ -3063,8 +3074,9 @@ DoLevelWindow(engine_resources *Engine)
           {
             FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
           }
-          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
         }
+
+        /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
 
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 

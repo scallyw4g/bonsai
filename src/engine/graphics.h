@@ -134,9 +134,9 @@ struct graphics
   v3 MaxClipP_worldspace;
 
   // TODO(Jesse): None of these need to be pointers..
-  g_buffer_render_group  *gBuffer;
-  ao_render_group        *AoGroup;
-  shadow_render_group    *SG;
+  g_buffer_render_group *gBuffer;
+  ao_render_group       *AoGroup;
+  shadow_render_group   *SG;
 
 
   // NOTE(Jesse): This is the CPU-side color palette.  It is the source of truth.

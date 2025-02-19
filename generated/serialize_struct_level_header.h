@@ -71,6 +71,17 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
 
                             Result &= Serialize(Bytes, &Element->RenderSettings); // default
 
+
+
+
+
+
+                        {
+            umm ThisCount = (256);
+
+      Result &= Serialize(Bytes, Element->TerrainGenShader, ThisCount);
+    }
+
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();

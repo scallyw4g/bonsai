@@ -3508,6 +3508,7 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   ++TotalChunksQueued;
 
+#if 0
   {
     Assert(Node->Chunk->Dim.x == 64);
     DebugLine("Queuing Chunk (%p)(%d) WorldP(%d, %d, %d) DimInChunks(%d, %d, %d) Dim(%d, %d, %d)", Node->Chunk, Node->Chunk->Flags,
@@ -3521,6 +3522,7 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
         Node->Chunk->Dim.y,
         Node->Chunk->Dim.z);
   }
+#endif
 
 #if 0
   work_queue_entry Entry = {};

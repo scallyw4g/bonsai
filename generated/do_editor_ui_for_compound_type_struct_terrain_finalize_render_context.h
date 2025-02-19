@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:83:0
+// src/engine/editor.cpp:390:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle ui_id", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_finalize_render_context", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -29,8 +29,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->_Reserved),
-        CSz("_Reserved"),
+        Cast(shader*, &Element->Program),
+        CSz("Program"),
         Params
         );
 
@@ -40,13 +40,29 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
-            PushNewRow(Ui);
+      
+                  if (ToggleButton(Ui, CSz("v Uniforms[1]"), CSz("> Uniforms[1]"), UiId(Window, "toggle terrain_finalize_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+      {
+        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+        PushNewRow(Ui);
+        RangeIterator(ArrayIndex, 1)
+        {
+                    DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
 
+          
+        }
+        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+      }
+      PushNewRow(Ui);
+
+
+
+      
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->WindowBits),
-        CSz("WindowBits"),
+        Cast(texture*, &Element->DestTexture),
+        CSz("DestTexture"),
         Params
         );
 
@@ -56,13 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
-            PushNewRow(Ui);
-
+      
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->InteractionBits),
-        CSz("InteractionBits"),
+        Cast(framebuffer*, &Element->FBO),
+        CSz("FBO"),
         Params
         );
 
@@ -72,23 +87,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
-            PushNewRow(Ui);
-
+      
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->ElementBits),
-        CSz("ElementBits"),
+        Cast(texture*, Element->InputTex),
+        CSz("InputTex"),
         Params
         );
-
-
-
-
-
-
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }
