@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:268:0
+// src/engine/work_queue.h:270:0
 
 
 link_internal work_queue_entry
@@ -72,19 +72,6 @@ WorkQueueEntry( work_queue_entry_init_asset A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_asset,
     .work_queue_entry_init_asset = A,
-
-    
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry( work_queue_entry_update_world_region A  )
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = A,
 
     
 

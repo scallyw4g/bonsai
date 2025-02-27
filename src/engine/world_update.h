@@ -75,13 +75,13 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 
 
 
-struct work_queue_entry_update_world_region;
+/* struct work_queue_entry_update_world_region; */
 
-link_internal void
-QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_blend_mode  Mode, world_edit_blend_mode_modifier  Modifier, world_edit_shape *Shape, v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory );
+/* link_internal void */
+/* QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_blend_mode  Mode, world_edit_blend_mode_modifier  Modifier, /1* world_edit_shape *Shape, *1/ v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory ); */
 
-link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False);
+/* link_internal void */
+/* ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False); */
 
-link_internal void
-DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job);
+/* link_internal void */
+/* DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job); */

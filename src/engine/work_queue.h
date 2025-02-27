@@ -89,6 +89,7 @@ struct work_queue_entry_rebuild_mesh
 
 
 
+#if 0
 struct work_queue_entry_update_world_region
 {
   world_edit_brush_constraints Brush;
@@ -104,6 +105,7 @@ struct work_queue_entry_update_world_region
   world_chunk **DestChunkBuffer;
   u32 ChunkCount;
 };
+#endif
 
 struct asset;
 struct work_queue_entry_init_asset
@@ -243,7 +245,7 @@ poof(
     work_queue_entry_copy_buffer_set
     work_queue_entry_copy_buffer_ref
     work_queue_entry_init_asset
-    work_queue_entry_update_world_region
+    /* work_queue_entry_update_world_region */
     work_queue_entry_rebuild_mesh
     work_queue_entry_sim_particle_system
 

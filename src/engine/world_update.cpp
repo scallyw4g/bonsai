@@ -42,6 +42,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
           InvalidCodePath();
         } break;
 
+#if 0
         case type_work_queue_entry_update_world_region:
         {
           work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
@@ -61,6 +62,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
 
         } break;
+#endif
 
       }
 
@@ -95,7 +97,7 @@ link_internal void
 QueueWorldUpdateForRegion( engine_resources *Engine,
                             world_edit_blend_mode  Mode,
                    world_edit_blend_mode_modifier  Modifier,
-                           world_edit_shape *Shape,
+                           /* world_edit_shape *Shape, */
                                          v3  HSVColor,
                                         b32  PersistWhitespace,
                                memory_arena *Memory )
@@ -903,12 +905,12 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
 
 
+#if 0
 link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert /* = False */, b32 PersistWhitespace /* = False */ )
 {
   world *World = GetWorld();
   NotImplemented;
-#if 0
 
   random_series ColorEntropy = {4654376543246};
 
@@ -1059,9 +1061,10 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
     }
   }
 
-#endif
 }
+#endif
 
+#if 0
 link_internal void
 DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job)
 {
@@ -1376,4 +1379,5 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     }
   }
 }
+#endif
 

@@ -11,15 +11,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name,
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("None"), UiId(Window, "enum ShapeType_None", Element), Params))
-    {
-            *Element = ShapeType_None;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Sphere"), UiId(Window, "enum ShapeType_Sphere", Element), Params))
     {
             *Element = ShapeType_Sphere;
@@ -32,6 +23,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name,
     if (Button(Ui, CSz("Rect"), UiId(Window, "enum ShapeType_Rect", Element), Params))
     {
             *Element = ShapeType_Rect;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Cylinder"), UiId(Window, "enum ShapeType_Cylinder", Element), Params))
+    {
+            *Element = ShapeType_Cylinder;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

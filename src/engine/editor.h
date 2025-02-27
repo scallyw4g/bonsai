@@ -748,21 +748,21 @@ poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 
 
 
-enum world_update_op_shape_type
-{
-  type_world_update_op_shape_params_noop,
+/* enum world_update_op_shape_type */
+/* { */
+/*   type_world_update_op_shape_params_noop, */
 
-  type_world_update_op_shape_params_sphere,
-  type_world_update_op_shape_params_rect,
-  type_world_update_op_shape_params_cylinder,
-  type_world_update_op_shape_params_asset,
-  type_world_update_op_shape_params_chunk_data,
+/*   type_world_update_op_shape_params_sphere, */
+/*   type_world_update_op_shape_params_rect, */
+/*   type_world_update_op_shape_params_cylinder, */
+/*   type_world_update_op_shape_params_asset, */
+/*   type_world_update_op_shape_params_chunk_data, */
 
-  type_world_update_op_shape_params_count,
-};
+/*   type_world_update_op_shape_params_count, */
+/* }; */
 
-poof(string_and_value_tables(world_update_op_shape_type))
-#include <generated/string_and_value_tables_world_update_op_shape_type.h>
+/* poof(string_and_value_tables(world_update_op_shape_type)) */
+/* #include <generated/string_and_value_tables_world_update_op_shape_type.h> */
 
 
 struct world_update_op_shape_params_rect
@@ -791,6 +791,7 @@ struct world_update_op_shape_params_sphere
   f32 Radius = 10.f; poof(@ui_disable)
 };
 
+#if 0
 struct world_edit_shape
 {
   world_update_op_shape_type Type;
@@ -823,6 +824,7 @@ struct world_edit_brush_constraints
 
 poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 #include <generated/do_editor_ui_for_compound_type_world_edit_brush.h>
+#endif
 
 
 
@@ -834,19 +836,9 @@ poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 
 enum shape_type
 {
-  // NOTE(Jesse): Having this none value is kinda janky; I'd prefer to not for
-  // this enum, but since we have to overlap with type_world_update_op_shape_params
-  // we kinda have to have it (so that the none value draws if we accidentally set it to 0.
-  //
-  // type_world_update_op_shape_params doesn't strictly require a 0 value,
-  // but it's really nice to have the assertion in DoWorldUpdate
-  //
-  // Once this code matures a bit we can probably take this _None value
-  // out.  It's strictly so we get a visual trigger in the UI.
-  //
-  ShapeType_None   = type_world_update_op_shape_params_noop,
-  ShapeType_Sphere = type_world_update_op_shape_params_sphere,
-  ShapeType_Rect   = type_world_update_op_shape_params_rect,
+  ShapeType_Sphere,
+  ShapeType_Rect,
+  ShapeType_Cylinder,
 };
 poof(string_and_value_tables(shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
@@ -1261,8 +1253,8 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
 link_internal v3
 GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier);
 
-link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);
+/* link_internal void */
+/* ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset); */
 
 link_internal v3i
 GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);

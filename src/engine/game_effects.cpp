@@ -295,12 +295,14 @@ DoDig( engine_resources *Resources, canonical_position PickCP, f32 Radius, f32 D
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, Depth);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, Depth);
 
+#if 0
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, {}, {}, Resources->WorldUpdateMemory);
+#endif
   NotImplemented;
-  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default, &Shape, {}, {}, Resources->WorldUpdateMemory); */
 }
 
 link_internal void
@@ -311,12 +313,14 @@ DoIceBlock( engine_resources *Resources, canonical_position PickCP, f32 Radius, 
   v3 MinP = SimSpaceMinCenterP - V3(Radius, Radius, 0.f);
   v3 MaxP = SimSpaceMinCenterP + V3(Radius, Radius, 3.f*Radius);
 
+#if 0
   world_edit_shape Shape = {
     .Type = type_world_update_op_shape_params_rect,
     .world_update_op_shape_params_rect.Region = RectMinMax(MinP,MaxP),
   };
+  QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, HSV_ICE_BLUE, {}, Resources->WorldUpdateMemory);
+#endif
   NotImplemented;
-  /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, HSV_ICE_BLUE, {}, Resources->WorldUpdateMemory); */
 }
 
 link_internal void
@@ -324,11 +328,11 @@ DoSplotion( engine_resources *Resources, cp PickCP, f32 Radius, random_series *E
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  world_edit_shape Shape = {
-    .Type = type_world_update_op_shape_params_sphere,
-    .world_update_op_shape_params_sphere.Radius = Radius,
-    .world_update_op_shape_params_sphere.Location = PickCP,
-  };
+  /* world_edit_shape Shape = { */
+  /*   .Type = type_world_update_op_shape_params_sphere, */
+  /*   .world_update_op_shape_params_sphere.Radius = Radius, */
+  /*   .world_update_op_shape_params_sphere.Location = PickCP, */
+  /* }; */
   NotImplemented;
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldEdit_Modifier_Flood, &Shape, HSV_DARK_GREY, {}, Resources->WorldUpdateMemory); */
   /* QueueWorldUpdateForRegion(Resources, WorldEdit_Mode_Remove, WorldUpdateModeModifier_None, &Shape, DARK_GREY, Resources->WorldUpdateMemory); */

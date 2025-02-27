@@ -26,7 +26,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
         case type_work_queue_entry_copy_buffer_set:
         case type_work_queue_entry_copy_buffer_ref:
         case type_work_queue_entry_init_asset:
-        case type_work_queue_entry_update_world_region:
+        /* case type_work_queue_entry_update_world_region: */
         case type_work_queue_entry_rebuild_mesh:
         case type_work_queue_entry_finalize_noise_values:
         case type_work_queue_entry_build_chunk_mesh:

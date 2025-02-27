@@ -501,6 +501,7 @@ GetMax(v3 *SelectionRegion)
   return Result;
 }
 
+#if 0
 link_internal void
 ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier)
 {
@@ -511,6 +512,7 @@ ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b
 
   QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, HSVColor, PersistWhitespace, Engine->WorldUpdateMemory);
 }
+#endif
 
 
 link_internal v3
@@ -907,7 +909,7 @@ GetShapeDim(shape_layer *Layer)
   v3i Result = {};
   switch (Layer->Type)
   {
-    case ShapeType_None: { } break;
+    case ShapeType_Cylinder: { NotImplemented; } break;
     case ShapeType_Sphere:
     {
       // NOTE(Jesse): This can't have a +1 because that dialates it outside the selection region.
@@ -940,7 +942,7 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
       shape_layer *Shape = &Layer->Settings.Shape;
       switch (Shape->Type)
       {
-        case ShapeType_None: { } break;
+        case ShapeType_Cylinder: { NotImplemented; } break;
         case ShapeType_Sphere:
         {
           Request += V3i(Shape->Sphere.Radius*2.f);
@@ -1026,7 +1028,6 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
         shape_layer *Shape = &Settings->Shape;
         switch (Shape->Type)
         {
-          case ShapeType_None: {} break;
 
           case ShapeType_Rect:
           {
@@ -1045,6 +1046,7 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
           } break;
 
+          case ShapeType_Cylinder: { NotImplemented; } break;
           case ShapeType_Sphere:
           {
             // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
@@ -1057,9 +1059,10 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
 
         if (LengthSq(GetShapeDim(Shape)) > 0)
         {
-          ApplyBrushLayer(Engine, Layer, Preview, Chunk, Settings->Offset.Min);
-          FinalizeChunkInitialization(Chunk);
-          QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
+          NotImplemented;
+          /* ApplyBrushLayer(Engine, Layer, Preview, Chunk, Settings->Offset.Min); */
+          /* FinalizeChunkInitialization(Chunk); */
+          /* QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk); */
         }
 
       } break;
@@ -1137,13 +1140,12 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
   v3 SelectionDim = GetDim(GetSelectionRect(World, Editor));
   switch (Layer->Type)
   {
-    case ShapeType_None: { } break;
-
     case ShapeType_Rect:
     {
       DoEditorUi(Ui, Window, &Layer->Rect, CSz(""));
     } break;
 
+    case ShapeType_Cylinder: { NotImplemented; } break;
     case ShapeType_Sphere:
     {
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz(""));
@@ -1261,6 +1263,7 @@ DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, window_lay
   CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
 }
 
+#if 0
 link_internal void
 ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset)
 {
@@ -1285,8 +1288,7 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
 
         switch (Settings->Shape.Type)
         {
-          case ShapeType_None: { } break;
-
+          case ShapeType_Cylinder: { NotImplemented; } break;
           case ShapeType_Sphere:
           {
             Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
@@ -1328,13 +1330,17 @@ ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *P
     if (Iterations > 1) { Info("%d", Iterations); }
     RangeIterator(IterIndex, Iterations)
     {
+      NotImplemented;
+#if 0
       work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, HSVtoRGB(Layer->Settings.HSVColor), {}, {}, {}, {}, 0);
       ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
       DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Occupancy, DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
+#endif
     }
   }
 
 }
+#endif
 
 link_internal v3i
 GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim)
@@ -2666,7 +2672,8 @@ DoWorldEditor(engine_resources *Engine)
             aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
             if (Input->LMB.Clicked && IntersectionResult.Face)
             {
-#if 1
+              NotImplemented;
+#if 0
               world_update_op_shape_params_asset AssetUpdateShape =
               {
                 SelectedEntity->AssetId,

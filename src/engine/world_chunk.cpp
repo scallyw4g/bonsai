@@ -3741,6 +3741,7 @@ WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u16 *NoiseData, v3
 }
 
 
+#if 0
 link_internal work_queue_entry_update_world_region
 WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
                                 world_edit_blend_mode_modifier Modifier,
@@ -3770,6 +3771,7 @@ WorkQueueEntryUpdateWorldRegion(world_edit_blend_mode Mode,
   };
   return Result;
 }
+#endif
 
 link_internal work_queue_entry_copy_buffer_ref
 WorkQueueEntryCopyBufferRef(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer* Dest, world_position ChunkP, camera* Camera, chunk_dimension WorldChunkDim)

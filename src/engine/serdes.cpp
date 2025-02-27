@@ -435,8 +435,8 @@ poof(serdes_struct(brush_settings))
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 
-poof(serdes_dunion(world_edit_shape))
-#include <generated/serdes_world_edit_shape.h>
+/* poof(serdes_dunion(world_edit_shape)) */
+/* #include <generated/serdes_world_edit_shape.h> */
 
 poof(serdes_struct(layered_brush))
 #include <generated/serdes_struct_layered_brush.h>

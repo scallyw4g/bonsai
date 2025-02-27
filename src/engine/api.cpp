@@ -660,7 +660,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-    InvalidCase(type_work_queue_entry_update_world_region);
+    /* InvalidCase(type_work_queue_entry_update_world_region); */
 
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
