@@ -898,6 +898,8 @@ enum brush_layer_type
   BrushLayerType_Shape,
 };
 
+poof(string_and_value_tables(brush_layer_type))
+#include <generated/string_and_value_tables_enum.h>
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
@@ -1190,6 +1192,8 @@ struct level_editor
   world_edit_brush_hashtable LoadedBrushes;
 
   world_edit *CurrentEdit;
+  world_edit *HotEdit;
+
   world_edit_brush *CurrentBrush;
 };
 

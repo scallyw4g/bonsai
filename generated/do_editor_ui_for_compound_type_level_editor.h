@@ -300,6 +300,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit*, Element->HotEdit),
+        CSz("HotEdit"),
+        Params
+        );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_brush*, Element->CurrentBrush),
         CSz("CurrentBrush"),
         Params

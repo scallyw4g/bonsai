@@ -10,7 +10,7 @@ struct world_chunk;
 #define VERTEX_TRANS_EMISS_LAYOUT_LOCATION 3
 
 
-#define DEFAULT_LINE_THICKNESS (0.1f)
+#define DEFAULT_LINE_THICKNESS (0.3f)
 
 #define SSAO_KERNEL_SIZE 32
 struct ao_render_group

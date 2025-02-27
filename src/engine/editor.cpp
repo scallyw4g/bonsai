@@ -1417,6 +1417,28 @@ NewBrush(world_edit_brush *Brush)
   CheckSettingsChanged(&Brush->Layered);
 }
 
+link_internal cs
+GetLayerUiText(brush_layer *Layer, memory_arena *TempMem)
+{
+  cs LayerType = ToStringPrefixless(Layer->Settings.Type);
+  cs SubType = {};
+  switch (Layer->Settings.Type)
+  {
+    case BrushLayerType_Noise: { SubType = ToStringPrefixless(Layer->Settings.Noise.Type); } break;
+    case BrushLayerType_Shape: { SubType = ToStringPrefixless(Layer->Settings.Shape.Type); } break;
+  }
+
+  return FSz("%S(%S)", LayerType, SubType);
+}
+
+link_internal void
+DoColorSwatch(renderer_2d *Ui, v2 QuadDim, v3 RGB)
+{
+  ui_style Style = FlatUiStyle(RGB);
+  PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
+  PushNewRow(Ui);
+}
+
 link_internal void
 DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
@@ -1569,7 +1591,8 @@ DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, win
         brush_layer *Layer = Layers + LayerIndex;
 
         ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
-        if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
+        cs LayerDetails = GetLayerUiText(Layer, GetTranArena());
+        if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
         {
           if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
           {
@@ -1596,6 +1619,10 @@ DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, win
           }
 
           DoSettingsForBrushLayer(Engine, Layer, BrushSettingsWindow);
+        }
+        else
+        {
+          DoColorSwatch(Ui, V2(20), HSVtoRGB(Layer->Settings.HSVColor));
         }
 
         if (IsNewBrush && LayerIndex == 0)
@@ -2193,9 +2220,7 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
   if (ShowColorSwatch)
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
-    ui_style Style = FlatUiStyle(RGB);
-    PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
-    PushNewRow(Ui);
+    DoColorSwatch(Ui, QuadDim, RGB);
   }
 
   cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
@@ -2690,23 +2715,6 @@ DoWorldEditor(engine_resources *Engine)
   // there's a frame of lag.
   /* DoWorldEditSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
 
-  {
-    IterateOver(&Editor->WorldEdits, Edit, EditIndex)
-    {
-      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
-      random_series S = {u64(Edit)};
-      v3 BaseColor = RandomV3Unilateral(&S);
-
-      f32 Size = DEFAULT_LINE_THICKNESS;
-      if (Edit == Editor->CurrentEdit)
-      {
-        Size = 3.f*DEFAULT_LINE_THICKNESS;
-      }
-
-      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
-    }
-  }
-
 
 
   //
@@ -2861,6 +2869,10 @@ DoWorldEditor(engine_resources *Engine)
           Editor->CurrentBrush = Edit->Brush;
         }
       }
+      if (Hover(Ui, &EditSelectButton))
+      {
+        Editor->HotEdit = Edit;
+      }
 
       if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
       {
@@ -2900,6 +2912,30 @@ DoWorldEditor(engine_resources *Engine)
     /* v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) ); */
     v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Additive );
     DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
+  }
+
+
+  {
+    IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+    {
+      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+      random_series S = {u64(Edit)};
+      v3 BaseColor = RandomV3Unilateral(&S);
+
+      f32 Size = DEFAULT_LINE_THICKNESS;
+      if (Edit == Editor->CurrentEdit)
+      {
+        Size = 3.f*DEFAULT_LINE_THICKNESS;
+      }
+
+      if (Edit == Editor->HotEdit)
+      {
+        Size = 5.f*DEFAULT_LINE_THICKNESS;
+      }
+
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+    }
+    Editor->HotEdit = 0;
   }
 }
 
