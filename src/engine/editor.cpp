@@ -2690,19 +2690,21 @@ DoWorldEditor(engine_resources *Engine)
   // there's a frame of lag.
   /* DoWorldEditSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
 
-  IterateOver(&Editor->WorldEdits, Edit, EditIndex)
   {
-    auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
-    random_series S = {u64(Edit)};
-    v3 BaseColor = RandomV3Unilateral(&S);
-
-    f32 Size = 1.f;
-    if (Edit == Editor->CurrentEdit)
+    IterateOver(&Editor->WorldEdits, Edit, EditIndex)
     {
-      Size = 3.f;
-    }
+      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+      random_series S = {u64(Edit)};
+      v3 BaseColor = RandomV3Unilateral(&S);
 
-    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+      f32 Size = DEFAULT_LINE_THICKNESS;
+      if (Edit == Editor->CurrentEdit)
+      {
+        Size = 3.f*DEFAULT_LINE_THICKNESS;
+      }
+
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+    }
   }
 
 
@@ -2806,12 +2808,23 @@ DoWorldEditor(engine_resources *Engine)
 
       // NOTE(Jesse): Must come after the settings window draws because the
       // settings window detects and initializes new brushes
-      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentEdit)
+      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
       {
-        b32 SettingsChanged = CheckSettingsChanged(Editor->CurrentEdit);
-        if (SettingsChanged || Editor->Selection.Changed)
+        if (Editor->Selection.Changed && Editor->CurrentEdit)
         {
           UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+        }
+
+        b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
+        if (SettingsChanged)
+        {
+          IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+          {
+            if (Edit->Brush == Editor->CurrentBrush)
+            {
+              UpdateWorldEdit(Engine, Edit, Editor->Selection.Region, GetTranArena());
+            }
+          }
         }
       }
     }
@@ -2835,7 +2848,8 @@ DoWorldEditor(engine_resources *Engine)
         PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
       }
 
-      if (Button(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit)))
+      auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit));
+      if (Clicked(Ui, &EditSelectButton))
       {
         Editor->Selection.Clicks = 2;
         Editor->Selection.Region = Edit->Region;

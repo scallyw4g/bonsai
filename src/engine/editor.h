@@ -754,6 +754,7 @@ enum world_update_op_shape_type
 
   type_world_update_op_shape_params_sphere,
   type_world_update_op_shape_params_rect,
+  type_world_update_op_shape_params_cylinder,
   type_world_update_op_shape_params_asset,
   type_world_update_op_shape_params_chunk_data,
 

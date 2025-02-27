@@ -102,6 +102,8 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
 {
   TIMED_FUNCTION();
 
+  NotImplemented;
+#if 0
   // TODO(Jesse): Should we just remove the paramter?  Or do we sometimes not pass this?
   Assert(Memory == Engine->WorldUpdateMemory);
 
@@ -243,6 +245,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
     };
     PushWorkQueueEntry(&Plat->WorldUpdateQ, &Entry);
   }
+#endif
 }
 
 link_internal u32
