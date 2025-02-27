@@ -1,4 +1,4 @@
-// src/engine/editor.h:885:0
+// src/engine/editor.h:886:0
 
 Live->Type = Stored->Type;
 

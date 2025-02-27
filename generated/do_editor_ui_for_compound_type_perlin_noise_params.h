@@ -32,7 +32,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
         Cast(r32*, &Element->Threshold),
         CSz("Threshold"),
         Params
-        , 0.1f, 20.f );
+        , 0.f,   1.f );
 
 
 

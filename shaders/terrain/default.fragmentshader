@@ -230,7 +230,7 @@ void main()
   //
   {
     v3 Period = V3(100.f);
-    float Amplitude = 200.f;
+    float Amplitude = 3.f;
     f32 StartingZDepth = 400.f;
     s32 Octaves = 1;
 
@@ -238,30 +238,26 @@ void main()
 
 
     v3 deriv = v3(0.f);
-    /* f32 warp = gradient_noise(Basis*1.001); */
     f32 warp = 0.f;
 
-    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
-    {
-      v3 xyz = Basis / (Period/Octave);
+    v3 xyz = Basis / Period;
 
-      /* f32 gn = white_noise(Basis); */
-      v4 gn = value_noise_derivs(xyz+warp);
-      /* v4 gn = gradient_noise_derivs(xyz+warp); */
-      /* v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f)); */
-      /* v4 gn = V4(0); */
+    v4 gn = gradient_noise_derivs(xyz+warp);
 
-      // NOTE(Jesse): yzw is not derivitives for voronoi_noise
-      deriv += gn.yzw;
-      /* deriv += v3(gn); */
-
-      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
-      /* NoiseValue = NoiseValue + (gn * (Amplitude/Octave)); */
-    }
-
+    deriv += gn.yzw;
     deriv = normalize(deriv);
-    ColorValue = abs(deriv);
-    /* ColorValue = v3(0.75f); */
+
+    NoiseValue = NoiseValue + (gn.x * Amplitude);
+
+    /* ColorValue = abs(deriv); */
+    /* f32 Tint = white_noise(xyz); */
+    f32 Tint = gradient_noise(xyz*60.f);
+    ColorValue = v3(0.1f, 0.55f + 0.1f*Tint, 0.1f);
+
+    f32 GrassMask = gradient_noise(xyz*10.f);
+    f32 Grass = white_noise(V3(xyz.xy,1.f))*3.f;
+
+    NoiseValue += abs(Grass*GrassMask);
 
     // Bias noise value to lower values as we get higher in z.
     // This creates a "plane" of terrain

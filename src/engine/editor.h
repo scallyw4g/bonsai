@@ -617,8 +617,9 @@ enum world_edit_brush_type
 
 enum world_edit_blend_mode
 {
-  WorldEdit_Mode_Additive,
-  WorldEdit_Mode_Subtractive,
+  WorldEdit_Mode_Additive,    // Adds layer value to noise value
+  WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
+  WorldEdit_Mode_Threshold,   // Sets noise value to layer value if above threshold
 
   WorldEdit_Mode_Disabled, // Useful for turning the layer off
 };
@@ -686,7 +687,7 @@ struct white_noise_params
 
 struct perlin_noise_params
 {
-  r32 Threshold = 3.f;               poof(@ui_value_range(0.1f, 20.f))
+  r32 Threshold = 0.f;               poof(@ui_value_range(0.f,   1.f))
   v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
 };
@@ -696,7 +697,7 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 1.5f;                 poof(@ui_value_range(0.1f, 20.f))
+  r32 Threshold = 0.0f;                 poof(@ui_value_range(0.f,   1.f))
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;                  poof(@ui_value_range(0.1f, 20.f))
 

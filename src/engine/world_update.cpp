@@ -519,6 +519,7 @@ link_internal void
 WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquared, v3i EditCenterP, voxel *NewVoxelValue)
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -557,6 +558,7 @@ WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquare
 #include <generated/rectalinear_iteration_pattern_920026661.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -624,6 +626,7 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -661,6 +664,7 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 #include <generated/rectalinear_iteration_pattern_530902269.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -669,6 +673,7 @@ WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state 
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   s32 TotalVoxels = Volume(UpdateDim);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -696,12 +701,14 @@ WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state 
 #include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
     } break;
   }
+#endif
 }
 
 link_internal void
 WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelValue)
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -726,6 +733,7 @@ WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelVal
 /* #include <generated/rectalinear_iteration_pattern_99934950.h> */
     /* } break; */
   }
+#endif
 }
 
 
@@ -744,6 +752,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -787,6 +796,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_992879728.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -799,6 +809,7 @@ WorldEdit_shape_chunk_data_Flood(
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
   s32 TotalVoxels = Volume(UpdateDim);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -850,6 +861,7 @@ WorldEdit_shape_chunk_data_Flood(
     /* } break; */
 
   }
+#endif
 }
 
 link_internal void
@@ -859,6 +871,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 
   voxel InvertV = { Params->Transparency, Params->Color };
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
@@ -881,6 +894,7 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_428632106.h>
     } break;
   }
+#endif
 }
 
 

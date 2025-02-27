@@ -311,12 +311,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
                     /* Edit->Type = WorldEdit_BrushType_Layered; */
-                    /* BindUniformByName(&WorldEditRC->Program, "BrushType", Edit->Type); */
                     TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                    layered_brush *Brush = &Edit->Brush->Layered;
-                    if (Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
+                    if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                     {
+                      layered_brush *Brush = &Edit->Brush->Layered;
                       RangeIterator(LayerIndex, Brush->LayerCount)
                       {
                         GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
@@ -330,28 +329,37 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
                         }
 
+                        BindUniformByName(&WorldEditRC->Program, "BrushType", Layer->Settings.Type);
                         BindUniformByName(&WorldEditRC->Program, "BlendMode", Layer->Settings.Mode);
                         BindUniformByName(&WorldEditRC->Program, "Modifiers", Layer->Settings.Modifier);
                         BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
+                        BindUniformByName(&WorldEditRC->Program, "Invert",    Layer->Settings.Invert);
 
                         switch (Layer->Settings.Type)
                         {
                           case BrushLayerType_Noise:
                           {
                             noise_layer *Noise = &Layer->Settings.Noise;
+                            BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
 
                             switch (Noise->Type)
                             {
                               case NoiseType_Perlin:
                               {
-                                perlin_noise_params *Perlin = &Noise->Perlin;
+                                auto *Perlin = &Noise->Perlin;
                                 BindUniformByName(&WorldEditRC->Program, "Threshold", Perlin->Threshold);
                                 BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
                                 BindUniformByName(&WorldEditRC->Program, "Amplitude", Perlin->Amplitude);
                               } break;
 
                               case NoiseType_Voronoi:
-                              {} break;
+                              {
+                                auto *Voronoi = &Noise->Voronoi;
+                                BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
+                                BindUniformByName(&WorldEditRC->Program, "Threshold", Voronoi->Threshold);
+                                BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
+                                BindUniformByName(&WorldEditRC->Program, "Amplitude", Voronoi->Amplitude);
+                              } break;
 
                               case NoiseType_White:
                               {} break;

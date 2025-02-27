@@ -2,7 +2,7 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out uint Output;
+out vec4 Output;
 
 vec3 vhash(vec3 UV, vec3 offset)
 {
@@ -11,6 +11,7 @@ vec3 vhash(vec3 UV, vec3 offset)
 	return vec3(sin(UV.z * +offset.x) * 0.5 + 0.5, cos(UV.x* offset.y) * 0.5 + 0.5,tan(UV.y * offset.z) * 0.5 + 0.5);
 }
 
+#if 0
 vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
 {
   vec3 g = floor(p * CellDensity);
@@ -58,6 +59,7 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   Out.w = 1.0-smoothstep( 0.0, 0.1, res);
   return Out;
 }
+#endif
 
 void main()
 {
@@ -103,8 +105,10 @@ void main()
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = PackRGB(ColorValue);
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+  /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
+  /* uint PackedColor = PackRGB(ColorValue); */
 
-  Output = (SolidBit << 15) | PackedColor;
+  /* Output = (SolidBit << 15) | PackedColor; */
 }

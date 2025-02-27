@@ -851,6 +851,7 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
   switch (WorldEditMode)
   {
     case WorldEdit_Mode_Disabled: {} break;
+    case WorldEdit_Mode_Threshold:
     case WorldEdit_Mode_Additive:
     {
       Pos = PickedVoxel_LastEmpty;
@@ -2929,6 +2930,15 @@ DrawEditorPreview(engine_resources *Engine, shader *Shader)
 #endif
 
 link_internal void
+ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    ApplyEditToOctree(Engine, Edit, GetTranArena());
+  }
+}
+
+link_internal void
 DoLevelWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -3053,7 +3063,7 @@ DoLevelWindow(engine_resources *Engine)
         /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
 
         Engine->Graphics.TerrainGenRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainGenShader, Thread->PermMemory);
-        Engine->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+        /* Engine->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0; */
 
         // Must come after we fill out the VisibleRegion so the root octree node
         // gets initialized to the correct size
@@ -3074,6 +3084,8 @@ DoLevelWindow(engine_resources *Engine)
           {
             FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
           }
+
+          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
         }
 
         /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
