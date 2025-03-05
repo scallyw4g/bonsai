@@ -1161,6 +1161,7 @@ GatherOctreeNodesOverlapping_Recursive(world *World, octree_node *Current, rect3
   if (Intersect(World, &Box, Region))
   {
     Push(Result, &Current);
+
     switch(Current->Type)
     {
       InvalidCase(OctreeNodeType_Undefined);

@@ -13,6 +13,7 @@ uniform int Modifiers;
 uniform v3 ChunkRelEditMin;
 uniform v3 ChunkRelEditMax;
 
+
 //
 // Shape params
 //
@@ -217,8 +218,13 @@ void main()
         {
           switch (ShapeType)
           {
-            case 0: { } break;
-            case 1: { } break;
+            // ShapeType_Sphere
+            case 0: { } break; 
+
+            // ShapeType_Rect
+            case 1: { NoiseSample = 1.f; } break;
+
+            // ShapeType_Cylinder
             case 2: { } break;
           }
         } break;
@@ -284,7 +290,9 @@ void main()
         NoiseSample *= -1.f;
       }
 
-      NoiseSample *= Amplitude;
+      f32 Amp = max(Amplitude, 1.f);
+      NoiseSample *= Amp;
+      /* NoiseSample *= Amplitude; */
 
       switch (BlendMode)
       {

@@ -2315,7 +2315,7 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 
       /* Assert(Node->Type == OctreeNodeType_Leaf); */
 
-      Node->Dirty = True;;
+      Node->Dirty = True;
       ReleaseFutex(&Node->Lock);
     }
   }
@@ -2349,7 +2349,6 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   // Update the edit
   //
 
-  auto OldEditRegion = Editor->CurrentEdit->Region; // NOTE(Jesse): Debug
   Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
 
   ApplyEditToOctree(Engine, Edit, TempMemory);

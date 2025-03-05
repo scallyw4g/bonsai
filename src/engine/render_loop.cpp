@@ -369,7 +369,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                           case BrushLayerType_Shape:
                           {
-                            NotImplemented;
+                            shape_layer *Shape = &Layer->Settings.Shape;
+                            BindUniformByName(&WorldEditRC->Program, "ShapeType", Shape->Type);
+                            switch(Shape->Type)
+                            {
+                              case ShapeType_Sphere:   { } break;
+                              case ShapeType_Rect:     { } break;
+                              case ShapeType_Cylinder: { } break;
+                            }
                           } break;
                         }
 
