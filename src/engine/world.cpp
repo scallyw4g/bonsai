@@ -428,11 +428,7 @@ CountsAsDrawableOrUnmeshed(octree_node *Node)
 
   if (world_chunk *Chunk = Node->Chunk)
   {
-    // NOTE(Jesse): Queued nodes don't necessarily mean they can't be drawn, but
-    // I'm going to say this is true to avoid data races for now
-    b32 NotQueued = (Chunk->Flags&Chunk_Queued) == 0;
-
-    Result = ( NotQueued && HasGpuMesh(&Chunk->Mesh) );
+    Result = HasGpuMesh(&Chunk->Mesh);
   }
   else
   {
@@ -863,11 +859,6 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
     Assert(Node->Chunk->Dim % World->ChunkDim == V3i(0));
   }
 
-  if (Node->Dirty)
-  {
-    ReinitializeOctreeNode(Engine, Node);
-  }
-
   f32 AABBLineDim = Max(1.f, Node->Resolution.x/12.f);
   Assert (Node);
   {
@@ -900,15 +891,55 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
         }
         else
         { // Draw ourselves; the mesh composed of the children has a hole.
-          if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
-          {
-            if (Chunk)
-            {
-              if (ContainsCameraGhost(World, EntityTable, Node, GameCamera))
-              {
-                EngineDebug->SelectedNode = Node;
-              }
 
+          if (Node->Dirty)
+          {
+            ReinitializeOctreeNode(Engine, Node);
+          }
+          else
+          {
+            if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
+            {
+              if (Chunk)
+              {
+                if (ContainsCameraGhost(World, EntityTable, Node, GameCamera))
+                {
+                  EngineDebug->SelectedNode = Node;
+                }
+
+                if (EngineDebug->DrawNodesWithChunks)
+                {
+                  DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
+                }
+
+                if (HasGpuMesh(&Chunk->Mesh))
+                {
+                  Push(MainDrawList, &Chunk);
+                  Push(ShadowMapDrawList, &Chunk);
+                }
+              }
+            }
+          }
+        }
+      } break;
+
+      case OctreeNodeType_Leaf:
+      {
+        if (Node->Dirty)
+        {
+          ReinitializeOctreeNode(Engine, Node);
+        }
+        else
+        {
+          if (Chunk)
+          {
+            if (EngineDebug->DrawLeafNodes)
+            {
+              DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
+            }
+
+            if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
+            {
               if (EngineDebug->DrawNodesWithChunks)
               {
                 DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
@@ -922,32 +953,6 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
             }
           }
         }
-      } break;
-
-      case OctreeNodeType_Leaf:
-      {
-        if (Chunk)
-        {
-          if (EngineDebug->DrawLeafNodes)
-          {
-            DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
-          }
-
-          if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
-          {
-            if (EngineDebug->DrawNodesWithChunks)
-            {
-              DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
-            }
-
-            if (HasGpuMesh(&Chunk->Mesh))
-            {
-              Push(MainDrawList, &Chunk);
-              Push(ShadowMapDrawList, &Chunk);
-            }
-          }
-        }
-
 
       } break;
 
