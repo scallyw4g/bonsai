@@ -914,7 +914,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
                 if (Node->Dirty)
                 {
                   AcquireFutex(&Node->Lock);
-                  ForceOctreeNodeReinitialization(Engine, Node);
+                  ReinitializeOctreeNode(Engine, Node);
                   ReleaseFutex(&Node->Lock);
                 }
                 else
@@ -949,7 +949,7 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
               if (Node->Dirty)
               {
                 AcquireFutex(&Node->Lock);
-                ForceOctreeNodeReinitialization(Engine, Node);
+                ReinitializeOctreeNode(Engine, Node);
                 ReleaseFutex(&Node->Lock);
               }
               else

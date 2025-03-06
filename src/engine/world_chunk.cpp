@@ -453,7 +453,7 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 }
 
 link_internal void
-ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node)
 {
   Assert(FutexIsSignaled(&Node->Lock));
 
@@ -463,9 +463,12 @@ ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node)
     if ( Node->Chunk->Flags &&
         (Node->Chunk->Flags & Chunk_Queued) == 0)
     {
-      DeallocateAndClearWorldChunk(Engine, Node->Chunk);
-      Node->Chunk->DimInChunks = Node->Resolution;
-      Node->Chunk->WorldP      = Node->WorldP;
+      Node->Chunk->FilledCount = {};
+      QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
+      /* DeallocateAndClearWorldChunk(Engine, Node->Chunk); */
+      /* Node->Chunk->DimInChunks = Node->Resolution; */
+      /* Node->Chunk->WorldP      = Node->WorldP; */
+
     }
   }
 

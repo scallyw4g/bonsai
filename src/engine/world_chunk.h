@@ -646,7 +646,7 @@ link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 
 link_internal void
-ForceOctreeNodeReinitialization(engine_resources *Engine, octree_node *Node);
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node);
 
 link_internal s32
 MarkBoundaryVoxels_MakeExteriorFaces(u64 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
@@ -669,3 +669,6 @@ struct gpu_readback_buffer;
 
 link_internal work_queue_entry_finalize_noise_values
 WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk);
+
+inline void
+QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);

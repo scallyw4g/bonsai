@@ -1420,6 +1420,7 @@ NewBrush(world_edit_brush *Brush)
   Brush->Layered.LayerCount = 1;
 
   // Initialize PrevSettings so we don't fire a changed event straight away..
+  // @prevent_change_event
   CheckSettingsChanged(&Brush->Layered);
 }
 
@@ -2809,6 +2810,7 @@ DoWorldEditor(engine_resources *Engine)
         if (Button(Ui, CS(Brush->NameBuf), UiId(&BrushSettingsWindow, "brush select", Brush)))
         {
           Editor->CurrentBrush = Brush;
+          CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
         }
         PushNewRow(Ui);
       }
@@ -2867,12 +2869,14 @@ DoWorldEditor(engine_resources *Engine)
       {
         Editor->Selection.Clicks = 2;
         Editor->Selection.Region = Edit->Region;
+        Editor->Selection.PrevRegion = Edit->Region;
 
         Editor->CurrentEdit = Edit;
 
         if (Edit->Brush)
         {
           Editor->CurrentBrush = Edit->Brush;
+          CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
         }
       }
       if (Hover(Ui, &EditSelectButton))

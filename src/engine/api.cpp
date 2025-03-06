@@ -727,14 +727,20 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         }
         else
         {
-          Assert(HasGpuMesh(&DestChunk->Mesh) == False);
+          if (HasGpuMesh(&DestChunk->Mesh))
+          {
+            PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
+          }
           FinalizeChunkInitialization(DestChunk);
           FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
         }
       }
       else
       {
-        Assert(HasGpuMesh(&DestChunk->Mesh) == False);
+        if (HasGpuMesh(&DestChunk->Mesh))
+        {
+          PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
+        }
         FinalizeChunkInitialization(DestChunk);
         FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
       }
@@ -747,6 +753,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       PushBonsaiRenderCommandUnmapAndDeallocateBuffer(RenderQ, Job->PBOBuf);
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+
     } break;
 
     { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)

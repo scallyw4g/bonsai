@@ -1046,7 +1046,7 @@ poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
 
 link_internal void
-ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
+ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
 {
   if (Handles->VertexHandle)
   {
@@ -1054,7 +1054,13 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
   }
   Clear(Handles);
 
-  AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
+  AllocateGpuElementBuffer(Handles, Type, ElementCount);
+}
+
+link_internal void
+ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
+{
+  ReallocateGpuBuffers(Handles, Mesh->Type, Mesh->At);
   CopyToGpuBuffer(Mesh, Handles);
 }
 

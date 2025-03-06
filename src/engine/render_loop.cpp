@@ -98,9 +98,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RC, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
-              Assert(HasGpuMesh(Command->Dest) == 0);
-              Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 0);
-              Command->Dest[0] = AllocateAndMapGpuBuffer(Command->Type, Command->ElementCount);
+              /* Assert(HasGpuMesh(Command->Dest) == 0); */
+              /* Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 0); */
+              /* Command->Dest[0] = AllocateAndMapGpuBuffer(Command->Type, Command->ElementCount); */
+
+              ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
+              MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
+
               Assert(HasGpuMesh(Command->Dest) == 1);
               Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 1);
 
