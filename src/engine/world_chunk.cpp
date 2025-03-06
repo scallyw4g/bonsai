@@ -90,6 +90,7 @@ ChunkIsGarbage(world_chunk* Chunk)
 link_internal void
 WorldChunk(world_chunk *Chunk, v3i WorldP, v3i Dim, v3i DimInChunks)
 {
+  Chunk->FilledCount = {};
   Chunk->WorldP = WorldP;
   Chunk->Dim  = Dim;
   Chunk->DimInChunks  = DimInChunks;
@@ -455,24 +456,26 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 link_internal void
 ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node)
 {
-  Assert(FutexIsSignaled(&Node->Lock));
+  Assert(!FutexIsSignaled(&Node->Lock));
+  AcquireFutex(&Node->Lock);
 
-  Node->HadNoVisibleSurface = False;
   if (Node->Chunk)
   {
-    if ( Node->Chunk->Flags &&
-        (Node->Chunk->Flags & Chunk_Queued) == 0)
-    {
-      Node->Chunk->FilledCount = {};
-      QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
-      /* DeallocateAndClearWorldChunk(Engine, Node->Chunk); */
-      /* Node->Chunk->DimInChunks = Node->Resolution; */
-      /* Node->Chunk->WorldP      = Node->WorldP; */
-
-    }
+    // Skip chunks that are already queued
+    if (Node->Chunk->Flags & Chunk_Queued) { ReleaseFutex(&Node->Lock); return; }
+  }
+  else
+  {
+    Node->Chunk = GetFreeWorldChunk(Engine->World);
   }
 
+  Node->HadNoVisibleSurface = False;
   Node->Dirty = 0;
+
+  WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
+  QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
+
+  ReleaseFutex(&Node->Lock);
 }
 
 link_internal world_chunk*

@@ -256,7 +256,6 @@ ClearWorldChunk( world_chunk *Chunk )
   /* Chunk->PointsToLeaveRemaining = {}; */
   /* Chunk->TriCount = {}; */
   /* Chunk->EdgeBoundaryVoxelCount = {}; */
-  Chunk->HasMesh = {};
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
   Chunk->Entities = {};
   Chunk->Next = {};

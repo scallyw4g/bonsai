@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:2085:0
+// src/engine/world_chunk.cpp:2088:0
 
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,

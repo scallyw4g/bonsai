@@ -432,7 +432,7 @@ CountsAsDrawableOrUnmeshed(octree_node *Node)
     // I'm going to say this is true to avoid data races for now
     b32 NotQueued = (Chunk->Flags&Chunk_Queued) == 0;
 
-    Result = ( NotQueued && Chunk->HasMesh && HasGpuMesh(&Chunk->Mesh) );
+    Result = ( NotQueued && HasGpuMesh(&Chunk->Mesh) );
   }
   else
   {
@@ -746,7 +746,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
     if (Chunk->Flags & Chunk_VoxelsInitialized)
     {
-      if (Chunk->HasMesh == False)
+      if (HasGpuMesh(&Chunk->Mesh) == False)
       {
         Assert( (Chunk->Flags & Chunk_Queued) == False);
         /* if (Chunk->WorldP == V3i(0,0,0)) { RuntimeBreak(); } */
@@ -863,6 +863,11 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
     Assert(Node->Chunk->Dim % World->ChunkDim == V3i(0));
   }
 
+  if (Node->Dirty)
+  {
+    ReinitializeOctreeNode(Engine, Node);
+  }
+
   f32 AABBLineDim = Max(1.f, Node->Resolution.x/12.f);
   Assert (Node);
   {
@@ -911,17 +916,8 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
               if (HasGpuMesh(&Chunk->Mesh))
               {
-                if (Node->Dirty)
-                {
-                  AcquireFutex(&Node->Lock);
-                  ReinitializeOctreeNode(Engine, Node);
-                  ReleaseFutex(&Node->Lock);
-                }
-                else
-                {
-                  Push(MainDrawList, &Chunk);
-                  Push(ShadowMapDrawList, &Chunk);
-                }
+                Push(MainDrawList, &Chunk);
+                Push(ShadowMapDrawList, &Chunk);
               }
             }
           }
@@ -946,17 +942,8 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
             if (HasGpuMesh(&Chunk->Mesh))
             {
-              if (Node->Dirty)
-              {
-                AcquireFutex(&Node->Lock);
-                ReinitializeOctreeNode(Engine, Node);
-                ReleaseFutex(&Node->Lock);
-              }
-              else
-              {
-                Push(MainDrawList, &Chunk);
-                Push(ShadowMapDrawList, &Chunk);
-              }
+              Push(MainDrawList, &Chunk);
+              Push(ShadowMapDrawList, &Chunk);
             }
           }
         }

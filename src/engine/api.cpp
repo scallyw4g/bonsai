@@ -771,8 +771,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(GpuMappedBuf->Buffer.At == GpuMappedBuf->Buffer.End);
       Assert(HasGpuMesh(&DestChunk->Mesh) == True);
 
-      DestChunk->HasMesh = True;
-
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
       DestChunk->DEBUG_OwnedByThread = 0;
