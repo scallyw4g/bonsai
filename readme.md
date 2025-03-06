@@ -7,9 +7,9 @@ Bonsai is a 3D voxel-based engine built with the intention of writing both
 fast-paced arcade games and tile/turn-based RPGs
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
-One external dependency is the C runtime library for startup, and a small
-handful of trig functions (sin, cos, atan2).  I have a back-burner task to
-remove the CRT entirely, though it's unclear when/if I'll get around to it.
+One external dependency is the C runtime library for program startup. I have a
+back-burner task to remove the CRT entirely, though it's unclear when/if I'll
+get around to it.
 
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
@@ -38,14 +38,14 @@ See the docs on the [build process](docs/01_build_process.md).
 
 ## Engine Features
 
-* Hot Code Reloading
-* MT Job System
+* Shader-based Terrain Generation
+* Hot Shader & Game-code Reloading
+* Async Job System
 * Entities
 * Collision
 * Transparent & Emissive Particles
 * UI Framework
 * Asset Loaders
-* Terrain Generators
 * Primitive Physics
 
 ![banner](screenshots/profiler.png)
@@ -158,3 +158,4 @@ See the docs on the [build process](docs/01_build_process.md).
 [ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
 
 [ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object
+

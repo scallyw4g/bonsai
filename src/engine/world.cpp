@@ -424,7 +424,7 @@ GetParentNodeFor(world *World, octree_node *QueryNode)
 link_internal b32
 CountsAsDrawableOrUnmeshed(octree_node *Node)
 {
-  b32 Result = True; // Default to true if there's nothing to draw (no chunk)
+  b32 Result = True;
 
   if (world_chunk *Chunk = Node->Chunk)
   {
