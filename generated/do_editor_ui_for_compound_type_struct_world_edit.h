@@ -48,6 +48,29 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         CSz("Brush"),
         Params
         );
+
+
+
+
+
+
+
+      
+                                          DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*, &Element->Ordinal),
+        CSz("Ordinal"),
+        Params
+        );
+
+
+
+
+
+
+
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

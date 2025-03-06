@@ -1110,8 +1110,6 @@ struct world_edit_brush
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
 
-  u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
-
   /* world_edit_brush_type Type; */
   /* union */
   /* { */
@@ -1139,6 +1137,7 @@ struct world_edit
 {
   rect3cp Region; // TODO(Jesse): Rename to bounds
   world_edit_brush *Brush;
+  u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
 };
 
 typedef world_edit* world_edit_ptr;

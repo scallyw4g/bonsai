@@ -2745,6 +2745,8 @@ DoWorldEditor(engine_resources *Engine)
 
     world_edit E = {};
     Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
+    Editor->CurrentEdit->Ordinal = Editor->NextEditOrdinal++;
+
     Editor->CurrentEdit->Brush = Editor->CurrentBrush;
   }
 
@@ -2889,6 +2891,7 @@ DoWorldEditor(engine_resources *Engine)
         Edit->Brush = Editor->CurrentBrush;
         UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
       }
+
       PushNewRow(Ui);
 
       DoEditorUi(Ui, &AllEditsWindow, Edit, {});
@@ -3139,7 +3142,6 @@ DoLevelWindow(engine_resources *Engine)
           Deserialize(&LevelBytes, &DeserEdit, GetTranArena());
 
           world_edit *FinalEdit = Push(&Editor->WorldEdits, &DeserEdit);
-
           if (FinalEdit->Brush)
           {
             FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);

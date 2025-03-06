@@ -318,9 +318,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
-                    u64 Ordinal = Edit->Brush ? u64(Edit->Brush->Ordinal) : 0;
                     u32 KeyIndex = u32(GetIndex(&EditIndex));
-                    Keys[KeyIndex] = {Ordinal, u64(Edit)};
+                    Keys[KeyIndex] = {u64(Edit->Ordinal), u64(Edit)};
                   }
 
                   BubbleSort_descending(Keys, u32(EditCount));

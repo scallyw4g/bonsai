@@ -54,13 +54,6 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
 
-                            Result &= Serialize(Bytes, &Element->Ordinal); // default
-
-
-
-
-
-
                             Result &= Serialize(Bytes, &Element->Layered); // default
 
     
@@ -100,14 +93,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
           Element->Modifier = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Ordinal, Memory);
-
 
 
 

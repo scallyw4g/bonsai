@@ -44,6 +44,10 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count = 1)
                 if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
+
+
+                            Result &= Serialize(Bytes, &Element->Ordinal); // default
+
                     if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
@@ -79,6 +83,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
 
         b64 HadBrushPointer = Read_u64(Bytes);
   Assert(HadBrushPointer < 2); // Should be 0 or 1
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Ordinal, Memory);
 
         if (HadBrushPointer)
   {
