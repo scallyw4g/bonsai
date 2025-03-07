@@ -43,119 +43,6 @@ in vec2 UV;
 out layout(location = 0) vec4 Output;
 
 
-
-
-// https://thebookofshaders.com/10/
-float rand(vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
-        43758.5453123);
-}
-
-float hash(float x)  { return fract(x + 1.32154 * 1.2151); }
-vec3 RandomV3FromFloat(float x) { return vec3(hash(((x   + 0.5283) * 59.3829) * 274.3487), hash(((x   + 0.8192) * 83.6621) * 345.3871), hash(((x   + 0.2157f) * 36.6521f) * 458.3971f)); }
-vec3 RandomV3FromV3(v3 V)       { return vec3(rand(V.xy), rand(V.yz), rand(V.xz)); }
-
-
-#define Floor floor
-#define Abs abs
-#define Clamp01(x) clamp(x, 0.f, 1.f)
-#define LengthSq(V) (V.x*V.x + V.y*V.y + V.z*V.z)
-#define Normalize normalize
-#define Dot dot
-#define Min min
-
-#define True true
-#define False false
-#define b32 bool
-
-link_internal f32
-voronoi(v3 Texel)
-{
-  v3 baseCell = Floor(Texel);
-
-  v3 CellOffsets[27];
-
-  // first pass to find the closest cell
-  //
-  f32 minDistToCellSq = 100;
-  v3 toClosestCell;
-  v3 closestCell;
-  s32 CellIndex = 0;
-  for( s32 x1 = -1;
-           x1 <= 1;
-         ++x1 )
-  {
-    for(s32 y1 = -1;
-            y1 <= 1;
-          ++y1 )
-    {
-      for( s32 z1 = -1;
-               z1 <= 1;
-             ++z1 )
-      {
-        v3 cell      =  baseCell + V3(x1, y1, z1);
-        v3 offset    = Clamp01(RandomV3FromV3(cell) - Squareness);
-        v3 cellPosition = cell + offset;
-
-        v3 toCell = cellPosition - Texel;
-        f32 distToCellSq = LengthSq(toCell);
-        if(distToCellSq < minDistToCellSq)
-        {
-          minDistToCellSq = distToCellSq;
-          closestCell = cell;
-          toClosestCell = toCell;
-        }
-
-        CellOffsets[CellIndex++] = offset;
-      }
-    }
-  }
-  //
-  // TODO(Jesse): This seems like you'd just want to do it in-line in the first
-  // loop ..?
-  //
-  // second pass to find the distance to the closest edge
-  //
-  f32 minEdgeDistance = 10;
-  CellIndex = 0;
-  for( s32 x2 = -1;
-           x2 <= 1;
-         ++x2 )
-  {
-    for(s32 y2 = -1;
-            y2 <= 1;
-          ++y2 )
-    {
-      for( s32 z2 = -1;
-               z2 <= 1;
-             ++z2 )
-      {
-        /* v3 cell = (baseCell + V3(x2, y2, z2)); */
-        v3 cell = baseCell + V3(x2, y2, z2);
-        v3 offset = CellOffsets[CellIndex++];
-
-        v3 cellPosition = cell + offset;
-        v3 toCell = cellPosition - Texel;
-
-        v3 diffToClosestCell = Abs(closestCell - cell);
-        b32 isClosestCell = diffToClosestCell.x + diffToClosestCell.y + diffToClosestCell.z < 0.1f;
-        if(isClosestCell == False)
-        {
-          v3 toCenter = (toClosestCell + toCell) * 0.5;
-          v3 cellDifference = Normalize(toCell - toClosestCell);
-          f32 edgeDistance = Dot(toCenter, cellDifference);
-          minEdgeDistance = Min(minEdgeDistance, edgeDistance);
-        }
-      }
-    }
-  }
-  return minEdgeDistance;
-  /* return sqrt(minDistToCellSq); */
-  /* return closestCell; */
-}
-
-
 void main()
 {
   v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
@@ -204,7 +91,7 @@ void main()
 
             case 1: // NoiseType_Voronoi:
             {
-              NoiseSample = voronoi(NoiseBasis);
+              NoiseSample = voronoi_noise(NoiseBasis, Squareness).x;
             } break;
 
             case 2: // NoiseType_White:
