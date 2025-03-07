@@ -1,4 +1,23 @@
 
+link_internal void
+LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
+{
+  cs Filename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, TempMemory);
+
+  u8_cursor Bytes = BeginDeserialization(Filename, TempMemory);
+
+  world_edit_brush B = {};
+  CopyString( FileNode->Name.Start, B.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len)));
+  Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
+
+  if (Deserialize(&Bytes, Editor->CurrentBrush, TempMemory) == False)
+  {
+    SoftError("While deserializing brush (%S).", Filename);
+    *Editor->CurrentBrush = {};
+  }
+  FinalizeDeserialization(&Bytes);
+}
+
 link_internal b32
 InitEditor(level_editor *Editor)
 {
@@ -9,6 +28,13 @@ InitEditor(level_editor *Editor)
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
   Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
+
+  file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("brushes"), GetTranArena());
+
+  IterateOver(&Nodes, Node, NodeIndex)
+  {
+    LoadBrushFromFile(Editor, Node, GetTranArena());
+  }
 
 /*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
 /*   { */
@@ -1524,21 +1550,7 @@ DoWorldEditSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, win
 
       if (ClickedFileNode.Tag)
       {
-        cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
-
-        u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-
-        world_edit_brush B = {};
-        CopyString( ClickedFileNode.Value.Name.Start, B.NameBuf, Min(umm(ClickedFileNode.Value.Name.Count), umm(NameBuf_Len)));
-        Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
-
-        if (Deserialize(&Bytes, Editor->CurrentBrush, Tran) == False)
-        {
-          SoftError("While deserializing brush (%S).", Filename);
-          *Editor->CurrentBrush = {};
-        }
-        FinalizeDeserialization(&Bytes);
-
+        LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
         SetToggleButton(Ui, ImportToggleId, False);
       }
     }
@@ -3142,7 +3154,14 @@ DoLevelWindow(engine_resources *Engine)
 
         // Must come after we fill out the VisibleRegion so the root octree node
         // gets initialized to the correct size
+        //
+        //
+        // HACK(Jesse): This is a maaaajor hack and should be dealt with in a better way
+        bonsai_type_info_hashtable Tmp = Global_SerializeTypeTable;
+        Global_SerializeTypeTable = {};
         HardResetEngine(Engine);
+        Global_SerializeTypeTable = Tmp;
+
 
         /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
         s32 ChunkCount = 0;
