@@ -526,7 +526,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
 
               // TODO(Jesse): Move into engine debug
-              DebugHighlightWorldChunkBasedOnState(Graphics, EngineDebug->PickedChunk, &GpuMap->Buffer);
+              world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
+              DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
 
               AssertNoGlErrors;
 

@@ -206,6 +206,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, 
   }
 }
 
+poof(do_editor_ui_for_compound_type(plane))
+#include <generated/do_editor_ui_for_compound_type_plane.h>
+
+poof(do_editor_ui_for_compound_type(frustum))
+#include <generated/do_editor_ui_for_compound_type_frustum.h>
+
+poof(do_editor_ui_for_compound_type(camera))
+#include <generated/do_editor_ui_for_compound_type_camera.h>
+
+poof(do_editor_ui_for_compound_type(texture))
+#include <generated/do_editor_ui_for_compound_type_texture.h>
+
+poof(do_editor_ui_for_compound_type(asset_thumbnail))
+#include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h>
+
+poof(do_editor_ui_for_compound_type(chunk_thumbnail))
+#include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h>
+
+poof(do_editor_ui_for_compound_type(noise_layer))
+#include <generated/do_editor_ui_for_compound_type_noise_layer.h>
+
+poof(do_editor_ui_for_compound_type(brush_layer))
+#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
+
+poof(do_editor_ui_for_compound_type(layered_brush))
+#include <generated/do_editor_ui_for_compound_type_layered_brush.h>
+
+poof(do_editor_ui_for_compound_type(world_edit_brush))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
+
+poof(do_editor_ui_for_compound_type(world_edit))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit.h>
+
+poof(do_editor_ui_for_container(world_edit_ptr_block_array))
+#include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h>
+
 poof(do_editor_ui_for_enum(chunk_flag))
 #include <generated/do_editor_ui_for_enum_chunk_flag.h>
 
@@ -291,39 +327,6 @@ poof(do_editor_ui_for_compound_type(collision_event))
 poof(do_editor_ui_for_compound_type(entity_position_info))
 #include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
 
-
-poof(do_editor_ui_for_compound_type(plane))
-#include <generated/do_editor_ui_for_compound_type_plane.h>
-
-poof(do_editor_ui_for_compound_type(frustum))
-#include <generated/do_editor_ui_for_compound_type_frustum.h>
-
-poof(do_editor_ui_for_compound_type(camera))
-#include <generated/do_editor_ui_for_compound_type_camera.h>
-
-poof(do_editor_ui_for_compound_type(texture))
-#include <generated/do_editor_ui_for_compound_type_texture.h>
-
-poof(do_editor_ui_for_compound_type(asset_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h>
-
-poof(do_editor_ui_for_compound_type(chunk_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h>
-
-poof(do_editor_ui_for_compound_type(noise_layer))
-#include <generated/do_editor_ui_for_compound_type_noise_layer.h>
-
-poof(do_editor_ui_for_compound_type(brush_layer))
-#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
-
-poof(do_editor_ui_for_compound_type(layered_brush))
-#include <generated/do_editor_ui_for_compound_type_layered_brush.h>
-
-poof(do_editor_ui_for_compound_type(world_edit_brush))
-#include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
-
-poof(do_editor_ui_for_compound_type(world_edit))
-#include <generated/do_editor_ui_for_compound_type_struct_world_edit.h>
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
@@ -2291,7 +2294,16 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
   // Gather newly overlapping nodes and add the edit
   {
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
-    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+
+    rect3cp QueryRegion = Edit->Region;
+
+    /* QueryRegion.Min.Offset -= 1.f; */
+    /* QueryRegion.Max.Offset += 1.f; */
+
+    /* Canonicalize(World, &QueryRegion.Min); */
+    /* Canonicalize(World, &QueryRegion.Max); */
+
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
@@ -3149,8 +3161,6 @@ DoLevelWindow(engine_resources *Engine)
 
           ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
         }
-
-        /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
 
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 

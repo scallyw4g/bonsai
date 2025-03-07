@@ -2,13 +2,15 @@
 
 struct heap_allocator;
 struct entity;
+struct octree_node;
+
 
 
 // NOTE(Jesse): Gets casted to sort_key_f, so Chunk and tChunk ahve to be 1st and second, in that order
 struct picked_world_chunk
 {
-  world_chunk *Chunk;
-  r64 tChunk;
+  octree_node *Node;
+  r64 t;
 };
 
 enum picked_voxel_position
@@ -43,12 +45,12 @@ struct picked_world_chunk_static_buffer
 };
 
 link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
+Push(picked_world_chunk_static_buffer *Buf, octree_node *Node, r32 t)
 {
   if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
   {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = r64(t);
+    Buf->E[Buf->At].Node = Node;
+    Buf->E[Buf->At].t = r64(t);
 
     ++Buf->At;
   }

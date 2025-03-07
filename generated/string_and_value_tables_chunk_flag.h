@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:80:0
+// src/engine/world_chunk.h:82:0
 
 link_internal counted_string
 ToStringPrefixless(chunk_flag Type)

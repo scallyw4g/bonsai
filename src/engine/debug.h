@@ -75,7 +75,7 @@ struct engine_debug
   r64 ChunkGenCyclesElapsed;
 
   u8 PickedChunkState;
-  world_chunk *PickedChunk;
+  octree_node *PickedNode;
 
   asset_window_view_mode AssetWindowViewMode;
 

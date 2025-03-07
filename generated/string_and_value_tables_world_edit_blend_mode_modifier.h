@@ -1,4 +1,4 @@
-// src/engine/editor.h:709:0
+// src/engine/editor.h:721:0
 
 link_internal counted_string
 ToStringPrefixless(world_edit_blend_mode_modifier Type)

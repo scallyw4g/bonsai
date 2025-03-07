@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:405:0
+// src/engine/editor.cpp:408:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -359,8 +359,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
                                           DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->PickedChunk),
-        CSz("PickedChunk"),
+        Cast(octree_node*, Element->PickedNode),
+        CSz("PickedNode"),
         Params
         );
 

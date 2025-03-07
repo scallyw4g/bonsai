@@ -176,9 +176,9 @@ void main()
       xyz.y >= ChunkRelEditMin.y &&
       xyz.z >= ChunkRelEditMin.z &&
 
-      xyz.x <= ChunkRelEditMax.x &&
-      xyz.y <= ChunkRelEditMax.y &&
-      xyz.z <= ChunkRelEditMax.z  )
+      xyz.x < ChunkRelEditMax.x &&
+      xyz.y < ChunkRelEditMax.y &&
+      xyz.z < ChunkRelEditMax.z  )
   {
     v3 Offset = V3(-1, -1, -1);
     v3 Basis = Offset + WorldspaceBasis + xyz;

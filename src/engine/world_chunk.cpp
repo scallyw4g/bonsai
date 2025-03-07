@@ -3827,11 +3827,11 @@ DebugHighlightWorldChunkBasedOnState(graphics *Graphics, world_chunk *Chunk, unt
   engine_debug *EngineDebug = GetEngineDebug();
   if (Chunk)
   {
-    Assert (Chunk == EngineDebug->PickedChunk);
+    Assert (Chunk == EngineDebug->PickedNode->Chunk);
     v3 RGBColor = EngineDebug->PickedChunkState == PickedChunkState_None ? RGB_GREEN : RGB_YELLOW;
 
     untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(Dest, VERTS_PER_AABB);
-    DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedChunk, EngineDebug->PickedChunk->Dim, RGBColor );
+    DEBUG_DrawChunkAABB( &Mesh, Graphics, EngineDebug->PickedNode->Chunk, Chunk->Dim, RGBColor );
   }
 #endif
 #if 0
@@ -4093,7 +4093,7 @@ GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_positio
 link_internal picked_world_chunk
 GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffer *AllChunksBuffer)
 {
-  world_chunk *ClosestChunk = 0;
+  octree_node *ClosestNode = 0;
 
   chunk_dimension VisibleRegion = World->VisibleRegion;
   chunk_dimension Radius = VisibleRegion/2;
@@ -4122,11 +4122,11 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
             {
               /* DEBUG_DrawSimSpaceAABB(GetEngineResources(), &ChunkAABB, RED); */
               r32 tChunk = IntersectResult.t;
-              if ( AllChunksBuffer ) { Push(AllChunksBuffer, Chunk, tChunk); }
+              if ( AllChunksBuffer ) { Push(AllChunksBuffer, Node, tChunk); }
 
               if (Chunk->FilledCount && tChunk < tChunkMin)
               {
-                ClosestChunk = Chunk;
+                ClosestNode = Node;
                 tChunkMin = tChunk;
               }
             }
@@ -4136,7 +4136,7 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
     }
   }
 
-  return { .Chunk = ClosestChunk, .tChunk = r64(tChunkMin) };
+  return { .Node = ClosestNode, .t = r64(tChunkMin) };
 }
 
 link_internal void
@@ -4203,7 +4203,7 @@ GetChunksFromMouseP(engine_resources *Engine, picked_world_chunk_static_buffer *
     ClosestChunk = GetChunksIntersectingRay(World, &MaybeRay.Ray, AllChunksBuffer);
   }
 
-  return ClosestChunk.Chunk;
+  return ClosestChunk.Node->Chunk;
 }
 
 link_internal aabb
@@ -4314,7 +4314,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
       {
         Done = True;
 
-        Result.Chunks[PickedVoxel_FirstFilled] = {ClosestChunk, r64(tChunk)};
+        Result.Chunks[PickedVoxel_FirstFilled] = {Node, r64(tChunk)};
         Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
 
 #if 0
@@ -4330,7 +4330,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
       }
       else
       {
-        Result.Chunks[PickedVoxel_LastEmpty] = {ClosestChunk, r64(tChunk)};
+        Result.Chunks[PickedVoxel_LastEmpty] = {Node, r64(tChunk)};
         Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
         {
           /* untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
@@ -4424,9 +4424,9 @@ MousePickVoxel(engine_resources *Resources, ray *Ray)
   UNPACK_ENGINE_RESOURCES(Resources);
 
   picked_voxel RayResult = RayTraceCollision(Resources, Ray);
-  if (world_chunk *ClosestChunk = RayResult.Chunks[PickedVoxel_FirstFilled].Chunk)
+  if (octree_node *Node = RayResult.Chunks[PickedVoxel_FirstFilled].Node)
   {
-    v3 MinP =  V3(ClosestChunk->WorldP * World->ChunkDim);
+    v3 MinP =  V3(Node->WorldP * World->ChunkDim);
     v3 VoxelP = MinP + Truncate(RayResult.Picks[PickedVoxel_FirstFilled].Offset);
 
     Result.Tag   = Maybe_Yes;
@@ -4459,11 +4459,13 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 {
   voxel *Result = 0;
 
-  if (Pick->Chunks[PickedVoxel_FirstFilled].Chunk)
+  if (Pick->Chunks[PickedVoxel_FirstFilled].Node)
   {
-    world_chunk *Chunk = Pick->Chunks[Pos].Chunk;
-    s32 Index = GetIndex(V3i(Pick->Picks[Pos].Offset), Chunk->Dim);
-    Result = Chunk->Voxels + Index;
+    if (auto *Chunk = Pick->Chunks[Pos].Node->Chunk)
+    {
+      s32 Index = GetIndex(V3i(Pick->Picks[Pos].Offset), Chunk->Dim);
+      Result = Chunk->Voxels + Index;
+    }
   }
 
   return Result;
@@ -4472,8 +4474,11 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 link_internal v3
 GetAbsoluteP(picked_voxel *Pick)
 {
-  world_chunk *Chunk = Pick->Chunks[PickedVoxel_FirstFilled].Chunk;
-  v3 MinP =  V3(Chunk->WorldP * Chunk->Dim);
+  // NOTE(Jesse): Pretty sure this is buggy
+  NotImplemented;
+
+  auto *Node = Pick->Chunks[PickedVoxel_FirstFilled].Node->Chunk;
+  v3 MinP =  V3(Node->WorldP * Node->Dim);
   v3 VoxelP = MinP + Truncate(Pick->Picks[PickedVoxel_FirstFilled].Offset);
   return VoxelP;
 }

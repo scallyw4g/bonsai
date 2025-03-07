@@ -532,8 +532,11 @@ DoEngineDebug(engine_resources *Engine)
   if (ViewMode & EngineDebugViewMode_WorldChunks)
   {
     local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
-    WorldChunkWindow.Title = EngineDebug->PickedChunk ?
-      FSz("World Chunk : (%p)", EngineDebug->PickedChunk) :
+    auto *PickedNode = EngineDebug->PickedNode;
+    auto *PickedChunk = PickedNode ? PickedNode->Chunk : 0;
+
+    WorldChunkWindow.Title = PickedChunk ?
+      FSz("World Chunk : (%p)", PickedChunk) :
       CSz("World Chunk");
 
     PushWindowStart(Ui, &WorldChunkWindow);
@@ -546,8 +549,6 @@ DoEngineDebug(engine_resources *Engine)
 
       if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) )
       {
-        world_chunk *PickedChunk = EngineDebug->PickedChunk;
-        /* MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim); */
         MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
         QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
       }
@@ -557,14 +558,14 @@ DoEngineDebug(engine_resources *Engine)
       {
         if (Engine->MousedOverVoxel.Tag)
         {
-          EngineDebug->PickedChunk = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk;
+          EngineDebug->PickedNode = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Node;
           if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
         }
       }
 
-      if (EngineDebug->PickedChunk)
+      if (EngineDebug->PickedNode)
       {
-        DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
+        DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedNode, {});
       }
 
     PushWindowEnd(Ui, &WorldChunkWindow);

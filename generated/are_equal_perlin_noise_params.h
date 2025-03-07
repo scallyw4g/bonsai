@@ -1,4 +1,4 @@
-// src/engine/editor.h:695:0
+// src/engine/editor.h:707:0
 
 link_internal b32
 AreEqual(perlin_noise_params *Thing1, perlin_noise_params *Thing2)

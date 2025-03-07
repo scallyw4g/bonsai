@@ -1,4 +1,4 @@
-// src/engine/world_chunk.h:178:0
+// src/engine/world_chunk.h:180:0
 
 struct maybe_chunk_data
 {
