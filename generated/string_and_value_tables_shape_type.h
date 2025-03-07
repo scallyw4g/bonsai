@@ -1,4 +1,4 @@
-// src/engine/editor.h:855:0
+// src/engine/editor.h:843:0
 
 link_internal counted_string
 ToStringPrefixless(shape_type Type)

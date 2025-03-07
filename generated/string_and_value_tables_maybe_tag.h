@@ -1,4 +1,4 @@
-// src/engine/editor.h:524:0
+// src/engine/editor.h:512:0
 
 link_internal counted_string
 ToStringPrefixless(maybe_tag Type)

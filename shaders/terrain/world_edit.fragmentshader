@@ -171,17 +171,18 @@ void main()
 
   v3 xyz = V3(x,y,z) * ChunkResolution;
 
+  // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
+  // think it should be >= Min and < Max .. but I'm just going to leave it for now..
   if (
-      xyz.x >= ChunkRelEditMin.x &&
-      xyz.y >= ChunkRelEditMin.y &&
-      xyz.z >= ChunkRelEditMin.z &&
+      xyz.x > ChunkRelEditMin.x &&
+      xyz.y > ChunkRelEditMin.y &&
+      xyz.z > ChunkRelEditMin.z &&
 
-      xyz.x < ChunkRelEditMax.x &&
-      xyz.y < ChunkRelEditMax.y &&
-      xyz.z < ChunkRelEditMax.z  )
+      xyz.x <= ChunkRelEditMax.x &&
+      xyz.y <= ChunkRelEditMax.y &&
+      xyz.z <= ChunkRelEditMax.z  )
   {
-    v3 Offset = V3(-1, -1, -1);
-    v3 Basis = Offset + WorldspaceBasis + xyz;
+    v3 Basis = WorldspaceBasis + xyz;
 
 
     {
