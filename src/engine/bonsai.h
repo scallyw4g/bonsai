@@ -260,8 +260,6 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->Entities = {};
   Chunk->Next = {};
 
-  Chunk->DEBUG_OwnedByThread = {};
-
   Clear(&Chunk->Mesh);
 
   Chunk->Flags = {};

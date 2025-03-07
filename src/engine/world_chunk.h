@@ -326,20 +326,7 @@ struct world_chunk poof(@version(1))
   // }
 
 
-  // TODO(Jesse): This stores pointers that are completely ephemeral and as
-  // such are wasted space.  We could remove those to make this struct 24 bytes
-  // smaller, which is probably pretty worth.
-  //
-  // TODO(Jesse): remove this in favor of Mesh
-  /* lod_element_buffer Meshes; poof(@no_serialize) */
-
   gpu_mapped_element_buffer Mesh; poof(@no_serialize)
-
-  // TODO(Jesse): Pack this into something else.. or ideally remove it entirely.
-  /* b32 HasMesh;                poof(@no_serialize) */
-
-  /* threadsafe_geometry_buffer TransparentMeshes; */
-  /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
 
@@ -351,23 +338,13 @@ struct world_chunk poof(@version(1))
 
   s32 FilledCount;            poof(@no_serialize)
 
-  b32 DrawBoundingVoxels;     poof(@no_serialize)
-  s32 PointsToLeaveRemaining; poof(@no_serialize)
-  u32 TriCount;               poof(@no_serialize)
-  s32 EdgeBoundaryVoxelCount; poof(@no_serialize)
-
-  u32 _Pad0; poof(@no_serialize)
-
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
   entity_ptr_block_array Entities; poof(@no_serialize)
-
-  // TODO(Jesse): Probably take this out?
-  s32 DEBUG_OwnedByThread; poof(@no_serialize)
-
-  u8 _Pad1[20];      poof(@no_serialize)
 };
+
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
+//
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 

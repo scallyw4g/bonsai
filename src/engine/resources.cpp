@@ -2,8 +2,6 @@ link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Chunk->DEBUG_OwnedByThread == 0);
-  Chunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
 
   Assert( (Chunk->Flags & Chunk_Queued) == 0);
   Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
@@ -15,7 +13,6 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   ClearWorldChunk(Chunk);
 
-  Assert(Chunk->DEBUG_OwnedByThread == 0);
   Assert(Chunk->Flags == 0);
   Assert(Chunk->Next == 0);
 

@@ -765,9 +765,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
       Assert(HasGpuMesh(GpuMappedBuf) == True);
 
-      Assert(DestChunk->DEBUG_OwnedByThread == 0);
-      DestChunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
-
       RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf->Buffer, Thread->TempMemory);
 
       if (HasGpuMesh(&DestChunk->Mesh) == True)
@@ -783,8 +780,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
 
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
-
-      DestChunk->DEBUG_OwnedByThread = 0;
 
       PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestChunk);
 
