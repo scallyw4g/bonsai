@@ -106,7 +106,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
 
               Assert(HasGpuMesh(Command->Dest) == 1);
-              Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 1);
+              /* Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 1); */
 
               auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestChunk));
               PushWorkQueueEntry(LowPriorityQ, &Next);

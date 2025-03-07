@@ -381,6 +381,7 @@ GetAndInsertFreeWorldChunk(world *World, world_position P)
   return Result;
 }
 
+#if 0
 link_internal void
 DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
 {
@@ -388,6 +389,7 @@ DeallocateGpuBuffers(work_queue *RenderQueue, world_chunk *Chunk )
   Assert(Chunk->Mesh.Handles.Mapped == False);
   Assert(Chunk->Mesh.Handles.ElementCount == 0);
 }
+#endif
 
 link_internal void PushBonsaiRenderCommandDeallocateWorldChunk( work_queue *RenderQueue, world_chunk* Chunk);
 
@@ -3623,6 +3625,7 @@ BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_ch
   }
 }
 
+#if 1
 link_internal void
 RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *Dest, memory_arena *TempMem, v3 VertexOffset = {})
 {
@@ -3633,11 +3636,11 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
   Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
   Assert( MeshBit == MeshBit_Lod0 );
 
-
   BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
 
   if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, &Chunk->Mesh.Handles); }
 }
+#endif
 
 
 link_internal void

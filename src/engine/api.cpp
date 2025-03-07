@@ -724,7 +724,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
         if (FacesRequired)
         {
-          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(RenderQ, DataType_v3_u8, u32(FacesRequired*6), &DestChunk->Mesh, SynChunk, DestChunk);
+          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(RenderQ, DataType_v3_u8, u32(FacesRequired*6), &SynChunk->Mesh, SynChunk, DestChunk);
         }
         else
         {
@@ -761,16 +761,26 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       world_chunk               *SynChunk     = Job->SynChunk;
       world_chunk               *DestChunk    = Job->DestChunk;
-      gpu_mapped_element_buffer *GpuMappedBuf = &DestChunk->Mesh;
-      Assert(HasGpuMesh(&DestChunk->Mesh) == True);
+      gpu_mapped_element_buffer *GpuMappedBuf = &SynChunk->Mesh;
+      /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
       Assert(HasGpuMesh(GpuMappedBuf) == True);
 
       Assert(DestChunk->DEBUG_OwnedByThread == 0);
       DestChunk->DEBUG_OwnedByThread = ThreadLocal_ThreadIndex;
 
       RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf->Buffer, Thread->TempMemory);
+
+      if (HasGpuMesh(&DestChunk->Mesh) == True)
+      {
+        PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
+      }
+
+      DestChunk->Mesh = *GpuMappedBuf;
+      SynChunk->Mesh = {};
+
       Assert(GpuMappedBuf->Buffer.At == GpuMappedBuf->Buffer.End);
       Assert(HasGpuMesh(&DestChunk->Mesh) == True);
+
 
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
@@ -800,7 +810,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       if (ChunkIsGarbage(Chunk))
       {
         // NOTE(Jesse): This is an optimization; the engine marks chunks that
-        // // have moved outside of the visible region as garbage.
+        // have moved outside of the visible region as garbage.
         Chunk->Flags = Chunk_Uninitialized;
       }
       else

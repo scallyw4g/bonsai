@@ -1042,7 +1042,8 @@ CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, br
     // @editor_chunk_memory_question
     //
     /* DeallocateWorldChunk(Chunk, MeshFreelist); */
-    DeallocateGpuBuffers(RenderQ, Chunk);
+    /* DeallocateGpuBuffers(RenderQ, Chunk); */
+    PushDeallocateBuffersCommand(RenderQ, &Chunk->Mesh.Handles);
     AllocateWorldChunk(Chunk, {}, RequiredLayerDim, {}, Editor->Memory);
   }
 
