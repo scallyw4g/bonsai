@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(bonsai_futex*, &Element->EnqueueFutex),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->EnqueueIndex),
@@ -55,9 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->DequeueIndex),
@@ -71,9 +73,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(work_queue_entry*, Element->Entries),

@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->AutoDayNightCycle),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->tDay),
@@ -56,9 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->DawnIntensity),
@@ -72,9 +74,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->DawnColor),
@@ -88,8 +91,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->SunIntensity),
@@ -103,9 +107,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->SunColor),
@@ -119,8 +124,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->DuskIntensity),
@@ -134,9 +140,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->DuskColor),
@@ -150,8 +157,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->MoonIntensity),
@@ -165,9 +173,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->MoonColor),
@@ -181,8 +190,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->CurrentSunColor),

@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(framebuffer*, &Element->FBO),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(g_buffer_textures*, &Element->Textures),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader*, &Element->gBufferShader),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(m4*, &Element->InverseViewMatrix),
@@ -85,8 +88,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(m4*, &Element->InverseProjectionMatrix),
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(m4*, &Element->ViewProjection),
@@ -115,14 +120,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->GlTimerObject),
         CSz("GlTimerObject"),
         Params
         );
+
 
 
 

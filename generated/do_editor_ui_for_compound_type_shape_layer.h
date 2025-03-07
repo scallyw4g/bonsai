@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shape_type*, &Element->Type),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_update_op_shape_params_sphere*, &Element->Sphere),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_update_op_shape_params_rect*, &Element->Rect),

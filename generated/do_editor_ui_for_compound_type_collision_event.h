@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->FrameIndex),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->Count),
@@ -56,9 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(cp*, &Element->MinP),
@@ -72,8 +74,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs 
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(cp*, &Element->MaxP),

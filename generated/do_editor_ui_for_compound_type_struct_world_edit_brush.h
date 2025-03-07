@@ -26,25 +26,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                        if (ToggleButton(Ui, CSz("v NameBuf[(256) + 1]"), CSz("> NameBuf[(256) + 1]"), UiId(Window, "toggle world_edit_brush char  NameBuf", Element->NameBuf), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, (256) + 1)
-        {
-                    DoEditorUi(Ui, Window, Element->NameBuf+ArrayIndex, FSz("NameBuf[%d]", ArrayIndex), Params);
-
-           PushNewRow(Ui); 
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-      }
-      PushNewRow(Ui);
+                        auto Value = CS(Element->NameBuf);
+      DoEditorUi(Ui, Window, &Value, CSz("NameBuf"), Params);
 
 
 
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode*, &Element->Mode),
@@ -58,8 +47,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
@@ -73,8 +63,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(layered_brush*, &Element->Layered),

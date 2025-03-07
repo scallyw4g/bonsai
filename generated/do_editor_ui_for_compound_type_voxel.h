@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u8*, &Element->Transparency),
@@ -40,15 +40,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u16*, &Element->Color),
         CSz("Color"),
         Params
         );
+
 
 
 

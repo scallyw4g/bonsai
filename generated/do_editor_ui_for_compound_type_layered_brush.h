@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->LayerCount),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
+
             PushNewRow(Ui);
 
-                  if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers), Params ))
+                        if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -58,8 +59,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->SeedBrushWithSelection),
@@ -73,9 +75,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->BrushFollowsCursor),
@@ -89,9 +92,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode*, &Element->Mode),
@@ -105,8 +109,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode_modifier*, &Element->Modifier),

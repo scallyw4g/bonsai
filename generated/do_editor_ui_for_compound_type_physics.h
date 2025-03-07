@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Velocity),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Force),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Delta),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Mass),
@@ -85,15 +88,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Speed),
         CSz("Speed"),
         Params
         );
+
 
 
 

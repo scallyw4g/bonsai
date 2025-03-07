@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(brush_layer_type*, &Element->Type),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(noise_layer*, &Element->Noise),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shape_layer*, &Element->Shape),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode*, &Element->Mode),
@@ -85,8 +88,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_color_blend_mode*, &Element->ColorMode),
@@ -115,8 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->Iterations),
@@ -130,9 +136,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(rect3i*, &Element->Offset),
@@ -146,8 +153,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->NoiseBasisOffset),
@@ -161,8 +169,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->HSVColor),
@@ -176,14 +185,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->Invert),
         CSz("Invert"),
         Params
         );
+
 
 
 

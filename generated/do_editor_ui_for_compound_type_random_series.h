@@ -26,13 +26,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->Seed),
         CSz("Seed"),
         Params
         );
+
 
 
 

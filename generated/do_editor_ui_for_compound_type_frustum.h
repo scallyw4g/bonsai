@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->farClip),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->nearClip),
@@ -56,9 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->width),
@@ -72,9 +74,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->FOV),
@@ -88,9 +91,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(plane*, &Element->Top),
@@ -104,8 +108,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(plane*, &Element->Bot),
@@ -119,8 +124,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(plane*, &Element->Left),
@@ -134,8 +140,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(plane*, &Element->Right),

@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader*, &Element->Program),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v Uniforms[1]"), CSz("> Uniforms[1]"), UiId(Window, "toggle terrain_finalize_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+                        if (ToggleButton(Ui, CSz("v Uniforms[1]"), CSz("> Uniforms[1]"), UiId(Window, "toggle terrain_finalize_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -57,8 +58,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture*, &Element->DestTexture),
@@ -72,8 +74,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(framebuffer*, &Element->FBO),
@@ -87,8 +90,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture*, Element->InputTex),

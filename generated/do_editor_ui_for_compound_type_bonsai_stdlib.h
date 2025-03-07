@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(os*, &Element->Os),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(platform*, &Element->Plat),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(thread_local_state*, Element->ThreadStates),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture_block_array*, &Element->AllTextures),
@@ -85,8 +88,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader_ptr_block_array*, &Element->AllShaders),
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(debug_state*, &Element->DebugState),

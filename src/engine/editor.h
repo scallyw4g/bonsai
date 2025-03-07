@@ -187,70 +187,77 @@ poof(
               {
               }
               {
-                member.is_array?
+                member.has_tag(ui_display_as)?
                 {
-                  if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
-                  {
-                    OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                      PushNewRow(Ui);
-                      RangeIterator(ArrayIndex, member.array)
-                      {
-                        member.has_tag(custom_ui)?
-                        {
-                          member.tag_value(custom_ui);
-                        }
-                        {
-                          DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
-                        }
-                        member.is_primitive?  { PushNewRow(Ui); }
-                      }
-                    CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-                  }
-                  PushNewRow(Ui);
+                  auto Value = member.tag_value(ui_display_as)(Element->member.name);
+                  DoEditorUi(Ui, Window, &Value, CSz("member.name"), Params);
                 }
                 {
-                  member.has_tag(custom_ui)?
+                  member.is_array?
                   {
-                    member.tag_value(custom_ui);
+                    if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
+                    {
+                      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                        PushNewRow(Ui);
+                        RangeIterator(ArrayIndex, member.array)
+                        {
+                          member.has_tag(custom_ui)?
+                          {
+                            member.tag_value(custom_ui);
+                          }
+                          {
+                            DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                          }
+                          member.is_primitive?  { PushNewRow(Ui); }
+                        }
+                      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+                    }
+                    PushNewRow(Ui);
                   }
                   {
-                    member.is_type(b32)?
+                    member.has_tag(custom_ui)?
                     {
-                      DoEditorUi(Ui,
-                                 Window,
-                                 Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
-                                 CSz("member.name"),
-                                 &DefaultUiRenderParams_Checkbox
-                                 member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                      member.tag_value(custom_ui);
                     }
                     {
-                      member.is_union?
+                      member.is_type(b32)?
                       {
-                        member.name?
-                        {
-                          DoEditorUi(Ui,
-                                     Window,
-                                     // Cast to remove const/volatile keywords if they're there
-                                     Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                     CSz("member.name"),
-                                     Params
-                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
-                        }
-                        {
-                        }
+                        DoEditorUi(Ui,
+                                   Window,
+                                   Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
+                                   CSz("member.name"),
+                                   &DefaultUiRenderParams_Checkbox
+                                   member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                       }
                       {
-                        member.is_function?
+                        member.is_union?
                         {
+                          member.name?
+                          {
+                            DoEditorUi(Ui,
+                                       Window,
+                                       // Cast to remove const/volatile keywords if they're there
+                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                       CSz("member.name"),
+                                       Params
+                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          }
+                          {
+                          }
                         }
                         {
-                          DoEditorUi(Ui,
-                                     Window,
-                                     // Cast to remove const/volatile keywords if they're there
-                                     Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                     CSz("member.name"),
-                                     Params
-                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          member.is_function?
+                          {
+                          }
+                          {
+                            DoEditorUi(Ui,
+                                       Window,
+                                       // Cast to remove const/volatile keywords if they're there
+                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                       CSz("member.name"),
+                                       Params
+                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          }
                         }
                       }
                     }
@@ -1104,7 +1111,7 @@ struct world_edit_brush
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
 #define NameBuf_Len (256)
-  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box)
+  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_display_as(CS))
 
   /* world_edit_shape               Shape; */
   world_edit_blend_mode          Mode;

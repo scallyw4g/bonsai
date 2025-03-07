@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->Center),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->VisibleRegion),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node*, &Element->Root),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->OctreeMemory),
@@ -85,8 +88,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node_freelist*, &Element->OctreeNodeFreelist),
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist),
@@ -115,14 +120,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->FreeChunkCount),
         CSz("FreeChunkCount"),
         Params
         );
+
 
 
 

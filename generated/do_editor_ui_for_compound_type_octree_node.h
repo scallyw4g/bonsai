@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node_type*, &Element->Type),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->HadNoVisibleSurface),
         CSz("HadNoVisibleSurface"),
@@ -52,9 +53,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->Dirty),
         CSz("Dirty"),
@@ -65,9 +67,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->WorldP),
@@ -81,8 +84,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->Resolution),
@@ -96,8 +100,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_chunk*, Element->Chunk),
@@ -111,8 +116,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v Children[8]"), CSz("> Children[8]"), UiId(Window, "toggle octree_node octree_node Children", Element->Children), Params ))
+                        if (ToggleButton(Ui, CSz("v Children[8]"), CSz("> Children[8]"), UiId(Window, "toggle octree_node octree_node Children", Element->Children), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -128,8 +134,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node*, Element->Next),
@@ -143,8 +150,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_edit_ptr_block_array*, &Element->Edits),
@@ -158,8 +166,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(bonsai_futex*, &Element->Lock),

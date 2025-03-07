@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->BytesSolidGeoLastFrame),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->BytesTransGeoLastFrame),
@@ -56,9 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->VertsDrawnLastFrame),
@@ -72,15 +74,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->DrawCallsLastFrame),
         CSz("DrawCallsLastFrame"),
         Params
         );
+
 
 
 

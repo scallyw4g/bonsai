@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->tEnd),
@@ -40,15 +40,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Value),
         CSz("Value"),
         Params
         );
+
 
 
 

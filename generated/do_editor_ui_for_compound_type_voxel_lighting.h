@@ -26,13 +26,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u8*, &Element->Emission),
         CSz("Emission"),
         Params
         );
+
 
 
 

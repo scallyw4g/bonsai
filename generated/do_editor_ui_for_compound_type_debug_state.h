@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                    DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->Initialized),
         CSz("Initialized"),
@@ -37,9 +37,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->UIType),
@@ -53,9 +54,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->BytesBufferedToCard),
@@ -69,9 +71,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->DebugDoScopeProfiling),
         CSz("DebugDoScopeProfiling"),
@@ -82,9 +85,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->NumScopes),
@@ -98,9 +102,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->DrawCallCountLastFrame),
@@ -114,9 +119,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->VertexCountLastFrame),
@@ -130,9 +136,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(picked_world_chunk*, Element->PickedChunk),
@@ -146,8 +153,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(picked_world_chunk*, Element->HoverChunk),
@@ -161,8 +169,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(debug_thread_state*, Element->ThreadStates),
@@ -176,8 +185,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->MetaTableNameStringsArena),
@@ -191,8 +201,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(renderer_2d*, Element->UiGroup),
@@ -206,8 +217,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(untextured_3d_geometry_buffer*, &Element->LineMesh),
@@ -221,8 +233,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(selected_arenas*, Element->SelectedArenas),
@@ -236,8 +249,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->DisplayDebugMenu),
         CSz("DisplayDebugMenu"),
@@ -248,9 +262,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(debug_profile_scope*, Element->HotFunction),
@@ -264,8 +279,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64_cursor*, &Element->HistogramSamples),
@@ -279,8 +295,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(bonsai_futex*, &Element->HistogramFutex),
@@ -294,8 +311,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(debug_profile_scope*, &Element->FreeScopeSentinel),
@@ -309,8 +327,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(umm*, &Element->MinCycles),
@@ -324,9 +343,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(umm*, &Element->MaxCycles),
@@ -340,9 +360,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                  if (ToggleButton(Ui, CSz("v Frames[(128)]"), CSz("> Frames[(128)]"), UiId(Window, "toggle debug_state frame_stats Frames", Element->Frames), Params ))
+                        if (ToggleButton(Ui, CSz("v Frames[(128)]"), CSz("> Frames[(128)]"), UiId(Window, "toggle debug_state frame_stats Frames", Element->Frames), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -358,8 +379,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->ReadScopeIndex),
@@ -373,9 +395,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->FreeScopeCount),
@@ -389,9 +412,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                  if (ToggleButton(Ui, CSz("v RegisteredMemoryArenas[(1024)]"), CSz("> RegisteredMemoryArenas[(1024)]"), UiId(Window, "toggle debug_state registered_memory_arena RegisteredMemoryArenas", Element->RegisteredMemoryArenas), Params ))
+                        if (ToggleButton(Ui, CSz("v RegisteredMemoryArenas[(1024)]"), CSz("> RegisteredMemoryArenas[(1024)]"), UiId(Window, "toggle debug_state registered_memory_arena RegisteredMemoryArenas", Element->RegisteredMemoryArenas), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -407,8 +431,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v TrackedDrawCalls[(4096)]"), CSz("> TrackedDrawCalls[(4096)]"), UiId(Window, "toggle debug_state debug_draw_call TrackedDrawCalls", Element->TrackedDrawCalls), Params ))
+                        if (ToggleButton(Ui, CSz("v TrackedDrawCalls[(4096)]"), CSz("> TrackedDrawCalls[(4096)]"), UiId(Window, "toggle debug_state debug_draw_call TrackedDrawCalls", Element->TrackedDrawCalls), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);

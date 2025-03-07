@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(render_buffers_2d*, Element->TextGroup),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture*, &Element->SpriteTextureArray),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->InteractionStackTop),
@@ -70,9 +72,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v2*, Element->MouseP),
@@ -86,8 +89,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v2*, Element->MouseDP),
@@ -101,8 +105,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v2*, Element->ScreenDim),
@@ -116,8 +121,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(input*, Element->Input),
@@ -131,8 +137,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(ui_toggle_hashtable*, &Element->ToggleTable),
@@ -146,8 +153,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(window_layout_hashtable*, &Element->WindowTable),
@@ -161,8 +169,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
+                        if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -178,8 +187,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(window_layout*, Element->HighestWindow),
@@ -193,8 +203,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(interactable*, &Element->Hover),
@@ -208,8 +219,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(interactable*, &Element->Clicked),
@@ -223,8 +235,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(interactable*, &Element->Pressed),
@@ -238,8 +251,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->RequestedForceCapture),
         CSz("RequestedForceCapture"),
@@ -250,9 +264,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(text_box_edit_state*, &Element->TextEdit),
@@ -266,8 +281,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(untextured_2d_geometry_buffer*, &Element->Geo),
@@ -281,8 +297,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader*, &Element->TexturedQuadShader),
@@ -296,8 +313,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(ui_render_command_buffer*, Element->CommandBuffer),
@@ -311,8 +329,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, &Element->RenderCommandArena),
@@ -326,8 +345,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, &Element->UiToggleArena),
@@ -341,8 +361,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, &Element->WindowTableArena),
@@ -356,8 +377,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
+                        if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -373,8 +395,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->SolidGeoCountLastFrame),
@@ -388,9 +411,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->TextGeoCountLastFrame),
@@ -404,9 +428,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3_cursor*, Element->ColorPalette),

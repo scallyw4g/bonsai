@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_id*, &Element->Id),
@@ -40,14 +40,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
-      
-                        DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
 
       
-                                          DoEditorUi(Ui,
+                              DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->EulerAngles),
@@ -61,8 +63,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Scale),
@@ -76,9 +79,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->_CollisionVolumeRadius),
@@ -92,8 +96,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(physics*, &Element->Physics),
@@ -107,8 +112,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(asset_id*, &Element->AssetId),
@@ -122,8 +128,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->ModelIndex),
@@ -137,9 +144,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(collision_event*, &Element->LastResolvedCollision),
@@ -153,8 +161,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_position_info*, &Element->LastResolvedPosInfo),
@@ -168,8 +177,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(particle_system*, Element->Emitter),
@@ -183,8 +193,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_state*, &Element->State),
@@ -198,8 +209,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_behavior_flags*, &Element->Behavior),
@@ -213,8 +225,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_id*, &Element->Carrying),
@@ -228,19 +241,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+
       
-                          if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                                if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
                  else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
 
 
 
 
+
             PushNewRow(Ui);
 
-                          if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
+                                if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
                  else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
+
 
 
 

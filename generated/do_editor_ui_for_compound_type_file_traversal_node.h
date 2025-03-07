@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(file_traversal_type*, &Element->Type),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(cs*, &Element->Dir),
@@ -55,15 +56,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(cs*, &Element->Name),
         CSz("Name"),
         Params
         );
+
 
 
 

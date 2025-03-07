@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(frustum*, &Element->Frust),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(cp*, &Element->CurrentP),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->RenderSpacePosition),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Pitch),
@@ -85,9 +88,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Roll),
@@ -101,9 +105,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Yaw),
@@ -117,9 +122,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->DistanceFromTarget),
@@ -133,9 +139,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->TargetPitch),
@@ -149,9 +156,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->TargetRoll),
@@ -165,9 +173,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->TargetYaw),
@@ -181,9 +190,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->TargetDistanceFromTarget),
@@ -197,9 +207,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r32*, &Element->Blend),
@@ -213,9 +224,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Front),
@@ -229,8 +241,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Right),
@@ -244,8 +257,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->Up),
@@ -259,8 +273,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_id*, &Element->GhostId),

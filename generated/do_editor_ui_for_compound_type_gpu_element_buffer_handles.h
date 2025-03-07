@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->VertexHandle),
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->NormalHandle),
@@ -56,9 +57,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->MatHandle),
@@ -72,9 +74,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->ElementCount),
@@ -88,9 +91,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(data_type*, &Element->ElementType),
@@ -104,8 +108,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->Mapped),
@@ -119,9 +124,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->Pad),
@@ -135,15 +141,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u16*, &Element->Flags),
         CSz("Flags"),
         Params
         );
+
 
 
 

@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_chunk*, Element->Next),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(chunk_flag*, &Element->Flags),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->Dim),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, Element->Occupancy),
@@ -85,9 +88,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, Element->xOccupancyBorder),
@@ -101,9 +105,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, Element->FaceMasks),
@@ -117,9 +122,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel*, Element->Voxels),
@@ -133,8 +139,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel_lighting*, Element->VoxelLighting),
@@ -148,8 +155,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(gpu_mapped_element_buffer*, &Element->Mesh),
@@ -163,8 +171,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel_position_cursor*, &Element->StandingSpots),
@@ -178,8 +187,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->DimInChunks),
@@ -193,8 +203,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3i*, &Element->WorldP),
@@ -208,8 +219,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->FilledCount),
@@ -223,9 +235,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                              DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
         Cast(b8*, &Element->DrawBoundingVoxels),
         CSz("DrawBoundingVoxels"),
@@ -236,9 +249,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->PointsToLeaveRemaining),
@@ -252,9 +266,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->TriCount),
@@ -268,9 +283,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->EdgeBoundaryVoxelCount),
@@ -284,9 +300,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->_Pad0),
@@ -300,9 +317,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_ptr_block_array*, &Element->Entities),
@@ -316,8 +334,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(s32*, &Element->DEBUG_OwnedByThread),
@@ -331,9 +350,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+
             PushNewRow(Ui);
 
-                  if (ToggleButton(Ui, CSz("v _Pad1[20]"), CSz("> _Pad1[20]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
+                        if (ToggleButton(Ui, CSz("v _Pad1[20]"), CSz("> _Pad1[20]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -346,6 +366,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
       PushNewRow(Ui);
+
 
 
 

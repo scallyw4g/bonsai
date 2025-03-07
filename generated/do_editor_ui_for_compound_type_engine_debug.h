@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->Memory),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(engine_debug_view_mode*, &Element->ViewMode),
@@ -55,8 +56,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(picked_world_chunk_static_buffer*, &Element->PickedChunks),
@@ -70,8 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture_ptr_block_array*, &Element->Textures),
@@ -85,8 +88,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(ui_debug*, &Element->UiDebug),
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(render_debug*, &Element->Render),
@@ -115,8 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawEntityCollisionVolumes),
@@ -130,9 +136,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawWorldAxies),
@@ -146,9 +153,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->TriggerRuntimeBreak),
@@ -162,9 +170,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->ResetAssetNodeView),
@@ -178,9 +187,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawBranchNodesWithMeshes),
@@ -194,9 +204,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawBranchNodes),
@@ -210,9 +221,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawLeafNodes),
@@ -226,9 +238,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawNodesWithChunks),
@@ -242,9 +255,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawQueuedNodes),
@@ -258,9 +272,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->MarkChunkBorderVoxels),
@@ -274,9 +289,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(b8*, &Element->DrawGameCameraLocation),
@@ -290,9 +306,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r64*, &Element->ChunkGenTimeElapsedMS),
@@ -306,9 +323,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->CellsGenerated),
@@ -322,9 +340,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(r64*, &Element->ChunkGenCyclesElapsed),
@@ -338,9 +357,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u8*, &Element->PickedChunkState),
@@ -354,9 +374,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node*, Element->PickedNode),
@@ -370,8 +391,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(asset_window_view_mode*, &Element->AssetWindowViewMode),
@@ -385,8 +407,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(asset_id*, &Element->SelectedAsset),
@@ -400,8 +423,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u64*, &Element->ModelIndex),
@@ -415,9 +439,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(entity_id*, &Element->SelectedEntity),
@@ -431,8 +456,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(u32*, &Element->OctreeDrawDepth),
@@ -446,9 +472,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+
             PushNewRow(Ui);
 
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(octree_node*, Element->SelectedNode),

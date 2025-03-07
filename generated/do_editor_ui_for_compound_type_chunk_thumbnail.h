@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(world_chunk*, &Element->Chunk),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(asset_thumbnail*, &Element->Thumbnail),

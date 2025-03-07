@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader*, &Element->Program),
@@ -40,8 +40,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                  if (ToggleButton(Ui, CSz("v Uniforms[3]"), CSz("> Uniforms[3]"), UiId(Window, "toggle terrain_gen_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+                        if (ToggleButton(Ui, CSz("v Uniforms[3]"), CSz("> Uniforms[3]"), UiId(Window, "toggle terrain_gen_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
@@ -57,8 +58,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(texture*, &Element->NoiseTexture),
@@ -72,8 +74,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(framebuffer*, &Element->FBO),
@@ -87,8 +90,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->ChunkDim),
@@ -102,8 +106,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->WorldspaceBasis),
@@ -117,8 +122,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_gen_render_context *E
 
 
 
+
       
-                                          DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(v3*, &Element->ChunkResolution),
