@@ -191,7 +191,7 @@ void main()
         { NoiseValue = NoiseValue - NoiseSample; } break;
 
         case 2: // Threshold
-        { if (NoiseSample > Threshold) NoiseValue = NoiseSample; } break;
+        { if (NoiseSample > Threshold) NoiseValue = Threshold; } break;
       }
 
 

@@ -60,9 +60,6 @@ vec3 calcNormal( in vec3 pos )
 	return normalize(nor);
 }
 
-#define PI64 (3.1415926535897932384626433832795028841971693993)
-#define PI32 (3.14159265358979)
-
 float
 CosineInterpolate( float t, f32 y1, f32 y2 )
 {
@@ -211,13 +208,36 @@ void main()
   //
   {
     v3 Period = V3(1500.f);
-    float Amplitude = 500.f;
-    f32 StartingZDepth = 1000;
+    float Amplitude = 100.f;
+    f32 StartingZDepth = 10000;
     /* f32 StartingZDepth = 0; */
     s32 Octaves = 6;
-
     NoiseValue = StartingZDepth;
 
+#if 1
+    {
+      f32 Start = 8000;
+      f32 End = 10000;
+      f32 Width = End-Start;
+      f32 Rad = Width/2.f;
+      /* f32 Power = 2000.f; */
+      /* f32 Power = 0.001f; */
+      f32 Power = 1000.f;
+
+      f32 CircleOrigin = Start + Rad;
+
+      /* if (Basis.x > Start && Basis.y > Start && */
+      /*     Basis.x < End && Basis.y < End) */
+      {
+        v2 OriginRelativeBasis = 0.30f*((Basis.xy-CircleOrigin)/Rad);
+        /* v2 t = sin(PI32*(0.5f+(OriginRelativeBasis/Width))); */
+        /* f32 t = sin(PI32*max(0.f, Rad - length(OriginRelativeBasis))); */
+        f32 t = sin( Rad - length(OriginRelativeBasis));
+        /* NoiseValue += min(t.x*Power, t.y*Power); */
+        NoiseValue += t*Power;
+      }
+    }
+#endif
 
     v3 Deriv = v3(0.f);
     f32 warp = 0.f;
@@ -227,33 +247,13 @@ void main()
       v3 xyz = Basis / (Period/Octave);
 
       v4 gn = gradient_noise_derivs(xyz+warp);
-      /* gn.x = MapNoiseValueToFinal(gn.x); */
-      /* v4 gn = value_noise_derivs(xyz+warp); */
       NoiseValue += gn.x*(Amplitude/Octave);
-      /* Deriv += calcNormal(Basis); */
       Deriv += gn.yzw;
-
-      /* v4 gn = COL(xyz+warp)*8; */
-      /* f32 fractal = DE(xyz/1.3f); */
-      /* NoiseValue += fractal * Amplitude; */
-      /* gn.x = fractal; */
-
-      /* v3 v = voronoi_noise(Basis/160); */
-      /* NoiseValue += v.x*150; */
-      /* NoiseValue += v.x*50; */
-      /* ColorValue += v3(v.y); */
-
-      /* ColorValue = bad_hash(Basis); */
-
-      /* NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave)); */
     }
 
     v3 Up = V3(0, 0, 1);
 
-    /* NoiseValue = MapNoiseValueToFinal(NoiseValue); */
-
-    /* NoiseValue = pow(NoiseValue, 1.0); */
-    /* NoiseValue = pow(NoiseValue, 1.0); */
+    /* NoiseValue = 100.f+MapNoiseValueToFinal(NoiseValue); */
 
     Deriv = normalize(Deriv);
     /* Deriv.xy = abs(Deriv.xy); */
@@ -272,6 +272,7 @@ void main()
     }
 
 
+#if 1
     f32 rng2d = white_noise(Basis.xy);
     f32 rng3d = white_noise(Basis);
 
@@ -411,6 +412,9 @@ void main()
       NoiseValue += NoiseToTile;
     }
 #endif
+#endif
+
+    /* NoiseValue = StartingZDepth; */
 
   }
 

@@ -387,6 +387,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           {
                             shape_layer *Shape = &Layer->Settings.Shape;
                             BindUniformByName(&WorldEditRC->Program, "ShapeType", Shape->Type);
+                            BindUniformByName(&WorldEditRC->Program, "Threshold", Shape->Threshold);
                             switch(Shape->Type)
                             {
                               case ShapeType_Sphere:   { } break;

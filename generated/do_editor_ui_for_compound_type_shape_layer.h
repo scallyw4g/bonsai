@@ -65,6 +65,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
         CSz("Rect"),
         Params
         );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(f32*, &Element->Threshold),
+        CSz("Threshold"),
+        Params
+        , 0.f, 1.f );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

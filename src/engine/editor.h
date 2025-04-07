@@ -692,6 +692,7 @@ struct white_noise_params
   r32 Threshold = 0.5f;
 };
 
+
 struct perlin_noise_params
 {
   r32 Threshold = 0.f;               poof(@ui_value_range(0.f,   1.f))
@@ -858,6 +859,8 @@ struct shape_layer
   // them and your parameter selections stay intact.
   world_update_op_shape_params_sphere Sphere;
   world_update_op_shape_params_rect   Rect;
+
+  f32 Threshold = 0.f; poof(@ui_value_range(0.f, 1.f))
 };
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
