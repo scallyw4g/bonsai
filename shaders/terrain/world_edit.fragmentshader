@@ -6,6 +6,8 @@ uniform int BlendMode;
 uniform int ColorMode;
 uniform int Modifiers;
 
+uniform int GenerateNormals;
+
 
 //
 // Clipping params
@@ -210,10 +212,10 @@ void main()
         { ColorValue = ColorValue - ColorSample; } break;
 
         case 4: // Multiply
-        { ColorValue = ColorValue - ColorSample; } break;
+        { ColorValue = ColorValue * ColorSample; } break;
 
         case 5: // Divide
-        { ColorValue = ColorValue - ColorSample; } break;
+        { ColorValue = SafeDivide0(ColorValue, ColorSample); } break;
 
         case 6: // Average
         { f32 StartingIntensity = length(ColorValue);
