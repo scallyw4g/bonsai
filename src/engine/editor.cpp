@@ -413,8 +413,11 @@ poof(do_editor_ui_for_compound_type(lighting_render_group))
 poof(do_editor_ui_for_compound_type(g_buffer_render_group))
 #include <generated/do_editor_ui_for_compound_type_g_buffer_render_group.h>
 
-poof(do_editor_ui_for_compound_type(terrain_gen_render_context))
-#include <generated/do_editor_ui_for_compound_type_struct_terrain_gen_render_context.h>
+poof(do_editor_ui_for_compound_type(terrain_shaping_render_context))
+#include <generated/do_editor_ui_for_compound_type_struct_terrain_shaping_render_context.h>
+
+poof(do_editor_ui_for_compound_type(terrain_decoration_render_context))
+#include <generated/do_editor_ui_for_compound_type_struct_terrain_decoration_render_context.h>
 
 poof(do_editor_ui_for_compound_type(terrain_finalize_render_context))
 #include <generated/do_editor_ui_for_compound_type_struct_terrain_finalize_render_context.h>
@@ -3060,9 +3063,16 @@ DoLevelWindow(engine_resources *Engine)
       Header.EntityCount = EntityCount;
       Header.EditCount = u32(TotalElements(&Editor->WorldEdits));
 
-      cs TerrainFragShaderFilename = Engine->Graphics.TerrainGenRC.Program.FragSourceFilename;
-      cs Dest = CS(Header.TerrainGenShader, NameBuf_Len);
-      CopyString(&TerrainFragShaderFilename, &Dest);
+      {
+        cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
+        cs Dest = CS(Header.TerrainShapingShader, NameBuf_Len);
+        CopyString(&Filename, &Dest);
+      }
+      {
+        cs Filename = Engine->Graphics.TerrainDecorationRC.Program.FragSourceFilename;
+        cs Dest = CS(Header.TerrainDecorationShader, NameBuf_Len);
+        CopyString(&Filename, &Dest);
+      }
 
       Serialize(&OutputStream, &Header);
 
@@ -3150,8 +3160,8 @@ DoLevelWindow(engine_resources *Engine)
 
         /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
 
-        Engine->Graphics.TerrainGenRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainGenShader, Thread->PermMemory);
-        /* Engine->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0; */
+        Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainShapingShader, Thread->PermMemory);
+        Engine->Graphics.TerrainDecorationRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainDecorationShader, Thread->PermMemory);
 
         // Must come after we fill out the VisibleRegion so the root octree node
         // gets initialized to the correct size

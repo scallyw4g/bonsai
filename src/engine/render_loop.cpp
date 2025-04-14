@@ -272,22 +272,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              v3 NoiseDim = Graphics->TerrainGenRC.ChunkDim;
+              v3 NoiseDim = Graphics->TerrainShapingRC.ChunkDim;
               v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
 
               {
-                auto *TerrainGenRC = &Graphics->TerrainGenRC;
+                auto *TerrainShapingRC = &Graphics->TerrainShapingRC;
                 v3i Apron = V3i(2, 2, 2);
                 Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
 
-                TerrainGenRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
-                TerrainGenRC->ChunkResolution = V3(Chunk->DimInChunks);
+                TerrainShapingRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                TerrainShapingRC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainGenRC->FBO.ID);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO.ID);
 
                 SetViewport(ViewportSize);
-                UseShader(TerrainGenRC);
+                UseShader(TerrainShapingRC);
 
                 /* gpu_timer Timer = StartGpuTimer(); */
                 RenderQuad();
@@ -297,15 +297,42 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
+              texture *InputTex = &Graphics->TerrainShapingRC.NoiseTexture;
+              s32 PingPongIndex = 0;
 
-              texture *InputTex = &Graphics->TerrainGenRC.NoiseTexture;
+              {
+                auto *TerrainDecorationRC = &Graphics->TerrainDecorationRC;
+                v3i Apron = V3i(2, 2, 2);
+                Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
+
+                TerrainDecorationRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                TerrainDecorationRC->ChunkResolution = V3(Chunk->DimInChunks);
+
+                TIMED_NAMED_BLOCK(TerrainDrawCall);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
+
+                SetViewport(ViewportSize);
+                UseShader(TerrainDecorationRC);
+
+                BindUniformByName(&TerrainDecorationRC->Program, "InputTex", InputTex, 0);
+
+                /* gpu_timer Timer = StartGpuTimer(); */
+                RenderQuad();
+                /* EndGpuTimer(&Timer); */
+                /* Push(&Graphics->GpuTimers, &Timer); */
+
+                AssertNoGlErrors;
+              }
+
+              world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
+              InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
+              PingPongIndex = (PingPongIndex + 1) & 1;
+
 #if 1
               {
                 AcquireFutex(&Node->Lock);
-                s32 PingPongIndex = 0;
                 if (TotalElements(&Node->Edits))
                 {
-                  world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
                   AssertNoGlErrors;
 
                   UseShader(WorldEditRC);

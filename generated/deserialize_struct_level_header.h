@@ -64,7 +64,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
             {
         umm Count = (256);
 
-    Result &= Deserialize(Bytes, Element->TerrainGenShader, Memory, Count);
+    Result &= Deserialize(Bytes, Element->TerrainShapingShader, Memory, Count);
+  }
+
+
+
+
+
+            {
+        umm Count = (256);
+
+    Result &= Deserialize(Bytes, Element->TerrainDecorationShader, Memory, Count);
   }
 
   

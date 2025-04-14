@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:425:0
+// src/engine/editor.cpp:428:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -411,8 +411,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(terrain_gen_render_context*, &Element->TerrainGenRC),
-        CSz("TerrainGenRC"),
+        Cast(terrain_shaping_render_context*, &Element->TerrainShapingRC),
+        CSz("TerrainShapingRC"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(terrain_decoration_render_context*, &Element->TerrainDecorationRC),
+        CSz("TerrainDecorationRC"),
         Params
         );
 

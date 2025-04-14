@@ -13,5 +13,6 @@ struct level_header
 
   render_settings RenderSettings;
 
-  char TerrainGenShader[NameBuf_Len];
+  char TerrainShapingShader[NameBuf_Len];
+  char TerrainDecorationShader[NameBuf_Len];
 };

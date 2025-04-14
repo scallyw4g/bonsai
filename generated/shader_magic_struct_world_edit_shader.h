@@ -1,4 +1,4 @@
-// src/engine/graphics.h:39:0
+// src/engine/graphics.h:56:0
 
 link_internal void
 InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *ChunkDim     , v3 *WorldspaceBasis     , v3 *ChunkResolution     , s32 Type  )

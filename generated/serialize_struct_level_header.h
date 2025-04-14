@@ -79,7 +79,17 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
                         {
             umm ThisCount = (256);
 
-      Result &= Serialize(Bytes, Element->TerrainGenShader, ThisCount);
+      Result &= Serialize(Bytes, Element->TerrainShapingShader, ThisCount);
+    }
+
+
+
+
+
+                        {
+            umm ThisCount = (256);
+
+      Result &= Serialize(Bytes, Element->TerrainDecorationShader, ThisCount);
     }
 
     

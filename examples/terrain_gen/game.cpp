@@ -813,29 +813,53 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
-  global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
+  {
+    global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
+    PushWindowStart(Ui, &Window);
+      file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/shaping"), GetTranArena());
 
-  PushWindowStart(Ui, &Window);
-    file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain"), GetTranArena());
-
-    u32 I = 0;
-    IterateOver(&Files, FileNode, FileNodeIndex)
-    {
-      if (FileNode->Type == FileTraversalType_File)
+      u32 I = 0;
+      IterateOver(&Files, FileNode, FileNodeIndex)
       {
-        if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+        if (FileNode->Type == FileTraversalType_File)
         {
-          // Force engine to reload new shader
-          Resources->Graphics.TerrainGenRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
-          Resources->Graphics.TerrainGenRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          {
+            // Force engine to reload new shader
+            Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+            Resources->Graphics.TerrainShapingRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+          }
+          PushNewRow(Ui);
         }
-        PushNewRow(Ui);
-      }
 
-    }
-    
-    /* ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical); */
-  PushWindowEnd(Ui, &Window);
+      }
+    PushWindowEnd(Ui, &Window);
+  }
+
+  {
+    global_variable window_layout Window = WindowLayout("Terrain Decoration Shader", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, &Window);
+      file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/decoration"), GetTranArena());
+
+      u32 I = 0;
+      IterateOver(&Files, FileNode, FileNodeIndex)
+      {
+        if (FileNode->Type == FileTraversalType_File)
+        {
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          {
+            // Force engine to reload new shader
+            Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+            Resources->Graphics.TerrainDecorationRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+          }
+          PushNewRow(Ui);
+        }
+
+      }
+    PushWindowEnd(Ui, &Window);
+  }
+
+
 
   /* Info("%S :: %d", ToString(GameState->TerrainGenType), GameState->TerrainGenType); */
 

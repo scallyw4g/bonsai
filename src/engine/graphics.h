@@ -1,8 +1,8 @@
 
 
-struct terrain_gen_render_context
+struct terrain_shaping_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/terrain/default.fragmentshader") )
+      @frag_source_file("shaders/terrain/shaping/terrain_shaping.fragmentshader") )
 {
           shader  Program;
   shader_uniform  Uniforms[3];
@@ -14,10 +14,27 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
               v3  ChunkResolution; poof(@uniform)
 };
 
+struct terrain_decoration_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/decoration/terrain_decoration.fragmentshader") )
+{
+          shader   Program;
+  shader_uniform   Uniforms[3];
+         texture  *NoiseTexture;
+     framebuffer  *FBO;
+
+              v3  ChunkDim;        poof(@uniform)
+              v3  WorldspaceBasis; poof(@uniform)
+              v3  ChunkResolution; poof(@uniform)
+};
 
 
-poof(shader_magic(terrain_gen_render_context))
-#include <generated/shader_magic_struct_terrain_shader.h>
+
+poof(shader_magic(terrain_shaping_render_context))
+#include <generated/shader_magic_struct_terrain_shaping_shader.h>
+
+poof(shader_magic(terrain_decoration_render_context))
+#include <generated/shader_magic_struct_terrain_decoration_shader.h>
 
 
 struct world_edit_render_context
@@ -155,7 +172,9 @@ struct graphics
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
 
-  terrain_gen_render_context      TerrainGenRC;
+  terrain_shaping_render_context     TerrainShapingRC;
+  terrain_decoration_render_context  TerrainDecorationRC;
+
   terrain_finalize_render_context TerrainFinalizeRC;
   world_edit_render_context       WorldEditRC;
 

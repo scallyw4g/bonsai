@@ -788,33 +788,14 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   v3 ChunkDim = V3(66, 66, 66);
 
   //
-  // Terrain Gen RC
-  //
-  {
-    terrain_gen_render_context *TerrainGenRC = &Result->TerrainGenRC;
-    InitializeTerrainGenRenderContext(TerrainGenRC, ChunkDim, {}, {});
-
-    TerrainGenRC->FBO = GenFramebuffer();
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainGenRC->FBO.ID);
-
-    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
-    TerrainGenRC->NoiseTexture = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("TerrainNoiseTexture"), 1, TextureStorageFormat_RGBA32F);
-
-    FramebufferTexture(&TerrainGenRC->FBO, &TerrainGenRC->NoiseTexture);
-    SetDrawBuffers(&TerrainGenRC->FBO);
-
-    Ensure(CheckAndClearFramebuffer());
-  }
-
-  //
   // World Edit RC
   //
   {
     world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
 
     {
-      terrain_gen_render_context *TerrainGenRC = &Result->TerrainGenRC;
-      InitializeWorldEditRenderContext(WorldEditRC, &TerrainGenRC->ChunkDim, &TerrainGenRC->WorldspaceBasis, &TerrainGenRC->ChunkResolution, {});
+      terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
+      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceBasis, &TerrainShapingRC->ChunkResolution, {});
     }
 
     RangeIterator(Index, 2)
@@ -831,6 +812,41 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       Ensure(CheckAndClearFramebuffer());
     }
   }
+
+  //
+  // Terrain Gen
+  //
+  {
+    terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
+    InitializeTerrainShapingRenderContext(TerrainShapingRC, ChunkDim, {}, {});
+
+    TerrainShapingRC->FBO = GenFramebuffer();
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO.ID);
+
+    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+    TerrainShapingRC->NoiseTexture = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("TerrainNoiseTexture"), 1, TextureStorageFormat_RGBA32F);
+
+    FramebufferTexture(&TerrainShapingRC->FBO, &TerrainShapingRC->NoiseTexture);
+    SetDrawBuffers(&TerrainShapingRC->FBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+  {
+    world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
+    terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, ChunkDim, {}, {});
+
+    TerrainDecorationRC->FBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainDecorationRC->NoiseTexture = &WorldEditRC->PingPongTextures[0];
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
+
+    FramebufferTexture(TerrainDecorationRC->FBO, TerrainDecorationRC->NoiseTexture);
+    SetDrawBuffers(TerrainDecorationRC->FBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
 
 
   //
@@ -856,7 +872,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
 
 
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainGenRC.NoiseTexture);
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.NoiseTexture);
     Ensure(CheckAndClearFramebuffer());
   }
 
