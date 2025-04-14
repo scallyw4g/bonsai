@@ -790,8 +790,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   //
   // World Edit RC
   //
+  world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
   {
-    world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
 
     {
       terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
@@ -820,24 +820,22 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
     InitializeTerrainShapingRenderContext(TerrainShapingRC, ChunkDim, {}, {});
 
-    TerrainShapingRC->FBO = GenFramebuffer();
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO.ID);
+    TerrainShapingRC->FBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainShapingRC->NoiseTexture = &WorldEditRC->PingPongTextures[0];
 
-    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
-    TerrainShapingRC->NoiseTexture = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("TerrainNoiseTexture"), 1, TextureStorageFormat_RGBA32F);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO->ID);
 
-    FramebufferTexture(&TerrainShapingRC->FBO, &TerrainShapingRC->NoiseTexture);
-    SetDrawBuffers(&TerrainShapingRC->FBO);
+    FramebufferTexture(TerrainShapingRC->FBO, TerrainShapingRC->NoiseTexture);
+    SetDrawBuffers(TerrainShapingRC->FBO);
 
     Ensure(CheckAndClearFramebuffer());
   }
   {
-    world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
     terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
     InitializeTerrainDecorationRenderContext(TerrainDecorationRC, ChunkDim, {}, {});
 
-    TerrainDecorationRC->FBO = &WorldEditRC->PingPongFBOs[0];
-    TerrainDecorationRC->NoiseTexture = &WorldEditRC->PingPongTextures[0];
+    TerrainDecorationRC->FBO = &WorldEditRC->PingPongFBOs[1];
+    TerrainDecorationRC->NoiseTexture = &WorldEditRC->PingPongTextures[1];
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
 
@@ -872,7 +870,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
 
 
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.NoiseTexture);
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, Result->TerrainShapingRC.NoiseTexture);
     Ensure(CheckAndClearFramebuffer());
   }
 

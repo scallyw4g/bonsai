@@ -284,7 +284,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TerrainShapingRC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO.ID);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO->ID);
 
                 SetViewport(ViewportSize);
                 UseShader(TerrainShapingRC);
@@ -297,7 +297,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
-              texture *InputTex = &Graphics->TerrainShapingRC.NoiseTexture;
+              texture *InputTex = Graphics->TerrainShapingRC.NoiseTexture;
               s32 PingPongIndex = 0;
 
               {

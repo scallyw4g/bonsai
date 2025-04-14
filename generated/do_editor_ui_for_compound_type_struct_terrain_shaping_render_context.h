@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->NoiseTexture),
+        Cast(texture*, Element->NoiseTexture),
         CSz("NoiseTexture"),
         Params
         );
@@ -79,7 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, &Element->FBO),
+        Cast(framebuffer*, Element->FBO),
         CSz("FBO"),
         Params
         );

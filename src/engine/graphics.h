@@ -6,8 +6,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[3];
-         texture  NoiseTexture;
-     framebuffer  FBO;
+         texture *NoiseTexture;
+     framebuffer *FBO;
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
@@ -18,10 +18,10 @@ struct terrain_decoration_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/decoration/terrain_decoration.fragmentshader") )
 {
-          shader   Program;
-  shader_uniform   Uniforms[3];
-         texture  *NoiseTexture;
-     framebuffer  *FBO;
+          shader  Program;
+  shader_uniform  Uniforms[3];
+         texture *NoiseTexture;
+     framebuffer *FBO;
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
