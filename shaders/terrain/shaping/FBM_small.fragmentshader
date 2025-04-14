@@ -1,8 +1,6 @@
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
-uniform sampler2D InputTex;
-
 in vec2 UV;
 out v4 Output;
 
@@ -17,29 +15,37 @@ void main()
   v3 Offset = V3(0);
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
-  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
-
   // NOTE(Jesse): Set these in the -- user code -- section
-  vec3 ColorValue = TexLookup.rgb;
-  f32 NoiseValue = TexLookup.a;
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
 
   //
-  // -- user code --
+  // -- user code -- 
   //
   {
-    /* f32 White = white_noise(Basis); */
-    /* ColorValue = V3(0.f); */
-    /* ColorValue.r = White*0.3f; */
-    ColorValue = Basis/1000.f;
+
+    v3 Period = V3(1500.f);
+    float Amplitude = 150.f;
+    f32 StartingZDepth = 1000;
+    /* f32 StartingZDepth = 0; */
+    s32 Octaves = 6;
+    NoiseValue = StartingZDepth;
+
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      f32 gn = gradient_noise_derivs(xyz+warp).x;
+      NoiseValue += gn*(Amplitude/Octave);
+    }
+
+    NoiseValue -= Basis.z;
+    ColorValue = V3(0.2f, 0.8f, 0.15f);
+    /* ColorValue = Basis/1000.f; */
     /* ColorValue = V3(x,y,z); */
     /* ColorValue = ChunkResolution/100.f; */
-    /* ColorValue = V3(1.f, 0.f, 0.f); */
-    /* if (White > 0.5f) */
-    /* { */
-    /*   NoiseValue += 2.f; */
-    /*   ColorValue = V3(1.f, 0.f, 0.f); */
-    /* } */
-
   }
 
   //
@@ -50,6 +56,7 @@ void main()
   Output.a = NoiseValue;
 
   /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
+  /* ColorValue = min(ColorValue, v3(1.f)); */
   /* uint PackedColor = PackRGB(ColorValue); */
   /* /1* uint PackedColor = 3543u; *1/ */
 

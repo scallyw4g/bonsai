@@ -297,8 +297,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
-              texture *InputTex = Graphics->TerrainShapingRC.NoiseTexture;
-              s32 PingPongIndex = 0;
+              world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
+              texture *InputTex = &WorldEditRC->PingPongTextures[0];
 
               {
                 auto *TerrainDecorationRC = &Graphics->TerrainDecorationRC;
@@ -307,6 +307,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 TerrainDecorationRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
                 TerrainDecorationRC->ChunkResolution = V3(Chunk->DimInChunks);
+
+                /* v3 WP = V3(Chunk->WorldP) * V3(64); */
+                /* Info("Chunk->WorldP(%V3)", &WP); */
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
                 GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
@@ -324,11 +327,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
-              world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
-              InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
-              PingPongIndex = (PingPongIndex + 1) & 1;
+              InputTex = &WorldEditRC->PingPongTextures[1];
+              s32 PingPongIndex = 0;
 
 #if 1
+              //
+              // Apply edits
+              //
+
               {
                 AcquireFutex(&Node->Lock);
                 if (TotalElements(&Node->Edits))
