@@ -6,8 +6,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[3];
-         texture *DestTex;
-     framebuffer *DestFBO;
+         texture  DestTex;
+     framebuffer  DestFBO;
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
@@ -20,8 +20,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[1];
-         texture  DestTexture;
-     framebuffer  FBO;
+         texture  DestTex;
+     framebuffer  DestFBO;
 
               v3  Ignored;        poof(@uniform)
               /* v3  WorldspaceBasis; poof(@uniform) */
@@ -79,7 +79,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[1];
-         texture  DestTexture;
+         texture  DestTex;
      framebuffer  FBO;
 
          texture *InputTex; poof(@uniform)

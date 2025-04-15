@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, Element->DestTex),
+        Cast(texture*, &Element->DestTex),
         CSz("DestTex"),
         Params
         );
@@ -79,7 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, Element->DestFBO),
+        Cast(framebuffer*, &Element->DestFBO),
         CSz("DestFBO"),
         Params
         );

@@ -792,8 +792,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   //
   world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
   v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
-  {
 
+  {
     {
       terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
       InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceBasis, &TerrainShapingRC->ChunkResolution, {});
@@ -814,42 +814,53 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
   //
-  // Terrain Gen
+  // Terrain Shaping
   //
+
   {
-    terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
-    InitializeTerrainShapingRenderContext(TerrainShapingRC, ChunkDim, {}, {});
+    terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
+    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {});
 
-    TerrainShapingRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
-    TerrainShapingRC->DestTex = &WorldEditRC->PingPongTextures[0];
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->DestFBO->ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
 
-    FramebufferTexture(TerrainShapingRC->DestFBO, TerrainShapingRC->DestTex);
-    SetDrawBuffers(TerrainShapingRC->DestFBO);
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
 
     Ensure(CheckAndClearFramebuffer());
   }
+
+  //
+  // Terrain Derivs
+  //
+
   {
     terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
     InitializeTerrainDerivsRenderContext(RC, {});
 
-    RC->FBO = GenFramebuffer();
-    RC->DestTexture = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("Derivs Tex"), 1, TextureStorageFormat_RGB32F);
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->FBO.ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
 
-    FramebufferTexture(&RC->FBO, &RC->DestTexture);
-    SetDrawBuffers(&RC->FBO);
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
 
     Ensure(CheckAndClearFramebuffer());
   }
+
+  //
+  // Terrain Decoration
+  //
+
   {
     terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
-    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTexture, ChunkDim, {}, {});
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {});
 
-    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[1];
-    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[1];
+    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[0];
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
 
@@ -874,16 +885,16 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       u32 Channels = 1;
       u32 Slices = 1;
       // @shared_terrain_texture
-      TerrainFinalizeRC->DestTexture = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
+      TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
       GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
       AssertNoGlErrors;
       GL.BindTexture(GL_TEXTURE_2D, 0);
     }
-    FramebufferTexture(&Result->TerrainFinalizeRC.FBO, &TerrainFinalizeRC->DestTexture);
+    FramebufferTexture(&Result->TerrainFinalizeRC.FBO, &TerrainFinalizeRC->DestTex);
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
 
 
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, Result->TerrainShapingRC.DestTex);
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex);
     Ensure(CheckAndClearFramebuffer());
   }
 

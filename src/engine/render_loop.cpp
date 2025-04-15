@@ -42,8 +42,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           DispatchAsyncFunctionCall(RPC);
         } break;
 
-        { tmatch(work_queue_entry__bonsai_render_command, Job, RC)
-          tswitch(RC)
+        { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+          tswitch(RenderCommand)
           {
             InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
@@ -95,7 +95,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
             } break;
 
-            { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RC, Command)
+            { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
               /* Assert(HasGpuMesh(Command->Dest) == 0); */
@@ -112,14 +112,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               PushWorkQueueEntry(LowPriorityQ, &Next);
             } break;
 
-            { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RC, Command)
+            { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
               FlushBuffersToCard(Command->Buf);
 
               FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, Command->Chunk)));
             } break;
 
-            { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RC, Command)
+            { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_buffer);
 
               gpu_readback_buffer PBOBuf = Command->PBOBuf;
@@ -132,7 +132,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               AssertNoGlErrors;
             } break;
 
-            { tmatch(bonsai_render_command_allocate_texture, RC, Command)
+            { tmatch(bonsai_render_command_allocate_texture, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_allocate_texture);
 
               texture *Texture = Command->Texture;
@@ -154,16 +154,16 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
 
-            { tmatch(bonsai_render_command_deallocate_texture, RC, Command)
+            { tmatch(bonsai_render_command_deallocate_texture, RenderCommand, Command)
               NotImplemented;
             } break;
 
 
-            { tmatch(bonsai_render_command_allocate_buffers, RC, Command)
+            { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
               NotImplemented;
             } break;
 
-            { tmatch(bonsai_render_command_reallocate_buffers, RC, Command)
+            { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_reallocate_buffers);
               auto *Handles = Command->Handles;
               auto *Mesh    = Command->Mesh;
@@ -173,21 +173,21 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             } break;
 
 
-            { tmatch(bonsai_render_command_deallocate_buffers, RC, Command)
+            { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_buffers);
               if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
               RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
             } break;
 
 
-            { tmatch(bonsai_render_command_deallocate_world_chunk, RC, Command)
+            { tmatch(bonsai_render_command_deallocate_world_chunk, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_world_chunk);
               world_chunk *Chunk = Command->Chunk;
               FreeWorldChunk(Engine, Chunk);
             } break;
 
 
-            { tmatch(bonsai_render_command_clear_all_framebuffers, RC, Command)
+            { tmatch(bonsai_render_command_clear_all_framebuffers, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
               ClearFramebuffers(Graphics, &Engine->RTTGroup);
             } break;
@@ -195,7 +195,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
 
 
-            { tmatch(bonsai_render_command_setup_shader, RC, Command)
+            { tmatch(bonsai_render_command_setup_shader, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
               switch (Command->ShaderId)
               {
@@ -213,7 +213,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
             } break;
 
-            { tmatch(bonsai_render_command_teardown_shader, RC, Command)
+            { tmatch(bonsai_render_command_teardown_shader, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
               switch (Command->ShaderId)
               {
@@ -231,7 +231,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
             } break;
 
-            { tmatch(bonsai_render_command_set_shader_uniform, RC, Command)
+            { tmatch(bonsai_render_command_set_shader_uniform, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
               shader *Shader = Command->Shader;
               shader_uniform *Uniform = &Command->Uniform;
@@ -245,25 +245,25 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
             } break;
 
-            { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RC, Command)
+            { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
               RenderDrawList(Engine, Command->DrawList, Command->Shader);
             } break;
 
-            { tmatch(bonsai_render_command_draw_all_entities, RC, Command)
+            { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
               DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
             } break;
 
 
-            { tmatch(bonsai_render_command_initialize_noise_buffer, RC, _Command)
+            { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
               /* Command = 0; */
 
 
               AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
-              bonsai_render_command_initialize_noise_buffer C = RC->bonsai_render_command_initialize_noise_buffer;
+              bonsai_render_command_initialize_noise_buffer C = RenderCommand->bonsai_render_command_initialize_noise_buffer;
 
               octree_node *Node = C.Node;
               world_chunk **Chunk2 = &C.Node->Chunk;
@@ -272,70 +272,74 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              v3 NoiseDim = Graphics->TerrainShapingRC.ChunkDim;
-              v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
-              SetViewport(ViewportSize);
+              texture *InputTex = 0;
 
               //
               // Launch terrain shaping shader
               //
               {
-                auto *TerrainShapingRC = &Graphics->TerrainShapingRC;
-                v3i Apron = V3i(2, 2, 2);
-                Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
+                auto *RC = &Graphics->TerrainShapingRC;
 
-                TerrainShapingRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
-                TerrainShapingRC->ChunkResolution = V3(Chunk->DimInChunks);
+                RC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                RC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->DestFBO->ID);
-                UseShader(TerrainShapingRC);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+                UseShader(RC);
+
+                v2i TextureDim = RC->DestTex.Dim;
+                SetViewport(TextureDim);
+
                 RenderQuad();
 
                 AssertNoGlErrors;
+                InputTex = &RC->DestTex;
               }
 
-              world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
-              texture *InputTex = &WorldEditRC->PingPongTextures[0];
 
               //
               // Calculate derivs of terrain shaping step
               //
               {
-                auto *TerrainDerivsRC = &Graphics->TerrainDerivsRC;
+                auto *RC = &Graphics->TerrainDerivsRC;
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDerivsRC->FBO.ID);
-                UseShader(TerrainDerivsRC);
-                BindUniformByName(&TerrainDerivsRC->Program, "InputTex", InputTex, 0);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+                UseShader(RC);
+                BindUniformByName(&RC->Program, "InputTex", InputTex, 0);
+
+                v2i TextureDim = RC->DestTex.Dim;
+                SetViewport(TextureDim);
+
                 RenderQuad();
 
                 AssertNoGlErrors;
+
+                /* InputTex = &RC->DestTex; */
               }
 
               //
               // Launch terrain decoration shader
               //
               {
-                auto *TerrainDecorationRC = &Graphics->TerrainDecorationRC;
-                v3i Apron = V3i(2, 2, 2);
-                Assert(V3(Chunk1->Dim+Apron) == NoiseDim);
+                auto *RC = &Graphics->TerrainDecorationRC;
 
-                TerrainDecorationRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
-                TerrainDecorationRC->ChunkResolution = V3(Chunk->DimInChunks);
+                RC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                RC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
-                UseShader(TerrainDecorationRC);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
+                UseShader(RC);
                 // Using texture unit 1 because the DerivsTex is automatically bound in
                 // UseShader to unit 0
-                BindUniformByName(&TerrainDecorationRC->Program, "InputTex", InputTex, 1);
+                BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
                 RenderQuad();
 
                 AssertNoGlErrors;
+
+                InputTex = RC->DestTex;
               }
 
-              InputTex = &WorldEditRC->PingPongTextures[1];
               s32 PingPongIndex = 0;
 
 #if 1
@@ -344,6 +348,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               //
 
               {
+                auto WorldEditRC = &Graphics->WorldEditRC;
                 AcquireFutex(&Node->Lock);
                 if (TotalElements(&Node->Edits))
                 {
@@ -477,7 +482,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
                 GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
 
-                SetViewport(ViewportSize);
                 UseShader(&Graphics->TerrainFinalizeRC);
 
                 BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", InputTex, 0);
@@ -491,10 +495,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
 
 
-              Assert(Chunk1->Dim == V3i(64));
-              Assert(NoiseDim == V3(66));
+              /* Assert(Chunk1->Dim == V3i(64)); */
+              /* Assert(NoiseDim == V3(66)); */
 
-              s32 NoiseElementCount = s32(Volume(NoiseDim));
+              v3i NoiseDim = V3i(66);
+              s32 NoiseElementCount = s32(Volume(InputTex->Dim));
               s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
 
               {
@@ -505,20 +510,20 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
                 GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
                 AssertNoGlErrors;
-                GL.ReadPixels(0, 0, ViewportSize.x, ViewportSize.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+                GL.ReadPixels(0, 0, InputTex->Dim.x, InputTex->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
                 AssertNoGlErrors;
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
                 gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, V3i(NoiseDim), Chunk};
+                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Chunk};
                 Push(&Graphics->NoiseReadbackJobs, &Readback);
               }
 
             } break;
 
 
-            { tmatch(bonsai_render_command_do_stuff, RC, Command)
+            { tmatch(bonsai_render_command_do_stuff, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
 
               //
@@ -641,28 +646,28 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
             } break;
 
-            { tmatch(bonsai_render_command_gl_timer_init, RC, Command)
+            { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_init);
               AssertNoGlErrors;
               GL.GenQueries(1, Command->GlTimerObject);
               AssertNoGlErrors;
             } break;
 
-            { tmatch(bonsai_render_command_gl_timer_start, RC, Command)
+            { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_start);
               AssertNoGlErrors;
               GL.BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
               AssertNoGlErrors;
             } break;
 
-            { tmatch(bonsai_render_command_gl_timer_end, RC, Command)
+            { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_end);
               AssertNoGlErrors;
               GL.EndQuery(GL_TIME_ELAPSED);
               AssertNoGlErrors;
             } break;
 
-            { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RC, Command)
+            { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_read_value_and_histogram);
 #if 0
               AssertNoGlErrors;

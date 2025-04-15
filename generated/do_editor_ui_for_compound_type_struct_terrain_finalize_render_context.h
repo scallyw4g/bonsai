@@ -63,8 +63,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->DestTexture),
-        CSz("DestTexture"),
+        Cast(texture*, &Element->DestTex),
+        CSz("DestTex"),
         Params
         );
 
