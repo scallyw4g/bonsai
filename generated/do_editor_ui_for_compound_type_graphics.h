@@ -443,6 +443,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(terrain_derivs_render_context*, &Element->TerrainDerivsRC),
+        CSz("TerrainDerivsRC"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(terrain_finalize_render_context*, &Element->TerrainFinalizeRC),
         CSz("TerrainFinalizeRC"),
         Params

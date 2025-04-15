@@ -791,6 +791,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   // World Edit RC
   //
   world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
+  v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
   {
 
     {
@@ -803,7 +804,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
       GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
 
-      v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
       WorldEditRC->PingPongTextures[Index] = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("PingPongTexture"), 1, TextureStorageFormat_RGBA32F);
 
       FramebufferTexture(&WorldEditRC->PingPongFBOs[Index], &WorldEditRC->PingPongTextures[Index]);
@@ -820,30 +820,45 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
     InitializeTerrainShapingRenderContext(TerrainShapingRC, ChunkDim, {}, {});
 
-    TerrainShapingRC->FBO = &WorldEditRC->PingPongFBOs[0];
-    TerrainShapingRC->NoiseTexture = &WorldEditRC->PingPongTextures[0];
+    TerrainShapingRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainShapingRC->DestTex = &WorldEditRC->PingPongTextures[0];
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO->ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->DestFBO->ID);
 
-    FramebufferTexture(TerrainShapingRC->FBO, TerrainShapingRC->NoiseTexture);
-    SetDrawBuffers(TerrainShapingRC->FBO);
+    FramebufferTexture(TerrainShapingRC->DestFBO, TerrainShapingRC->DestTex);
+    SetDrawBuffers(TerrainShapingRC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+  {
+    terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
+    InitializeTerrainDerivsRenderContext(RC, {});
+
+    RC->FBO = GenFramebuffer();
+    RC->DestTexture = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("Derivs Tex"), 1, TextureStorageFormat_RGB32F);
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->FBO.ID);
+
+    FramebufferTexture(&RC->FBO, &RC->DestTexture);
+    SetDrawBuffers(&RC->FBO);
 
     Ensure(CheckAndClearFramebuffer());
   }
   {
     terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
-    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, ChunkDim, {}, {});
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTexture, ChunkDim, {}, {});
 
-    TerrainDecorationRC->FBO = &WorldEditRC->PingPongFBOs[1];
-    TerrainDecorationRC->NoiseTexture = &WorldEditRC->PingPongTextures[1];
+    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[1];
+    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[1];
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
 
-    FramebufferTexture(TerrainDecorationRC->FBO, TerrainDecorationRC->NoiseTexture);
-    SetDrawBuffers(TerrainDecorationRC->FBO);
+    FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
+    SetDrawBuffers(TerrainDecorationRC->DestFBO);
 
     Ensure(CheckAndClearFramebuffer());
   }
+
 
 
 
@@ -855,8 +870,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Result->TerrainFinalizeRC.FBO = GenFramebuffer();
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainFinalizeRC.FBO.ID);
 
-
-    v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
     {
       u32 Channels = 1;
       u32 Slices = 1;
@@ -870,7 +883,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
 
 
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, Result->TerrainShapingRC.NoiseTexture);
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, Result->TerrainShapingRC.DestTex);
     Ensure(CheckAndClearFramebuffer());
   }
 

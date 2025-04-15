@@ -42,11 +42,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
       
-                        if (ToggleButton(Ui, CSz("v Uniforms[3]"), CSz("> Uniforms[3]"), UiId(Window, "toggle terrain_decoration_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+                        if (ToggleButton(Ui, CSz("v Uniforms[4]"), CSz("> Uniforms[4]"), UiId(Window, "toggle terrain_decoration_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 3)
+        RangeIterator(ArrayIndex, 4)
         {
                     DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
 
@@ -63,8 +63,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, Element->NoiseTexture),
-        CSz("NoiseTexture"),
+        Cast(texture*, Element->DestTex),
+        CSz("DestTex"),
         Params
         );
 
@@ -79,8 +79,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, Element->FBO),
-        CSz("FBO"),
+        Cast(framebuffer*, Element->DestFBO),
+        CSz("DestFBO"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(texture*, Element->DerivsTex),
+        CSz("DerivsTex"),
         Params
         );
 

@@ -1,4 +1,4 @@
-// src/engine/graphics.h:33:0
+// src/engine/graphics.h:48:0
 
 link_internal void
 InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution  )

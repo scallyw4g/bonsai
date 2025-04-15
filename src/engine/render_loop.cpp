@@ -274,7 +274,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               v3 NoiseDim = Graphics->TerrainShapingRC.ChunkDim;
               v2i ViewportSize = V2i(s32(NoiseDim.x), s32(NoiseDim.y*NoiseDim.z));
+              SetViewport(ViewportSize);
 
+              //
+              // Launch terrain shaping shader
+              //
               {
                 auto *TerrainShapingRC = &Graphics->TerrainShapingRC;
                 v3i Apron = V3i(2, 2, 2);
@@ -284,15 +288,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TerrainShapingRC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->FBO->ID);
-
-                SetViewport(ViewportSize);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainShapingRC->DestFBO->ID);
                 UseShader(TerrainShapingRC);
-
-                /* gpu_timer Timer = StartGpuTimer(); */
                 RenderQuad();
-                /* EndGpuTimer(&Timer); */
-                /* Push(&Graphics->GpuTimers, &Timer); */
 
                 AssertNoGlErrors;
               }
@@ -300,6 +298,24 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
               texture *InputTex = &WorldEditRC->PingPongTextures[0];
 
+              //
+              // Calculate derivs of terrain shaping step
+              //
+              {
+                auto *TerrainDerivsRC = &Graphics->TerrainDerivsRC;
+
+                TIMED_NAMED_BLOCK(TerrainDrawCall);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDerivsRC->FBO.ID);
+                UseShader(TerrainDerivsRC);
+                BindUniformByName(&TerrainDerivsRC->Program, "InputTex", InputTex, 0);
+                RenderQuad();
+
+                AssertNoGlErrors;
+              }
+
+              //
+              // Launch terrain decoration shader
+              //
               {
                 auto *TerrainDecorationRC = &Graphics->TerrainDecorationRC;
                 v3i Apron = V3i(2, 2, 2);
@@ -308,21 +324,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TerrainDecorationRC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
                 TerrainDecorationRC->ChunkResolution = V3(Chunk->DimInChunks);
 
-                /* v3 WP = V3(Chunk->WorldP) * V3(64); */
-                /* Info("Chunk->WorldP(%V3)", &WP); */
-
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->FBO->ID);
-
-                SetViewport(ViewportSize);
+                GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
                 UseShader(TerrainDecorationRC);
-
-                BindUniformByName(&TerrainDecorationRC->Program, "InputTex", InputTex, 0);
-
-                /* gpu_timer Timer = StartGpuTimer(); */
+                // Using texture unit 1 because the DerivsTex is automatically bound in
+                // UseShader to unit 0
+                BindUniformByName(&TerrainDecorationRC->Program, "InputTex", InputTex, 1);
                 RenderQuad();
-                /* EndGpuTimer(&Timer); */
-                /* Push(&Graphics->GpuTimers, &Timer); */
 
                 AssertNoGlErrors;
               }

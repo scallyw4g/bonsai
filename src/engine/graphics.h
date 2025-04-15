@@ -6,12 +6,26 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[3];
-         texture *NoiseTexture;
-     framebuffer *FBO;
+         texture *DestTex;
+     framebuffer *DestFBO;
 
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
               v3  ChunkResolution; poof(@uniform)
+};
+
+struct terrain_derivs_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/derivs.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[1];
+         texture  DestTexture;
+     framebuffer  FBO;
+
+              v3  Ignored;        poof(@uniform)
+              /* v3  WorldspaceBasis; poof(@uniform) */
+              /* v3  ChunkResolution; poof(@uniform) */
 };
 
 struct terrain_decoration_render_context
@@ -19,10 +33,11 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
       @frag_source_file("shaders/terrain/decoration/terrain_decoration.fragmentshader") )
 {
           shader  Program;
-  shader_uniform  Uniforms[3];
-         texture *NoiseTexture;
-     framebuffer *FBO;
+  shader_uniform  Uniforms[4];
+         texture *DestTex;
+     framebuffer *DestFBO;
 
+         texture *DerivsTex   ;    poof(@uniform)
               v3  ChunkDim;        poof(@uniform)
               v3  WorldspaceBasis; poof(@uniform)
               v3  ChunkResolution; poof(@uniform)
@@ -36,6 +51,8 @@ poof(shader_magic(terrain_shaping_render_context))
 poof(shader_magic(terrain_decoration_render_context))
 #include <generated/shader_magic_struct_terrain_decoration_shader.h>
 
+poof(shader_magic(terrain_derivs_render_context))
+#include <generated/shader_magic_struct_terrain_derivs_render_context.h>
 
 struct world_edit_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
@@ -174,6 +191,7 @@ struct graphics
 
   terrain_shaping_render_context     TerrainShapingRC;
   terrain_decoration_render_context  TerrainDecorationRC;
+  terrain_derivs_render_context      TerrainDerivsRC;
 
   terrain_finalize_render_context TerrainFinalizeRC;
   world_edit_render_context       WorldEditRC;

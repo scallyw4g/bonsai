@@ -1,13 +1,17 @@
-// src/engine/graphics.h:36:0
+// src/engine/graphics.h:51:0
 
 link_internal void
-InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution  )
+InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct    , texture *DerivsTex     , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution  )
 {
       Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/terrain_decoration.fragmentshader"));
 
   u32 UniformIndex = 0;
 
-      Struct->ChunkDim = ChunkDim;
+      Struct->DerivsTex = DerivsTex;
+  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->DerivsTex, "DerivsTex");
+  ++UniformIndex;
+
+    Struct->ChunkDim = ChunkDim;
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->ChunkDim, "ChunkDim");
   ++UniformIndex;
 
@@ -19,7 +23,7 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
   Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->ChunkResolution, "ChunkResolution");
   ++UniformIndex;
 
-  if (UniformIndex !=  3  )
+  if (UniformIndex !=  4  )
   {
     Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
   }
@@ -45,7 +49,10 @@ UseShader( terrain_decoration_render_context *Struct )
     BindUnifromById(Struct->Uniforms+UniformIndex, &TextureUnit);
   ++UniformIndex;
 
-  if (UniformIndex !=  3  )
+    BindUnifromById(Struct->Uniforms+UniformIndex, &TextureUnit);
+  ++UniformIndex;
+
+  if (UniformIndex !=  4  )
   {
     Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
   }

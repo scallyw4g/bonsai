@@ -2,6 +2,7 @@ uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
 uniform sampler2D InputTex;
+uniform sampler2D DerivsTex;
 
 in vec2 UV;
 out v4 Output;
@@ -17,7 +18,9 @@ void main()
   v3 Offset = V3(0);
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
-  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+  v4 TexLookup = texelFetch(InputTex,  ivec2(gl_FragCoord.xy), 0);
+  v3 Derivs    = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy), 0).xyz;
+  /* v3 Derivs = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy+ivec2(1,66)), 0).xyz; */
 
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
@@ -26,20 +29,23 @@ void main()
   //
   // -- user code --
   //
-  {
-    /* f32 White = white_noise(Basis); */
-    /* ColorValue = V3(0.f); */
-    /* ColorValue.r = White*0.3f; */
-    ColorValue = Basis/1000.f;
-    /* ColorValue = V3(x,y,z); */
-    /* ColorValue = ChunkResolution/100.f; */
-    /* ColorValue = V3(1.f, 0.f, 0.f); */
-    /* if (White > 0.5f) */
-    /* { */
-    /*   NoiseValue += 2.f; */
-    /*   ColorValue = V3(1.f, 0.f, 0.f); */
-    /* } */
 
+  {
+
+    // Put random junk here
+
+    f32 White = Clamp01(1.5f+white_noise(Basis));
+
+    v3 Green = V3(0.1f, 0.7f, 0.1f)*White;
+    /* ColorValue = V3(White); */
+
+    f32 CosTheta = Dot(Derivs, Normalize(V3(0,-1,-1)));
+    ColorValue = Green*CosTheta;
+
+
+    /* ColorValue = Derivs; */
+    ColorValue = abs(Derivs);
+    /* ColorValue = NoiseValue/V3(5000.f); */
   }
 
   //

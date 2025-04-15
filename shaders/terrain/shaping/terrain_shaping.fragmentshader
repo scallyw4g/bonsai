@@ -172,41 +172,21 @@ void main()
   // -- user code -- 
   //
   {
-    v3 Period = V3(100.f);
-    float Amplitude = 5.f;
-    f32 StartingZDepth = 400.f;
+    v3 Period = V3(800.f);
+    float Amplitude = 4000.f;
+    f32 StartingZDepth = 1000.f;
     s32 Octaves = 1;
 
     NoiseValue = StartingZDepth;
 
 
     v3 deriv = v3(0.f);
-    f32 warp = 0.f;
 
     v3 xyz = Basis / Period;
+    v4 gn = gradient_noise_derivs(xyz);
 
-    v4 gn = gradient_noise_derivs(xyz+warp);
-
-    deriv += gn.yzw;
-    deriv = normalize(deriv);
-
-    NoiseValue = NoiseValue + (gn.x * Amplitude);
-
-    /* ColorValue = abs(deriv); */
-    /* f32 Tint = white_noise(xyz); */
-    f32 Tint = gradient_noise(xyz*60.f);
-    ColorValue = v3(0.1f, 0.55f + 0.1f*Tint, 0.1f);
-
-    f32 GrassMask = clamp(gradient_noise(xyz*5.f), 0.f, 1.f);
-    f32 GrassSample = white_noise(V3(xyz.xy,1.f));
-
-    f32 Grass = GrassSample > 0.88f ? GrassSample*9.f : 0.f;
-
-    NoiseValue += abs(Grass*GrassMask);
-
-    // Bias noise value to lower values as we get higher in z.
-    // This creates a "plane" of terrain
-    NoiseValue = NoiseValue - Basis.z;
+    NoiseValue += gn.x * Amplitude;
+    NoiseValue -= Basis.z;
   }
 
   //

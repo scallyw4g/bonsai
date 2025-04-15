@@ -87,7 +87,9 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   Resources->FrameIndex += 1;
 
-  if (Resources->Graphics.TerrainShapingRC.Program.HotReloaded || Resources->Graphics.TerrainDecorationRC.Program.HotReloaded)
+  if (Resources->Graphics.TerrainShapingRC.Program.HotReloaded ||
+      Resources->Graphics.TerrainDerivsRC.Program.HotReloaded  ||
+      Resources->Graphics.TerrainDecorationRC.Program.HotReloaded)
   {
     auto Plat = &Resources->Stdlib.Plat;
 
