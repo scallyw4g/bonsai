@@ -33,5 +33,7 @@ void main()
       Normal += V3(dx,dy,dz)*Diff;
   }
 
-  Output = Normalize(Normal);
+  // Invert because we accumulate the value by pointing 'at' the cell we're checking
+  //
+  Output = -1.f * Normalize(Normal);
 }

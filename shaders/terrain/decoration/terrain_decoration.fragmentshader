@@ -39,7 +39,7 @@ void main()
     v3 Green = V3(0.1f, 0.7f, 0.1f)*White;
     /* ColorValue = V3(White); */
 
-    f32 CosTheta = Dot(Derivs, Normalize(V3(0,-1,-1)));
+    f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
     ColorValue = Green*CosTheta;
 
 
