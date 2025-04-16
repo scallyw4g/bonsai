@@ -18,6 +18,8 @@ enum terrain_gen_type
   TerrainGenType_GrassyIsland               = (1 << 13),
   TerrainGenType_Hoodoo                     = (1 << 14),
   TerrainGenType_Warped                     = (1 << 15),
+
+  TerrainGenType_Debug                      = (1 << 16),
 };
 
 poof(radio_button_group_for_bitfield_enum(terrain_gen_type))

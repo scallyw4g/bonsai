@@ -1,4 +1,4 @@
-// examples/terrain_gen/game_types.h:26:0
+// examples/terrain_gen/game_types.h:28:0
 
 link_internal counted_string
 ToStringPrefixless(terrain_gen_type Type)
@@ -6,7 +6,7 @@ ToStringPrefixless(terrain_gen_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TerrainGenType_Flat: { Result = CSz("Flat"); } break;
+        case TerrainGenType_Flat: { Result = CSz("Flat"); } break;
     case TerrainGenType_Checkerboard: { Result = CSz("Checkerboard"); } break;
     case TerrainGenType_SinCos: { Result = CSz("SinCos"); } break;
     case TerrainGenType_Voronoi: { Result = CSz("Voronoi"); } break;
@@ -22,6 +22,7 @@ ToStringPrefixless(terrain_gen_type Type)
     case TerrainGenType_GrassyIsland: { Result = CSz("GrassyIsland"); } break;
     case TerrainGenType_Hoodoo: { Result = CSz("Hoodoo"); } break;
     case TerrainGenType_Warped: { Result = CSz("Warped"); } break;
+    case TerrainGenType_Debug: { Result = CSz("Debug"); } break;
 
     
   }
@@ -35,7 +36,7 @@ ToString(terrain_gen_type Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TerrainGenType_Flat: { Result = CSz("TerrainGenType_Flat"); } break;
+        case TerrainGenType_Flat: { Result = CSz("TerrainGenType_Flat"); } break;
     case TerrainGenType_Checkerboard: { Result = CSz("TerrainGenType_Checkerboard"); } break;
     case TerrainGenType_SinCos: { Result = CSz("TerrainGenType_SinCos"); } break;
     case TerrainGenType_Voronoi: { Result = CSz("TerrainGenType_Voronoi"); } break;
@@ -51,6 +52,7 @@ ToString(terrain_gen_type Type)
     case TerrainGenType_GrassyIsland: { Result = CSz("TerrainGenType_GrassyIsland"); } break;
     case TerrainGenType_Hoodoo: { Result = CSz("TerrainGenType_Hoodoo"); } break;
     case TerrainGenType_Warped: { Result = CSz("TerrainGenType_Warped"); } break;
+    case TerrainGenType_Debug: { Result = CSz("TerrainGenType_Debug"); } break;
 
     
   }
@@ -63,7 +65,7 @@ TerrainGenType(counted_string S)
 {
   terrain_gen_type Result = {};
 
-  if (StringsMatch(S, CSz("TerrainGenType_Flat"))) { return TerrainGenType_Flat; }
+    if (StringsMatch(S, CSz("TerrainGenType_Flat"))) { return TerrainGenType_Flat; }
   if (StringsMatch(S, CSz("TerrainGenType_Checkerboard"))) { return TerrainGenType_Checkerboard; }
   if (StringsMatch(S, CSz("TerrainGenType_SinCos"))) { return TerrainGenType_SinCos; }
   if (StringsMatch(S, CSz("TerrainGenType_Voronoi"))) { return TerrainGenType_Voronoi; }
@@ -79,6 +81,7 @@ TerrainGenType(counted_string S)
   if (StringsMatch(S, CSz("TerrainGenType_GrassyIsland"))) { return TerrainGenType_GrassyIsland; }
   if (StringsMatch(S, CSz("TerrainGenType_Hoodoo"))) { return TerrainGenType_Hoodoo; }
   if (StringsMatch(S, CSz("TerrainGenType_Warped"))) { return TerrainGenType_Warped; }
+  if (StringsMatch(S, CSz("TerrainGenType_Debug"))) { return TerrainGenType_Debug; }
 
   return Result;
 }

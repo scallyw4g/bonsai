@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:341:0
+// src/engine/editor.cpp:253:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(ui_noise_type*,&Element->Type),
+        Cast(ui_noise_type*, &Element->Type),
         CSz("Type"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(white_noise_params*,&Element->White),
+        Cast(white_noise_params*, &Element->White),
         CSz("White"),
         Params
         );
@@ -55,11 +56,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(perlin_noise_params*,&Element->Perlin),
+        Cast(perlin_noise_params*, &Element->Perlin),
         CSz("Perlin"),
         Params
         );
@@ -70,11 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(voronoi_noise_params*,&Element->Voronoi),
+        Cast(voronoi_noise_params*, &Element->Voronoi),
         CSz("Voronoi"),
         Params
         );

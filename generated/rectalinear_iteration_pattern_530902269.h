@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:699:0
+// src/engine/world_update.cpp:654:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -11,7 +11,8 @@ DimIterator(x, y, z, UpdateDim)
   if (Contains(SSRect, SimVoxP))
   {
     
-        if ( (V->Flags&VoxelFaceMask))
+        NotImplemented;
+        /* if ( (V->Flags&VoxelFaceMask)) */
         {
           OverwriteVoxel = True;
         }
@@ -20,20 +21,21 @@ DimIterator(x, y, z, UpdateDim)
     if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True ))  )
     {
-      if (Mode == WorldEdit_Mode_Paint)
+      /* if (Mode == WorldEdit_Mode_Paint) */
+      /* { */
+      /*   V->Color = NewVoxelValue->Color; */
+      /* } */
+      /* else */
       {
-        V->Color = NewVoxelValue->Color;
-      }
-      else
-      {
-        if (Mode == WorldEdit_Mode_Remove) { *V = {}; }
+        if (Mode == WorldEdit_Mode_Subtractive) { *V = {}; }
         else { *V = *NewVoxelValue; }
       }
 
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

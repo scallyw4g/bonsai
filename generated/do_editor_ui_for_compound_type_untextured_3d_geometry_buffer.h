@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:225:0
+// src/engine/editor.cpp:217:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(data_type*,&Element->Type),
+        Cast(data_type*, &Element->Type),
         CSz("Type"),
         Params
         );
@@ -40,12 +40,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       
       
 
-      PushNewRow(Ui);
+            PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(void *, Element->Verts),
@@ -59,9 +60,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(void *, Element->Normals),
@@ -75,9 +77,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(vertex_material*, Element->Mat),
@@ -91,11 +94,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->End),
+        Cast(u32*, &Element->End),
         CSz("End"),
         Params
         );
@@ -106,12 +110,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->At),
+        Cast(u32*, &Element->At),
         CSz("At"),
         Params
         );
@@ -122,9 +127,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(untextured_3d_geometry_buffer*, Element->Parent),
@@ -138,11 +144,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->BufferNeedsToGrow),
+        Cast(u32*, &Element->BufferNeedsToGrow),
         CSz("BufferNeedsToGrow"),
         Params
         );
@@ -153,12 +160,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u64*,&Element->Timestamp),
+        Cast(u64*, &Element->Timestamp),
         CSz("Timestamp"),
         Params
         );
@@ -169,7 +177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -1,4 +1,4 @@
-// src/engine/editor.h:512:0
+// src/engine/editor.h:532:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Min),
+        Cast(v3i*, &Element->Min),
         CSz("Min"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Max),
+        Cast(v3i*, &Element->Max),
         CSz("Max"),
         Params
         );

@@ -1,0 +1,231 @@
+uniform v3 WorldspaceBasis;
+uniform v3 ChunkResolution;
+
+uniform int BrushType;
+uniform int BlendMode;
+uniform int ColorMode;
+uniform int Modifiers;
+
+uniform int GenerateNormals;
+
+
+//
+// Clipping params
+//
+uniform v3 ChunkRelEditMin;
+uniform v3 ChunkRelEditMax;
+
+
+//
+// Shape params
+//
+uniform int ShapeType;
+
+
+//
+// Noise params
+//
+uniform int NoiseType;
+uniform v3 RGBColor;
+uniform v3 Period;
+uniform f32 Amplitude;
+uniform f32 Threshold;
+uniform bool Invert;
+
+//
+// Voronoi Params
+//
+uniform f32 Squareness; // 0 == not square, 1 == square
+
+
+
+uniform sampler2D InputTex;
+
+in vec2 UV;
+out layout(location = 0) vec4 Output;
+
+
+void main()
+{
+  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  vec3 ColorValue = TexLookup.rgb;
+  f32 NoiseValue = TexLookup.a;
+
+
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+
+  v3 xyz = V3(x,y,z) * ChunkResolution;
+
+  // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
+  // think it should be >= Min and < Max .. but I'm just going to leave it for now..
+  if (
+      xyz.x > ChunkRelEditMin.x &&
+      xyz.y > ChunkRelEditMin.y &&
+      xyz.z > ChunkRelEditMin.z &&
+
+      xyz.x <= ChunkRelEditMax.x &&
+      xyz.y <= ChunkRelEditMax.y &&
+      xyz.z <= ChunkRelEditMax.z  )
+  {
+    v3 Basis = WorldspaceBasis + xyz;
+
+
+    {
+      v3 ColorSample = RGBColor;
+      f32 NoiseSample = 0.f;
+
+      s32 Octaves = 1;
+      switch (BrushType)
+      {
+        case 0: // BrushLayerType_Noise
+        {
+          v3 NoiseBasis = Basis / Period;
+          switch (NoiseType)
+          {
+            case 0: // NoiseType_Perlin:
+            {
+              NoiseSample = value_noise_derivs(NoiseBasis).x;
+            } break;
+
+            case 1: // NoiseType_Voronoi:
+            {
+              NoiseSample = voronoi_noise(NoiseBasis, Squareness).x;
+            } break;
+
+            case 2: // NoiseType_White:
+            {
+            } break;
+          }
+
+          break;
+        }
+
+        case 1: // BrushLayerType_Shape
+        {
+          switch (ShapeType)
+          {
+            // ShapeType_Sphere
+            case 0: { } break; 
+
+            // ShapeType_Rect
+            case 1: { NoiseSample = 1.f; } break;
+
+            // ShapeType_Cylinder
+            case 2: { } break;
+          }
+        } break;
+
+        default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
+      }
+
+      // TODO(Jesse): This is buggy; it generates extra geometry on the edges
+      // of chunks for some reason.  At the moment it's a non-issue because the
+      // additional geometry is always below the ground, and doesn't cause
+      // visible artifacts.  At the moment I just want anything 'working', but
+      // this should definitely be improved in the future.
+      //
+      if ( (Modifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
+      {
+        if (x > 0 && x < 65 &&
+            y > 0 && y < 65 &&
+            z > 0 && z < 65)
+        {
+          f32 ThisCell = sign(TexLookup.a);
+          if (ThisCell < 0.f)
+          {
+            // only consider cells that are air
+            s32 IsSurface  = s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a));
+
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a));
+
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a));
+                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a));
+
+            if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
+          }
+          else
+          {
+            NoiseSample = 0.f; ColorSample = V3(0,0,0);
+          }
+        }
+        else
+        {
+          NoiseSample = 0.f; ColorSample = V3(0,0,0);
+        }
+      }
+
+      if ( (Modifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+      {
+        NoiseSample = max(0.f, NoiseSample);
+      }
+
+      if ( (Modifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+      {
+        NoiseSample = min(0.f, NoiseSample);
+      }
+
+      if (abs(NoiseSample) < Threshold)
+      {
+        NoiseSample = 0.f;
+      }
+
+      if (Invert)
+      {
+        NoiseSample *= -1.f;
+      }
+
+      f32 Amp = max(Amplitude, 1.f);
+      NoiseSample *= Amp;
+      /* NoiseSample *= Amplitude; */
+
+      switch (BlendMode)
+      {
+        case 0: // Addative
+        { NoiseValue = NoiseValue + NoiseSample; } break;
+
+        case 1: // Subtractive
+        { NoiseValue = NoiseValue - NoiseSample; } break;
+
+        case 2: // Threshold
+        { if (NoiseSample > Threshold) NoiseValue = Threshold; } break;
+      }
+
+
+      switch (ColorMode)
+      {
+        case 0: // ThresholdPositive
+        { if (NoiseSample > 0.f) { ColorValue = ColorSample; } } break;
+
+        case 1: // ThresholdNegative
+        { if (NoiseSample < 0.f) { ColorValue = ColorSample; } } break;
+
+        case 2: // Addative
+        { ColorValue = ColorValue + ColorSample; } break;
+
+        case 3: // Subtractive
+        { ColorValue = ColorValue - ColorSample; } break;
+
+        case 4: // Multiply
+        { ColorValue = ColorValue * ColorSample; } break;
+
+        case 5: // Divide
+        { ColorValue = SafeDivide0(ColorValue, ColorSample); } break;
+
+        case 6: // Average
+        { f32 StartingIntensity = length(ColorValue);
+          ColorValue = (ColorValue + ColorSample)/StartingIntensity; } break;
+      }
+
+    }
+
+  }
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

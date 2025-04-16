@@ -14,6 +14,14 @@ struct u64_stream
   umm ChunkCount;
 };
 
+link_internal u64_stream
+U64Stream(memory_arena *Memory)
+{
+  u64_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(u64_stream *Stream)
 {
@@ -62,10 +70,7 @@ IsLastElement(u64_iterator* Iter)
 link_internal u64 *
 Push(u64_stream* Stream, u64 Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   u64_stream_chunk* NextChunk = (u64_stream_chunk*)PushStruct(Stream->Memory, sizeof(u64_stream_chunk), 1, 0);

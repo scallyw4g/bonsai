@@ -1,3 +1,94 @@
+
+
+struct terrain_shaping_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/shaping/terrain_shaping.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[3];
+         texture  DestTex;
+     framebuffer  DestFBO;
+
+              v3  ChunkDim;        poof(@uniform)
+              v3  WorldspaceBasis; poof(@uniform)
+              v3  ChunkResolution; poof(@uniform)
+};
+
+struct terrain_derivs_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/derivs.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[1];
+         texture  DestTex;
+     framebuffer  DestFBO;
+
+              v3  Ignored;        poof(@uniform)
+              /* v3  WorldspaceBasis; poof(@uniform) */
+              /* v3  ChunkResolution; poof(@uniform) */
+};
+
+struct terrain_decoration_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/decoration/terrain_decoration.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[4];
+         texture *DestTex;
+     framebuffer *DestFBO;
+
+         texture *DerivsTex   ;    poof(@uniform)
+              v3  ChunkDim;        poof(@uniform)
+              v3  WorldspaceBasis; poof(@uniform)
+              v3  ChunkResolution; poof(@uniform)
+};
+
+
+
+poof(shader_magic(terrain_shaping_render_context))
+#include <generated/shader_magic_struct_terrain_shaping_shader.h>
+
+poof(shader_magic(terrain_decoration_render_context))
+#include <generated/shader_magic_struct_terrain_decoration_shader.h>
+
+poof(shader_magic(terrain_derivs_render_context))
+#include <generated/shader_magic_struct_terrain_derivs_render_context.h>
+
+struct world_edit_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[4];
+     framebuffer  PingPongFBOs[2];
+         texture  PingPongTextures[2];
+
+              v3 *ChunkDim;        poof(@uniform)
+              v3 *WorldspaceBasis; poof(@uniform)
+              v3 *ChunkResolution; poof(@uniform)
+
+             s32  Type;            poof(@uniform)
+};
+
+poof(shader_magic(world_edit_render_context))
+#include <generated/shader_magic_struct_world_edit_shader.h>
+
+struct terrain_finalize_render_context
+poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+      @frag_source_file("shaders/terrain/TerrainFinalize.fragmentshader") )
+{
+          shader  Program;
+  shader_uniform  Uniforms[1];
+         texture  DestTex;
+     framebuffer  FBO;
+
+         texture *InputTex; poof(@uniform)
+};
+
+poof(shader_magic(terrain_finalize_render_context))
+#include <generated/shader_magic_struct_terrain_finalize_render_context.h>
+
+
 struct composite_render_group
 {
   shader Shader;
@@ -24,6 +115,23 @@ struct transparency_render_group
 
 struct shadow_render_group;
 
+poof(gen_constructor(gpu_readback_buffer))
+#include <generated/gen_constructor_gpu_readback_buffer.h>
+
+poof(block_array(gpu_readback_buffer, {32}))
+#include <generated/block_array_gpu_readback_buffer_688853862.h>
+
+
+struct dummy_work_queue_entry_build_chunk_mesh
+{
+  gpu_readback_buffer PBOBuf;
+  v3i NoiseDim;
+  world_chunk *Chunk;
+};
+
+poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
+#include <generated/block_array_dummy_work_queue_entry_build_chunk_mesh_688853862.h>
+
 struct graphics
 {
   b32 Initialized;
@@ -31,6 +139,9 @@ struct graphics
   volatile b32 RenderGate;
 
   render_settings Settings;
+  render_settings PrevSettings;
+
+  v3 OffsetOfWorldCenterToGrid;
 
   v3 SunBasis;
 
@@ -57,9 +168,9 @@ struct graphics
   v3 MaxClipP_worldspace;
 
   // TODO(Jesse): None of these need to be pointers..
-  g_buffer_render_group  *gBuffer;
-  ao_render_group        *AoGroup;
-  shadow_render_group    *SG;
+  g_buffer_render_group *gBuffer;
+  ao_render_group       *AoGroup;
+  shadow_render_group   *SG;
 
 
   // NOTE(Jesse): This is the CPU-side color palette.  It is the source of truth.
@@ -78,8 +189,26 @@ struct graphics
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
 
+  terrain_shaping_render_context     TerrainShapingRC;
+  terrain_decoration_render_context  TerrainDecorationRC;
+  terrain_derivs_render_context      TerrainDerivsRC;
+
+  terrain_finalize_render_context TerrainFinalizeRC;
+  world_edit_render_context       WorldEditRC;
+
+  // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
+  // step process going on.  First, the job is dispatched (copy values into PBO)
+  // then the job is complete (values copied, not used by app yet), then the
+  // NoiseFinalize is done, and the job is completed.  NoiseFinalizeJobsPending
+  // tracks this third stage.
+  //
+  volatile u32 NoiseFinalizeJobsPending;
+  dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
+
   gpu_mapped_element_buffer GpuBuffers[2];
   u32 GpuBufferWriteIndex;
+
+  gpu_timer_block_array GpuTimers = GpuTimerBlockArray(&Global_PermMemory);
 
   memory_arena *Memory;
 };

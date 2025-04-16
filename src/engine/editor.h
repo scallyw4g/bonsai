@@ -1,3 +1,5 @@
+struct world;
+
 #define EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS r32 MinValue = 0.f, r32 MaxValue = 1.f
 #define EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES MinValue, MaxValue
 
@@ -185,64 +187,77 @@ poof(
               {
               }
               {
-                member.is_array?
+                member.has_tag(ui_display_as)?
                 {
-                  if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
-                  {
-                    OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                      PushNewRow(Ui);
-                      RangeIterator(ArrayIndex, member.array)
-                      {
-                        DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
-                        member.is_primitive?  { PushNewRow(Ui); }
-                      }
-                    CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-                  }
-                  PushNewRow(Ui);
+                  auto Value = member.tag_value(ui_display_as)(Element->member.name);
+                  DoEditorUi(Ui, Window, &Value, CSz("member.name"), Params);
                 }
                 {
-                  member.has_tag(custom_ui)?
+                  member.is_array?
                   {
-                    member.tag_value(custom_ui);
+                    if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
+                    {
+                      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                        PushNewRow(Ui);
+                        RangeIterator(ArrayIndex, member.array)
+                        {
+                          member.has_tag(custom_ui)?
+                          {
+                            member.tag_value(custom_ui);
+                          }
+                          {
+                            DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                          }
+                          member.is_primitive?  { PushNewRow(Ui); }
+                        }
+                      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+                    }
+                    PushNewRow(Ui);
                   }
                   {
-                    member.is_type(b32)?
+                    member.has_tag(custom_ui)?
                     {
-                      DoEditorUi(Ui,
-                                 Window,
-                                 Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
-                                 CSz("member.name"),
-                                 &DefaultUiRenderParams_Checkbox
-                                 member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                      member.tag_value(custom_ui);
                     }
                     {
-                      member.is_union?
+                      member.is_type(b32)?
                       {
-                        member.name?
-                        {
-                          DoEditorUi(Ui,
-                                     Window,
-                                     // Cast to remove const/volatile keywords if they're there
-                                     Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                     CSz("member.name"),
-                                     Params
-                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
-                        }
-                        {
-                        }
+                        DoEditorUi(Ui,
+                                   Window,
+                                   Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
+                                   CSz("member.name"),
+                                   &DefaultUiRenderParams_Checkbox
+                                   member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                       }
                       {
-                        member.is_function?
+                        member.is_union?
                         {
+                          member.name?
+                          {
+                            DoEditorUi(Ui,
+                                       Window,
+                                       // Cast to remove const/volatile keywords if they're there
+                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                       CSz("member.name"),
+                                       Params
+                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          }
+                          {
+                          }
                         }
                         {
-                          DoEditorUi(Ui,
-                                     Window,
-                                     // Cast to remove const/volatile keywords if they're there
-                                     Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                     CSz("member.name"),
-                                     Params
-                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          member.is_function?
+                          {
+                          }
+                          {
+                            DoEditorUi(Ui,
+                                       Window,
+                                       // Cast to remove const/volatile keywords if they're there
+                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                       CSz("member.name"),
+                                       Params
+                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                          }
                         }
                       }
                     }
@@ -501,6 +516,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI
   DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
 }
 
+poof(string_and_value_tables(maybe_tag))
+#include <generated/string_and_value_tables_maybe_tag.h>
+poof(do_editor_ui_for_enum(maybe_tag))
+#include <generated/do_editor_ui_for_enum_maybe_tag.h>
+
 poof(string_and_value_tables(data_type))
 #include <generated/string_and_value_tables_data_type.h>
 poof(do_editor_ui_for_enum(data_type))
@@ -517,6 +537,12 @@ poof(do_editor_ui_for_compound_type(rect3cp))
 
 poof(block_array_h(asset_thumbnail, {8}, {}))
 #include <generated/block_array_h_asset_thumbnail_688856411.h>
+
+poof(do_editor_ui_for_compound_type(ray))
+#include <generated/do_editor_ui_for_compound_type_ray.h>
+
+poof(do_editor_ui_for_compound_type(maybe_ray))
+#include <generated/do_editor_ui_for_compound_type_maybe_ray.h>
 
 struct selection_modification_state
 {
@@ -581,7 +607,7 @@ enum world_edit_tool
 {
   WorldEdit_Tool_Disabled,      // poof(@ui_skip)
   WorldEdit_Tool_Select,        // world_edit_selection_mode
-  WorldEdit_Tool_Brush,         // world_edit_brush_type
+  /* WorldEdit_Tool_Brush,         // world_edit_brush_type */
   WorldEdit_Tool_Eyedropper,
   WorldEdit_Tool_BlitEntity,
   /* WorldEdit_Tool_StandingSpots, // Recomputes standing spots for an area */
@@ -596,21 +622,40 @@ enum world_edit_brush_type
   WorldEdit_BrushType_Layered,
 };
 
-// TODO(Jesse): Rename to .. something something behavior ?
-enum world_edit_mode
+enum world_edit_blend_mode
 {
-  WorldEdit_Mode_Attach,
-  WorldEdit_Mode_Remove,
-  WorldEdit_Mode_Paint,
+  WorldEdit_Mode_Additive,    // Adds layer value to noise value
+  WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
+  WorldEdit_Mode_Threshold,   // Sets noise value to layer value if above threshold
+
   WorldEdit_Mode_Disabled, // Useful for turning the layer off
 };
 
-// TODO(Jesse): Rename to reflect that it's the iteration pattern ..?
-enum world_edit_mode_modifier
+enum world_edit_color_blend_mode
+{
+  WorldEdit_ColorBlendMode_ThresholdPositive,
+  WorldEdit_ColorBlendMode_ThresholdNegative,
+
+  WorldEdit_ColorBlendMode_Additive,
+  WorldEdit_ColorBlendMode_Subtractive,
+  WorldEdit_ColorBlendMode_Multiply,
+  WorldEdit_ColorBlendMode_Divide,
+
+  WorldEdit_ColorBlendMode_Average,
+
+  WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
+};
+
+enum world_edit_blend_mode_modifier poof(@bitfield)
 {
   WorldEdit_Modifier_Default  =     0,
-  WorldEdit_Modifier_Flood    = (1<<0),
-  WorldEdit_Modifier_Surface  = (1<<1),
+  WorldEdit_ValueModifier_Surface  = (1<<0),
+  WorldEdit_ValueModifier_ClampPos = (1<<1),
+  WorldEdit_ValueModifier_ClampNeg = (1<<2),
+
+  WorldEdit_ColorModifier_Discard  = (1<<3),
+  // NOTE(Jesse): Unsupported for now, unclear if it will be again ..
+  // WorldEdit_Modifier_Flood    = xxxx,
 };
 
 
@@ -631,15 +676,15 @@ struct generic_noise_params
 };
 
 // TODO(Jesse): Get rid of zMin
-#define UNPACK_NOISE_PARAMS(P)                                       \
-  v3i WorldChunkDim = GetWorldChunkDim();                            \
-  v3i Dim = Chunk->Dim;                                              \
-  r32 Thresh  = Cast(generic_noise_params*, (P))->Threshold;         \
-  s64 zMin    = s64(Cast(generic_noise_params*, (P))->Threshold);    \
-  v3  Period     = Cast(generic_noise_params*, (P))->Period;         \
-  s32 Amplitude  = s32(Cast(generic_noise_params*, (P))->Amplitude); \
-  v3  RGBColor      = Cast(generic_noise_params*, (P))->RGBColor;    \
-  v3i SrcToDest  = {-1*Global_ChunkApronMinDim};
+#define UNPACK_NOISE_PARAMS(P)                                          \
+  v3i WorldChunkDim = GetWorldChunkDim();                               \
+  v3i           Dim = Chunk->Dim;                                       \
+  r32        Thresh = Cast(generic_noise_params*, (P))->Threshold;      \
+  s64          zMin = s64(Cast(generic_noise_params*, (P))->Threshold); \
+  v3         Period = Cast(generic_noise_params*, (P))->Period;         \
+  s32     Amplitude = s32(Cast(generic_noise_params*, (P))->Amplitude); \
+  v3       RGBColor = Cast(generic_noise_params*, (P))->RGBColor;       \
+  v3i     SrcToDest = {}
 
 
 struct white_noise_params
@@ -647,9 +692,10 @@ struct white_noise_params
   r32 Threshold = 0.5f;
 };
 
+
 struct perlin_noise_params
 {
-  r32 Threshold = 3.f;               poof(@ui_value_range(0.1f, 20.f))
+  r32 Threshold = 0.f;               poof(@ui_value_range(0.f,   1.f))
   v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
 };
@@ -659,7 +705,7 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 1.5f;                 poof(@ui_value_range(0.1f, 20.f))
+  r32 Threshold = 0.0f;                 poof(@ui_value_range(0.f,   1.f))
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Amplitude = 8.f;                  poof(@ui_value_range(0.1f, 20.f))
 
@@ -667,11 +713,13 @@ struct voronoi_noise_params
   r32 MaskChance;
 };
 
-poof(do_editor_ui_for_radio_enum(world_edit_mode_modifier))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode_modifier.h>
 
-poof(string_and_value_tables(world_edit_mode_modifier))
-#include <generated/string_and_value_tables_world_edit_mode_modifier.h>
+poof(string_and_value_tables(world_edit_blend_mode_modifier))
+#include <generated/string_and_value_tables_world_edit_blend_mode_modifier.h>
+
+poof(do_editor_ui_for_enum(world_edit_blend_mode_modifier))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode_modifier.h>
+
 
 
 
@@ -683,13 +731,17 @@ poof(toggle_button_group_for_enum(engine_debug_view_mode))
 poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 #include <generated/do_editor_ui_for_radio_enum_asset_window_view_mode.h>
 
-poof(string_and_value_tables(world_edit_mode))
-#include <generated/string_and_value_tables_world_edit_mode.h>
-/* poof(radio_button_group_for_bitfield_enum(world_edit_mode)); */
-/* #include <generated/radio_button_group_for_bitfield_enum_world_edit_mode.h> */
+poof(string_and_value_tables(world_edit_blend_mode))
+#include <generated/string_and_value_tables_world_edit_blend_mode.h>
 
-poof(do_editor_ui_for_radio_enum(world_edit_mode))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_mode.h>
+poof(do_editor_ui_for_radio_enum(world_edit_blend_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode.h>
+
+poof(string_and_value_tables(world_edit_color_blend_mode))
+#include <generated/string_and_value_tables_world_edit_color_blend_mode.h>
+poof(do_editor_ui_for_enum(world_edit_color_blend_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_color_blend_mode.h>
+
 
 poof(do_editor_ui_for_radio_enum(world_edit_tool))
 #include <generated/do_editor_ui_for_radio_enum_world_edit_tool.h>
@@ -704,20 +756,21 @@ poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 
 
 
-enum world_update_op_shape_type
-{
-  type_world_update_op_shape_params_noop,
+/* enum world_update_op_shape_type */
+/* { */
+/*   type_world_update_op_shape_params_noop, */
 
-  type_world_update_op_shape_params_sphere,
-  type_world_update_op_shape_params_rect,
-  type_world_update_op_shape_params_asset,
-  type_world_update_op_shape_params_chunk_data,
+/*   type_world_update_op_shape_params_sphere, */
+/*   type_world_update_op_shape_params_rect, */
+/*   type_world_update_op_shape_params_cylinder, */
+/*   type_world_update_op_shape_params_asset, */
+/*   type_world_update_op_shape_params_chunk_data, */
 
-  type_world_update_op_shape_params_count,
-};
+/*   type_world_update_op_shape_params_count, */
+/* }; */
 
-poof(string_and_value_tables(world_update_op_shape_type))
-#include <generated/string_and_value_tables_world_update_op_shape_type.h>
+/* poof(string_and_value_tables(world_update_op_shape_type)) */
+/* #include <generated/string_and_value_tables_world_update_op_shape_type.h> */
 
 
 struct world_update_op_shape_params_rect
@@ -746,11 +799,12 @@ struct world_update_op_shape_params_sphere
   f32 Radius = 10.f; poof(@ui_disable)
 };
 
+#if 0
 struct world_edit_shape
 {
   world_update_op_shape_type Type;
-
-  union {
+  union poof(@d_union_type_target)
+  {
     world_update_op_shape_params_sphere     world_update_op_shape_params_sphere;
     world_update_op_shape_params_rect       world_update_op_shape_params_rect;
     world_update_op_shape_params_asset      world_update_op_shape_params_asset;
@@ -758,12 +812,12 @@ struct world_edit_shape
   };
 };
 
-struct world_edit_brush
+struct world_edit_brush_constraints
 {
   world_edit_shape         Shape;
 
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
   // NOTE(Jesse): If Modifier is Flood, this is set to where the flood should start
   //
@@ -776,8 +830,9 @@ struct world_edit_brush
   /* v3 SimFloodOrigin; */
 };
 
-poof(do_editor_ui_for_compound_type(world_edit_brush))
+poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 #include <generated/do_editor_ui_for_compound_type_world_edit_brush.h>
+#endif
 
 
 
@@ -789,19 +844,9 @@ poof(do_editor_ui_for_compound_type(world_edit_brush))
 
 enum shape_type
 {
-  // NOTE(Jesse): Having this none value is kinda janky; I'd prefer to not for
-  // this enum, but since we have to overlap with type_world_update_op_shape_params
-  // we kinda have to have it (so that the none value draws if we accidentally set it to 0.
-  //
-  // type_world_update_op_shape_params doesn't strictly require a 0 value,
-  // but it's really nice to have the assertion in DoWorldUpdate
-  //
-  // Once this code matures a bit we can probably take this _None value
-  // out.  It's strictly so we get a visual trigger in the UI.
-  //
-  ShapeType_None   = type_world_update_op_shape_params_noop,
-  ShapeType_Sphere = type_world_update_op_shape_params_sphere,
-  ShapeType_Rect   = type_world_update_op_shape_params_rect,
+  ShapeType_Sphere,
+  ShapeType_Rect,
+  ShapeType_Cylinder,
 };
 poof(string_and_value_tables(shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
@@ -814,6 +859,8 @@ struct shape_layer
   // them and your parameter selections stay intact.
   world_update_op_shape_params_sphere Sphere;
   world_update_op_shape_params_rect   Rect;
+
+  f32 Threshold = 0.f; poof(@ui_value_range(0.f, 1.f))
 };
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
@@ -853,6 +900,8 @@ enum brush_layer_type
   BrushLayerType_Shape,
 };
 
+poof(string_and_value_tables(brush_layer_type))
+#include <generated/string_and_value_tables_enum.h>
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
@@ -866,8 +915,9 @@ struct brush_settings poof(@version(3))
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
+  world_edit_color_blend_mode    ColorMode;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -895,8 +945,8 @@ struct brush_settings_2
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -924,8 +974,8 @@ struct brush_settings_1
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -947,8 +997,8 @@ struct brush_settings_0
   //
   // Common across brush types
   //
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -988,156 +1038,147 @@ struct brush_layer
 
 
 
-#define NameBuf_Len (256)
 // TODO(Jesse): Make this dynamic .. probably ..
 #define MAX_BRUSH_LAYERS 16
 #define BRUSH_PREVIEW_TEXTURE_DIM 256
-struct layered_brush_editor poof(@version(3))
+struct layered_brush
 {
-  // NOTE(Jesse): This is so we can just copy the name of the brush in here and
-  // not fuck around with allocating a single string when we load these in.
-  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
-
   // NOTE(Jesse): The layer previews have to be seperate from the brush_layer
   // because the deserialization code isn't smart enough to not stomp on the
   // texture handles when it marshals old types to the current one.
               s32 LayerCount;
-      brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-  chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize)
+      brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
 
-  chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value
+  /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
+  /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */
 
   b8 SeedBrushWithSelection;
   b8 BrushFollowsCursor;
 
   // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.
-  world_edit_mode          Mode;
-  world_edit_mode_modifier Modifier;
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
   // NOTE(Jesse): This is actually just using the chunk .. should probably change it
-  chunk_thumbnail Preview; poof(@no_serialize)
+  /* chunk_thumbnail Preview; poof(@no_serialize) */
 };
 
-struct layered_brush_editor_2
+
+
+
+
+
+struct single_brush
+{
+  world_edit_blend_mode Mode;
+};
+
+
+struct asset_brush
+{
+  world_edit_blend_mode Mode;
+  world_edit_blend_mode_modifier Modifier;
+};
+
+
+
+
+
+
+// NOTE(Jesse): This isn't really meant to be used outside the the level_editor
+// I just packed all the things together such that it's a bit more obvious
+// they're all for doing the selection
+struct selection_region
+{
+  u32 Clicks;
+
+  // NOTE(Jesse): We need to save the first point we clicked such that we can
+  // synthetically construct the region and construct it while we're clicking
+  // on a second point.  The problem without this Base point is that we don't
+  // know if the point we clicked is the min or the max of the current box.
+  // There's probably a way to get around having this Base point, but it's not
+  // really a big deal.
+  cp Base;
+
+  rect3cp Region;
+  rect3cp PrevRegion; // Change detection
+  b32 Changed;
+
+  selection_modification_state ModState;
+};
+
+
+
+struct world_edit_brush
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
-  char NameBuf[NameBuf_Len+1]; poof(@no_serialize @ui_text_box)
+#define NameBuf_Len (256)
+  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_display_as(CS))
 
-  s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS];  poof(@array_length(LayerCount))
+  /* world_edit_shape               Shape; */
+  world_edit_blend_mode          Mode;
+  world_edit_blend_mode_modifier Modifier;
 
-  b8 SeedBrushWithSelection;
-  b8 BrushFollowsCursor;
-
-  chunk_thumbnail Preview; poof(@no_serialize)
+  /* world_edit_brush_type Type; */
+  /* union */
+  /* { */
+  /*   single_brush  Single; */
+  /*   asset_brush   Asset; */
+    layered_brush Layered;
+  /* }; */
 };
 
-
-struct layered_brush_editor_1
+link_internal umm
+Hash(world_edit_brush *Brush)
 {
-  char NameBuf[NameBuf_Len];
-
-  s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-
-  b8 SeedBrushWithSelection;
-  b8 BrushFollowsCursor;
-
-  chunk_thumbnail Preview; poof(@no_serialize)
-};
-
-struct layered_brush_editor_0
-{
-  s32 LayerCount = 1;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
-
-  chunk_thumbnail Preview; poof(@no_serialize)
-  b8 SeedBrushWithSelection; poof(@no_serialize)
-};
-
-link_internal void
-Marshal(layered_brush_editor_2 *Stored, layered_brush_editor *Live)
-{
-  poof(default_marshal(layered_brush_editor_2))
-#include <generated/default_marshal_layered_brush_editor_2.h>
-}
-
-link_internal void
-Marshal(layered_brush_editor_1 *Stored, layered_brush_editor *Live)
-{
-  poof(default_marshal(layered_brush_editor_1))
-#include <generated/default_marshal_layered_brush_editor_1.h>
-}
-
-link_internal void
-Marshal(layered_brush_editor_0 *Stored, layered_brush_editor *Live)
-{
-  poof(default_marshal(layered_brush_editor_0))
-#include <generated/default_marshal_layered_brush_editor_0.h>
+  umm Result = Hash(CS(Brush->NameBuf));
+  return Result;
 }
 
 
+poof(are_equal(world_edit_brush))
+#include <generated/are_equal_struct.h>
 
+poof(hashtable(world_edit_brush))
+#include <generated/hashtable_struct.h>
 
-
-
-struct single_brush_settings
+struct world_edit
 {
-  world_edit_mode Mode;
+  rect3cp Region; // TODO(Jesse): Rename to bounds
+  world_edit_brush *Brush;
+  u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
 };
 
+typedef world_edit* world_edit_ptr;
 
-struct asset_brush_settings
-{
-  world_edit_mode Mode;
-  world_edit_mode_modifier Modifier;
-};
-
-
-
-
-
-
+poof(block_array(world_edit, {128}))
+#include <generated/block_array_struct_688735882.h>
+poof(block_array(world_edit_ptr, {128}))
+#include <generated/block_array_world_edit_ptr_688735882.h>
 
 
 struct level_editor
 {
   memory_arena *Memory;
 
-  world_edit_tool       Tool;
-  world_edit_tool       PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
-
-  world_edit_brush_type BrushType;
-
-  single_brush_settings SingleBrush;
-  asset_brush_settings  AssetBrush;
-  layered_brush_editor  LayeredBrushEditor;
+  world_edit_tool Tool;
+  world_edit_tool PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
 
   b8 SelectionFollowsCursor;
 
   b32 RootChunkNeedsNewMesh;
 
-  cp  MostRecentSelectionRegionMin;
-  cp  NextSelectionRegionMin;
-  cp  EditorPreviewRegionMin;
-
   u64 EngineDebugViewModeToggleBits;
 
-  /* u16 SelectedColorIndex; */
   u16 HoverColorIndex;
 
-  b32 SelectionChanged;
-  u32 SelectionClicks;
-  cp  SelectionBase;
+  selection_region Selection;
 
-  rect3cp SelectionRegion;
-  rect3cp PrevSelectionRegion; // Change detection
-                               //
   rect3cp CopyRegion;
 
   // Recorded when accel-clicking on the selection to manipulate it
-  selection_modification_state Selection;
+  /* selection_modification_state Selection; */
   selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
@@ -1145,7 +1186,16 @@ struct level_editor
   b32 NewAssetFromSelection;
   char NewAssetFromSelectionFilename[512];
 
-  /* v3 HSVColorSelection = {{0.f, 0.8f, 0.5f}}; */
+  b32 MaskSelection;
+
+  u32 NextEditOrdinal;
+  world_edit_block_array WorldEdits;
+  world_edit_brush_hashtable LoadedBrushes;
+
+  world_edit *CurrentEdit;
+  world_edit *HotEdit;
+
+  world_edit_brush *CurrentBrush;
 };
 
 
@@ -1168,22 +1218,20 @@ SelectionIncomplete(u32 SelectionClicks)
 link_internal void
 ResetSelection(level_editor *Editor)
 {
-  Editor->SelectionClicks = 0;
-  Editor->SelectionBase = {};
-  Editor->SelectionRegion = {};
+  Editor->Selection = {};
 }
 
 link_internal void
 ResetSelectionIfIncomplete(level_editor *Editor)
 {
-  if (SelectionIncomplete(Editor->SelectionClicks)) { ResetSelection(Editor); }
+  if (SelectionIncomplete(Editor->Selection.Clicks)) { ResetSelection(Editor); }
 }
 
 link_internal rect3
 GetSelectionRect(world *World, level_editor *Editor)
 {
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->Selection.Region.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->Selection.Region.Max);
 
   rect3 Result = RectMinMax(SelectionMinP, SelectionMaxP);
   return Result;
@@ -1192,30 +1240,36 @@ GetSelectionRect(world *World, level_editor *Editor)
 link_internal v3i
 GetSelectionDim(world *World, level_editor *Editor)
 {
-  v3 SelectionMinP = GetSimSpaceP(World, Editor->SelectionRegion.Min);
-  v3 SelectionMaxP = GetSimSpaceP(World, Editor->SelectionRegion.Max);
+  v3 SelectionMinP = GetSimSpaceP(World, Editor->Selection.Region.Min);
+  v3 SelectionMaxP = GetSimSpaceP(World, Editor->Selection.Region.Max);
 
   v3i Result = V3i(SelectionMaxP - SelectionMinP);
   return Result;
 }
 
 
+link_internal b32
+CheckSettingsChanged(layered_brush *);
+
+link_internal b32
+CheckSettingsChanged(world_edit *);
+
 link_internal b32 HardResetEditor(level_editor *Editor);
 
 link_internal v3
-GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode);
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode);
 
 link_internal v3
-GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier);
+GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier);
 
-link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset);
+/* link_internal void */
+/* ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset); */
 
 link_internal v3i
-GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim = 0);
+GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);
 
-link_internal void
-DrawEditorPreview(engine_resources *Engine, shader *Shader);
+/* link_internal void */
+/* DrawEditorPreview(engine_resources *Engine, shader *Shader); */
 
 link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);

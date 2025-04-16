@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:323:0
+// src/engine/editor.cpp:235:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->P),
+        Cast(v3*, &Element->P),
         CSz("P"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->Normal),
+        Cast(v3*, &Element->Normal),
         CSz("Normal"),
         Params
         );
@@ -55,11 +56,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->d),
+        Cast(r32*, &Element->d),
         CSz("d"),
         Params
         );
@@ -70,7 +72,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
 
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

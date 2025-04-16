@@ -1,5 +1,18 @@
-// src/engine/render_command.h:160:0
+// src/engine/render_command.h:219:0
 
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_initialize_noise_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_initialize_noise_buffer,
+    .bonsai_render_command_initialize_noise_buffer = A,
+
+    
+
+  };
+  return Result;
+}
 
 link_internal work_queue_entry__bonsai_render_command
 WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_clear_all_framebuffers A  )
@@ -98,6 +111,45 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_do_stuff A  )
   work_queue_entry__bonsai_render_command Result = {
     .Type = type_bonsai_render_command_do_stuff,
     .bonsai_render_command_do_stuff = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_and_map_gpu_element_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_allocate_and_map_gpu_element_buffer,
+    .bonsai_render_command_allocate_and_map_gpu_element_buffer = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_gpu_element_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_unmap_gpu_element_buffer,
+    .bonsai_render_command_unmap_gpu_element_buffer = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_buffer A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_unmap_and_deallocate_buffer,
+    .bonsai_render_command_unmap_and_deallocate_buffer = A,
 
     
 
@@ -222,12 +274,42 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_gl_timer_read_value_and
   return Result;
 }
 
+link_internal work_queue_entry__bonsai_render_command
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_cancel_all_noise_readback_jobs A  )
+{
+  work_queue_entry__bonsai_render_command Result = {
+    .Type = type_bonsai_render_command_cancel_all_noise_readback_jobs,
+    .bonsai_render_command_cancel_all_noise_readback_jobs = A,
+
+    
+
+  };
+  return Result;
+}
+
+
+
+
+link_internal bonsai_render_command_initialize_noise_buffer
+BonsaiRenderCommandInitializeNoiseBuffer(  octree_node *  Node  )
+{
+  bonsai_render_command_initialize_noise_buffer Reuslt = {
+            .Node = Node
+
+
+  };
+
+  
+  return Reuslt;
+}
 
 link_internal bonsai_render_command_clear_all_framebuffers
-BonsaiRenderCommandClearAllFramebuffers( u32   Ignored  )
+BonsaiRenderCommandClearAllFramebuffers(  u32   Ignored  )
 {
   bonsai_render_command_clear_all_framebuffers Reuslt = {
-    .Ignored = Ignored
+            .Ignored = Ignored
+
+
   };
 
   
@@ -235,12 +317,12 @@ BonsaiRenderCommandClearAllFramebuffers( u32   Ignored  )
 }
 
 link_internal bonsai_render_command_allocate_texture
-BonsaiRenderCommandAllocateTexture( texture*  Texture , void *  Data  )
+BonsaiRenderCommandAllocateTexture(  texture *  Texture , void  *  Data  )
 {
   bonsai_render_command_allocate_texture Reuslt = {
-    .Texture = Texture
-,
-    .Data = Data
+            .Texture = Texture
+
+,        .Data = Data
   };
 
   
@@ -248,12 +330,12 @@ BonsaiRenderCommandAllocateTexture( texture*  Texture , void *  Data  )
 }
 
 link_internal bonsai_render_command_deallocate_texture
-BonsaiRenderCommandDeallocateTexture( u32*  Buffers , s32   Count  )
+BonsaiRenderCommandDeallocateTexture(  u32 *  Buffers , s32   Count  )
 {
   bonsai_render_command_deallocate_texture Reuslt = {
-    .Buffers = Buffers
-,
-    .Count = Count
+            .Buffers = Buffers
+
+,        .Count = Count
   };
 
   
@@ -261,12 +343,12 @@ BonsaiRenderCommandDeallocateTexture( u32*  Buffers , s32   Count  )
 }
 
 link_internal bonsai_render_command_allocate_buffers
-BonsaiRenderCommandAllocateBuffers( u32*  Buffers , s32   Count  )
+BonsaiRenderCommandAllocateBuffers(  u32 *  Buffers , s32   Count  )
 {
   bonsai_render_command_allocate_buffers Reuslt = {
-    .Buffers = Buffers
-,
-    .Count = Count
+            .Buffers = Buffers
+
+,        .Count = Count
   };
 
   
@@ -274,12 +356,12 @@ BonsaiRenderCommandAllocateBuffers( u32*  Buffers , s32   Count  )
 }
 
 link_internal bonsai_render_command_reallocate_buffers
-BonsaiRenderCommandReallocateBuffers( gpu_element_buffer_handles*  Handles , untextured_3d_geometry_buffer*  Mesh  )
+BonsaiRenderCommandReallocateBuffers(  gpu_element_buffer_handles *  Handles , untextured_3d_geometry_buffer *  Mesh  )
 {
   bonsai_render_command_reallocate_buffers Reuslt = {
-    .Handles = Handles
-,
-    .Mesh = Mesh
+            .Handles = Handles
+
+,        .Mesh = Mesh
   };
 
   
@@ -287,13 +369,15 @@ BonsaiRenderCommandReallocateBuffers( gpu_element_buffer_handles*  Handles , unt
 }
 
 link_internal bonsai_render_command_deallocate_buffers
-BonsaiRenderCommandDeallocateBuffers( u32*  Buffers , s32   Count  )
+BonsaiRenderCommandDeallocateBuffers(  u32 *  Buffers , s32   Count  )
 {
   bonsai_render_command_deallocate_buffers Reuslt = {
-    .Count = Count
+            .Buffers = {}
+
+,        .Count = Count
   };
 
-  RangeIterator(Index, s32(Count))
+      RangeIterator(Index, s32(Count))
   {
     Reuslt.Buffers[Index] = Buffers[Index];
   }
@@ -303,10 +387,12 @@ BonsaiRenderCommandDeallocateBuffers( u32*  Buffers , s32   Count  )
 }
 
 link_internal bonsai_render_command_deallocate_world_chunk
-BonsaiRenderCommandDeallocateWorldChunk( world_chunk*  Chunk  )
+BonsaiRenderCommandDeallocateWorldChunk(  world_chunk *  Chunk  )
 {
   bonsai_render_command_deallocate_world_chunk Reuslt = {
-    .Chunk = Chunk
+            .Chunk = Chunk
+
+
   };
 
   
@@ -314,10 +400,57 @@ BonsaiRenderCommandDeallocateWorldChunk( world_chunk*  Chunk  )
 }
 
 link_internal bonsai_render_command_do_stuff
-BonsaiRenderCommandDoStuff( u32   Ignored  )
+BonsaiRenderCommandDoStuff(  u32   Ignored  )
 {
   bonsai_render_command_do_stuff Reuslt = {
-    .Ignored = Ignored
+            .Ignored = Ignored
+
+
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_allocate_and_map_gpu_element_buffer
+BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   ElementCount , gpu_mapped_element_buffer *  Dest , world_chunk *  SynChunk , world_chunk *  DestChunk  )
+{
+  bonsai_render_command_allocate_and_map_gpu_element_buffer Reuslt = {
+            .Type = Type
+
+,        .ElementCount = ElementCount
+,
+        .Dest = Dest
+,
+        .SynChunk = SynChunk
+,
+        .DestChunk = DestChunk
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_unmap_gpu_element_buffer
+BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_mapped_element_buffer *  Buf , world_chunk *  Chunk  )
+{
+  bonsai_render_command_unmap_gpu_element_buffer Reuslt = {
+            .Buf = Buf
+
+,        .Chunk = Chunk
+  };
+
+  
+  return Reuslt;
+}
+
+link_internal bonsai_render_command_unmap_and_deallocate_buffer
+BonsaiRenderCommandUnmapAndDeallocateBuffer(  gpu_readback_buffer   PBOBuf  )
+{
+  bonsai_render_command_unmap_and_deallocate_buffer Reuslt = {
+            .PBOBuf = PBOBuf
+
+
   };
 
   
@@ -325,10 +458,12 @@ BonsaiRenderCommandDoStuff( u32   Ignored  )
 }
 
 link_internal bonsai_render_command_setup_shader
-BonsaiRenderCommandSetupShader( bonsai_render_command_shader_id   ShaderId  )
+BonsaiRenderCommandSetupShader(  bonsai_render_command_shader_id   ShaderId  )
 {
   bonsai_render_command_setup_shader Reuslt = {
-    .ShaderId = ShaderId
+            .ShaderId = ShaderId
+
+
   };
 
   
@@ -336,10 +471,12 @@ BonsaiRenderCommandSetupShader( bonsai_render_command_shader_id   ShaderId  )
 }
 
 link_internal bonsai_render_command_teardown_shader
-BonsaiRenderCommandTeardownShader( bonsai_render_command_shader_id   ShaderId  )
+BonsaiRenderCommandTeardownShader(  bonsai_render_command_shader_id   ShaderId  )
 {
   bonsai_render_command_teardown_shader Reuslt = {
-    .ShaderId = ShaderId
+            .ShaderId = ShaderId
+
+
   };
 
   
@@ -347,14 +484,14 @@ BonsaiRenderCommandTeardownShader( bonsai_render_command_shader_id   ShaderId  )
 }
 
 link_internal bonsai_render_command_set_shader_uniform
-BonsaiRenderCommandSetShaderUniform( shader_uniform   Uniform , shader*  Shader , s32   TextureUnit  )
+BonsaiRenderCommandSetShaderUniform(  shader_uniform   Uniform , shader *  Shader , s32   TextureUnit  )
 {
   bonsai_render_command_set_shader_uniform Reuslt = {
-    .Uniform = Uniform
+            .Uniform = Uniform
+
+,        .Shader = Shader
 ,
-    .Shader = Shader
-,
-    .TextureUnit = TextureUnit
+        .TextureUnit = TextureUnit
   };
 
   
@@ -362,12 +499,12 @@ BonsaiRenderCommandSetShaderUniform( shader_uniform   Uniform , shader*  Shader 
 }
 
 link_internal bonsai_render_command_draw_world_chunk_draw_list
-BonsaiRenderCommandDrawWorldChunkDrawList( world_chunk_ptr_paged_list*  DrawList , shader*  Shader  )
+BonsaiRenderCommandDrawWorldChunkDrawList(  world_chunk_ptr_paged_list *  DrawList , shader *  Shader  )
 {
   bonsai_render_command_draw_world_chunk_draw_list Reuslt = {
-    .DrawList = DrawList
-,
-    .Shader = Shader
+            .DrawList = DrawList
+
+,        .Shader = Shader
   };
 
   
@@ -375,10 +512,12 @@ BonsaiRenderCommandDrawWorldChunkDrawList( world_chunk_ptr_paged_list*  DrawList
 }
 
 link_internal bonsai_render_command_draw_all_entities
-BonsaiRenderCommandDrawAllEntities( shader*  Shader  )
+BonsaiRenderCommandDrawAllEntities(  shader *  Shader  )
 {
   bonsai_render_command_draw_all_entities Reuslt = {
-    .Shader = Shader
+            .Shader = Shader
+
+
   };
 
   
@@ -386,10 +525,12 @@ BonsaiRenderCommandDrawAllEntities( shader*  Shader  )
 }
 
 link_internal bonsai_render_command_gl_timer_init
-BonsaiRenderCommandGlTimerInit( u32*  GlTimerObject  )
+BonsaiRenderCommandGlTimerInit(  u32 *  GlTimerObject  )
 {
   bonsai_render_command_gl_timer_init Reuslt = {
-    .GlTimerObject = GlTimerObject
+            .GlTimerObject = GlTimerObject
+
+
   };
 
   
@@ -397,10 +538,12 @@ BonsaiRenderCommandGlTimerInit( u32*  GlTimerObject  )
 }
 
 link_internal bonsai_render_command_gl_timer_start
-BonsaiRenderCommandGlTimerStart( u32   GlTimerObject  )
+BonsaiRenderCommandGlTimerStart(  u32   GlTimerObject  )
 {
   bonsai_render_command_gl_timer_start Reuslt = {
-    .GlTimerObject = GlTimerObject
+            .GlTimerObject = GlTimerObject
+
+
   };
 
   
@@ -408,10 +551,12 @@ BonsaiRenderCommandGlTimerStart( u32   GlTimerObject  )
 }
 
 link_internal bonsai_render_command_gl_timer_end
-BonsaiRenderCommandGlTimerEnd( u32   GlTimerObject  )
+BonsaiRenderCommandGlTimerEnd(  u32   GlTimerObject  )
 {
   bonsai_render_command_gl_timer_end Reuslt = {
-    .GlTimerObject = GlTimerObject
+            .GlTimerObject = GlTimerObject
+
+
   };
 
   
@@ -419,13 +564,28 @@ BonsaiRenderCommandGlTimerEnd( u32   GlTimerObject  )
 }
 
 link_internal bonsai_render_command_gl_timer_read_value_and_histogram
-BonsaiRenderCommandGlTimerReadValueAndHistogram( u32   GlTimerObject  )
+BonsaiRenderCommandGlTimerReadValueAndHistogram(  u32   GlTimerObject  )
 {
   bonsai_render_command_gl_timer_read_value_and_histogram Reuslt = {
-    .GlTimerObject = GlTimerObject
+            .GlTimerObject = GlTimerObject
+
+
   };
 
   
   return Reuslt;
 }
+
+link_internal bonsai_render_command_cancel_all_noise_readback_jobs
+BonsaiRenderCommandCancelAllNoiseReadbackJobs(  )
+{
+  bonsai_render_command_cancel_all_noise_readback_jobs Reuslt = {
+    
+  };
+
+  
+  return Reuslt;
+}
+
+
 

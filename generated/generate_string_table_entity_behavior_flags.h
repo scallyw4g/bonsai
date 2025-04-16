@@ -6,7 +6,7 @@ ToStringPrefixless(entity_behavior_flags Type)
   counted_string Result = {};
   switch (Type)
   {
-    case EntityBehaviorFlags_None: { Result = CSz("None"); } break;
+        case EntityBehaviorFlags_None: { Result = CSz("None"); } break;
     case EntityBehaviorFlags_Gravity: { Result = CSz("Gravity"); } break;
     case EntityBehaviorFlags_WorldCollision: { Result = CSz("WorldCollision"); } break;
     case EntityBehaviorFlags_EntityCollision: { Result = CSz("EntityCollision"); } break;
@@ -16,7 +16,7 @@ ToStringPrefixless(entity_behavior_flags Type)
     case EntityBehaviorFlags_WorldCenter: { Result = CSz("WorldCenter"); } break;
     case EntityBehaviorFlags_Default: { Result = CSz("Default"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {
@@ -51,7 +51,7 @@ ToString(entity_behavior_flags Type)
   counted_string Result = {};
   switch (Type)
   {
-    case EntityBehaviorFlags_None: { Result = CSz("EntityBehaviorFlags_None"); } break;
+        case EntityBehaviorFlags_None: { Result = CSz("EntityBehaviorFlags_None"); } break;
     case EntityBehaviorFlags_Gravity: { Result = CSz("EntityBehaviorFlags_Gravity"); } break;
     case EntityBehaviorFlags_WorldCollision: { Result = CSz("EntityBehaviorFlags_WorldCollision"); } break;
     case EntityBehaviorFlags_EntityCollision: { Result = CSz("EntityBehaviorFlags_EntityCollision"); } break;
@@ -61,7 +61,7 @@ ToString(entity_behavior_flags Type)
     case EntityBehaviorFlags_WorldCenter: { Result = CSz("EntityBehaviorFlags_WorldCenter"); } break;
     case EntityBehaviorFlags_Default: { Result = CSz("EntityBehaviorFlags_Default"); } break;
 
-    // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
     default:
     {

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:2311:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2359:0
 
 case type_ui_render_command_window_start:
 {
@@ -41,4 +41,8 @@ case type_ui_render_command_untextured_quad_at:
   Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_untextured_quad_at.Layout));
   Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_untextured_quad_at.Layout));
 } break;
+
+
+
+
 

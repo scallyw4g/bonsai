@@ -1,4 +1,4 @@
-// src/engine/world_update.cpp:792:0
+// src/engine/world_update.cpp:757:0
 
 DimIterator(x, y, z, UpdateDim)
 {
@@ -15,10 +15,11 @@ DimIterator(x, y, z, UpdateDim)
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
 
-        if ((V->Flags&Voxel_Filled)==False)
+        NotImplemented;
+        /* if ((V->Flags&Voxel_Filled)==False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -29,20 +30,21 @@ DimIterator(x, y, z, UpdateDim)
     if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
       ((OverwriteVoxel == False) && (Invert == True ))  )
     {
-      if (Mode == WorldEdit_Mode_Paint)
+      /* if (Mode == WorldEdit_Mode_Paint) */
+      /* { */
+      /*   V->Color = NewVoxelValue->Color; */
+      /* } */
+      /* else */
       {
-        V->Color = NewVoxelValue->Color;
-      }
-      else
-      {
-        if (Mode == WorldEdit_Mode_Remove) { *V = {}; }
+        if (Mode == WorldEdit_Mode_Subtractive) { *V = {}; }
         else { *V = *NewVoxelValue; }
       }
 
       // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
       // We recompute these, so it's fine there.  It's slower on non-surface
       // paths, but .. when that's the bottleneck, we've won.
-      V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+      NotImplemented;
+      /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
     }
   }
 }

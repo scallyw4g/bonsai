@@ -6,7 +6,7 @@ ToStringPrefixless(model_index Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ModelIndex_None: { Result = CSz("None"); } break;
+        case ModelIndex_None: { Result = CSz("None"); } break;
     case ModelIndex_Enemy_Skeleton_Axe: { Result = CSz("Axe"); } break;
     case ModelIndex_Enemy_Skeleton_Sword: { Result = CSz("Sword"); } break;
     case ModelIndex_Enemy_Skeleton_Lasher: { Result = CSz("Lasher"); } break;
@@ -58,7 +58,7 @@ ToString(model_index Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ModelIndex_None: { Result = CSz("ModelIndex_None"); } break;
+        case ModelIndex_None: { Result = CSz("ModelIndex_None"); } break;
     case ModelIndex_Enemy_Skeleton_Axe: { Result = CSz("ModelIndex_Enemy_Skeleton_Axe"); } break;
     case ModelIndex_Enemy_Skeleton_Sword: { Result = CSz("ModelIndex_Enemy_Skeleton_Sword"); } break;
     case ModelIndex_Enemy_Skeleton_Lasher: { Result = CSz("ModelIndex_Enemy_Skeleton_Lasher"); } break;
@@ -109,7 +109,7 @@ ModelIndex(counted_string S)
 {
   model_index Result = {};
 
-  if (StringsMatch(S, CSz("ModelIndex_None"))) { return ModelIndex_None; }
+    if (StringsMatch(S, CSz("ModelIndex_None"))) { return ModelIndex_None; }
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_Axe"))) { return ModelIndex_Enemy_Skeleton_Axe; }
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_Sword"))) { return ModelIndex_Enemy_Skeleton_Sword; }
   if (StringsMatch(S, CSz("ModelIndex_Enemy_Skeleton_Lasher"))) { return ModelIndex_Enemy_Skeleton_Lasher; }

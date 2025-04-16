@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:437:0
+// src/engine/editor.cpp:455:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(graphics_settings*,&Element->Graphics),
+        Cast(graphics_settings*, &Element->Graphics),
         CSz("Graphics"),
         Params
         );
+
+
+
+
+
+
+
+
+      
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

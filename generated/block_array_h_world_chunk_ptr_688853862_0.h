@@ -1,4 +1,8 @@
-// src/engine/world_chunk.h:462:0
+// src/engine/world_chunk.h:427:0
+
+
+
+
 
 struct world_chunk_ptr_block
 {
@@ -23,10 +27,42 @@ struct world_chunk_ptr_block_array
   
 };
 
+link_internal world_chunk_ptr_block_array
+WorldChunkPtrBlockArray(memory_arena *Memory)
+{
+  world_chunk_ptr_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(world_chunk_ptr_block_array_index *Thing1, world_chunk_ptr_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( world_chunk_ptr_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(world_chunk_ptr_block_array_index Thing1, world_chunk_ptr_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( world_chunk_ptr_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef world_chunk_ptr_block_array world_chunk_ptr_paged_list;
 
 link_internal world_chunk_ptr_block_array_index
-operator++(world_chunk_ptr_block_array_index &I0)
+operator++( world_chunk_ptr_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +85,29 @@ operator++(world_chunk_ptr_block_array_index &I0)
 }
 
 link_internal b32
-operator<(world_chunk_ptr_block_array_index I0, world_chunk_ptr_block_array_index I1)
+operator<( world_chunk_ptr_block_array_index I0, world_chunk_ptr_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(world_chunk_ptr_block_array_index *Index)
+GetIndex( world_chunk_ptr_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*32);
   return Result;
 }
 
 link_internal world_chunk_ptr_block_array_index
-ZerothIndex(world_chunk_ptr_block_array *Arr)
+ZerothIndex( world_chunk_ptr_block_array *Arr)
 {
   world_chunk_ptr_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(world_chunk_ptr_block_array *Arr)
+TotalElements( world_chunk_ptr_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +118,7 @@ TotalElements(world_chunk_ptr_block_array *Arr)
 }
 
 link_internal world_chunk_ptr_block_array_index
-LastIndex(world_chunk_ptr_block_array *Arr)
+LastIndex( world_chunk_ptr_block_array *Arr)
 {
   world_chunk_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +133,7 @@ LastIndex(world_chunk_ptr_block_array *Arr)
 }
 
 link_internal world_chunk_ptr_block_array_index
-AtElements(world_chunk_ptr_block_array *Arr)
+AtElements( world_chunk_ptr_block_array *Arr)
 {
   world_chunk_ptr_block_array_index Result = {};
   if (Arr->Current)
@@ -110,23 +145,31 @@ AtElements(world_chunk_ptr_block_array *Arr)
   return Result;
 }
 
-link_internal world_chunk_ptr *
+link_internal umm
+Count( world_chunk_ptr_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
+link_internal world_chunk_ptr 
 GetPtr(world_chunk_ptr_block_array *Arr, world_chunk_ptr_block_array_index Index)
 {
-  world_chunk_ptr *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  world_chunk_ptr Result = {};
+  if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal world_chunk_ptr *
+link_internal world_chunk_ptr 
 GetPtr(world_chunk_ptr_block *Block, umm Index)
 {
-  world_chunk_ptr *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  world_chunk_ptr Result = {};
+  if (Index < Block->At) { Result = *(Block->Elements + Index); }
   return Result;
 }
 
-link_internal world_chunk_ptr *
+link_internal world_chunk_ptr 
 GetPtr(world_chunk_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 32;
@@ -139,11 +182,11 @@ GetPtr(world_chunk_ptr_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  world_chunk_ptr *Result = Block->Elements+ElementIndex;
+  world_chunk_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal world_chunk_ptr *
+link_internal world_chunk_ptr 
 TryGetPtr(world_chunk_ptr_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 32;
@@ -151,7 +194,7 @@ TryGetPtr(world_chunk_ptr_block_array *Arr, umm Index)
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  world_chunk_ptr *Result = {};
+  world_chunk_ptr Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }

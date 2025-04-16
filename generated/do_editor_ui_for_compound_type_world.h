@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:189:0
+// src/engine/editor.cpp:332:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Center),
+        Cast(v3i*, &Element->Center),
         CSz("Center"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->VisibleRegion),
+        Cast(v3i*, &Element->VisibleRegion),
         CSz("VisibleRegion"),
         Params
         );
@@ -55,46 +56,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->HashSlotsUsed),
-        CSz("HashSlotsUsed"),
+        Cast(octree_node*, &Element->Root),
+        CSz("Root"),
         Params
         );
 
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->HashSize),
-        CSz("HashSize"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->ChunkHash),
-        CSz("ChunkHash"),
-        Params
-        );
 
 
 
@@ -103,10 +74,58 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->FreeChunkCount),
+        Cast(memory_arena*, Element->OctreeMemory),
+        CSz("OctreeMemory"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(octree_node_freelist*, &Element->OctreeNodeFreelist),
+        CSz("OctreeNodeFreelist"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist),
+        CSz("OctreeNodeDeferFreelist"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*, &Element->FreeChunkCount),
         CSz("FreeChunkCount"),
         Params
         );
@@ -117,7 +136,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
 
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

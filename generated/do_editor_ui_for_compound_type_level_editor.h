@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:425:0
+// src/engine/editor.cpp:443:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,7 +26,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(memory_arena*, Element->Memory),
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_tool*,&Element->Tool),
+        Cast(world_edit_tool*, &Element->Tool),
         CSz("Tool"),
         Params
         );
@@ -55,11 +56,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_tool*,&Element->PreviousTool),
+        Cast(world_edit_tool*, &Element->PreviousTool),
         CSz("PreviousTool"),
         Params
         );
@@ -70,71 +72,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_brush_type*,&Element->BrushType),
-        CSz("BrushType"),
-        Params
-        );
-
-
-
-
-
-
 
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(single_brush_settings*,&Element->SingleBrush),
-        CSz("SingleBrush"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_brush_settings*,&Element->AssetBrush),
-        CSz("AssetBrush"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(layered_brush_editor*,&Element->LayeredBrushEditor),
-        CSz("LayeredBrushEditor"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->SelectionFollowsCursor),
+        Cast(b8*, &Element->SelectionFollowsCursor),
         CSz("SelectionFollowsCursor"),
         Params
         );
@@ -145,11 +88,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                    DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->RootChunkNeedsNewMesh),
+        Cast(b8*, &Element->RootChunkNeedsNewMesh),
         CSz("RootChunkNeedsNewMesh"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -158,57 +102,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->MostRecentSelectionRegionMin),
-        CSz("MostRecentSelectionRegionMin"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->NextSelectionRegionMin),
-        CSz("NextSelectionRegionMin"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->EditorPreviewRegionMin),
-        CSz("EditorPreviewRegionMin"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*,&Element->EngineDebugViewModeToggleBits),
+        Cast(u64*, &Element->EngineDebugViewModeToggleBits),
         CSz("EngineDebugViewModeToggleBits"),
         Params
         );
@@ -219,12 +119,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u16*,&Element->HoverColorIndex),
+        Cast(u16*, &Element->HoverColorIndex),
         CSz("HoverColorIndex"),
         Params
         );
@@ -235,101 +136,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
-        Window,
-        Cast(b8*,&Element->SelectionChanged),
-        CSz("SelectionChanged"),
-        &DefaultUiRenderParams_Checkbox
-        );
+            PushNewRow(Ui);
 
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->SelectionClicks),
-        CSz("SelectionClicks"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->SelectionBase),
-        CSz("SelectionBase"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(rect3cp*,&Element->SelectionRegion),
-        CSz("SelectionRegion"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(rect3cp*,&Element->PrevSelectionRegion),
-        CSz("PrevSelectionRegion"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(rect3cp*,&Element->CopyRegion),
-        CSz("CopyRegion"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(selection_modification_state*,&Element->Selection),
+        Cast(selection_region*, &Element->Selection),
         CSz("Selection"),
         Params
         );
@@ -340,11 +153,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(selection_modification_state*,&Element->Entity),
+        Cast(rect3cp*, &Element->CopyRegion),
+        CSz("CopyRegion"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(selection_modification_state*, &Element->Entity),
         CSz("Entity"),
         Params
         );
@@ -355,11 +185,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(asset_thumbnail_block_array*,&Element->AssetThumbnails),
+        Cast(asset_thumbnail_block_array*, &Element->AssetThumbnails),
         CSz("AssetThumbnails"),
         Params
         );
@@ -370,10 +201,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
+
       
-      DoEditorUi(Ui,
+                                    DoEditorUi(Ui,
         Window,
-        Cast(b8*,&Element->NewAssetFromSelection),
+        Cast(b8*, &Element->NewAssetFromSelection),
         CSz("NewAssetFromSelection"),
         &DefaultUiRenderParams_Checkbox
         );
@@ -382,16 +214,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
 
-      if (ToggleButton(Ui, CSz("v NewAssetFromSelectionFilename[512]"), CSz("> NewAssetFromSelectionFilename[512]"), UiId(Window, "toggle level_editor char  NewAssetFromSelectionFilename", Element->NewAssetFromSelectionFilename), Params ))
+            PushNewRow(Ui);
+
+                        if (ToggleButton(Ui, CSz("v NewAssetFromSelectionFilename[512]"), CSz("> NewAssetFromSelectionFilename[512]"), UiId(Window, "toggle level_editor char  NewAssetFromSelectionFilename", Element->NewAssetFromSelectionFilename), Params ))
       {
         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
         RangeIterator(ArrayIndex, 512)
         {
-          DoEditorUi(Ui, Window, Element->NewAssetFromSelectionFilename+ArrayIndex, FSz("NewAssetFromSelectionFilename[%d]", ArrayIndex), Params);
- PushNewRow(Ui); 
+                    DoEditorUi(Ui, Window, Element->NewAssetFromSelectionFilename+ArrayIndex, FSz("NewAssetFromSelectionFilename[%d]", ArrayIndex), Params);
+
+           PushNewRow(Ui); 
         }
         CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
@@ -399,7 +233,111 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
+
+                                    DoEditorUi(Ui,
+        Window,
+        Cast(b8*, &Element->MaskSelection),
+        CSz("MaskSelection"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u32*, &Element->NextEditOrdinal),
+        CSz("NextEditOrdinal"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_block_array*, &Element->WorldEdits),
+        CSz("WorldEdits"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_brush_hashtable*, &Element->LoadedBrushes),
+        CSz("LoadedBrushes"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit*, Element->CurrentEdit),
+        CSz("CurrentEdit"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit*, Element->HotEdit),
+        CSz("HotEdit"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(world_edit_brush*, Element->CurrentBrush),
+        CSz("CurrentBrush"),
+        Params
+        );
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

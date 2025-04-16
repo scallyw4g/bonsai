@@ -370,7 +370,7 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinCli
   *Current = GetUniform(GraphicsMemory, &Shader, &Camera->RenderSpacePosition, "CameraToWorld");
   Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
+  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
   Current = &(*Current)->Next;
 
   *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");
@@ -561,64 +561,91 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   Ensure( CheckAndClearFramebuffer() );
 }
 
+
+#define RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH "runtime_settings/graphics_settings.bin"
+
+link_internal void
+DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings, r32 GameCameraFOV)
+{
+    Settings->ToneMappingType = ToneMappingType_Exposure;
+
+    Settings->UseSsao           = True;
+
+    Settings->BravoilMyersOIT   = True;
+    Settings->BravoilMcGuireOIT = True;
+
+    /* Settings->UseShadowMapping = True; */
+    Settings->UseLightingBloom = True;
+
+    /* Settings->DrawMajorGrid = True; */
+    /* Settings->DrawMinorGrid = True; */
+    Settings->MajorGridDim = 16.f;
+
+    Settings->ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+    Settings->ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+    Settings->LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+    Settings->iApplicationResolution  = GetApplicationResolution(EngineSettings);
+    Settings->iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+    Settings->iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+
+    Settings->GameCameraFOV = GameCameraFOV;
+
+    {
+      lighting_settings *Lighting = &Settings->Lighting;
+
+      Lighting->tDay = 0.75f;
+
+      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
+      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
+      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
+      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+
+      Lighting->SunIntensity  = 1.10f;
+      Lighting->MoonIntensity = 0.10f;
+      Lighting->DawnIntensity = 0.70f;
+      Lighting->DuskIntensity = 0.50f;
+    }
+}
+
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
+  Assert(Result->Initialized == False);
+
   Init_Global_QuadVertexBuffer();
 
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.ToneMappingType = ToneMappingType_Exposure;
+  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
+  Result->Camera = &Result->GameCamera;
 
-  Result->Settings.UseSsao           = True;
+  if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
+  {
+    u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
+    if (Deserialize(&Bytes, &Result->Settings, GetTranArena()) == False)
+    {
+      Result->Settings = {};
+      Remove(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH));
+      DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
+    }
+    FinalizeDeserialization(&Bytes);
+  }
+  else
+  {
+    DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
+  }
 
-  Result->Settings.BravoilMyersOIT   = True;
-  Result->Settings.BravoilMcGuireOIT = True;
-
-  Result->Settings.UseShadowMapping = True;
-  Result->Settings.UseLightingBloom = True;
-
-  Result->Settings.DrawMajorGrid = True;
-  Result->Settings.DrawMinorGrid = True;
-  Result->Settings.MajorGridDim = 8.f;
+  Result->PrevSettings = Result->Settings;
 
   Result->Exposure = 1.5f;
-
-  Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-  Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-  Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
-
-  Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-  Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-  Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-
   Result->FogPower = 2.f;
 
   Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
-
-  {
-    lighting_settings *Lighting = &Result->Settings.Lighting;
-
-    Lighting->tDay = 0.75f;
-
-    Lighting->SunP = V3(-1.f, -1.f, 0.35f);
-
-    Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-    Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-    Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-    Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
-
-    Lighting->SunIntensity  = 1.10f;
-    Lighting->MoonIntensity = 0.10f;
-    Lighting->DawnIntensity = 0.70f;
-    Lighting->DuskIntensity = 0.50f;
-  }
-
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
-
-  Result->Camera = &Result->GameCamera;
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
   AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));
@@ -755,6 +782,120 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Settings.BravoilMcGuireOIT,
                                                         &Result->Settings.ToneMappingType
                                                        );
+  }
+
+
+  //
+  // World Edit RC
+  //
+  world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
+
+   v3 ChunkDim = V3(66, 66, 66);
+  v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+
+  {
+    {
+      terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
+      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceBasis, &TerrainShapingRC->ChunkResolution, {});
+    }
+
+    RangeIterator(Index, 2)
+    {
+      WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
+      GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
+
+      WorldEditRC->PingPongTextures[Index] = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("PingPongTexture"), 1, TextureStorageFormat_RGBA32F);
+
+      FramebufferTexture(&WorldEditRC->PingPongFBOs[Index], &WorldEditRC->PingPongTextures[Index]);
+      SetDrawBuffers(&WorldEditRC->PingPongFBOs[Index]);
+
+      Ensure(CheckAndClearFramebuffer());
+    }
+  }
+
+  //
+  // Terrain Shaping
+  //
+
+  {
+    terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
+    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {});
+
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  //
+  // Terrain Derivs
+  //
+
+  {
+    terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
+    InitializeTerrainDerivsRenderContext(RC, {});
+
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  //
+  // Terrain Decoration
+  //
+
+  {
+    terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {});
+
+    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[0];
+
+    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
+
+    FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
+    SetDrawBuffers(TerrainDecorationRC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+
+
+
+  //
+  // Terrain Finalize RC
+  //
+  {
+    terrain_finalize_render_context *TerrainFinalizeRC = &Result->TerrainFinalizeRC;
+    Result->TerrainFinalizeRC.FBO = GenFramebuffer();
+    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainFinalizeRC.FBO.ID);
+
+    {
+      u32 Channels = 1;
+      u32 Slices = 1;
+      // @shared_terrain_texture
+      TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
+      GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+      AssertNoGlErrors;
+      GL.BindTexture(GL_TEXTURE_2D, 0);
+    }
+    FramebufferTexture(&Result->TerrainFinalizeRC.FBO, &TerrainFinalizeRC->DestTex);
+    SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
+
+
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex);
+    Ensure(CheckAndClearFramebuffer());
   }
 
   GL.Enable(GL_CULL_FACE);

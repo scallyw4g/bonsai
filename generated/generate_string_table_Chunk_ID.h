@@ -6,7 +6,7 @@ ToStringPrefixless(Chunk_ID Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ID_NONE: { Result = CSz("NONE"); } break;
+        case ID_NONE: { Result = CSz("NONE"); } break;
     case ID_VOX: { Result = CSz("VOX"); } break;
     case ID_MAIN: { Result = CSz("MAIN"); } break;
     case ID_PACK: { Result = CSz("PACK"); } break;
@@ -35,7 +35,7 @@ ToString(Chunk_ID Type)
   counted_string Result = {};
   switch (Type)
   {
-    case ID_NONE: { Result = CSz("ID_NONE"); } break;
+        case ID_NONE: { Result = CSz("ID_NONE"); } break;
     case ID_VOX: { Result = CSz("ID_VOX"); } break;
     case ID_MAIN: { Result = CSz("ID_MAIN"); } break;
     case ID_PACK: { Result = CSz("ID_PACK"); } break;

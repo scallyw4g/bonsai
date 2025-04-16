@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:534:0
+// src/engine/serdes.cpp:416:0
 
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_sphere *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(world_update_op_shape_params_sphere *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("world_update_op_shape_params_sphere");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,13 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_sphere *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Location);
+                                Result &= Serialize(Bytes, &Element->Location); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Radius);
+
+                            Result &= Serialize(Bytes, &Element->Radius); // default
 
     
 
@@ -63,7 +64,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Location, Memory);
 
@@ -71,7 +72,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Radius, Memory);
 
@@ -89,7 +90,7 @@ Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memo
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

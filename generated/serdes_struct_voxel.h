@@ -6,7 +6,7 @@ TypeInfo(voxel *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("voxel");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +24,7 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,19 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voxel *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Flags);
+                                Result &= Serialize(Bytes, &Element->Transparency); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Transparency);
 
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Color);
+                            Result &= Serialize(Bytes, &Element->Color); // default
 
     
 
@@ -69,15 +64,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Flags, Memory);
-
-
-
-
-
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Transparency, Memory);
 
@@ -85,7 +72,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Color, Memory);
 
@@ -103,7 +90,7 @@ Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

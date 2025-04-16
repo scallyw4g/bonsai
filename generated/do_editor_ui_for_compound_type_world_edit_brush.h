@@ -1,7 +1,7 @@
-// src/engine/editor.h:779:0
+// src/engine/editor.h:824:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_constraints *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush_constraints", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_shape*,&Element->Shape),
+        Cast(world_edit_shape*, &Element->Shape),
         CSz("Shape"),
         Params
         );
@@ -41,10 +41,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode*,&Element->Mode),
+        Cast(world_edit_blend_mode*, &Element->Mode),
         CSz("Mode"),
         Params
         );
@@ -56,10 +56,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
       
-      DoEditorUi(Ui,
+                                          DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_mode_modifier*,&Element->Modifier),
+        Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
         CSz("Modifier"),
         Params
         );

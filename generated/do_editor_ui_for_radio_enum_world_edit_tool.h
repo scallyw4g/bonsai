@@ -1,4 +1,4 @@
-// src/engine/editor.h:694:0
+// src/engine/editor.h:746:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
@@ -18,9 +18,8 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
+        { CSz("Disabled"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
     { CSz("Select"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Select")), WorldEdit_Tool_Select },
-    { CSz("Brush"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Brush")), WorldEdit_Tool_Brush },
     { CSz("Eyedropper"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
     { CSz("BlitEntity"), UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
   };

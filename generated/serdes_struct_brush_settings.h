@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:545:0
+// src/engine/serdes.cpp:432:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
@@ -6,7 +6,7 @@ TypeInfo(brush_settings *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("brush_settings");
-  Result.Version =3 ;
+  Result.Version =  3 ;
 
   /* type.map(member) */
   /* { */
@@ -24,71 +24,82 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
 
-  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =3;
+    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber = 3;
   Serialize(Bytes, &VersionNumber);
 
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     brush_settings *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, (u32*)&Element->Type);
+                        Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Noise);
-
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Shape);
+                            Result &= Serialize(Bytes, &Element->Noise); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->Mode);
 
-
-
-
-    Result &= Serialize(Bytes, (u32*)&Element->Modifier);
-
-
-
-
-    Result &= Serialize(Bytes, &Element->Iterations);
+                            Result &= Serialize(Bytes, &Element->Shape); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Offset);
+
+                    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->Modifier); // enum
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Iterations); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->NoiseBasisOffset);
+
+                            Result &= Serialize(Bytes, &Element->Offset); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->HSVColor);
+
+                            Result &= Serialize(Bytes, &Element->NoiseBasisOffset); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Invert);
+
+                            Result &= Serialize(Bytes, &Element->HSVColor); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Invert); // default
 
     
 
@@ -108,11 +119,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=3);
+  Assert(TypeInfo->Version <= 3);
 
   b32 Result = True;
 
-  if (TypeInfo->Version == 0)
+    if (TypeInfo->Version == 0)
   {
     brush_settings_0 T0 = {};
     Result &= Deserialize(Bytes, &T0, Memory);
@@ -132,7 +143,7 @@ DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info
   }
 
 
-  if (TypeInfo->Version ==3)
+  if (TypeInfo->Version == 3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -145,12 +156,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
+            Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Noise, Memory);
 
@@ -158,7 +169,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Shape, Memory);
 
@@ -166,17 +177,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  Element->Mode = Cast(world_edit_mode, Read_u32(Bytes));
+          Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 
 
-  Element->Modifier = Cast(world_edit_mode_modifier, Read_u32(Bytes));
+          Element->Modifier = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Iterations, Memory);
 
@@ -184,7 +200,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Offset, Memory);
 
@@ -192,7 +208,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->NoiseBasisOffset, Memory);
 
@@ -200,7 +216,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
@@ -208,7 +224,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Invert, Memory);
 
@@ -226,7 +242,7 @@ Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("brush_settings"));
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("brush_settings"));
 
     if (MaybeSerializedType.Tag)
     {

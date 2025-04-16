@@ -1,4 +1,4 @@
-// src/engine/editor.h:533:0
+// src/engine/editor.h:559:0
 
 link_internal ui_toggle_button_group
 RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
@@ -10,7 +10,7 @@ RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Noop"), UiId(Window, Cast(void*, Element), Cast(void*, "level_editor_flags LevelEditorFlags_Noop")), LevelEditorFlags_Noop },
+        { CSz("Noop"), UiId(Window, Cast(void*, Element), Cast(void*, "level_editor_flags LevelEditorFlags_Noop")), LevelEditorFlags_Noop },
 
   };
 

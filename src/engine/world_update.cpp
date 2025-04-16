@@ -32,6 +32,8 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
         case type_work_queue_entry_copy_buffer_ref:
         case type_work_queue_entry_init_asset:
         case type_work_queue_entry_rebuild_mesh:
+        case type_work_queue_entry_finalize_noise_values:
+        case type_work_queue_entry_build_chunk_mesh:
         case type_work_queue_entry_sim_particle_system:
         case type_work_queue_entry__align_to_cache_line_helper:
         case type_work_queue_entry_async_function_call:
@@ -40,6 +42,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
           InvalidCodePath();
         } break;
 
+#if 0
         case type_work_queue_entry_update_world_region:
         {
           work_queue_entry_update_world_region *Job = SafeAccess(work_queue_entry_update_world_region, Entry);
@@ -59,6 +62,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
 
         } break;
+#endif
 
       }
 
@@ -66,7 +70,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
     IterateOver(&UpdatedChunks, Chunk, ChunkIndex)
     {
-      QueueChunkForMeshRebuild(&Plat->LowPriority, *Chunk);
+      QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
     }
 
     // NOTE(Jesse): This is intentionally after all the updates have completed
@@ -90,79 +94,18 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 }
 
 link_internal void
-BlitAssetIntoWorld(engine_resources *Engine, asset *Asset, cp Origin)
-{
-  world *World = Engine->World;
-
-  Assert(Asset->LoadState == AssetLoadState_Loaded);
-
-  world_chunk SrcChunk = {};
-  chunk_dimension ModelDim = {};
-  switch (Asset->Type)
-  {
-    InvalidCase(AssetType_Undefined);
-
-    case AssetType_Models:
-    {
-      Assert(Asset->Models.Count > 0);
-      chunk_data *VoxData = Asset->Models.Start[0].Vox.ChunkData;
-
-      ModelDim = Asset->Models.Start[0].Dim;
-
-      SrcChunk = {
-        .Flags = VoxData->Flags,
-        .Dim = VoxData->Dim,
-        .Voxels = VoxData->Voxels,
-      };
-
-    } break;
-
-    case AssetType_WorldChunk:
-    {
-      SrcChunk = Asset->Chunk;
-      ModelDim = Asset->Chunk.Dim;
-    } break;
-  }
-
-  // TODO(Jesse): Need to account for model offset in its chunk here.
-  chunk_dimension ChunkCounts = ChunkCountForDim(ModelDim + Origin.Offset, World->ChunkDim);
-
-  DebugLine("%d %d %d", ChunkCounts.x, ChunkCounts.y, ChunkCounts.z);
-
-  DimIterator(xChunk, yChunk, zChunk, ChunkCounts)
-  {
-    v3i SrcWorldP = V3i(xChunk, yChunk, zChunk);
-
-    v3i DestWorldP = Origin.WorldP + SrcWorldP;
-    world_chunk *DestChunk = GetWorldChunkFromHashtable(World, DestWorldP);
-    if (DestChunk)
-    {
-      Assert(DestChunk->Flags & Chunk_VoxelsInitialized);
-
-      v3i SrcVoxelsOffset = (SrcWorldP*World->ChunkDim) - V3i(Origin.Offset);
-
-      MergeChunksOffset(&SrcChunk, DestChunk, SrcVoxelsOffset);
-
-      // NOTE(Jesse): We have to either call MarkBoundaryVoxels_??? here or somehow infer
-      // what the face values are in the Merge routine
-      NotImplemented;
-
-      QueueChunkForMeshRebuild(&Engine->Stdlib.Plat.LowPriority, DestChunk);
-    }
-  }
-}
-
-link_internal void
 QueueWorldUpdateForRegion( engine_resources *Engine,
-                            world_edit_mode  Mode,
-                   world_edit_mode_modifier  Modifier,
-                           world_edit_shape *Shape,
+                            world_edit_blend_mode  Mode,
+                   world_edit_blend_mode_modifier  Modifier,
+                           /* world_edit_shape *Shape, */
                                          v3  HSVColor,
                                         b32  PersistWhitespace,
                                memory_arena *Memory )
 {
   TIMED_FUNCTION();
 
+  NotImplemented;
+#if 0
   // TODO(Jesse): Should we just remove the paramter?  Or do we sometimes not pass this?
   Assert(Memory == Engine->WorldUpdateMemory);
 
@@ -304,6 +247,7 @@ QueueWorldUpdateForRegion( engine_resources *Engine,
     };
     PushWorkQueueEntry(&Plat->WorldUpdateQ, &Entry);
   }
+#endif
 }
 
 link_internal u32
@@ -326,7 +270,8 @@ MapIntoQueryBox(v3 SimSpaceVoxP, v3 UpdateMinP, v3i UpdateDim)
 link_internal void
 DEBUG_AssertVoxelFloodStartsInEmptyVoxel(v3i SimSphereP, rect3i *SimSpaceUpdateBounds, voxel *CopiedVoxels)
 {
-#if 1
+  NotImplemented;
+#if 0
 #if BONSAI_INTERNAL
     v3i UpdateDim = GetDim(*SimSpaceUpdateBounds);
 
@@ -385,7 +330,8 @@ poof(
 
         (FloodPredicate)
         {
-          if ( (V->Flags & Voxel_MarkBit) == 0)
+          NotImplemented;
+          /* if ( (V->Flags & Voxel_MarkBit) == 0) */
           {
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -398,16 +344,17 @@ poof(
 
         (UserCode)
 
-        V->Flags |= Voxel_MarkBit;
+          NotImplemented;
+        /* V->Flags |= Voxel_MarkBit; */
 
         if ( ((OverwriteVoxel == True)  && (Invert == False)) ||
              ((OverwriteVoxel == False) && (Invert == True))  )
         {
-          if (Mode == WorldEdit_Mode_Paint)
-          {
-            V->Color = NewVoxelValue->Color;
-          }
-          else
+          /* if (Mode == WorldEdit_Mode_Paint) */
+          /* { */
+          /*   V->Color = NewVoxelValue->Color; */
+          /* } */
+          /* else */
           {
             *V = *NewVoxelValue;
           }
@@ -432,7 +379,8 @@ poof(
 
           (UserCode2)
 
-          if ( (V->Flags&Voxel_MarkBit))
+          NotImplemented;
+          /* if ( (V->Flags&Voxel_MarkBit)) */
           {
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_PosX));
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegX));
@@ -442,7 +390,8 @@ poof(
             Push(&Stack, VoxelStackElement(SimVoxP, VoxelRuleDir_NegZ));
           }
 
-          V->Flags &= ~Voxel_MarkBit;
+          NotImplemented;
+          /* V->Flags &= ~Voxel_MarkBit; */
         }
       }
     }
@@ -468,20 +417,21 @@ poof(
         if ( ((OverwriteVoxel == True ) && (Invert == False)) ||
              ((OverwriteVoxel == False) && (Invert == True ))  )
         {
-          if (Mode == WorldEdit_Mode_Paint)
+          /* if (Mode == WorldEdit_Mode_Paint) */
+          /* { */
+          /*   V->Color = NewVoxelValue->Color; */
+          /* } */
+          /* else */
           {
-            V->Color = NewVoxelValue->Color;
-          }
-          else
-          {
-            if (Mode == WorldEdit_Mode_Remove) { *V = {}; }
+            if (Mode == WorldEdit_Mode_Subtractive) { *V = {}; }
             else { *V = *NewVoxelValue; }
           }
 
           // Knock out face flags so the 'surface' algorithm doesn't "self-apply"
           // We recompute these, so it's fine there.  It's slower on non-surface
           // paths, but .. when that's the bottleneck, we've won.
-          V->Flags = voxel_flag(V->Flags&~VoxelFaceMask);
+          NotImplemented;
+          /* V->Flags = voxel_flag(V->Flags&~VoxelFaceMask); */
         }
       }
     }
@@ -490,7 +440,9 @@ poof(
 )
 
 // TODO(Jesse): Make this not a macro.
-#define poof_check_for_unfilled_border()                              \
+#define poof_check_for_unfilled_border() NotImplemented
+
+#if 0
   {                                                                    \
     if (voxel *Vn = TryGetVoxel(CopiedChunk, VoxP + V3(1,0,0)))  \
     {                                                                  \
@@ -518,7 +470,8 @@ poof(
     {                                                                  \
       if ((Vn->Flags&VoxelFaceMask)) { IsUnfilledBorder = True; }      \
     }                                                                  \
-  }                                                                    \
+  }
+#endif
 
 #if 0
 poof(
@@ -571,20 +524,22 @@ link_internal void
 WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquared, v3i EditCenterP, voxel *NewVoxelValue)
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Additive:
     {
       poof(rectalinear_iteration_pattern({
 
         v3i CenterToVoxP = SimVoxP - EditCenterP;
-        if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == False)
+        NotImplemented;
+        /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
+          poof_check_for_unfilled_border();
+          /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -594,12 +549,13 @@ WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquare
 #include <generated/rectalinear_iteration_pattern_398799212.h>
     } break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Subtractive:
     {
       poof(rectalinear_iteration_pattern({
         v3i CenterToVoxP = SimVoxP - EditCenterP;
-        if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&VoxelFaceMask))
+        NotImplemented;
+        /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&VoxelFaceMask)) */
         {
           OverwriteVoxel = True;
         }
@@ -607,6 +563,7 @@ WorldEdit_shape_sphere_Surface(apply_world_edit_params *Params, r32 RadiusSquare
 #include <generated/rectalinear_iteration_pattern_920026661.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -615,21 +572,24 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   s32 TotalVoxels = Volume(UpdateDim);
 
-  Assert(Params->Mode == WorldEdit_Mode_Remove);
+  Assert(Params->Mode == WorldEdit_Mode_Subtractive);
 
   poof(flood_fill_iteration_pattern(
     {
-      if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0)
+      NotImplemented;
+      /* if (LengthSq(CenterToVoxP) < RadiusSquared && (V->Flags&Voxel_Filled) == 0) */
     },
     {
-      if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) )
-         { V->Flags = Voxel_Empty; }
+      NotImplemented;
+      /* if ( Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f && (V->Flags&Voxel_Filled) ) */
+         /* { V->Flags = Voxel_Empty; } */
     },
     {
       v3i CenterToVoxP = SimVoxP - EditCenterP;
       if (Length(CenterToVoxP) < SquareRoot(RadiusSquared)-1.f)
       {
-        if (V->Flags & Voxel_Filled)
+        NotImplemented;
+        /* if (V->Flags & Voxel_Filled) */
         {
           V->Color = MagicaVoxelDefaultPaletteToPackedHSV(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1)));
         }
@@ -671,19 +631,22 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Additive:
     {
       poof(rectalinear_iteration_pattern({
 
-        if ((V->Flags&Voxel_Filled) == False)
+        NotImplemented;
+        /* if ((V->Flags&Voxel_Filled) == False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
-          Assert(NewVoxelValue->Flags & Voxel_Filled);
+          poof_check_for_unfilled_border();
+          NotImplemented;
+          /* Assert(NewVoxelValue->Flags & Voxel_Filled); */
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -693,11 +656,12 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 #include <generated/rectalinear_iteration_pattern_643608995.h>
     } break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Subtractive:
     {
       poof(rectalinear_iteration_pattern({
-        if ( (V->Flags&VoxelFaceMask))
+        NotImplemented;
+        /* if ( (V->Flags&VoxelFaceMask)) */
         {
           OverwriteVoxel = True;
         }
@@ -705,6 +669,7 @@ WorldEdit_shape_rect_Surface(apply_world_edit_params *Params, voxel *NewVoxelVal
 #include <generated/rectalinear_iteration_pattern_530902269.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -713,20 +678,25 @@ WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state 
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
   s32 TotalVoxels = Volume(UpdateDim);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Attach:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Additive:
+    case WorldEdit_Mode_Subtractive:
     {
       poof(flood_fill_iteration_pattern(
-        { if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Attach)) ) },
         {
-          if ( Mode == WorldEdit_Mode_Attach && (V->Flags&Voxel_Filled) )
-          { }
-          else
+          NotImplemented;
+          /* { if ( (V->Flags&Voxel_Filled) == (Voxel_Filled*(Mode==WorldEdit_Mode_Additive)) ) }, */
+        },
+        {
+          NotImplemented;
+          /* if ( Mode == WorldEdit_Mode_Additive && (V->Flags&Voxel_Filled) ) */
+          /* { } */
+          /* else */
           {
             OverwriteVoxel = True;
           }
@@ -736,17 +706,19 @@ WorldEdit_shape_rect_Flood( apply_world_edit_params *Params, thread_local_state 
 #include <generated/flood_fill_iteration_pattern_846291950_267608728_0.h>
     } break;
   }
+#endif
 }
 
 link_internal void
 WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelValue)
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Attach:
-    case WorldEdit_Mode_Remove:
+    case WorldEdit_Mode_Additive:
+    case WorldEdit_Mode_Subtractive:
     {
       poof(rectalinear_iteration_pattern({
         OverwriteVoxel = True;
@@ -754,17 +726,19 @@ WorldEdit_shape_rect_Default(apply_world_edit_params *Params, voxel *NewVoxelVal
 #include <generated/rectalinear_iteration_pattern_416827956.h>
     } break;
 
-    case WorldEdit_Mode_Paint:
-    {
-      poof(rectalinear_iteration_pattern({
-        if (V->Flags & Voxel_Filled)
-        {
-          OverwriteVoxel = True;
-        }
-      }))
-#include <generated/rectalinear_iteration_pattern_99934950.h>
-    } break;
+    /* case WorldEdit_Mode_Paint: */
+    /* { */
+    /*   poof(rectalinear_iteration_pattern({ */
+    /*     NotImplemented; */
+    /*     /1* if (V->Flags & Voxel_Filled) *1/ */
+    /*     { */
+    /*       OverwriteVoxel = True; */
+    /*     } */
+    /*   })) */
+/* #include <generated/rectalinear_iteration_pattern_99934950.h> */
+    /* } break; */
   }
+#endif
 }
 
 
@@ -783,21 +757,23 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Additive:
     {
       poof(rectalinear_iteration_pattern({
 
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
 
-        if ((V->Flags&Voxel_Filled)==False)
+        NotImplemented;
+        /* if ((V->Flags&Voxel_Filled)==False) */
         {
           b32 IsUnfilledBorder = False;
-          poof_check_for_unfilled_border()
+          poof_check_for_unfilled_border();
           if (IsUnfilledBorder)
           {
             OverwriteVoxel = True;
@@ -807,15 +783,16 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_631222419.h>
     } break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Subtractive:
     {
       poof(rectalinear_iteration_pattern({
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
         if (NewVoxelValue)
         {
-          if ( (V->Flags&VoxelFaceMask) && (NewVoxelValue->Flags&Voxel_Filled) )
+          NotImplemented;
+          /* if ( (V->Flags&VoxelFaceMask) && (NewVoxelValue->Flags&Voxel_Filled) ) */
           {
             OverwriteVoxel = True;
           }
@@ -824,6 +801,7 @@ WorldEdit_shape_chunk_data_Surface(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_992879728.h>
     } break;
   }
+#endif
 }
 
 link_internal void
@@ -836,52 +814,59 @@ WorldEdit_shape_chunk_data_Flood(
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
   s32 TotalVoxels = Volume(UpdateDim);
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Attach:
+    case WorldEdit_Mode_Additive:
     {
       poof(flood_fill_iteration_pattern(
         {
           v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
           voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-          if ((V->Flags&Voxel_Filled))
+          NotImplemented;
+          /* if ((V->Flags&Voxel_Filled)) */
         },
         {
-          if ( ((V->Flags&Voxel_Filled) == 0) && NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = *NewVoxelValue; }
+          NotImplemented;
+          /* if ( ((V->Flags&Voxel_Filled) == 0) && NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = *NewVoxelValue; } */
         },
         {}
         ))
 #include <generated/flood_fill_iteration_pattern_275071431_785723886_0.h>
     } break;
 
-    case WorldEdit_Mode_Remove:
+    case WorldEdit_Mode_Subtractive:
     {
       poof(flood_fill_iteration_pattern(
         {
           v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
           voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-          if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0)
+          NotImplemented;
+          /* if (Contains(SSRect, SimVoxP) && (V->Flags&Voxel_Filled) == 0) */
         },
         {
-          if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = {}; }
+          NotImplemented;
+          /* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { *V = {}; } */
         },
         {}
         ))
 #include <generated/flood_fill_iteration_pattern_275071431_101859599_0.h>
     } break;
 
-    case WorldEdit_Mode_Paint:
-    {
-      poof(rectalinear_iteration_pattern({
-        v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
-        voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP);
-        if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; }
-      }))
-#include <generated/rectalinear_iteration_pattern_583358156.h>
-    } break;
+    /* case WorldEdit_Mode_Paint: */
+    /* { */
+    /*   poof(rectalinear_iteration_pattern({ */
+    /*     v3i OriginToCurrentVoxP = SimVoxP - SimOrigin; */
+    /*     voxel *NewVoxelValue = TryGetVoxel(Data, OriginToCurrentVoxP); */
+    /*     NotImplemented; */
+    /*     /1* if (NewVoxelValue && (NewVoxelValue->Flags&Voxel_Filled)) { V->Color = NewVoxelValue->Color; } *1/ */
+    /*   })) */
+/* #include <generated/rectalinear_iteration_pattern_583358156.h> */
+    /* } break; */
 
   }
+#endif
 }
 
 link_internal void
@@ -889,21 +874,23 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
-  voxel InvertV = { Voxel_Filled, Params->Transparency, Params->Color };
+  voxel InvertV = { Params->Transparency, Params->Color };
 
+#if 0
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;
 
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Attach:
-    case WorldEdit_Mode_Remove:
+    /* case WorldEdit_Mode_Paint: */
+    case WorldEdit_Mode_Additive:
+    case WorldEdit_Mode_Subtractive:
     {
       poof(rectalinear_iteration_pattern({
         v3i OriginToCurrentVoxP = SimVoxP - SimOrigin;
         voxel *AssetV = TryGetVoxel(Data, OriginToCurrentVoxP);
         voxel *NewVoxelValue = &InvertV;
-        if ( (AssetV && (AssetV->Flags&Voxel_Filled)) || Params->PersistWhitespace )
+        NotImplemented;
+        /* if ( (AssetV && (AssetV->Flags&Voxel_Filled)) || Params->PersistWhitespace ) */
         {
           NewVoxelValue  = AssetV;
           OverwriteVoxel = True;
@@ -912,23 +899,26 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 #include <generated/rectalinear_iteration_pattern_428632106.h>
     } break;
   }
+#endif
 }
 
 
 
 
+#if 0
 link_internal void
 ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert /* = False */, b32 PersistWhitespace /* = False */ )
 {
   world *World = GetWorld();
+  NotImplemented;
 
   random_series ColorEntropy = {4654376543246};
 
   v3i UpdateDim = GetDim(SimSpaceUpdateBounds);
   s32 TotalVoxels = Volume(UpdateDim);
 
-  world_edit_mode              Mode =     Job->Brush.Mode;
-  world_edit_mode_modifier Modifier =     Job->Brush.Modifier;
+  world_edit_blend_mode              Mode =     Job->Brush.Mode;
+  world_edit_blend_mode_modifier Modifier =     Job->Brush.Modifier;
   world_edit_shape            Shape =     Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
@@ -938,13 +928,9 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   voxel _NewVoxelValue = {};
   voxel *NewVoxelValue = &_NewVoxelValue;
 
-  if (Mode == WorldEdit_Mode_Attach || Mode == WorldEdit_Mode_Paint)
+  if (Mode == WorldEdit_Mode_Additive) // || Mode == WorldEdit_Mode_Paint)
   {
-#if VOXEL_DEBUG_COLOR
-    _NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor, {}, {}};
-#else
-    _NewVoxelValue = { Voxel_Filled, NewTransparency, NewColor};
-#endif
+    _NewVoxelValue = { NewTransparency, NewColor};
   }
 
   switch (Shape.Type)
@@ -975,16 +961,16 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
           WorldEdit_shape_sphere_Default(&Params, RadiusSquared, EditCenterP, NewVoxelValue);
         } break;
 
-        case WorldEdit_Modifier_Surface:
+        case WorldEdit_ValueModifier_Surface:
         {
           WorldEdit_shape_sphere_Surface(&Params, RadiusSquared, EditCenterP, NewVoxelValue);
         } break;
 
-        case WorldEdit_Modifier_Flood:
-        {
-          v3i FloodOrigin = EditCenterP;
-          WorldEdit_shape_sphere_Flood(&Params, Thread, RadiusSquared, EditCenterP, FloodOrigin, NewVoxelValue);
-        } break;
+        /* case WorldEdit_Modifier_Flood: */
+        /* { */
+        /*   v3i FloodOrigin = EditCenterP; */
+        /*   WorldEdit_shape_sphere_Flood(&Params, Thread, RadiusSquared, EditCenterP, FloodOrigin, NewVoxelValue); */
+        /* } break; */
       }
 } break;
 
@@ -1076,14 +1062,16 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   }
 
 }
+#endif
 
+#if 0
 link_internal void
 DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job)
 {
   TIMED_FUNCTION();
 
-  world_edit_mode              Mode = Job->Brush.Mode;
-  world_edit_mode_modifier Modifier = Job->Brush.Modifier;
+  world_edit_blend_mode              Mode = Job->Brush.Mode;
+  world_edit_blend_mode_modifier Modifier = Job->Brush.Modifier;
   world_edit_shape            Shape = Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
@@ -1146,7 +1134,8 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         {
           v3i RelVoxP = V3i(s32(xVoxel), s32(yVoxel), s32(zVoxel));
           voxel *V = GetVoxel(Chunk, RelVoxP);
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
 
           v3i SimSpaceVoxPExact = V3i(xVoxel, yVoxel, zVoxel) + SimSpaceChunkMin;
 
@@ -1180,7 +1169,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   // NOTE(Jesse): We can actually do the entire dim here, but it's probably
   // better (faster) to just do what we actually need to
 
-  MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
+  MakeFaceMasks_NoExteriorFaces( CopiedChunk.Occupancy, CopiedChunk.xOccupancyBorder, CopiedChunk.FaceMasks, CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1);
   /* MarkBoundaryVoxels_NoExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {{1,1,1}}, UpdateDim-1); */
   /* MarkBoundaryVoxels_MakeExteriorFaces( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim); */
@@ -1218,21 +1207,18 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
           Assert(UpdateMinP <= SimSpaceVoxPExact);
           u32 Index = MapIntoQueryBox(SimSpaceVoxPExact, UpdateMinP, UpdateDim);
           Assert(s32(Index) < TotalVoxels);
-          Assert(CopiedChunk.Voxels[Index].Flags        != Global_UnsetVoxel.Flags);
+          /* Assert(CopiedChunk.Voxels[Index].Flags        != Global_UnsetVoxel.Flags); */
           Assert(CopiedChunk.Voxels[Index].Transparency != Global_UnsetVoxel.Transparency);
           Assert(CopiedChunk.Voxels[Index].Color        != Global_UnsetVoxel.Color);
 
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
-          StartedFilled += (V->Flags&Voxel_Filled);
-#if VOXEL_DEBUG_COLOR
-          V->Flags = CopiedChunk.Voxels[Index].Flags;
-          V->Color = CopiedChunk.Voxels[Index].Color;
-          V->Transparency = CopiedChunk.Voxels[Index].Transparency;
-#else
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
+
+          StartedFilled += GetOccupancyBit(Chunk, s32(Index));
           *V = CopiedChunk.Voxels[Index];
-#endif
-          EndedFilled += (V->Flags&Voxel_Filled);
-          Assert( (V->Flags & Voxel_MarkBit) == 0);
+          EndedFilled += GetOccupancyBit(&CopiedChunk, s32(Index));
+          NotImplemented;
+          /* Assert( (V->Flags & Voxel_MarkBit) == 0); */
         }
       }
     }
@@ -1257,11 +1243,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
 
   chunk_data CD = { Chunk_VoxelsInitialized, UpdateDim, CopiedChunk.Voxels, 0 };
   vox_data Vox = {&CD};
-#if VOXEL_DEBUG_COLOR
-  BuildWorldChunkMeshFromMarkedVoxels_Naieve( CopiedChunk.Voxels, UpdateDim, {}, UpdateDim, DebugMesh );
-#else
   BuildWorldChunkMeshFromMarkedVoxels_Greedy( &Vox, DebugMesh, 0, GetTranArena());
-#endif
 
   /* aabb QueryAABB = AABBMinMax( {}, V3i(7.f + Radius*2.f) ); */
 
@@ -1284,7 +1266,10 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   NotImplemented;
 #else
   {
-    ComputeStandingSpots( UpdateDim, CopiedChunk.Voxels, {},
+    ComputeStandingSpots( UpdateDim,
+                          CopiedChunk.Occupancy,
+                          CopiedChunk.Voxels,
+                          {},
                           {},
                           Global_StandingSpotDim,
                           UpdateDim,
@@ -1394,4 +1379,5 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
     }
   }
 }
+#endif
 

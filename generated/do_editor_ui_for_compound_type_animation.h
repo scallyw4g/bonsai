@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:216:0
+// src/engine/editor.cpp:208:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->t),
+        Cast(r32*, &Element->t),
         CSz("t"),
         Params
         );
@@ -40,12 +40,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->tEnd),
+        Cast(r32*, &Element->tEnd),
         CSz("tEnd"),
         Params
         );
@@ -56,12 +57,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->xKeyframeCount),
+        Cast(u32*, &Element->xKeyframeCount),
         CSz("xKeyframeCount"),
         Params
         );
@@ -72,9 +74,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(keyframe*, Element->xKeyframes),
@@ -88,11 +91,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->yKeyframeCount),
+        Cast(u32*, &Element->yKeyframeCount),
         CSz("yKeyframeCount"),
         Params
         );
@@ -103,9 +107,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(keyframe*, Element->yKeyframes),
@@ -119,11 +124,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->zKeyframeCount),
+        Cast(u32*, &Element->zKeyframeCount),
         CSz("zKeyframeCount"),
         Params
         );
@@ -134,9 +140,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(keyframe*, Element->zKeyframes),

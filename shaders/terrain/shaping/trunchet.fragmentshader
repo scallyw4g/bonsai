@@ -1,0 +1,79 @@
+uniform v3 WorldspaceBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out uint Output;
+
+// https://www.shadertoy.com/view/4td3zj
+float heightMap(in vec2 p) { 
+    
+    p *= 3.;
+    
+	// Hexagonal coordinates.
+    vec2 h = vec2(p.x + p.y*.57735, p.y*1.1547);
+    
+    // Closest hexagon center.
+    vec2 fh = floor(h);
+    vec2 f = h - fh; h = fh;
+    float c = fract((h.x + h.y)/3.);
+    h =  c<.666 ?   c<.333 ?  h  :  h + 1.  :  h  + step(f.yx, f); 
+
+    p -= vec2(h.x - h.y*.5, h.y*.8660254);
+    
+    // Rotate (flip, in this case) random hexagons. Otherwise, you'd have a bunch of circles only.
+    // Note that "h" is unique to each hexagon, so we can use it as the random ID.
+    c = fract(cos(dot(h, vec2(41, 289)))*43758.5453); // Reusing "c."
+    p -= p*step(c, .5)*2.; // Equivalent to: if (c<.5) p *= -1.;
+    
+    // Minimum squared distance to neighbors. Taking the square root after comparing, for speed.
+    // Three partitions need to be checked due to the flipping process.
+    p -= vec2(-1, 0);
+    c = dot(p, p); // Reusing "c" again.
+    p -= vec2(1.5, .8660254);
+    c = min(c, dot(p, p));
+    p -= vec2(0, -1.73205);
+    c = min(c, dot(p, p));
+    
+    return sqrt(c);
+    
+    // Wrapping the values - or folding the values over (abs(c-.5)*2., cos(c*6.283*1.), etc) - to produce 
+    // the nicely lined-up, wavy patterns. I"m perfoming this step in the "map" function. It has to do 
+    // with coloring and so forth.
+    //c = sqrt(c);
+    //c = cos(c*6.283*1.) + cos(c*6.283*2.);
+    //return (clamp(c*.6+.5, 0., 1.));
+
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+
+  v3 Offset = V3(-1, -1, -1);
+  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+  Basis *= .2;
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 1000.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    f32 H = heightMap(Basis.xy/100.f);
+    NoiseValue = Basis.z - 10.f + H;
+    ColorValue = V3(H);
+  }
+
+  //
+  // -- end user code --
+  //
+
+  uint SolidBit = NoiseValue > 0.0f ? 1u : 0u;
+  uint PackedColor = PackRGB(ColorValue);
+
+  Output = (SolidBit << 15) | PackedColor;
+}

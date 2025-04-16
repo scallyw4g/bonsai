@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:267:0
+// src/engine/editor.cpp:295:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(vox_data*,&Element->Vox),
+        Cast(vox_data*, &Element->Vox),
         CSz("Vox"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(lod_element_buffer*,&Element->Meshes),
+        Cast(lod_element_buffer*, &Element->Meshes),
         CSz("Meshes"),
         Params
         );
@@ -55,11 +56,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(untextured_3d_geometry_buffer*,&Element->TransparentMesh),
+        Cast(gpu_mapped_element_buffer*, &Element->Mesh),
+        CSz("Mesh"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(untextured_3d_geometry_buffer*, &Element->TransparentMesh),
         CSz("TransparentMesh"),
         Params
         );
@@ -70,11 +88,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(animation*,&Element->Animation),
+        Cast(animation*, &Element->Animation),
         CSz("Animation"),
         Params
         );
@@ -85,11 +104,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Dim),
+        Cast(v3i*, &Element->Dim),
         CSz("Dim"),
         Params
         );

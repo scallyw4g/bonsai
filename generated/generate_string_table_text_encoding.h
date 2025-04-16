@@ -6,7 +6,7 @@ ToStringPrefixless(text_encoding Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TextEncoding_ASCII: { Result = CSz("ASCII"); } break;
+        case TextEncoding_ASCII: { Result = CSz("ASCII"); } break;
     case TextEncoding_UTF8: { Result = CSz("UTF8"); } break;
     case TextEncoding_UTF16LE: { Result = CSz("UTF16LE"); } break;
     case TextEncoding_UTF16BE: { Result = CSz("UTF16BE"); } break;
@@ -31,7 +31,7 @@ ToString(text_encoding Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TextEncoding_ASCII: { Result = CSz("TextEncoding_ASCII"); } break;
+        case TextEncoding_ASCII: { Result = CSz("TextEncoding_ASCII"); } break;
     case TextEncoding_UTF8: { Result = CSz("TextEncoding_UTF8"); } break;
     case TextEncoding_UTF16LE: { Result = CSz("TextEncoding_UTF16LE"); } break;
     case TextEncoding_UTF16BE: { Result = CSz("TextEncoding_UTF16BE"); } break;

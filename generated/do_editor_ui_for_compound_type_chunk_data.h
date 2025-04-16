@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:252:0
+// src/engine/editor.cpp:280:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(chunk_flag*,&Element->Flags),
+        Cast(chunk_flag*, &Element->Flags),
         CSz("Flags"),
         Params
         );
@@ -40,11 +40,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Dim),
+        Cast(v3i*, &Element->Dim),
         CSz("Dim"),
         Params
         );
@@ -55,8 +56,60 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->Occupancy),
+        CSz("Occupancy"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->xOccupancyBorder),
+        CSz("xOccupancyBorder"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(u64*, Element->FaceMasks),
+        CSz("FaceMasks"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel*, Element->Voxels),
@@ -70,8 +123,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(voxel_lighting*, Element->VoxelLighting),

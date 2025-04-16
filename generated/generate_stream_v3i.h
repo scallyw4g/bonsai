@@ -14,6 +14,14 @@ struct v3i_stream
   umm ChunkCount;
 };
 
+link_internal v3i_stream
+V3iStream(memory_arena *Memory)
+{
+  v3i_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(v3i_stream *Stream)
 {
@@ -62,10 +70,7 @@ IsLastElement(v3i_iterator* Iter)
 link_internal v3i *
 Push(v3i_stream* Stream, v3i Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   v3i_stream_chunk* NextChunk = (v3i_stream_chunk*)PushStruct(Stream->Memory, sizeof(v3i_stream_chunk), 1, 0);

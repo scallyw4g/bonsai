@@ -6,7 +6,7 @@ ToStringPrefixless(token_cursor_source Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TokenCursorSource_Unknown: { Result = CSz("Unknown"); } break;
+        case TokenCursorSource_Unknown: { Result = CSz("Unknown"); } break;
     case TokenCursorSource_RootFile: { Result = CSz("RootFile"); } break;
     case TokenCursorSource_Include: { Result = CSz("Include"); } break;
     case TokenCursorSource_MacroExpansion: { Result = CSz("MacroExpansion"); } break;
@@ -30,7 +30,7 @@ ToString(token_cursor_source Type)
   counted_string Result = {};
   switch (Type)
   {
-    case TokenCursorSource_Unknown: { Result = CSz("TokenCursorSource_Unknown"); } break;
+        case TokenCursorSource_Unknown: { Result = CSz("TokenCursorSource_Unknown"); } break;
     case TokenCursorSource_RootFile: { Result = CSz("TokenCursorSource_RootFile"); } break;
     case TokenCursorSource_Include: { Result = CSz("TokenCursorSource_Include"); } break;
     case TokenCursorSource_MacroExpansion: { Result = CSz("TokenCursorSource_MacroExpansion"); } break;

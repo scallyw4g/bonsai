@@ -71,11 +71,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
   DimIterator(xIndex, yIndex, zIndex, FillDim)
   {
     s32 VIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
-    Vox.ChunkData->Voxels[VIndex].Flags = Voxel_Filled;
+    NotImplemented;
+    /* Vox.ChunkData->Voxels[VIndex].Flags = {}; */
     Vox.ChunkData->Voxels[VIndex].Color = RGBtoPackedHSV(RGB_GRASS_GREEN);
   }
 
-  MarkBoundaryVoxels_NoExteriorFaces(Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
+  MakeFaceMasks_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->xOccupancyBorder, Vox.ChunkData->FaceMasks, Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
 
   Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
   Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
@@ -219,10 +220,12 @@ BakeVoxelSynthesisRules(const char* InputVox)
 
 
   voxel_synthesis_result Result = {
+    .Errors = {},
     .VoxData = Vox,
     .Tiles = AllTiles,
     .Rules = Rules,
     .MaxTileEntropy = MaxTileEntropy,
+    .TileSuperpositionsDim = {},
   };
 
 #if 1

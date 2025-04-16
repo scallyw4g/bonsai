@@ -271,6 +271,9 @@ poof(serdes_struct(rect3))
 poof(serdes_struct(rect3i))
 #include <generated/serdes_struct_rect3i.h>
 
+poof(serdes_struct(rect3cp))
+#include <generated/serdes_struct_rect3cp.h>
+
 poof(serdes_struct(random_series))
 #include <generated/serdes_struct_random_series.h>
 
@@ -366,137 +369,16 @@ poof(serialize_struct(entity))
 poof( block_array(entity, {4}) )
 #include <generated/block_array_entity_688856407.h>
 
-
-
-
-#if 0
-link_internal void
-Marshal(entity_1 *E0, entity_2 *E1)
-{
-  E1->Id = E0->Id;
-  E1->P = E0->P;
-  E1->EulerAngles = E0->EulerAngles.xyz;
-  E1->Scale = E0->Scale;
-  E1->_CollisionVolumeRadius = E0->_CollisionVolumeRadius;
-  E1->Physics = E0->Physics;
-
-  E1->AssetId = E0->AssetId;
-  E1->AssetId.Index = INVALID_ASSET_INDEX;
-
-  E1->Emitter = E0->Emitter;
-  E1->State = E0->State;
-  E1->Behavior = E0->Behavior;
-  E1->UserType = E0->UserType;
-  E1->UserData = E0->UserData;
-}
-#endif
-
-link_internal void
-Marshal(lighting_settings_0 *E0, lighting_settings *E1)
-{
-  NotImplemented;
-}
-
-poof(serdes_struct(lighting_settings_0))
-#include <generated/serdes_struct_lighting_settings_0.h>
-
 poof(serdes_struct(lighting_settings))
 #include <generated/serdes_struct_lighting_settings.h>
-
-
-
-
-
-
-link_internal void
-Marshal(render_settings_0 *E0, render_settings *E1)
-{
-  poof(func (render_settings_0 settings_t) {
-      settings_t.map(member) {
-        E1->(member.name) = E0->(member.name);
-      }
-  })
-#include <generated/anonymous_render_settings_0_wwLVyABc.h>
-}
-
-poof(deserialize_struct(render_settings_0))
-#include <generated/serialize_struct_render_settings_0.h>
 
 poof(serdes_struct(render_settings))
 #include <generated/serdes_struct_render_settings.h>
 
-/* poof(serdes_struct(member_info)) */
-/* #include <generated/serdes_struct_member_info.h> */
-/* poof(serdes_struct(member_info_block)) */
-/* #include <generated/serdes_struct_member_info_block.h> */
-/* poof(serdes_struct(member_info_block_array)) */
-/* #include <generated/serdes_struct_member_info_block_array.h> */
 poof(serdes_struct(bonsai_type_info))
 #include <generated/serdes_struct_bonsai_type_info.h>
 poof(serdes_struct(bonsai_type_info_buffer))
 #include <generated/serdes_struct_bonsai_type_info_buffer.h>
-
-/* poof(serdes_struct(bonsai_type_info_linked_list_node)) */
-/* #include <generated/serdes_struct_bonsai_type_info_linked_list_node.h> */
-/* poof(serdes_struct(bonsai_type_info_hashtable)) */
-/* #include <generated/serdes_struct_bonsai_type_info_hashtable.h> */
-
-/* poof(serdes_struct(level_header)) */
-/* #include <generated/serdes_struct_level_header.h> */
-
-
-link_internal void
-Marshal(level_header_0 *E0, level_header *E1)
-{
-  E1->ChunkCount = E0->ChunkCount;
-  E1->EntityCount = E0->EntityCount;
-  E1->WorldFlags = E0->WorldFlags;
-  E1->WorldCenter = E0->WorldCenter;
-  E1->VisibleRegion = E0->VisibleRegion;
-  E1->Camera = E0->Camera;
-}
-
-link_internal void
-Marshal(level_header_1 *E0, level_header *E1)
-{
-  E1->ChunkCount = E0->ChunkCount;
-  E1->EntityCount = E0->EntityCount;
-  E1->WorldFlags = E0->WorldFlags;
-  E1->WorldCenter = E0->WorldCenter;
-  E1->VisibleRegion = E0->VisibleRegion;
-  E1->Camera = E0->Camera;
-}
-
-link_internal void
-Marshal(level_header_2 *E0, level_header *E1)
-{
-  E1->ChunkCount = E0->ChunkCount;
-  E1->EntityCount = E0->EntityCount;
-  E1->WorldFlags = E0->WorldFlags;
-  E1->WorldCenter = E0->WorldCenter;
-  E1->VisibleRegion = E0->VisibleRegion;
-  E1->Camera = E0->Camera;
-}
-
-link_internal void
-Marshal(level_header_3 *Stored, level_header *Live)
-{
-  poof(default_marshal(level_header_3))
-#include <generated/default_marshal_level_header_3.h>
-}
-
-
-poof(deserialize_struct(level_header_0))
-#include <generated/deserialize_struct_level_header_0.h>
-
-poof(deserialize_struct(level_header_1))
-#include <generated/deserialize_struct_level_header_1.h>
-
-poof(deserialize_struct(level_header_2))
-#include <generated/deserialize_struct_level_header_2.h>
-
-poof(deserialize_struct(level_header_3))
-#include <generated/deserialize_struct_level_header_3.h>
 
 poof(deserialize_struct(level_header))
 #include <generated/deserialize_struct_level_header.h>
@@ -533,6 +415,11 @@ poof(serdes_struct(world_update_op_shape_params_rect))
 #include <generated/serdes_struct_world_update_op_shape_params_rect.h>
 poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
+poof(serdes_struct(world_update_op_shape_params_asset))
+#include <generated/serdes_struct_world_update_op_shape_params_asset.h>
+poof(serdes_struct(world_update_op_shape_params_chunk_data))
+#include <generated/serdes_struct_world_update_op_shape_params_chunk_data.h>
+
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
 
@@ -548,11 +435,14 @@ poof(serdes_struct(brush_settings))
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 
-poof(serdes_struct(layered_brush_editor_0))
-#include <generated/serdes_struct_layered_brush_editor_0.h>
-poof(serdes_struct(layered_brush_editor_1))
-#include <generated/serdes_struct_layered_brush_editor_1.h>
-poof(serdes_struct(layered_brush_editor_2))
-#include <generated/serdes_struct_layered_brush_editor_2.h>
-poof(serdes_struct(layered_brush_editor))
-#include <generated/serdes_struct_layered_brush_editor.h>
+/* poof(serdes_dunion(world_edit_shape)) */
+/* #include <generated/serdes_world_edit_shape.h> */
+
+poof(serdes_struct(layered_brush))
+#include <generated/serdes_struct_layered_brush.h>
+
+poof(serdes_struct(world_edit_brush))
+#include <generated/serdes_struct_world_edit_brush.h>
+
+poof(serdes_struct(world_edit))
+#include <generated/serdes_struct_world_edit.h>

@@ -155,7 +155,7 @@ poof(
     {
       Assert(Count > 0);
 
-      u64 PointerTrue = True;
+      u64 PointerTrue  = True;
       u64 PointerFalse = False;
 
       b32 Result = True;
@@ -189,7 +189,7 @@ poof(
               {
                 member.is_enum?
                 {
-                  Result &= Serialize(Bytes, (u32*)&Element->(member.name));
+                  Result &= Serialize(Bytes, (u32*)&Element->(member.name)); // enum
                 }
                 {
                   member.is_array?
@@ -207,7 +207,13 @@ poof(
                     }
                   }
                   {
-                    Result &= Serialize(Bytes, &Element->(member.name));
+                    member.name?
+                    {
+                      Result &= Serialize(Bytes, &Element->(member.name)); // default
+                    }
+                    {
+                      /// NOTE(Jesse): This path is here because of a bug in poof, issue #19
+                    }
                   }
                 }
               }
@@ -457,6 +463,43 @@ poof(
   {
     serialize_vector(type)
     deserialize_vector(type)
+  }
+)
+
+poof(
+  func serdes_dunion(type)
+  {
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count = 1)
+    {
+      switch (BaseElement->Type)
+      {
+        type.map_members(union_member)
+        {
+          union_member.has_tag(d_union_type_target)?
+          {
+            union_member.map(variant)
+            {
+              case type_(variant.name):
+              {
+                Serialize(Bytes, &BaseElement->(variant.name));
+              } break;
+            }
+          }
+        }
+
+        InvalidDefaultCase;
+      }
+
+      return False;
+    }
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count = 1)
+    {
+      NotImplemented;
+      return False;
+    }
   }
 )
 

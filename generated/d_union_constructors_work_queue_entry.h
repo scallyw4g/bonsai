@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:325:0
+// src/engine/work_queue.h:270:0
 
 
 link_internal work_queue_entry
@@ -7,6 +7,32 @@ WorkQueueEntry( work_queue_entry_init_world_chunk A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_world_chunk,
     .work_queue_entry_init_world_chunk = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_finalize_noise_values A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_finalize_noise_values,
+    .work_queue_entry_finalize_noise_values = A,
+
+    
+
+  };
+  return Result;
+}
+
+link_internal work_queue_entry
+WorkQueueEntry( work_queue_entry_build_chunk_mesh A  )
+{
+  work_queue_entry Result = {
+    .Type = type_work_queue_entry_build_chunk_mesh,
+    .work_queue_entry_build_chunk_mesh = A,
 
     
 
@@ -46,19 +72,6 @@ WorkQueueEntry( work_queue_entry_init_asset A  )
   work_queue_entry Result = {
     .Type = type_work_queue_entry_init_asset,
     .work_queue_entry_init_asset = A,
-
-    
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry
-WorkQueueEntry( work_queue_entry_update_world_region A  )
-{
-  work_queue_entry Result = {
-    .Type = type_work_queue_entry_update_world_region,
-    .work_queue_entry_update_world_region = A,
 
     
 
@@ -130,4 +143,6 @@ WorkQueueEntry( work_queue_entry__align_to_cache_line_helper A  )
   };
   return Result;
 }
+
+
 

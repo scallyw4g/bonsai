@@ -6,6 +6,38 @@
 #include "game_types.h"
 
 link_internal u32
+Terrain_Debug( world_chunk *Chunk,
+                       v3i  NoiseBasis,
+                      void *NoiseParams,
+                      void *UserData )
+{
+  UNPACK_NOISE_PARAMS(NoiseParams);
+
+  u32 Result = 0;
+
+  auto AbsX = Abs(Chunk->WorldP.x);
+  auto AbsY = Abs(Chunk->WorldP.y);
+
+  for ( s32 z = 0; z < Dim.z; ++ z)
+  {
+    for ( s32 y = 0; y < Dim.y; ++ y)
+    {
+      for ( s32 x = 0; x < Dim.x; ++ x)
+      {
+        if (x == 2 && y == 2 && z == 2)
+        {
+          s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
+          SetOccupancyBit(Chunk, Index, VoxelOccupancy_Filled);
+          Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
+          ++Result;
+        }
+      }
+    }
+  }
+
+  return Result;;
+}
+link_internal u32
 Terrain_Checkerboard( world_chunk *Chunk,
                               v3i  NoiseBasis,
                              void *NoiseParams,
@@ -32,7 +64,8 @@ Terrain_Checkerboard( world_chunk *Chunk,
         if (WorldZ < zMin)
         {
           s32 Index = GetIndex(Voxel_Position(x,y,z), Dim);
-          Chunk->Voxels[Index].Flags = Voxel_Filled;
+          /* Chunk->Voxels[Index].Flags = Voxel_Filled; */
+          SetOccupancyBit(Chunk, Index, VoxelOccupancy_Filled);
           Chunk->Voxels[Index].Color = RGBtoPackedHSV(RGBColor);
           ++Result;
         }
@@ -70,8 +103,9 @@ GrassyIslandTerrain( world_chunk *Chunk,
       {
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
+        /* Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) ); */
 
         r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -223,23 +257,14 @@ GrassyIslandTerrain( world_chunk *Chunk,
         }
 #endif
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         Chunk->Voxels[VoxIndex].Transparency = ThisTransparency;
         ChunkSum += NoiseChoice;
 
-
-
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -275,8 +300,8 @@ WarpedTerrain( world_chunk *Chunk,
       {
         s64 WorldX = x - SrcToDest.x + (WorldChunkDim.x*Chunk->WorldP.x);
         s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
-        Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
-        Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
+        NotImplemented;
+        /* Chunk->Voxels[VoxIndex].Flags = Voxel_Empty; */
 
         r32 NoiseValue = 0.f;
         for (u32 OctaveIndex = 0; OctaveIndex < OctaveCount; ++OctaveIndex)
@@ -323,20 +348,13 @@ WarpedTerrain( world_chunk *Chunk,
         }
 #endif
 
-        SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice));
+        /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*NoiseChoice)); */
+        SetOccupancyBit(Chunk, VoxIndex, s32(NoiseChoice));
         Chunk->Voxels[VoxIndex].Color = RGBtoPackedHSV(ThisColor)*u16(NoiseChoice);
         ChunkSum += NoiseChoice;
 
-        Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
-
-        if (NoiseChoice)
-        {
-          Assert( IsSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
-        else
-        {
-          Assert( NotSet(&Chunk->Voxels[VoxIndex], Voxel_Filled) );
-        }
+        NotImplemented;
+        /* Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0); */
       }
     }
   }
@@ -370,7 +388,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       {
         // NOTE(Jesse): This is an optimization; the engine marks chunks that
         // have moved outside of the visible region as garbage.
-        Chunk->Flags = Chunk_Uninitialized;
+        NotImplemented;
+        /* Chunk->Flags = Chunk_Uninitialized; */
       }
       else
       {
@@ -381,6 +400,15 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
         /* Info("%S", ToString(GenType)); */
         switch (GenType)
         {
+          case TerrainGenType_Debug:
+          {
+            // Flat Params
+            v3 Period = {};
+            s32 Amplititude = {};
+            s32 StartingZDepth = {};
+            v3 Color = RGB_GRASS_GREEN;
+            InitializeChunkWithNoise( Terrain_Debug, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, ChunkInitFlag_Noop, 0);
+          } break;
           case TerrainGenType_Flat:
           {
             // Flat Params
@@ -394,11 +422,11 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
           case TerrainGenType_SinCos:
           {
             // Bumpy Sin(x)+Cos(y) noise.  Useful for visualizing the polylines/splines mapping noise values to their final values.
-            v3 Period = V3(100);
-            s32 Amplititude = 250;
+            v3 Period = V3(20);
+            s32 Amplititude = 70;
             /* s32 Period = 100; */
             /* s32 Amplititude = 2500; */
-            s32 StartingZDepth = -1;
+            s32 StartingZDepth = 15;
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
             InitializeChunkWithNoise( Terrain_SinCos, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, Ignored, InitFlags, 0);
@@ -451,11 +479,40 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
           case TerrainGenType_FBM2D:
           {
-            // FBM params
-            v3 Period = V3(300);
-            s32 Amplititude = 220;
-            s32 StartingZDepth = -200;
-            u32 Octaves = 4;
+            /* // FBM params */
+
+            // 5km features
+            /* v3 Period = V3(500'000); */
+            /* s32 Amplititude = 80'000; */
+            /* s32 StartingZDepth = 20000; */
+            /* u32 Octaves = 9; */
+
+            // 2km features
+            /* v3 Period = V3(200'000); */
+            /* // 600m high */
+            /* s32 Amplititude = 60'000; */
+            /* s32 StartingZDepth = 60000; */
+            /* u32 Octaves = 7; */
+
+            /* v3 Period = V3(5000); */
+            /* s32 Amplititude = 1500; */
+            /* s32 StartingZDepth = 1600; */
+            /* u32 Octaves = 9; */
+
+            v3 Period = V3(2500);
+            s32 Amplititude = 1500;
+            s32 StartingZDepth = 1600;
+            u32 Octaves = 9;
+            /* u32 Octaves = 4; */
+            /* u32 Octaves = 1; */
+
+            /* v3 Period = V3(50); */
+            /* s32 Amplititude = 60; */
+            /* s32 StartingZDepth = 6000; */
+            /* u32 Octaves = 1; */
+            /* u32 Octaves = 4; */
+
+
             /* chunk_init_flags InitFlags = ChunkInitFlag_ComputeStandingSpots; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
@@ -558,7 +615,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             /* chunk_init_flags InitFlags = ChunkInitFlag_GenMipMapLODs; */
             chunk_init_flags InitFlags = ChunkInitFlag_Noop;
             v3 Color = RGB_GRASS_GREEN;
-            InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
+            /* InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, Period, Amplititude, StartingZDepth, Color, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf); */
           } break;
 
 
@@ -567,7 +624,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
             // Custom FBM noise example generating slightly-more-complex game-world-like terrain
             v3 Period = V3(0); // Ignored
             s32 Amplititude = 0; // Ignored
-            s32 StartingZDepth = -100;
+            s32 StartingZDepth = 100;
             u32 OctaveCount = 1;
 
             octave_buffer OctaveBuf = { OctaveCount, {} };
@@ -691,8 +748,6 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
       }
 
-      FinalizeChunkInitialization(Chunk);
-      UnSetFlag(&Chunk->Flags, Chunk_Queued);
     } break;
   }
 
@@ -705,10 +760,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
-  world_position WorldCenter = {};
+  /* world_position WorldCenter = V3i(s32_MAX-1000); */
+  world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 5000.0f);
+  f32 DistanceFromTarget = Length(g_VisibleRegion/2.f);
+  f32 FarClip = 150000.f;
+  StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
 
@@ -716,7 +774,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
 
-  GameState->TerrainGenType = TerrainGenType_SinCos;
+  /* GameState->TerrainGenType = TerrainGenType_Debug; */
+  /* GameState->TerrainGenType = TerrainGenType_SinCos; */
+  /* GameState->TerrainGenType = TerrainGenType_TerracedTerrain; */
+  GameState->TerrainGenType = TerrainGenType_FBM2D;
   /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
   /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
   /* World->Center = V3i(-22, 101, 1); */
@@ -727,9 +788,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = V3i(-25, -75, 2); */ 
   /* CameraGhost->P.WorldP = V3i(-5, -121, 2); */ 
 
-  CameraGhost->P.WorldP = V3i(330, -87, 2); 
+  /* CameraGhost->P.WorldP = V3i(330, -87, 2); */ 
   /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
   /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
+  /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
+  /* CameraGhost->P.WorldP = WorldCenter; */
+  /* CameraGhost->P.WorldP = WorldCenter + g_VisibleRegion/2; */
+  CameraGhost->P.WorldP = g_VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);
@@ -748,18 +813,60 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
-  global_variable window_layout Window = WindowLayout("Terrain Gen", WindowLayoutFlag_Align_Right);
+  {
+    global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
+    PushWindowStart(Ui, &Window);
+      file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/shaping"), GetTranArena());
 
-  PushWindowStart(Ui, &Window);
-    ui_toggle_button_group TerrainGenTypeRadio = RadioButtonGroup_terrain_gen_type(Ui, &Window, CSz("Terrain Generators"), &GameState->TerrainGenType, &DefaultUiRenderParams_Generic, ToggleButtonGroupFlags_DrawVertical);
-  PushWindowEnd(Ui, &Window);
+      u32 I = 0;
+      IterateOver(&Files, FileNode, FileNodeIndex)
+      {
+        if (FileNode->Type == FileTraversalType_File)
+        {
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          {
+            // Force engine to reload new shader
+            Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+            Resources->Graphics.TerrainShapingRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+          }
+          PushNewRow(Ui);
+        }
+
+      }
+    PushWindowEnd(Ui, &Window);
+  }
+
+  {
+    global_variable window_layout Window = WindowLayout("Terrain Decoration Shader", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, &Window);
+      file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/decoration"), GetTranArena());
+
+      u32 I = 0;
+      IterateOver(&Files, FileNode, FileNodeIndex)
+      {
+        if (FileNode->Type == FileTraversalType_File)
+        {
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          {
+            // Force engine to reload new shader
+            Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+            Resources->Graphics.TerrainDecorationRC.Program.FragmentTimeModifiedWhenLoaded = 0;
+          }
+          PushNewRow(Ui);
+        }
+
+      }
+    PushWindowEnd(Ui, &Window);
+  }
+
+
 
   /* Info("%S :: %d", ToString(GameState->TerrainGenType), GameState->TerrainGenType); */
 
-  if (TerrainGenTypeRadio.AnyElementClicked)
-  {
-    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-    SoftResetEngine(Resources, HardResetFlag_NoResetCamera);
-    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-  }
+  /* if (TerrainGenTypeRadio.AnyElementClicked) */
+  /* { */
+  /*   SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex); */
+  /*   SoftResetEngine(Resources, HardResetFlag_NoResetCamera); */
+  /*   UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
+  /* } */
 }

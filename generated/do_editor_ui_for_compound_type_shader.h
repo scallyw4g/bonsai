@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:392:0
+// src/engine/editor.cpp:398:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ID),
+        Cast(u32*, &Element->ID),
         CSz("ID"),
         Params
         );
@@ -40,9 +40,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(shader_uniform*, Element->FirstUniform),
@@ -56,11 +57,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->VertexSourceFilename),
+        Cast(cs*, &Element->VertexSourceFilename),
         CSz("VertexSourceFilename"),
         Params
         );
@@ -71,12 +73,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->FragSourceFilename),
+        Cast(cs*, &Element->FragSourceFilename),
         CSz("FragSourceFilename"),
         Params
         );
@@ -87,7 +90,56 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s64*, &Element->VertexTimeModifiedWhenLoaded),
+        CSz("VertexTimeModifiedWhenLoaded"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded),
+        CSz("FragmentTimeModifiedWhenLoaded"),
+        Params
+        );
+
+
+
+
+
+
+
+
+            PushNewRow(Ui);
+
+                                    DoEditorUi(Ui,
+        Window,
+        Cast(b8*, &Element->HotReloaded),
+        CSz("HotReloaded"),
+        &DefaultUiRenderParams_Checkbox
+        );
+
+
+
+
+
+
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

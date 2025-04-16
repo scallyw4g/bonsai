@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.h:116:0
+// external/bonsai_stdlib/src/counted_string.h:123:0
 
 struct counted_string_cursor
 {
@@ -15,12 +15,10 @@ link_internal counted_string_cursor
 CountedStringCursor(umm ElementCount, memory_arena* Memory)
 {
   counted_string *Start = (counted_string*)PushStruct(Memory, sizeof(counted_string)*ElementCount, 1, 0);
-  counted_string_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  counted_string_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 
@@ -194,6 +192,14 @@ struct counted_string_stream
   umm ChunkCount;
 };
 
+link_internal counted_string_stream
+CountedStringStream(memory_arena *Memory)
+{
+  counted_string_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(counted_string_stream *Stream)
 {
@@ -242,10 +248,7 @@ IsLastElement(counted_string_iterator* Iter)
 link_internal counted_string *
 Push(counted_string_stream* Stream, counted_string Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Stream->Memory, sizeof(counted_string_stream_chunk), 1, 0);

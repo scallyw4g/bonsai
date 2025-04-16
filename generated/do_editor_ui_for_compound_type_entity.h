@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:291:0
+// src/engine/editor.cpp:319:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,10 +26,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(entity_id*,&Element->Id),
+        Cast(entity_id*, &Element->Id),
         CSz("Id"),
         Params
         );
@@ -40,20 +40,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
-      
-DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
 
       
-      DoEditorUi(Ui,
+                              DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->EulerAngles),
+        Cast(v3*, &Element->EulerAngles),
         CSz("EulerAngles"),
         Params
-,-PI32, PI32 );
+        , -PI32, PI32 );
+
 
 
 
@@ -62,10 +65,10 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Scale),
+        Cast(r32*, &Element->Scale),
         CSz("Scale"),
         Params
         );
@@ -76,12 +79,13 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->_CollisionVolumeRadius),
+        Cast(v3*, &Element->_CollisionVolumeRadius),
         CSz("_CollisionVolumeRadius"),
         Params
         );
@@ -92,11 +96,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(physics*,&Element->Physics),
+        Cast(physics*, &Element->Physics),
         CSz("Physics"),
         Params
         );
@@ -107,11 +112,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(asset_id*,&Element->AssetId),
+        Cast(asset_id*, &Element->AssetId),
         CSz("AssetId"),
         Params
         );
@@ -122,11 +128,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(u64*,&Element->ModelIndex),
+        Cast(u64*, &Element->ModelIndex),
         CSz("ModelIndex"),
         Params
         );
@@ -137,12 +144,13 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
-      PushNewRow(Ui);
 
-      DoEditorUi(Ui,
+            PushNewRow(Ui);
+
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(collision_event*,&Element->LastResolvedCollision),
+        Cast(collision_event*, &Element->LastResolvedCollision),
         CSz("LastResolvedCollision"),
         Params
         );
@@ -153,11 +161,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(entity_position_info*,&Element->LastResolvedPosInfo),
+        Cast(entity_position_info*, &Element->LastResolvedPosInfo),
         CSz("LastResolvedPosInfo"),
         Params
         );
@@ -168,8 +177,9 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
         Cast(particle_system*, Element->Emitter),
@@ -183,11 +193,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(entity_state*,&Element->State),
+        Cast(entity_state*, &Element->State),
         CSz("State"),
         Params
         );
@@ -198,11 +209,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(entity_behavior_flags*,&Element->Behavior),
+        Cast(entity_behavior_flags*, &Element->Behavior),
         CSz("Behavior"),
         Params
         );
@@ -213,11 +225,12 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-      DoEditorUi(Ui,
+                                                DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(entity_id*,&Element->Carrying),
+        Cast(entity_id*, &Element->Carrying),
         CSz("Carrying"),
         Params
         );
@@ -228,24 +241,27 @@ DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANC
 
 
 
+
       
-  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                                if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
                  else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-;
+    ;
 
 
 
 
-      PushNewRow(Ui);
 
-  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
+            PushNewRow(Ui);
+
+                                if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
                  else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
-;
+    ;
 
 
 
 
-      PushNewRow(Ui);
+
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -1,16 +1,16 @@
 #define INVALID_WORLD_CHUNK_POSITION (V3i(s32_MAX, s32_MAX, s32_MAX))
 
-struct world;
-struct world_chunk;
 struct heap_allocator;
 struct entity;
+struct octree_node;
+
 
 
 // NOTE(Jesse): Gets casted to sort_key_f, so Chunk and tChunk ahve to be 1st and second, in that order
 struct picked_world_chunk
 {
-  world_chunk *Chunk;
-  r64 tChunk;
+  octree_node *Node;
+  r64 t;
 };
 
 enum picked_voxel_position
@@ -45,12 +45,12 @@ struct picked_world_chunk_static_buffer
 };
 
 link_internal void
-Push(picked_world_chunk_static_buffer *Buf, world_chunk *Chunk, r32 t)
+Push(picked_world_chunk_static_buffer *Buf, octree_node *Node, r32 t)
 {
   if (Buf->At < MAX_PICKED_WORLD_CHUNKS)
   {
-    Buf->E[Buf->At].Chunk = Chunk;
-    Buf->E[Buf->At].tChunk = r64(t);
+    Buf->E[Buf->At].Node = Node;
+    Buf->E[Buf->At].t = r64(t);
 
     ++Buf->At;
   }
@@ -68,11 +68,8 @@ enum chunk_flag poof(@bitfield)
 
   Chunk_Queued            = 1 << 0,
   Chunk_VoxelsInitialized = 1 << 1,
-  /* Chunk_MeshUploadedToGpu = 1 << 2, */
-  /* Chunk_MeshDirty         = 1 << 3, // Re-upload the */ 
 
-  // This is an optimization to tell the thread queue to not initialize chunks
-  // we've already moved away from.
+  // This is an optimization to tell the thread queue to not initialize chunks we've already moved away from.
   Chunk_Garbage           = 1 << 3,
 
   // Threads can set this to mark a chunk as ready to deallocate
@@ -88,10 +85,11 @@ poof(string_and_value_tables(chunk_flag))
 // If we make a mapping between these bit-flags and another face_index enum we
 // could delete a bit of code.
 // @duplicate_face_index_enum
+#if 0
 enum voxel_flag
 {
   Voxel_Empty      =      0,
-  Voxel_Filled     = 1 << 0,
+  /* Voxel_Filled     = 1 << 0, // NOTE(Jesse): This now lives in the Occupancy buffer */
 
   Voxel_LeftFace   = 1 << 1,
   Voxel_RightFace  = 1 << 2,
@@ -107,25 +105,16 @@ enum voxel_flag
   Voxel_MarkBit    = 1 << 7,
 };
 CAssert(Voxel_MarkBit < u8_MAX);
+#endif
 
-global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace;
-
-#define VOXEL_DEBUG_COLOR (0)
+/* global_variable u8 VoxelFaceMask = Voxel_LeftFace | Voxel_RightFace | Voxel_TopFace | Voxel_BottomFace | Voxel_FrontFace | Voxel_BackFace; */
 
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel
 {
-  u8 Flags;
   u8 Transparency;
   u16 Color;
-
-  /* v3 Derivs; */
-#if VOXEL_DEBUG_COLOR
-  v3 DebugColor;       poof(@no_serialize)
-  f32 DebugNoiseValue; poof(@no_serialize)
-#endif
 };
-/* CAssert(sizeof(voxel) == 8); */
 
 struct voxel_lighting
 {
@@ -135,27 +124,10 @@ struct voxel_lighting
 poof(gen_constructor(voxel_lighting))
 #include <generated/gen_constructor_voxel_lighting.h>
 
-#if 0
-link_internal b32
-IsValid(voxel *V)
-{
-  b32 Result = (V->Flags & Voxel_INVALID_BIT) == 0;
-  if (V->Flags & Voxel_Filled)
-  {
-    Result &= (V->Flags & Voxel_INVALID_BIT) == 0;
-  }
-  else
-  {
-    Result &= (V->Flags & VoxelFaceMask) == 0;
-  }
-  return Result;
-}
-#endif
-
 b32
-operator ==(voxel &V1, voxel &V2)
+operator==(voxel &V1, voxel &V2)
 {
-  b32 Result = V1.Flags == V2.Flags && V1.Color == V2.Color;
+  b32 Result = V1.Transparency == V2.Transparency && V1.Color == V2.Color;
   return Result;
 }
 
@@ -179,7 +151,7 @@ struct boundary_voxel
 
     this->V.Color = w;
 
-    this->V.Flags = Voxel_Empty;
+    /* this->V.Flags = Voxel_Empty; */
     this->V.Transparency = 0;
   }
 
@@ -190,10 +162,17 @@ struct boundary_voxel
   }
 };
 
+// 2 planar slices (1 bit per slice), each bit corresponds to a y index (64 y indices), 66 z slices
+#define xOccupancyBorder_Dim V3i(2, 1, 66)
+#define xOccupancyBorder_ElementCount Volume(xOccupancyBorder_Dim)
+
 struct chunk_data
 {
   chunk_flag Flags;
   v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
+  u64            *Occupancy;
+  u64            *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
+  u64            *FaceMasks;
   voxel          *Voxels;
   voxel_lighting *VoxelLighting;
 };
@@ -325,8 +304,10 @@ poof(
 
 struct entity;
 typedef entity* entity_ptr;
-poof( block_array(entity_ptr, {8}) )
-#include <generated/block_array_entity_ptr_688856411.h>
+poof( block_array_h(entity_ptr, {8}, {}) )
+#include <generated/block_array_entity_ptr_688856411_h.h>
+
+
 
 struct world_chunk poof(@version(1))
 {
@@ -336,61 +317,51 @@ struct world_chunk poof(@version(1))
 
   // chunk_data {
           chunk_flag  Flags;          poof(@no_serialize)
-                 v3i  Dim; // could be compressed?
+                 v3i  Dim;            // could/should be compressed?
+                 u64 *Occupancy;
+                 u64 *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
+                 u64 *FaceMasks;
                voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
       voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
   // }
 
 
-  // TODO(Jesse): This stores pointers that are completely ephemeral and as
-  // such are wasted space.  We could remove those to make this struct 24 bytes
-  // smaller, which is probably pretty worth.
-  lod_element_buffer Meshes; poof(@no_serialize)
-
-  /* threadsafe_geometry_buffer TransparentMeshes; */
-  /* gpu_mapped_element_buffer  GpuBuffers[MeshIndex_Count]; */
+  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
+
+  // TODO(Jesse): Rename
+  v3i DimInChunks;
+  /* v3i Resolution; */
 
   v3i WorldP;
 
   s32 FilledCount;            poof(@no_serialize)
-  b32 DrawBoundingVoxels;     poof(@no_serialize)
-
-  s32 PointsToLeaveRemaining; poof(@no_serialize)
-  u32 TriCount;               poof(@no_serialize)
-  s32 EdgeBoundaryVoxelCount; poof(@no_serialize)
-
-  u32 _Pad0; poof(@no_serialize)
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
   entity_ptr_block_array Entities; poof(@no_serialize)
-
-  // TODO(Jesse): Probably take this out?
-  s32 DEBUG_OwnedByThread; poof(@no_serialize)
-
-#if VOXEL_DEBUG_COLOR
-  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
-  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
-  u8 _Pad1[16];      poof(@no_serialize)
-#else
-  u8 _Pad1[28];      poof(@no_serialize)
-#endif
 };
+
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
+//
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(world_chunk) == CACHE_LINE_SIZE); */
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 // @world-chunk-cache-line-size
-CAssert(sizeof(chunk_data) == 32);
+/* CAssert(sizeof(chunk_data) == 32); */
 /* CAssert(sizeof(threadsafe_geometry_buffer) == 112); */
 CAssert(sizeof(voxel_position_cursor) == 24);
 /* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 
 
+b32 IsAllocated(world_chunk *Chunk)
+{
+  b32 Result = Volume(Chunk->Dim) > 0;
+  return Result;
+}
 
 
 
@@ -438,13 +409,7 @@ struct world_chunk_0
   // TODO(Jesse): Probably take this out?
   s32 DEBUG_OwnedByThread; poof(@no_serialize)
 
-#if VOXEL_DEBUG_COLOR
-  f32 *NoiseValues;  poof(@no_serialize @array_length(Volume(Element->Dim)))
-  v3  *NormalValues; poof(@no_serialize @array_length(Volume(Element->Dim)))
-  u8 _Pad1[16];      poof(@no_serialize)
-#else
   u8 _Pad1[28];      poof(@no_serialize)
-#endif
 };
 
 
@@ -485,32 +450,6 @@ Volume(world_chunk* Chunk)
   return Result;
 }
 
-enum world_flag
-{
-  WorldFlag_noop,
-  /* WorldFlag_WorldCenterFollowsCameraTarget = (1 << 0), */
-};
-
-struct world
-{
-  v3i Center;
-  v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
-
-  u32 HashSlotsUsed;
-  u32 HashSize;
-  world_chunk **ChunkHashMemory[2];  poof(@ui_skip)
-  world_chunk **ChunkHash;           poof(@array_length(Element->HashSize))
-
-
-  bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
-  world_chunk ChunkFreelistSentinal; poof(@ui_skip)
-  s32 FreeChunkCount;
-
-  v3i ChunkDim;                      poof(@ui_skip)
-  memory_arena *ChunkMemory;         poof(@ui_skip)
-  world_flag Flags;                  poof(@ui_skip)
-};
-
 struct standing_spot
 {
   b32 CanStand;
@@ -539,22 +478,6 @@ Canonical_Position(picked_voxel *V, picked_voxel_position Pos = PickedVoxel_Firs
   return Result;
 }
 
-inline canonical_position
-Canonicalize( world *World, canonical_position CP )
-{
-  canonical_position Result = Canonicalize( World->ChunkDim, CP.Offset, CP.WorldP );
-  return Result;
-}
-
-// NOTE(Jesse): Technically, these should always be strictly less than the chunkdim,
-// but because of float-ness we can actually hit directly on it.
-inline b32
-IsCanonical( world *World, canonical_position CP )
-{
-  b32 Result = CP.Offset <= V3(World->ChunkDim);
-  return Result;
-}
-
 inline b32
 IsCanonical( v3i WorldChunkDim, canonical_position CP )
 {
@@ -571,61 +494,6 @@ poof(generate_stream(standing_spot))
 
 poof(generate_stream_compact(standing_spot))
 #include <generated/generate_stream_compact_standing_spot.h>
-
-link_internal v3
-GetSimSpaceP(world *World, world_position P)
-{
-  v3i CenterToP = P - World->Center;
-  v3 Result = V3(CenterToP*World->ChunkDim);
-  return Result;
-}
-
-link_internal v3
-GetSimSpaceP(world *World, canonical_position P)
-{
-  cp WorldCenter = Canonical_Position(V3(0), World->Center);
-  cp CenterToP = P - WorldCenter;
-  v3 Result = CenterToP.Offset + (CenterToP.WorldP*World->ChunkDim);
-  return Result;
-}
-
-link_internal v3
-GetSimSpaceP(world *World, picked_voxel *P, picked_voxel_position Pos = PickedVoxel_FirstFilled)
-{
-  v3 Result = GetSimSpaceP(World, Canonical_Position(P, Pos));
-  return Result;
-}
-
-link_internal v3i
-GetSimSpacePi(world *World, world_chunk *Chunk)
-{
-  world_position CenterToP = Chunk->WorldP - World->Center;
-  v3i Result = CenterToP*World->ChunkDim;
-  return Result;
-}
-
-link_internal v3
-GetSimSpaceP(world *World, world_chunk *Chunk)
-{
-  v3 Result = V3(GetSimSpacePi(World, Chunk));
-  return Result;
-}
-
-link_internal rect3i
-GetSimSpaceAABBi(world *World, world_chunk *Chunk)
-{
-  v3i SimSpaceMin = GetSimSpacePi(World, Chunk);
-  rect3i Result = Rect3iMinDim(SimSpaceMin, World->ChunkDim );
-  return Result;
-}
-
-link_internal aabb
-GetSimSpaceAABB(world *World, world_chunk *Chunk)
-{
-  v3 SimSpaceMin = GetSimSpaceP(World, Chunk);
-  aabb Result = AABBMinDim(SimSpaceMin, V3(World->ChunkDim) );
-  return Result;
-}
 
 inline bool
 IsRightChunkBoundary( chunk_dimension ChunkDim, int idx )
@@ -651,6 +519,8 @@ IsBottomChunkBoundary( chunk_dimension ChunkDim, int idx )
   return (idx/(int)ChunkDim.x) % (int)ChunkDim.y == 0;
 }
 
+
+
 global_variable v3i Global_StandingSpotDim = V3i(8,8,3);
 global_variable v3 Global_StandingSpotHalfDim = Global_StandingSpotDim/2.f;
 
@@ -668,34 +538,13 @@ global_variable v3i Global_ChunkApronMaxDim = V3i(1,1,3);
 /* CAssert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z); */
 
 
-link_internal v3
-GetSimSpaceCenterP(world *World, standing_spot *Spot)
-{
-  v3 Result = GetSimSpaceP(World, Spot->P) + Global_StandingSpotHalfDim;
-  return Result;
-}
-
-link_internal v3
-GetSimSpaceBaseP(world *World, standing_spot *Spot)
-{
-  v3 Result = GetSimSpaceP(World, Spot->P) + V3(Global_StandingSpotHalfDim.xy, 0.f);
-  return Result;
-}
-
-link_internal cp
-GetSpotMidpoint(world *World, standing_spot *Spot)
-{
-  cp Result = Canonical_Position(World->ChunkDim, Spot->P.Offset+Global_StandingSpotHalfDim, Spot->P.WorldP);
-  return Result;
-}
-
 struct mesh_freelist;
 
 link_internal void
-AllocateWorldChunk(world_chunk *Result,  world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
+AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage);
 
 link_internal world_chunk *
-AllocateWorldChunk(world_position WorldP, chunk_dimension Dim, memory_arena *Storage);
+AllocateWorldChunk(v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage);
 
 link_internal void
 BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geometry_buffer*, world* World, graphics *Graphics, heap_allocator *Heap);
@@ -733,33 +582,14 @@ MapIntoQueryBox(v3i SimSpaceVoxP, v3i SimSpaceQueryMinP, voxel_position SimSpace
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P);
 
-link_internal world_chunk_ptr_buffer
-GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
+/* link_internal octree_node_ptr_buffer */
+/* GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory); */
 
 link_internal standing_spot_buffer
 GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_position P, r32 GatherRadius, v3 EntityRadius, memory_arena *Memory);
 
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
-
-link_internal rect3i
-GetVisibleRegionRect(world *World)
-{
-  world_position CenterP = World->Center;
-  chunk_dimension Radius = (World->VisibleRegion/2);
-  world_position Min = CenterP - Radius;
-  world_position Max = CenterP + Radius + 1; // Add one so we can pass to functions that expect an open-interval
-
-  return RectMinMax(Min, Max);
-}
-
-link_internal b32
-IsInsideVisibleRegion(world *World, v3i P)
-{
-  rect3i VRRect = GetVisibleRegionRect(World);
-  b32 Result = IsInside(P, VRRect);
-  return Result;
-}
 
 inline voxel*
 TryGetVoxel(world_chunk* Chunk, voxel_position VoxelP)
@@ -778,18 +608,6 @@ GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
   return Result;
 }
 
-inline voxel*
-TryGetVoxel(world *World, cp P)
-{
-  voxel *Result = {};
-  world_chunk *Chunk = GetWorldChunkFromHashtable(World, P.WorldP);
-  if (Chunk)
-  {
-    Result = TryGetVoxel(Chunk, V3i(P.Offset));
-  }
-  return Result;
-}
-
 link_internal void
 MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
 {
@@ -801,11 +619,16 @@ MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
   }
 }
 
+struct octree_node;
+
 link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 
+link_internal void
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node);
+
 link_internal s32
-MarkBoundaryVoxels_MakeExteriorFaces( voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
+MarkBoundaryVoxels_MakeExteriorFaces(u64 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );
 
 /* link_internal world_chunk_geometry_buffer* */
 /* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */
@@ -818,3 +641,13 @@ FinalizeChunkInitialization(world_chunk *Chunk);
 
 link_internal untextured_3d_geometry_buffer*
 AllocateTempMesh(memory_arena* TempMemory, data_type Type);
+
+
+struct work_queue_entry_finalize_noise_values;
+struct gpu_readback_buffer;
+
+link_internal work_queue_entry_finalize_noise_values
+WorkQueueEntryBuildChunkMesh(gpu_readback_buffer PBOBuf, f32 *NoiseData, v3i NoiseDim, world_chunk *Chunk);
+
+inline void
+QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfield MeshBit);

@@ -1,4 +1,8 @@
-// src/engine/serdes.cpp:366:0
+// src/engine/serdes.cpp:369:0
+
+
+
+
 
 struct entity_block
 {
@@ -23,10 +27,42 @@ struct entity_block_array
   
 };
 
+link_internal entity_block_array
+EntityBlockArray(memory_arena *Memory)
+{
+  entity_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(entity_block_array_index *Thing1, entity_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( entity_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(entity_block_array_index Thing1, entity_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( entity_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef entity_block_array entity_paged_list;
 
 link_internal entity_block_array_index
-operator++(entity_block_array_index &I0)
+operator++( entity_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +85,29 @@ operator++(entity_block_array_index &I0)
 }
 
 link_internal b32
-operator<(entity_block_array_index I0, entity_block_array_index I1)
+operator<( entity_block_array_index I0, entity_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(entity_block_array_index *Index)
+GetIndex( entity_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal entity_block_array_index
-ZerothIndex(entity_block_array *Arr)
+ZerothIndex( entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(entity_block_array *Arr)
+TotalElements( entity_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +118,7 @@ TotalElements(entity_block_array *Arr)
 }
 
 link_internal entity_block_array_index
-LastIndex(entity_block_array *Arr)
+LastIndex( entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +133,7 @@ LastIndex(entity_block_array *Arr)
 }
 
 link_internal entity_block_array_index
-AtElements(entity_block_array *Arr)
+AtElements( entity_block_array *Arr)
 {
   entity_block_array_index Result = {};
   if (Arr->Current)
@@ -110,19 +145,27 @@ AtElements(entity_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count( entity_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal entity *
 GetPtr(entity_block_array *Arr, entity_block_array_index Index)
 {
   entity *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal entity *
 GetPtr(entity_block *Block, umm Index)
 {
-  entity *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  entity *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -139,7 +182,7 @@ GetPtr(entity_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  entity *Result = Block->Elements+ElementIndex;
+  entity *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
@@ -163,53 +206,111 @@ AtElements(entity_block *Block)
 }
 
 
-link_internal entity_block*
+
+
+
+link_internal entity_block *
 Allocate_entity_block(memory_arena *Memory)
 {
-  entity_block *Result = Allocate(entity_block, Memory, 1);
-  Result->Elements = Allocate(entity, Memory, 8);
+  entity_block *Result = Allocate( entity_block, Memory, 1);
+  Result->Elements = Allocate( entity, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS(entity_block_array_index Index)
+CS( entity_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
+link_internal entity *
+Set( entity_block_array *Arr,
+  entity *Element,
+  entity_block_array_index Index )
+{
+  entity *Result = {};
+  if (Index.Block)
+  {
+    entity *Slot = &Index.Block->Elements[Index.ElementIndex];
+    *Slot = *Element;
+
+    Result = Slot;
+  }
+
+  return Result;
+}
+
 link_internal void
-RemoveUnordered(entity_block_array *Array, entity_block_array_index Index)
+RemoveUnordered( entity_block_array *Array, entity_block_array_index Index)
 {
   entity_block_array_index LastI = LastIndex(Array);
 
   entity *Element = GetPtr(Array, Index);
   entity *LastElement = GetPtr(Array, LastI);
 
-  *Element = *LastElement;
+  Set(Array, LastElement, Index);
 
   Assert(Array->Current->At);
   Array->Current->At -= 1;
 
   if (Array->Current->At == 0)
   {
-    // Walk the chain till we get to the second-last one
-    entity_block *Current = Array->First;
-    entity_block *LastB = LastI.Block;
+    // TODO(Jesse): There's obviously a way better way to do this ..
+    auto AtE = AtElements(Array);
+    s32 Count = s32(GetIndex(&AtE));
 
-    while (Current->Next && Current->Next != LastB)
+    if (Count == 0)
     {
-      Current = Current->Next;
+      // Nothing to be done, we've popping the last thing off the array
+      Assert(Index.Block == Array->First);
+      Assert(Index.Block == Array->Current);
+      Assert(Index.BlockIndex == 0);
+      Assert(Index.ElementIndex == 0);
     }
+    else
+    {
+      // Walk the chain till we get to the second-last one
+      entity_block *Current = Array->First;
+      entity_block *LastB = LastI.Block;
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+      while (Current->Next && Current->Next != LastB)
+      {
+        Current = Current->Next;
+      }
+
+      Assert(Current->Next == LastB || Current->Next == 0);
+      Array->Current = Current;
+    }
   }
 }
 
-link_internal entity *
-Push(entity_block_array *Array, entity *Element)
+link_internal entity_block_array_index
+Find( entity_block_array *Array, entity *Query)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  entity_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  IterateOver(Array, E, Index)
+  {
+    if ( E == Query)
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+link_internal b32
+IsValid(entity_block_array_index *Index)
+{
+  entity_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  b32 Result = (AreEqual(Index, &Test) == False);
+  return Result;
+}
+
+link_internal entity *
+Push( entity_block_array *Array, entity *Element)
+{
+  Assert(Array->Memory);
 
   if (Array->First == 0) { Array->First = Allocate_entity_block(Array->Memory); Array->Current = Array->First; }
 

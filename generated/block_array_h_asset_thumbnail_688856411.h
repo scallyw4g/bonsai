@@ -1,4 +1,8 @@
-// src/engine/editor.h:518:0
+// src/engine/editor.h:538:0
+
+
+
+
 
 struct asset_thumbnail_block
 {
@@ -23,10 +27,42 @@ struct asset_thumbnail_block_array
   
 };
 
+link_internal asset_thumbnail_block_array
+AssetThumbnailBlockArray(memory_arena *Memory)
+{
+  asset_thumbnail_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(asset_thumbnail_block_array_index *Thing1, asset_thumbnail_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( asset_thumbnail_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(asset_thumbnail_block_array_index Thing1, asset_thumbnail_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( asset_thumbnail_block_array_index ) );
+
+  return Result;
+}
+
+
 typedef asset_thumbnail_block_array asset_thumbnail_paged_list;
 
 link_internal asset_thumbnail_block_array_index
-operator++(asset_thumbnail_block_array_index &I0)
+operator++( asset_thumbnail_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -49,30 +85,29 @@ operator++(asset_thumbnail_block_array_index &I0)
 }
 
 link_internal b32
-operator<(asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_index I1)
+operator<( asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex(asset_thumbnail_block_array_index *Index)
+GetIndex( asset_thumbnail_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
 link_internal asset_thumbnail_block_array_index
-ZerothIndex(asset_thumbnail_block_array *Arr)
+ZerothIndex( asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
   Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
   return Result;
 }
 
 link_internal umm
-TotalElements(asset_thumbnail_block_array *Arr)
+TotalElements( asset_thumbnail_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -83,7 +118,7 @@ TotalElements(asset_thumbnail_block_array *Arr)
 }
 
 link_internal asset_thumbnail_block_array_index
-LastIndex(asset_thumbnail_block_array *Arr)
+LastIndex( asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
   if (Arr->Current)
@@ -98,7 +133,7 @@ LastIndex(asset_thumbnail_block_array *Arr)
 }
 
 link_internal asset_thumbnail_block_array_index
-AtElements(asset_thumbnail_block_array *Arr)
+AtElements( asset_thumbnail_block_array *Arr)
 {
   asset_thumbnail_block_array_index Result = {};
   if (Arr->Current)
@@ -110,19 +145,27 @@ AtElements(asset_thumbnail_block_array *Arr)
   return Result;
 }
 
+link_internal umm
+Count( asset_thumbnail_block_array *Arr)
+{
+  auto Index = AtElements(Arr);
+  umm Result = GetIndex(&Index);
+  return Result;
+}
+
 link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
 link_internal asset_thumbnail *
 GetPtr(asset_thumbnail_block *Block, umm Index)
 {
-  asset_thumbnail *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
+  asset_thumbnail *Result = {};
+  if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
@@ -139,7 +182,7 @@ GetPtr(asset_thumbnail_block_array *Arr, umm Index)
     Block = Block->Next;
   }
 
-  asset_thumbnail *Result = Block->Elements+ElementIndex;
+  asset_thumbnail *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 

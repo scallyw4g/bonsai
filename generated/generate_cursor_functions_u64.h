@@ -5,12 +5,10 @@ link_internal u64_cursor
 U64Cursor(umm ElementCount, memory_arena* Memory)
 {
   u64 *Start = (u64*)PushStruct(Memory, sizeof(u64)*ElementCount, 1, 0);
-  u64_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u64_cursor Result = {};
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
   return Result;
 }
 
