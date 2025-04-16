@@ -93,9 +93,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
   {
     auto Plat = &Resources->Stdlib.Plat;
 
-    /* RuntimeBreak(); */
-    PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->RenderQ);
-
     SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
     CancelAllWorkQueueJobs(Resources);
     Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);

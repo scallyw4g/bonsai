@@ -135,6 +135,14 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
   Assert(QueueIsEmpty(&Plat->LowPriority));
   Assert(QueueIsEmpty(&Plat->WorldUpdateQ));
   Assert(QueueIsEmpty(&Plat->RenderQ));
+
+  PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->RenderQ);
+
+  UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+
+  while (!QueueIsEmpty(&Plat->RenderQ)) { SleepMs(1); }
+
+  SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 }
 
 link_internal void
@@ -241,13 +249,6 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   Engine->EngineDebug.Memory = AllocateArena();
 
   HardResetAssets(Engine);
-
-  umm ReadbackJobCount = TotalElements(&Graphics->NoiseReadbackJobs);
-  RangeIterator_t(umm, JobIndex, ReadbackJobCount)
-  {
-    dummy_work_queue_entry_build_chunk_mesh_block_array_index I = ZerothIndex(&Graphics->NoiseReadbackJobs);
-    RemoveUnordered(&Graphics->NoiseReadbackJobs, I);
-  }
 
   Info("Hard Reset End");
 }
