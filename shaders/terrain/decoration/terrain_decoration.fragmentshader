@@ -202,10 +202,9 @@ void main()
     /* ColorValue = v3(CosTheta); */
     /* /1* ColorValue = Green*Clamp01(0.5+CosTheta); *1/ */
 
-
     v4 Cliffs = DoCliffs(Basis, Derivs);
     ColorValue = Cliffs.xyz*Clamp01(0.8f+CosTheta);
-    NoiseValue += Cliffs.w*0.1f;
+    NoiseValue += Cliffs.w;
 
     /* v3 v = voronoi_noise(Basis/v3(200,200,1800)) * 100.f; */
     /* NoiseValue += v.x * CosTheta; */
