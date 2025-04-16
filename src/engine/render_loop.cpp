@@ -289,6 +289,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 v2i TextureDim = RC->DestTex.Dim;
                 SetViewport(TextureDim);
+                Assert(TextureDim == V2i(68, 68*68));
 
                 RenderQuad();
 
@@ -309,6 +310,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 0);
 
                 v2i TextureDim = RC->DestTex.Dim;
+                Assert(TextureDim == V2i(66, 66*66));
                 SetViewport(TextureDim);
 
                 RenderQuad();
@@ -333,6 +335,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 // Using texture unit 1 because the DerivsTex is automatically bound in
                 // UseShader to unit 0
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
+
+                v2i TextureDim = RC->DestTex->Dim;
+                Assert(TextureDim == V2i(66, 66*66));
+                SetViewport(TextureDim);
+
                 RenderQuad();
 
                 AssertNoGlErrors;

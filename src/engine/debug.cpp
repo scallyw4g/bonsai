@@ -588,7 +588,11 @@ DoEngineDebug(engine_resources *Engine)
 
       PushTableStart(Ui);
 
+      auto Button = ToggleButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(0)));
         PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
+      ToggleButtonEnd(Ui);
+
+      if (ToggledOn(Ui, &Button)) { Dim = V2(Texture->Dim) * 8.f; }
 
         u32 StartOuter = StartColumn(Ui);
           PushTableStart(Ui);
@@ -596,12 +600,10 @@ DoEngineDebug(engine_resources *Engine)
               {
                 RangeIterator_t(u32, SliceIndex, Texture->Slices)
                 {
-                  interactable_handle Button = PushButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(SliceIndex)));
                     u32 Start = StartColumn(Ui);
                       PushTexturedQuad(Ui, Texture, s32(SliceIndex), Dim, zDepth_Text);
                       PushForceAdvance(Ui, V2(xAdvance, 0));
                     EndColumn(Ui, Start);
-                  PushButtonEnd(Ui);
 
                   if ( (SliceIndex+1) % 8 == 0)
                   {

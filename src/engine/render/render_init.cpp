@@ -785,12 +785,12 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
 
-  v3 ChunkDim = V3(66, 66, 66);
-
   //
   // World Edit RC
   //
   world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
+
+   v3 ChunkDim = V3(66, 66, 66);
   v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
 
   {
@@ -822,7 +822,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {});
 
     RC->DestFBO = GenFramebuffer();
-    RC->DestTex = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+    RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
 
     GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
 
