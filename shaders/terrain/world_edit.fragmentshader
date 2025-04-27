@@ -1,3 +1,5 @@
+#extension GL_ARB_explicit_uniform_location : enable
+
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
@@ -39,7 +41,7 @@ uniform f32 Squareness; // 0 == not square, 1 == square
 
 
 
-uniform sampler2D InputTex;
+uniform layout(location = 1) sampler2D InputTex;
 
 in vec2 UV;
 out layout(location = 0) vec4 Output;
@@ -53,11 +55,9 @@ void main()
   vec3 ColorValue = TexLookup.rgb;
   f32 NoiseValue = TexLookup.a;
 
-
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
-
   v3 xyz = V3(x,y,z) * ChunkResolution;
 
   // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I

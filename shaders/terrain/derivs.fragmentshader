@@ -36,10 +36,13 @@ void main()
 
       f32 Next = texelFetch(InputTex, ivec2(xCoord, yCoord+zCoord), 0).a;
       f32 Diff = Next-(dz*ChunkResolution.z) - Truncate(CurrentNoiseValue);
-      if (Diff > 0) {
+      // NOTE(Jesse): Can't do this because we end up with complete nonsense on
+      // the edges for some unknown reason
+      /* if (Diff > 0) */
+
       // TODO(Jesse): Recompute with a small random variance to the weight if this is 0?
+      // EDIT(Jesse): Why exactly would we do this?? Sounds like a bad idea.. ?
       Normal += V3(dx,dy,dz)*Diff;
-      }
   }
 
   // Invert because we accumulate the value by pointing 'at' the cell we're checking

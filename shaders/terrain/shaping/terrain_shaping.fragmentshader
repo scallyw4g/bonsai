@@ -45,7 +45,7 @@ out v4 Output;
 #define METHOD 1
 
 // 0: cubic
-// 1: quintic
+// 1: quintic 
 #define INTERPOLANT 1
 
 
@@ -276,7 +276,7 @@ void main()
 #if 1
     v3 Period = V3(1000.f);
     float Amplitude = 1000.f;
-    f32 StartingZDepth = 8000.f;
+    f32 StartingZDepth = 2000.f;
 
     NoiseValue = StartingZDepth;
 

@@ -1,8 +1,10 @@
+#extension GL_ARB_explicit_uniform_location : enable
+
 uniform v3 WorldspaceBasis;
 uniform v3 ChunkResolution;
 
-uniform sampler2D InputTex;
-uniform sampler2D DerivsTex;
+uniform layout(location = 0) sampler2D DerivsTex;
+uniform layout(location = 1) sampler2D InputTex;
 
 in vec2 UV;
 out v4 Output;

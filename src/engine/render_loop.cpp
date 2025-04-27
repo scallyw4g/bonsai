@@ -287,9 +287,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
                 UseShader(RC);
 
-                v2i TextureDim = RC->DestTex.Dim;
-                SetViewport(TextureDim);
-                Assert(TextureDim == V2i(68, 68*68));
+                v2i DestTextureDim = RC->DestTex.Dim;
+                SetViewport(DestTextureDim);
+                Assert(DestTextureDim == V2i(68, 68*68));
 
                 RenderQuad();
 
@@ -309,9 +309,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 UseShader(RC);
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 0);
 
-                v2i TextureDim = RC->DestTex.Dim;
-                Assert(TextureDim == V2i(66, 66*66));
-                SetViewport(TextureDim);
+                v2i DestTextureDim = RC->DestTex.Dim;
+                Assert(DestTextureDim == V2i(66, 66*66));
+                SetViewport(DestTextureDim);
 
                 RenderQuad();
 
@@ -336,10 +336,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 // UseShader to unit 0
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
 
-                v2i TextureDim = RC->DestTex->Dim;
-                Assert(TextureDim == V2i(66, 66*66));
-                SetViewport(TextureDim);
-
                 RenderQuad();
 
                 AssertNoGlErrors;
@@ -347,7 +343,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 InputTex = RC->DestTex;
               }
 
-              s32 PingPongIndex = 0;
+              s32 PingPongIndex = 1;
 
 #if 1
               //
@@ -389,7 +385,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                       {
                         GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
 
-                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 0);
+                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
 
                         brush_layer *Layer = Brush->Layers + LayerIndex;
 
@@ -464,11 +460,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
                         AssertNoGlErrors;
 
+
                         /* gpu_timer Timer = StartGpuTimer(); */
                         RenderQuad();
                         /* EndGpuTimer(&Timer); */
                         /* Push(&Graphics->GpuTimers, &Timer); */
-
                         InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
                         PingPongIndex = (PingPongIndex + 1) & 1;
                       }
@@ -501,11 +497,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 AssertNoGlErrors;
               }
 
-
               /* Assert(Chunk1->Dim == V3i(64)); */
               /* Assert(NoiseDim == V3(66)); */
-
               v3i NoiseDim = V3i(66);
+
               s32 NoiseElementCount = s32(Volume(InputTex->Dim));
               s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
 
