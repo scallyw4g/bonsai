@@ -259,15 +259,7 @@ void main()
   f32 y = floor(gl_FragCoord.y - (z*68));
 
   v3 Offset = V3(-2, -2, -2);
-
-#if 0
-  // Sets Basis to the same value for every chunk and, importantly, doesn't allow
-  // the WorldspaceBasis uniform to be retrieved from the C++ side of the application
-  v3 Basis = V3(64)*4 +                   (v3(x,y,z)*ChunkResolution);
-#else
-  // Sets Basis to the correct value for the chunk
-  v3 Basis = V3(-2)              + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
-#endif
+  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
 
   // NOTE(Jesse): Set these in the -- user code -- section
