@@ -4,12 +4,11 @@ link_internal void
 InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct    , texture *InputTex  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
+  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
-
       Struct->InputTex = InputTex;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->InputTex, "InputTex");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->InputTex, "InputTex");
 
 
 

@@ -7,20 +7,12 @@ struct model_buffer
 };
 
 link_internal model_buffer
-ModelBuffer( u64 ElementCount, memory_arena* Memory)
+ModelBuffer( u64 ElementCount, memory_arena* Memory);
+
+link_internal model_buffer
+ModelBuffer( model *Start, u64 ElementCount)
 {
-  model_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( model, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate model_buffer of 0 length.");
-  }
-
+  model_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -73,4 +65,5 @@ Get(model_buffer *Buf, u64 Index)
   model *Result = GetPtr(Buf, Index);
   return Result;
 }
+
 

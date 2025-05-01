@@ -7,20 +7,12 @@ struct standing_spot_buffer
 };
 
 link_internal standing_spot_buffer
-StandingSpotBuffer( umm ElementCount, memory_arena* Memory)
+StandingSpotBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal standing_spot_buffer
+StandingSpotBuffer( standing_spot *Start, umm ElementCount)
 {
-  standing_spot_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( standing_spot, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate standing_spot_buffer of 0 length.");
-  }
-
+  standing_spot_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline standing_spot *
 Get(standing_spot_buffer *Buf, umm Index)
 {
   standing_spot *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal standing_spot_buffer
+StandingSpotBuffer( umm ElementCount, memory_arena* Memory)
+{
+  standing_spot_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( standing_spot, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate standing_spot_buffer of 0 length.");
+  }
+
   return Result;
 }
 

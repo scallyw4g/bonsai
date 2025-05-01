@@ -7,20 +7,12 @@ struct thread_main_callback_type_buffer
 };
 
 link_internal thread_main_callback_type_buffer
-ThreadMainCallbackTypeBuffer( umm ElementCount, memory_arena* Memory)
+ThreadMainCallbackTypeBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal thread_main_callback_type_buffer
+ThreadMainCallbackTypeBuffer( thread_main_callback_type *Start, umm ElementCount)
 {
-  thread_main_callback_type_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( thread_main_callback_type, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate thread_main_callback_type_buffer of 0 length.");
-  }
-
+  thread_main_callback_type_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline thread_main_callback_type *
 Get(thread_main_callback_type_buffer *Buf, umm Index)
 {
   thread_main_callback_type *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal thread_main_callback_type_buffer
+ThreadMainCallbackTypeBuffer( umm ElementCount, memory_arena* Memory)
+{
+  thread_main_callback_type_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( thread_main_callback_type, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate thread_main_callback_type_buffer of 0 length.");
+  }
+
   return Result;
 }
 

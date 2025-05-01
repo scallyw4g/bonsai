@@ -7,6 +7,7 @@
 #include <engine/debug_draw.cpp>
 
 #include <engine/game_api.cpp>
+#include <engine/model.cpp>
 #include <engine/asset.cpp>
 #include <engine/canonical_position.cpp>
 #include <engine/chunk.cpp>

@@ -17,17 +17,19 @@ GetUniform(memory_arena *Mem, shader *Shader, light *Value, const char *Name)
   return Uniform;
 }
 
-shader_uniform
-ShaderUniform(shader *Shader, light *Value, const char *Name)
+b32
+SetShaderUniform(shader *Shader, u32 Index, light *Value, const char *Name)
 {
-  shader_uniform Uniform = {};
+  Assert(Index < Shader->Uniforms.Count);
 
-  Uniform.Type = ShaderUniform_Light;
-  Uniform.Light = Value;
-  Uniform.Name = Name;
+  shader_uniform *Uniform = Shader->Uniforms.Start + Index;
 
-  Uniform.ID = GetShaderUniform(Shader, Name);
+  Uniform->Type = ShaderUniform_Light;
+  Uniform->Light = Value;
+  Uniform->Name = Name;
 
-  return Uniform;
+  Uniform->ID = GetShaderUniform(Shader, Name);
+
+  return Uniform->ID != INVALID_SHADER_UNIFORM;
 }
 

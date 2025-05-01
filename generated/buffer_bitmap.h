@@ -7,20 +7,12 @@ struct bitmap_buffer
 };
 
 link_internal bitmap_buffer
-BitmapBuffer( umm ElementCount, memory_arena* Memory)
+BitmapBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal bitmap_buffer
+BitmapBuffer( bitmap *Start, umm ElementCount)
 {
-  bitmap_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( bitmap, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate bitmap_buffer of 0 length.");
-  }
-
+  bitmap_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline bitmap *
 Get(bitmap_buffer *Buf, umm Index)
 {
   bitmap *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal bitmap_buffer
+BitmapBuffer( umm ElementCount, memory_arena* Memory)
+{
+  bitmap_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( bitmap, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate bitmap_buffer of 0 length.");
+  }
+
   return Result;
 }
 

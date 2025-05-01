@@ -4,12 +4,11 @@ link_internal void
 InitializeBloomUpsampleShader( bloom_upsample_shader *Struct    , f32 *FilterRadius  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader"));
+  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
-
       Struct->FilterRadius = FilterRadius;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->FilterRadius, "FilterRadius");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->FilterRadius, "FilterRadius");
 
 
 

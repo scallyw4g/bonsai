@@ -79,14 +79,10 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                    )
 {
   shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
-
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader.Uniforms = ShaderUniformBuffer(11, GraphicsMemory);
 
   /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
   /* Current = &(*Current)->Next; */
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
 
   /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
   /* Current = &(*Current)->Next; */
@@ -97,41 +93,32 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   /* *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao"); */
   /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
-  Current = &(*Current)->Next;
+  /* SetShaderUniform(&Shader, 8, ShadowMVP, "ShadowMVP"); *1/ */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyAccum, "TransparencyAccum");
-  Current = &(*Current)->Next;
+  /* SetShaderUniform(&Shader, 9, Camera, "CameraP"); *1/ */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyCount, "TransparencyCount");
-  Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 0, &gTextures->Normal, "gNormal");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 1, BloomTex, "BloomTex");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 2, TransparencyAccum, "TransparencyAccum");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 3, TransparencyCount, "TransparencyCount");
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
-  /* Current = &(*Current)->Next; */
+  SetShaderUniform(&Shader, 4, (u32*)UseLightingBloom, "UseLightingBloom");
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP"); */
-  /* Current = &(*Current)->Next; */
+  SetShaderUniform(&Shader, 5, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Exposure, "Exposure");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 6, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (int*)ToneMappingType, "ToneMappingType");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 7, LuminanceTex, "LuminanceTex");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 8, Exposure, "Exposure");
+
+  SetShaderUniform(&Shader, 9, (int*)ToneMappingType, "ToneMappingType");
+
+  SetShaderUniform(&Shader, 10, ApplicationResolution, "ApplicationResolution");
 
 
   AssertNoGlErrors;
@@ -174,99 +161,71 @@ MakeLightingShader( memory_arena *GraphicsMemory,
 {
   shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader.Uniforms = ShaderUniformBuffer(26, GraphicsMemory);
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 0, &gTextures->Color, "gColor");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 1, &gTextures->Normal, "gNormal");
 
 /*   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
   /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 2, &gTextures->Depth, "gDepth");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 3, ShadowMap, "shadowMap");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 4, Ssao, "Ssao");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, AccumTex, "TransparencyAccum");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 5, AccumTex, "TransparencyAccum");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, CountTex, "TransparencyCount");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 6, CountTex, "TransparencyCount");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 7, BravoilMyersOIT, "BravoilMyersOIT");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 8, BravoilMcGuireOIT, "BravoilMcGuireOIT");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 9, InverseViewMatrix, "InverseViewMatrix");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 10, InverseProjectionMatrix, "InverseProjectionMatrix");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 11, ShadowMVP, "ShadowMVP");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->ColorTex, "LightColors");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 12, &Lights->ColorTex, "LightColors");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->PositionTex, "LightPositions");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 13, &Lights->PositionTex, "LightPositions");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->IndexToUV, "LightIndexToUV");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 14, &Lights->IndexToUV, "LightIndexToUV");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 15, &Lights->Count, "LightCount");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 16, Camera, "CameraP");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SunPosition, "SunPosition");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 17, SunPosition, "SunPosition");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 18, SunColor, "SunColor");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, FogColor, "FogColor");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 19, FogColor, "FogColor");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, FogPower, "FogPower");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 20, FogPower, "FogPower");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseSsao, "UseSsao");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 21, (u32*)UseSsao, "UseSsao");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseShadowMapping, "UseShadowMapping");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 22, (u32*)UseShadowMapping, "UseShadowMapping");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 23, (u32*)UseLightingBloom, "UseLightingBloom");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 24, ApplicationResolution, "ApplicationResolution");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMapResolution, "ShadowMapResolution");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 25, ShadowMapResolution, "ShadowMapResolution");
 
   AssertNoGlErrors;
 
 #if 0
   if (Lights)
   {
-    *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
-    Current = &(*Current)->Next;
+    SetShaderUniform(&Shader, 26, Lights->Lights, "Lights");
 
-    *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
-    Current = &(*Current)->Next;
+    SetShaderUniform(&Shader, 27, &Lights->Count, "LightCount");
   }
 #endif
 
@@ -299,10 +258,8 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
   Result.Shader = CompileShaderPair(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
 
   {
-    shader_uniform **Current = &Result.Shader.FirstUniform;
-
-    *Current = GetUniform(GraphicsMemory, &Result.Shader, ApplicationResolution, "ApplicationResolution");
-    Current = &(*Current)->Next;
+    Result.Shader.Uniforms = ShaderUniformBuffer(1, GraphicsMemory);
+    SetShaderUniform(&Result.Shader, 0, ApplicationResolution, "ApplicationResolution");
   }
 
 
@@ -343,44 +300,32 @@ CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinCli
 {
   shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader.Uniforms = ShaderUniformBuffer(12, GraphicsMemory);
 
-  *Current = GetUniform(GraphicsMemory, &Shader, MinClipP_worldspace, "MinClipP_worldspace");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 0, MinClipP_worldspace, "MinClipP_worldspace");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, MaxClipP_worldspace, "MaxClipP_worldspace");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 1, MaxClipP_worldspace, "MaxClipP_worldspace");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 2, ViewProjection, "ViewProjection");
 
   // @janky_model_matrix_bs
-  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 3, &IdentityMatrix, "ModelMatrix");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ColorPaletteTexture, "ColorPalette");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 4, ColorPaletteTexture, "ColorPalette");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 5, &Camera->Frust.farClip, "FarClip");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.nearClip, "NearClip");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 6, &Camera->Frust.nearClip, "NearClip");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->RenderSpacePosition, "CameraToWorld");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 7, &Camera->RenderSpacePosition, "CameraToWorld");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 8, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 9, &Graphics->Settings.MajorGridDim, "MajorGridDim");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 10, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 11, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
 
   return Shader;
 }
@@ -396,7 +341,7 @@ MakeSsaoShader(      memory_arena *GraphicsMemory,
 {
   shader Shader = CompileShaderPair( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader.Uniforms = ShaderUniformBuffer(7, GraphicsMemory);
 
   /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
   /* Current = &(*Current)->Next; */
@@ -404,26 +349,19 @@ MakeSsaoShader(      memory_arena *GraphicsMemory,
   /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
   /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 0, &gTextures->Normal, "gNormal");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 1, &gTextures->Depth, "gDepth");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 2, SsaoNoiseTexture, "SsaoNoiseTexture");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 3, SsaoNoiseTile, "SsaoNoiseTile");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 4, InverseViewMatrix, "InverseViewMatrix");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 5, InverseProjectionMatrix, "InverseProjectionMatrix");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 6, ViewProjection, "ViewProjection");
 
   AssertNoGlErrors;
 
@@ -498,29 +436,22 @@ MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *Bra
 {
   shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader.Uniforms = ShaderUniformBuffer(7, Memory);
 
-  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 0, ViewProjection, "ViewProjection");
 
   // @janky_model_matrix_bs
-  *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "ModelMatrix");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 1, &IdentityMatrix, "ModelMatrix");
 
-  *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 2, gBufferDepthTexture, "gBufferDepthTexture");
 
-  *Current = GetUniform(Memory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 3, BravoilMyersOIT, "BravoilMyersOIT");
 
-  *Current = GetUniform(Memory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 4, BravoilMcGuireOIT, "BravoilMcGuireOIT");
 
-  *Current = GetUniform(Memory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 5, ApplicationResolution, "ApplicationResolution");
 
-  *Current = GetUniform(Memory, &Shader, ColorPaletteTexture, "ColorPalette");
-  Current = &(*Current)->Next;
+  SetShaderUniform(&Shader, 6, ColorPaletteTexture, "ColorPalette");
 
   return Shader;
 }

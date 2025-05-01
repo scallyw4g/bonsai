@@ -7,20 +7,12 @@ struct octree_node_ptr_buffer
 };
 
 link_internal octree_node_ptr_buffer
-OctreeNodePtrBuffer( umm ElementCount, memory_arena* Memory)
+OctreeNodePtrBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal octree_node_ptr_buffer
+OctreeNodePtrBuffer( octree_node_ptr *Start, umm ElementCount)
 {
-  octree_node_ptr_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( octree_node_ptr, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate octree_node_ptr_buffer of 0 length.");
-  }
-
+  octree_node_ptr_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline octree_node_ptr *
 Get(octree_node_ptr_buffer *Buf, umm Index)
 {
   octree_node_ptr *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal octree_node_ptr_buffer
+OctreeNodePtrBuffer( umm ElementCount, memory_arena* Memory)
+{
+  octree_node_ptr_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( octree_node_ptr, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate octree_node_ptr_buffer of 0 length.");
+  }
+
   return Result;
 }
 

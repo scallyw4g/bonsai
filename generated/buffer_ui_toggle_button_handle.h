@@ -7,20 +7,12 @@ struct ui_toggle_button_handle_buffer
 };
 
 link_internal ui_toggle_button_handle_buffer
-UiToggleButtonHandleBuffer( umm ElementCount, memory_arena* Memory)
+UiToggleButtonHandleBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal ui_toggle_button_handle_buffer
+UiToggleButtonHandleBuffer( ui_toggle_button_handle *Start, umm ElementCount)
 {
-  ui_toggle_button_handle_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( ui_toggle_button_handle, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate ui_toggle_button_handle_buffer of 0 length.");
-  }
-
+  ui_toggle_button_handle_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline ui_toggle_button_handle *
 Get(ui_toggle_button_handle_buffer *Buf, umm Index)
 {
   ui_toggle_button_handle *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal ui_toggle_button_handle_buffer
+UiToggleButtonHandleBuffer( umm ElementCount, memory_arena* Memory)
+{
+  ui_toggle_button_handle_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( ui_toggle_button_handle, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate ui_toggle_button_handle_buffer of 0 length.");
+  }
+
   return Result;
 }
 

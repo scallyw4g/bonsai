@@ -7,20 +7,12 @@ struct c_token_buffer
 };
 
 link_internal c_token_buffer
-CTokenBuffer( umm ElementCount, memory_arena* Memory)
+CTokenBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal c_token_buffer
+CTokenBuffer( c_token *Start, umm ElementCount)
 {
-  c_token_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( c_token, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate c_token_buffer of 0 length.");
-  }
-
+  c_token_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline c_token *
 Get(c_token_buffer *Buf, umm Index)
 {
   c_token *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal c_token_buffer
+CTokenBuffer( umm ElementCount, memory_arena* Memory)
+{
+  c_token_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( c_token, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate c_token_buffer of 0 length.");
+  }
+
   return Result;
 }
 

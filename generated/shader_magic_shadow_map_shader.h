@@ -4,24 +4,20 @@ link_internal void
 InitializeShadowMapShader( shadow_map_shader *Struct    , m4 MVP     , m4 ModelMatrix     , v3 *MinClipP_worldspace     , v3 *MaxClipP_worldspace  )
 {
       Struct->Program = CompileShaderPair(CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
+  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
-
       Struct->MVP = MVP;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->MVP, "MVP");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->MVP, "MVP");
 
     Struct->ModelMatrix = ModelMatrix;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->ModelMatrix, "ModelMatrix");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ModelMatrix, "ModelMatrix");
 
     Struct->MinClipP_worldspace = MinClipP_worldspace;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->MinClipP_worldspace, "MinClipP_worldspace");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MinClipP_worldspace, "MinClipP_worldspace");
 
     Struct->MaxClipP_worldspace = MaxClipP_worldspace;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->MaxClipP_worldspace, "MaxClipP_worldspace");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MaxClipP_worldspace, "MaxClipP_worldspace");
 
   if (UniformIndex !=  4  )
   {

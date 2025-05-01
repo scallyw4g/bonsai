@@ -559,7 +559,6 @@ Bonsai_Render(engine_resources *Engine)
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
     .Name = "DrawMinorGrid",
-    .Next = 0,
   };
 
   shader_uniform MajorGridUniform =
@@ -568,7 +567,6 @@ Bonsai_Render(engine_resources *Engine)
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
     .Name = "DrawMajorGrid",
-    .Next = 0,
   };
 
 

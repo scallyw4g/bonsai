@@ -7,20 +7,12 @@ struct tile_ruleset_buffer
 };
 
 link_internal tile_ruleset_buffer
-TileRulesetBuffer( umm ElementCount, memory_arena* Memory)
+TileRulesetBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal tile_ruleset_buffer
+TileRulesetBuffer( tile_ruleset *Start, umm ElementCount)
 {
-  tile_ruleset_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( tile_ruleset, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate tile_ruleset_buffer of 0 length.");
-  }
-
+  tile_ruleset_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline tile_ruleset *
 Get(tile_ruleset_buffer *Buf, umm Index)
 {
   tile_ruleset *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal tile_ruleset_buffer
+TileRulesetBuffer( umm ElementCount, memory_arena* Memory)
+{
+  tile_ruleset_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( tile_ruleset, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate tile_ruleset_buffer of 0 length.");
+  }
+
   return Result;
 }
 

@@ -384,7 +384,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
       PushTableEnd(Ui);
       PushNewRow(Ui);
 
-      DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      /* DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
     }
   }
   else

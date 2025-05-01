@@ -7,20 +7,12 @@ struct bonsai_type_info_buffer
 };
 
 link_internal bonsai_type_info_buffer
-BonsaiTypeInfoBuffer( umm ElementCount, memory_arena* Memory)
+BonsaiTypeInfoBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal bonsai_type_info_buffer
+BonsaiTypeInfoBuffer( bonsai_type_info *Start, umm ElementCount)
 {
-  bonsai_type_info_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( bonsai_type_info, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate bonsai_type_info_buffer of 0 length.");
-  }
-
+  bonsai_type_info_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline bonsai_type_info *
 Get(bonsai_type_info_buffer *Buf, umm Index)
 {
   bonsai_type_info *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal bonsai_type_info_buffer
+BonsaiTypeInfoBuffer( umm ElementCount, memory_arena* Memory)
+{
+  bonsai_type_info_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( bonsai_type_info, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate bonsai_type_info_buffer of 0 length.");
+  }
+
   return Result;
 }
 

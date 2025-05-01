@@ -46,8 +46,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(shader_uniform*, Element->FirstUniform),
-        CSz("FirstUniform"),
+        Cast(shader_uniform_buffer*, &Element->Uniforms),
+        CSz("Uniforms"),
         Params
         );
 

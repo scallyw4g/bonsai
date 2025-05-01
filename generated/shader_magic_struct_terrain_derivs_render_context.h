@@ -4,12 +4,11 @@ link_internal void
 InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct    , v3 Ignored  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader"));
+  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
-
       Struct->Ignored = Ignored;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, &Struct->Ignored, "Ignored");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Ignored, "Ignored");
 
 
 

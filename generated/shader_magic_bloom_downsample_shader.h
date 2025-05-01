@@ -4,12 +4,11 @@ link_internal void
 InitializeBloomDownsampleShader( bloom_downsample_shader *Struct    , v2 *SrcResolution  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
+  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
-
       Struct->SrcResolution = SrcResolution;
-  Struct->Uniforms[UniformIndex] = ShaderUniform(&Struct->Program, Struct->SrcResolution, "SrcResolution");
-  ++UniformIndex;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SrcResolution, "SrcResolution");
 
 
 

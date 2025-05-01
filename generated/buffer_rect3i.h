@@ -7,20 +7,12 @@ struct rect3i_buffer
 };
 
 link_internal rect3i_buffer
-Rect3iBuffer( umm ElementCount, memory_arena* Memory)
+Rect3iBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal rect3i_buffer
+Rect3iBuffer( rect3i *Start, umm ElementCount)
 {
-  rect3i_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( rect3i, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate rect3i_buffer of 0 length.");
-  }
-
+  rect3i_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline rect3i *
 Get(rect3i_buffer *Buf, umm Index)
 {
   rect3i *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal rect3i_buffer
+Rect3iBuffer( umm ElementCount, memory_arena* Memory)
+{
+  rect3i_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( rect3i, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate rect3i_buffer of 0 length.");
+  }
+
   return Result;
 }
 

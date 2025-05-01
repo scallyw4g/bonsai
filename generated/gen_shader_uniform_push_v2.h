@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/shader.cpp:253:0
+// external/bonsai_stdlib/src/shader.cpp:255:0
 
 shader_uniform *
 PushShaderUniform( memory_arena *Mem, const char *Name, v2 *Value)
@@ -17,17 +17,19 @@ GetUniform(memory_arena *Mem, shader *Shader, v2 *Value, const char *Name)
   return Uniform;
 }
 
-shader_uniform
-ShaderUniform(shader *Shader, v2 *Value, const char *Name)
+b32
+SetShaderUniform(shader *Shader, u32 Index, v2 *Value, const char *Name)
 {
-  shader_uniform Uniform = {};
+  Assert(Index < Shader->Uniforms.Count);
 
-  Uniform.Type = ShaderUniform_V2;
-  Uniform.V2 = Value;
-  Uniform.Name = Name;
+  shader_uniform *Uniform = Shader->Uniforms.Start + Index;
 
-  Uniform.ID = GetShaderUniform(Shader, Name);
+  Uniform->Type = ShaderUniform_V2;
+  Uniform->V2 = Value;
+  Uniform->Name = Name;
 
-  return Uniform;
+  Uniform->ID = GetShaderUniform(Shader, Name);
+
+  return Uniform->ID != INVALID_SHADER_UNIFORM;
 }
 

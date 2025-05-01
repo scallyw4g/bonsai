@@ -7,20 +7,12 @@ struct world_chunk_ptr_buffer
 };
 
 link_internal world_chunk_ptr_buffer
-WorldChunkPtrBuffer( umm ElementCount, memory_arena* Memory)
+WorldChunkPtrBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal world_chunk_ptr_buffer
+WorldChunkPtrBuffer( world_chunk_ptr *Start, umm ElementCount)
 {
-  world_chunk_ptr_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( world_chunk_ptr, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate world_chunk_ptr_buffer of 0 length.");
-  }
-
+  world_chunk_ptr_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -71,6 +63,24 @@ link_inline world_chunk_ptr *
 Get(world_chunk_ptr_buffer *Buf, umm Index)
 {
   world_chunk_ptr *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal world_chunk_ptr_buffer
+WorldChunkPtrBuffer( umm ElementCount, memory_arena* Memory)
+{
+  world_chunk_ptr_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( world_chunk_ptr, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate world_chunk_ptr_buffer of 0 length.");
+  }
+
   return Result;
 }
 
