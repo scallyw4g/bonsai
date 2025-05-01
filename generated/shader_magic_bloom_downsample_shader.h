@@ -3,7 +3,7 @@
 link_internal void
 InitializeBloomDownsampleShader( bloom_downsample_shader *Struct    , v2 *SrcResolution  )
 {
-      Struct->Program = LoadShaders(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
+      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
 
   u32 UniformIndex = 0;
 

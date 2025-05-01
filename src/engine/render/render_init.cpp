@@ -78,7 +78,7 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      tone_mapping_type *ToneMappingType
                    )
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
+  shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -172,7 +172,7 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *UseLightingBloom
                   )
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
+  shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -296,7 +296,7 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
 {
   gaussian_render_group Result = {};
 
-  Result.Shader = LoadShaders(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
+  Result.Shader = CompileShaderPair(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
 
   {
     shader_uniform **Current = &Result.Shader.FirstUniform;
@@ -341,7 +341,7 @@ CreateGbuffer(memory_arena *Memory)
 shader
 CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
+  shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -394,7 +394,7 @@ MakeSsaoShader(      memory_arena *GraphicsMemory,
                                m4 *InverseProjectionMatrix,
                                m4 *ViewProjection )
 {
-  shader Shader = LoadShaders( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
+  shader Shader = CompileShaderPair( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 
@@ -496,7 +496,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPa
 link_internal shader
 MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
+  shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
   shader_uniform **Current = &Shader.FirstUniform;
 

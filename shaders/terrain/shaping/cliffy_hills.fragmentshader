@@ -145,8 +145,9 @@ void main()
   {
     v3 Period = V3(1500.f);
     float Amplitude = 100.f;
-    f32 StartingZDepth = 10000;
-    /* f32 StartingZDepth = 0; */
+    /* f32 StartingZDepth = 10000; */
+    /* f32 StartingZDepth = 5000; */
+    f32 StartingZDepth = 0;
     s32 Octaves = 6;
     NoiseValue = StartingZDepth;
 
@@ -332,7 +333,7 @@ void main()
     // This creates a "plane" of terrain
     /* NoiseValue = NoiseValue - Basis.z + sin(Basis.x/500.f)*1000.f; */
     /* NoiseValue = NoiseValue - Basis.z + sin(Basis.x/500.f)*300.f - cos(Basis.y/800.f)*200.f;; */
-    NoiseValue = NoiseValue - Basis.z;
+    NoiseValue -= Basis.z;
 
 #if 0
     if (NoiseValue <= 0)

@@ -3,7 +3,7 @@
 link_internal void
 InitializeShadowMapShader( shadow_map_shader *Struct    , m4 MVP     , m4 ModelMatrix     , v3 *MinClipP_worldspace     , v3 *MaxClipP_worldspace  )
 {
-      Struct->Program = LoadShaders(CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
+      Struct->Program = CompileShaderPair(CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
 
   u32 UniformIndex = 0;
 

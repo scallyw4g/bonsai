@@ -258,10 +258,6 @@ void main()
   f32 z = floor(gl_FragCoord.y / 68);
   f32 y = floor(gl_FragCoord.y - (z*68));
 
-  /* if (x == 0 || x == 67) { Output = V4(1,0,0,1); return; } */
-  /* if (y == 0 || y == 67) { Output = V4(1,1,0,1); return; } */
-  /* if (z == 0 || z == 67) { Output = V4(1,0,1,1); return; } */
-
   v3 Offset = V3(-2, -2, -2);
   v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
 
@@ -276,7 +272,7 @@ void main()
 #if 1
     v3 Period = V3(1000.f);
     float Amplitude = 1000.f;
-    f32 StartingZDepth = 2000.f;
+    f32 StartingZDepth = 1000.f;
 
     NoiseValue = StartingZDepth;
 
