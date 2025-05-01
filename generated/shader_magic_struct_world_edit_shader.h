@@ -7,6 +7,7 @@ InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *Chu
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->ChunkDim = ChunkDim;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ChunkDim, "ChunkDim");
 

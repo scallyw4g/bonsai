@@ -1,7 +1,7 @@
-poof(gen_shader_uniform_push(camera));
+poof(set_shader_uniform(camera));
 #include <generated/gen_shader_uniform_push_camera.h>
 
-poof(gen_shader_uniform_push(light));
+poof(set_shader_uniform(light));
 #include <generated/gen_shader_uniform_push_light.h>
 
 

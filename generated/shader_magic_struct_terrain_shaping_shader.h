@@ -7,6 +7,7 @@ InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct   
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->ChunkDim = ChunkDim;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
 

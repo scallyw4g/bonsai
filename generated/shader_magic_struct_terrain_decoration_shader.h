@@ -7,6 +7,7 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->DerivsTex = DerivsTex;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->DerivsTex, "DerivsTex");
 

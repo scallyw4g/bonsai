@@ -7,6 +7,7 @@ InitializeShadowMapShader( shadow_map_shader *Struct    , m4 MVP     , m4 ModelM
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->MVP = MVP;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->MVP, "MVP");
 

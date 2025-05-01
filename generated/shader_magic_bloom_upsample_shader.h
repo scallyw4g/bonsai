@@ -7,6 +7,7 @@ InitializeBloomUpsampleShader( bloom_upsample_shader *Struct    , f32 *FilterRad
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->FilterRadius = FilterRadius;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->FilterRadius, "FilterRadius");
 

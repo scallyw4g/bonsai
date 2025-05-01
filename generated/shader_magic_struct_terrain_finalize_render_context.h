@@ -7,6 +7,7 @@ InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct 
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
+
       Struct->InputTex = InputTex;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->InputTex, "InputTex");
 
