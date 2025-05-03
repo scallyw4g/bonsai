@@ -764,7 +764,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  auto VisibleRegionSize = VisibleRegionSize_256;
+  auto VisibleRegionSize = VisibleRegionSize_32;
   v3i VisibleRegion = V3i(VisibleRegionSize);
   f32 DistanceFromTarget = Length(VisibleRegion/2.f);
   f32 FarClip = 150000.f;
