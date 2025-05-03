@@ -154,6 +154,8 @@ vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
   return Out;
 }
 
+#if 0
+#extension GL_NV_shader_buffer_load : enable
 // tx should be range 0-1
 f32 CosineInterpolatePointSet(f32 tx)
 {
@@ -251,6 +253,7 @@ f32 CosineInterpolatePointSet(f32 tx)
   /* Result = abs(max(Result, 1.0)); */
   return Result;
 }
+#endif
 
 void main()
 {
@@ -273,15 +276,15 @@ void main()
 #if 1
     v3 Period = V3(200.f);
     float Amplitude = 150.f;
-    f32 StartingZDepth = 0000.f;
+    f32 StartingZDepth = 0.f;
 
     NoiseValue = StartingZDepth;
 
     v3 xyz = Basis / Period;
     v4 gn = gradient_noise_derivs(xyz);
 
-    NoiseValue += (CosineInterpolatePointSet((gn.x+1.f)/2.f)*2.f-1.f) * Amplitude;
-    /* NoiseValue += gn.x * Amplitude; */
+    /* NoiseValue += (CosineInterpolatePointSet((gn.x+1.f)/2.f)*2.f-1.f) * Amplitude; */
+    NoiseValue += gn.x * Amplitude;
 
     /* NoiseValue += Smoothstep(pow(Clamp01(gn.x), 0.1)) * Amplitude; */
 

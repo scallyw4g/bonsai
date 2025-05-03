@@ -2894,6 +2894,10 @@ DoWorldEditor(engine_resources *Engine)
   {
     local_persist window_layout AllEditsWindow = WindowLayout("All Edits", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &AllEditsWindow);
+
+    /* PushToolbarStart(); */
+    /* PushToolbarEnd(); */
+
     PushTableStart(Ui);
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
