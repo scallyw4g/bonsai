@@ -7,7 +7,8 @@ struct level_header
 
   // World Params
   v3i WorldCenter;
-  v3i VisibleRegion;
+  /* v3i VisibleRegion; */
+  visible_region_size VisibleRegionSize;
 
   camera Camera;
 

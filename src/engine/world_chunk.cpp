@@ -4098,10 +4098,11 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
 {
   octree_node *ClosestNode = 0;
 
-  chunk_dimension VisibleRegion = World->VisibleRegion;
-  chunk_dimension Radius = VisibleRegion/2;
-  world_position Min = World->Center - Radius;
-  world_position Max = World->Center + Radius;
+  v3i VisibleRegion = V3i(World->VisibleRegionSize);
+
+  v3i Radius = VisibleRegion/2;
+  v3i Min = World->Center - Radius;
+  v3i Max = World->Center + Radius;
 
   f32 tChunkMin = 0.f;
   for (s32 z = Min.z; z < Max.z; ++ z)

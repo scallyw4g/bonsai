@@ -39,7 +39,7 @@ SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
 
   if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
   {
-    SimulateEntity(Engine, CameraGhost, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+    SimulateEntity(Engine, CameraGhost, Plat->dt, V3i(World->VisibleRegionSize), &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
 
     v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
     Graphics->OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
@@ -87,7 +87,17 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   Resources->FrameIndex += 1;
 
-  if (Resources->Graphics.TerrainShapingRC.Program.HotReloaded ||
+
+  b32 VRChanged = False;
+  DETECT_CHANGES_ON(Resources->World->VisibleRegionSize, PrevValue,
+  {
+    Info("Changed From (%S) to (%S)", ToString(PrevValue), ToString(Resources->World->VisibleRegionSize));
+    VRChanged = True;
+  });
+
+
+  if (VRChanged                                                ||
+      Resources->Graphics.TerrainShapingRC.Program.HotReloaded ||
       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded  ||
       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded)
   {
@@ -132,7 +142,6 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
 
   UNPACK_ENGINE_RESOURCES(Resources);
-
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -373,7 +382,7 @@ Bonsai_Simulate(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+  SimulateEntities(Resources, Plat->dt, V3i(World->VisibleRegionSize), &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);

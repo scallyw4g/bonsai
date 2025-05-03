@@ -901,7 +901,7 @@ enum brush_layer_type
 };
 
 poof(string_and_value_tables(brush_layer_type))
-#include <generated/string_and_value_tables_enum.h>
+#include <generated/string_and_value_tables_enum_brush_layer_type.h>
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 

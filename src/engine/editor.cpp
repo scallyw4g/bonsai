@@ -88,6 +88,11 @@ GetUiDebug()
 }
 
 
+poof(string_and_value_tables(visible_region_size))
+#include <generated/string_and_value_tables_visible_region_size.h>
+poof(do_editor_ui_for_enum(visible_region_size))
+#include <generated/do_editor_ui_for_enum_visible_region_size.h>
+
 
 poof(do_editor_ui_for_compound_type(white_noise_params))
 #include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
@@ -3079,12 +3084,12 @@ DoLevelWindow(engine_resources *Engine)
 
       level_header Header = {};
 
-      Header.WorldCenter   = World->Center;
-      Header.VisibleRegion = World->VisibleRegion;
-      Header.Camera = *Camera;
-      Header.RenderSettings = Graphics->Settings;
-      Header.EntityCount = EntityCount;
-      Header.LayerCount = u32(TotalElements(&Editor->Layers));
+      Header.WorldCenter       =  World->Center;
+      Header.VisibleRegionSize =  World->VisibleRegionSize;
+      Header.Camera            = *Camera;
+      Header.RenderSettings    =  Graphics->Settings;
+      Header.EntityCount       =  EntityCount;
+      Header.LayerCount        =  u32(TotalElements(&Editor->Layers));
 
       {
         cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
@@ -3181,10 +3186,10 @@ DoLevelWindow(engine_resources *Engine)
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
 
-        Graphics->Settings   = LevelHeader.RenderSettings;
-       *Graphics->Camera     = LevelHeader.Camera;
-        World->VisibleRegion = LevelHeader.VisibleRegion;
-        World->Center        = LevelHeader.WorldCenter;
+        Graphics->Settings       = LevelHeader.RenderSettings;
+       *Graphics->Camera         = LevelHeader.Camera;
+        World->VisibleRegionSize = LevelHeader.VisibleRegionSize;
+        World->Center            = LevelHeader.WorldCenter;
 
         /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
 

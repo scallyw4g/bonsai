@@ -1,3 +1,24 @@
+enum visible_region_size
+{
+  VisibleRegionSize_1    = (1 << 0),
+  VisibleRegionSize_2    = (1 << 1),
+  VisibleRegionSize_4    = (1 << 2),
+  VisibleRegionSize_8    = (1 << 3),
+  VisibleRegionSize_16   = (1 << 4),
+  VisibleRegionSize_32   = (1 << 5),
+  VisibleRegionSize_64   = (1 << 6),
+  VisibleRegionSize_128  = (1 << 7),
+  VisibleRegionSize_256  = (1 << 8),
+  VisibleRegionSize_512  = (1 << 9),  //   3.3 km
+  VisibleRegionSize_1024 = (1 << 10), //   6.6 km
+  VisibleRegionSize_2048 = (1 << 11), //  13.1 km
+  VisibleRegionSize_4096 = (1 << 12), //  26.2 km
+  VisibleRegionSize_8192 = (1 << 13), //  52.4 km
+  VisibleRegionSize_16k  = (1 << 14), // 104.8 km
+  VisibleRegionSize_32k  = (1 << 15), // 209.6 km
+  VisibleRegionSize_64k  = (1 << 16), // 419.2 km
+};
+
 enum octree_node_type
 {
   OctreeNodeType_Undefined,
@@ -66,8 +87,8 @@ poof(block_array(picked_octree_node, {32}))
 
 struct world
 {
-  v3i Center;        // the world chunk position of the center of the visible region
-  v3i VisibleRegion; // The number of chunks in xyz we're going to update and render
+  v3i Center;                            // the world chunk position of the center of the visible region
+  visible_region_size VisibleRegionSize; // The number of chunks in xyz we're going to update and render
 
   /* u32 HashSlotsUsed; */
   /* u32 HashSize; */
@@ -195,7 +216,7 @@ link_internal rect3i
 GetVisibleRegionRect(world *World)
 {
   world_position CenterP = World->Center;
-  chunk_dimension Radius = (World->VisibleRegion/2);
+  chunk_dimension Radius = V3i(World->VisibleRegionSize/2);
   world_position Min = CenterP - Radius;
   world_position Max = CenterP + Radius + 1; // Add one so we can pass to functions that expect an open-interval
 
@@ -253,7 +274,7 @@ link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_paged_list *PotentialEdits);
 
 link_internal world *
-AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion);
+AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegion);
 
 link_internal rect3cp
 GetBoundingBox(world *World, octree_node *Node);

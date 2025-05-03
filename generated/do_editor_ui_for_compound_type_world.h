@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:339:0
+// src/engine/editor.cpp:344:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -45,8 +45,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->VisibleRegion),
-        CSz("VisibleRegion"),
+        Cast(visible_region_size*, &Element->VisibleRegionSize),
+        CSz("VisibleRegionSize"),
         Params
         );
 

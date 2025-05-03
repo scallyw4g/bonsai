@@ -764,11 +764,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  f32 DistanceFromTarget = Length(g_VisibleRegion/2.f);
+  auto VisibleRegionSize = VisibleRegionSize_256;
+  v3i VisibleRegion = V3i(VisibleRegionSize);
+  f32 DistanceFromTarget = Length(VisibleRegion/2.f);
   f32 FarClip = 150000.f;
   StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 
-  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
 
@@ -793,8 +795,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
   /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
   /* CameraGhost->P.WorldP = WorldCenter; */
-  /* CameraGhost->P.WorldP = WorldCenter + g_VisibleRegion/2; */
-  CameraGhost->P.WorldP = g_VisibleRegion/2;
+  /* CameraGhost->P.WorldP = WorldCenter + VisibleRegion/2; */
+  CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
   SpawnEntity(CameraGhost);

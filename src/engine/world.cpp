@@ -3,7 +3,7 @@ debug_global u32 DeferrFreedNodes;
 debug_global u32 FreedNodes;
 
 link_internal world *
-AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
+AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegionSize)
 {
   Clear(World);
 
@@ -23,8 +23,6 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   /* World->ChunkHash = World->ChunkHashMemory[0]; */
   /* World->FreeChunks = Allocate(world_chunk*, WorldChunkMemory, FREELIST_SIZE ); */
 
-  Assert(VisibleRegion.x == VisibleRegion.y);
-  Assert(VisibleRegion.y == VisibleRegion.z);
 
   Assert(WorldChunkDim.x == WorldChunkDim.y);
   Assert(WorldChunkDim.y == WorldChunkDim.z);
@@ -33,10 +31,11 @@ AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, v3i VisibleRegion)
   World->OctreeNodeFreelist.Memory = World->OctreeMemory;
 
   World->ChunkDim = WorldChunkDim;
-  World->VisibleRegion = VisibleRegion;
+  World->VisibleRegionSize = VisibleRegionSize;
   World->Center = Center;
 
   // NOTE(Jesse): Has to come after World->ChunkDim is set
+  v3i VisibleRegion = V3i(VisibleRegionSize);
   InitOctreeNode(World, &World->Root, {}, VisibleRegion, {});
   World->Root.Chunk = AllocateWorldChunk( {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
 
@@ -532,7 +531,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (4)
+#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (6)
 
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)

@@ -212,12 +212,13 @@ HardResetWorld(engine_resources *Engine)
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);
 
-  v3i Center = World->Center;
-  v3i ChunkDim = World->ChunkDim;
-  v3i VisibleRegion = World->VisibleRegion;
+  v3i Center             = World->Center;
+  v3i ChunkDim           = World->ChunkDim;
+  auto VisibleRegionSize = World->VisibleRegionSize;
+
   Clear(World);
 
-  AllocateWorld(World, Center, ChunkDim, VisibleRegion);
+  AllocateWorld(World, Center, ChunkDim, VisibleRegionSize);
 }
 
 link_internal void

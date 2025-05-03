@@ -1619,7 +1619,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3i Radius = World->VisibleRegion/2;
+  v3i Radius = V3i(World->VisibleRegionSize/2);
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 

@@ -55,9 +55,7 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
 
 
 
-                            Result &= Serialize(Bytes, &Element->VisibleRegion); // default
-
-
+                    Result &= Serialize(Bytes, (u32*)&Element->VisibleRegionSize); // enum
 
 
 
