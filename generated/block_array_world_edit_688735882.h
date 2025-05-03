@@ -1,46 +1,46 @@
-// src/engine/model.h:94:0
+// src/engine/editor.h:1155:0
 
 
 
 
 
-struct model_block
+struct world_edit_block
 {
   u32 Index;
   u32 At;
-  model *Elements;
-  model_block *Next;
+  world_edit *Elements;
+  world_edit_block *Next;
 };
 
-struct model_block_array_index
+struct world_edit_block_array_index
 {
-  model_block *Block;
+  world_edit_block *Block;
   u32 BlockIndex;
   u32 ElementIndex;
 };
 
-struct model_block_array
+struct world_edit_block_array
 {
-  model_block *First;
-  model_block *Current;
+  world_edit_block *First;
+  world_edit_block *Current;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-link_internal model_block_array
-ModelBlockArray(memory_arena *Memory)
+link_internal world_edit_block_array
+WorldEditBlockArray(memory_arena *Memory)
 {
-  model_block_array Result = {};
+  world_edit_block_array Result = {};
   Result.Memory = Memory;
   return Result;
 }
 
 link_internal b32
-AreEqual(model_block_array_index *Thing1, model_block_array_index *Thing2)
+AreEqual(world_edit_block_array_index *Thing1, world_edit_block_array_index *Thing2)
 {
   if (Thing1 && Thing2)
   {
-        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( model_block_array_index ) );
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( world_edit_block_array_index ) );
 
     return Result;
   }
@@ -51,18 +51,18 @@ AreEqual(model_block_array_index *Thing1, model_block_array_index *Thing2)
 }
 
 link_internal b32
-AreEqual(model_block_array_index Thing1, model_block_array_index Thing2)
+AreEqual(world_edit_block_array_index Thing1, world_edit_block_array_index Thing2)
 {
-    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( model_block_array_index ) );
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( world_edit_block_array_index ) );
 
   return Result;
 }
 
 
-typedef model_block_array model_paged_list;
+typedef world_edit_block_array world_edit_paged_list;
 
-link_internal model_block_array_index
-operator++( model_block_array_index &I0 )
+link_internal world_edit_block_array_index
+operator++( world_edit_block_array_index &I0 )
 {
   if (I0.Block)
   {
@@ -85,29 +85,29 @@ operator++( model_block_array_index &I0 )
 }
 
 link_internal b32
-operator<( model_block_array_index I0, model_block_array_index I1 )
+operator<( world_edit_block_array_index I0, world_edit_block_array_index I1 )
 {
   b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
   return Result;
 }
 
 link_inline umm
-GetIndex( model_block_array_index *Index)
+GetIndex( world_edit_block_array_index *Index)
 {
   umm Result = Index->ElementIndex + (Index->BlockIndex*8);
   return Result;
 }
 
-link_internal model_block_array_index
-ZerothIndex( model_block_array *Arr)
+link_internal world_edit_block_array_index
+ZerothIndex( world_edit_block_array *Arr)
 {
-  model_block_array_index Result = {};
+  world_edit_block_array_index Result = {};
   Result.Block = Arr->First;
   return Result;
 }
 
 link_internal umm
-TotalElements( model_block_array *Arr)
+TotalElements( world_edit_block_array *Arr)
 {
   umm Result = 0;
   if (Arr->Current)
@@ -117,10 +117,10 @@ TotalElements( model_block_array *Arr)
   return Result;
 }
 
-link_internal model_block_array_index
-LastIndex( model_block_array *Arr)
+link_internal world_edit_block_array_index
+LastIndex( world_edit_block_array *Arr)
 {
-  model_block_array_index Result = {};
+  world_edit_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -132,10 +132,10 @@ LastIndex( model_block_array *Arr)
   return Result;
 }
 
-link_internal model_block_array_index
-AtElements( model_block_array *Arr)
+link_internal world_edit_block_array_index
+AtElements( world_edit_block_array *Arr)
 {
-  model_block_array_index Result = {};
+  world_edit_block_array_index Result = {};
   if (Arr->Current)
   {
     Result.Block = Arr->Current;
@@ -146,61 +146,61 @@ AtElements( model_block_array *Arr)
 }
 
 link_internal umm
-Count( model_block_array *Arr)
+Count( world_edit_block_array *Arr)
 {
   auto Index = AtElements(Arr);
   umm Result = GetIndex(&Index);
   return Result;
 }
 
-link_internal model *
-GetPtr(model_block_array *Arr, model_block_array_index Index)
+link_internal world_edit *
+GetPtr(world_edit_block_array *Arr, world_edit_block_array_index Index)
 {
-  model *Result = {};
+  world_edit *Result = {};
   if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
   return Result;
 }
 
-link_internal model *
-GetPtr(model_block *Block, umm Index)
+link_internal world_edit *
+GetPtr(world_edit_block *Block, umm Index)
 {
-  model *Result = {};
+  world_edit *Result = {};
   if (Index < Block->At) { Result = (Block->Elements + Index); }
   return Result;
 }
 
-link_internal model *
-GetPtr(model_block_array *Arr, umm Index)
+link_internal world_edit *
+GetPtr(world_edit_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   umm AtBlock = 0;
-  model_block *Block = Arr->First;
+  world_edit_block *Block = Arr->First;
   while (AtBlock++ < BlockIndex)
   {
     Block = Block->Next;
   }
 
-  model *Result = (Block->Elements+ElementIndex);
+  world_edit *Result = (Block->Elements+ElementIndex);
   return Result;
 }
 
-link_internal model *
-TryGetPtr(model_block_array *Arr, umm Index)
+link_internal world_edit *
+TryGetPtr(world_edit_block_array *Arr, umm Index)
 {
   umm BlockIndex = Index / 8;
   umm ElementIndex = Index % 8;
 
   auto AtE = AtElements(Arr);
   umm Total = GetIndex(&AtE);
-  model *Result = {};
+  world_edit *Result = {};
   if (Index < Total) { Result = GetPtr(Arr, Index); }
   return Result;
 }
 
 link_internal u32
-AtElements(model_block *Block)
+AtElements(world_edit_block *Block)
 {
   return Block->At;
 }
@@ -209,29 +209,29 @@ AtElements(model_block *Block)
 
 
 
-link_internal model_block *
-Allocate_model_block(memory_arena *Memory)
+link_internal world_edit_block *
+Allocate_world_edit_block(memory_arena *Memory)
 {
-  model_block *Result = Allocate( model_block, Memory, 1);
-  Result->Elements = Allocate( model, Memory, 8);
+  world_edit_block *Result = Allocate( world_edit_block, Memory, 1);
+  Result->Elements = Allocate( world_edit, Memory, 8);
   return Result;
 }
 
 link_internal cs
-CS( model_block_array_index Index )
+CS( world_edit_block_array_index Index )
 {
   return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
 }
 
-link_internal model *
-Set( model_block_array *Arr,
-  model *Element,
-  model_block_array_index Index )
+link_internal world_edit *
+Set( world_edit_block_array *Arr,
+  world_edit *Element,
+  world_edit_block_array_index Index )
 {
-  model *Result = {};
+  world_edit *Result = {};
   if (Index.Block)
   {
-    model *Slot = &Index.Block->Elements[Index.ElementIndex];
+    world_edit *Slot = &Index.Block->Elements[Index.ElementIndex];
     *Slot = *Element;
 
     Result = Slot;
@@ -241,12 +241,12 @@ Set( model_block_array *Arr,
 }
 
 link_internal void
-RemoveUnordered( model_block_array *Array, model_block_array_index Index)
+RemoveUnordered( world_edit_block_array *Array, world_edit_block_array_index Index)
 {
-  model_block_array_index LastI = LastIndex(Array);
+  world_edit_block_array_index LastI = LastIndex(Array);
 
-  model *Element = GetPtr(Array, Index);
-  model *LastElement = GetPtr(Array, LastI);
+  world_edit *Element = GetPtr(Array, Index);
+  world_edit *LastElement = GetPtr(Array, LastI);
 
   Set(Array, LastElement, Index);
 
@@ -270,8 +270,8 @@ RemoveUnordered( model_block_array *Array, model_block_array_index Index)
     else
     {
       // Walk the chain till we get to the second-last one
-      model_block *Current = Array->First;
-      model_block *LastB = LastI.Block;
+      world_edit_block *Current = Array->First;
+      world_edit_block *LastB = LastI.Block;
 
       while (Current->Next && Current->Next != LastB)
       {
@@ -284,10 +284,10 @@ RemoveUnordered( model_block_array *Array, model_block_array_index Index)
   }
 }
 
-link_internal model_block_array_index
-Find( model_block_array *Array, model *Query)
+link_internal world_edit_block_array_index
+Find( world_edit_block_array *Array, world_edit *Query)
 {
-  model_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  world_edit_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -300,19 +300,19 @@ Find( model_block_array *Array, model *Query)
 }
 
 link_internal b32
-IsValid(model_block_array_index *Index)
+IsValid(world_edit_block_array_index *Index)
 {
-  model_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  world_edit_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal model *
-Push( model_block_array *Array, model *Element)
+link_internal world_edit *
+Push( world_edit_block_array *Array, world_edit *Element)
 {
   Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_model_block(Array->Memory); Array->Current = Array->First; }
+  if (Array->First == 0) { Array->First = Allocate_world_edit_block(Array->Memory); Array->Current = Array->First; }
 
   if (Array->Current->At == 8)
   {
@@ -323,7 +323,7 @@ Push( model_block_array *Array, model *Element)
     }
     else
     {
-      model_block *Next = Allocate_model_block(Array->Memory);
+      world_edit_block *Next = Allocate_world_edit_block(Array->Memory);
       Next->Index = Array->Current->Index + 1;
 
       Array->Current->Next = Next;
@@ -331,17 +331,17 @@ Push( model_block_array *Array, model *Element)
     }
   }
 
-  model *Result = Array->Current->Elements + Array->Current->At;
+  world_edit *Result = Array->Current->Elements + Array->Current->At;
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 
   return Result;
 }
 
-link_internal model *
-Push( model_block_array *Array )
+link_internal world_edit *
+Push( world_edit_block_array *Array )
 {
-  model Element = {};
+  world_edit Element = {};
   auto Result = Push(Array, &Element);
   return Result;
 }

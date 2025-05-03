@@ -338,4 +338,12 @@ Push( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_que
   return Result;
 }
 
+link_internal dummy_work_queue_entry_build_chunk_mesh *
+Push( dummy_work_queue_entry_build_chunk_mesh_block_array *Array )
+{
+  dummy_work_queue_entry_build_chunk_mesh Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

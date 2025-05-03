@@ -338,4 +338,12 @@ Push( file_traversal_node_block_array *Array, file_traversal_node *Element)
   return Result;
 }
 
+link_internal file_traversal_node *
+Push( file_traversal_node_block_array *Array )
+{
+  file_traversal_node Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

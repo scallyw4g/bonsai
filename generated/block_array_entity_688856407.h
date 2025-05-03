@@ -338,4 +338,12 @@ Push( entity_block_array *Array, entity *Element)
   return Result;
 }
 
+link_internal entity *
+Push( entity_block_array *Array )
+{
+  entity Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

@@ -1138,10 +1138,10 @@ Hash(world_edit_brush *Brush)
 
 
 poof(are_equal(world_edit_brush))
-#include <generated/are_equal_struct.h>
+#include <generated/are_equal_world_edit_brush.h>
 
 poof(hashtable(world_edit_brush))
-#include <generated/hashtable_struct.h>
+#include <generated/hashtable_world_edit_brush.h>
 
 struct world_edit
 {
@@ -1153,10 +1153,18 @@ struct world_edit
 typedef world_edit* world_edit_ptr;
 
 poof(block_array(world_edit, {128}))
-#include <generated/block_array_struct_688735882.h>
+#include <generated/block_array_world_edit_688735882.h>
+
 poof(block_array(world_edit_ptr, {128}))
 #include <generated/block_array_world_edit_ptr_688735882.h>
 
+struct world_edit_layer
+{
+  char NameBuf[NameBuf_Len+1];
+  world_edit_block_array Edits;
+};
+poof(block_array(world_edit_layer, {128}))
+#include <generated/block_array_world_edit_layer_688735882.h>
 
 struct level_editor
 {
@@ -1189,8 +1197,13 @@ struct level_editor
   b32 MaskSelection;
 
   u32 NextEditOrdinal;
-  world_edit_block_array WorldEdits;
+  /* world_edit_block_array WorldEdits; */
+  world_edit_layer_block_array Layers;
   world_edit_brush_hashtable LoadedBrushes;
+
+
+  world_edit_layer *CurrentLayer;
+  world_edit_layer *HotLayer;
 
   world_edit *CurrentEdit;
   world_edit *HotEdit;

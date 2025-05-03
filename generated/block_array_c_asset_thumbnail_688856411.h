@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:73:0
+// src/engine/editor.cpp:80:0
 
 
 
@@ -130,6 +130,14 @@ Push( asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 
+  return Result;
+}
+
+link_internal asset_thumbnail *
+Push( asset_thumbnail_block_array *Array )
+{
+  asset_thumbnail Element = {};
+  auto Result = Push(Array, &Element);
   return Result;
 }
 

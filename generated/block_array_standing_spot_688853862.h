@@ -338,4 +338,12 @@ Push( standing_spot_block_array *Array, standing_spot *Element)
   return Result;
 }
 
+link_internal standing_spot *
+Push( standing_spot_block_array *Array )
+{
+  standing_spot Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

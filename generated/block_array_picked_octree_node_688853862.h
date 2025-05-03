@@ -338,4 +338,12 @@ Push( picked_octree_node_block_array *Array, picked_octree_node *Element)
   return Result;
 }
 
+link_internal picked_octree_node *
+Push( picked_octree_node_block_array *Array )
+{
+  picked_octree_node Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

@@ -35,30 +35,6 @@ WorldEditBlockArray(memory_arena *Memory)
   return Result;
 }
 
-link_internal b32
-AreEqual(world_edit_block_array_index *Thing1, world_edit_block_array_index *Thing2)
-{
-  if (Thing1 && Thing2)
-  {
-        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( world_edit_block_array_index ) );
-
-    return Result;
-  }
-  else
-  {
-    return (Thing1 == Thing2);
-  }
-}
-
-link_internal b32
-AreEqual(world_edit_block_array_index Thing1, world_edit_block_array_index Thing2)
-{
-    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( world_edit_block_array_index ) );
-
-  return Result;
-}
-
-
 typedef world_edit_block_array world_edit_paged_list;
 
 link_internal world_edit_block_array_index
@@ -216,6 +192,32 @@ Allocate_world_edit_block(memory_arena *Memory)
   Result->Elements = Allocate( world_edit, Memory, 8);
   return Result;
 }
+
+
+
+link_internal b32
+AreEqual(world_edit_block_array_index *Thing1, world_edit_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( world_edit_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(world_edit_block_array_index Thing1, world_edit_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( world_edit_block_array_index ) );
+
+  return Result;
+}
+
 
 link_internal cs
 CS( world_edit_block_array_index Index )

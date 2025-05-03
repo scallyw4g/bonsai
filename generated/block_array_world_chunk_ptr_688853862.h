@@ -133,3 +133,11 @@ Push( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element)
   return Result;
 }
 
+link_internal world_chunk_ptr *
+Push( world_chunk_ptr_block_array *Array )
+{
+  world_chunk_ptr Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

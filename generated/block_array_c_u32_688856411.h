@@ -133,3 +133,11 @@ Push( u32_block_array *Array, u32 *Element)
   return Result;
 }
 
+link_internal u32 *
+Push( u32_block_array *Array )
+{
+  u32 Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

@@ -338,4 +338,12 @@ Push( member_info_block_array *Array, member_info *Element)
   return Result;
 }
 
+link_internal member_info *
+Push( member_info_block_array *Array )
+{
+  member_info Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

@@ -1,4 +1,4 @@
-// src/engine/editor.h:1157:0
+// src/engine/editor.h:1158:0
 
 
 
@@ -335,6 +335,14 @@ Push( world_edit_ptr_block_array *Array, world_edit_ptr *Element)
 
   Array->Current->Elements[Array->Current->At++] = *Element;
 
+  return Result;
+}
+
+link_internal world_edit_ptr *
+Push( world_edit_ptr_block_array *Array )
+{
+  world_edit_ptr Element = {};
+  auto Result = Push(Array, &Element);
   return Result;
 }
 

@@ -24,7 +24,14 @@ InitEditor(level_editor *Editor)
   b32 Result = True;
   Editor->Memory = AllocateArena();
 
-  Editor->WorldEdits = WorldEditBlockArray(Editor->Memory);
+  Editor->Layers = WorldEditLayerBlockArray(Editor->Memory);
+
+  Editor->CurrentLayer = Push(&Editor->Layers);
+  Editor->CurrentLayer->Edits = WorldEditBlockArray(Editor->Memory);
+
+  cs DefaultName = CSz("layer_0");
+  CopyString(DefaultName.Start, Editor->CurrentLayer->NameBuf, DefaultName.Count);
+
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
   Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
@@ -2771,8 +2778,7 @@ DoWorldEditor(engine_resources *Engine)
     Editor->Tool = WorldEdit_Tool_Select;
     ResetSelection(Editor);
 
-    world_edit E = {};
-    Editor->CurrentEdit = Push(&Editor->WorldEdits, &E);
+    Editor->CurrentEdit = Push(&Editor->CurrentLayer->Edits);
     Editor->CurrentEdit->Ordinal = Editor->NextEditOrdinal++;
 
     Editor->CurrentEdit->Brush = Editor->CurrentBrush;
@@ -2864,11 +2870,14 @@ DoWorldEditor(engine_resources *Engine)
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
         if (SettingsChanged)
         {
-          IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+          IterateOver(&Editor->Layers, Layer, LayerIndex)
           {
-            if (Edit->Brush == Editor->CurrentBrush)
+            IterateOver(&Layer->Edits, Edit, EditIndex)
             {
-              UpdateWorldEdit(Engine, Edit, Editor->Selection.Region, GetTranArena());
+              if (Edit->Brush == Editor->CurrentBrush)
+              {
+                UpdateWorldEdit(Engine, Edit, Editor->Selection.Region, GetTranArena());
+              }
             }
           }
         }
@@ -2880,52 +2889,63 @@ DoWorldEditor(engine_resources *Engine)
   {
     local_persist window_layout AllEditsWindow = WindowLayout("All Edits", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &AllEditsWindow);
-    IterateOver(&Editor->WorldEdits, Edit, BrushIndex)
+    PushTableStart(Ui);
+    IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
-      umm I = GetIndex(&BrushIndex);
-      const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
-
-      if (Edit == Editor->CurrentEdit)
+      cs Name = CS(Layer->NameBuf);
+      if (ToggleButton(Ui, Name, Name, UiId(&AllEditsWindow, Layer, Layer), &DefaultSelectedStyle))
       {
-        PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
-      }
-      else
-      {
-        PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
-      }
-
-      auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit));
-      if (Clicked(Ui, &EditSelectButton))
-      {
-        Editor->Selection.Clicks = 2;
-        Editor->Selection.Region = Edit->Region;
-        Editor->Selection.PrevRegion = Edit->Region;
-
-        Editor->CurrentEdit = Edit;
-
-        if (Edit->Brush)
+        PushNewRow(Ui);
+        IterateOver(&Layer->Edits, Edit, BrushIndex)
         {
-          Editor->CurrentBrush = Edit->Brush;
-          CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+          umm I = GetIndex(&BrushIndex);
+          const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
+
+          if (Edit == Editor->CurrentEdit)
+          {
+            PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
+          }
+          else
+          {
+            PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
+          }
+
+          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit));
+          if (Clicked(Ui, &EditSelectButton))
+          {
+            Editor->Selection.Clicks = 2;
+            Editor->Selection.Region = Edit->Region;
+            Editor->Selection.PrevRegion = Edit->Region;
+
+            Editor->CurrentEdit = Edit;
+
+            if (Edit->Brush)
+            {
+              Editor->CurrentBrush = Edit->Brush;
+              CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+            }
+          }
+
+          if (Hover(Ui, &EditSelectButton))
+          {
+            Editor->HotEdit = Edit;
+          }
+
+          if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
+          {
+            Edit->Brush = Editor->CurrentBrush;
+            UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
+          }
+
+          PushNewRow(Ui);
+
+          /* DoEditorUi(Ui, &AllEditsWindow, Edit, {}); */
+          /* PushNewRow(Ui); */
         }
       }
-      if (Hover(Ui, &EditSelectButton))
-      {
-        Editor->HotEdit = Edit;
-      }
 
-      if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
-      {
-        Edit->Brush = Editor->CurrentBrush;
-        UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
-      }
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, &AllEditsWindow, Edit, {});
-      PushNewRow(Ui);
     }
-
+    PushTableEnd(Ui);
     PushWindowEnd(Ui, &AllEditsWindow);
 
   }
@@ -2957,24 +2977,27 @@ DoWorldEditor(engine_resources *Engine)
 
 
   {
-    IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+    IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
-      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
-      random_series S = {u64(Edit)};
-      v3 BaseColor = RandomV3Unilateral(&S);
-
-      f32 Size = DEFAULT_LINE_THICKNESS;
-      if (Edit == Editor->CurrentEdit)
+      IterateOver(&Layer->Edits, Edit, BrushIndex)
       {
-        Size = 3.f*DEFAULT_LINE_THICKNESS;
-      }
+        auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+        random_series S = {u64(Edit)};
+        v3 BaseColor = RandomV3Unilateral(&S);
 
-      if (Edit == Editor->HotEdit)
-      {
-        Size = 5.f*DEFAULT_LINE_THICKNESS;
-      }
+        f32 Size = DEFAULT_LINE_THICKNESS;
+        if (Edit == Editor->CurrentEdit)
+        {
+          Size = 3.f*DEFAULT_LINE_THICKNESS;
+        }
 
-      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+        if (Edit == Editor->HotEdit)
+        {
+          Size = 5.f*DEFAULT_LINE_THICKNESS;
+        }
+
+        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+      }
     }
     Editor->HotEdit = 0;
   }
@@ -3061,7 +3084,7 @@ DoLevelWindow(engine_resources *Engine)
       Header.Camera = *Camera;
       Header.RenderSettings = Graphics->Settings;
       Header.EntityCount = EntityCount;
-      Header.EditCount = u32(TotalElements(&Editor->WorldEdits));
+      Header.LayerCount = u32(TotalElements(&Editor->Layers));
 
       {
         cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
@@ -3080,9 +3103,14 @@ DoLevelWindow(engine_resources *Engine)
       Ensure(Serialize(&OutputStream, &Delimeter));
 
 #if 1
-      IterateOver(&Editor->WorldEdits, Edit, EditIndex)
+      IterateOver(&Editor->Layers, Layer, LayerIndex)
       {
-        Serialize(&OutputStream, Edit);
+        u32 EditCount = u32(TotalElements(&Layer->Edits));
+        Serialize(&OutputStream, &EditCount);
+        IterateOver(&Layer->Edits, Edit, EditIndex)
+        {
+          Serialize(&OutputStream, Edit);
+        }
       }
 #else
       RangeIterator(HashIndex, s32(World->HashSize))
@@ -3178,19 +3206,20 @@ DoLevelWindow(engine_resources *Engine)
         s32 ChunkCount = 0;
         /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
 
-        RangeIterator_t(u32, EditIndex, LevelHeader.EditCount)
-        {
-          world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this?
-          Deserialize(&LevelBytes, &DeserEdit, GetTranArena());
+        NotImplemented;
+        /* RangeIterator_t(u32, EditIndex, LevelHeader.EditCount) */
+        /* { */
+        /*   world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this? */
+        /*   Deserialize(&LevelBytes, &DeserEdit, GetTranArena()); */
 
-          world_edit *FinalEdit = Push(&Editor->WorldEdits, &DeserEdit);
-          if (FinalEdit->Brush)
-          {
-            FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
-          }
+        /*   world_edit *FinalEdit = Push(&Editor->WorldEdits, &DeserEdit); */
+        /*   if (FinalEdit->Brush) */
+        /*   { */
+        /*     FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory); */
+        /*   } */
 
-          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
-        }
+        /*   ApplyEditToOctree(Engine, FinalEdit, GetTranArena()); */
+        /* } */
 
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 

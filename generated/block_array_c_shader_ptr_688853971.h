@@ -133,3 +133,11 @@ Push( shader_ptr_block_array *Array, shader_ptr *Element)
   return Result;
 }
 
+link_internal shader_ptr *
+Push( shader_ptr_block_array *Array )
+{
+  shader_ptr Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

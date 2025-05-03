@@ -271,9 +271,9 @@ void main()
   //
   {
 #if 1
-    v3 Period = V3(100.f);
-    float Amplitude = 1000.f;
-    f32 StartingZDepth = 1000.f;
+    v3 Period = V3(200.f);
+    float Amplitude = 150.f;
+    f32 StartingZDepth = 7000.f;
 
     NoiseValue = StartingZDepth;
 
@@ -285,7 +285,9 @@ void main()
 
     /* NoiseValue += Smoothstep(pow(Clamp01(gn.x), 0.1)) * Amplitude; */
 
-    NoiseValue -= Basis.z;
+    f32 xyContrib = 0.2f*(max(abs(Basis.x), abs(Basis.y)));
+    /* f32 xyContrib = 0.f; */
+    NoiseValue -= Basis.z - xyContrib;
 #endif
   }
 

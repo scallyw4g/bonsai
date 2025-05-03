@@ -133,3 +133,11 @@ Push( entity_ptr_block_array *Array, entity_ptr *Element)
   return Result;
 }
 
+link_internal entity_ptr *
+Push( entity_ptr_block_array *Array )
+{
+  entity_ptr Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

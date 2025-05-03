@@ -338,4 +338,12 @@ Push( octree_node_ptr_block_array *Array, octree_node_ptr *Element)
   return Result;
 }
 
+link_internal octree_node_ptr *
+Push( octree_node_ptr_block_array *Array )
+{
+  octree_node_ptr Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

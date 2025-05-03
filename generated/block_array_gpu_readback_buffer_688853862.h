@@ -338,4 +338,12 @@ Push( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
   return Result;
 }
 
+link_internal gpu_readback_buffer *
+Push( gpu_readback_buffer_block_array *Array )
+{
+  gpu_readback_buffer Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

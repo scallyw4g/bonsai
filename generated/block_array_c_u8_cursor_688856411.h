@@ -133,3 +133,11 @@ Push( u8_cursor_block_array *Array, u8_cursor *Element)
   return Result;
 }
 
+link_internal u8_cursor *
+Push( u8_cursor_block_array *Array )
+{
+  u8_cursor Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

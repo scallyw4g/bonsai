@@ -338,4 +338,12 @@ Push( vox_data_block_array *Array, vox_data *Element)
   return Result;
 }
 
+link_internal vox_data *
+Push( vox_data_block_array *Array )
+{
+  vox_data Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

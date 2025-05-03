@@ -133,3 +133,11 @@ Push( texture_block_array *Array, texture *Element)
   return Result;
 }
 
+link_internal texture *
+Push( texture_block_array *Array )
+{
+  texture Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

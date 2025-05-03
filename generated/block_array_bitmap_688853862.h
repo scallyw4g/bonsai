@@ -338,4 +338,12 @@ Push( bitmap_block_array *Array, bitmap *Element)
   return Result;
 }
 
+link_internal bitmap *
+Push( bitmap_block_array *Array )
+{
+  bitmap Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

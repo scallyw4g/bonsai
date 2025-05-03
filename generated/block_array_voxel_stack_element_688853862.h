@@ -338,4 +338,12 @@ Push( voxel_stack_element_block_array *Array, voxel_stack_element *Element)
   return Result;
 }
 
+link_internal voxel_stack_element *
+Push( voxel_stack_element_block_array *Array )
+{
+  voxel_stack_element Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
 

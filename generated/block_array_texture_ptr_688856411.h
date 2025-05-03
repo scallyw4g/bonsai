@@ -133,3 +133,11 @@ Push( texture_ptr_block_array *Array, texture_ptr *Element)
   return Result;
 }
 
+link_internal texture_ptr *
+Push( texture_ptr_block_array *Array )
+{
+  texture_ptr Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+

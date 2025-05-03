@@ -133,3 +133,11 @@ Push( gpu_timer_block_array *Array, gpu_timer *Element)
   return Result;
 }
 
+link_internal gpu_timer *
+Push( gpu_timer_block_array *Array )
+{
+  gpu_timer Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
