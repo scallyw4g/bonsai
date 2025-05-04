@@ -1,4 +1,12 @@
-// src/engine/editor.h:559:0
+// src/engine/editor.h:590:0
+
+link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, level_editor_flags Selection)
+{
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+}
 
 link_internal ui_toggle_button_group
 RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
@@ -22,5 +30,6 @@ RadioButtonGroup_level_editor_flags( renderer_2d *Ui,
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;
 }
+
 
 

@@ -22,7 +22,7 @@ enum terrain_gen_type
   TerrainGenType_Debug                      = (1 << 16),
 };
 
-poof(radio_button_group_for_bitfield_enum(terrain_gen_type))
+poof(radio_button_group_for_enum(terrain_gen_type))
 #include <generated/radio_button_group_for_bitfield_enum_terrain_gen_type.h>
 
 poof(string_and_value_tables(terrain_gen_type))

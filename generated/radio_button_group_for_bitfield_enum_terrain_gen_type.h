@@ -1,5 +1,13 @@
 // examples/terrain_gen/game_types.h:25:0
 
+link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, terrain_gen_type Selection)
+{
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+}
+
 link_internal ui_toggle_button_group
 RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
   window_layout *Window,
@@ -37,5 +45,6 @@ RadioButtonGroup_terrain_gen_type( renderer_2d *Ui,
   ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
   return Result;
 }
+
 
 

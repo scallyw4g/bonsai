@@ -2395,6 +2395,9 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   ApplyEditToOctree(Engine, Edit, TempMemory);
 }
 
+poof(toolbar_for_enum(layer_toolbar_actions))
+#include <generated/toolbar_for_enum_enum.h>
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -2895,8 +2898,11 @@ DoWorldEditor(engine_resources *Engine)
     local_persist window_layout AllEditsWindow = WindowLayout("All Edits", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &AllEditsWindow);
 
-    /* PushToolbarStart(); */
-    /* PushToolbarEnd(); */
+
+
+    PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
+
+    /* if ( */
 
     PushTableStart(Ui);
     IterateOver(&Editor->Layers, Layer, LayerIndex)

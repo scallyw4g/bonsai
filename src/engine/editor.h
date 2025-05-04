@@ -47,6 +47,7 @@ poof(
   }
 )
 
+// radio group
 poof(
   func radio_button_group_for_enum(enum_t)
   {
@@ -68,15 +69,45 @@ poof(
   }
 )
 
-// TODO(Jesse) This is now the same as the radio button path, remove it
 poof(
-  func radio_button_group_for_bitfield_enum(enum_t)
+  func toolbar_for_enum(enum_t)
   {
-    generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
+    radio_button_group_for_enum(enum_t)
+
+    link_internal ui_toggle_button_group
+    PushToolbar(     renderer_2d *Ui, 
+                   window_layout *Window,
+                              cs  GroupName,
+                     enum_t.name *Element,
+                ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+    ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+    {
+      /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
+
+      ui_toggle_button_handle ButtonHandles[] =
+      {
+        enum_t.map(enum_v)
+        {
+          { CSz("enum_v.name.strip_all_prefix"), UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
+        }
+      };
+
+      ui_toggle_button_handle_buffer ButtonBuffer = {
+        ArrayCount(ButtonHandles),
+        ButtonHandles
+      };
+
+      ui_toggle_button_group Result = {};
+      Result.Ui = Ui;
+      Result.Flags = ToggleButtonGroupFlags_None;
+      Result.Buttons = ButtonBuffer;
+      Result.EnumValue = Cast(u32*, Element);
+
+      DrawButtonGroup(&Result, CSz("Uhh"));
+      return Result;
+    }
   }
 )
-
-
 
 
 poof(
@@ -556,7 +587,7 @@ enum level_editor_flags
   /* LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad = (1 << 1), */
 };
 
-poof(radio_button_group_for_bitfield_enum(level_editor_flags));
+poof(radio_button_group_for_enum(level_editor_flags));
 #include <generated/radio_button_group_for_bitfield_enum_level_editor_flags.h>
 
 enum ui_noise_type
@@ -568,7 +599,7 @@ enum ui_noise_type
 
 poof(string_and_value_tables(ui_noise_type))
 #include <generated/string_and_value_tables_ui_noise_type.h>
-poof(radio_button_group_for_bitfield_enum(ui_noise_type));
+poof(radio_button_group_for_enum(ui_noise_type));
 #include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
 poof(do_editor_ui_for_enum(ui_noise_type))
 #include <generated/do_editor_ui_for_enum_ui_noise_type.h>
