@@ -1,13 +1,14 @@
-// src/engine/editor.h:903:0
+// src/engine/editor.cpp:2398:0
 
 link_internal counted_string
-ToStringPrefixless(brush_layer_type Type)
+ToStringPrefixless(layer_toolbar_actions Type)
 {
   counted_string Result = {};
   switch (Type)
   {
-        case BrushLayerType_Noise: { Result = CSz("Noise"); } break;
-    case BrushLayerType_Shape: { Result = CSz("Shape"); } break;
+        case LayerToolbarActions_New: { Result = CSz("New"); } break;
+    case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
+    case LayerToolbarActions_Rename: { Result = CSz("Rename"); } break;
 
     
   }
@@ -16,13 +17,14 @@ ToStringPrefixless(brush_layer_type Type)
 }
 
 link_internal counted_string
-ToString(brush_layer_type Type)
+ToString(layer_toolbar_actions Type)
 {
   counted_string Result = {};
   switch (Type)
   {
-        case BrushLayerType_Noise: { Result = CSz("BrushLayerType_Noise"); } break;
-    case BrushLayerType_Shape: { Result = CSz("BrushLayerType_Shape"); } break;
+        case LayerToolbarActions_New: { Result = CSz("LayerToolbarActions_New"); } break;
+    case LayerToolbarActions_Delete: { Result = CSz("LayerToolbarActions_Delete"); } break;
+    case LayerToolbarActions_Rename: { Result = CSz("LayerToolbarActions_Rename"); } break;
 
     
   }
@@ -30,13 +32,14 @@ ToString(brush_layer_type Type)
   return Result;
 }
 
-link_internal brush_layer_type
-BrushLayerType(counted_string S)
+link_internal layer_toolbar_actions
+LayerToolbarActions(counted_string S)
 {
-  brush_layer_type Result = {};
+  layer_toolbar_actions Result = {};
 
-    if (StringsMatch(S, CSz("BrushLayerType_Noise"))) { return BrushLayerType_Noise; }
-  if (StringsMatch(S, CSz("BrushLayerType_Shape"))) { return BrushLayerType_Shape; }
+    if (StringsMatch(S, CSz("LayerToolbarActions_New"))) { return LayerToolbarActions_New; }
+  if (StringsMatch(S, CSz("LayerToolbarActions_Delete"))) { return LayerToolbarActions_Delete; }
+  if (StringsMatch(S, CSz("LayerToolbarActions_Rename"))) { return LayerToolbarActions_Rename; }
 
   return Result;
 }

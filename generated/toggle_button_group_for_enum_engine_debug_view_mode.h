@@ -25,7 +25,7 @@ ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_MultiSelectButtons));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeMultiSelectButton));
   return Result;
 }
 

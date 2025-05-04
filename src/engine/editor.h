@@ -39,7 +39,7 @@ poof(
   {
     enum_t.has_tag(bitfield)?
     {
-      generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_MultiSelectButtons})
+      generic_button_group_for_enum(enum_t, {Toggle}, {|ToggleButtonGroupFlags_TypeMultiSelectButton})
     }
     {
       poof_error { Enum without @bitfield tag (enum_t.name) cannot create a multi-select button group. }
@@ -64,7 +64,7 @@ poof(
         /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
       }
 
-      generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_RadioButtons})
+      generic_button_group_for_enum(enum_t, {Radio}, {|ToggleButtonGroupFlags_TypeRadioButton})
     }
   }
 )
@@ -99,9 +99,9 @@ poof(
 
       ui_toggle_button_group Result = {};
       Result.Ui = Ui;
-      Result.Flags = ToggleButtonGroupFlags_None;
+      Result.Flags = ToggleButtonGroupFlags_TypePlainButton;
       Result.Buttons = ButtonBuffer;
-      Result.EnumValue = Cast(u32*, Element);
+      Result.EnumStorage = Cast(u32*, Element);
 
       DrawButtonGroup(&Result, CSz("Uhh"));
       return Result;

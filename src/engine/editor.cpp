@@ -2395,6 +2395,9 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
   ApplyEditToOctree(Engine, Edit, TempMemory);
 }
 
+poof(string_and_value_tables(layer_toolbar_actions))
+#include <generated/string_and_value_tables_enum.h>
+
 poof(toolbar_for_enum(layer_toolbar_actions))
 #include <generated/toolbar_for_enum_enum.h>
 
@@ -2899,8 +2902,11 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowStart(Ui, &AllEditsWindow);
 
 
-
-    PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
+   ui_toggle_button_group Toolbar = PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
+   if (Toolbar.AnyElementClicked)
+   {
+     Info("%S", ToString(Ui->LayerToolbarAction));
+   }
 
     /* if ( */
 
