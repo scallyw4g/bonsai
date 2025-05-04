@@ -29,7 +29,9 @@ See the docs on the [build process](docs/01_build_process.md).
 
 ![banner](screenshots/orks.png)
 
-## Renderer Features
+# Feature Sets
+
+## Renderer
 
 * Deferred Shading
 * HDR Lighting
@@ -40,9 +42,8 @@ See the docs on the [build process](docs/01_build_process.md).
 
 ![banner](screenshots/abandoned_workshop.png)
 
-## Engine Features
+## Engine
 
-* Shader-based Terrain Generation
 * Hot Shader & Game-code Reloading
 * Async Job System
 * Entities
@@ -52,9 +53,31 @@ See the docs on the [build process](docs/01_build_process.md).
 * Asset Loaders
 * Primitive Physics
 
+<p>
+  <img style='max-height=250px' src='screenshots/platapus.png' />
+</p>
+
+## Terrain Generation
+
+* Fully programmable GPU-based terrain generation
+* Batteries-included library of pre-built terrain shaders
+* 1D, 2D and 3D noise library
+* Terrain derivitives available in second-stage terrain "decoration"
+
+## Editing
+
+* CSG-like SDF world editing
+* Library of primitive shapes (sphere, rectangular prism, pyramid, cone, etc)
+* SDF brush-based texturing of primitives
+
+## SDF Brushes
+
+* Layer-based brush GUI
+* (coming soon) Fully programmable custom brush shaders
+
 ![banner](screenshots/profiler.png)
 
-## Performance Profiler Features
+## Performance Profiler
 
 * Manual Instrumentation
 * Memory allocation tracing
