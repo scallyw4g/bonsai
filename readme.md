@@ -53,9 +53,8 @@ See the docs on the [build process](docs/01_build_process.md).
 * Asset Loaders
 * Primitive Physics
 
-<p>
-  <img style='max-height=250px' src='screenshots/platapus.png' />
-</p>
+
+![banner]( screenshots/platapus.png)
 
 ## Terrain Generation
 
@@ -64,11 +63,15 @@ See the docs on the [build process](docs/01_build_process.md).
 * 1D, 2D and 3D noise library
 * Terrain derivitives available in second-stage terrain "decoration"
 
+![banner](screenshots/pillar.png)
+
 ## Editing
 
 * CSG-like SDF world editing
 * Library of primitive shapes (sphere, rectangular prism, pyramid, cone, etc)
 * SDF brush-based texturing of primitives
+
+![banner](screenshots/ork_aerial.png)
 
 ## SDF Brushes
 
