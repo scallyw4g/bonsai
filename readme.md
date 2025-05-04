@@ -1,5 +1,7 @@
 
-![hero_banner](screenshots/two_doors.png)
+<p align='center'>
+  <img src='screenshots/logo_256.png' />
+</p>
 
 # Welcome to Bonsai!
 
@@ -14,7 +16,7 @@ get around to it.
 The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
 compiler, and a few appropriate system headers.
 
-![banner](screenshots/orks.png)
+![banner](screenshots/two_doors.png)
 
 # Quickstart
 
@@ -24,6 +26,8 @@ for your platform of choice (as long as it's Windows or Linux ;)
 ## Build from Source
 
 See the docs on the [build process](docs/01_build_process.md).
+
+![banner](screenshots/orks.png)
 
 ## Renderer Features
 
