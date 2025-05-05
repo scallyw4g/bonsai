@@ -1,6 +1,6 @@
 
-<p align='center'>
-  <img src='screenshots/logo_256.png' />
+<p align='right' style='margin-bottom:-80px;'>
+  <img style='width=180px; height=180px;' src='screenshots/logo_256.png' />
 </p>
 
 # Welcome to Bonsai!
