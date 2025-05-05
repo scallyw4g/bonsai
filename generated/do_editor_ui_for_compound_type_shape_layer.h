@@ -77,6 +77,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
+        Cast(world_update_op_shape_params_cylinder*, &Element->Cylinder),
+        CSz("Cylinder"),
+        Params
+        );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
         Cast(f32*, &Element->Threshold),
         CSz("Threshold"),
         Params

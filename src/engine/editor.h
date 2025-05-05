@@ -827,8 +827,18 @@ struct world_update_op_shape_params_chunk_data
 struct world_update_op_shape_params_sphere
 {
   cp  Location;      poof(@ui_disable)
-  f32 Radius = 10.f; poof(@ui_disable)
+  f32 Radius = 10.f;
 };
+
+
+struct world_update_op_shape_params_cylinder
+{
+  v3 P0;
+  v3 P1;
+};
+
+// @dottedboxguy (Step2) Add new asset struct here
+//
 
 #if 0
 struct world_edit_shape
@@ -878,6 +888,9 @@ enum shape_type
   ShapeType_Sphere,
   ShapeType_Rect,
   ShapeType_Cylinder,
+
+  // @dottedboxguy (Step1) Add shape types here
+  //
 };
 poof(string_and_value_tables(shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
@@ -888,8 +901,12 @@ struct shape_layer
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
-  world_update_op_shape_params_sphere Sphere;
-  world_update_op_shape_params_rect   Rect;
+  world_update_op_shape_params_sphere   Sphere;
+  world_update_op_shape_params_rect     Rect;
+  world_update_op_shape_params_cylinder Cylinder;
+
+  // @dottedboxguy (Step5) Add an instance of the new shape here
+  //
 
   f32 Threshold = 0.f; poof(@ui_value_range(0.f, 1.f))
 };

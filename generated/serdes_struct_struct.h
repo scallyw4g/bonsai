@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:418:0
+// src/engine/serdes.cpp:420:0
 
 link_internal bonsai_type_info
-TypeInfo(world_update_op_shape_params_sphere *Ignored)
+TypeInfo(world_update_op_shape_params_cylinder *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_update_op_shape_params_sphere");
+  Result.Name = CSz("world_update_op_shape_params_cylinder");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(world_update_op_shape_params_sphere *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,15 +33,15 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_update_op_shape_params_sphere *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Location); // default
+    world_update_op_shape_params_cylinder *Element = BaseElement + ElementIndex;
+                                Result &= Serialize(Bytes, &Element->P0); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Radius); // default
+                            Result &= Serialize(Bytes, &Element->P1); // default
 
     
 
@@ -52,21 +52,21 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_sphere *Bas
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
 {
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Location, Memory);
+  Result &= Deserialize(Bytes, &Element->P0, Memory);
 
 
 
@@ -74,7 +74,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere 
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+  Result &= Deserialize(Bytes, &Element->P1, Memory);
 
   
 
@@ -83,7 +83,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere 
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

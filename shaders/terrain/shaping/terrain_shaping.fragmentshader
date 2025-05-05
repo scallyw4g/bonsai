@@ -276,7 +276,7 @@ void main()
 #if 1
     v3 Period = V3(200.f);
     float Amplitude = 150.f;
-    f32 StartingZDepth = 0.f;
+    f32 StartingZDepth = 800.f;
 
     NoiseValue = StartingZDepth;
 

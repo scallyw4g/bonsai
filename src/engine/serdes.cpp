@@ -411,14 +411,19 @@ poof(serdes_struct(noise_layer_0))
 #include <generated/serdes_struct_noise_layer_0.h>
 poof(serdes_struct(noise_layer))
 #include <generated/serdes_struct_noise_layer.h>
+
 poof(serdes_struct(world_update_op_shape_params_rect))
 #include <generated/serdes_struct_world_update_op_shape_params_rect.h>
 poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
+poof(serdes_struct(world_update_op_shape_params_cylinder))
+#include <generated/serdes_struct_world_update_op_shape_params_cylinder.h>
 poof(serdes_struct(world_update_op_shape_params_asset))
 #include <generated/serdes_struct_world_update_op_shape_params_asset.h>
 poof(serdes_struct(world_update_op_shape_params_chunk_data))
 #include <generated/serdes_struct_world_update_op_shape_params_chunk_data.h>
+// @dottedboxguy (Step3) Add new asset struct here to generate serialization code
+//
 
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>

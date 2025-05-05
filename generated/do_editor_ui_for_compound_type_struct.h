@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:195:0
+// src/engine/editor.cpp:93:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input_event", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader_uniform", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -26,12 +26,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                          DoEditorUi(Ui,
+                                                      DoEditorUi(Ui,
         Window,
-        Cast(b8*, &Element->Clicked),
-        CSz("Clicked"),
-        &DefaultUiRenderParams_Checkbox
+        // Cast to remove const/volatile keywords if they're there
+        Cast(shader_uniform_type*, &Element->Type),
+        CSz("Type"),
+        Params
         );
+
+
+
+
+
+
+
+
+      
+                                                DoEditorUi(Ui,
+        Window,
+        // Cast to remove const/volatile keywords if they're there
+        Cast(s32*, &Element->ID),
+        CSz("ID"),
+        Params
+        );
+
+
 
 
 
@@ -40,15 +59,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
             PushNewRow(Ui);
 
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->Pressed),
-        CSz("Pressed"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
+                  auto Value = CS(Element->Name);
+      DoEditorUi(Ui, Window, &Value, CSz("Name"), Params);
 
 
 

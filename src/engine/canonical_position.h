@@ -1,3 +1,4 @@
+struct world;
 
 struct canonical_position
 {
@@ -144,10 +145,10 @@ Min(canonical_position P1, canonical_position P2)
 }
 #endif
 
-inline canonical_position
-operator-(canonical_position A, v3 B)
+inline cp
+operator-(cp A, v3 B)
 {
-  canonical_position Result = A;
+  cp Result = A;
 
   Result.Offset.x = A.Offset.x - B.x;
   Result.Offset.y = A.Offset.y - B.y;
@@ -156,10 +157,10 @@ operator-(canonical_position A, v3 B)
   return Result;
 }
 
-inline canonical_position
-operator+(canonical_position A, v3 B)
+inline cp
+operator+(cp A, v3 B)
 {
-  canonical_position Result = A;
+  cp Result = A;
 
   Result.Offset.x = A.Offset.x + B.x;
   Result.Offset.y = A.Offset.y + B.y;
@@ -168,42 +169,51 @@ operator+(canonical_position A, v3 B)
   return Result;
 }
 
-inline canonical_position
-operator/(canonical_position A, s32 Int)
+inline cp
+operator/(cp A, s32 Int)
 {
-  canonical_position Result = A;
+  cp Result = A;
   Result.Offset /= f32(Int);
   Result.WorldP /= Int;
   return Result;
 }
 
 
-inline canonical_position&
-operator+=(canonical_position& A, float B)
+inline cp&
+operator+=(cp& A, float B)
 {
   A.Offset += B;
   return(A);
 }
 
-inline canonical_position&
-operator+=(canonical_position& A, v3 B)
+inline cp&
+operator+=(cp& A, v3 B)
 {
   A.Offset += B;
   return(A);
 }
 
-inline canonical_position&
-operator+=(canonical_position& A, canonical_position B)
+inline cp&
+operator+=(cp& A, cp B)
 {
   A.Offset += B.Offset;
   A.WorldP += B.WorldP;
   return(A);
 }
 
-inline canonical_position
-operator-(canonical_position P1, canonical_position P2)
+inline cp
+operator+(cp P1, cp P2)
 {
-  canonical_position Result;
+  cp Result;
+  Result.Offset = P1.Offset + P2.Offset;
+  Result.WorldP = P1.WorldP + P2.WorldP;
+  return Result;
+}
+
+inline cp
+operator-(cp P1, cp P2)
+{
+  cp Result;
   Result.Offset = P1.Offset - P2.Offset;
   Result.WorldP = P1.WorldP - P2.WorldP;
   return Result;
@@ -271,6 +281,16 @@ Rect3CP(rect3 *Rect)
 }
 
 /* poof(gen_rect_helpers(rect3cp, cp)) */
+/* #include <generated/gen_rect_helpers_struct_cp.h> */
+
+link_internal cp
+GetRadius(rect3cp *Rect)
+{
+  cp Dim = Rect->Max - Rect->Min;
+  cp Result = Dim/2;
+  return Result;
+}
+
 
 link_internal rect3cp
 RectMinMax(cp Min, cp Max)
@@ -286,9 +306,11 @@ RectMinDim(v3i WorldChunkDim, cp Min, v3 Dim)
   return Result;
 }
 
-struct world;
+link_internal cp
+GetCenter(world *World, rect3cp *Rect);
+
 link_internal v3
-GetSimSpaceP(world *World, canonical_position P);
+GetSimSpaceP(world *World, cp P);
 
 link_internal v3
 GetDim(world *World, rect3cp Rect)

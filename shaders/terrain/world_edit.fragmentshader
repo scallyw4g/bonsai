@@ -1,6 +1,6 @@
 #extension GL_ARB_explicit_uniform_location : enable
 
-uniform v3 WorldspaceBasis;
+uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 uniform int BrushType;
@@ -22,6 +22,12 @@ uniform v3 ChunkRelEditMax;
 // Shape params
 //
 uniform int ShapeType;
+
+//
+// Sphere Params
+//
+uniform v3 ChunkRelLocation;
+uniform f32 Radius;
 
 
 //
@@ -71,7 +77,7 @@ void main()
       xyz.y <= ChunkRelEditMax.y &&
       xyz.z <= ChunkRelEditMax.z  )
   {
-    v3 Basis = WorldspaceBasis + xyz;
+    v3 Basis = WorldspaceChunkBasis + xyz;
 
 
     {
@@ -109,13 +115,21 @@ void main()
           switch (ShapeType)
           {
             // ShapeType_Sphere
-            case 0: { } break; 
+            case 0:
+            {
+              f32 Dist = distance(ChunkRelLocation, xyz);
+              if (Dist < Radius) { NoiseSample = 1.f; }
+            } break; 
 
             // ShapeType_Rect
             case 1: { NoiseSample = 1.f; } break;
 
             // ShapeType_Cylinder
             case 2: { } break;
+
+            // @dottedboxguy (Step6) Add more cases and implementations here
+            // for shape types added in Step 1
+            //
           }
         } break;
 

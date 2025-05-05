@@ -400,6 +400,21 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
                         BindUniformByName(&WorldEditRC->Program, "Invert",    Layer->Settings.Invert);
 
+                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+                           v3 EditRectRad = GetRadius(&SimEditRect);
+
+                        // NOTE(Jesse): Must call bind explicitly because the
+                        // driver doesn't cache these values otherwise .. it
+                        // just reads them whenever it wants through the pointer..
+                        v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
+                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
+                        AssertNoGlErrors;
+
+                        v3 Mx = SimEditRect.Max - SimChunkMin;
+                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
+                        AssertNoGlErrors;
+
                         switch (Layer->Settings.Type)
                         {
                           case BrushLayerType_Noise:
@@ -439,26 +454,26 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                             BindUniformByName(&WorldEditRC->Program, "Threshold", Shape->Threshold);
                             switch(Shape->Type)
                             {
-                              case ShapeType_Sphere:   { } break;
-                              case ShapeType_Rect:     { } break;
+                              case ShapeType_Sphere:
+                              {
+                                auto Sphere = &Shape->Sphere;
+
+                                v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
+                                v3 ChunkRelLocation = SimSphereOrigin - SimChunkMin;
+
+                                BindUniformByName(&WorldEditRC->Program, "ChunkRelLocation", &ChunkRelLocation);
+                                BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
+                              } break;
+
+                              case ShapeType_Rect:     { /* No special uniforms needed for Rect .. */ } break;
+
                               case ShapeType_Cylinder: { } break;
+
+                              // @dottedboxguy (Step4) Calculate values and bind uniform variables for the new shape
+                              //
                             }
                           } break;
                         }
-
-                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
-                           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-
-                        // NOTE(Jesse): Must call bind explicitly because the driver doesn't cache
-                        // these values otherwise .. it just reads then whenever it wants through
-                        // the pointer..
-                        v3 Mn = SimEditRect.Min - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &Mn);
-                        AssertNoGlErrors;
-
-                        v3 Mx = SimEditRect.Max - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
-                        AssertNoGlErrors;
 
 
                         /* gpu_timer Timer = StartGpuTimer(); */

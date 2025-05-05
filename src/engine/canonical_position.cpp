@@ -76,3 +76,10 @@ SimSpaceToCanonical(world *World, rect3i *Rect)
   return Result;
 }
 
+link_internal cp
+GetCenter(world *World, rect3cp *Rect)
+{
+  cp Rad = GetRadius(Rect);
+  cp Result = CAdd(World, Rect->Min, Rad);
+  return Result;
+}
