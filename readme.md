@@ -78,7 +78,7 @@ See the docs on the [build process](docs/01_build_process.md).
 * Layer-based brush GUI
 * (coming soon) Fully programmable custom brush shaders
 
-![banner](screenshots/profiler.png)
+![banner](screenshots/brush.png)
 
 ## Performance Profiler
 
@@ -88,6 +88,7 @@ See the docs on the [build process](docs/01_build_process.md).
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
+![banner](screenshots/profiler.png)
 
 # Gallery
 
