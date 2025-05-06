@@ -1,4 +1,4 @@
-// src/engine/graphics.h:54:0
+// src/engine/graphics.h:52:0
 
 link_internal void
 InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct    , v3 Ignored  )

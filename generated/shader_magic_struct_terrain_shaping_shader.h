@@ -1,7 +1,7 @@
-// src/engine/graphics.h:48:0
+// src/engine/graphics.h:46:0
 
 link_internal void
-InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution  )
+InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceChunkBasis     , v3 ChunkResolution  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/terrain_shaping.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -11,8 +11,8 @@ InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct   
       Struct->ChunkDim = ChunkDim;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
 
-    Struct->WorldspaceBasis = WorldspaceBasis;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceBasis, "WorldspaceBasis");
+    Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
 
     Struct->ChunkResolution = ChunkResolution;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");

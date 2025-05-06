@@ -1,4 +1,4 @@
-uniform v3 WorldspaceBasis;
+uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 uniform sampler2D InputTex;

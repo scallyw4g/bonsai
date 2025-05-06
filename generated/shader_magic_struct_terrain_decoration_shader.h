@@ -1,7 +1,7 @@
-// src/engine/graphics.h:51:0
+// src/engine/graphics.h:49:0
 
 link_internal void
-InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct    , texture *DerivsTex     , v3 ChunkDim     , v3 WorldspaceBasis     , v3 ChunkResolution  )
+InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct    , texture *DerivsTex     , v3 ChunkDim     , v3 WorldspaceChunkBasis     , v3 ChunkResolution  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/terrain_decoration.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -14,8 +14,8 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
     Struct->ChunkDim = ChunkDim;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
 
-    Struct->WorldspaceBasis = WorldspaceBasis;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceBasis, "WorldspaceBasis");
+    Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
 
     Struct->ChunkResolution = ChunkResolution;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");

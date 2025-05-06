@@ -1,6 +1,6 @@
 #extension GL_ARB_explicit_uniform_location : enable
 
-uniform v3 WorldspaceBasis;
+uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 uniform layout(location = 0) sampler2D DerivsTex;
@@ -176,7 +176,7 @@ void main()
 
   /* v3 Offset = V3(-1, -1, -1); */
   v3 Offset = V3(0);
-  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
   ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
   v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);

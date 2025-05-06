@@ -1,4 +1,4 @@
-uniform v3 WorldspaceBasis;
+uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
@@ -13,7 +13,7 @@ void main()
 
   /* v3 Offset = V3(-1, -1, -1); */
   v3 Offset = V3(0);
-  v3 Basis = Offset + WorldspaceBasis + (v3(x,y,z)*ChunkResolution);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
   // NOTE(Jesse): Set these in the -- user code -- section
   v3 ColorValue = V3(0.f);

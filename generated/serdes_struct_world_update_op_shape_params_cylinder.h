@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:420:0
+// src/engine/serdes.cpp:419:0
 
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_cylinder *Ignored)

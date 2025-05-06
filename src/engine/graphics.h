@@ -9,9 +9,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
          texture  DestTex;
      framebuffer  DestFBO;
 
-              v3  ChunkDim;        poof(@uniform)
-              v3  WorldspaceBasis; poof(@uniform)
-              v3  ChunkResolution; poof(@uniform)
+              v3  ChunkDim;             poof(@uniform)
+              v3  WorldspaceChunkBasis; poof(@uniform)
+              v3  ChunkResolution;      poof(@uniform)
 };
 
 struct terrain_derivs_render_context
@@ -24,8 +24,6 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
      framebuffer  DestFBO;
 
               v3  Ignored;        poof(@uniform)
-              /* v3  WorldspaceBasis; poof(@uniform) */
-              /* v3  ChunkResolution; poof(@uniform) */
 };
 
 struct terrain_decoration_render_context
@@ -37,10 +35,10 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
          texture *DestTex;
      framebuffer *DestFBO;
 
-         texture *DerivsTex   ;    poof(@uniform)
-              v3  ChunkDim;        poof(@uniform)
-              v3  WorldspaceBasis; poof(@uniform)
-              v3  ChunkResolution; poof(@uniform)
+         texture *DerivsTex;            poof(@uniform)
+              v3  ChunkDim;             poof(@uniform)
+              v3  WorldspaceChunkBasis; poof(@uniform)
+              v3  ChunkResolution;      poof(@uniform)
 };
 
 
@@ -63,11 +61,11 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
      framebuffer  PingPongFBOs[2];
          texture  PingPongTextures[2];
 
-              v3 *ChunkDim;        poof(@uniform)
-              v3 *WorldspaceBasis; poof(@uniform)
-              v3 *ChunkResolution; poof(@uniform)
+              v3 *ChunkDim;             poof(@uniform)
+              v3 *WorldspaceChunkBasis; poof(@uniform)
+              v3 *ChunkResolution;      poof(@uniform)
 
-             s32  Type;            poof(@uniform)
+             s32  Type;                 poof(@uniform)
 };
 
 poof(shader_magic(world_edit_render_context))

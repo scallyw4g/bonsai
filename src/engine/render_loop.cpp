@@ -280,7 +280,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               {
                 auto *RC = &Graphics->TerrainShapingRC;
 
-                RC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
                 RC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
@@ -326,7 +326,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               {
                 auto *RC = &Graphics->TerrainDecorationRC;
 
-                RC->WorldspaceBasis = V3(Chunk->WorldP) * V3(64);
+                RC->WorldspaceChunkBasis = V3(Chunk->WorldP) * V3(64);
                 RC->ChunkResolution = V3(Chunk->DimInChunks);
 
                 TIMED_NAMED_BLOCK(TerrainDrawCall);

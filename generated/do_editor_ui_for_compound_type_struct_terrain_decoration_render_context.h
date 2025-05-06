@@ -127,8 +127,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
                                                 DoEditorUi(Ui,
         Window,
         // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->WorldspaceBasis),
-        CSz("WorldspaceBasis"),
+        Cast(v3*, &Element->WorldspaceChunkBasis),
+        CSz("WorldspaceChunkBasis"),
         Params
         );
 

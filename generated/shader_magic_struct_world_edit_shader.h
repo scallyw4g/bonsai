@@ -1,7 +1,7 @@
-// src/engine/graphics.h:73:0
+// src/engine/graphics.h:71:0
 
 link_internal void
-InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *ChunkDim     , v3 *WorldspaceBasis     , v3 *ChunkResolution     , s32 Type  )
+InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *ChunkDim     , v3 *WorldspaceChunkBasis     , v3 *ChunkResolution     , s32 Type  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -11,8 +11,8 @@ InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *Chu
       Struct->ChunkDim = ChunkDim;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ChunkDim, "ChunkDim");
 
-    Struct->WorldspaceBasis = WorldspaceBasis;
-  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->WorldspaceBasis, "WorldspaceBasis");
+    Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
+  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
 
     Struct->ChunkResolution = ChunkResolution;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ChunkResolution, "ChunkResolution");
