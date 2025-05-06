@@ -2441,11 +2441,11 @@ DoWorldEditor(engine_resources *Engine)
     PushTableStart(Ui);
       ui_render_params Params = DefaultUiRenderParams_Button;
       Params.Padding = V4(6, 3, 6, 3);
-      ui_element_reference CurrentRef = {};
+      /* ui_element_reference CurrentRef = {}; */
 
       {
         WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &Editor->Tool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditToolButtonGroup.UiRef;
+        /* CurrentRef = WorldEditToolButtonGroup.UiRef; */
       }
 
 #if 0

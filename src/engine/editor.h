@@ -210,7 +210,8 @@ poof(
 
         if (DrawChildren)
         {
-          PushTableStart(Ui);
+          if (Name.Count) { PushTableStart(Ui); }
+
           if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             type.map(member)
             {
@@ -312,7 +313,7 @@ poof(
               }
             }
           if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-          PushTableEnd(Ui);
+          if (Name.Count) { PushTableEnd(Ui); }
         }
         else
         {
@@ -334,51 +335,57 @@ poof(
 poof(
   func do_editor_ui_for_enum(enum_t)
   {
-    link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+    enum_t.has_tag(ui_display_radio)?
     {
-      if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
-
-      cs ElementName = ToStringPrefixless(*Element);
-      ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
-      if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+      do_editor_ui_for_radio_enum(enum_t)
+    }
+    {
+      link_internal void
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
       {
-        PushNewRow(Ui);
-        enum_t.map(value)
+        if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+
+        cs ElementName = ToStringPrefixless(*Element);
+        ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+        if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
         {
-          if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-          if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
+          PushNewRow(Ui);
+          enum_t.map(value)
           {
-            enum_t.has_tag(bitfield)?
+            if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+            if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
             {
-              if ((value.name) == enum_t.name(0))
+              enum_t.has_tag(bitfield)?
               {
-                *Element = enum_t.name(0);
-              }
-              else
-              {
-                if ((*Element & value.name) == value.name)
+                if ((value.name) == enum_t.name(0))
                 {
-                  *Element = enum_t.name(*Element&~value.name);
+                  *Element = enum_t.name(0);
                 }
                 else
                 {
-                  *Element = enum_t.name(*Element|value.name);
+                  if ((*Element & value.name) == value.name)
+                  {
+                    *Element = enum_t.name(*Element&~value.name);
+                  }
+                  else
+                  {
+                    *Element = enum_t.name(*Element|value.name);
+                  }
                 }
               }
-            }
-            {
-              *Element = value.name;
-            }
+              {
+                *Element = value.name;
+              }
 
-            SetToggleButton(Ui, ToggleButtonId, False);
+              SetToggleButton(Ui, ToggleButtonId, False);
+            }
+            PushNewRow(Ui);
           }
+        }
+        else
+        {
           PushNewRow(Ui);
         }
-      }
-      else
-      {
-        PushNewRow(Ui);
       }
     }
   }

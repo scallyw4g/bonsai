@@ -1,4 +1,4 @@
-// src/engine/editor.h:758:0
+// src/engine/editor.h:765:0
 
 link_internal counted_string
 ToStringPrefixless(world_edit_blend_mode_modifier Type)
@@ -18,21 +18,27 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
     {
       u32 CurrentFlags = u32(Type);
 
-      if (CountBitsSet_Kernighan(CurrentFlags) == 1)
+      u32 BitsSet = CountBitsSet_Kernighan(CurrentFlags);
+      switch(BitsSet)
       {
-        Result = FSz("(invalid value for world_edit_blend_mode_modifier (%d))", CurrentFlags);
-      }
-      else
-      {
-        u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
-        Result = ToStringPrefixless(world_edit_blend_mode_modifier(FirstValue));
-
-        while (CurrentFlags)
+        case 0: // We likely passed 0 into this function, and the enum didn't have a 0 value
+        case 1: // The value we passed in was outside the range of the valid enum values
         {
-          u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
-          cs Next = ToStringPrefixless(world_edit_blend_mode_modifier(Value));
-          Result = FSz("%S | %S", Result, Next);
-        }
+          Result = FSz("(invalid value (%d))", CurrentFlags);
+        } break;
+
+        default:
+        {
+          u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+          Result = ToStringPrefixless(world_edit_blend_mode_modifier(FirstValue));
+
+          while (CurrentFlags)
+          {
+            u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+            cs Next = ToStringPrefixless(world_edit_blend_mode_modifier(Value));
+            Result = FSz("%S | %S", Result, Next);
+          }
+        } break;
       }
     } break;
 

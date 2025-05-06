@@ -24,7 +24,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             
 
@@ -169,7 +170,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

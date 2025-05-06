@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:93:0
+// examples/ui_test/game.cpp:33:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader_uniform", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle test_type", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader_uniform_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UnsignedNumber");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->UnsignedNumber),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,29 +47,79 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->ID),
-        CSz("ID"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                  auto Value = CS(Element->Name);
-      DoEditorUi(Ui, Window, &Value, CSz("Name"), Params);
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SignedNumber");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->SignedNumber),
+          MemberName,
+          Params
+          );
 
 
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FloatNumber");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->FloatNumber),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Boolean");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Boolean),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

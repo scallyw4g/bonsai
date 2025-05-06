@@ -21,21 +21,27 @@ ToStringPrefixless(engine_debug_view_mode Type)
     {
       u32 CurrentFlags = u32(Type);
 
-      if (CountBitsSet_Kernighan(CurrentFlags) == 1)
+      u32 BitsSet = CountBitsSet_Kernighan(CurrentFlags);
+      switch(BitsSet)
       {
-        Result = FSz("(invalid value for engine_debug_view_mode (%d))", CurrentFlags);
-      }
-      else
-      {
-        u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
-        Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
-
-        while (CurrentFlags)
+        case 0: // We likely passed 0 into this function, and the enum didn't have a 0 value
+        case 1: // The value we passed in was outside the range of the valid enum values
         {
-          u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
-          cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
-          Result = FSz("%S | %S", Result, Next);
-        }
+          Result = FSz("(invalid value (%d))", CurrentFlags);
+        } break;
+
+        default:
+        {
+          u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+          Result = ToStringPrefixless(engine_debug_view_mode(FirstValue));
+
+          while (CurrentFlags)
+          {
+            u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+            cs Next = ToStringPrefixless(engine_debug_view_mode(Value));
+            Result = FSz("%S | %S", Result, Next);
+          }
+        } break;
       }
     } break;
 

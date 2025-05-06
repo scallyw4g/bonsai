@@ -1,4 +1,4 @@
-// src/engine/editor.h:614:0
+// src/engine/editor.h:621:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -43,4 +43,5 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
     PushNewRow(Ui);
   }
 }
+
 

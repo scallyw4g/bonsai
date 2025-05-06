@@ -24,7 +24,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             
 
@@ -176,7 +177,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

@@ -1,4 +1,4 @@
-// src/engine/editor.h:576:0
+// src/engine/editor.h:583:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -24,7 +24,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             
 
@@ -73,7 +74,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, ui
 
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {
