@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:381:0
+// src/engine/editor.cpp:378:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_id*, &Element->Id),
-        CSz("Id"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Id");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_id*, &Element->Id),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,38 +47,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
-
-      
-                              DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->EulerAngles),
-        CSz("EulerAngles"),
-        Params
-        , -PI32, PI32 );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Scale),
-        CSz("Scale"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("P");
+                                        DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EulerAngles");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->EulerAngles),
+          MemberName,
+          Params
+          , -PI32, PI32 );
 
 
 
@@ -79,16 +86,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Scale");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Scale),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->_CollisionVolumeRadius),
-        CSz("_CollisionVolumeRadius"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("_CollisionVolumeRadius");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->_CollisionVolumeRadius),
+          MemberName,
+          Params
+          );
 
 
 
@@ -96,15 +135,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(physics*, &Element->Physics),
-        CSz("Physics"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Physics");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(physics*, &Element->Physics),
+          MemberName,
+          Params
+          );
 
 
 
@@ -112,15 +159,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_id*, &Element->AssetId),
-        CSz("AssetId"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("AssetId");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_id*, &Element->AssetId),
+          MemberName,
+          Params
+          );
 
 
 
@@ -128,15 +183,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->ModelIndex),
-        CSz("ModelIndex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ModelIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->ModelIndex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -144,16 +207,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(collision_event*, &Element->LastResolvedCollision),
-        CSz("LastResolvedCollision"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LastResolvedCollision");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(collision_event*, &Element->LastResolvedCollision),
+          MemberName,
+          Params
+          );
 
 
 
@@ -161,15 +232,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_position_info*, &Element->LastResolvedPosInfo),
-        CSz("LastResolvedPosInfo"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LastResolvedPosInfo");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_position_info*, &Element->LastResolvedPosInfo),
+          MemberName,
+          Params
+          );
 
 
 
@@ -177,15 +256,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(particle_system*, Element->Emitter),
-        CSz("Emitter"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Emitter");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(particle_system*, Element->Emitter),
+          MemberName,
+          Params
+          );
 
 
 
@@ -193,15 +280,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_state*, &Element->State),
-        CSz("State"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("State");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_state*, &Element->State),
+          MemberName,
+          Params
+          );
 
 
 
@@ -209,15 +304,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_behavior_flags*, &Element->Behavior),
-        CSz("Behavior"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Behavior");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_behavior_flags*, &Element->Behavior),
+          MemberName,
+          Params
+          );
 
 
 
@@ -225,15 +328,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_id*, &Element->Carrying),
-        CSz("Carrying"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Carrying");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_id*, &Element->Carrying),
+          MemberName,
+          Params
+          );
 
 
 
@@ -241,25 +352,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
 
 
 
+      }
 
       
-                                if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UserType");
+                                          if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
                  else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
 
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UserData");
+                                          if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
                  else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
 
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

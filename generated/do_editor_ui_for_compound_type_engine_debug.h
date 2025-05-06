@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:459:0
+// src/engine/editor.cpp:456:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, Element->Memory),
-        CSz("Memory"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Memory");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, Element->Memory),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(engine_debug_view_mode*, &Element->ViewMode),
-        CSz("ViewMode"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(picked_world_chunk_static_buffer*, &Element->PickedChunks),
-        CSz("PickedChunks"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ViewMode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(engine_debug_view_mode*, &Element->ViewMode),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture_ptr_block_array*, &Element->Textures),
-        CSz("Textures"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PickedChunks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(picked_world_chunk_static_buffer*, &Element->PickedChunks),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ui_debug*, &Element->UiDebug),
-        CSz("UiDebug"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Textures");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture_ptr_block_array*, &Element->Textures),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,15 +119,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(render_debug*, &Element->Render),
-        CSz("Render"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UiDebug");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ui_debug*, &Element->UiDebug),
+          MemberName,
+          Params
+          );
 
 
 
@@ -120,16 +143,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawEntityCollisionVolumes),
-        CSz("DrawEntityCollisionVolumes"),
-        Params
-        );
+      
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("Render");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(render_debug*, &Element->Render),
+          MemberName,
+          Params
+          );
 
 
 
@@ -137,285 +167,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawWorldAxies),
-        CSz("DrawWorldAxies"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->TriggerRuntimeBreak),
-        CSz("TriggerRuntimeBreak"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->ResetAssetNodeView),
-        CSz("ResetAssetNodeView"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawBranchNodesWithMeshes),
-        CSz("DrawBranchNodesWithMeshes"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawBranchNodes),
-        CSz("DrawBranchNodes"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawLeafNodes),
-        CSz("DrawLeafNodes"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawNodesWithChunks),
-        CSz("DrawNodesWithChunks"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawQueuedNodes),
-        CSz("DrawQueuedNodes"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->MarkChunkBorderVoxels),
-        CSz("MarkChunkBorderVoxels"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DrawGameCameraLocation),
-        CSz("DrawGameCameraLocation"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r64*, &Element->ChunkGenTimeElapsedMS),
-        CSz("ChunkGenTimeElapsedMS"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->CellsGenerated),
-        CSz("CellsGenerated"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r64*, &Element->ChunkGenCyclesElapsed),
-        CSz("ChunkGenCyclesElapsed"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u8*, &Element->PickedChunkState),
-        CSz("PickedChunkState"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node*, Element->PickedNode),
-        CSz("PickedNode"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_window_view_mode*, &Element->AssetWindowViewMode),
-        CSz("AssetWindowViewMode"),
-        Params
-        );
-
-
-
-
-
-
-
-
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_id*, &Element->SelectedAsset),
-        CSz("SelectedAsset"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawEntityCollisionVolumes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawEntityCollisionVolumes),
+          MemberName,
+          Params
+          );
 
 
 
@@ -423,48 +191,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->ModelIndex),
-        CSz("ModelIndex"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_id*, &Element->SelectedEntity),
-        CSz("SelectedEntity"),
-        Params
-        );
-
-
-
-
-
-
-
-
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->OctreeDrawDepth),
-        CSz("OctreeDrawDepth"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawWorldAxies");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawWorldAxies),
+          MemberName,
+          Params
+          );
 
 
 
@@ -472,16 +216,503 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node*, Element->SelectedNode),
-        CSz("SelectedNode"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TriggerRuntimeBreak");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->TriggerRuntimeBreak),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ResetAssetNodeView");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->ResetAssetNodeView),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawBranchNodesWithMeshes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawBranchNodesWithMeshes),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawBranchNodes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawBranchNodes),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawLeafNodes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawLeafNodes),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawNodesWithChunks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawNodesWithChunks),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawQueuedNodes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawQueuedNodes),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MarkChunkBorderVoxels");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->MarkChunkBorderVoxels),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawGameCameraLocation");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DrawGameCameraLocation),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkGenTimeElapsedMS");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r64*, &Element->ChunkGenTimeElapsedMS),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("CellsGenerated");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->CellsGenerated),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkGenCyclesElapsed");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r64*, &Element->ChunkGenCyclesElapsed),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PickedChunkState");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u8*, &Element->PickedChunkState),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PickedNode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node*, Element->PickedNode),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("AssetWindowViewMode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_window_view_mode*, &Element->AssetWindowViewMode),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SelectedAsset");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_id*, &Element->SelectedAsset),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ModelIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->ModelIndex),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SelectedEntity");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_id*, &Element->SelectedEntity),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OctreeDrawDepth");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->OctreeDrawDepth),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SelectedNode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node*, Element->SelectedNode),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

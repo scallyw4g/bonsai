@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:394:0
+// src/engine/editor.cpp:391:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->Center),
-        CSz("Center"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Center");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Center),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(visible_region_size*, &Element->VisibleRegionSize),
-        CSz("VisibleRegionSize"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node*, &Element->Root),
-        CSz("Root"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("VisibleRegionSize");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(visible_region_size*, &Element->VisibleRegionSize),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, Element->OctreeMemory),
-        CSz("OctreeMemory"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Root");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node*, &Element->Root),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node_freelist*, &Element->OctreeNodeFreelist),
-        CSz("OctreeNodeFreelist"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OctreeMemory");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, Element->OctreeMemory),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,15 +119,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist),
-        CSz("OctreeNodeDeferFreelist"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OctreeNodeFreelist");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node_freelist*, &Element->OctreeNodeFreelist),
+          MemberName,
+          Params
+          );
 
 
 
@@ -120,15 +143,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->FreeChunkCount),
-        CSz("FreeChunkCount"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OctreeNodeDeferFreelist");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist),
+          MemberName,
+          Params
+          );
 
 
 
@@ -136,10 +167,76 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkFreelistFutex");
+        
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkFreelistSentinal");
+        
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FreeChunkCount");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->FreeChunkCount),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
+      
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkDim");
+        
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkMemory");
+        
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

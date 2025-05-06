@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:415:0
+// src/engine/editor.cpp:412:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*, &Element->P),
-        CSz("P"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("P");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cp*, &Element->P),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->_CollisionVolumeRadius),
-        CSz("_CollisionVolumeRadius"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Scale),
-        CSz("Scale"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("_CollisionVolumeRadius");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->_CollisionVolumeRadius),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,16 +71,56 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Scale");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Scale),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->EulerAngles),
-        CSz("EulerAngles"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EulerAngles");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->EulerAngles),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

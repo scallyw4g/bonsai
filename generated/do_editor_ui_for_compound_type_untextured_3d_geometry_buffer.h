@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(data_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(data_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,36 +47,109 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Next");
+        
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Verts");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(void *, Element->Verts),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Normals");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(void *, Element->Normals),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mat");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(vertex_material*, Element->Mat),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
       
       
 
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(void *, Element->Verts),
-        CSz("Verts"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(void *, Element->Normals),
-        CSz("Normals"),
-        Params
-        );
+      { 
+        
+        
+        
+        cs MemberName = CSz("End");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->End),
+          MemberName,
+          Params
+          );
 
 
 
@@ -77,32 +157,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(vertex_material*, Element->Mat),
-        CSz("Mat"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->End),
-        CSz("End"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("At");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->At),
+          MemberName,
+          Params
+          );
 
 
 
@@ -110,49 +182,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->At),
-        CSz("At"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(untextured_3d_geometry_buffer*, Element->Parent),
-        CSz("Parent"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->BufferNeedsToGrow),
-        CSz("BufferNeedsToGrow"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Parent");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(untextured_3d_geometry_buffer*, Element->Parent),
+          MemberName,
+          Params
+          );
 
 
 
@@ -160,16 +207,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BufferNeedsToGrow");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->BufferNeedsToGrow),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->Timestamp),
-        CSz("Timestamp"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Timestamp");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->Timestamp),
+          MemberName,
+          Params
+          );
 
 
 
@@ -177,6 +256,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

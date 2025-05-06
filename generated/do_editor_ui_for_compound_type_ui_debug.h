@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:456:0
+// src/engine/editor.cpp:453:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->OutlineUiValues),
-        CSz("OutlineUiValues"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OutlineUiValues");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->OutlineUiValues),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,33 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->OutlineUiButtons),
-        CSz("OutlineUiButtons"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->OutlineUiTables),
-        CSz("OutlineUiTables"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OutlineUiButtons");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->OutlineUiButtons),
+          MemberName,
+          Params
+          );
 
 
 
@@ -74,33 +72,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->OutlineUiTableColumns),
-        CSz("OutlineUiTableColumns"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DebugBreakOnElementClick),
-        CSz("DebugBreakOnElementClick"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OutlineUiTables");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->OutlineUiTables),
+          MemberName,
+          Params
+          );
 
 
 
@@ -108,16 +97,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->DebugBreakUiCommand),
-        CSz("DebugBreakUiCommand"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OutlineUiTableColumns");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->OutlineUiTableColumns),
+          MemberName,
+          Params
+          );
 
 
 
@@ -125,6 +122,57 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
 
 
 
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DebugBreakOnElementClick");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DebugBreakOnElementClick),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DebugBreakUiCommand");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->DebugBreakUiCommand),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

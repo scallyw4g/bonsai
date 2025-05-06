@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Enter),
-        CSz("Enter"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Enter");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Enter),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Escape),
-        CSz("Escape"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Alt),
-        CSz("Alt"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Escape");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Escape),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Ctrl),
-        CSz("Ctrl"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Alt");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Alt),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Shift),
-        CSz("Shift"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Ctrl");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Ctrl),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,15 +119,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Backspace),
-        CSz("Backspace"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Shift");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Shift),
+          MemberName,
+          Params
+          );
 
 
 
@@ -120,15 +143,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Delete),
-        CSz("Delete"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Backspace");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Backspace),
+          MemberName,
+          Params
+          );
 
 
 
@@ -136,15 +167,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F12),
-        CSz("F12"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Delete");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Delete),
+          MemberName,
+          Params
+          );
 
 
 
@@ -152,15 +191,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F11),
-        CSz("F11"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F12");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F12),
+          MemberName,
+          Params
+          );
 
 
 
@@ -168,15 +215,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F10),
-        CSz("F10"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F11");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F11),
+          MemberName,
+          Params
+          );
 
 
 
@@ -184,15 +239,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F9),
-        CSz("F9"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F10");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F10),
+          MemberName,
+          Params
+          );
 
 
 
@@ -200,15 +263,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F8),
-        CSz("F8"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F9");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F9),
+          MemberName,
+          Params
+          );
 
 
 
@@ -216,15 +287,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F7),
-        CSz("F7"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F8");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F8),
+          MemberName,
+          Params
+          );
 
 
 
@@ -232,15 +311,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F6),
-        CSz("F6"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F7");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F7),
+          MemberName,
+          Params
+          );
 
 
 
@@ -248,15 +335,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F5),
-        CSz("F5"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F6");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F6),
+          MemberName,
+          Params
+          );
 
 
 
@@ -264,15 +359,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F4),
-        CSz("F4"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F5");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F5),
+          MemberName,
+          Params
+          );
 
 
 
@@ -280,15 +383,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F3),
-        CSz("F3"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F4");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F4),
+          MemberName,
+          Params
+          );
 
 
 
@@ -296,15 +407,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F2),
-        CSz("F2"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F3");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F3),
+          MemberName,
+          Params
+          );
 
 
 
@@ -312,15 +431,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F1),
-        CSz("F1"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F2");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F2),
+          MemberName,
+          Params
+          );
 
 
 
@@ -328,15 +455,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Dot),
-        CSz("Dot"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F1");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F1),
+          MemberName,
+          Params
+          );
 
 
 
@@ -344,15 +479,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Minus),
-        CSz("Minus"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dot");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Dot),
+          MemberName,
+          Params
+          );
 
 
 
@@ -360,15 +503,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->FSlash),
-        CSz("FSlash"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Minus");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Minus),
+          MemberName,
+          Params
+          );
 
 
 
@@ -376,15 +527,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Space),
-        CSz("Space"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FSlash");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->FSlash),
+          MemberName,
+          Params
+          );
 
 
 
@@ -392,15 +551,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Underscore),
-        CSz("Underscore"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Space");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Space),
+          MemberName,
+          Params
+          );
 
 
 
@@ -408,15 +575,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N0),
-        CSz("N0"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Underscore");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Underscore),
+          MemberName,
+          Params
+          );
 
 
 
@@ -424,15 +599,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N1),
-        CSz("N1"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N0");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N0),
+          MemberName,
+          Params
+          );
 
 
 
@@ -440,15 +623,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N2),
-        CSz("N2"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N1");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N1),
+          MemberName,
+          Params
+          );
 
 
 
@@ -456,15 +647,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N3),
-        CSz("N3"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N2");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N2),
+          MemberName,
+          Params
+          );
 
 
 
@@ -472,15 +671,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N4),
-        CSz("N4"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N3");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N3),
+          MemberName,
+          Params
+          );
 
 
 
@@ -488,15 +695,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N5),
-        CSz("N5"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N4");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N4),
+          MemberName,
+          Params
+          );
 
 
 
@@ -504,15 +719,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N6),
-        CSz("N6"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N5");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N5),
+          MemberName,
+          Params
+          );
 
 
 
@@ -520,15 +743,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N7),
-        CSz("N7"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N6");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N6),
+          MemberName,
+          Params
+          );
 
 
 
@@ -536,15 +767,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N8),
-        CSz("N8"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N7");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N7),
+          MemberName,
+          Params
+          );
 
 
 
@@ -552,15 +791,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N9),
-        CSz("N9"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N8");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N8),
+          MemberName,
+          Params
+          );
 
 
 
@@ -568,15 +815,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->A),
-        CSz("A"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N9");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N9),
+          MemberName,
+          Params
+          );
 
 
 
@@ -584,15 +839,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->B),
-        CSz("B"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("A");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->A),
+          MemberName,
+          Params
+          );
 
 
 
@@ -600,15 +863,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->C),
-        CSz("C"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("B");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->B),
+          MemberName,
+          Params
+          );
 
 
 
@@ -616,15 +887,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->D),
-        CSz("D"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("C");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->C),
+          MemberName,
+          Params
+          );
 
 
 
@@ -632,15 +911,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->E),
-        CSz("E"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("D");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->D),
+          MemberName,
+          Params
+          );
 
 
 
@@ -648,15 +935,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->F),
-        CSz("F"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("E");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->E),
+          MemberName,
+          Params
+          );
 
 
 
@@ -664,15 +959,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->G),
-        CSz("G"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("F");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->F),
+          MemberName,
+          Params
+          );
 
 
 
@@ -680,15 +983,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->H),
-        CSz("H"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("G");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->G),
+          MemberName,
+          Params
+          );
 
 
 
@@ -696,15 +1007,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->I),
-        CSz("I"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("H");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->H),
+          MemberName,
+          Params
+          );
 
 
 
@@ -712,15 +1031,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->J),
-        CSz("J"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("I");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->I),
+          MemberName,
+          Params
+          );
 
 
 
@@ -728,15 +1055,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->K),
-        CSz("K"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("J");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->J),
+          MemberName,
+          Params
+          );
 
 
 
@@ -744,15 +1079,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->L),
-        CSz("L"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("K");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->K),
+          MemberName,
+          Params
+          );
 
 
 
@@ -760,15 +1103,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->M),
-        CSz("M"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("L");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->L),
+          MemberName,
+          Params
+          );
 
 
 
@@ -776,15 +1127,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->N),
-        CSz("N"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("M");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->M),
+          MemberName,
+          Params
+          );
 
 
 
@@ -792,15 +1151,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->O),
-        CSz("O"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("N");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->N),
+          MemberName,
+          Params
+          );
 
 
 
@@ -808,15 +1175,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->P),
-        CSz("P"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("O");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->O),
+          MemberName,
+          Params
+          );
 
 
 
@@ -824,15 +1199,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Q),
-        CSz("Q"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("P");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->P),
+          MemberName,
+          Params
+          );
 
 
 
@@ -840,15 +1223,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->R),
-        CSz("R"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Q");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Q),
+          MemberName,
+          Params
+          );
 
 
 
@@ -856,15 +1247,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->S),
-        CSz("S"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("R");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->R),
+          MemberName,
+          Params
+          );
 
 
 
@@ -872,15 +1271,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->T),
-        CSz("T"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("S");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->S),
+          MemberName,
+          Params
+          );
 
 
 
@@ -888,15 +1295,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->U),
-        CSz("U"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("T");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->T),
+          MemberName,
+          Params
+          );
 
 
 
@@ -904,15 +1319,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->V),
-        CSz("V"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("U");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->U),
+          MemberName,
+          Params
+          );
 
 
 
@@ -920,15 +1343,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->W),
-        CSz("W"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("V");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->V),
+          MemberName,
+          Params
+          );
 
 
 
@@ -936,15 +1367,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->X),
-        CSz("X"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("W");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->W),
+          MemberName,
+          Params
+          );
 
 
 
@@ -952,15 +1391,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Y),
-        CSz("Y"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("X");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->X),
+          MemberName,
+          Params
+          );
 
 
 
@@ -968,15 +1415,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->Z),
-        CSz("Z"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Y");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Y),
+          MemberName,
+          Params
+          );
 
 
 
@@ -984,15 +1439,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->RMB),
-        CSz("RMB"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Z");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->Z),
+          MemberName,
+          Params
+          );
 
 
 
@@ -1000,15 +1463,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->LMB),
-        CSz("LMB"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("RMB");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->RMB),
+          MemberName,
+          Params
+          );
 
 
 
@@ -1016,15 +1487,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input_event*, &Element->MMB),
-        CSz("MMB"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LMB");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->LMB),
+          MemberName,
+          Params
+          );
 
 
 
@@ -1032,15 +1511,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->MouseWheelDelta),
-        CSz("MouseWheelDelta"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MMB");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input_event*, &Element->MMB),
+          MemberName,
+          Params
+          );
 
 
 
@@ -1048,6 +1535,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MouseWheelDelta");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->MouseWheelDelta),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

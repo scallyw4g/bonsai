@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:409:0
+// src/engine/editor.cpp:406:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_load_state*, &Element->LoadState),
-        CSz("LoadState"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LoadState");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_load_state*, &Element->LoadState),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_id*, &Element->Id),
-        CSz("Id"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->LRUFrameIndex),
-        CSz("LRUFrameIndex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Id");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_id*, &Element->Id),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,26 +71,67 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LRUFrameIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->LRUFrameIndex),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
-
-
-
-
-
-
-
-
       
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_type*, &Element->Type),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("(anonymous)");
+        
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

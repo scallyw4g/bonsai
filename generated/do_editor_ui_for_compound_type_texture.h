@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->ID),
-        CSz("ID"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ID");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->ID),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,32 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2i*, &Element->Dim),
-        CSz("Dim"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->Slices),
-        CSz("Slices"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2i*, &Element->Dim),
+          MemberName,
+          Params
+          );
 
 
 
@@ -73,63 +72,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->Channels),
-        CSz("Channels"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->IsDepthTexture),
-        CSz("IsDepthTexture"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture_storage_format*, &Element->Format),
-        CSz("Format"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*, &Element->DebugName),
-        CSz("DebugName"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Slices");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->Slices),
+          MemberName,
+          Params
+          );
 
 
 
@@ -137,20 +96,125 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->Queued),
-        CSz("Queued"),
-        &DefaultUiRenderParams_Checkbox
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Channels");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->Channels),
+          MemberName,
+          Params
+          );
 
 
 
 
 
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("IsDepthTexture");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->IsDepthTexture),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Format");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture_storage_format*, &Element->Format),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DebugName");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->DebugName),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Queued");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Queued),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

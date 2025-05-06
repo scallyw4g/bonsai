@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:324:0
+// src/engine/editor.cpp:321:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,20 +26,35 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("NameBuf");
                         auto Value = CS(Element->NameBuf);
-      DoEditorUi(Ui, Window, &Value, CSz("NameBuf"), Params);
+        DoEditorUi(Ui, Window, &Value, MemberName, Params);
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_blend_mode*, &Element->Mode),
-        CSz("Mode"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_blend_mode*, &Element->Mode),
+          MemberName,
+          Params
+          );
 
 
 
@@ -47,15 +62,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
-        CSz("Modifier"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Modifier");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
+          MemberName,
+          Params
+          );
 
 
 
@@ -63,15 +86,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(layered_brush*, &Element->Layered),
-        CSz("Layered"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Layered");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(layered_brush*, &Element->Layered),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

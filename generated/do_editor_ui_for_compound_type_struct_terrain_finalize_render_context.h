@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:444:0
+// src/engine/editor.cpp:441:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader*, &Element->Program),
-        CSz("Program"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Program");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader*, &Element->Program),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,49 +47,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
-
-      
-                        if (ToggleButton(Ui, CSz("v Uniforms[1]"), CSz("> Uniforms[1]"), UiId(Window, "toggle terrain_finalize_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 1)
-        {
-                    DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->DestTex),
-        CSz("DestTex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Uniforms");
+                                
+
+        if (ToggleButton(Ui, CSz("v Uniforms[1]"), CSz("> Uniforms[1]"), UiId(Window, "toggle terrain_finalize_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 1)
+          {
+                        DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
 
 
 
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, &Element->FBO),
-        CSz("FBO"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DestTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, &Element->DestTex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -90,15 +99,55 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, Element->InputTex),
-        CSz("InputTex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FBO");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(framebuffer*, &Element->FBO),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InputTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, Element->InputTex),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(os*, &Element->Os),
-        CSz("Os"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Os");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(os*, &Element->Os),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(platform*, &Element->Plat),
-        CSz("Plat"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(thread_local_state*, Element->ThreadStates),
-        CSz("ThreadStates"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Plat");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(platform*, &Element->Plat),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture_block_array*, &Element->AllTextures),
-        CSz("AllTextures"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ThreadStates");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(thread_local_state*, Element->ThreadStates),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader_ptr_block_array*, &Element->AllShaders),
-        CSz("AllShaders"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("AllTextures");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture_block_array*, &Element->AllTextures),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,15 +119,55 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(debug_state*, &Element->DebugState),
-        CSz("DebugState"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("AllShaders");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader_ptr_block_array*, &Element->AllShaders),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DebugState");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(debug_state*, &Element->DebugState),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

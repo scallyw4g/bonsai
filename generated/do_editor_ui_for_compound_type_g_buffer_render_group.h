@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:435:0
+// src/engine/editor.cpp:432:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, &Element->FBO),
-        CSz("FBO"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FBO");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(framebuffer*, &Element->FBO),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(g_buffer_textures*, &Element->Textures),
-        CSz("Textures"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader*, &Element->gBufferShader),
-        CSz("gBufferShader"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Textures");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(g_buffer_textures*, &Element->Textures),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(m4*, &Element->InverseViewMatrix),
-        CSz("InverseViewMatrix"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("gBufferShader");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader*, &Element->gBufferShader),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(m4*, &Element->InverseProjectionMatrix),
-        CSz("InverseProjectionMatrix"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InverseViewMatrix");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->InverseViewMatrix),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,15 +119,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(m4*, &Element->ViewProjection),
-        CSz("ViewProjection"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InverseProjectionMatrix");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->InverseProjectionMatrix),
+          MemberName,
+          Params
+          );
 
 
 
@@ -120,15 +143,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->GlTimerObject),
-        CSz("GlTimerObject"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ViewProjection");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->ViewProjection),
+          MemberName,
+          Params
+          );
 
 
 
@@ -136,6 +167,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("GlTimerObject");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->GlTimerObject),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

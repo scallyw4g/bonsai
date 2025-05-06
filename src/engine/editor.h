@@ -214,80 +214,90 @@ poof(
           if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             type.map(member)
             {
-              member.has_tag(ui_skip)?
-              {
-              }
-              {
-                member.has_tag(ui_display_as)?
+              member.has_tag(ui_display_condition)?  { if ((member.tag_value(ui_display_condition))) }{}
+
+              { /// NOTE(Jesse): this scope is here for the ui_display_condition if above..
+                /// Yes, it's pretty janky, but it's the best I could come up with in a few minutes.
+                ///
+                /// It also hides the MemberName local, which .. is fine ..
+                cs MemberName = member.has_tag(ui_display_name)? {member.tag_value(ui_display_name)}{CSz("member.name")};
+                member.has_tag(ui_skip)?
                 {
-                  auto Value = member.tag_value(ui_display_as)(Element->member.name);
-                  DoEditorUi(Ui, Window, &Value, CSz("member.name"), Params);
                 }
                 {
-                  member.is_array?
+                  member.has_tag(ui_construct_as)?
                   {
-                    if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
-                    {
-                      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                        PushNewRow(Ui);
-                        RangeIterator(ArrayIndex, member.array)
-                        {
-                          member.has_tag(custom_ui)?
-                          {
-                            member.tag_value(custom_ui);
-                          }
-                          {
-                            DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
-                          }
-                          member.is_primitive?  { PushNewRow(Ui); }
-                        }
-                      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-                    }
-                    PushNewRow(Ui);
+                    auto Value = member.tag_value(ui_construct_as)(Element->member.name);
+                    DoEditorUi(Ui, Window, &Value, MemberName, Params);
                   }
                   {
-                    member.has_tag(custom_ui)?
+                    member.is_array?
                     {
-                      member.tag_value(custom_ui);
+                      member.has_tag(ui_display_name)? {poof_error(ui_display_name tag is incompatible with array members )}
+
+                      if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
+                      {
+                        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                          PushNewRow(Ui);
+                          RangeIterator(ArrayIndex, member.array)
+                          {
+                            member.has_tag(custom_ui)?
+                            {
+                              member.tag_value(custom_ui);
+                            }
+                            {
+                              DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                            }
+                            member.is_primitive?  { PushNewRow(Ui); }
+                          }
+                        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+                      }
+                      PushNewRow(Ui);
                     }
                     {
-                      member.is_type(b32)?
+                      member.has_tag(custom_ui)?
                       {
-                        DoEditorUi(Ui,
-                                   Window,
-                                   Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
-                                   CSz("member.name"),
-                                   &DefaultUiRenderParams_Checkbox
-                                   member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                        member.tag_value(custom_ui);
                       }
                       {
-                        member.is_union?
+                        member.is_type(b32)?
                         {
-                          member.name?
-                          {
-                            DoEditorUi(Ui,
-                                       Window,
-                                       // Cast to remove const/volatile keywords if they're there
-                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                       CSz("member.name"),
-                                       Params
-                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
-                          }
-                          {
-                          }
+                          DoEditorUi(Ui,
+                                     Window,
+                                     Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
+                                     MemberName,
+                                     &DefaultUiRenderParams_Checkbox
+                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                         }
                         {
-                          member.is_function?
+                          member.is_union?
                           {
+                            member.name?
+                            {
+                              DoEditorUi(Ui,
+                                         Window,
+                                         // Cast to remove const/volatile keywords if they're there
+                                         Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                         MemberName,
+                                         Params
+                                         member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                            }
+                            {
+                            }
                           }
                           {
-                            DoEditorUi(Ui,
-                                       Window,
-                                       // Cast to remove const/volatile keywords if they're there
-                                       Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                       CSz("member.name"),
-                                       Params
-                                       member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                            member.is_function?
+                            {
+                            }
+                            {
+                              DoEditorUi(Ui,
+                                         Window,
+                                         // Cast to remove const/volatile keywords if they're there
+                                         Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                         MemberName,
+                                         Params
+                                         member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                            }
                           }
                         }
                       }
@@ -437,7 +447,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
       auto Range = Max-Min;
       r32 PercFilled = ((*Value)-Min)/Range;
 
-      r32 Width = 100.f;
+      r32 Width = 50.f;
 
       if (Value)
       {
@@ -897,29 +907,30 @@ poof(string_and_value_tables(shape_type))
 
 struct shape_layer
 {
-  shape_type Type = ShapeType_Sphere;
+  shape_type Type; poof(@ui_display_name(CSz("Shape Type")))
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
-  world_update_op_shape_params_sphere   Sphere;
-  world_update_op_shape_params_rect     Rect;
-  world_update_op_shape_params_cylinder Cylinder;
+  world_update_op_shape_params_sphere   Sphere;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Sphere))
+  world_update_op_shape_params_rect     Rect;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Rect))
+  world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
 
   // @dottedboxguy (Step5) Add an instance of the new shape here
   //
 
-  f32 Threshold = 0.f; poof(@ui_value_range(0.f, 1.f))
+  f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f))
+  f32     Power = 10.f; poof(@ui_value_range(0.f, 25.f))
 };
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
 struct noise_layer poof(@version(1))
 {
-  ui_noise_type Type;
+  ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
 
-  white_noise_params   White;
-  perlin_noise_params  Perlin;
-  voronoi_noise_params Voronoi;
+  white_noise_params   White;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
+  perlin_noise_params  Perlin;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
+  voronoi_noise_params Voronoi; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
 };
 
 struct noise_layer_0
@@ -955,10 +966,10 @@ poof(do_editor_ui_for_radio_enum(brush_layer_type))
 
 struct brush_settings poof(@version(3))
 {
-  brush_layer_type Type;
+  brush_layer_type Type; poof(@ui_display_name(CSz("BrushType")))
 
-  noise_layer Noise;
-  shape_layer Shape;
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
 
   //
   // Common across brush types
@@ -1016,8 +1027,8 @@ struct brush_settings_1
 {
   brush_layer_type Type;
 
-  noise_layer Noise;
-  shape_layer Shape;
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Sphere))
 
   //
   // Common across brush types
@@ -1080,7 +1091,7 @@ Marshal(brush_settings_0 *Stored, brush_settings *Live)
 
 struct brush_layer
 {
-  brush_settings Settings;
+  brush_settings Settings;     poof(@ui_display_name({}))
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
 };
 
@@ -1162,7 +1173,7 @@ struct world_edit_brush
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
 #define NameBuf_Len (256)
-  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_display_as(CS))
+  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
   /* world_edit_shape               Shape; */
   world_edit_blend_mode          Mode;

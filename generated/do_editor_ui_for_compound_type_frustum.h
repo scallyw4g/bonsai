@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->farClip),
-        CSz("farClip"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("farClip");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->farClip),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,83 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->nearClip),
-        CSz("nearClip"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->width),
-        CSz("width"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->FOV),
-        CSz("FOV"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(plane*, &Element->Top),
-        CSz("Top"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(plane*, &Element->Bot),
-        CSz("Bot"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("nearClip");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->nearClip),
+          MemberName,
+          Params
+          );
 
 
 
@@ -124,31 +72,154 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, ui
 
 
 
+      }
 
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(plane*, &Element->Left),
-        CSz("Left"),
-        Params
-        );
-
-
-
-
-
-
-
+            PushNewRow(Ui);
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(plane*, &Element->Right),
-        CSz("Right"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("width");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->width),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FOV");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->FOV),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Top");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(plane*, &Element->Top),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Bot");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(plane*, &Element->Bot),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Left");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(plane*, &Element->Left),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Right");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(plane*, &Element->Right),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

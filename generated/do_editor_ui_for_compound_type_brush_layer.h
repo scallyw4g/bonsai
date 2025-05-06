@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:318:0
+// src/engine/editor.cpp:315:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(brush_settings*, &Element->Settings),
-        CSz("Settings"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(brush_settings*, &Element->Settings),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,9 +47,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 
+      }
 
       
+      
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("PrevSettings");
+        
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

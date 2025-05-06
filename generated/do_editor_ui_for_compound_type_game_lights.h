@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:429:0
+// src/engine/editor.cpp:426:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->ColorTex),
-        CSz("ColorTex"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ColorTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, &Element->ColorTex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->PositionTex),
-        CSz("PositionTex"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->IndexToUV),
-        CSz("IndexToUV"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PositionTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, &Element->PositionTex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,16 +71,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("IndexToUV");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->IndexToUV),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->Count),
-        CSz("Count"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Count");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->Count),
+          MemberName,
+          Params
+          );
 
 
 
@@ -89,16 +120,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(light*, Element->Lights),
-        CSz("Lights"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Lights");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(light*, Element->Lights),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

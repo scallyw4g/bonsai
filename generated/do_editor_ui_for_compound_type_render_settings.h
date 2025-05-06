@@ -26,276 +26,174 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                          DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->UseSsao),
-        CSz("UseSsao"),
-        &DefaultUiRenderParams_Checkbox
-        );
+            
 
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->UseShadowMapping),
-        CSz("UseShadowMapping"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->UseLightingBloom),
-        CSz("UseLightingBloom"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->BravoilMyersOIT),
-        CSz("BravoilMyersOIT"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->BravoilMcGuireOIT),
-        CSz("BravoilMcGuireOIT"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->DrawMajorGrid),
-        CSz("DrawMajorGrid"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->DrawMinorGrid),
-        CSz("DrawMinorGrid"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
+      { 
+        
+        
+        
+        cs MemberName = CSz("UseSsao");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->MajorGridDim),
-        CSz("MajorGridDim"),
-        Params
-        , 0, 32 );
+          Window,
+          Cast(b8*, &Element->UseSsao),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->DrawCameraGhost),
-        CSz("DrawCameraGhost"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->CameraGhostSize),
-        CSz("CameraGhostSize"),
-        Params
-        , 1, 100 );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
       
 
-            PushNewRow(Ui);
-
+      { 
+        
+        
+        
+        cs MemberName = CSz("UseShadowMapping");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(tone_mapping_type*, &Element->ToneMappingType),
-        CSz("ToneMappingType"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->UseShadowMapping),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->GameCameraFOV),
-        CSz("GameCameraFOV"),
-        Params
-        , 5, 250 );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UseLightingBloom");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(lighting_settings*, &Element->Lighting),
-        CSz("Lighting"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->UseLightingBloom),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BravoilMyersOIT");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->ApplicationResolution),
-        CSz("ApplicationResolution"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->BravoilMyersOIT),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BravoilMcGuireOIT");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->ShadowMapResolution),
-        CSz("ShadowMapResolution"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->BravoilMcGuireOIT),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawMajorGrid");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->LuminanceMapResolution),
-        CSz("LuminanceMapResolution"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->DrawMajorGrid),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawMinorGrid");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2i*, &Element->iApplicationResolution),
-        CSz("iApplicationResolution"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->DrawMinorGrid),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2i*, &Element->iShadowMapResolution),
-        CSz("iShadowMapResolution"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MajorGridDim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->MajorGridDim),
+          MemberName,
+          Params
+          , 0, 32 );
 
 
 
@@ -303,15 +201,295 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 
 
+      }
+
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawCameraGhost");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2i*, &Element->iLuminanceMapResolution),
-        CSz("iLuminanceMapResolution"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->DrawCameraGhost),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("CameraGhostSize");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->CameraGhostSize),
+          MemberName,
+          Params
+          , 1, 100 );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Ignored");
+        
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Headless");
+        
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ToneMappingType");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(tone_mapping_type*, &Element->ToneMappingType),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("GameCameraFOV");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->GameCameraFOV),
+          MemberName,
+          Params
+          , 5, 250 );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Lighting");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(lighting_settings*, &Element->Lighting),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ApplicationResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->ApplicationResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ShadowMapResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->ShadowMapResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LuminanceMapResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->LuminanceMapResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("iApplicationResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2i*, &Element->iApplicationResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("iShadowMapResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2i*, &Element->iShadowMapResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("iLuminanceMapResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2i*, &Element->iLuminanceMapResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

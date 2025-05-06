@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->AutoDayNightCycle),
-        CSz("AutoDayNightCycle"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("AutoDayNightCycle");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->AutoDayNightCycle),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,66 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->tDay),
-        CSz("tDay"),
-        Params
-        , -PI32, PI32 );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->DawnIntensity),
-        CSz("DawnIntensity"),
-        Params
-        , 0.f, 3.f );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->DawnColor),
-        CSz("DawnColor"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->SunIntensity),
-        CSz("SunIntensity"),
-        Params
-        , 0.f, 3.f );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("tDay");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->tDay),
+          MemberName,
+          Params
+          , -PI32, PI32 );
 
 
 
@@ -107,65 +72,35 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->SunColor),
-        CSz("SunColor"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->DuskIntensity),
-        CSz("DuskIntensity"),
-        Params
-        , 0.f, 3.f );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->DuskColor),
-        CSz("DuskColor"),
-        Params
-        );
+      
 
-
-
-
-
-
-
+      { 
+        
+        
+        
+        cs MemberName = CSz("SunP");
+        
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->MoonIntensity),
-        CSz("MoonIntensity"),
-        Params
-        , 0.f, 3.f );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DawnIntensity");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->DawnIntensity),
+          MemberName,
+          Params
+          , 0.f, 3.f );
 
 
 
@@ -173,16 +108,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->MoonColor),
-        CSz("MoonColor"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DawnColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->DawnColor),
+          MemberName,
+          Params
+          );
 
 
 
@@ -190,15 +133,178 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->CurrentSunColor),
-        CSz("CurrentSunColor"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SunIntensity");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->SunIntensity),
+          MemberName,
+          Params
+          , 0.f, 3.f );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SunColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->SunColor),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DuskIntensity");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->DuskIntensity),
+          MemberName,
+          Params
+          , 0.f, 3.f );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DuskColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->DuskColor),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MoonIntensity");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->MoonIntensity),
+          MemberName,
+          Params
+          , 0.f, 3.f );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MoonColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->MoonColor),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("CurrentSunColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->CurrentSunColor),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

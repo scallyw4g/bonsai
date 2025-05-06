@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->_Reserved),
-        CSz("_Reserved"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("_Reserved");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->_Reserved),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,33 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->WindowBits),
-        CSz("WindowBits"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->InteractionBits),
-        CSz("InteractionBits"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WindowBits");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->WindowBits),
+          MemberName,
+          Params
+          );
 
 
 
@@ -74,16 +72,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->ElementBits),
-        CSz("ElementBits"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InteractionBits");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->InteractionBits),
+          MemberName,
+          Params
+          );
 
 
 
@@ -91,6 +97,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, ui_r
 
 
 
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ElementBits");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->ElementBits),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

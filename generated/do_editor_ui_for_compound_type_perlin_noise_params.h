@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:100:0
+// src/engine/editor.cpp:99:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Threshold),
-        CSz("Threshold"),
-        Params
-        , 0.f,   1.f );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Threshold");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Threshold),
+          MemberName,
+          Params
+          , 0.f,   1.f );
 
 
 
@@ -40,16 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->Period),
-        CSz("Period"),
-        Params
-        , 0.1f, 20.f );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Period");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->Period),
+          MemberName,
+          Params
+          , 0.1f, 20.f );
 
 
 
@@ -57,15 +72,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Amplitude),
-        CSz("Amplitude"),
-        Params
-        , 0.1f, 20.f );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Amplitude");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Amplitude),
+          MemberName,
+          Params
+          , 0.1f, 20.f );
 
 
 
@@ -73,6 +96,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

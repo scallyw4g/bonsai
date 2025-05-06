@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:447:0
+// src/engine/editor.cpp:444:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader*, &Element->Program),
-        CSz("Program"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Program");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader*, &Element->Program),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,101 +47,107 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-
-      
-                        if (ToggleButton(Ui, CSz("v Uniforms[4]"), CSz("> Uniforms[4]"), UiId(Window, "toggle world_edit_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 4)
-        {
-                    DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                        if (ToggleButton(Ui, CSz("v PingPongFBOs[2]"), CSz("> PingPongFBOs[2]"), UiId(Window, "toggle world_edit_render_context framebuffer PingPongFBOs", Element->PingPongFBOs), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 2)
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Uniforms");
+                                
+
+        if (ToggleButton(Ui, CSz("v Uniforms[4]"), CSz("> Uniforms[4]"), UiId(Window, "toggle world_edit_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
         {
-                    DoEditorUi(Ui, Window, Element->PingPongFBOs+ArrayIndex, FSz("PingPongFBOs[%d]", ArrayIndex), Params);
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 4)
+          {
+                        DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
 
-          
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-      }
-      PushNewRow(Ui);
-
-
-
-
-      
-                        if (ToggleButton(Ui, CSz("v PingPongTextures[2]"), CSz("> PingPongTextures[2]"), UiId(Window, "toggle world_edit_render_context texture PingPongTextures", Element->PingPongTextures), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
         PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 2)
-        {
-                    DoEditorUi(Ui, Window, Element->PingPongTextures+ArrayIndex, FSz("PingPongTextures[%d]", ArrayIndex), Params);
 
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+
+
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, Element->ChunkDim),
-        CSz("ChunkDim"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PingPongFBOs");
+                                
+
+        if (ToggleButton(Ui, CSz("v PingPongFBOs[2]"), CSz("> PingPongFBOs[2]"), UiId(Window, "toggle world_edit_render_context framebuffer PingPongFBOs", Element->PingPongFBOs), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 2)
+          {
+                        DoEditorUi(Ui, Window, Element->PingPongFBOs+ArrayIndex, FSz("PingPongFBOs[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
 
 
 
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, Element->WorldspaceChunkBasis),
-        CSz("WorldspaceChunkBasis"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("PingPongTextures");
+                                
+
+        if (ToggleButton(Ui, CSz("v PingPongTextures[2]"), CSz("> PingPongTextures[2]"), UiId(Window, "toggle world_edit_render_context texture PingPongTextures", Element->PingPongTextures), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 2)
+          {
+                        DoEditorUi(Ui, Window, Element->PingPongTextures+ArrayIndex, FSz("PingPongTextures[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
 
 
 
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, Element->ChunkResolution),
-        CSz("ChunkResolution"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkDim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, Element->ChunkDim),
+          MemberName,
+          Params
+          );
 
 
 
@@ -142,15 +155,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldspaceChunkBasis");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, Element->WorldspaceChunkBasis),
+          MemberName,
+          Params
+          );
 
 
 
@@ -158,6 +179,55 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, Element->ChunkResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->Type),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

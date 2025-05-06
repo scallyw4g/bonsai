@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:441:0
+// src/engine/editor.cpp:438:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_context *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader*, &Element->Program),
-        CSz("Program"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Program");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader*, &Element->Program),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,49 +47,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-
-      
-                        if (ToggleButton(Ui, CSz("v Uniforms[4]"), CSz("> Uniforms[4]"), UiId(Window, "toggle terrain_decoration_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 4)
-        {
-                    DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, Element->DestTex),
-        CSz("DestTex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Uniforms");
+                                
+
+        if (ToggleButton(Ui, CSz("v Uniforms[4]"), CSz("> Uniforms[4]"), UiId(Window, "toggle terrain_decoration_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 4)
+          {
+                        DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
 
 
 
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(framebuffer*, Element->DestFBO),
-        CSz("DestFBO"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DestTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, Element->DestTex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -90,15 +99,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, Element->DerivsTex),
-        CSz("DerivsTex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DestFBO");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(framebuffer*, Element->DestFBO),
+          MemberName,
+          Params
+          );
 
 
 
@@ -106,15 +123,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->ChunkDim),
-        CSz("ChunkDim"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DerivsTex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, Element->DerivsTex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -122,15 +147,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->WorldspaceChunkBasis),
-        CSz("WorldspaceChunkBasis"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkDim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->ChunkDim),
+          MemberName,
+          Params
+          );
 
 
 
@@ -138,15 +171,55 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->ChunkResolution),
-        CSz("ChunkResolution"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldspaceChunkBasis");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->WorldspaceChunkBasis),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ChunkResolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->ChunkResolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

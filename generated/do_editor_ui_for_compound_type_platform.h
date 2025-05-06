@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*, &Element->LowPriority),
-        CSz("LowPriority"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LowPriority");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue*, &Element->LowPriority),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*, &Element->HighPriority),
-        CSz("HighPriority"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*, &Element->RenderQ),
-        CSz("RenderQ"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HighPriority");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue*, &Element->HighPriority),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue*, &Element->WorldUpdateQ),
-        CSz("WorldUpdateQ"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("RenderQ");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue*, &Element->RenderQ),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,15 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->HighPriorityWorkerCount),
-        CSz("HighPriorityWorkerCount"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldUpdateQ");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue*, &Element->WorldUpdateQ),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,16 +119,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HighPriorityWorkerCount");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->HighPriorityWorkerCount),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*, &Element->HighPriorityModeFutex),
-        CSz("HighPriorityModeFutex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HighPriorityModeFutex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->HighPriorityModeFutex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -121,15 +168,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex),
-        CSz("WorkerThreadsSuspendFutex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorkerThreadsSuspendFutex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -137,15 +192,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex),
-        CSz("WorkerThreadsExitFutex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorkerThreadsExitFutex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -153,15 +216,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(thread_startup_params*, Element->Threads),
-        CSz("Threads"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Threads");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(thread_startup_params*, Element->Threads),
+          MemberName,
+          Params
+          );
 
 
 
@@ -169,15 +240,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->MouseP),
-        CSz("MouseP"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MouseP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->MouseP),
+          MemberName,
+          Params
+          );
 
 
 
@@ -185,15 +264,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->MouseDP),
-        CSz("MouseDP"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MouseDP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->MouseDP),
+          MemberName,
+          Params
+          );
 
 
 
@@ -201,15 +288,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, Element->Memory),
-        CSz("Memory"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Memory");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, Element->Memory),
+          MemberName,
+          Params
+          );
 
 
 
@@ -217,15 +312,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->GameTime),
-        CSz("GameTime"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("GameTime");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->GameTime),
+          MemberName,
+          Params
+          );
 
 
 
@@ -233,16 +336,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->dt),
-        CSz("dt"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("dt");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->dt),
+          MemberName,
+          Params
+          );
 
 
 
@@ -250,16 +361,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, &Element->ScreenDim),
-        CSz("ScreenDim"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ScreenDim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, &Element->ScreenDim),
+          MemberName,
+          Params
+          );
 
 
 
@@ -267,15 +386,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input*, &Element->Input),
-        CSz("Input"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Input");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input*, &Element->Input),
+          MemberName,
+          Params
+          );
 
 
 
@@ -283,15 +410,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(server_state*, Element->ServerState),
-        CSz("ServerState"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ServerState");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(server_state*, Element->ServerState),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

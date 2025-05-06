@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:391:0
+// src/engine/editor.cpp:388:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,141 +47,223 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
 
 
-
-      
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->HadNoVisibleSurface),
-        CSz("HadNoVisibleSurface"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->Dirty),
-        CSz("Dirty"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->WorldP),
-        CSz("WorldP"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->Resolution),
-        CSz("Resolution"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->Chunk),
-        CSz("Chunk"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                        if (ToggleButton(Ui, CSz("v Children[8]"), CSz("> Children[8]"), UiId(Window, "toggle octree_node octree_node Children", Element->Children), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 8)
-        {
-                    if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);};
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HadNoVisibleSurface");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(octree_node*, Element->Next),
-        CSz("Next"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->HadNoVisibleSurface),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dirty");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_ptr_block_array*, &Element->Edits),
-        CSz("Edits"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->Dirty),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
-
+            PushNewRow(Ui);
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*, &Element->Lock),
-        CSz("Lock"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->WorldP),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Resolution");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Resolution),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Chunk");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_chunk*, Element->Chunk),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Children");
+                                
+
+        if (ToggleButton(Ui, CSz("v Children[8]"), CSz("> Children[8]"), UiId(Window, "toggle octree_node octree_node Children", Element->Children), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 8)
+          {
+                        if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);};
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Next");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(octree_node*, Element->Next),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Edits");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_ptr_block_array*, &Element->Edits),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Lock");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->Lock),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

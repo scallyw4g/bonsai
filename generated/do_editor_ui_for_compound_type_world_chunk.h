@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:388:0
+// src/engine/editor.cpp:385:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->Next),
-        CSz("Next"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Next");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_chunk*, Element->Next),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(chunk_flag*, &Element->Flags),
-        CSz("Flags"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->Dim),
-        CSz("Dim"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Flags");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(chunk_flag*, &Element->Flags),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, Element->Occupancy),
-        CSz("Occupancy"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Dim),
+          MemberName,
+          Params
+          );
 
 
 
@@ -88,16 +95,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Occupancy");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->Occupancy),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, Element->xOccupancyBorder),
-        CSz("xOccupancyBorder"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("xOccupancyBorder");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->xOccupancyBorder),
+          MemberName,
+          Params
+          );
 
 
 
@@ -105,16 +144,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, Element->FaceMasks),
-        CSz("FaceMasks"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FaceMasks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->FaceMasks),
+          MemberName,
+          Params
+          );
 
 
 
@@ -122,16 +169,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel*, Element->Voxels),
-        CSz("Voxels"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Voxels");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voxel*, Element->Voxels),
+          MemberName,
+          Params
+          );
 
 
 
@@ -139,15 +194,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel_lighting*, Element->VoxelLighting),
-        CSz("VoxelLighting"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("VoxelLighting");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voxel_lighting*, Element->VoxelLighting),
+          MemberName,
+          Params
+          );
 
 
 
@@ -155,15 +218,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(gpu_mapped_element_buffer*, &Element->Mesh),
-        CSz("Mesh"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mesh");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(gpu_mapped_element_buffer*, &Element->Mesh),
+          MemberName,
+          Params
+          );
 
 
 
@@ -171,15 +242,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel_position_cursor*, &Element->StandingSpots),
-        CSz("StandingSpots"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("StandingSpots");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voxel_position_cursor*, &Element->StandingSpots),
+          MemberName,
+          Params
+          );
 
 
 
@@ -187,15 +266,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->DimInChunks),
-        CSz("DimInChunks"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DimInChunks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->DimInChunks),
+          MemberName,
+          Params
+          );
 
 
 
@@ -203,15 +290,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->WorldP),
-        CSz("WorldP"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->WorldP),
+          MemberName,
+          Params
+          );
 
 
 
@@ -219,15 +314,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->FilledCount),
-        CSz("FilledCount"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FilledCount");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->FilledCount),
+          MemberName,
+          Params
+          );
 
 
 
@@ -235,16 +338,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_ptr_block_array*, &Element->Entities),
-        CSz("Entities"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Entities");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_ptr_block_array*, &Element->Entities),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

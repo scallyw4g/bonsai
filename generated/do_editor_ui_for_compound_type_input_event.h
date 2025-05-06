@@ -26,31 +26,47 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                          DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->Clicked),
-        CSz("Clicked"),
-        &DefaultUiRenderParams_Checkbox
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Clicked");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Clicked),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->Pressed),
-        CSz("Pressed"),
-        &DefaultUiRenderParams_Checkbox
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Pressed");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Pressed),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

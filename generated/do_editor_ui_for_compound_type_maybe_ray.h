@@ -1,4 +1,4 @@
-// src/engine/editor.h:575:0
+// src/engine/editor.h:585:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(maybe_tag*, &Element->Tag),
-        CSz("Tag"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Tag");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(maybe_tag*, &Element->Tag),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,15 +47,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, 
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ray*, &Element->Ray),
-        CSz("Ray"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Ray");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ray*, &Element->Ray),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

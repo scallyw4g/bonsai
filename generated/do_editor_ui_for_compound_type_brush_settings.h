@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:114:0
+// src/engine/editor.cpp:115:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(brush_layer_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BrushType");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(brush_layer_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(noise_layer*, &Element->Noise),
-        CSz("Noise"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shape_layer*, &Element->Shape),
-        CSz("Shape"),
-        Params
-        );
+       if (Element->Type == BrushLayerType_Noise) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(noise_layer*, &Element->Noise),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,31 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_blend_mode*, &Element->Mode),
-        CSz("Mode"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
-        CSz("Modifier"),
-        Params
-        );
+       if (Element->Type == BrushLayerType_Shape) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shape_layer*, &Element->Shape),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,31 +95,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_edit_color_blend_mode*, &Element->ColorMode),
-        CSz("ColorMode"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*, &Element->Iterations),
-        CSz("Iterations"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_blend_mode*, &Element->Mode),
+          MemberName,
+          Params
+          );
 
 
 
@@ -136,16 +119,96 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Modifier");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ColorMode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_color_blend_mode*, &Element->ColorMode),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Iterations");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->Iterations),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(rect3i*, &Element->Offset),
-        CSz("Offset"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Offset");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(rect3i*, &Element->Offset),
+          MemberName,
+          Params
+          );
 
 
 
@@ -153,15 +216,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*, &Element->NoiseBasisOffset),
-        CSz("NoiseBasisOffset"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("NoiseBasisOffset");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->NoiseBasisOffset),
+          MemberName,
+          Params
+          );
 
 
 
@@ -169,15 +240,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*, &Element->HSVColor),
-        CSz("HSVColor"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HSVColor");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->HSVColor),
+          MemberName,
+          Params
+          );
 
 
 
@@ -185,15 +264,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*, &Element->Invert),
-        CSz("Invert"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Invert");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->Invert),
+          MemberName,
+          Params
+          );
 
 
 
@@ -201,6 +288,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

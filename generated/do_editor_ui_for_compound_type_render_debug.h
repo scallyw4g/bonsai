@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:453:0
+// src/engine/editor.cpp:450:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->BytesSolidGeoLastFrame),
-        CSz("BytesSolidGeoLastFrame"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BytesSolidGeoLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->BytesSolidGeoLastFrame),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,33 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->BytesTransGeoLastFrame),
-        CSz("BytesTransGeoLastFrame"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->VertsDrawnLastFrame),
-        CSz("VertsDrawnLastFrame"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BytesTransGeoLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->BytesTransGeoLastFrame),
+          MemberName,
+          Params
+          );
 
 
 
@@ -74,16 +72,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->DrawCallsLastFrame),
-        CSz("DrawCallsLastFrame"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("VertsDrawnLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->VertsDrawnLastFrame),
+          MemberName,
+          Params
+          );
 
 
 
@@ -91,6 +97,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DrawCallsLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->DrawCallsLastFrame),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

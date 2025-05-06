@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u16*, &Element->ColorIndex),
-        CSz("ColorIndex"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ColorIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u16*, &Element->ColorIndex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,33 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u8*, &Element->Transparency),
-        CSz("Transparency"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u8*, &Element->Emission),
-        CSz("Emission"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Transparency");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u8*, &Element->Transparency),
+          MemberName,
+          Params
+          );
 
 
 
@@ -74,6 +72,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
 
 
 
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Emission");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u8*, &Element->Emission),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

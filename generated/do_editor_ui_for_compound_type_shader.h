@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->ID),
-        CSz("ID"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ID");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->ID),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,32 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+      }
 
             PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader_uniform_buffer*, &Element->Uniforms),
-        CSz("Uniforms"),
-        Params
-        );
-
-
-
-
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*, &Element->VertexSourceFilename),
-        CSz("VertexSourceFilename"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Uniforms");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader_uniform_buffer*, &Element->Uniforms),
+          MemberName,
+          Params
+          );
 
 
 
@@ -73,33 +72,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+      }
 
-            PushNewRow(Ui);
+      
+      
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*, &Element->FragSourceFilename),
-        CSz("FragSourceFilename"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s64*, &Element->VertexTimeModifiedWhenLoaded),
-        CSz("VertexTimeModifiedWhenLoaded"),
-        Params
-        );
+      { 
+        
+        
+        
+        cs MemberName = CSz("VertexSourceFilename");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->VertexSourceFilename),
+          MemberName,
+          Params
+          );
 
 
 
@@ -107,16 +96,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded),
-        CSz("FragmentTimeModifiedWhenLoaded"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FragSourceFilename");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->FragSourceFilename),
+          MemberName,
+          Params
+          );
 
 
 
@@ -124,20 +121,79 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->HotReloaded),
-        CSz("HotReloaded"),
-        &DefaultUiRenderParams_Checkbox
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("VertexTimeModifiedWhenLoaded");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s64*, &Element->VertexTimeModifiedWhenLoaded),
+          MemberName,
+          Params
+          );
 
 
 
 
 
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FragmentTimeModifiedWhenLoaded");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HotReloaded");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->HotReloaded),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

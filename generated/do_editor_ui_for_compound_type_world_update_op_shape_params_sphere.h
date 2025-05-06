@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:106:0
+// src/engine/editor.cpp:107:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*, &Element->Location),
-        CSz("Location"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Location");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cp*, &Element->Location),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,15 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->Radius),
-        CSz("Radius"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Radius");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->Radius),
+          MemberName,
+          Params
+          );
 
 
 
@@ -56,6 +71,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:315:0
+// src/engine/editor.cpp:103:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ui_noise_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Noise Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ui_noise_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(white_noise_params*, &Element->White),
-        CSz("White"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(perlin_noise_params*, &Element->Perlin),
-        CSz("Perlin"),
-        Params
-        );
+       if (Element->Type == NoiseType_White) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(white_noise_params*, &Element->White),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,15 +71,55 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voronoi_noise_params*, &Element->Voronoi),
-        CSz("Voronoi"),
-        Params
-        );
+       if (Element->Type == NoiseType_Perlin) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(perlin_noise_params*, &Element->Perlin),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+       if (Element->Type == NoiseType_Voronoi) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voronoi_noise_params*, &Element->Voronoi),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

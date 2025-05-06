@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:112:0
+// src/engine/editor.cpp:113:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shape_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Shape Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shape_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,31 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_update_op_shape_params_sphere*, &Element->Sphere),
-        CSz("Sphere"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_update_op_shape_params_rect*, &Element->Rect),
-        CSz("Rect"),
-        Params
-        );
+       if (Element->Type == ShapeType_Sphere) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_update_op_shape_params_sphere*, &Element->Sphere),
+          MemberName,
+          Params
+          );
 
 
 
@@ -72,31 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_update_op_shape_params_cylinder*, &Element->Cylinder),
-        CSz("Cylinder"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(f32*, &Element->Threshold),
-        CSz("Threshold"),
-        Params
-        , 0.f, 1.f );
+       if (Element->Type == ShapeType_Rect) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_update_op_shape_params_rect*, &Element->Rect),
+          MemberName,
+          Params
+          );
 
 
 
@@ -104,6 +95,80 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
+      }
+
+      
+       if (Element->Type == ShapeType_Cylinder) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_update_op_shape_params_cylinder*, &Element->Cylinder),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Threshold");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->Threshold),
+          MemberName,
+          Params
+          , 0.f,  1.f );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Power");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->Power),
+          MemberName,
+          Params
+          , 0.f, 25.f );
+
+
+
+
+
+
+
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, &Element->Chunk),
-        CSz("Chunk"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Chunk");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_chunk*, &Element->Chunk),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,15 +47,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(asset_thumbnail*, &Element->Thumbnail),
-        CSz("Thumbnail"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Thumbnail");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(asset_thumbnail*, &Element->Thumbnail),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

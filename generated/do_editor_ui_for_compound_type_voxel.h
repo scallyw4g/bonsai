@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:336:0
+// src/engine/editor.cpp:333:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u8*, &Element->Transparency),
-        CSz("Transparency"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Transparency");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u8*, &Element->Transparency),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,16 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u16*, &Element->Color),
-        CSz("Color"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Color");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u16*, &Element->Color),
+          MemberName,
+          Params
+          );
 
 
 
@@ -57,6 +72,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, ui_r
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

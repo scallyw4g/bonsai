@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(bonsai_futex*, &Element->EnqueueFutex),
-        CSz("EnqueueFutex"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EnqueueFutex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->EnqueueFutex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,15 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->EnqueueIndex),
-        CSz("EnqueueIndex"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EnqueueIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->EnqueueIndex),
+          MemberName,
+          Params
+          );
 
 
 
@@ -56,33 +71,57 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->DequeueIndex),
-        CSz("DequeueIndex"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue_entry*, Element->Entries),
-        CSz("Entries"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DequeueIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->DequeueIndex),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Entries");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue_entry*, Element->Entries),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

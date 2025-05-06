@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(work_queue_entry_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(work_queue_entry_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,9 +47,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs
 
 
 
+      }
 
       
+      
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("(anonymous)");
+        
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

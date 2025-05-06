@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:366:0
+// src/engine/editor.cpp:363:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(file_traversal_type*, &Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(file_traversal_type*, &Element->Type),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,15 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+      }
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*, &Element->Dir),
-        CSz("Dir"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dir");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->Dir),
+          MemberName,
+          Params
+          );
 
 
 
@@ -56,16 +71,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*, &Element->Name),
-        CSz("Name"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Name");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->Name),
+          MemberName,
+          Params
+          );
 
 
 
@@ -73,6 +96,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

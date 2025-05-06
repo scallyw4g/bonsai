@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ui_id*, &Element->Id),
-        CSz("Id"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Id");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ui_id*, &Element->Id),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,19 +47,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
 
 
 
+      }
 
       
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->ToggledOn),
-        CSz("ToggledOn"),
-        &DefaultUiRenderParams_Checkbox
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ToggledOn");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->ToggledOn),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
 
 
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

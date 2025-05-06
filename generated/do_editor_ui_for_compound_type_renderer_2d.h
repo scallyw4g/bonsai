@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:426:0
+// src/engine/editor.cpp:423:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -26,14 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(render_buffers_2d*, Element->TextGroup),
-        CSz("TextGroup"),
-        Params
-        );
+            
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("TextGroup");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(render_buffers_2d*, Element->TextGroup),
+          MemberName,
+          Params
+          );
 
 
 
@@ -41,178 +47,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(texture*, &Element->SpriteTextureArray),
-        CSz("SpriteTextureArray"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u64*, &Element->InteractionStackTop),
-        CSz("InteractionStackTop"),
-        Params
-        );
-
-
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, Element->MouseP),
-        CSz("MouseP"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, Element->MouseDP),
-        CSz("MouseDP"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v2*, Element->ScreenDim),
-        CSz("ScreenDim"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(input*, Element->Input),
-        CSz("Input"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ui_toggle_hashtable*, &Element->ToggleTable),
-        CSz("ToggleTable"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(window_layout_hashtable*, &Element->WindowTable),
-        CSz("WindowTable"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                        if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 64)
-        {
-                    DoEditorUi(Ui, Window, Element->MinimizedWindowBuffer+ArrayIndex, FSz("MinimizedWindowBuffer[%d]", ArrayIndex), Params);
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(window_layout*, Element->HighestWindow),
-        CSz("HighestWindow"),
-        Params
-        );
-
-
-
-
-
-
-
-
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(interactable*, &Element->Hover),
-        CSz("Hover"),
-        Params
-        );
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("SpriteTextureArray");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(texture*, &Element->SpriteTextureArray),
+          MemberName,
+          Params
+          );
 
 
 
@@ -220,206 +71,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(interactable*, &Element->Clicked),
-        CSz("Clicked"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(interactable*, &Element->Pressed),
-        CSz("Pressed"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                    DoEditorUi(Ui,
-        Window,
-        Cast(b8*, &Element->RequestedForceCapture),
-        CSz("RequestedForceCapture"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(text_box_edit_state*, &Element->TextEdit),
-        CSz("TextEdit"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(layer_toolbar_actions*, &Element->LayerToolbarAction),
-        CSz("LayerToolbarAction"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(untextured_2d_geometry_buffer*, &Element->Geo),
-        CSz("Geo"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(shader*, &Element->TexturedQuadShader),
-        CSz("TexturedQuadShader"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(ui_render_command_buffer*, Element->CommandBuffer),
-        CSz("CommandBuffer"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, &Element->RenderCommandArena),
-        CSz("RenderCommandArena"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, &Element->UiToggleArena),
-        CSz("UiToggleArena"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(memory_arena*, &Element->WindowTableArena),
-        CSz("WindowTableArena"),
-        Params
-        );
-
-
-
-
-
-
-
-
-      
-                        if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 128)
-        {
-                    DoEditorUi(Ui, Window, Element->DebugColors+ArrayIndex, FSz("DebugColors[%d]", ArrayIndex), Params);
-
-          
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
-
-
-
 
       
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->SolidGeoCountLastFrame),
-        CSz("SolidGeoCountLastFrame"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InteractionStackTop");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, &Element->InteractionStackTop),
+          MemberName,
+          Params
+          );
 
 
 
@@ -427,33 +95,592 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
 
-
-            PushNewRow(Ui);
-
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*, &Element->TextGeoCountLastFrame),
-        CSz("TextGeoCountLastFrame"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
 
             PushNewRow(Ui);
 
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MouseP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, Element->MouseP),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MouseDP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, Element->MouseDP),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ScreenDim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v2*, Element->ScreenDim),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Input");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(input*, Element->Input),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ToggleTable");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ui_toggle_hashtable*, &Element->ToggleTable),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WindowTable");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(window_layout_hashtable*, &Element->WindowTable),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("MinimizedWindowBuffer");
+                                
+
+        if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 64)
+          {
+                        DoEditorUi(Ui, Window, Element->MinimizedWindowBuffer+ArrayIndex, FSz("MinimizedWindowBuffer[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("HighestWindow");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(window_layout*, Element->HighestWindow),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Hover");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(interactable*, &Element->Hover),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Clicked");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(interactable*, &Element->Clicked),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Pressed");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(interactable*, &Element->Pressed),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("RequestedForceCapture");
                                                 DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3_cursor*, Element->ColorPalette),
-        CSz("ColorPalette"),
-        Params
-        );
+          Window,
+          Cast(b8*, &Element->RequestedForceCapture),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TextEdit");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(text_box_edit_state*, &Element->TextEdit),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LayerToolbarAction");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(layer_toolbar_actions*, &Element->LayerToolbarAction),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Geo");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(untextured_2d_geometry_buffer*, &Element->Geo),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TexturedQuadShader");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shader*, &Element->TexturedQuadShader),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("CommandBuffer");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(ui_render_command_buffer*, Element->CommandBuffer),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("RenderCommandArena");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, &Element->RenderCommandArena),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("UiToggleArena");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, &Element->UiToggleArena),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WindowTableArena");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(memory_arena*, &Element->WindowTableArena),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DebugColors");
+                                
+
+        if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 128)
+          {
+                        DoEditorUi(Ui, Window, Element->DebugColors+ArrayIndex, FSz("DebugColors[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SolidGeoCountLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->SolidGeoCountLastFrame),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TextGeoCountLastFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->TextGeoCountLastFrame),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ColorPalette");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3_cursor*, Element->ColorPalette),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       PushTableEnd(Ui);
     }

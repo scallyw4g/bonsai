@@ -26,13 +26,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
     {
       PushTableStart(Ui);
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-                                                      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->tEnd),
-        CSz("tEnd"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("tEnd");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->tEnd),
+          MemberName,
+          Params
+          );
 
 
 
@@ -40,16 +47,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
+      }
 
             PushNewRow(Ui);
 
-                                                DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*, &Element->Value),
-        CSz("Value"),
-        Params
-        );
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Value");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Value),
+          MemberName,
+          Params
+          );
 
 
 
@@ -57,6 +72,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
 
 
 
+      }
 
             PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
