@@ -312,6 +312,21 @@ poof(do_editor_ui_for_compound_type(asset_thumbnail))
 poof(do_editor_ui_for_compound_type(chunk_thumbnail))
 #include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h>
 
+
+
+poof(string_and_value_tables(ui_layer_toolbar_actions))
+#include <generated/string_and_value_tables_ui_layer_toolbar_actions.h>
+poof(toolbar_for_enum(ui_layer_toolbar_actions))
+#include <generated/toolbar_for_enum_ui_layer_toolbar_actions.h>
+
+poof(string_and_value_tables(ui_brush_layer_actions))
+#include <generated/string_and_value_tables_enum_ui_brush_layer_actions.h>
+poof(toolbar_for_enum(ui_brush_layer_actions))
+#include <generated/toolbar_for_enum_ui_brush_layer_actions.h>
+
+
+
+
 poof(do_editor_ui_for_compound_type(brush_layer))
 #include <generated/do_editor_ui_for_compound_type_brush_layer.h>
 
@@ -1629,50 +1644,56 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
       }
 
       {
-        b32 ReorderUp         = False;
-        b32 ReorderDown       = False;
-        b32 Duplicate         = False;
-        b32 Delete            = False;
         s32 EditLayerIndex = 0;
+
         PushTableStart(Ui);
+
+        Ui->UiBrushLayerAction = {};
 
         brush_layer *Layers = Brush->Layered.Layers;
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
         {
           brush_layer *Layer = Layers + LayerIndex;
 
-          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
+          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex));
           cs LayerDetails = GetLayerUiText(Layer, GetTranArena());
+
           if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
           {
-            if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
+            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->UiBrushLayerAction, u64(LayerIndex));
+            if (Toolbar.AnyElementClicked)
             {
-              ReorderUp = True;
               EditLayerIndex = LayerIndex;
+
+              if (Ui->UiBrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+
+              b32 ThisState = GetToggleState(Ui, ToggleId);
+
+              if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveUp)
+              {
+                ui_id NextId = ToggleId;
+                NextId.ElementBits -= 1;
+                b32 NextState = GetToggleState(Ui, NextId);
+
+                SetToggleButton(Ui, ToggleId, NextState);
+                SetToggleButton(Ui, NextId, ThisState);
+              }
+
+              if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveDown)
+              {
+                ui_id NextId = ToggleId;
+                NextId.ElementBits += 1;
+                b32 NextState = GetToggleState(Ui, NextId);
+
+                SetToggleButton(Ui, ToggleId, NextState);
+                SetToggleButton(Ui, NextId, ThisState);
+              }
+
             }
 
-            if (Button(Ui, CSz("Down"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
-            {
-              ReorderDown = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
-            {
-              Duplicate = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Del"), UiId(BrushSettingsWindow, "layer_delete", Layer)))
-            {
-              Delete = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            PushNewRow(Ui);
-
-            /* DoSettingsForBrushLayer(Engine, Layer, BrushSettingsWindow); */
-            DoEditorUi(Ui, BrushSettingsWindow, Layer, {}, &DefaultUiRenderParams_Generic);
+            OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              DoEditorUi(Ui, BrushSettingsWindow, Layer, {});
+            CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
           }
           else
           {
@@ -1688,7 +1709,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
         }
         PushTableEnd(Ui);
 
-        if (ReorderUp)
+        if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveUp)
         {
           if (EditLayerIndex > 0)
           {
@@ -1699,12 +1720,13 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (ReorderDown)
+        if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveDown)
         {
           if (LayeredBrush->LayerCount)
           {
             if (EditLayerIndex < LayeredBrush->LayerCount-1)
             {
+              Info("SwippySwap");
               brush_layer *Layer = Layers + EditLayerIndex;
               brush_layer Tmp = Layers[EditLayerIndex+1];
               Layers[EditLayerIndex+1].Settings = Layer->Settings;
@@ -1713,7 +1735,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (Duplicate)
+        if (Ui->UiBrushLayerAction == UiBrushLayerAction_Duplicate)
         {
           if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
           {
@@ -1727,13 +1749,14 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (Delete)
+        if (Ui->UiBrushLayerAction == UiBrushLayerAction_Delete)
         {
           if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
           {
             // Shuffle layers backwards, overwriting EditLayerIndex
             RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
             {
+              Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
               Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
             }
 
@@ -2204,10 +2227,8 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
   v3 HSV = *HSVDest;
@@ -2241,7 +2262,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
       PushTooltip(Ui, FSz("%d %.2V3", ColorIndex, &RGB));
     }
 
-    if (ButtonHover && Input->LMB.Pressed)
+    if (Clicked(Ui, &ColorPickerButton))
     {
       HSVDest->E[ElementIndex] = Value;
     }
@@ -2251,10 +2272,8 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 }
 
 link_internal void
-DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-
   /* u8 FourBits   = 0b1111; */
   u8 FiveBits   = 0b11111;
   u8 SixBits    = 0b111111;
@@ -2266,9 +2285,9 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *HSVDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Engine, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
-  DoColorPickerSection(Engine, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
-  DoColorPickerSection(Engine, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
 
   PushNewRow(Ui);
 
@@ -2296,7 +2315,7 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
 
   if (window_layout *Window = ModalIsActive(Ui, ModalId))
   {
-    DoColorPicker(Engine, Window, HSVDest, ShowColorSwatch);
+    DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch);
 
     PushNewRow(Ui);
 
@@ -2412,12 +2431,6 @@ UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memo
 
   ApplyEditToOctree(Engine, Edit, TempMemory);
 }
-
-poof(string_and_value_tables(layer_toolbar_actions))
-#include <generated/string_and_value_tables_enum.h>
-
-poof(toolbar_for_enum(layer_toolbar_actions))
-#include <generated/toolbar_for_enum_enum.h>
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)

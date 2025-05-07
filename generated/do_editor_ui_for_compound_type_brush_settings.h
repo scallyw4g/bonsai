@@ -251,16 +251,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("HSVColor");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->HSVColor),
-          MemberName,
-          Params
-          );
-
-
-
+                                        DoColorPicker(Ui, Window, &Element->HSVColor, False);
 
 
 

@@ -79,6 +79,7 @@ poof(
                    window_layout *Window,
                               cs  GroupName,
                      enum_t.name *Element,
+                             u64  Index = 0,
                 ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
     ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
     {
@@ -88,7 +89,7 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          { CSz("enum_v.name.strip_all_prefix"), UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
+          /* enum_v.has_tag(ui_skip)?{} */ { CSz("enum_v.name.strip_all_prefix"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name"), Cast(void*, Index)), enum_v.name },
         }
       };
 
@@ -99,11 +100,11 @@ poof(
 
       ui_toggle_button_group Result = {};
       Result.Ui = Ui;
-      Result.Flags = ToggleButtonGroupFlags_TypePlainButton;
+      Result.Flags = ToggleButtonGroupFlags_TypeClickButton;
       Result.Buttons = ButtonBuffer;
       Result.EnumStorage = Cast(u32*, Element);
 
-      DrawButtonGroup(&Result, CSz("Uhh"));
+      DrawButtonGroup(&Result, GroupName);
       return Result;
     }
   }
@@ -899,7 +900,6 @@ poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 
 
 
-
 enum shape_type
 {
   ShapeType_Sphere,
@@ -995,7 +995,7 @@ struct brush_settings poof(@version(3))
   v3i NoiseBasisOffset;
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(DoColorPicker(Ui, Window, &Element->HSVColor, False)))
   /* v3 RGBColor = DEFAULT_RGB_COLOR; */
   b8 Invert;
 };
@@ -1352,3 +1352,6 @@ GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);
 
 link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);
+
+link_internal void
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);
