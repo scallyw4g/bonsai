@@ -546,6 +546,17 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 {
   Assert(Result->Initialized == False);
 
+
+  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
+  {
+    v2i SR = V2i(1024*2);
+    if (!InitializeShadowRenderGroup(Result, SG, SR))
+    {
+      SoftError("Initializing Shadow Buffer");// return False;
+    }
+  }
+
+
   Init_Global_QuadVertexBuffer();
 
   Result->Memory = GraphicsMemory;
@@ -585,12 +596,6 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))
   {
     Error("Initializing g_buffer_render_group"); return False;
-  }
-
-  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowRenderGroup(Result, SG, Result->Settings.iShadowMapResolution))
-  {
-    SoftError("Initializing Shadow Buffer");// return False;
   }
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);

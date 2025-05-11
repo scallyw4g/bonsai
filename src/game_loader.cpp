@@ -189,11 +189,9 @@ main( s32 ArgCount, const char ** Args )
   InitQueue(&Plat->RenderQ,      WorkQueueMemory);
   InitQueue(&Plat->WorldUpdateQ, WorkQueueMemory);
 
-
   DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
-
 
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 

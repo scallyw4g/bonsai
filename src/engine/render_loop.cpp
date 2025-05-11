@@ -239,7 +239,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               shader_uniform *Uniform = &Command->Uniform;
               if (Uniform->ID >= 0)
               {
-                BindUnifromById(Uniform, &Command->TextureUnit);
+                BindUniformById(Uniform, &Command->TextureUnit);
               }
               else
               {

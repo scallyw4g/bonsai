@@ -30,7 +30,7 @@ UseShader( bloom_downsample_shader *Struct )
 
   s32 TextureUnit = 0;
   s32 UniformIndex = 0;
-      BindUnifromById(Struct->Uniforms+UniformIndex, &TextureUnit);
+      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
   ++UniformIndex;
 
 
