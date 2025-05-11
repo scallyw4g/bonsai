@@ -2227,25 +2227,27 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim)
 {
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
   v3 HSV = *HSVDest;
 
-  r32 CurrentValue = HSVDest->E[ElementIndex];
+  r32 CurrentValue = HSVDest->E[HSVElementIndex];
 
   ui_element_reference SaturationTable = PushTableStart(Ui);
   RangeIterator_t(u8, ColorIndex, Slices)
   {
     r32 Value = r32(ColorIndex)/r32(Slices);
 
-    HSV.E[ElementIndex] = Value;
+    HSV.E[HSVElementIndex] = Value;
     v3 RGB = HSVtoRGB(HSV);
 
     b32 Selected = Value == CurrentValue;
     ui_style Style = FlatUiStyle(RGB);
-    interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(Window, "ColorPicker value button", Cast(void*, u64(ColorIndex) | u64(ElementIndex<<16))) );
+    ui_id Id = UiId(Window, Cast(void*, "ColorPicker value button"), Cast(void*, HSVDest), Cast(void*, u64(ColorIndex) | u64(HSVElementIndex<<16)));
+
+    interactable_handle ColorPickerButton = PushButtonStart(Ui, Id);
       PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
     PushButtonEnd(Ui);
 
@@ -2264,7 +2266,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 El
 
     if (Clicked(Ui, &ColorPickerButton))
     {
-      HSVDest->E[ElementIndex] = Value;
+      HSVDest->E[HSVElementIndex] = Value;
     }
   }
   PushTableEnd(Ui);
