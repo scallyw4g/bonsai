@@ -3,7 +3,6 @@ uniform v3 ChunkResolution;
 
 in vec2 UV;
 out v4 Output;
-/* layout (location = 0) out float Output; */
 
 
 // https://www.shadertoy.com/view/4dffRH
