@@ -971,7 +971,7 @@ poof(string_and_value_tables(brush_layer_type))
 poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
-struct brush_settings poof(@version(3))
+struct brush_settings
 {
   brush_layer_type Type; poof(@ui_display_name(CSz("BrushType")))
 
@@ -984,6 +984,7 @@ struct brush_settings poof(@version(3))
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
   world_edit_color_blend_mode    ColorMode;
+  b8 Invert;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
   // NOTE(Jesse): This is the relative offset from the base selection.
@@ -995,106 +996,11 @@ struct brush_settings poof(@version(3))
   v3i NoiseBasisOffset;
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(DoColorPicker(Ui, Window, &Element->HSVColor, False)))
-  /* v3 RGBColor = DEFAULT_RGB_COLOR; */
-  b8 Invert;
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False)))
 };
 
-// TODO(Jesse): Rename to `brush` ..?
-struct brush_settings_2
-{
-  brush_layer_type Type;
-
-  noise_layer Noise;
-  shape_layer Shape;
-
-  //
-  // Common across brush types
-  //
-  world_edit_blend_mode          Mode;
-  world_edit_blend_mode_modifier Modifier;
-  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
-
-  // NOTE(Jesse): This is the relative offset from the base selection.
-  // Used to inflate or contract the area affected by the brush.
-  //
-  // TODO(Jesse): Rename to dilation
-  rect3i Offset;
-
-  v3i NoiseBasisOffset;
-
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
-  b8 Invert;
-};
 poof(are_equal(brush_settings))
-#include <generated/are_equal_brush_settings.h>
-
-
-struct brush_settings_1
-{
-  brush_layer_type Type;
-
-  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
-  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Sphere))
-
-  //
-  // Common across brush types
-  //
-  world_edit_blend_mode          Mode;
-  world_edit_blend_mode_modifier Modifier;
-  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
-
-  // NOTE(Jesse): This is the relative offset from the base selection.
-  // Used to inflate or contract the area affected by the brush.
-  rect3i Offset;
-
-  v3i NoiseBasisOffset;
-
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
-};
-
-struct brush_settings_0
-{
-  brush_layer_type Type;
-
-  noise_layer Noise;
-  shape_layer Shape;
-
-  //
-  // Common across brush types
-  //
-  world_edit_blend_mode          Mode;
-  world_edit_blend_mode_modifier Modifier;
-  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
-
-  // NOTE(Jesse): This is the relative offset from the base selection.
-  // Used to inflate or contract the area affected by the brush.
-  rect3i Offset;
-
-  u16 Color = 1; poof(@custom_marshal(Live->HSVColor = MagicaVoxelDefaultPaletteToHSV(Stored->Color);)) // Default to white
-};
-
-link_internal void
-Marshal(brush_settings_2 *Stored, brush_settings *Live)
-{
-  poof(default_marshal(brush_settings_2))
-#include <generated/default_marshal_brush_settings_2.h>
-}
-
-link_internal void
-Marshal(brush_settings_1 *Stored, brush_settings *Live)
-{
-  poof(default_marshal(brush_settings_1))
-#include <generated/default_marshal_brush_settings_1.h>
-}
-
-link_internal void
-Marshal(brush_settings_0 *Stored, brush_settings *Live)
-{
-  poof(default_marshal(brush_settings_0))
-#include <generated/default_marshal_brush_settings_0.h>
-}
-
+#include <generated/are_equal_struct.h>
 
 struct brush_layer
 {
@@ -1355,3 +1261,6 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
 
 link_internal void
 DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);
+
+link_internal void
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);

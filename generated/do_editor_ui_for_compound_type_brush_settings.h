@@ -177,6 +177,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
+        cs MemberName = CSz("Invert");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->Invert),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("Iterations");
                                                                 DoEditorUi(Ui,
           Window,
@@ -251,38 +276,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("HSVColor");
-                                        DoColorPicker(Ui, Window, &Element->HSVColor, False);
+                                        PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False);
 
 
 
 
       }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Invert");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(b8*, &Element->Invert),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

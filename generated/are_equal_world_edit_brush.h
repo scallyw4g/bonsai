@@ -1,4 +1,4 @@
-// src/engine/editor.h:1206:0
+// src/engine/editor.h:1112:0
 
 link_internal b32
 AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2)

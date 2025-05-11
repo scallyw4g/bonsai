@@ -428,12 +428,7 @@ poof(serdes_struct(world_update_op_shape_params_chunk_data))
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
 
-poof(serdes_struct(brush_settings_0))
-#include <generated/serdes_struct_brush_settings_0.h>
-poof(serdes_struct(brush_settings_1))
-#include <generated/serdes_struct_brush_settings_1.h>
-poof(serdes_struct(brush_settings_2))
-#include <generated/serdes_struct_brush_settings_2.h>
+
 poof(serdes_struct(brush_settings))
 #include <generated/serdes_struct_brush_settings.h>
 

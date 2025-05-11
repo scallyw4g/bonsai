@@ -2311,6 +2311,32 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 }
 
 link_internal void
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+{
+  ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest);
+
+  u32 ColumnIndex = StartColumn(Ui);
+    if (ToggledOn(Ui, InteractionId))
+    {
+      // NOTE(Jesse): Gotta use a discrete button id for this
+      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest))) { SetToggleButton(Ui, InteractionId, False); }
+      PushNewRow(Ui);
+      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch);
+    }
+    else
+    {
+      ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
+      interactable_handle Handle = ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
+        v2 Dim = V2(25);
+        PushUntexturedQuad(Ui, V2(0), Dim, zDepth_Text, &BStyle);
+      ToggleButtonEnd(Ui);
+    }
+  EndColumn(Ui, ColumnIndex);
+
+  PushNewRow(Ui);
+}
+
+link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2318,8 +2344,6 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
   if (window_layout *Window = ModalIsActive(Ui, ModalId))
   {
     DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch);
-
-    PushNewRow(Ui);
 
     if (Button(Ui, CSz("Close"), UiId(Window, "modal close button", 0u)))
     {
@@ -2474,9 +2498,6 @@ DoWorldEditor(engine_resources *Engine)
 #endif
 
     PushTableEnd(Ui);
-
-    /* DoColorPicker(Engine, &Window, &Editor->HSVColorSelection); */
-
     PushWindowEnd(Ui, &Window);
   }
 
