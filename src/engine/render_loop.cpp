@@ -16,6 +16,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
     WorkerThread_BeforeJobStart(ThreadParams);
 
+    AssertNoGlErrors;
+
     while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
     {
       /* TIMED_NAMED_BLOCK(RENDER_LOOP); */

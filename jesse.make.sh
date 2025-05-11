@@ -10,9 +10,9 @@
 # ./make.sh RunTests
 
 ./make.sh $OPT                                                 \
-  BuildSingleExample examples/ui_test                          \
   BuildExecutables                                             \
-  # BuildSingleExample examples/terrain_gen                      \
+  BuildSingleExample examples/terrain_gen                      \
+  # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/blank_project                    \
   # BuildTests                                                   \
   # BuildSingleExample examples/blank_project                    \
