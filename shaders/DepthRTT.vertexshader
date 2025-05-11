@@ -9,6 +9,6 @@ out vec3 vertexP_worldspace;
 void main()
 {
   vertexP_worldspace = (ModelMatrix * vec4(vertexPosition_modelspace, 1)).xyz; // ??
-  gl_Position = MVP * V4(vertexP_worldspace, 1);
+  gl_Position = MVP * vec4(vertexP_worldspace, 1);
 }
 
