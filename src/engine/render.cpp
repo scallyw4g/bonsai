@@ -1172,7 +1172,9 @@ DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mes
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
 
     // @janky_model_matrix_bs
-    Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
+    // nopush
+    TryBindUniform(Shader, "ModelMatrix", &LocalTransform);
+    /* Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform)); */
     AssertNoGlErrors;
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
