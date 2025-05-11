@@ -50,11 +50,10 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-        /* enum_v.has_tag(ui_skip)?{} */ { CSz("NoAction"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_NoAction"), Cast(void*, Index)), UiBrushLayerAction_NoAction },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("MoveUp"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp"), Cast(void*, Index)), UiBrushLayerAction_MoveUp },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("MoveDown"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown"), Cast(void*, Index)), UiBrushLayerAction_MoveDown },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("Duplicate"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate"), Cast(void*, Index)), UiBrushLayerAction_Duplicate },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete"), Cast(void*, Index)), UiBrushLayerAction_Delete },
+         {CSz("MoveUp"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp"), Cast(void*, Index)), UiBrushLayerAction_MoveUp }, 
+     {CSz("MoveDown"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown"), Cast(void*, Index)), UiBrushLayerAction_MoveDown }, 
+     {CSz("Duplicate"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate"), Cast(void*, Index)), UiBrushLayerAction_Duplicate }, 
+     {CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete"), Cast(void*, Index)), UiBrushLayerAction_Delete }, 
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

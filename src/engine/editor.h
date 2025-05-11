@@ -89,7 +89,7 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          /* enum_v.has_tag(ui_skip)?{} */ { CSz("enum_v.name.strip_all_prefix"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name"), Cast(void*, Index)), enum_v.name },
+          enum_v.has_tag(ui_skip)?{} { {CSz("enum_v.name.strip_all_prefix"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name"), Cast(void*, Index)), enum_v.name }, }
         }
       };
 

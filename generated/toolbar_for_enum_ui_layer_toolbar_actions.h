@@ -48,9 +48,9 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-        /* enum_v.has_tag(ui_skip)?{} */ { CSz("New"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New"), Cast(void*, Index)), LayerToolbarActions_New },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"), Cast(void*, Index)), LayerToolbarActions_Delete },
-    /* enum_v.has_tag(ui_skip)?{} */ { CSz("Rename"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"), Cast(void*, Index)), LayerToolbarActions_Rename },
+         {CSz("New"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New"), Cast(void*, Index)), LayerToolbarActions_New }, 
+     {CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"), Cast(void*, Index)), LayerToolbarActions_Delete }, 
+     {CSz("Rename"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"), Cast(void*, Index)), LayerToolbarActions_Rename }, 
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
