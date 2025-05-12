@@ -241,6 +241,18 @@ Set( picked_octree_node_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( picked_octree_node_block_array *Array, picked_octree_node_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( picked_octree_node_block_array *Array, picked_octree_node *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( picked_octree_node_block_array *Array, picked_octree_node_block_array_index Index)
 {
   picked_octree_node_block_array_index LastI = LastIndex(Array);

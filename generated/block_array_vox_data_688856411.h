@@ -241,6 +241,18 @@ Set( vox_data_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( vox_data_block_array *Array, vox_data_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( vox_data_block_array *Array, vox_data *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( vox_data_block_array *Array, vox_data_block_array_index Index)
 {
   vox_data_block_array_index LastI = LastIndex(Array);

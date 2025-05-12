@@ -241,6 +241,18 @@ Set( file_traversal_node_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( file_traversal_node_block_array *Array, file_traversal_node_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( file_traversal_node_block_array *Array, file_traversal_node *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( file_traversal_node_block_array *Array, file_traversal_node_block_array_index Index)
 {
   file_traversal_node_block_array_index LastI = LastIndex(Array);

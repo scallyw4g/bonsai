@@ -1169,6 +1169,7 @@ struct level_editor
   b32 MaskSelection;
 
   u32 NextEditOrdinal;
+  u32 NextLayerIndex;
   /* world_edit_block_array WorldEdits; */
   world_edit_layer_block_array Layers;
   world_edit_brush_hashtable LoadedBrushes;

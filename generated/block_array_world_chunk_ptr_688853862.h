@@ -36,6 +36,18 @@ Set( world_chunk_ptr_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
 {
   world_chunk_ptr_block_array_index LastI = LastIndex(Array);

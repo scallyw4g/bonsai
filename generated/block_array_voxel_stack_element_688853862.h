@@ -241,6 +241,18 @@ Set( voxel_stack_element_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( voxel_stack_element_block_array *Array, voxel_stack_element *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( voxel_stack_element_block_array *Array, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element_block_array_index LastI = LastIndex(Array);

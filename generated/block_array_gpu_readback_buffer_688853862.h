@@ -241,6 +241,18 @@ Set( gpu_readback_buffer_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
 {
   gpu_readback_buffer_block_array_index LastI = LastIndex(Array);

@@ -36,6 +36,18 @@ Set( gpu_timer_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( gpu_timer_block_array *Array, gpu_timer *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( gpu_timer_block_array *Array, gpu_timer_block_array_index Index)
 {
   gpu_timer_block_array_index LastI = LastIndex(Array);

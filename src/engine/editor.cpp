@@ -18,6 +18,16 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
   FinalizeDeserialization(&Bytes);
 }
 
+link_internal void
+NewLayer(level_editor *Editor)
+{
+  Editor->CurrentLayer = Push(&Editor->Layers);
+  Editor->CurrentLayer->Edits = WorldEditBlockArray(Editor->Memory);
+
+  cs DefaultName = FSz("layer_%d", Editor->NextLayerIndex++);
+  CopyString(DefaultName.Start, Editor->CurrentLayer->NameBuf, DefaultName.Count);
+}
+
 link_internal b32
 InitEditor(level_editor *Editor)
 {
@@ -25,12 +35,8 @@ InitEditor(level_editor *Editor)
   Editor->Memory = AllocateArena();
 
   Editor->Layers = WorldEditLayerBlockArray(Editor->Memory);
-
-  Editor->CurrentLayer = Push(&Editor->Layers);
-  Editor->CurrentLayer->Edits = WorldEditBlockArray(Editor->Memory);
-
-  cs DefaultName = CSz("layer_0");
-  CopyString(DefaultName.Start, Editor->CurrentLayer->NameBuf, DefaultName.Count);
+  Assert(Editor->NextLayerIndex == 0);
+  NewLayer(Editor);
 
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
@@ -2956,13 +2962,35 @@ DoWorldEditor(engine_resources *Engine)
     PushWindowStart(Ui, &AllEditsWindow);
 
 
-   ui_toggle_button_group Toolbar = PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
-   if (Toolbar.AnyElementClicked)
-   {
-     Info("%S", ToString(Ui->LayerToolbarAction));
-   }
+    ui_toggle_button_group Toolbar = PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
 
-    /* if ( */
+    if (Toolbar.AnyElementClicked)
+    {
+      switch(Ui->LayerToolbarAction)
+      {
+        case LayerToolbarActions_New:
+        {
+          NewLayer(Editor);
+        } break;
+
+        case LayerToolbarActions_Delete:
+        {
+          RemoveOrdered(&Editor->Layers, Editor->CurrentLayer);
+        } break;
+
+        case LayerToolbarActions_Rename:
+        {
+          NotImplemented;
+          ui_id Id = {};
+          TextBox(Ui, {}, CS(Editor->CurrentLayer->NameBuf, NameBuf_Len), NameBuf_Len, Id);
+        } break;
+
+        case LayerToolbarActions_Duplicate:
+        {
+          NotImplemented;
+        } break;
+      }
+    }
 
     PushTableStart(Ui);
     IterateOver(&Editor->Layers, Layer, LayerIndex)
@@ -3006,7 +3034,7 @@ DoWorldEditor(engine_resources *Engine)
             Editor->HotEdit = Edit;
           }
 
-          if (Button(Ui, FSz("(UpdateBrush)", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
+          if (Button(Ui, FSz("SetBrush", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
           {
             Edit->Brush = Editor->CurrentBrush;
             UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());

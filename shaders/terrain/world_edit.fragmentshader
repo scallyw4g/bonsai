@@ -8,6 +8,7 @@ uniform int Modifiers;
 
 uniform int GenerateNormals;
 
+uniform f32 Power;
 
 //
 // Clipping params
@@ -34,7 +35,6 @@ uniform f32 Radius;
 uniform int NoiseType;
 uniform v3 RGBColor;
 uniform v3 Period;
-uniform f32 Amplitude;
 uniform f32 Threshold;
 uniform bool Invert;
 
@@ -116,8 +116,8 @@ void main()
             case 0:
             {
               f32 Dist = distance(ChunkRelLocation, xyz);
-              if (Dist < Radius) { NoiseSample = 1.f; }
-            } break; 
+              if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; }
+            } break;
 
             // ShapeType_Rect
             case 1: { NoiseSample = 1.f; } break;
@@ -192,9 +192,7 @@ void main()
         NoiseSample *= -1.f;
       }
 
-      f32 Amp = max(Amplitude, 1.f);
-      NoiseSample *= Amp;
-      /* NoiseSample *= Amplitude; */
+      NoiseSample *= max(Power, 1.f);
 
       switch (BlendMode)
       {

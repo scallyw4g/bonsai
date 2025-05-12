@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:319:0
+// src/engine/editor.cpp:325:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_layer_toolbar_actions Selection)
@@ -21,6 +21,7 @@ RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
         { CSz("New"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New")), LayerToolbarActions_New },
     { CSz("Delete"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
     { CSz("Rename"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
+    { CSz("Duplicate"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -51,6 +52,7 @@ PushToolbar(     renderer_2d *Ui,
          {CSz("New"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New"), Cast(void*, Index)), LayerToolbarActions_New }, 
      {CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"), Cast(void*, Index)), LayerToolbarActions_Delete }, 
      {CSz("Rename"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"), Cast(void*, Index)), LayerToolbarActions_Rename }, 
+     {CSz("Duplicate"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate"), Cast(void*, Index)), LayerToolbarActions_Duplicate }, 
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

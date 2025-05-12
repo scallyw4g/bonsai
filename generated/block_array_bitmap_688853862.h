@@ -241,6 +241,18 @@ Set( bitmap_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( bitmap_block_array *Array, bitmap_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( bitmap_block_array *Array, bitmap *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( bitmap_block_array *Array, bitmap_block_array_index Index)
 {
   bitmap_block_array_index LastI = LastIndex(Array);

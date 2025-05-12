@@ -36,6 +36,18 @@ Set( entity_ptr_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( entity_ptr_block_array *Array, entity_ptr_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( entity_ptr_block_array *Array, entity_ptr *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( entity_ptr_block_array *Array, entity_ptr_block_array_index Index)
 {
   entity_ptr_block_array_index LastI = LastIndex(Array);

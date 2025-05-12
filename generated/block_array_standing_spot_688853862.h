@@ -241,6 +241,18 @@ Set( standing_spot_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( standing_spot_block_array *Array, standing_spot_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( standing_spot_block_array *Array, standing_spot *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( standing_spot_block_array *Array, standing_spot_block_array_index Index)
 {
   standing_spot_block_array_index LastI = LastIndex(Array);

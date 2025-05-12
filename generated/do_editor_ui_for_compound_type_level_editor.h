@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:477:0
+// src/engine/editor.cpp:483:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -376,6 +376,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->NextEditOrdinal),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("NextLayerIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->NextLayerIndex),
           MemberName,
           Params
           );

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:80:0
+// src/engine/editor.cpp:86:0
 
 
 
@@ -33,6 +33,18 @@ Set( asset_thumbnail_block_array *Arr,
   }
 
   return Result;
+}
+
+link_internal void
+RemoveOrdered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( asset_thumbnail_block_array *Array, asset_thumbnail *Element )
+{
+  NotImplemented;
 }
 
 link_internal void

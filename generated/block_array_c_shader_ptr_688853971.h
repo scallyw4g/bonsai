@@ -36,6 +36,18 @@ Set( shader_ptr_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( shader_ptr_block_array *Array, shader_ptr_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( shader_ptr_block_array *Array, shader_ptr *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( shader_ptr_block_array *Array, shader_ptr_block_array_index Index)
 {
   shader_ptr_block_array_index LastI = LastIndex(Array);

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:317:0
+// src/engine/editor.cpp:323:0
 
 link_internal counted_string
 ToStringPrefixless(ui_layer_toolbar_actions Type)
@@ -9,6 +9,7 @@ ToStringPrefixless(ui_layer_toolbar_actions Type)
         case LayerToolbarActions_New: { Result = CSz("New"); } break;
     case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
     case LayerToolbarActions_Rename: { Result = CSz("Rename"); } break;
+    case LayerToolbarActions_Duplicate: { Result = CSz("Duplicate"); } break;
 
     
   }
@@ -25,6 +26,7 @@ ToString(ui_layer_toolbar_actions Type)
         case LayerToolbarActions_New: { Result = CSz("LayerToolbarActions_New"); } break;
     case LayerToolbarActions_Delete: { Result = CSz("LayerToolbarActions_Delete"); } break;
     case LayerToolbarActions_Rename: { Result = CSz("LayerToolbarActions_Rename"); } break;
+    case LayerToolbarActions_Duplicate: { Result = CSz("LayerToolbarActions_Duplicate"); } break;
 
     
   }
@@ -40,6 +42,7 @@ UiLayerToolbarActions(counted_string S)
     if (StringsMatch(S, CSz("LayerToolbarActions_New"))) { return LayerToolbarActions_New; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Delete"))) { return LayerToolbarActions_Delete; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Rename"))) { return LayerToolbarActions_Rename; }
+  if (StringsMatch(S, CSz("LayerToolbarActions_Duplicate"))) { return LayerToolbarActions_Duplicate; }
 
   return Result;
 }

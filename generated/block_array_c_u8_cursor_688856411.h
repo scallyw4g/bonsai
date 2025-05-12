@@ -36,6 +36,18 @@ Set( u8_cursor_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( u8_cursor_block_array *Array, u8_cursor *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( u8_cursor_block_array *Array, u8_cursor_block_array_index Index)
 {
   u8_cursor_block_array_index LastI = LastIndex(Array);

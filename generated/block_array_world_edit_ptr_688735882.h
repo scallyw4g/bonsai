@@ -241,6 +241,18 @@ Set( world_edit_ptr_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( world_edit_ptr_block_array *Array, world_edit_ptr *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( world_edit_ptr_block_array *Array, world_edit_ptr_block_array_index Index)
 {
   world_edit_ptr_block_array_index LastI = LastIndex(Array);

@@ -36,6 +36,18 @@ Set( texture_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( texture_block_array *Array, texture_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( texture_block_array *Array, texture *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( texture_block_array *Array, texture_block_array_index Index)
 {
   texture_block_array_index LastI = LastIndex(Array);

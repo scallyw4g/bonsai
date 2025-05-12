@@ -241,6 +241,18 @@ Set( member_info_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( member_info_block_array *Array, member_info_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( member_info_block_array *Array, member_info *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( member_info_block_array *Array, member_info_block_array_index Index)
 {
   member_info_block_array_index LastI = LastIndex(Array);

@@ -241,6 +241,18 @@ Set( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr,
 }
 
 link_internal void
+RemoveOrdered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
+{
+  NotImplemented;
+}
+
+link_internal void
+RemoveOrdered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Element )
+{
+  NotImplemented;
+}
+
+link_internal void
 RemoveUnordered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {
   dummy_work_queue_entry_build_chunk_mesh_block_array_index LastI = LastIndex(Array);
