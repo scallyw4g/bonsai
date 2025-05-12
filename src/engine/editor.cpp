@@ -2980,9 +2980,11 @@ DoWorldEditor(engine_resources *Engine)
 
         case LayerToolbarActions_Rename:
         {
-          NotImplemented;
-          ui_id Id = {};
-          TextBox(Ui, {}, CS(Editor->CurrentLayer->NameBuf, NameBuf_Len), NameBuf_Len, Id);
+          if (Editor->CurrentLayer)
+          {
+            ui_id Id = UiId(&AllEditsWindow, "rename current layer", Editor->CurrentLayer->NameBuf);
+            TextBox(Ui, {}, CS(Editor->CurrentLayer->NameBuf), NameBuf_Len, Id);
+          }
         } break;
 
         case LayerToolbarActions_Duplicate:
@@ -2996,7 +2998,15 @@ DoWorldEditor(engine_resources *Engine)
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
-      if (ToggleButton(Ui, Name, Name, UiId(&AllEditsWindow, Layer, Layer), &DefaultSelectedStyle))
+      b32 Selected = Editor->CurrentLayer == Layer;
+
+      ui_style *Style = Selected ? &DefaultSelectedStyle : &DefaultStyle;
+      if (Button(Ui, Name, UiId(&AllEditsWindow, Layer, Layer), Style))
+      {
+        Editor->CurrentLayer = Layer;
+      }
+
+      /* if (ToggleButton(Ui, Name, Name, UiId(&AllEditsWindow, Layer, Layer), &DefaultSelectedStyle)) */
       {
         PushNewRow(Ui);
         IterateOver(&Layer->Edits, Edit, BrushIndex)
@@ -3047,7 +3057,10 @@ DoWorldEditor(engine_resources *Engine)
         }
       }
 
+      PushNewRow(Ui);
     }
+
+    PushNewRow(Ui);
     PushTableEnd(Ui);
     PushWindowEnd(Ui, &AllEditsWindow);
 
