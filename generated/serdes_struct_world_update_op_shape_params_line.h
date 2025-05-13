@@ -1,11 +1,11 @@
-// src/engine/serdes.cpp:421:0
+// src/engine/serdes.cpp:419:0
 
 link_internal bonsai_type_info
-TypeInfo(world_update_op_shape_params_cylinder *Ignored)
+TypeInfo(world_update_op_shape_params_line *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_update_op_shape_params_cylinder");
+  Result.Name = CSz("world_update_op_shape_params_line");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -20,7 +20,7 @@ TypeInfo(world_update_op_shape_params_cylinder *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_line *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
@@ -33,7 +33,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_update_op_shape_params_cylinder *Element = BaseElement + ElementIndex;
+    world_update_op_shape_params_line *Element = BaseElement + ElementIndex;
                                 Result &= Serialize(Bytes, &Element->P0); // default
 
 
@@ -59,16 +59,16 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_line *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_line *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_line *Element, memory_arena *Memory)
 {
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
@@ -98,7 +98,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinde
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, world_update_op_shape_params_line *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 

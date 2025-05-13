@@ -416,13 +416,15 @@ poof(serdes_struct(world_update_op_shape_params_rect))
 #include <generated/serdes_struct_world_update_op_shape_params_rect.h>
 poof(serdes_struct(world_update_op_shape_params_sphere))
 #include <generated/serdes_struct_world_update_op_shape_params_sphere.h>
+poof(serdes_struct(world_update_op_shape_params_line))
+#include <generated/serdes_struct_world_update_op_shape_params_line.h>
 poof(serdes_struct(world_update_op_shape_params_cylinder))
 #include <generated/serdes_struct_world_update_op_shape_params_cylinder.h>
 poof(serdes_struct(world_update_op_shape_params_asset))
 #include <generated/serdes_struct_world_update_op_shape_params_asset.h>
 poof(serdes_struct(world_update_op_shape_params_chunk_data))
 #include <generated/serdes_struct_world_update_op_shape_params_chunk_data.h>
-// @dottedboxguy (Step3) Add new asset struct here to generate serialization code
+// @sdf_shape_step(3): Add new asset struct here to generate serialization code
 //
 
 poof(serdes_struct(shape_layer))

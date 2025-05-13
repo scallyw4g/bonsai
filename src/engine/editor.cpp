@@ -979,8 +979,11 @@ link_internal v3i
 GetShapeDim(shape_layer *Layer)
 {
   v3i Result = {};
+  NotImplemented;
+#if 0
   switch (Layer->Type)
   {
+    case ShapeType_: { NotImplemented; } break;
     case ShapeType_Cylinder: { NotImplemented; } break;
     case ShapeType_Sphere:
     {
@@ -993,6 +996,7 @@ GetShapeDim(shape_layer *Layer)
       Result = V3i(GetDim(Layer->Rect.Region));
     } break;
   }
+#endif
 
   return Result;
 }
@@ -1001,6 +1005,8 @@ link_internal v3i
 GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
 {
   v3i Request = GetDim(Layer->Settings.Offset);
+  NotImplemented;
+#if 0
   switch (Layer->Settings.Type)
   {
     case BrushLayerType_Noise:
@@ -1027,6 +1033,7 @@ GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
       }
     } break;
   }
+#endif
 
   v3i Result = Max(V3i(0), Request);
   return Result;
@@ -1212,6 +1219,8 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  NotImplemented;
+#if 0
   DoEditorUi(Ui, Window, &Layer->Type, CSz("ShapeType"));
 
   v3 SelectionDim = GetDim(GetSelectionRect(World, Editor));
@@ -1228,6 +1237,7 @@ BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shap
       DoEditorUi(Ui, Window, &Layer->Sphere, CSz(""));
     } break;
   }
+#endif
 
 }
 

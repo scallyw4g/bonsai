@@ -51,6 +51,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
       }
 
       
+       if (Element->Type == ShapeType_Rect) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_update_op_shape_params_rect*, &Element->Rect),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
        if (Element->Type == ShapeType_Sphere) 
 
       { 
@@ -75,7 +99,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
       }
 
       
-       if (Element->Type == ShapeType_Rect) 
+       if (Element->Type == ShapeType_Line) 
 
       { 
         
@@ -85,7 +109,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_update_op_shape_params_rect*, &Element->Rect),
+          Cast(world_update_op_shape_params_sphere*, &Element->Line),
           MemberName,
           Params
           );

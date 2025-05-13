@@ -1,5 +1,5 @@
-uniform v3 WorldspaceChunkBasis;
-uniform v3 ChunkResolution;
+uniform  v3 WorldspaceChunkBasis;
+uniform  v3 ChunkResolution;
 
 uniform int BrushType;
 uniform int BlendMode;
@@ -25,17 +25,17 @@ uniform int ShapeType;
 //
 // Sphere Params
 //
-uniform v3 ChunkRelLocation;
+uniform  v3 ChunkRelLocation;
 uniform f32 Radius;
 
 
 //
 // Noise params
 //
-uniform int NoiseType;
-uniform v3 RGBColor;
-uniform v3 Period;
-uniform f32 Threshold;
+uniform  int NoiseType;
+uniform   v3 RGBColor;
+uniform   v3 Period;
+uniform  f32 Threshold;
 uniform bool Invert;
 
 //
@@ -64,6 +64,7 @@ void main()
   f32 y = floor(gl_FragCoord.y - (z*66));
   v3 xyz = V3(x,y,z) * ChunkResolution;
 
+
   // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
   // think it should be >= Min and < Max .. but I'm just going to leave it for now..
   if (
@@ -76,6 +77,7 @@ void main()
       xyz.z <= ChunkRelEditMax.z  )
   {
     v3 Basis = WorldspaceChunkBasis + xyz;
+    v3 EditRelPosition = xyz - ChunkRelEditMin;
 
 
     {
@@ -112,20 +114,33 @@ void main()
         {
           switch (ShapeType)
           {
+            // ShapeType_Rect
+            case 0: { NoiseSample = 1.f; } break;
+
             // ShapeType_Sphere
-            case 0:
+            case 1:
             {
               f32 Dist = distance(ChunkRelLocation, xyz);
               if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; }
             } break;
 
-            // ShapeType_Rect
-            case 1: { NoiseSample = 1.f; } break;
+            // ShapeType_Line
+            case 2:
+            {
+              // TODO(Jesse): Mr. Jippity said this is how to do distance to
+              // line and it works, although I'm not sure it's necessarily a very good way to do it ..
+              v3 Line = normalize(ChunkRelEditMax-ChunkRelEditMin);
+              v3 X = cross(Line, EditRelPosition);
+              f32 Dist = length(X)/length(Line);
+              /* if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; } */
+              /* if (Dist < Radius) { NoiseSample = Dist*Power; } */
+              if (Dist < Radius) { NoiseSample = Power; }
+            } break;
 
             // ShapeType_Cylinder
-            case 2: { } break;
+            case 3: { } break;
 
-            // @dottedboxguy (Step6) Add more cases and implementations here
+            // @sdf_shape_step(6): Add more cases and implementations here
             // for shape types added in Step 1
             //
           }

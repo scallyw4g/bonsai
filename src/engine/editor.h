@@ -822,12 +822,6 @@ poof(do_editor_ui_for_radio_enum(world_edit_brush_type))
 /* #include <generated/string_and_value_tables_world_update_op_shape_type.h> */
 
 
-struct world_update_op_shape_params_rect
-{
-  // Sim-space positions
-  rect3 Region; poof(@ui_disable)
-};
-
 struct asset;
 struct world_update_op_shape_params_asset
 {
@@ -842,20 +836,35 @@ struct world_update_op_shape_params_chunk_data
           v3 SimSpaceOrigin;
 };
 
+struct world_update_op_shape_params_rect
+{
+  // Sim-space positions
+  rect3 Region; poof(@ui_disable)
+};
+
 struct world_update_op_shape_params_sphere
 {
-  cp  Location;      poof(@ui_disable)
+   cp Location; poof(@ui_disable)
   f32 Radius = 10.f;
 };
 
 
-struct world_update_op_shape_params_cylinder
+struct world_update_op_shape_params_line
 {
-  v3 P0;
-  v3 P1;
+   cp P0; poof(@ui_disable)
+   cp P1; poof(@ui_disable)
+  r32 Radius = 10.f;
 };
 
-// @dottedboxguy (Step2) Add new asset struct here
+struct world_update_op_shape_params_cylinder
+{
+   cp P0; poof(@ui_disable)
+   cp P1; poof(@ui_disable)
+  r32 Radius = 10.f;
+};
+
+
+// @sdf_shape_step(2): Add new asset struct here
 //
 
 #if 0
@@ -902,11 +911,12 @@ poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 
 enum shape_type
 {
-  ShapeType_Sphere,
   ShapeType_Rect,
+  ShapeType_Sphere,
+  ShapeType_Line,
   ShapeType_Cylinder,
 
-  // @dottedboxguy (Step1) Add shape types here
+  // @sdf_shape_step(1): Add shape types here
   //
 };
 poof(string_and_value_tables(shape_type))
@@ -918,11 +928,12 @@ struct shape_layer
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
-  world_update_op_shape_params_sphere   Sphere;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Sphere))
   world_update_op_shape_params_rect     Rect;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Rect))
+  world_update_op_shape_params_sphere   Sphere;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Sphere))
+  world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
 
-  // @dottedboxguy (Step5) Add an instance of the new shape here
+  // @sdf_shape_step(5): Add an instance of the new shape here
   //
 
   f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f))

@@ -457,6 +457,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                             BindUniformByName(&WorldEditRC->Program, "Power",     Shape->Power);
                             switch(Shape->Type)
                             {
+                              case ShapeType_Rect:     { /* No special uniforms needed for Rect .. */ } break;
+
                               case ShapeType_Sphere:
                               {
                                 auto Sphere = &Shape->Sphere;
@@ -468,11 +470,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
                               } break;
 
-                              case ShapeType_Rect:     { /* No special uniforms needed for Rect .. */ } break;
+                              case ShapeType_Line:
+                              {
+                                auto Line = &Shape->Line;
+                                BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
+                              } break;
 
-                              case ShapeType_Cylinder: { } break;
+                              case ShapeType_Cylinder:
+                              {
+                              } break;
 
-                              // @dottedboxguy (Step4) Calculate values and bind uniform variables for the new shape
+                              // @sdf_shape_step(4): Calculate values and bind uniform variables for the new shape
                               //
                             }
                           } break;
