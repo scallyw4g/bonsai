@@ -21,7 +21,7 @@ compiler, and a few appropriate system headers.
 # Quickstart
 
 Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
-for your platform of choice (as long as it's Windows or Linux ;)
+for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
 
 ## Build from Source
 
@@ -68,7 +68,7 @@ See the docs on the [build process](docs/01_build_process.md).
 ## Editing
 
 * CSG-like SDF world editing
-* Library of primitive shapes (sphere, rectangular prism, pyramid, cone, etc)
+* Library of primitive shapes (rect, sphere, line, cylinder .. etc)
 * SDF brush-based texturing of primitives
 
 ![banner](screenshots/ork_aerial.png)
