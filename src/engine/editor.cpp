@@ -110,10 +110,16 @@ poof(do_editor_ui_for_compound_type(noise_layer))
 #include <generated/do_editor_ui_for_compound_type_noise_layer.h>
 
 
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
 poof(do_editor_ui_for_compound_type(world_update_op_shape_params_rect))
 #include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_rect.h>
+poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
+#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
+poof(do_editor_ui_for_compound_type(world_update_op_shape_params_cylinder))
+#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_cylinder.h>
+
+// @sdf_shape_step(4): Add the editor shit here ..
+
+
 poof(do_editor_ui_for_enum(shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
 poof(do_editor_ui_for_compound_type(shape_layer))

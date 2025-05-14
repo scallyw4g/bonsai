@@ -1,20 +1,3 @@
-// NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
-// @duplicate_face_index_enum
-enum voxel_rule_direction
-{
-  VoxelRuleDir_PosX,
-  VoxelRuleDir_NegX,
-
-  VoxelRuleDir_PosY,
-  VoxelRuleDir_NegY,
-
-  VoxelRuleDir_PosZ,
-  VoxelRuleDir_NegZ,
-
-  VoxelRuleDir_Count,
-};
-CAssert(VoxelRuleDir_Count == 6);
-
 
 struct voxel_stack_element
 {

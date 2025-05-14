@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:421:0
+// src/engine/serdes.cpp:426:0
 
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_cylinder *Ignored)
@@ -34,16 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_cylinder *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->P0); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->P1); // default
-
-
+                        Result &= Serialize(Bytes, (u32*)&Element->Axis); // enum
 
 
 
@@ -71,18 +62,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->P0, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->P1, Memory);
-
+            Element->Axis = Cast(voxel_rule_direction, Read_u32(Bytes));
 
 
 

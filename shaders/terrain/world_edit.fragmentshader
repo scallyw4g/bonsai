@@ -20,13 +20,19 @@ uniform v3 ChunkRelEditMax;
 //
 // Shape params
 //
-uniform int ShapeType;
+uniform s32 ShapeType; // shape_type
 
 //
 // Sphere Params
 //
 uniform  v3 ChunkRelLocation;
 uniform f32 Radius;
+
+//
+// Cylinder Params
+//
+
+uniform s32 Axis; // voxel_rule_direction
 
 
 //
@@ -138,9 +144,46 @@ void main()
             } break;
 
             // ShapeType_Cylinder
-            case 3: { } break;
+            case 3:
+            {
+              switch (Axis)
+              {
+                case 0: // VoxelRuleDir_PosX
+                case 1: // VoxelRuleDir_NegX
+                {
+                  v3 AxisMask    = V3(1,0,0);
+                  v3 InvAxisMask = V3(0.f,1.f,1.f)*0.5f;
+                  v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
 
-            // @sdf_shape_step(6): Add more cases and implementations here
+                  v3 MajorAxis  = EditDim*AxisMask;
+                  v3 MinorAxies = EditDim*InvAxisMask;
+
+                  v3 ChunkRelP0 = MinorAxies;
+                  v3 ChunkRelP1 = MinorAxies + MajorAxis;
+
+                  v3 Line = ChunkRelP1 - ChunkRelP0;
+                  v3 LineRelativeXYZ = EditRelPosition - ChunkRelP0;
+
+                  v3 X = cross(Line, LineRelativeXYZ);
+                  f32 Dist = length(X)/length(Line);
+                  if (Dist < Radius) { NoiseSample = Power; }
+
+                } break;
+
+                case 2: // VoxelRuleDir_PosY
+                case 3: // VoxelRuleDir_NegY
+                {
+                } break;
+
+                case 4: // VoxelRuleDir_PosZ
+                case 5: // VoxelRuleDir_NegZ
+                {
+                } break;
+              }
+
+            } break;
+
+            // @sdf_shape_step(7): Add more cases and implementations here
             // for shape types added in Step 1
             //
           }

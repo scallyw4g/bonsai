@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:348:0
+// src/engine/editor.cpp:117:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_update_op_shape_params_cylinder", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,85 +33,48 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         
         
         
-        cs MemberName = CSz("NameBuf");
-                        auto Value = CS(Element->NameBuf);
-        DoEditorUi(Ui, Window, &Value, MemberName, Params);
+        cs MemberName = CSz("Axis");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voxel_rule_direction*, &Element->Axis),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Radius");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Radius),
+          MemberName,
+          Params
+          );
+
+
+
+
+
 
 
       }
 
             PushNewRow(Ui);
-
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Mode");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode*, &Element->Mode),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Modifier");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Layered");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(layered_brush*, &Element->Layered),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

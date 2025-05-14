@@ -478,9 +478,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                               case ShapeType_Cylinder:
                               {
+                                auto Cylinder = &Shape->Cylinder;
+                                BindUniformByName(&WorldEditRC->Program, "Axis", Cylinder->Axis);
+                                BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
                               } break;
 
-                              // @sdf_shape_step(4): Calculate values and bind uniform variables for the new shape
+                              // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
                               //
                             }
                           } break;

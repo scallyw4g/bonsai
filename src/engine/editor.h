@@ -1,3 +1,22 @@
+// NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
+// @duplicate_face_index_enum
+//
+// TODO(Jesse): Rename this to `axis_dir` or something..
+enum voxel_rule_direction
+{
+  VoxelRuleDir_PosX,
+  VoxelRuleDir_NegX,
+
+  VoxelRuleDir_PosY,
+  VoxelRuleDir_NegY,
+
+  VoxelRuleDir_PosZ,
+  VoxelRuleDir_NegZ,
+
+  VoxelRuleDir_Count,
+};
+CAssert(VoxelRuleDir_Count == 6);
+
 struct world;
 
 #define EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS r32 MinValue = 0.f, r32 MaxValue = 1.f
@@ -858,8 +877,7 @@ struct world_update_op_shape_params_line
 
 struct world_update_op_shape_params_cylinder
 {
-   cp P0; poof(@ui_disable)
-   cp P1; poof(@ui_disable)
+  voxel_rule_direction Axis;
   r32 Radius = 10.f;
 };
 
@@ -933,7 +951,7 @@ struct shape_layer
   world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
 
-  // @sdf_shape_step(5): Add an instance of the new shape here
+  // @sdf_shape_step(6): Add an instance of the new shape here
   //
 
   f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f))

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:328:0
+// src/engine/editor.cpp:334:0
 
 link_internal counted_string
 ToStringPrefixless(ui_brush_layer_actions Type)
