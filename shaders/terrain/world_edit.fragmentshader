@@ -146,40 +146,48 @@ void main()
             // ShapeType_Cylinder
             case 3:
             {
+
+              v3 AxisMask;
+              v3 InvAxisMask;
+              v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
               switch (Axis)
               {
                 case 0: // VoxelRuleDir_PosX
                 case 1: // VoxelRuleDir_NegX
                 {
-                  v3 AxisMask    = V3(1,0,0);
-                  v3 InvAxisMask = V3(0.f,1.f,1.f)*0.5f;
-                  v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
-
-                  v3 MajorAxis  = EditDim*AxisMask;
-                  v3 MinorAxies = EditDim*InvAxisMask;
-
-                  v3 ChunkRelP0 = MinorAxies;
-                  v3 ChunkRelP1 = MinorAxies + MajorAxis;
-
-                  v3 Line = ChunkRelP1 - ChunkRelP0;
-                  v3 LineRelativeXYZ = EditRelPosition - ChunkRelP0;
-
-                  v3 X = cross(Line, LineRelativeXYZ);
-                  f32 Dist = length(X)/length(Line);
-                  if (Dist < Radius) { NoiseSample = Power; }
-
+                  AxisMask    = V3(1,0,0);
+                  InvAxisMask = V3(0.f,1.f,1.f)*0.5f;
                 } break;
 
                 case 2: // VoxelRuleDir_PosY
                 case 3: // VoxelRuleDir_NegY
                 {
+                  AxisMask    = V3(0,1,0);
+                  InvAxisMask = V3(1.f,0.f,1.f)*0.5f;
                 } break;
 
                 case 4: // VoxelRuleDir_PosZ
                 case 5: // VoxelRuleDir_NegZ
                 {
+                  AxisMask    = V3(0,0,1);
+                  InvAxisMask = V3(1.f,1.f,0.f)*0.5f;
                 } break;
+
               }
+
+              v3 MajorAxis  = EditDim*AxisMask;
+              v3 MinorAxies = EditDim*InvAxisMask;
+
+              v3 ChunkRelP0 = MinorAxies;
+              v3 ChunkRelP1 = MinorAxies + MajorAxis;
+
+              v3 Line = ChunkRelP1 - ChunkRelP0;
+              v3 LineRelativeXYZ = EditRelPosition - ChunkRelP0;
+
+              v3 X = cross(Line, LineRelativeXYZ);
+              f32 Dist = length(X)/length(Line);
+              if (Dist < Radius) { NoiseSample = Power; }
+
 
             } break;
 

@@ -1,4 +1,4 @@
-// src/engine/editor.h:637:0
+// src/engine/editor.h:642:0
 
 link_internal counted_string
 ToStringPrefixless(ui_noise_type Type)

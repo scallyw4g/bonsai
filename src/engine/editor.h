@@ -17,6 +17,9 @@ enum voxel_rule_direction
 };
 CAssert(VoxelRuleDir_Count == 6);
 
+poof(string_and_value_tables(voxel_rule_direction))
+#include <generated/string_and_value_tables_voxel_rule_direction.h>
+
 struct world;
 
 #define EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS r32 MinValue = 0.f, r32 MaxValue = 1.f
@@ -593,6 +596,9 @@ poof(string_and_value_tables(data_type))
 #include <generated/string_and_value_tables_data_type.h>
 poof(do_editor_ui_for_enum(data_type))
 #include <generated/do_editor_ui_for_enum_data_type.h>
+
+poof(do_editor_ui_for_enum(voxel_rule_direction))
+#include <generated/do_editor_ui_for_enum_voxel_rule_direction.h>
 
 poof(do_editor_ui_for_compound_type(rect3))
 #include <generated/do_editor_ui_for_compound_type_rect3.h>
