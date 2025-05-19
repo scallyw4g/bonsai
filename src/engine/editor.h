@@ -1150,6 +1150,7 @@ poof(are_equal(world_edit_brush))
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
 
+#define EDIT_ORDINAL_TOMBSTONE (u32_MAX)
 struct world_edit
 {
   rect3cp Region; // TODO(Jesse): Rename to bounds

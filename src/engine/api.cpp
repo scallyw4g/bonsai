@@ -96,11 +96,11 @@ Bonsai_FrameBegin(engine_resources *Resources)
   });
 
 
-  if (VRChanged                                                ||
-      Resources->Graphics.WorldEditRC.Program.HotReloaded      ||
-      Resources->Graphics.TerrainShapingRC.Program.HotReloaded ||
-      Resources->Graphics.TerrainDerivsRC.Program.HotReloaded  ||
-      Resources->Graphics.TerrainDecorationRC.Program.HotReloaded)
+  if ( VRChanged                                                  ||
+       Resources->Graphics.WorldEditRC.Program.HotReloaded        ||
+       Resources->Graphics.TerrainShapingRC.Program.HotReloaded   ||
+       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded    ||
+       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded )
   {
     auto Plat = &Resources->Stdlib.Plat;
 

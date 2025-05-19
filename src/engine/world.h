@@ -249,7 +249,7 @@ TryGetVoxel(world *World, cp P)
 
 #define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)
 #define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (128)
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (25)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (72)
 struct octree_node_priority_queue
 {
   octree_node_ptr_cursor Lists[OCTREE_PRIORITY_QUEUE_LIST_COUNT];

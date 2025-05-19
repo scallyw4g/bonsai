@@ -18,14 +18,33 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
   FinalizeDeserialization(&Bytes);
 }
 
-link_internal void
+link_internal world_edit*
+NewEdit(world_edit_layer *Layer)
+{
+  world_edit *Result = {};
+  IterateOver(&Layer->Edits, Edit, EditIndex)
+  {
+    if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE)
+    {
+      Result = Edit;
+    }
+  }
+
+  if (Result == 0) Result = Push(&Layer->Edits);
+  return Result;
+}
+
+link_internal world_edit_layer*
 NewLayer(level_editor *Editor)
 {
-  Editor->CurrentLayer = Push(&Editor->Layers);
-  Editor->CurrentLayer->Edits = WorldEditBlockArray(Editor->Memory);
+  auto Result        = Push(&Editor->Layers);
+       Result->Edits = WorldEditBlockArray(Editor->Memory);
 
   cs DefaultName = FSz("layer_%d", Editor->NextLayerIndex++);
-  CopyString(DefaultName.Start, Editor->CurrentLayer->NameBuf, DefaultName.Count);
+  CopyString(DefaultName.Start, Result->NameBuf, DefaultName.Count);
+
+  Editor->CurrentLayer = Result;
+  return Result;
 }
 
 link_internal b32
@@ -326,10 +345,16 @@ poof(do_editor_ui_for_compound_type(chunk_thumbnail))
 
 
 
+
 poof(string_and_value_tables(ui_layer_toolbar_actions))
 #include <generated/string_and_value_tables_ui_layer_toolbar_actions.h>
 poof(toolbar_for_enum(ui_layer_toolbar_actions))
 #include <generated/toolbar_for_enum_ui_layer_toolbar_actions.h>
+
+poof(string_and_value_tables(ui_brush_actions))
+#include <generated/string_and_value_tables_ui_brush_actions.h>
+poof(toolbar_for_enum(ui_brush_actions))
+#include <generated/toolbar_for_enum_ui_brush_actions.h>
 
 poof(string_and_value_tables(ui_brush_layer_actions))
 #include <generated/string_and_value_tables_enum_ui_brush_layer_actions.h>
@@ -1478,20 +1503,18 @@ GetFilenameForBrush(cs Name, s32 Version = 0)
 link_internal void
 SaveBrush(world_edit_brush *Brush, const char *FilenameZ)
 {
+  ZeroMemory(Brush->NameBuf, NameBuf_Len);
+  cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
+
+  cs BrushBasename = Basename(CS(FilenameZ));
+  CopyString(&BrushBasename, &BrushNameBuf);
+
   u8_cursor_block_array OutputStream = BeginSerialization();
   Serialize(&OutputStream, Brush);
 
   if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
   {
     SoftError("Unable to serialize brush (%s) to file (%s).", Brush->NameBuf, FilenameZ);
-  }
-  else
-  {
-    ZeroMemory(Brush->NameBuf, NameBuf_Len);
-    cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
-
-    cs BrushBasename = Basename(CS(FilenameZ));
-    CopyString(&BrushBasename, &BrushNameBuf);
   }
 }
 
@@ -1578,64 +1601,81 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
     if (LayeredBrush->LayerCount)
     {
-      if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
+      Ui->BrushAction = {};
+      ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->BrushAction);
+      switch (Ui->BrushAction)
       {
-        cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
-        SaveBrush(Brush, BrushFilepath.Start);
-      }
+        case UiBrushAction_NoAction: {} break;
 
-      if (Button(Ui, CSz("Duplicate"), UiId(BrushSettingsWindow, "brush dup", 0u)))
-      {
-        cs_buffer Pieces = Split( CS(Brush->NameBuf), '.', Tran);
-
-        if (Pieces.Count > 2)
+        case UiBrushAction_New:
         {
-          cs BrushNameString = Pieces.Start[0];
-          cs VersionString   = Pieces.Start[Pieces.Count-2];
+          world_edit_brush ThisBrush = NewBrush();
+          Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+        } break;
 
-          s32 VersionNumber;
-          if ( ParseInteger(VersionString, &VersionNumber) )
-          {
-            cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-            while (FileExists(BrushFilepath.Start))
-            {
-              ++VersionNumber;
-              BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-            }
-
-            SaveBrush(Brush, BrushFilepath.Start);
-          }
-        }
-        else
+        case UiBrushAction_Save:
         {
-          cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf), 1);
+          cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
           SaveBrush(Brush, BrushFilepath.Start);
-        }
+        } break;
+
+        case UiBrushAction_Duplicate:
+        {
+          world_edit_brush Duplicated = *Brush;
+
+          cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', Tran);
+
+          if (Pieces.Count > 2)
+          {
+            cs BrushNameString = Pieces.Start[0];
+            cs VersionString   = Pieces.Start[Pieces.Count-2];
+
+            s32 VersionNumber;
+            if ( ParseInteger(VersionString, &VersionNumber) )
+            {
+              cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+              while (FileExists(BrushFilepath.Start))
+              {
+                ++VersionNumber;
+                BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+              }
+
+              SaveBrush(&Duplicated, BrushFilepath.Start);
+            }
+          }
+          else
+          {
+            cs BrushFilepath = GetFilenameForBrush(CS(Duplicated.NameBuf), 1);
+            SaveBrush(&Duplicated, BrushFilepath.Start);
+          }
+
+          Editor->CurrentBrush = Insert(Duplicated, &Editor->LoadedBrushes, Editor->Memory);
+        } break;
+
+#if 0
+        case UiBrushAction_Import:
+        {
+          ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
+          if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
+          {
+            PushNewRow(Ui);
+
+            filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
+            maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+            if (ClickedFileNode.Tag)
+            {
+              LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
+              SetToggleButton(Ui, ImportToggleId, False);
+            }
+          }
+        } break;
+#endif
+
       }
     }
 
-
-    ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
-    if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
     {
-      PushNewRow(Ui);
-
-      filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
-      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
-
-      if (ClickedFileNode.Tag)
-      {
-        LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
-        SetToggleButton(Ui, ImportToggleId, False);
-      }
-    }
-    else
-    {
-      if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
-      {
-        world_edit_brush ThisBrush = NewBrush();
-        Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
-      }
 
       if (LayeredBrush->LayerCount)
       {
@@ -1678,28 +1718,28 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
         PushTableStart(Ui);
 
-        Ui->UiBrushLayerAction = {};
+        Ui->BrushLayerAction = {};
 
-        brush_layer *Layers = Brush->Layered.Layers;
+        brush_layer *BrushLayers = Brush->Layered.Layers;
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
         {
-          brush_layer *Layer = Layers + LayerIndex;
+          brush_layer *BrushLayer = BrushLayers + LayerIndex;
 
           ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex));
-          cs LayerDetails = GetLayerUiText(Layer, GetTranArena());
+          cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
 
           if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
           {
-            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->UiBrushLayerAction, u64(LayerIndex));
+            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->BrushLayerAction, u64(LayerIndex));
             if (Toolbar.AnyElementClicked)
             {
               EditLayerIndex = LayerIndex;
 
-              if (Ui->UiBrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+              if (Ui->BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
 
               b32 ThisState = GetToggleState(Ui, ToggleId);
 
-              if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveUp)
+              if (Ui->BrushLayerAction == UiBrushLayerAction_MoveUp)
               {
                 ui_id NextId = ToggleId;
                 NextId.ElementBits -= 1;
@@ -1709,7 +1749,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
                 SetToggleButton(Ui, NextId, ThisState);
               }
 
-              if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveDown)
+              if (Ui->BrushLayerAction == UiBrushLayerAction_MoveDown)
               {
                 ui_id NextId = ToggleId;
                 NextId.ElementBits += 1;
@@ -1722,12 +1762,12 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
             }
 
             OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              DoEditorUi(Ui, BrushSettingsWindow, Layer, {});
+              DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {});
             CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
           }
           else
           {
-            DoColorSwatch(Ui, V2(20), HSVtoRGB(Layer->Settings.HSVColor));
+            DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
           }
 
           if (IsNewBrush && LayerIndex == 0)
@@ -1739,33 +1779,32 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
         }
         PushTableEnd(Ui);
 
-        if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveUp)
+        if (Ui->BrushLayerAction == UiBrushLayerAction_MoveUp)
         {
           if (EditLayerIndex > 0)
           {
-            brush_layer *Layer = Layers + EditLayerIndex;
-            brush_layer Tmp = Layers[EditLayerIndex-1];
-            Layers[EditLayerIndex-1].Settings = Layer->Settings;
-            Layer->Settings = Tmp.Settings;
+            brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+            brush_layer Tmp = BrushLayers[EditLayerIndex-1];
+            BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
+            BrushLayer->Settings = Tmp.Settings;
           }
         }
 
-        if (Ui->UiBrushLayerAction == UiBrushLayerAction_MoveDown)
+        if (Ui->BrushLayerAction == UiBrushLayerAction_MoveDown)
         {
           if (LayeredBrush->LayerCount)
           {
             if (EditLayerIndex < LayeredBrush->LayerCount-1)
             {
-              Info("SwippySwap");
-              brush_layer *Layer = Layers + EditLayerIndex;
-              brush_layer Tmp = Layers[EditLayerIndex+1];
-              Layers[EditLayerIndex+1].Settings = Layer->Settings;
-              Layer->Settings = Tmp.Settings;
+              brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+              brush_layer Tmp = BrushLayers[EditLayerIndex+1];
+              BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
+              BrushLayer->Settings = Tmp.Settings;
             }
           }
         }
 
-        if (Ui->UiBrushLayerAction == UiBrushLayerAction_Duplicate)
+        if (Ui->BrushLayerAction == UiBrushLayerAction_Duplicate)
         {
           if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
           {
@@ -1774,24 +1813,25 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
             // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
             RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
             {
-              Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
+              BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
             }
           }
         }
 
-        if (Ui->UiBrushLayerAction == UiBrushLayerAction_Delete)
+        if (Ui->BrushLayerAction == UiBrushLayerAction_Delete)
         {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
-          {
-            // Shuffle layers backwards, overwriting EditLayerIndex
-            RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
-            {
-              Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
-              Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
-            }
+          // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
+          // delete a layer if there aren't any to delete!
+          Assert(LayeredBrush->LayerCount < 0);
 
-            LayeredBrush->LayerCount -= 1;
+          // Shuffle layers backwards, overwriting EditLayerIndex
+          RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+          {
+            Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
+            BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
           }
+
+          LayeredBrush->LayerCount -= 1;
         }
       }
     }
@@ -2412,6 +2452,7 @@ link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
 
   Info("Updating Edit(%p)", Edit);
 
@@ -2463,6 +2504,7 @@ link_internal void
 DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
@@ -2485,6 +2527,7 @@ link_internal void
 UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
 
   DropEditFromOctree(Engine, Edit, TempMemory);
 
@@ -2501,8 +2544,10 @@ IncrementAllEditOrdinalsAbove(world_edit_layer_block_array *Layers, u32 Ordinal)
   {
     IterateOver(&Layer->Edits, Edit, EditIndex)
     {
-      if (Edit->Ordinal >=  Ordinal)
+      if (Edit->Ordinal >= Ordinal)
       {
+        if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
         ++Edit->Ordinal;
       }
     }
@@ -2957,27 +3002,17 @@ DoWorldEditor(engine_resources *Engine)
     local_persist window_layout BrushSettingsWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
     PushWindowStart(Ui, &BrushSettingsWindow);
 
-    if (Button(Ui, CSz("New"), UiId(&BrushSettingsWindow, "brush new", 0u)))
-    {
-      world_edit_brush Brush = NewBrush();
-      Editor->CurrentBrush = Insert(Brush, &Editor->LoadedBrushes, Editor->Memory);
-    }
-    PushNewRow(Ui);
-
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
       if (Brush)
       {
+        ui_style *Style = &DefaultStyle;
         if (Brush == Editor->CurrentBrush)
         {
-          PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
-        }
-        else
-        {
-          PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
+          Style = &DefaultSelectedStyle;
         }
 
-        if (Button(Ui, CS(Brush->NameBuf), UiId(&BrushSettingsWindow, "brush select", Brush)))
+        if (Button(Ui, CS(Brush->NameBuf), UiId(&BrushSettingsWindow, "brush select", Brush), Style))
         {
           Editor->CurrentBrush = Brush;
           CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
@@ -3008,6 +3043,8 @@ DoWorldEditor(engine_resources *Engine)
           {
             IterateOver(&Layer->Edits, Edit, EditIndex)
             {
+              if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
               if (Edit->Brush == Editor->CurrentBrush)
               {
                 UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
@@ -3038,7 +3075,14 @@ DoWorldEditor(engine_resources *Engine)
 
         case LayerToolbarActions_Delete:
         {
-          RemoveOrdered(&Editor->Layers, Editor->CurrentLayer);
+          auto Layer = Editor->CurrentLayer;
+          IterateOver(&Layer->Edits, Edit, EditIndex)
+          {
+            if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
+            DropEditFromOctree(Engine, Edit, GetTranArena());
+          }
+          RemoveOrdered(&Editor->Layers, Layer);
         } break;
 
         case LayerToolbarActions_Rename:
@@ -3052,7 +3096,26 @@ DoWorldEditor(engine_resources *Engine)
 
         case LayerToolbarActions_Duplicate:
         {
-          NotImplemented;
+          auto SrcLayer = Editor->CurrentLayer;
+          auto DstLayer = NewLayer(Editor);
+
+          IterateOver(&SrcLayer->Edits, Edit, EditIndex)
+          {
+            if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
+            auto *Duplicated = NewEdit(DstLayer);
+                 *Duplicated = *Edit;
+                  Duplicated->Ordinal = Editor->NextEditOrdinal++;
+
+            ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+
+            if (Editor->CurrentEdit == Edit)
+            {
+              Editor->CurrentEdit = Duplicated;
+            }
+          }
+
+
         } break;
       }
     }
@@ -3078,6 +3141,7 @@ DoWorldEditor(engine_resources *Engine)
         IterateOver(&Keys, Key, KeyIndex)
         {
           world_edit *Edit = Cast(world_edit*, Key->Index);
+          if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
 
           const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
@@ -3095,6 +3159,7 @@ DoWorldEditor(engine_resources *Engine)
             Editor->Selection.PrevRegion = Edit->Region;
 
             Editor->CurrentEdit = Edit;
+            Editor->CurrentLayer = Layer;
 
             if (Edit->Brush)
             {
@@ -3126,7 +3191,8 @@ DoWorldEditor(engine_resources *Engine)
           {
             IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1);
 
-            auto *Duplicated = Push(&Layer->Edits, Edit);
+            auto *Duplicated = NewEdit(Layer);
+                 *Duplicated = *Edit;
                 ++Duplicated->Ordinal;
 
             ApplyEditToOctree(Engine, Duplicated, GetTranArena());
@@ -3135,21 +3201,16 @@ DoWorldEditor(engine_resources *Engine)
 
           if (Button(Ui, CSz("X"), DelEditId))
           {
-            /* DropEditFromOctree(Engine, Edit, GetTranArena()); */
             if (Editor->CurrentEdit == Edit)
             {
               Editor->CurrentEdit = 0;
             }
 
-            RemoveOrdered(&Layer->Edits, Edit);
+            DropEditFromOctree(Engine, Edit, GetTranArena());
+            Edit->Ordinal = EDIT_ORDINAL_TOMBSTONE;
           }
 
-
-
           PushNewRow(Ui);
-
-          /* DoEditorUi(Ui, &AllEditsWindow, Edit, {}); */
-          /* PushNewRow(Ui); */
         }
       }
 
@@ -3193,14 +3254,20 @@ DoWorldEditor(engine_resources *Engine)
     {
       IterateOver(&Layer->Edits, Edit, BrushIndex)
       {
+        if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
 
         f32 Size = DEFAULT_LINE_THICKNESS;
-        if (Edit == Editor->CurrentEdit)
+
+        if (Layer == Editor->CurrentLayer)
         {
-          Size = 3.f*DEFAULT_LINE_THICKNESS;
+          if (Edit == Editor->CurrentEdit)
+          {
+            Size = 3.f*DEFAULT_LINE_THICKNESS;
+          }
         }
 
         if (Edit == Editor->HotEdit)
@@ -3321,6 +3388,7 @@ DoLevelWindow(engine_resources *Engine)
         Serialize(&OutputStream, &EditCount);
         IterateOver(&Layer->Edits, Edit, EditIndex)
         {
+          if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
           Serialize(&OutputStream, Edit);
         }
       }
