@@ -1,4 +1,4 @@
-// src/engine/editor.h:1004:0
+// src/engine/editor.h:1027:0
 
 link_internal counted_string
 ToStringPrefixless(brush_layer_type Type)

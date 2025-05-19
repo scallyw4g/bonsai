@@ -13,12 +13,32 @@ enum voxel_rule_direction
   VoxelRuleDir_PosZ,
   VoxelRuleDir_NegZ,
 
-  VoxelRuleDir_Count,
+  VoxelRuleDir_Count poof(@ui_skip),
 };
 CAssert(VoxelRuleDir_Count == 6);
 
 poof(string_and_value_tables(voxel_rule_direction))
 #include <generated/string_and_value_tables_voxel_rule_direction.h>
+
+
+enum shape_axis
+{
+  ShapeAxis_InferFromMajorAxis,
+
+  ShapeAxis_PosX,
+  ShapeAxis_NegX,
+
+  ShapeAxis_PosY,
+  ShapeAxis_NegY,
+
+  ShapeAxis_PosZ,
+  ShapeAxis_NegZ,
+
+  ShapeAxis_Count poof(@ui_skip),
+};
+
+poof(string_and_value_tables(shape_axis))
+#include <generated/string_and_value_tables_shape_axis.h>
 
 struct world;
 
@@ -597,6 +617,9 @@ poof(string_and_value_tables(data_type))
 poof(do_editor_ui_for_enum(data_type))
 #include <generated/do_editor_ui_for_enum_data_type.h>
 
+poof(do_editor_ui_for_enum(shape_axis))
+#include <generated/do_editor_ui_for_enum_shape_axis.h>
+
 poof(do_editor_ui_for_enum(voxel_rule_direction))
 #include <generated/do_editor_ui_for_enum_voxel_rule_direction.h>
 
@@ -883,7 +906,7 @@ struct world_update_op_shape_params_line
 
 struct world_update_op_shape_params_cylinder
 {
-  voxel_rule_direction Axis;
+  shape_axis Axis;
   r32 Radius = 10.f;
 };
 
@@ -1268,6 +1291,20 @@ GetSelectionDim(world *World, level_editor *Editor)
   return Result;
 }
 
+link_internal shape_axis
+ComputeShapeAxisFromEditDim(v3 Dim)
+{
+  shape_axis Result = ShapeAxis_Count;
+
+  f32 MaxAxisValue = Max(Max(Dim.x, Dim.y), Dim.z);
+  if (MaxAxisValue == Dim.x) { Result = ShapeAxis_PosX; }
+  if (MaxAxisValue == Dim.y) { Result = ShapeAxis_PosY; }
+  if (MaxAxisValue == Dim.z) { Result = ShapeAxis_PosZ; }
+
+  Assert(Result != ShapeAxis_Count);
+
+  return Result;
+}
 
 link_internal b32
 CheckSettingsChanged(layered_brush *);

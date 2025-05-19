@@ -62,7 +62,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Axis = Cast(voxel_rule_direction, Read_u32(Bytes));
+            Element->Axis = Cast(shape_axis, Read_u32(Bytes));
 
 
 

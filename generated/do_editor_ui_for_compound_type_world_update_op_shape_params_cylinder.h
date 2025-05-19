@@ -37,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(voxel_rule_direction*, &Element->Axis),
+          Cast(shape_axis*, &Element->Axis),
           MemberName,
           Params
           );

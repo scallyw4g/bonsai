@@ -419,9 +419,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
                         AssertNoGlErrors;
 
-                        v3 Mx = SimEditRect.Max - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &Mx);
+                        v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
+                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
                         AssertNoGlErrors;
+
+                        v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
 
                         switch (Layer->Settings.Type)
                         {
@@ -485,7 +487,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                               case ShapeType_Cylinder:
                               {
                                 auto Cylinder = &Shape->Cylinder;
-                                BindUniformByName(&WorldEditRC->Program, "Axis", Cylinder->Axis);
+                                shape_axis Axis = Cylinder->Axis;
+                                if (Axis == ShapeAxis_InferFromMajorAxis)
+                                {
+                                  Axis = ComputeShapeAxisFromEditDim(EditDim);
+                                }
+                                BindUniformByName(&WorldEditRC->Program, "Axis", Axis);
                                 BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
                               } break;
 
