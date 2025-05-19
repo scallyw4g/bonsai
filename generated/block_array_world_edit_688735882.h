@@ -1,4 +1,4 @@
-// src/engine/editor.h:1161:0
+// src/engine/editor.h:1162:0
 
 
 
@@ -241,18 +241,6 @@ Set( world_edit_block_array *Arr,
 }
 
 link_internal void
-RemoveOrdered( world_edit_block_array *Array, world_edit_block_array_index Index)
-{
-  NotImplemented;
-}
-
-link_internal void
-RemoveOrdered( world_edit_block_array *Array, world_edit *Element )
-{
-  NotImplemented;
-}
-
-link_internal void
 RemoveUnordered( world_edit_block_array *Array, world_edit_block_array_index Index)
 {
   world_edit_block_array_index LastI = LastIndex(Array);
@@ -292,6 +280,41 @@ RemoveUnordered( world_edit_block_array *Array, world_edit_block_array_index Ind
 
       Assert(Current->Next == LastB || Current->Next == 0);
       Array->Current = Current;
+    }
+  }
+}
+
+link_internal void
+RemoveOrdered( world_edit_block_array *Array, world_edit_block_array_index Index)
+{
+  auto End = AtElements(Array);
+  auto   AtI = Index;
+  auto NextI = Index;
+  ++NextI;
+
+  while (NextI < End)
+  {
+    auto At    =  GetPtr(Array, AtI);
+    auto NextV = *GetPtr(Array, NextI);
+
+    *At = NextV;
+
+    ++AtI;
+    ++NextI;
+  }
+
+  RemoveUnordered(Array, NextI);
+}
+
+link_internal void
+RemoveOrdered( world_edit_block_array *Array, world_edit *Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
     }
   }
 }

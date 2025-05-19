@@ -1520,6 +1520,14 @@ NewBrush(world_edit_brush *Brush)
   CheckSettingsChanged(&Brush->Layered);
 }
 
+link_internal world_edit_brush
+NewBrush()
+{
+  world_edit_brush Brush = {};
+  NewBrush(&Brush);
+  return Brush;
+}
+
 link_internal cs
 GetLayerUiText(brush_layer *Layer, memory_arena *TempMem)
 {
@@ -1551,8 +1559,8 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
   b32 IsNewBrush = False;
 #if 1
   {
-    cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
-    if (Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0)
+    b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0;
+    if (BrushUninitialized)
     {
       NewBrush(Brush);
       IsNewBrush = True;
@@ -1625,8 +1633,8 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
     {
       if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
       {
-        NewBrush(Brush);
-        IsNewBrush = True;
+        world_edit_brush ThisBrush = NewBrush();
+        Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
       }
 
       if (LayeredBrush->LayerCount)
@@ -2404,7 +2412,11 @@ link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  Info("Updating Edit(%p)", Edit);
+
   // Gather newly overlapping nodes and add the edit
+
   {
     octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
@@ -2448,36 +2460,72 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 }
 
 link_internal void
-UpdateWorldEdit(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
+DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  // First, gather the currently edited nodes and remove the edit
+  octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+
+  IterateOver(&Nodes, Node, NodeIndex)
   {
-    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
-    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+    AcquireFutex(&Node->Lock);
+    auto Index = Find(&Node->Edits, Edit);
+    Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
+    RemoveUnordered(&Node->Edits, Index);
 
-    IterateOver(&Nodes, Node, NodeIndex)
-    {
-      AcquireFutex(&Node->Lock);
-      auto Index = Find(&Node->Edits, Edit);
-      Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
-      RemoveUnordered(&Node->Edits, Index);
-
-      // Need to reinitialize chunks that no longer have the edit so that it
-      // doesn't stay intact in chunks that lose it entirely
-      Node->Dirty = True;;
-      ReleaseFutex(&Node->Lock);
-    }
+    // Need to reinitialize chunks that no longer have the edit so that it
+    // doesn't stay intact in chunks that lose it entirely
+    Node->Dirty = True;;
+    ReleaseFutex(&Node->Lock);
   }
+}
 
-  //
-  // Update the edit
-  //
+link_internal void
+UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-  Editor->CurrentEdit->Region = Region; // TODO(Jesse): I feel like this should be happening more automagically, but ..
+  DropEditFromOctree(Engine, Edit, TempMemory);
+
+  Edit->Region = Region;
 
   ApplyEditToOctree(Engine, Edit, TempMemory);
+}
+
+
+link_internal void
+IncrementAllEditOrdinalsAbove(world_edit_layer_block_array *Layers, u32 Ordinal)
+{
+  IterateOver(Layers, Layer, LayerIndex)
+  {
+    IterateOver(&Layer->Edits, Edit, EditIndex)
+    {
+      if (Edit->Ordinal >=  Ordinal)
+      {
+        ++Edit->Ordinal;
+      }
+    }
+  }
+}
+
+
+// NOTE(Jesse): @duplicated_edit_ordinal_sort_code
+link_internal sort_key_buffer
+GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem)
+{
+  umm EditCount = TotalElements(Edits);
+  sort_key *Keys = Allocate(sort_key, TempMem, EditCount);
+
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    u32 KeyIndex = u32(GetIndex(&EditIndex));
+    Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+  }
+
+  BubbleSort_descending(Keys, u32(EditCount));
+
+  return {EditCount, Keys};
 }
 
 link_internal void
@@ -2911,8 +2959,7 @@ DoWorldEditor(engine_resources *Engine)
 
     if (Button(Ui, CSz("New"), UiId(&BrushSettingsWindow, "brush new", 0u)))
     {
-      world_edit_brush Brush = {};
-      NewBrush(&Brush);
+      world_edit_brush Brush = NewBrush();
       Editor->CurrentBrush = Insert(Brush, &Editor->LoadedBrushes, Editor->Memory);
     }
     PushNewRow(Ui);
@@ -2951,7 +2998,7 @@ DoWorldEditor(engine_resources *Engine)
       {
         if (Editor->Selection.Changed && Editor->CurrentEdit)
         {
-          UpdateWorldEdit(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
+          UpdateWorldEditBounds(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
         }
 
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
@@ -2963,7 +3010,7 @@ DoWorldEditor(engine_resources *Engine)
             {
               if (Edit->Brush == Editor->CurrentBrush)
               {
-                UpdateWorldEdit(Engine, Edit, Editor->Selection.Region, GetTranArena());
+                UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
               }
             }
           }
@@ -2974,7 +3021,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout AllEditsWindow = WindowLayout("All Edits", WindowLayoutFlag_Align_Bottom);
+    local_persist window_layout AllEditsWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Bottom);
     PushWindowStart(Ui, &AllEditsWindow);
 
 
@@ -3025,21 +3072,22 @@ DoWorldEditor(engine_resources *Engine)
       /* if (ToggleButton(Ui, Name, Name, UiId(&AllEditsWindow, Layer, Layer), &DefaultSelectedStyle)) */
       {
         PushNewRow(Ui);
-        IterateOver(&Layer->Edits, Edit, BrushIndex)
+
+        sort_key_buffer Keys = GetEditsSortedByOrdianl(&Layer->Edits, GetTranArena());
+
+        IterateOver(&Keys, Key, KeyIndex)
         {
-          umm I = GetIndex(&BrushIndex);
+          world_edit *Edit = Cast(world_edit*, Key->Index);
+
           const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
+          ui_render_params Params = DefaultUiRenderParams_Button;
           if (Edit == Editor->CurrentEdit)
           {
-            PushColumn(Ui, CSz("*"), &DefaultSelectedStyle);
-          }
-          else
-          {
-            PushColumn(Ui, CSz(" "), &DefaultSelectedStyle);
+            Params.FStyle = &DefaultSelectedStyle;
           }
 
-          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d) (%s)", I, NameBuf), UiId(&AllEditsWindow, "edit select", Edit));
+          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&AllEditsWindow, "edit select", Edit), &Params);
           if (Clicked(Ui, &EditSelectButton))
           {
             Editor->Selection.Clicks = 2;
@@ -3060,11 +3108,43 @@ DoWorldEditor(engine_resources *Engine)
             Editor->HotEdit = Edit;
           }
 
-          if (Button(Ui, FSz("SetBrush", I, NameBuf), UiId(&AllEditsWindow, "edit brush select", Edit)))
+          ui_id SetBrushEditId = UiId(&AllEditsWindow, "edit set_brush", Edit);
+          ui_id DupEditId      = UiId(&AllEditsWindow, "edit duplicate", Edit);
+          ui_id DelEditId      = UiId(&AllEditsWindow, "edit delete", Edit);
+
+          if (Hover(Ui, &SetBrushEditId)) { PushTooltip(Ui, CSz("Set Brush"));   }
+          if (Hover(Ui, &DupEditId))      { PushTooltip(Ui, CSz("Duplicatate")); }
+          if (Hover(Ui, &DelEditId))      { PushTooltip(Ui, CSz("Delete"));      }
+
+          if (Button(Ui, CSz("S"), SetBrushEditId))
           {
             Edit->Brush = Editor->CurrentBrush;
-            UpdateWorldEdit(Engine, Edit, Edit->Region, GetTranArena());
+            UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
           }
+
+          if (Button(Ui, CSz("D"), DupEditId))
+          {
+            IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1);
+
+            auto *Duplicated = Push(&Layer->Edits, Edit);
+                ++Duplicated->Ordinal;
+
+            ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+            Editor->CurrentEdit = Duplicated;
+          }
+
+          if (Button(Ui, CSz("X"), DelEditId))
+          {
+            /* DropEditFromOctree(Engine, Edit, GetTranArena()); */
+            if (Editor->CurrentEdit == Edit)
+            {
+              Editor->CurrentEdit = 0;
+            }
+
+            RemoveOrdered(&Layer->Edits, Edit);
+          }
+
+
 
           PushNewRow(Ui);
 

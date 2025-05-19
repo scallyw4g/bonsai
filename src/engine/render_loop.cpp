@@ -363,6 +363,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   AssertNoGlErrors;
 
 
+                  // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
+                  // Was too lazy to make a templated overload for the sort
+                  // function.. so here we are.  Hopefully I don't pay for this
+                  // in the future.
+                  // {
                   s32 EditCount = s32(TotalElements(&Node->Edits));
                   sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
 
@@ -370,16 +375,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   IterateOver(&Node->Edits, Edit, EditIndex)
                   {
                     u32 KeyIndex = u32(GetIndex(&EditIndex));
-                    Keys[KeyIndex] = {u64(Edit->Ordinal), u64(Edit)};
+                    Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
                   }
 
                   BubbleSort_descending(Keys, u32(EditCount));
+                  // }
 
                   RangeIterator(KeyIndex, EditCount)
                   {
                     TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                    world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Value);
+                    world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                     if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                     {
                       layered_brush *Brush = &Edit->Brush->Layered;

@@ -146,10 +146,10 @@ void main()
             // ShapeType_Cylinder
             case 3:
             {
-
               v3 AxisMask;
               v3 InvAxisMask;
               v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
+
               switch (Axis)
               {
                 case 0: // VoxelRuleDir_PosX

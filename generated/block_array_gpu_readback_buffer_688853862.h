@@ -241,18 +241,6 @@ Set( gpu_readback_buffer_block_array *Arr,
 }
 
 link_internal void
-RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
-{
-  NotImplemented;
-}
-
-link_internal void
-RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
-{
-  NotImplemented;
-}
-
-link_internal void
 RemoveUnordered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
 {
   gpu_readback_buffer_block_array_index LastI = LastIndex(Array);
@@ -292,6 +280,41 @@ RemoveUnordered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_blo
 
       Assert(Current->Next == LastB || Current->Next == 0);
       Array->Current = Current;
+    }
+  }
+}
+
+link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
+{
+  auto End = AtElements(Array);
+  auto   AtI = Index;
+  auto NextI = Index;
+  ++NextI;
+
+  while (NextI < End)
+  {
+    auto At    =  GetPtr(Array, AtI);
+    auto NextV = *GetPtr(Array, NextI);
+
+    *At = NextV;
+
+    ++AtI;
+    ++NextI;
+  }
+
+  RemoveUnordered(Array, NextI);
+}
+
+link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
     }
   }
 }

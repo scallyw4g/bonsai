@@ -36,18 +36,6 @@ Set( texture_ptr_block_array *Arr,
 }
 
 link_internal void
-RemoveOrdered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
-{
-  NotImplemented;
-}
-
-link_internal void
-RemoveOrdered( texture_ptr_block_array *Array, texture_ptr *Element )
-{
-  NotImplemented;
-}
-
-link_internal void
 RemoveUnordered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
 {
   texture_ptr_block_array_index LastI = LastIndex(Array);
@@ -87,6 +75,41 @@ RemoveUnordered( texture_ptr_block_array *Array, texture_ptr_block_array_index I
 
       Assert(Current->Next == LastB || Current->Next == 0);
       Array->Current = Current;
+    }
+  }
+}
+
+link_internal void
+RemoveOrdered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
+{
+  auto End = AtElements(Array);
+  auto   AtI = Index;
+  auto NextI = Index;
+  ++NextI;
+
+  while (NextI < End)
+  {
+    auto At    =  GetPtr(Array, AtI);
+    auto NextV = *GetPtr(Array, NextI);
+
+    *At = NextV;
+
+    ++AtI;
+    ++NextI;
+  }
+
+  RemoveUnordered(Array, NextI);
+}
+
+link_internal void
+RemoveOrdered( texture_ptr_block_array *Array, texture_ptr Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
     }
   }
 }

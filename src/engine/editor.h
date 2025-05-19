@@ -1205,10 +1205,9 @@ struct level_editor
 
   u32 NextEditOrdinal;
   u32 NextLayerIndex;
-  /* world_edit_block_array WorldEdits; */
-  world_edit_layer_block_array Layers;
-  world_edit_brush_hashtable LoadedBrushes;
 
+  world_edit_layer_block_array Layers;
+  world_edit_brush_hashtable   LoadedBrushes;
 
   world_edit_layer *CurrentLayer;
   world_edit_layer *HotLayer;
@@ -1300,3 +1299,6 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 
 link_internal void
 DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);
+
+link_internal sort_key_buffer
+GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);

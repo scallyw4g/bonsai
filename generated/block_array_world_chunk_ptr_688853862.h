@@ -36,18 +36,6 @@ Set( world_chunk_ptr_block_array *Arr,
 }
 
 link_internal void
-RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
-{
-  NotImplemented;
-}
-
-link_internal void
-RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element )
-{
-  NotImplemented;
-}
-
-link_internal void
 RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
 {
   world_chunk_ptr_block_array_index LastI = LastIndex(Array);
@@ -87,6 +75,41 @@ RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array
 
       Assert(Current->Next == LastB || Current->Next == 0);
       Array->Current = Current;
+    }
+  }
+}
+
+link_internal void
+RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
+{
+  auto End = AtElements(Array);
+  auto   AtI = Index;
+  auto NextI = Index;
+  ++NextI;
+
+  while (NextI < End)
+  {
+    auto At    =  GetPtr(Array, AtI);
+    auto NextV = *GetPtr(Array, NextI);
+
+    *At = NextV;
+
+    ++AtI;
+    ++NextI;
+  }
+
+  RemoveUnordered(Array, NextI);
+}
+
+link_internal void
+RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
     }
   }
 }
