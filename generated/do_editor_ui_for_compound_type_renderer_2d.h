@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:475:0
+// src/engine/editor.cpp:473:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -401,78 +401,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(text_box_edit_state*, &Element->TextEdit),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("LayerToolbarAction");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(ui_layer_toolbar_actions*, &Element->LayerToolbarAction),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("BrushAction");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(ui_brush_actions*, &Element->BrushAction),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("BrushLayerAction");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(ui_brush_layer_actions*, &Element->BrushLayerAction),
           MemberName,
           Params
           );

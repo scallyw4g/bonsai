@@ -346,20 +346,18 @@ poof(do_editor_ui_for_compound_type(chunk_thumbnail))
 
 
 
-poof(string_and_value_tables(ui_layer_toolbar_actions))
-#include <generated/string_and_value_tables_ui_layer_toolbar_actions.h>
-poof(toolbar_for_enum(ui_layer_toolbar_actions))
-#include <generated/toolbar_for_enum_ui_layer_toolbar_actions.h>
-
-poof(string_and_value_tables(ui_brush_actions))
-#include <generated/string_and_value_tables_ui_brush_actions.h>
-poof(toolbar_for_enum(ui_brush_actions))
-#include <generated/toolbar_for_enum_ui_brush_actions.h>
-
-poof(string_and_value_tables(ui_brush_layer_actions))
-#include <generated/string_and_value_tables_enum_ui_brush_layer_actions.h>
-poof(toolbar_for_enum(ui_brush_layer_actions))
-#include <generated/toolbar_for_enum_ui_brush_layer_actions.h>
+poof(
+  for_datatypes(all)
+  func (struct_t) {}
+  func (enum_t) {
+    enum_t.has_tag(gen_ui_toolbar)?
+    {
+      string_and_value_tables(enum_t)
+      toolbar_for_enum(enum_t)
+    }
+  }
+)
+#include <generated/for_datatypes_kh9dwrCf.h>
 
 
 
@@ -1601,9 +1599,9 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
     if (LayeredBrush->LayerCount)
     {
-      Ui->BrushAction = {};
-      ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->BrushAction);
-      switch (Ui->BrushAction)
+      ui_brush_actions BrushAction = {};
+      ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
+      switch (BrushAction)
       {
         case UiBrushAction_NoAction: {} break;
 
@@ -1715,10 +1713,9 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
       {
         s32 EditLayerIndex = 0;
+        ui_brush_layer_actions BrushLayerAction = {};
 
         PushTableStart(Ui);
-
-        Ui->BrushLayerAction = {};
 
         brush_layer *BrushLayers = Brush->Layered.Layers;
         RangeIterator(LayerIndex, LayeredBrush->LayerCount)
@@ -1730,16 +1727,16 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
           if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
           {
-            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &Ui->BrushLayerAction, u64(LayerIndex));
+            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex));
             if (Toolbar.AnyElementClicked)
             {
               EditLayerIndex = LayerIndex;
 
-              if (Ui->BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+              if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
 
               b32 ThisState = GetToggleState(Ui, ToggleId);
 
-              if (Ui->BrushLayerAction == UiBrushLayerAction_MoveUp)
+              if (BrushLayerAction == UiBrushLayerAction_MoveUp)
               {
                 ui_id NextId = ToggleId;
                 NextId.ElementBits -= 1;
@@ -1749,7 +1746,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
                 SetToggleButton(Ui, NextId, ThisState);
               }
 
-              if (Ui->BrushLayerAction == UiBrushLayerAction_MoveDown)
+              if (BrushLayerAction == UiBrushLayerAction_MoveDown)
               {
                 ui_id NextId = ToggleId;
                 NextId.ElementBits += 1;
@@ -1779,7 +1776,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
         }
         PushTableEnd(Ui);
 
-        if (Ui->BrushLayerAction == UiBrushLayerAction_MoveUp)
+        if (BrushLayerAction == UiBrushLayerAction_MoveUp)
         {
           if (EditLayerIndex > 0)
           {
@@ -1790,7 +1787,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (Ui->BrushLayerAction == UiBrushLayerAction_MoveDown)
+        if (BrushLayerAction == UiBrushLayerAction_MoveDown)
         {
           if (LayeredBrush->LayerCount)
           {
@@ -1804,7 +1801,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (Ui->BrushLayerAction == UiBrushLayerAction_Duplicate)
+        if (BrushLayerAction == UiBrushLayerAction_Duplicate)
         {
           if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
           {
@@ -1818,7 +1815,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
         }
 
-        if (Ui->BrushLayerAction == UiBrushLayerAction_Delete)
+        if (BrushLayerAction == UiBrushLayerAction_Delete)
         {
           // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
           // delete a layer if there aren't any to delete!
@@ -3164,7 +3161,7 @@ DoWorldEditor(engine_resources *Engine)
 
             case LayerToolbarActions_Duplicate:
             {
-              auto SrcLayer = Editor->CurrentLayer;
+              auto SrcLayer = Layer;
               auto DstLayer = NewLayer(Editor);
 
               IterateOver(&SrcLayer->Edits, Edit, EditIndex)
@@ -3225,7 +3222,11 @@ DoWorldEditor(engine_resources *Engine)
             Params.FStyle = &DefaultSelectedStyle;
           }
 
-          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params);
+          ui_reorder_action EditReorderAction = {};
+          PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+
+          /* auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params); */
+          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params);
           if (Clicked(Ui, &EditSelectButton))
           {
             Editor->Selection.Clicks = 2;
@@ -3247,44 +3248,41 @@ DoWorldEditor(engine_resources *Engine)
             Editor->HotEdit = Edit;
           }
 
-          ui_id SetBrushEditId = UiId(&LayersWindow, "edit set_brush", Edit);
-          ui_id DupEditId      = UiId(&LayersWindow, "edit duplicate", Edit);
-          ui_id DelEditId      = UiId(&LayersWindow, "edit delete", Edit);
-
-          if (Hover(Ui, &SetBrushEditId)) { PushTooltip(Ui, CSz("Set Brush"));   }
-          if (Hover(Ui, &DupEditId))      { PushTooltip(Ui, CSz("Duplicatate")); }
-          if (Hover(Ui, &DelEditId))      { PushTooltip(Ui, CSz("Delete"));      }
-
-          if (Button(Ui, CSz("S"), SetBrushEditId))
+          ui_layer_edit_actions LayerEditAction = {};
+          PushToolbar( Ui, &LayersWindow, {}, &LayerEditAction, u64(Edit));
+          switch (LayerEditAction)
           {
-            Edit->Brush = Editor->CurrentBrush;
-            UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
-          }
+            case UiLayerEditAction_NoAction: {} break;
 
-          if (Button(Ui, CSz("D"), DupEditId))
-          {
-            IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1);
-
-            auto *Duplicated = NewEdit(Layer);
-                 *Duplicated = *Edit;
-                ++Duplicated->Ordinal;
-
-            ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-            Editor->CurrentEdit = Duplicated;
-          }
-
-          if (Button(Ui, CSz("X"), DelEditId))
-          {
-            if (Editor->CurrentEdit == Edit)
+            case UiLayerEditAction_SetBrush:
             {
-              Editor->CurrentEdit = 0;
-            }
+              Edit->Brush = Editor->CurrentBrush;
+              UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
+            } break;
 
-            DropEditFromOctree(Engine, Edit, GetTranArena());
-            Edit->Ordinal = EDIT_ORDINAL_TOMBSTONE;
+            case UiLayerEditAction_Duplicate:
+            {
+              IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1);
+
+              auto *Duplicated = NewEdit(Layer);
+                   *Duplicated = *Edit;
+                  ++Duplicated->Ordinal;
+
+              ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+              Editor->CurrentEdit = Duplicated;
+            } break;
+
+            case UiLayerEditAction_Delete:
+            {
+              if (Editor->CurrentEdit == Edit)
+              {
+                Editor->CurrentEdit = 0;
+              }
+
+              DropEditFromOctree(Engine, Edit, GetTranArena());
+              Edit->Ordinal = EDIT_ORDINAL_TOMBSTONE;
+            } break;
           }
-
-          PushNewRow(Ui);
         }
       }
       PushTableEnd(Ui);

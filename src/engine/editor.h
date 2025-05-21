@@ -1,3 +1,55 @@
+enum ui_layer_toolbar_actions
+poof(@gen_ui_toolbar)
+{
+  LayerToolbarActions_NoAction   poof(@ui_skip),
+
+  LayerToolbarActions_Rename     poof(@ui_display_name(CSz("R"))),
+  LayerToolbarActions_Duplicate  poof(@ui_display_name(CSz("D"))),
+  LayerToolbarActions_Delete     poof(@ui_display_name(CSz("X"))),
+  //
+  // .. ?
+};
+
+enum ui_brush_actions
+poof(@gen_ui_toolbar)
+{
+  UiBrushAction_NoAction poof(@ui_skip),
+
+  UiBrushAction_New,
+  UiBrushAction_Save,
+  UiBrushAction_Duplicate,
+};
+
+enum ui_reorder_action
+poof(@gen_ui_toolbar)
+{
+  UiReorderAction_NoAction    poof(@ui_skip),
+  UiReorderAction_ReorderUp   poof(@ui_display_name(CSz("^"))),
+  UiReorderAction_ReorderDown poof(@ui_display_name(CSz("v"))),
+};
+
+enum ui_layer_edit_actions
+poof(@gen_ui_toolbar)
+{
+  UiLayerEditAction_NoAction  poof(@ui_skip),
+
+  UiLayerEditAction_SetBrush  poof(@ui_display_name(CSz("S"))),
+  UiLayerEditAction_Duplicate poof(@ui_display_name(CSz("D"))),
+  UiLayerEditAction_Delete    poof(@ui_display_name(CSz("X"))),
+};
+
+enum ui_brush_layer_actions
+poof(@gen_ui_toolbar)
+{
+  UiBrushLayerAction_NoAction  poof(@ui_skip),
+
+  UiBrushLayerAction_MoveUp,
+  UiBrushLayerAction_MoveDown,
+  UiBrushLayerAction_Duplicate,
+  UiBrushLayerAction_Delete,
+};
+
+//
 // NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
 // @duplicate_face_index_enum
 //
@@ -155,7 +207,7 @@ poof(
 
       ui_toggle_button_group Result = {};
       Result.Ui = Ui;
-      Result.Flags = ToggleButtonGroupFlags_TypeClickButton;
+      Result.Flags = ui_toggle_button_group_flags(ToggleButtonGroupFlags_TypeClickButton | ExtraFlags);
       Result.Buttons = ButtonBuffer;
       Result.EnumStorage = Cast(u32*, Element);
 

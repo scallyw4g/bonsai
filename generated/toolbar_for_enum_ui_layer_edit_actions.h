@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:364:0
+// src/engine/editor.cpp:374:0
 
 link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, ui_layer_toolbar_actions Selection)
+RadioSelect(ui_toggle_button_group *RadioGroup, ui_layer_edit_actions Selection)
 {
   ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
   SetRadioButton(RadioGroup, ToggleHandle, True);
@@ -9,19 +9,18 @@ RadioSelect(ui_toggle_button_group *RadioGroup, ui_layer_toolbar_actions Selecti
 }
 
 link_internal ui_toggle_button_group
-RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
+RadioButtonGroup_ui_layer_edit_actions( renderer_2d *Ui,
   window_layout *Window,
   cs  GroupName,
-  ui_layer_toolbar_actions *Element,
+  ui_layer_edit_actions *Element,
   ui_render_params *Params     = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_NoAction")), LayerToolbarActions_NoAction },
-    { CSz("Rename"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
-    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
-    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
+        { CSz("SetBrush"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_SetBrush")), UiLayerEditAction_SetBrush },
+    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Duplicate")), UiLayerEditAction_Duplicate },
+    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete")), UiLayerEditAction_Delete },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -40,7 +39,7 @@ link_internal ui_toggle_button_group
 PushToolbar(     renderer_2d *Ui, 
   window_layout *Window,
   cs  GroupName,
-  ui_layer_toolbar_actions *Element,
+  ui_layer_edit_actions *Element,
   u64  Index = 0,
   ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
@@ -50,15 +49,15 @@ PushToolbar(     renderer_2d *Ui,
   ui_toggle_button_handle ButtonHandles[] =
   {
             {
-      CSz("R"),
-      CSz("Rename"),
+      CSz("S"),
+      CSz("SetBrush"),
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
-        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"),
+        Cast(void*, "ui_layer_edit_actions UiLayerEditAction_SetBrush"),
         Cast(void*, Index)
       ),
-      LayerToolbarActions_Rename,
+      UiLayerEditAction_SetBrush,
     },
 
         {
@@ -67,10 +66,10 @@ PushToolbar(     renderer_2d *Ui,
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
-        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate"),
+        Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Duplicate"),
         Cast(void*, Index)
       ),
-      LayerToolbarActions_Duplicate,
+      UiLayerEditAction_Duplicate,
     },
 
         {
@@ -79,10 +78,10 @@ PushToolbar(     renderer_2d *Ui,
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
-        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"),
+        Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete"),
         Cast(void*, Index)
       ),
-      LayerToolbarActions_Delete,
+      UiLayerEditAction_Delete,
     },
   };
 
