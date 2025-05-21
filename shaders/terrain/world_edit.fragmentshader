@@ -126,7 +126,7 @@ void main()
             // ShapeType_Sphere
             case 1:
             {
-              f32 Dist = distance(ChunkRelLocation, xyz);
+              f32 Dist = 0.5f+distance(ChunkRelLocation, xyz);
               if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; }
             } break;
 
@@ -216,14 +216,14 @@ void main()
           if (ThisCell < 0.f)
           {
             // only consider cells that are air
-            s32 IsSurface  = s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a));
-                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a));
+            s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) > 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) > 0.f);
 
-                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a));
-                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a));
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a ) > 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a ) > 0.f);
 
-                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a));
-                IsSurface |= s32(ThisCell < sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a));
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) > 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) > 0.f);
 
             if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
           }

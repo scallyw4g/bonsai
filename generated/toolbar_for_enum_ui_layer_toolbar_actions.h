@@ -18,10 +18,10 @@ RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("New"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New")), LayerToolbarActions_New },
-    { CSz("Delete"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
-    { CSz("Rename"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
-    { CSz("Duplicate"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
+        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_NoAction")), LayerToolbarActions_NoAction },
+    { CSz("Rename"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
+    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
+    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -49,10 +49,41 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-         {CSz("New"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_New"), Cast(void*, Index)), LayerToolbarActions_New }, 
-     {CSz("Delete"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"), Cast(void*, Index)), LayerToolbarActions_Delete }, 
-     {CSz("Rename"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"), Cast(void*, Index)), LayerToolbarActions_Rename }, 
-     {CSz("Duplicate"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate"), Cast(void*, Index)), LayerToolbarActions_Duplicate }, 
+            {
+      CSz("R"),
+      CSz("Rename"),
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename"),
+        Cast(void*, Index)
+      ),
+      LayerToolbarActions_Rename,
+    },
+
+        {
+      CSz("D"),
+      CSz("Duplicate"),
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate"),
+        Cast(void*, Index)
+      ),
+      LayerToolbarActions_Duplicate,
+    },
+
+        {
+      CSz("X"),
+      CSz("Delete"),
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete"),
+        Cast(void*, Index)
+      ),
+      LayerToolbarActions_Delete,
+    },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

@@ -60,7 +60,7 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          { CSz("enum_v.name.strip_all_prefix"), UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
+          { CSz("enum_v.name.strip_all_prefix"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
         }
       };
 
@@ -131,7 +131,20 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          enum_v.has_tag(ui_skip)?{} { {CSz("enum_v.name.strip_all_prefix"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name"), Cast(void*, Index)), enum_v.name }, }
+          enum_v.has_tag(ui_skip)?{}
+          {
+            {
+              enum_v.has_tag(ui_display_name)? {enum_v.tag_value(ui_display_name)}   {CSz("enum_v.name.strip_all_prefix")},
+              enum_v.has_tag(ui_display_name)? {CSz("enum_v.name.strip_all_prefix")} {{}},
+              UiId(
+                Cast(void*, Window),
+                Cast(void*, Element),
+                Cast(void*, "enum_t.name enum_v.name"),
+                Cast(void*, Index)
+              ),
+              enum_v.name,
+            },
+          }
         }
       };
 

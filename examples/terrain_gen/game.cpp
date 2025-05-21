@@ -2,7 +2,6 @@
 
 #include <bonsai_types.h>
 
-#include "game_constants.h"
 #include "game_types.h"
 
 link_internal u32

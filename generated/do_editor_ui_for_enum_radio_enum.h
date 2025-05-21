@@ -18,9 +18,9 @@ RadioButtonGroup_radio_enum( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Foo"), UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Foo")), RadioEnum_Foo },
-    { CSz("Bar"), UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Bar")), RadioEnum_Bar },
-    { CSz("Baz"), UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Baz")), RadioEnum_Baz },
+        { CSz("Foo"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Foo")), RadioEnum_Foo },
+    { CSz("Bar"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Bar")), RadioEnum_Bar },
+    { CSz("Baz"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Baz")), RadioEnum_Baz },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

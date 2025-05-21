@@ -2406,6 +2406,7 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
   PushNewRow(Ui);
 }
 
+#if 0
 link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch /* = True */)
 {
@@ -2423,6 +2424,7 @@ ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowC
     PushNewRow(Ui);
   }
 }
+#endif
 
 link_internal b32
 CheckSettingsChanged(layered_brush *Brush)
@@ -2954,14 +2956,17 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed && Input->S.Clicked)
   {
-    Editor->PreviousTool = Editor->Tool;
-    Editor->Tool = WorldEdit_Tool_Select;
-    ResetSelection(Editor);
+    if (Editor->CurrentLayer)
+    {
+      Editor->PreviousTool = Editor->Tool;
+      Editor->Tool = WorldEdit_Tool_Select;
+      ResetSelection(Editor);
 
-    Editor->CurrentEdit = Push(&Editor->CurrentLayer->Edits);
-    Editor->CurrentEdit->Ordinal = Editor->NextEditOrdinal++;
+      Editor->CurrentEdit = Push(&Editor->CurrentLayer->Edits);
+      Editor->CurrentEdit->Ordinal = Editor->NextEditOrdinal++;
 
-    Editor->CurrentEdit->Brush = Editor->CurrentBrush;
+      Editor->CurrentEdit->Brush = Editor->CurrentBrush;
+    }
   }
 
 #if 0
@@ -3047,7 +3052,9 @@ DoWorldEditor(engine_resources *Engine)
 
               if (Edit->Brush == Editor->CurrentBrush)
               {
-                UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+                // TODO(Jesse): We should be able to just mark the overlapping
+                // nodes dirty because we're not actually updating the edit bounds here..
+                UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
               }
             }
           }
@@ -3058,11 +3065,12 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    local_persist window_layout AllEditsWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Bottom);
-    PushWindowStart(Ui, &AllEditsWindow);
+    local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Bottom);
+    PushWindowStart(Ui, &LayersWindow);
 
 
-    ui_toggle_button_group Toolbar = PushToolbar(Ui, &AllEditsWindow, {}, &Ui->LayerToolbarAction);
+#if 0
+    ui_toggle_button_group Toolbar = PushToolbar(Ui, &LayersWindow, {}, &Ui->LayerToolbarAction);
 
     if (Toolbar.AnyElementClicked)
     {
@@ -3089,7 +3097,7 @@ DoWorldEditor(engine_resources *Engine)
         {
           if (Editor->CurrentLayer)
           {
-            ui_id Id = UiId(&AllEditsWindow, "rename current layer", Editor->CurrentLayer->NameBuf);
+            ui_id Id = UiId(&LayersWindow, "rename current layer", Editor->CurrentLayer->NameBuf);
             TextBox(Ui, {}, CS(Editor->CurrentLayer->NameBuf), NameBuf_Len, Id);
           }
         } break;
@@ -3119,6 +3127,14 @@ DoWorldEditor(engine_resources *Engine)
         } break;
       }
     }
+#endif
+    if (Button(Ui, CSz("New Layer"), UiId(&LayersWindow, "new layer", 0ull)))
+    {
+      NewLayer(Editor);
+    }
+
+    PushNewRow(Ui);
+    PushNewRow(Ui);
 
     PushTableStart(Ui);
     IterateOver(&Editor->Layers, Layer, LayerIndex)
@@ -3126,18 +3142,76 @@ DoWorldEditor(engine_resources *Engine)
       cs Name = CS(Layer->NameBuf);
       b32 Selected = Editor->CurrentLayer == Layer;
 
-      ui_style *Style = Selected ? &DefaultSelectedStyle : &DefaultStyle;
-      if (Button(Ui, Name, UiId(&AllEditsWindow, Layer, Layer), Style))
+      PushTableStart(Ui);
       {
-        Editor->CurrentLayer = Layer;
+        ui_style *Style = Selected ? &DefaultSelectedStyle : &DefaultStyle;
+        if (Button(Ui, Name, UiId(&LayersWindow, Layer, Layer), Style))
+        {
+          Editor->CurrentLayer = Layer;
+        }
+
+        ui_layer_toolbar_actions LayerToolbarAction = {};
+        ui_toggle_button_group Toolbar = PushToolbar(Ui, &LayersWindow, {}, &LayerToolbarAction, u64(Layer));
+        if (Toolbar.AnyElementClicked)
+        {
+          switch (LayerToolbarAction)
+          {
+            case LayerToolbarActions_NoAction: {} break;
+
+            case LayerToolbarActions_Rename:
+            {
+            } break;
+
+            case LayerToolbarActions_Duplicate:
+            {
+              auto SrcLayer = Editor->CurrentLayer;
+              auto DstLayer = NewLayer(Editor);
+
+              IterateOver(&SrcLayer->Edits, Edit, EditIndex)
+              {
+                if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
+                auto *Duplicated = NewEdit(DstLayer);
+                     *Duplicated = *Edit;
+                      Duplicated->Ordinal = Editor->NextEditOrdinal++;
+
+                ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+
+                if (Editor->CurrentEdit == Edit)
+                {
+                  Editor->CurrentEdit = Duplicated;
+                }
+              }
+            } break;
+
+            case LayerToolbarActions_Delete:
+            {
+              IterateOver(&Layer->Edits, Edit, EditIndex)
+              {
+                if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+
+                DropEditFromOctree(Engine, Edit, GetTranArena());
+              }
+              RemoveOrdered(&Editor->Layers, Layer);
+              Editor->CurrentLayer = 0;
+            } break;
+          }
+        }
+
+      }
+      PushTableEnd(Ui);
+
+      auto I = AtElements(&Layer->Edits);
+      if (GetIndex(&I) == 0)
+      {
+        PushColumn(Ui, CSz("--- no edits ---"));
+        PushNewRow(Ui);
       }
 
-      /* if (ToggleButton(Ui, Name, Name, UiId(&AllEditsWindow, Layer, Layer), &DefaultSelectedStyle)) */
+      PushTableStart(Ui);
       {
-        PushNewRow(Ui);
 
         sort_key_buffer Keys = GetEditsSortedByOrdianl(&Layer->Edits, GetTranArena());
-
         IterateOver(&Keys, Key, KeyIndex)
         {
           world_edit *Edit = Cast(world_edit*, Key->Index);
@@ -3151,7 +3225,7 @@ DoWorldEditor(engine_resources *Engine)
             Params.FStyle = &DefaultSelectedStyle;
           }
 
-          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&AllEditsWindow, "edit select", Edit), &Params);
+          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params);
           if (Clicked(Ui, &EditSelectButton))
           {
             Editor->Selection.Clicks = 2;
@@ -3173,9 +3247,9 @@ DoWorldEditor(engine_resources *Engine)
             Editor->HotEdit = Edit;
           }
 
-          ui_id SetBrushEditId = UiId(&AllEditsWindow, "edit set_brush", Edit);
-          ui_id DupEditId      = UiId(&AllEditsWindow, "edit duplicate", Edit);
-          ui_id DelEditId      = UiId(&AllEditsWindow, "edit delete", Edit);
+          ui_id SetBrushEditId = UiId(&LayersWindow, "edit set_brush", Edit);
+          ui_id DupEditId      = UiId(&LayersWindow, "edit duplicate", Edit);
+          ui_id DelEditId      = UiId(&LayersWindow, "edit delete", Edit);
 
           if (Hover(Ui, &SetBrushEditId)) { PushTooltip(Ui, CSz("Set Brush"));   }
           if (Hover(Ui, &DupEditId))      { PushTooltip(Ui, CSz("Duplicatate")); }
@@ -3213,13 +3287,13 @@ DoWorldEditor(engine_resources *Engine)
           PushNewRow(Ui);
         }
       }
-
+      PushTableEnd(Ui);
       PushNewRow(Ui);
     }
 
     PushNewRow(Ui);
     PushTableEnd(Ui);
-    PushWindowEnd(Ui, &AllEditsWindow);
+    PushWindowEnd(Ui, &LayersWindow);
 
   }
 
@@ -3327,6 +3401,7 @@ ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {
+    if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
     ApplyEditToOctree(Engine, Edit, GetTranArena());
   }
 }

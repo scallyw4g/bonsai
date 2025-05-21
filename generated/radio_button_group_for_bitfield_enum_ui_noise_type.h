@@ -1,4 +1,4 @@
-// src/engine/editor.h:668:0
+// src/engine/editor.h:681:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
@@ -18,9 +18,9 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Perlin"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
-    { CSz("Voronoi"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
-    { CSz("White"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
+        { CSz("Perlin"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
+    { CSz("Voronoi"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
+    { CSz("White"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

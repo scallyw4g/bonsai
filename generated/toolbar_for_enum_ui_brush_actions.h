@@ -18,10 +18,10 @@ RadioButtonGroup_ui_brush_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_NoAction")), UiBrushAction_NoAction },
-    { CSz("New"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New")), UiBrushAction_New },
-    { CSz("Save"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save")), UiBrushAction_Save },
-    { CSz("Duplicate"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate")), UiBrushAction_Duplicate },
+        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_NoAction")), UiBrushAction_NoAction },
+    { CSz("New"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New")), UiBrushAction_New },
+    { CSz("Save"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save")), UiBrushAction_Save },
+    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate")), UiBrushAction_Duplicate },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -49,9 +49,41 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-         {CSz("New"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New"), Cast(void*, Index)), UiBrushAction_New }, 
-     {CSz("Save"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save"), Cast(void*, Index)), UiBrushAction_Save }, 
-     {CSz("Duplicate"), UiId(Cast(void*, Window), Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate"), Cast(void*, Index)), UiBrushAction_Duplicate }, 
+            {
+      CSz("New"),
+      {},
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_brush_actions UiBrushAction_New"),
+        Cast(void*, Index)
+      ),
+      UiBrushAction_New,
+    },
+
+        {
+      CSz("Save"),
+      {},
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_brush_actions UiBrushAction_Save"),
+        Cast(void*, Index)
+      ),
+      UiBrushAction_Save,
+    },
+
+        {
+      CSz("Duplicate"),
+      {},
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_brush_actions UiBrushAction_Duplicate"),
+        Cast(void*, Index)
+      ),
+      UiBrushAction_Duplicate,
+    },
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
