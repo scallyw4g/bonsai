@@ -1,4 +1,4 @@
-// src/engine/editor.h:72:0
+// src/engine/editor.h:74:0
 
 link_internal counted_string
 ToStringPrefixless(voxel_rule_direction Type)

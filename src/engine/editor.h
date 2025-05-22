@@ -1,3 +1,5 @@
+#define EDITOR_DEFAULT_SELECTION_THICKNESS (0.5f)
+
 enum ui_layer_toolbar_actions
 poof(@gen_ui_toolbar)
 {

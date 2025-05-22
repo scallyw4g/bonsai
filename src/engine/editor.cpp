@@ -761,7 +761,7 @@ DoSelectonModification( engine_resources *Engine,
   // Draw selection modification region
   //
   rect3 Draw = Rect3(&Result);
-  DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, 0.1f);
+  DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
 
   Assert(Result.Min <= Result.Max);
 
@@ -1361,7 +1361,6 @@ EditWorldSelection(engine_resources *Engine)
 
   if (Editor->Selection.Clicks)
   {
-    r32 Thickness = 0.10f;
 
     if (SelectionIncomplete(Editor->Selection.Clicks))
     {
@@ -1375,10 +1374,6 @@ EditWorldSelection(engine_resources *Engine)
         /* Assert(MinP <= MaxP); */
         Editor->Selection.Region = RectMinMax(MinP, MaxP);
       }
-    }
-    else
-    {
-      Thickness = 0.20f;
     }
 
     aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
@@ -1399,7 +1394,7 @@ EditWorldSelection(engine_resources *Engine)
           /* r32 InsetWidth = 0.25f; */
           r32 InsetWidth  = 0.f;
           v3  HiColor     = RGB_GREEN;
-          r32 HiThickness = Thickness*1.2f;
+          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS;
 
           HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
 
@@ -1459,12 +1454,6 @@ EditWorldSelection(engine_resources *Engine)
         }
       }
     }
-
-    // Draw selection box
-    //
-
-    v3 BaseColor = RGB_WHITE;
-    DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
   }
 
 
@@ -2293,22 +2282,24 @@ DoWorldEditor(engine_resources *Engine)
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
 
-        f32 Size = DEFAULT_LINE_THICKNESS;
+        f32 Size = EDITOR_DEFAULT_SELECTION_THICKNESS;
 
-        if (Layer == Editor->CurrentLayer)
+
+        // Always highlight the hot edit
+        if (Edit == Editor->HotEdit)
         {
-          if (Edit == Editor->CurrentEdit)
+          Size *= 3.f;
+          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
+        }
+        else
+        { // But otherwise only highlight the edits on the current layer.
+          if (Layer == Editor->CurrentLayer)
           {
-            Size = 3.f*DEFAULT_LINE_THICKNESS;
+            if (Edit == Editor->CurrentEdit) { Size *= 2.f; }
+            DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
           }
         }
 
-        if (Edit == Editor->HotEdit)
-        {
-          Size = 5.f*DEFAULT_LINE_THICKNESS;
-        }
-
-        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
       }
     }
     Editor->HotEdit = 0;
