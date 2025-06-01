@@ -6,23 +6,24 @@
 
 struct octree_node_ptr_block
 {
-  u32 Index;
-  u32 At;
-  octree_node_ptr *Elements;
-  octree_node_ptr_block *Next;
+  /* u32 Index; */
+  umm At;
+  octree_node_ptr Elements[8];
 };
 
 struct octree_node_ptr_block_array_index
 {
-  octree_node_ptr_block *Block;
-  u32 BlockIndex;
-  u32 ElementIndex;
+  umm Index; 
+  /* block_t *Block; */
+  /* u32 BlockIndex; */
+  /* u32 ElementIndex; */
 };
 
 struct octree_node_ptr_block_array
 {
-  octree_node_ptr_block *First;
-  octree_node_ptr_block *Current;
+  octree_node_ptr_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   
 };
@@ -64,163 +65,145 @@ typedef octree_node_ptr_block_array octree_node_ptr_paged_list;
 link_internal octree_node_ptr_block_array_index
 operator++( octree_node_ptr_block_array_index &I0 )
 {
-  if (I0.Block)
-  {
-    if (I0.ElementIndex == 8-1)
-    {
-      I0.ElementIndex = 0;
-      I0.BlockIndex++;
-      I0.Block = I0.Block->Next;
-    }
-    else
-    {
-      I0.ElementIndex++;
-    }
-  }
-  else
-  {
-    I0.ElementIndex++;
-  }
+  I0.Index++;
   return I0;
 }
 
 link_internal b32
 operator<( octree_node_ptr_block_array_index I0, octree_node_ptr_block_array_index I1 )
 {
-  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( octree_node_ptr_block_array_index I0, octree_node_ptr_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
 GetIndex( octree_node_ptr_block_array_index *Index)
 {
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal octree_node_ptr_block_array_index
+ZerothIndex( octree_node_ptr_block_array *Arr )
+{
+  return {};
+}
+
+link_internal octree_node_ptr_block_array_index
+Capacity( octree_node_ptr_block_array *Arr )
+{
+  octree_node_ptr_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
 link_internal octree_node_ptr_block_array_index
-ZerothIndex( octree_node_ptr_block_array *Arr)
+AtElements( octree_node_ptr_block_array *Arr )
+{
+  octree_node_ptr_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( octree_node_ptr_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal octree_node_ptr_block_array_index
+LastIndex( octree_node_ptr_block_array *Arr )
 {
   octree_node_ptr_block_array_index Result = {};
-  Result.Block = Arr->First;
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-TotalElements( octree_node_ptr_block_array *Arr)
+Count( octree_node_ptr_block_array *Arr )
 {
-  umm Result = 0;
-  if (Arr->Current)
-  {
-    Result = (Arr->Current->Index * 8) + Arr->Current->At;
-  }
+  auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal octree_node_ptr_block_array_index
-LastIndex( octree_node_ptr_block_array *Arr)
+link_internal octree_node_ptr_block *
+GetBlock( octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index )
 {
-  octree_node_ptr_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-    Assert(Result.ElementIndex);
-    Result.ElementIndex--;
-  }
-  return Result;
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  octree_node_ptr_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
 }
 
-link_internal octree_node_ptr_block_array_index
-AtElements( octree_node_ptr_block_array *Arr)
+link_internal octree_node_ptr 
+GetPtr( octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index )
 {
-  octree_node_ptr_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-  }
-  return Result;
-}
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
 
-link_internal umm
-Count( octree_node_ptr_block_array *Arr)
-{
-  auto Index = AtElements(Arr);
-  umm Result = GetIndex(&Index);
+  octree_node_ptr_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  octree_node_ptr Result = *(Block->Elements + ElementIndex);
   return Result;
 }
 
 link_internal octree_node_ptr 
-GetPtr(octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index)
+TryGetPtr(octree_node_ptr_block_array *Arr, octree_node_ptr_block_array_index Index)
 {
-  octree_node_ptr Result = {};
-  if (Index.Block) { Result = *(Index.Block->Elements + Index.ElementIndex); }
-  return Result;
-}
-
-link_internal octree_node_ptr 
-GetPtr(octree_node_ptr_block *Block, umm Index)
-{
-  octree_node_ptr Result = {};
-  if (Index < Block->At) { Result = *(Block->Elements + Index); }
-  return Result;
-}
-
-link_internal octree_node_ptr 
-GetPtr(octree_node_ptr_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  umm AtBlock = 0;
-  octree_node_ptr_block *Block = Arr->First;
-  while (AtBlock++ < BlockIndex)
+  octree_node_ptr  Result = {};
+  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
   {
-    Block = Block->Next;
+    Result = GetPtr(Arr, Index);
   }
-
-  octree_node_ptr Result = *(Block->Elements+ElementIndex);
   return Result;
+}
+
+
+link_internal octree_node_ptr 
+GetPtr( octree_node_ptr_block_array *Arr, umm Index )
+{
+  octree_node_ptr_block_array_index I = {Index};
+  return GetPtr(Arr, I);
 }
 
 link_internal octree_node_ptr 
 TryGetPtr(octree_node_ptr_block_array *Arr, umm Index)
 {
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  auto AtE = AtElements(Arr);
-  umm Total = GetIndex(&AtE);
-  octree_node_ptr Result = {};
-  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  octree_node_ptr  Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  {
+    octree_node_ptr_block_array_index I = {Index};
+    Result = GetPtr(Arr, I);
+  }
   return Result;
 }
 
-link_internal u32
-AtElements(octree_node_ptr_block *Block)
-{
-  return Block->At;
-}
 
 
 
 
-
-link_internal octree_node_ptr_block *
-Allocate_octree_node_ptr_block(memory_arena *Memory)
-{
-  octree_node_ptr_block *Result = Allocate( octree_node_ptr_block, Memory, 1);
-  Result->Elements = Allocate( octree_node_ptr, Memory, 8);
-  return Result;
-}
+/* link_internal block_t * */
+/* Allocate_(element_t.name)_block(memory_arena *Memory) */
+/* { */
+/*   block_t *Result = Allocate( block_t, Memory, 1); */
+/*   return Result; */
+/* } */
 
 link_internal cs
 CS( octree_node_ptr_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
 }
 
 link_internal octree_node_ptr 
@@ -228,82 +211,63 @@ Set( octree_node_ptr_block_array *Arr,
   octree_node_ptr Element,
   octree_node_ptr_block_array_index Index )
 {
-  octree_node_ptr Result = {};
-  if (Index.Block)
-  {
-    octree_node_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
-    *Slot = Element;
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  octree_node_ptr_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = Element;
+  return *Slot;
+}
 
-    Result = *Slot;
+link_internal void
+NewBlock( octree_node_ptr_block_array *Arr )
+{
+  octree_node_ptr_block  *NewBlock     = Allocate( octree_node_ptr_block , Arr->Memory,                 1);
+  octree_node_ptr_block **NewBlockPtrs = Allocate( octree_node_ptr_block*, Arr->Memory, Arr->BlockCount+1);
+
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
+  {
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
   }
 
-  return Result;
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
 }
 
 link_internal void
 RemoveUnordered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index Index)
 {
-  octree_node_ptr_block_array_index LastI = LastIndex(Array);
-
-  octree_node_ptr Element = GetPtr(Array, Index);
-  octree_node_ptr LastElement = GetPtr(Array, LastI);
-
+  auto LastElement = GetPtr(Array, LastIndex(Array));
   Set(Array, LastElement, Index);
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
-  {
-    // TODO(Jesse): There's obviously a way better way to do this ..
-    auto AtE = AtElements(Array);
-    s32 Count = s32(GetIndex(&AtE));
-
-    if (Count == 0)
-    {
-      // Nothing to be done, we've popping the last thing off the array
-      Assert(Index.Block == Array->First);
-      Assert(Index.Block == Array->Current);
-      Assert(Index.BlockIndex == 0);
-      Assert(Index.ElementIndex == 0);
-    }
-    else
-    {
-      // Walk the chain till we get to the second-last one
-      octree_node_ptr_block *Current = Array->First;
-      octree_node_ptr_block *LastB = LastI.Block;
-
-      while (Current->Next && Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
-
-      Assert(Current->Next == LastB || Current->Next == 0);
-      Array->Current = Current;
-    }
-  }
+  Array->ElementCount -= 1;
 }
 
 link_internal void
-RemoveOrdered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index Index)
+RemoveOrdered( octree_node_ptr_block_array *Array, octree_node_ptr_block_array_index IndexToRemove)
 {
-  auto End = AtElements(Array);
-  auto   AtI = Index;
-  auto NextI = Index;
-  ++NextI;
+  Assert(IndexToRemove.Index < Array->ElementCount);
 
-  while (NextI < End)
+  octree_node_ptr Prev = {};
+
+  octree_node_ptr_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    auto At    =  GetPtr(Array, AtI);
-    auto NextV = *GetPtr(Array, NextI);
+    octree_node_ptr E = GetPtr(Array, Index);
 
-    *At = NextV;
+    if (Prev)
+    {
+      *Prev = *E;
+    }
 
-    ++AtI;
-    ++NextI;
+    Prev = E;
   }
 
-  RemoveUnordered(Array, NextI);
+  Array->ElementCount -= 1;
 }
 
 link_internal void
@@ -342,43 +306,49 @@ IsValid(octree_node_ptr_block_array_index *Index)
   return Result;
 }
 
-link_internal octree_node_ptr *
-Push( octree_node_ptr_block_array *Array, octree_node_ptr *Element)
+link_internal octree_node_ptr 
+Push( octree_node_ptr_block_array *Array, octree_node_ptr Element)
 {
   Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_octree_node_ptr_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 8)
+  if (AtElements(Array) == Capacity(Array))
   {
-    if (Array->Current->Next)
-    {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      octree_node_ptr_block *Next = Allocate_octree_node_ptr_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
-    }
+    NewBlock(Array);
   }
 
-  octree_node_ptr *Result = Array->Current->Elements + Array->Current->At;
+  octree_node_ptr Result = Set(Array, Element, AtElements(Array));
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+  Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal octree_node_ptr *
+link_internal octree_node_ptr 
 Push( octree_node_ptr_block_array *Array )
 {
   octree_node_ptr Element = {};
-  auto Result = Push(Array, &Element);
+  auto Result = Push(Array, Element);
   return Result;
+}
+
+link_internal void
+Shift( octree_node_ptr_block_array *Array, octree_node_ptr Element )
+{
+  Assert(Array->Memory);
+  octree_node_ptr Prev = {};
+
+  // Alocate a new thingy
+  Push(Array);
+
+  auto End = AtElements(Array);
+  RangeIteratorReverse(Index, s32(End.Index))
+  {
+    auto E = GetPtr(Array, umm(Index));
+    if (Prev) { *Prev = *E; }
+    Prev = E;
+  }
+
+  *Prev = *Element;
 }
 
 

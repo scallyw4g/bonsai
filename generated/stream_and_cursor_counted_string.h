@@ -33,6 +33,12 @@ GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal counted_string*
+TryGetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal counted_string*
 GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

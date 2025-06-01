@@ -33,6 +33,12 @@ GetPtr(octree_node_ptr_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal octree_node_ptr*
+TryGetPtr(octree_node_ptr_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal octree_node_ptr*
 GetPtrUnsafe(octree_node_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

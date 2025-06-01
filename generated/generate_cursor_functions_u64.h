@@ -23,6 +23,12 @@ GetPtr(u64_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal u64*
+TryGetPtr(u64_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal u64*
 GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

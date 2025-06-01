@@ -60,6 +60,12 @@ GetPtr(c_token_buffer *Buf, umm Index)
 }
 
 link_inline c_token *
+TryGetPtr(c_token_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline c_token *
 Get(c_token_buffer *Buf, umm Index)
 {
   c_token *Result = GetPtr(Buf, Index);

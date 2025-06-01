@@ -20,7 +20,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
     WorkerThread_BeforeJobStart(ThreadParams);
 
-    world_chunk_ptr_block_array UpdatedChunks = {0, 0, Thread->TempMemory};
+    world_chunk_ptr_block_array UpdatedChunks = WorldChunkPtrBlockArray(Thread->TempMemory);
 
     while (work_queue_entry *Entry = PopWorkQueueEntry(WorldUpdateQ))
     {

@@ -60,6 +60,12 @@ GetPtr(standing_spot_buffer *Buf, umm Index)
 }
 
 link_inline standing_spot *
+TryGetPtr(standing_spot_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline standing_spot *
 Get(standing_spot_buffer *Buf, umm Index)
 {
   standing_spot *Result = GetPtr(Buf, Index);

@@ -166,3 +166,9 @@ GetPtr(window_layout_hashtable *Hashtable, window_layout_hashtable_iterator Iter
   return Result;
 }
 
+link_inline window_layout *
+TryGetPtr(window_layout_hashtable *Hashtable, window_layout_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+

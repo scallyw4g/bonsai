@@ -33,6 +33,12 @@ GetPtr(v3i_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal v3i*
+TryGetPtr(v3i_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal v3i*
 GetPtrUnsafe(v3i_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

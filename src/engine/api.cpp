@@ -109,10 +109,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
     Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
 
     HardResetWorld(Resources);
-    IterateOver(&Resources->Editor.Layers, Layer, LayerIndex)
-    {
-      ApplyEditBufferToOctree(Resources, &Layer->Edits);
-    }
+    ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits);
     /* HardResetEditor(&Resources->Editor); */
 
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);

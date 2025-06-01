@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:374:0
+// src/engine/editor.cpp:388:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -81,11 +81,33 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
         
         
         
-        cs MemberName = CSz("Ordinal");
+        cs MemberName = CSz("Tombstone");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Tombstone),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("LayerIndex");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->Ordinal),
+          Cast(u32*, &Element->LayerIndex),
           MemberName,
           Params
           );

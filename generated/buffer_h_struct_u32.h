@@ -60,6 +60,12 @@ GetPtr(shader_uniform_buffer *Buf, u32 Index)
 }
 
 link_inline shader_uniform *
+TryGetPtr(shader_uniform_buffer *Buf, u32 Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline shader_uniform *
 Get(shader_uniform_buffer *Buf, u32 Index)
 {
   shader_uniform *Result = GetPtr(Buf, Index);

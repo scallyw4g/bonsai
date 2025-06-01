@@ -714,15 +714,6 @@ struct selection_modification_state
   v3 ClickedP[2];
 };
 
-enum level_editor_flags
-{
-  LevelEditorFlags_Noop                              = (1 << 0),
-  /* LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad = (1 << 1), */
-};
-
-poof(radio_button_group_for_enum(level_editor_flags));
-#include <generated/radio_button_group_for_bitfield_enum_level_editor_flags.h>
-
 enum ui_noise_type
 {
   NoiseType_Perlin,
@@ -1240,12 +1231,16 @@ poof(are_equal(world_edit_brush))
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
 
-#define EDIT_ORDINAL_TOMBSTONE (u32_MAX)
 struct world_edit
 {
   rect3cp Region; // TODO(Jesse): Rename to bounds
   world_edit_brush *Brush;
-  u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal
+
+  // Instance params
+
+  b32 Tombstone;
+  u32 LayerIndex;
+  /* u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal */
 };
 
 typedef world_edit* world_edit_ptr;
@@ -1256,10 +1251,16 @@ poof(block_array(world_edit, {128}))
 poof(block_array(world_edit_ptr, {128}))
 #include <generated/block_array_world_edit_ptr_688735882.h>
 
+poof(block_array(world_edit_block_array_index, {128}))
+#include <generated/block_array_world_edit_block_array_index_688735882.h>
+
 struct world_edit_layer
 {
   char NameBuf[NameBuf_Len+1];
-  world_edit_block_array Edits;
+
+  // NOTE(Jesse): type name is confusing here .. this is an array of indices into
+  // the world_edit block array
+  world_edit_block_array_index_block_array EditIndices;
 };
 poof(block_array(world_edit_layer, {128}))
 #include <generated/block_array_world_edit_layer_688735882.h>
@@ -1294,11 +1295,13 @@ struct level_editor
 
   b32 MaskSelection;
 
-  u32 NextEditOrdinal;
+  /* u32 NextEditOrdinal; */
   u32 NextLayerIndex;
 
+
+
   world_edit_layer_block_array Layers;
-  world_edit_brush_hashtable   LoadedBrushes;
+  world_edit_block_array       Edits;
 
   world_edit_layer *CurrentLayer;
   world_edit_layer *HotLayer;
@@ -1306,7 +1309,8 @@ struct level_editor
   world_edit *CurrentEdit;
   world_edit *HotEdit;
 
-  world_edit_brush *CurrentBrush;
+  world_edit_brush_hashtable  LoadedBrushes;
+  world_edit_brush           *CurrentBrush;
 };
 
 

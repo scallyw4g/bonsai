@@ -60,6 +60,12 @@ GetPtr(model_buffer *Buf, u64 Index)
 }
 
 link_inline model *
+TryGetPtr(model_buffer *Buf, u64 Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline model *
 Get(model_buffer *Buf, u64 Index)
 {
   model *Result = GetPtr(Buf, Index);

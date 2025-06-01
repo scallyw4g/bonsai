@@ -1,21 +1,20 @@
-// src/engine/editor.cpp:105:0
+// src/engine/editor.cpp:119:0
 
 
 
 
 
-link_internal asset_thumbnail_block *
-Allocate_asset_thumbnail_block(memory_arena *Memory)
-{
-  asset_thumbnail_block *Result = Allocate( asset_thumbnail_block, Memory, 1);
-  Result->Elements = Allocate( asset_thumbnail, Memory, 8);
-  return Result;
-}
+/* link_internal block_t * */
+/* Allocate_(element_t.name)_block(memory_arena *Memory) */
+/* { */
+/*   block_t *Result = Allocate( block_t, Memory, 1); */
+/*   return Result; */
+/* } */
 
 link_internal cs
 CS( asset_thumbnail_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
 }
 
 link_internal asset_thumbnail *
@@ -23,82 +22,63 @@ Set( asset_thumbnail_block_array *Arr,
   asset_thumbnail *Element,
   asset_thumbnail_block_array_index Index )
 {
-  asset_thumbnail *Result = {};
-  if (Index.Block)
-  {
-    asset_thumbnail *Slot = &Index.Block->Elements[Index.ElementIndex];
-    *Slot = *Element;
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  asset_thumbnail_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = *Element;
+  return Slot;
+}
 
-    Result = Slot;
+link_internal void
+NewBlock( asset_thumbnail_block_array *Arr )
+{
+  asset_thumbnail_block  *NewBlock     = Allocate( asset_thumbnail_block , Arr->Memory,                 1);
+  asset_thumbnail_block **NewBlockPtrs = Allocate( asset_thumbnail_block*, Arr->Memory, Arr->BlockCount+1);
+
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
+  {
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
   }
 
-  return Result;
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
 }
 
 link_internal void
 RemoveUnordered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
 {
-  asset_thumbnail_block_array_index LastI = LastIndex(Array);
-
-  asset_thumbnail *Element = GetPtr(Array, Index);
-  asset_thumbnail *LastElement = GetPtr(Array, LastI);
-
+  auto LastElement = GetPtr(Array, LastIndex(Array));
   Set(Array, LastElement, Index);
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
-  {
-    // TODO(Jesse): There's obviously a way better way to do this ..
-    auto AtE = AtElements(Array);
-    s32 Count = s32(GetIndex(&AtE));
-
-    if (Count == 0)
-    {
-      // Nothing to be done, we've popping the last thing off the array
-      Assert(Index.Block == Array->First);
-      Assert(Index.Block == Array->Current);
-      Assert(Index.BlockIndex == 0);
-      Assert(Index.ElementIndex == 0);
-    }
-    else
-    {
-      // Walk the chain till we get to the second-last one
-      asset_thumbnail_block *Current = Array->First;
-      asset_thumbnail_block *LastB = LastI.Block;
-
-      while (Current->Next && Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
-
-      Assert(Current->Next == LastB || Current->Next == 0);
-      Array->Current = Current;
-    }
-  }
+  Array->ElementCount -= 1;
 }
 
 link_internal void
-RemoveOrdered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index Index)
+RemoveOrdered( asset_thumbnail_block_array *Array, asset_thumbnail_block_array_index IndexToRemove)
 {
-  auto End = AtElements(Array);
-  auto   AtI = Index;
-  auto NextI = Index;
-  ++NextI;
+  Assert(IndexToRemove.Index < Array->ElementCount);
 
-  while (NextI < End)
+  asset_thumbnail *Prev = {};
+
+  asset_thumbnail_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    auto At    =  GetPtr(Array, AtI);
-    auto NextV = *GetPtr(Array, NextI);
+    asset_thumbnail *E = GetPtr(Array, Index);
 
-    *At = NextV;
+    if (Prev)
+    {
+      *Prev = *E;
+    }
 
-    ++AtI;
-    ++NextI;
+    Prev = E;
   }
 
-  RemoveUnordered(Array, NextI);
+  Array->ElementCount -= 1;
 }
 
 link_internal void
@@ -142,28 +122,14 @@ Push( asset_thumbnail_block_array *Array, asset_thumbnail *Element)
 {
   Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_asset_thumbnail_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 8)
+  if (AtElements(Array) == Capacity(Array))
   {
-    if (Array->Current->Next)
-    {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      asset_thumbnail_block *Next = Allocate_asset_thumbnail_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
-    }
+    NewBlock(Array);
   }
 
-  asset_thumbnail *Result = Array->Current->Elements + Array->Current->At;
+  asset_thumbnail *Result = Set(Array, Element, AtElements(Array));
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+  Array->ElementCount += 1;
 
   return Result;
 }
@@ -174,5 +140,25 @@ Push( asset_thumbnail_block_array *Array )
   asset_thumbnail Element = {};
   auto Result = Push(Array, &Element);
   return Result;
+}
+
+link_internal void
+Shift( asset_thumbnail_block_array *Array, asset_thumbnail *Element )
+{
+  Assert(Array->Memory);
+  asset_thumbnail *Prev = {};
+
+  // Alocate a new thingy
+  Push(Array);
+
+  auto End = AtElements(Array);
+  RangeIteratorReverse(Index, s32(End.Index))
+  {
+    auto E = GetPtr(Array, umm(Index));
+    if (Prev) { *Prev = *E; }
+    Prev = E;
+  }
+
+  *Prev = *Element;
 }
 

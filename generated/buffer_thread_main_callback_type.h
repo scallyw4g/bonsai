@@ -60,6 +60,12 @@ GetPtr(thread_main_callback_type_buffer *Buf, umm Index)
 }
 
 link_inline thread_main_callback_type *
+TryGetPtr(thread_main_callback_type_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline thread_main_callback_type *
 Get(thread_main_callback_type_buffer *Buf, umm Index)
 {
   thread_main_callback_type *Result = GetPtr(Buf, Index);

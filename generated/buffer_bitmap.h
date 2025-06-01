@@ -60,6 +60,12 @@ GetPtr(bitmap_buffer *Buf, umm Index)
 }
 
 link_inline bitmap *
+TryGetPtr(bitmap_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline bitmap *
 Get(bitmap_buffer *Buf, umm Index)
 {
   bitmap *Result = GetPtr(Buf, Index);

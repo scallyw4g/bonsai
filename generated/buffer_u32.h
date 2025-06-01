@@ -60,6 +60,12 @@ GetPtr(u32_buffer *Buf, umm Index)
 }
 
 link_inline u32 *
+TryGetPtr(u32_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline u32 *
 Get(u32_buffer *Buf, umm Index)
 {
   u32 *Result = GetPtr(Buf, Index);

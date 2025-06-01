@@ -166,3 +166,9 @@ GetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
   return Result;
 }
 
+link_inline ui_toggle *
+TryGetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+

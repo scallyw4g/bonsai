@@ -60,6 +60,12 @@ GetPtr(octree_node_ptr_buffer *Buf, umm Index)
 }
 
 link_inline octree_node_ptr *
+TryGetPtr(octree_node_ptr_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline octree_node_ptr *
 Get(octree_node_ptr_buffer *Buf, umm Index)
 {
   octree_node_ptr *Result = GetPtr(Buf, Index);

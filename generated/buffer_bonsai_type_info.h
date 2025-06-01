@@ -60,6 +60,12 @@ GetPtr(bonsai_type_info_buffer *Buf, umm Index)
 }
 
 link_inline bonsai_type_info *
+TryGetPtr(bonsai_type_info_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline bonsai_type_info *
 Get(bonsai_type_info_buffer *Buf, umm Index)
 {
   bonsai_type_info *Result = GetPtr(Buf, Index);

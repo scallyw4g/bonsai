@@ -60,6 +60,12 @@ GetPtr(rect3i_buffer *Buf, umm Index)
 }
 
 link_inline rect3i *
+TryGetPtr(rect3i_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline rect3i *
 Get(rect3i_buffer *Buf, umm Index)
 {
   rect3i *Result = GetPtr(Buf, Index);

@@ -178,4 +178,10 @@ GetPtr(counted_string_hashtable *Hashtable, counted_string_hashtable_iterator It
   }
   return Result;
 }
+
+link_inline counted_string *
+TryGetPtr(counted_string_hashtable *Hashtable, counted_string_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
  

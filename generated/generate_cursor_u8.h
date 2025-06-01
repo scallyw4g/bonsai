@@ -33,6 +33,12 @@ GetPtr(u8_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal u8*
+TryGetPtr(u8_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal u8*
 GetPtrUnsafe(u8_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

@@ -60,6 +60,12 @@ GetPtr(file_traversal_node_buffer *Buf, umm Index)
 }
 
 link_inline file_traversal_node *
+TryGetPtr(file_traversal_node_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline file_traversal_node *
 Get(file_traversal_node_buffer *Buf, umm Index)
 {
   file_traversal_node *Result = GetPtr(Buf, Index);

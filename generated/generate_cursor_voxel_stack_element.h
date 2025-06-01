@@ -33,6 +33,12 @@ GetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal voxel_stack_element*
+TryGetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal voxel_stack_element*
 GetPtrUnsafe(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

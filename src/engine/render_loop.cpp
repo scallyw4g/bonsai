@@ -368,6 +368,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   // function.. so here we are.  Hopefully I don't pay for this
                   // in the future.
                   // {
+#if 0
                   s32 EditCount = s32(TotalElements(&Node->Edits));
                   sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
 
@@ -379,13 +380,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   }
 
                   BubbleSort_descending(Keys, u32(EditCount));
+#endif
                   // }
 
-                  RangeIterator(KeyIndex, EditCount)
+                  /* RangeIterator(KeyIndex, EditCount) */
+                  IterateOver(&Node->Edits, Edit, EditIndex)
                   {
                     TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-                    world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
+                    /* world_edit *Edit = GetPtr(&Editor->Edits, *Edit); */
+
+                    /* world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index); */
                     if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                     {
                       layered_brush *Brush = &Edit->Brush->Layered;

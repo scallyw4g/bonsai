@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/maff.h:372:0
+// external/bonsai_stdlib/src/maff.h:379:0
 
 inline r32
 Clamp( r32 Min, r32 Value, r32 Max )

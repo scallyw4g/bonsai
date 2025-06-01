@@ -23,6 +23,12 @@ GetPtr(c_token_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal c_token*
+TryGetPtr(c_token_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal c_token*
 GetPtrUnsafe(c_token_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

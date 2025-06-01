@@ -60,6 +60,12 @@ GetPtr(tile_ruleset_buffer *Buf, umm Index)
 }
 
 link_inline tile_ruleset *
+TryGetPtr(tile_ruleset_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline tile_ruleset *
 Get(tile_ruleset_buffer *Buf, umm Index)
 {
   tile_ruleset *Result = GetPtr(Buf, Index);

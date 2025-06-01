@@ -166,3 +166,9 @@ GetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
   return Result;
 }
 
+link_inline xml_tag *
+TryGetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+

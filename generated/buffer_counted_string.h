@@ -60,6 +60,12 @@ GetPtr(counted_string_buffer *Buf, umm Index)
 }
 
 link_inline counted_string *
+TryGetPtr(counted_string_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline counted_string *
 Get(counted_string_buffer *Buf, umm Index)
 {
   counted_string *Result = GetPtr(Buf, Index);

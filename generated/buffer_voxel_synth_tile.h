@@ -60,6 +60,12 @@ GetPtr(voxel_synth_tile_buffer *Buf, umm Index)
 }
 
 link_inline voxel_synth_tile *
+TryGetPtr(voxel_synth_tile_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline voxel_synth_tile *
 Get(voxel_synth_tile_buffer *Buf, umm Index)
 {
   voxel_synth_tile *Result = GetPtr(Buf, Index);

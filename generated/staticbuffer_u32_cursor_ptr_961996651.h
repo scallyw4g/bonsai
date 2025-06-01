@@ -16,6 +16,12 @@ GetPtr( entropy_lists *Buf, umm Index)
   return Result;
 }
 
+link_inline u32_cursor*
+TryGetPtr( entropy_lists *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
 link_inline u32_cursor
 Get( entropy_lists *Buf, umm Index)
 {

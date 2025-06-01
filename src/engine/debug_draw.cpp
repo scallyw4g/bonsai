@@ -196,7 +196,7 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, v3 RGBColo
   // Top
 #define LINES_PER_AABB (12)
 #define VERTS_PER_AABB (VERTS_PER_VOXEL*LINES_PER_AABB)
-#if 0
+#if 1
   DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
   DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
   DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);

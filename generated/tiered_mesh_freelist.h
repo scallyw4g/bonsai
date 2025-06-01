@@ -16,6 +16,12 @@ GetPtr( tiered_mesh_freelist *Buf, umm Index)
   return Result;
 }
 
+link_inline mesh_freelist*
+TryGetPtr( tiered_mesh_freelist *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
 link_inline mesh_freelist
 Get( tiered_mesh_freelist *Buf, umm Index)
 {

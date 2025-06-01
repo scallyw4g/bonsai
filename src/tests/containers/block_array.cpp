@@ -53,8 +53,7 @@ TrivialAddRemove()
 
   RemoveUnordered(&Array, Last);
 
-  Assert( AtElements(&Array).BlockIndex == 0);
-  Assert( AtElements(&Array).ElementIndex == 0);
+  TestThat( AtElements(&Array).Index == 0);
 }
 
 link_internal void
@@ -66,19 +65,21 @@ TwoBlocksRemoveFromEnd()
   RangeIterator_t(u32, Index, 8)
   {
     Push(&Array, &Index);
-
-    TestThat(LastIndex(&Array).BlockIndex == 0);
-    TestThat(LastIndex(&Array).ElementIndex == Index);
+    TestThat(LastIndex(&Array).Index == Index);
   }
+  TestThat(Array.BlockCount == 1);
 
   {
     u32 Index = 8;
     Push(&Array, &Index);
+    TestThat(Array.BlockCount == 2);
 
     Index = 9;
     Push(&Array, &Index);
+    TestThat(Array.BlockCount == 2);
   }
 
+  TestThat(Array.ElementCount == 10 );
 
   IterateOver(&Array, Value, Index)
   {
@@ -87,48 +88,29 @@ TwoBlocksRemoveFromEnd()
     TestThat( *P == IntIndex );
   }
 
-  // 8 elements per block, (10-8 == 2)
-  TestThat( Array.Current->At == 2 );
+  {
+    auto Last = LastIndex(&Array);
+    RemoveUnordered(&Array, Last);
+
+    TestThat(Array.ElementCount == 9 );
+    TestThat(Array.BlockCount == 2);
+  }
 
   {
     auto Last = LastIndex(&Array);
-
-    TestThat( Last.BlockIndex == 1 );
-    TestThat( Last.ElementIndex == 1 );
-
     RemoveUnordered(&Array, Last);
 
-    TestThat( Array.First->Next == Last.Block );
-    TestThat( Array.First->Next == Array.Current );
+    TestThat(Array.ElementCount == 8 );
+    TestThat(Array.BlockCount == 2);
   }
-
-  TestThat( Array.Current->At == 1 );
 
   {
     auto Last = LastIndex(&Array);
-
-    TestThat( Last.BlockIndex == 1 );
-    TestThat( Last.ElementIndex == 0 );
-
     RemoveUnordered(&Array, Last);
 
-    TestThat( Array.Current == Array.First);
+    TestThat(Array.ElementCount == 7 );
+    TestThat(Array.BlockCount == 2);
   }
-
-  TestThat( Array.Current->At == 8 );
-
-  {
-    auto Last = LastIndex(&Array);
-
-    TestThat( Last.BlockIndex == 0 );
-    TestThat( Last.ElementIndex == 7 );
-
-    RemoveUnordered(&Array, Last);
-
-    TestThat( Array.Current == Array.First);
-  }
-
-  /* TestThat( Last.ElementIndex = 1 ); */
 }
 
 link_internal void
@@ -140,17 +122,18 @@ TwoBlocksRemoveFromFront()
   RangeIterator_t(u32, Index, 8)
   {
     Push(&Array, &Index);
-
-    TestThat(LastIndex(&Array).BlockIndex == 0);
-    TestThat(LastIndex(&Array).ElementIndex == Index);
+    TestThat(LastIndex(&Array).Index == Index);
   }
+  TestThat(Array.BlockCount == 1);
 
   {
     u32 Index = 8;
     Push(&Array, &Index);
+    TestThat(Array.BlockCount == 2);
 
     Index = 9;
     Push(&Array, &Index);
+    TestThat(Array.BlockCount == 2);
   }
 
 
@@ -161,97 +144,29 @@ TwoBlocksRemoveFromFront()
     TestThat( *P == IntIndex );
   }
 
-  // 8 elements per block, (10-8 == 2)
-  TestThat( Array.Current->At == 2 );
-
   {
     auto I = ZerothIndex(&Array);
     RemoveUnordered(&Array, I);
-
-    auto Last = LastIndex(&Array);
-    TestThat( Array.First->Next == Last.Block );
-    TestThat( Array.First->Next == Array.Current );
-    TestThat( Array.Current->At == 1 );
+    TestThat(Array.ElementCount == 9);
+    TestThat(Array.BlockCount == 2);
   }
 
 
   {
     auto I = ZerothIndex(&Array);
     RemoveUnordered(&Array, I);
-
-    TestThat( Array.Current == Array.First);
-    TestThat( Array.Current->At == 8 );
+    TestThat(Array.ElementCount == 8);
+    TestThat(Array.BlockCount == 2);
   }
 
 
   {
     auto I = ZerothIndex(&Array);
     RemoveUnordered(&Array, I);
-
-    TestThat( Array.Current == Array.First);
-    TestThat( Array.Current->At == 7 );
+    TestThat(Array.ElementCount == 7);
+    TestThat(Array.BlockCount == 2);
   }
 }
-
-
-link_internal void
-PrintThreeBlocksRemoveFromMiddle()
-{
-  auto Array = MakeOrderedBlockArray(32);
-  TestThat( Array.Current->At == 8 );
-
-  auto I = ZerothIndex(&Array);
-
-  ++I;
-
-  {
-    RemoveUnordered(&Array, I);
-    TestThat( Array.Current->At == 7 );
-    Print(&Array);
-    Info("--");
-  }
-
-  {
-    RemoveUnordered(&Array, I);
-    TestThat( Array.Current->At == 6 );
-    Print(&Array);
-    Info("--");
-  }
-
-  {
-    I.ElementIndex = 7;
-    RemoveUnordered(&Array, I);
-    TestThat( Array.Current->At == 5 );
-    Print(&Array);
-    Info("--");
-  }
-
-  {
-    ++I;
-    RemoveUnordered(&Array, I);
-    /* TestThat( Array.Current->At == 6 ); */
-    Print(&Array);
-    Info("--");
-  }
-
-  {
-    I = LastIndex(&Array);;
-    RemoveUnordered(&Array, I);
-    /* TestThat( Array.Current->At == 6 ); */
-    Print(&Array);
-    Info("--");
-  }
-
-  {
-    I.ElementIndex = 0;
-    RemoveUnordered(&Array, I);
-    /* TestThat( Array.Current->At == 6 ); */
-    Print(&Array);
-    Info("--");
-  }
-
-}
-
 
 link_internal void
 RemoveAllBlocks()
@@ -277,6 +192,10 @@ Remove0thElementInTwoElementList()
   auto Z = ZerothIndex(&Array);
 
   RemoveUnordered(&Array, Z);
+  TestThat(Array.ElementCount == 1);
+
+  RemoveUnordered(&Array, Z);
+  TestThat(Array.ElementCount == 0);
 }
 
 s32
@@ -289,8 +208,6 @@ main(s32 ArgCount, const char** Args)
   TwoBlocksRemoveFromEnd();
 
   TwoBlocksRemoveFromFront();
-
-  PrintThreeBlocksRemoveFromMiddle();
 
   RemoveAllBlocks();
 

@@ -1721,7 +1721,7 @@ InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
       world_chunk *Chunk = Chunks.Start[ChunkIndex];
       /* Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk); */
 
-      Push(&Chunk->Entities, &Entity);
+      Push(&Chunk->Entities, Entity);
     }
   }
 }

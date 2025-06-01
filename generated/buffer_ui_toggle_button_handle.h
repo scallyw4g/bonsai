@@ -60,6 +60,12 @@ GetPtr(ui_toggle_button_handle_buffer *Buf, umm Index)
 }
 
 link_inline ui_toggle_button_handle *
+TryGetPtr(ui_toggle_button_handle_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline ui_toggle_button_handle *
 Get(ui_toggle_button_handle_buffer *Buf, umm Index)
 {
   ui_toggle_button_handle *Result = GetPtr(Buf, Index);

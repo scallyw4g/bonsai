@@ -178,4 +178,10 @@ GetPtr(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile_hashtable_iterato
   }
   return Result;
 }
+
+link_inline voxel_synth_tile *
+TryGetPtr(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
  

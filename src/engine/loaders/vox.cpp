@@ -192,7 +192,7 @@ global_variable random_series TMP = {54235432543};
 link_internal vox_data_block_array
 LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
-  vox_data_block_array Result = { {}, {}, TempMemory };
+  vox_data_block_array Result = VoxDataBlockArray(TempMemory);
 
   v3i ReportedDim = {};
 

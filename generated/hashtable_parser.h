@@ -178,4 +178,10 @@ GetPtr(parser_hashtable *Hashtable, parser_hashtable_iterator Iterator)
   }
   return Result;
 }
+
+link_inline parser *
+TryGetPtr(parser_hashtable *Hashtable, parser_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
  

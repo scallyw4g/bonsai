@@ -60,6 +60,12 @@ GetPtr(world_chunk_ptr_buffer *Buf, umm Index)
 }
 
 link_inline world_chunk_ptr *
+TryGetPtr(world_chunk_ptr_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline world_chunk_ptr *
 Get(world_chunk_ptr_buffer *Buf, umm Index)
 {
   world_chunk_ptr *Result = GetPtr(Buf, Index);

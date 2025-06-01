@@ -60,6 +60,12 @@ GetPtr(v3i_buffer *Buf, umm Index)
 }
 
 link_inline v3i *
+TryGetPtr(v3i_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline v3i *
 Get(v3i_buffer *Buf, umm Index)
 {
   v3i *Result = GetPtr(Buf, Index);

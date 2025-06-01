@@ -60,6 +60,12 @@ GetPtr(u64_buffer *Buf, umm Index)
 }
 
 link_inline u64 *
+TryGetPtr(u64_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline u64 *
 Get(u64_buffer *Buf, umm Index)
 {
   u64 *Result = GetPtr(Buf, Index);

@@ -33,6 +33,12 @@ GetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal debug_profile_scope*
+TryGetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal debug_profile_scope*
 GetPtrUnsafe(debug_profile_scope_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */

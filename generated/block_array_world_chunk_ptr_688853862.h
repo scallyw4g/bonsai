@@ -4,18 +4,17 @@
 
 
 
-link_internal world_chunk_ptr_block *
-Allocate_world_chunk_ptr_block(memory_arena *Memory)
-{
-  world_chunk_ptr_block *Result = Allocate( world_chunk_ptr_block, Memory, 1);
-  Result->Elements = Allocate( world_chunk_ptr, Memory, 32);
-  return Result;
-}
+/* link_internal block_t * */
+/* Allocate_(element_t.name)_block(memory_arena *Memory) */
+/* { */
+/*   block_t *Result = Allocate( block_t, Memory, 1); */
+/*   return Result; */
+/* } */
 
 link_internal cs
 CS( world_chunk_ptr_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
 }
 
 link_internal world_chunk_ptr 
@@ -23,82 +22,63 @@ Set( world_chunk_ptr_block_array *Arr,
   world_chunk_ptr Element,
   world_chunk_ptr_block_array_index Index )
 {
-  world_chunk_ptr Result = {};
-  if (Index.Block)
-  {
-    world_chunk_ptr *Slot = &Index.Block->Elements[Index.ElementIndex];
-    *Slot = Element;
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  world_chunk_ptr_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 32;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = Element;
+  return *Slot;
+}
 
-    Result = *Slot;
+link_internal void
+NewBlock( world_chunk_ptr_block_array *Arr )
+{
+  world_chunk_ptr_block  *NewBlock     = Allocate( world_chunk_ptr_block , Arr->Memory,                 1);
+  world_chunk_ptr_block **NewBlockPtrs = Allocate( world_chunk_ptr_block*, Arr->Memory, Arr->BlockCount+1);
+
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
+  {
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
   }
 
-  return Result;
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
 }
 
 link_internal void
 RemoveUnordered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
 {
-  world_chunk_ptr_block_array_index LastI = LastIndex(Array);
-
-  world_chunk_ptr Element = GetPtr(Array, Index);
-  world_chunk_ptr LastElement = GetPtr(Array, LastI);
-
+  auto LastElement = GetPtr(Array, LastIndex(Array));
   Set(Array, LastElement, Index);
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
-  {
-    // TODO(Jesse): There's obviously a way better way to do this ..
-    auto AtE = AtElements(Array);
-    s32 Count = s32(GetIndex(&AtE));
-
-    if (Count == 0)
-    {
-      // Nothing to be done, we've popping the last thing off the array
-      Assert(Index.Block == Array->First);
-      Assert(Index.Block == Array->Current);
-      Assert(Index.BlockIndex == 0);
-      Assert(Index.ElementIndex == 0);
-    }
-    else
-    {
-      // Walk the chain till we get to the second-last one
-      world_chunk_ptr_block *Current = Array->First;
-      world_chunk_ptr_block *LastB = LastI.Block;
-
-      while (Current->Next && Current->Next != LastB)
-      {
-        Current = Current->Next;
-      }
-
-      Assert(Current->Next == LastB || Current->Next == 0);
-      Array->Current = Current;
-    }
-  }
+  Array->ElementCount -= 1;
 }
 
 link_internal void
-RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index)
+RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index IndexToRemove)
 {
-  auto End = AtElements(Array);
-  auto   AtI = Index;
-  auto NextI = Index;
-  ++NextI;
+  Assert(IndexToRemove.Index < Array->ElementCount);
 
-  while (NextI < End)
+  world_chunk_ptr Prev = {};
+
+  world_chunk_ptr_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    auto At    =  GetPtr(Array, AtI);
-    auto NextV = *GetPtr(Array, NextI);
+    world_chunk_ptr E = GetPtr(Array, Index);
 
-    *At = NextV;
+    if (Prev)
+    {
+      *Prev = *E;
+    }
 
-    ++AtI;
-    ++NextI;
+    Prev = E;
   }
 
-  RemoveUnordered(Array, NextI);
+  Array->ElementCount -= 1;
 }
 
 link_internal void
@@ -137,42 +117,48 @@ IsValid(world_chunk_ptr_block_array_index *Index)
   return Result;
 }
 
-link_internal world_chunk_ptr *
-Push( world_chunk_ptr_block_array *Array, world_chunk_ptr *Element)
+link_internal world_chunk_ptr 
+Push( world_chunk_ptr_block_array *Array, world_chunk_ptr Element)
 {
   Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_world_chunk_ptr_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 32)
+  if (AtElements(Array) == Capacity(Array))
   {
-    if (Array->Current->Next)
-    {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      world_chunk_ptr_block *Next = Allocate_world_chunk_ptr_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
-    }
+    NewBlock(Array);
   }
 
-  world_chunk_ptr *Result = Array->Current->Elements + Array->Current->At;
+  world_chunk_ptr Result = Set(Array, Element, AtElements(Array));
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+  Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal world_chunk_ptr *
+link_internal world_chunk_ptr 
 Push( world_chunk_ptr_block_array *Array )
 {
   world_chunk_ptr Element = {};
-  auto Result = Push(Array, &Element);
+  auto Result = Push(Array, Element);
   return Result;
+}
+
+link_internal void
+Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+{
+  Assert(Array->Memory);
+  world_chunk_ptr Prev = {};
+
+  // Alocate a new thingy
+  Push(Array);
+
+  auto End = AtElements(Array);
+  RangeIteratorReverse(Index, s32(End.Index))
+  {
+    auto E = GetPtr(Array, umm(Index));
+    if (Prev) { *Prev = *E; }
+    Prev = E;
+  }
+
+  *Prev = *Element;
 }
 

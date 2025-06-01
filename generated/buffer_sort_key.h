@@ -60,6 +60,12 @@ GetPtr(sort_key_buffer *Buf, umm Index)
 }
 
 link_inline sort_key *
+TryGetPtr(sort_key_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline sort_key *
 Get(sort_key_buffer *Buf, umm Index)
 {
   sort_key *Result = GetPtr(Buf, Index);

@@ -178,4 +178,10 @@ GetPtr(bonsai_type_info_hashtable *Hashtable, bonsai_type_info_hashtable_iterato
   }
   return Result;
 }
+
+link_inline bonsai_type_info *
+TryGetPtr(bonsai_type_info_hashtable *Hashtable, bonsai_type_info_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
  

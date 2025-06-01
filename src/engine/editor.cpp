@@ -18,27 +18,39 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
   FinalizeDeserialization(&Bytes);
 }
 
-link_internal world_edit*
-NewEdit(world_edit_layer *Layer)
+link_internal world_edit *
+NewEdit(level_editor *Editor, world_edit_layer *Layer)
 {
+  world_edit_block_array_index Index = {};
   world_edit *Result = {};
-  IterateOver(&Layer->Edits, Edit, EditIndex)
+  IterateOver(&Editor->Edits, Edit, EditIndex)
   {
-    if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE)
+    if (Edit->Tombstone)
     {
+      Edit->Tombstone = False;
       Result = Edit;
+      Index = EditIndex;
     }
   }
 
-  if (Result == 0) Result = Push(&Layer->Edits);
+
+
+  if (Result == 0)
+  {
+    Result = Push(&Editor->Edits);
+    Index = LastIndex(&Editor->Edits);
+  }
+
+  Push(&Layer->EditIndices, &Index);
+
   return Result;
 }
 
 link_internal world_edit_layer*
 NewLayer(level_editor *Editor)
 {
-  auto Result        = Push(&Editor->Layers);
-       Result->Edits = WorldEditBlockArray(Editor->Memory);
+  auto Result              = Push(&Editor->Layers);
+       Result->EditIndices = WorldEditBlockArrayIndexBlockArray(Editor->Memory);
 
   cs DefaultName = FSz("layer_%d", Editor->NextLayerIndex++);
   CopyString(DefaultName.Start, Result->NameBuf, DefaultName.Count);
@@ -67,6 +79,8 @@ InitEditor(level_editor *Editor)
   {
     LoadBrushFromFile(Editor, Node, GetTranArena());
   }
+
+  Editor->Edits.Memory = Editor->Memory;
 
 /*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
 /*   { */
@@ -1394,7 +1408,7 @@ EditWorldSelection(engine_resources *Engine)
           /* r32 InsetWidth = 0.25f; */
           r32 InsetWidth  = 0.f;
           v3  HiColor     = RGB_GREEN;
-          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS;
+          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
 
           HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
 
@@ -1642,7 +1656,7 @@ link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
+  Assert(Edit->Tombstone == False);
 
   Info("Updating Edit(%p)", Edit);
 
@@ -1680,7 +1694,7 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
         Node->Edits = WorldEditPtrBlockArray(Editor->Memory);
       }
 
-      Push(&Node->Edits, &Edit);
+      Push(&Node->Edits, Edit);
 
       /* Assert(Node->Type == OctreeNodeType_Leaf); */
 
@@ -1694,7 +1708,7 @@ link_internal void
 DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
+  Assert(Edit->Tombstone == False);
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
@@ -1717,7 +1731,7 @@ link_internal void
 UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Edit->Ordinal != EDIT_ORDINAL_TOMBSTONE);
+  Assert(Edit->Tombstone == False);
 
   DropEditFromOctree(Engine, Edit, TempMemory);
 
@@ -1726,20 +1740,17 @@ UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region
   ApplyEditToOctree(Engine, Edit, TempMemory);
 }
 
+#if 0
 
 link_internal void
-IncrementAllEditOrdinalsAbove(world_edit_layer_block_array *Layers, u32 Ordinal)
+IncrementAllEditOrdinalsAbove(world_edit_block_array *Edits, u32 Ordinal)
 {
-  IterateOver(Layers, Layer, LayerIndex)
+  IterateOver(Edits, Edit, EditIndex)
   {
-    IterateOver(&Layer->Edits, Edit, EditIndex)
+    if (Edit->Ordinal >= Ordinal)
     {
-      if (Edit->Ordinal >= Ordinal)
-      {
-        if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
-
-        ++Edit->Ordinal;
-      }
+      if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+      ++Edit->Ordinal;
     }
   }
 }
@@ -1762,6 +1773,7 @@ GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem)
 
   return {EditCount, Keys};
 }
+#endif
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -1963,17 +1975,18 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed && Input->S.Clicked)
   {
-    if (Editor->CurrentLayer)
+    if (Editor->CurrentLayer == 0)
     {
-      Editor->PreviousTool = Editor->Tool;
-      Editor->Tool = WorldEdit_Tool_Select;
-      ResetSelection(Editor);
-
-      Editor->CurrentEdit = Push(&Editor->CurrentLayer->Edits);
-      Editor->CurrentEdit->Ordinal = Editor->NextEditOrdinal++;
-
-      Editor->CurrentEdit->Brush = Editor->CurrentBrush;
+      NewLayer(Editor);
     }
+
+    Editor->PreviousTool = Editor->Tool;
+    Editor->Tool = WorldEdit_Tool_Select;
+    ResetSelection(Editor);
+
+    Editor->CurrentEdit = NewEdit(Editor, Editor->CurrentLayer);
+
+    Editor->CurrentEdit->Brush = Editor->CurrentBrush;
   }
 
 #if 0
@@ -2051,18 +2064,15 @@ DoWorldEditor(engine_resources *Engine)
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
         if (SettingsChanged)
         {
-          IterateOver(&Editor->Layers, Layer, LayerIndex)
+          IterateOver(&Editor->Edits, Edit, EditIndex)
           {
-            IterateOver(&Layer->Edits, Edit, EditIndex)
-            {
-              if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+            if (Edit->Tombstone) { continue; }
 
-              if (Edit->Brush == Editor->CurrentBrush)
-              {
-                // TODO(Jesse): We should be able to just mark the overlapping
-                // nodes dirty because we're not actually updating the edit bounds here..
-                UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
-              }
+            if (Edit->Brush == Editor->CurrentBrush)
+            {
+              // TODO(Jesse): We should be able to just mark the overlapping
+              // nodes dirty because we're not actually updating the edit bounds here..
+              UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
             }
           }
         }
@@ -2084,6 +2094,9 @@ DoWorldEditor(engine_resources *Engine)
     PushNewRow(Ui);
 
     PushTableStart(Ui);
+
+    world_edit_layer *PrevLayer = {};
+
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
@@ -2114,13 +2127,12 @@ DoWorldEditor(engine_resources *Engine)
               auto SrcLayer = Layer;
               auto DstLayer = NewLayer(Editor);
 
-              IterateOver(&SrcLayer->Edits, Edit, EditIndex)
+              IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
               {
-                if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
 
-                auto *Duplicated = NewEdit(DstLayer);
+                auto *Duplicated = NewEdit(Editor, DstLayer);
                      *Duplicated = *Edit;
-                      Duplicated->Ordinal = Editor->NextEditOrdinal++;
 
                 ApplyEditToOctree(Engine, Duplicated, GetTranArena());
 
@@ -2133,11 +2145,13 @@ DoWorldEditor(engine_resources *Engine)
 
             case LayerToolbarActions_Delete:
             {
-              IterateOver(&Layer->Edits, Edit, EditIndex)
+              IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
               {
-                if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+                Assert(Edit->Tombstone == False);
 
                 DropEditFromOctree(Engine, Edit, GetTranArena());
+                Edit->Tombstone = False;
               }
               RemoveOrdered(&Editor->Layers, Layer);
               Editor->CurrentLayer = 0;
@@ -2148,21 +2162,22 @@ DoWorldEditor(engine_resources *Engine)
       }
       PushTableEnd(Ui);
 
-      auto I = AtElements(&Layer->Edits);
-      if (GetIndex(&I) == 0)
       {
-        PushColumn(Ui, CSz("--- no edits ---"));
-        PushNewRow(Ui);
+        auto I = AtElements(&Layer->EditIndices);
+        if (GetIndex(&I) == 0)
+        {
+          PushColumn(Ui, CSz("--- no edits ---"));
+          PushNewRow(Ui);
+        }
       }
 
       PushTableStart(Ui);
       {
-
-        sort_key_buffer Keys = GetEditsSortedByOrdianl(&Layer->Edits, GetTranArena());
-        IterateOver(&Keys, Key, KeyIndex)
+        world_edit_block_array_index *PrevEditIndex = {};
+        IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
         {
-          world_edit *Edit = Cast(world_edit*, Key->Index);
-          if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          Assert(Edit->Tombstone == False);
 
           const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
@@ -2173,7 +2188,61 @@ DoWorldEditor(engine_resources *Engine)
           }
 
           ui_reorder_action EditReorderAction = {};
-          PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+          PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+
+          switch(EditReorderAction)
+          {
+            case UiReorderAction_NoAction: break;
+
+            case UiReorderAction_ReorderUp:
+            {
+              if (PrevEditIndex)
+              {
+                auto Tmp = *PrevEditIndex;
+                *PrevEditIndex = *EditIndex;
+                *EditIndex = Tmp;
+              }
+              else if (PrevLayer)
+              {
+                Push(&PrevLayer->EditIndices, EditIndex);
+                RemoveOrdered(&Layer->EditIndices, EditIndex);
+              }
+
+            } break;
+
+            case UiReorderAction_ReorderDown:
+            {
+              auto NextEditIndexIndex = EditIndexIndex;
+                 ++NextEditIndexIndex;
+
+              if (NextEditIndexIndex < AtElements(&Layer->EditIndices))
+              {
+                auto NextEditIndex = GetPtr(&Layer->EditIndices, NextEditIndexIndex);
+
+                auto Tmp = *NextEditIndex;
+                *NextEditIndex = *EditIndex;
+                *EditIndex = Tmp;
+
+                EditIndexIndex = AtElements(&Layer->EditIndices);
+              }
+              else
+              {
+                auto NextLayerIndex = LayerIndex;
+                   ++NextLayerIndex;
+
+                auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex));
+                if (NextLayer)
+                {
+                  RemoveOrdered(&Layer->EditIndices, EditIndex);
+                  Shift(&NextLayer->EditIndices, EditIndex);
+                }
+
+                EditIndexIndex = AtElements(&Layer->EditIndices);
+              }
+            }
+
+            break;
+          }
 
           /* auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params); */
           auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params);
@@ -2212,11 +2281,11 @@ DoWorldEditor(engine_resources *Engine)
 
             case UiLayerEditAction_Duplicate:
             {
-              IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1);
+              /* IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1); */
 
-              auto *Duplicated = NewEdit(Layer);
+              auto *Duplicated = NewEdit(Editor, Layer);
                    *Duplicated = *Edit;
-                  ++Duplicated->Ordinal;
+                  /* ++Duplicated->Ordinal; */
 
               ApplyEditToOctree(Engine, Duplicated, GetTranArena());
               Editor->CurrentEdit = Duplicated;
@@ -2230,13 +2299,18 @@ DoWorldEditor(engine_resources *Engine)
               }
 
               DropEditFromOctree(Engine, Edit, GetTranArena());
-              Edit->Ordinal = EDIT_ORDINAL_TOMBSTONE;
+              RemoveOrdered(&Layer->EditIndices, EditIndex);
+              Edit->Tombstone = True;
             } break;
           }
+
+          PrevEditIndex = EditIndex;
         }
       }
       PushTableEnd(Ui);
       PushNewRow(Ui);
+
+      PrevLayer = Layer;
     }
 
     PushNewRow(Ui);
@@ -2274,16 +2348,16 @@ DoWorldEditor(engine_resources *Engine)
   {
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
-      IterateOver(&Layer->Edits, Edit, BrushIndex)
+      IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
       {
-        if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+        Assert(Edit->Tombstone == False);
 
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
 
         f32 Size = EDITOR_DEFAULT_SELECTION_THICKNESS;
-
 
         // Always highlight the hot edit
         if (Edit == Editor->HotEdit)
@@ -2314,7 +2388,7 @@ ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {
-    if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+    if (Edit->Tombstone) { continue; }
     ApplyEditToOctree(Engine, Edit, GetTranArena());
   }
 }
@@ -2369,9 +2443,10 @@ DoLevelWindow(engine_resources *Engine)
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       Ensure(Serialize(&OutputStream, &Delimeter));
 
+#if 0
       IterateOver(&Editor->Layers, Layer, LayerIndex)
       {
-        u32 EditCount = u32(TotalElements(&Layer->Edits));
+        u32 EditCount = u32(TotalElements(&Layer->EditIndices));
         Serialize(&OutputStream, &EditCount);
         IterateOver(&Layer->Edits, Edit, EditIndex)
         {
@@ -2379,6 +2454,9 @@ DoLevelWindow(engine_resources *Engine)
           Serialize(&OutputStream, Edit);
         }
       }
+#else
+      NotImplemented;
+#endif
 
       Ensure(Serialize(&OutputStream, &Delimeter));
 

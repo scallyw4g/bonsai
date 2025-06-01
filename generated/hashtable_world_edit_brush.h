@@ -1,4 +1,4 @@
-// src/engine/editor.h:1240:0
+// src/engine/editor.h:1231:0
 
 struct world_edit_brush_linked_list_node
 {
@@ -177,5 +177,11 @@ GetPtr(world_edit_brush_hashtable *Hashtable, world_edit_brush_hashtable_iterato
     Result = &Iterator.Node->Element;
   }
   return Result;
+}
+
+link_inline world_edit_brush *
+TryGetPtr(world_edit_brush_hashtable *Hashtable, world_edit_brush_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
 }
  

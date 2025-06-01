@@ -6,23 +6,24 @@
 
 struct asset_thumbnail_block
 {
-  u32 Index;
-  u32 At;
-  asset_thumbnail *Elements;
-  asset_thumbnail_block *Next;
+  /* u32 Index; */
+  umm At;
+  asset_thumbnail Elements[8];
 };
 
 struct asset_thumbnail_block_array_index
 {
-  asset_thumbnail_block *Block;
-  u32 BlockIndex;
-  u32 ElementIndex;
+  umm Index; 
+  /* block_t *Block; */
+  /* u32 BlockIndex; */
+  /* u32 ElementIndex; */
 };
 
 struct asset_thumbnail_block_array
 {
-  asset_thumbnail_block *First;
-  asset_thumbnail_block *Current;
+  asset_thumbnail_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   
 };
@@ -64,144 +65,127 @@ typedef asset_thumbnail_block_array asset_thumbnail_paged_list;
 link_internal asset_thumbnail_block_array_index
 operator++( asset_thumbnail_block_array_index &I0 )
 {
-  if (I0.Block)
-  {
-    if (I0.ElementIndex == 8-1)
-    {
-      I0.ElementIndex = 0;
-      I0.BlockIndex++;
-      I0.Block = I0.Block->Next;
-    }
-    else
-    {
-      I0.ElementIndex++;
-    }
-  }
-  else
-  {
-    I0.ElementIndex++;
-  }
+  I0.Index++;
   return I0;
 }
 
 link_internal b32
 operator<( asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_index I1 )
 {
-  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( asset_thumbnail_block_array_index I0, asset_thumbnail_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
 GetIndex( asset_thumbnail_block_array_index *Index)
 {
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal asset_thumbnail_block_array_index
+ZerothIndex( asset_thumbnail_block_array *Arr )
+{
+  return {};
+}
+
+link_internal asset_thumbnail_block_array_index
+Capacity( asset_thumbnail_block_array *Arr )
+{
+  asset_thumbnail_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
 link_internal asset_thumbnail_block_array_index
-ZerothIndex( asset_thumbnail_block_array *Arr)
+AtElements( asset_thumbnail_block_array *Arr )
+{
+  asset_thumbnail_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( asset_thumbnail_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal asset_thumbnail_block_array_index
+LastIndex( asset_thumbnail_block_array *Arr )
 {
   asset_thumbnail_block_array_index Result = {};
-  Result.Block = Arr->First;
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-TotalElements( asset_thumbnail_block_array *Arr)
+Count( asset_thumbnail_block_array *Arr )
 {
-  umm Result = 0;
-  if (Arr->Current)
-  {
-    Result = (Arr->Current->Index * 8) + Arr->Current->At;
-  }
+  auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal asset_thumbnail_block_array_index
-LastIndex( asset_thumbnail_block_array *Arr)
+link_internal asset_thumbnail_block *
+GetBlock( asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index )
 {
-  asset_thumbnail_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-    Assert(Result.ElementIndex);
-    Result.ElementIndex--;
-  }
-  return Result;
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  asset_thumbnail_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
 }
 
-link_internal asset_thumbnail_block_array_index
-AtElements( asset_thumbnail_block_array *Arr)
+link_internal asset_thumbnail *
+GetPtr( asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index )
 {
-  asset_thumbnail_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-  }
-  return Result;
-}
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
 
-link_internal umm
-Count( asset_thumbnail_block_array *Arr)
-{
-  auto Index = AtElements(Arr);
-  umm Result = GetIndex(&Index);
+  asset_thumbnail_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  asset_thumbnail *Result = (Block->Elements + ElementIndex);
   return Result;
 }
 
 link_internal asset_thumbnail *
-GetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
+TryGetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
-  asset_thumbnail *Result = {};
-  if (Index.Block) { Result = (Index.Block->Elements + Index.ElementIndex); }
-  return Result;
-}
-
-link_internal asset_thumbnail *
-GetPtr(asset_thumbnail_block *Block, umm Index)
-{
-  asset_thumbnail *Result = {};
-  if (Index < Block->At) { Result = (Block->Elements + Index); }
-  return Result;
-}
-
-link_internal asset_thumbnail *
-GetPtr(asset_thumbnail_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  umm AtBlock = 0;
-  asset_thumbnail_block *Block = Arr->First;
-  while (AtBlock++ < BlockIndex)
+  asset_thumbnail * Result = {};
+  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
   {
-    Block = Block->Next;
+    Result = GetPtr(Arr, Index);
   }
-
-  asset_thumbnail *Result = (Block->Elements+ElementIndex);
   return Result;
+}
+
+
+link_internal asset_thumbnail *
+GetPtr( asset_thumbnail_block_array *Arr, umm Index )
+{
+  asset_thumbnail_block_array_index I = {Index};
+  return GetPtr(Arr, I);
 }
 
 link_internal asset_thumbnail *
 TryGetPtr(asset_thumbnail_block_array *Arr, umm Index)
 {
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  auto AtE = AtElements(Arr);
-  umm Total = GetIndex(&AtE);
-  asset_thumbnail *Result = {};
-  if (Index < Total) { Result = GetPtr(Arr, Index); }
+  asset_thumbnail * Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  {
+    asset_thumbnail_block_array_index I = {Index};
+    Result = GetPtr(Arr, I);
+  }
   return Result;
-}
-
-link_internal u32
-AtElements(asset_thumbnail_block *Block)
-{
-  return Block->At;
 }
 

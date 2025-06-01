@@ -326,8 +326,12 @@ ContainsCameraGhost(world *World, entity **EntityTable, octree_node *Node, camer
 
 
 link_internal void
-InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_paged_list *PotentialEdits)
+InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_block_array *PotentialEdits)
 {
+  // TODO(Jesse): Should there be a pointer to the editor on the World?
+  // Or should this just take the editor too..?
+  level_editor *Editor = &GetEngineResources()->Editor;
+
   *Node = {};
   Node->Type = OctreeNodeType_Leaf;
   Node->WorldP = WorldP;
@@ -338,11 +342,14 @@ InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, wor
   if (PotentialEdits)
   {
     Node->Edits.Memory = PotentialEdits->Memory;
-    IterateOver(PotentialEdits, Edit, EditIndex)
+    IterateOver(PotentialEdits, Edit, EditIndexIndex)
     {
+      /* auto Edit = GetPtr(&Editor->Edits, *Edit); */
+      /* Assert(Edit); */
+
       if (Intersect(World, &NodeBounds, &Edit->Region))
       {
-        Push(&Node->Edits, &Edit);
+        Push(&Node->Edits, Edit);
       }
     }
   }
@@ -913,8 +920,8 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
                 if (HasGpuMesh(&Chunk->Mesh))
                 {
-                  Push(MainDrawList, &Chunk);
-                  Push(ShadowMapDrawList, &Chunk);
+                  Push(MainDrawList, Chunk);
+                  Push(ShadowMapDrawList, Chunk);
                 }
               }
             }
@@ -946,8 +953,8 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
               if (HasGpuMesh(&Chunk->Mesh))
               {
-                Push(MainDrawList, &Chunk);
-                Push(ShadowMapDrawList, &Chunk);
+                Push(MainDrawList, Chunk);
+                Push(ShadowMapDrawList, Chunk);
               }
             }
           }
@@ -1151,7 +1158,7 @@ GatherOctreeNodesOverlapping_Recursive(world *World, octree_node *Current, rect3
   rect3cp Box = GetBoundingBox(World, Current);
   if (Intersect(World, &Box, Region))
   {
-    Push(Result, &Current);
+    Push(Result, Current);
 
     switch(Current->Type)
     {

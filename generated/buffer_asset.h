@@ -60,6 +60,12 @@ GetPtr(asset_buffer *Buf, umm Index)
 }
 
 link_inline asset *
+TryGetPtr(asset_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline asset *
 Get(asset_buffer *Buf, umm Index)
 {
   asset *Result = GetPtr(Buf, Index);

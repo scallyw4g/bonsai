@@ -33,6 +33,12 @@ GetPtr(parser_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal parser*
+TryGetPtr(parser_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
+}
+
+link_internal parser*
 GetPtrUnsafe(parser_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
