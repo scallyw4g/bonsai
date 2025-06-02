@@ -51,10 +51,10 @@ uniform f32 Squareness; // 0 == not square, 1 == square
 
 
 
-uniform layout(location = 1) sampler2D InputTex;
+uniform sampler2D InputTex;
 
 in vec2 UV;
-out layout(location = 0) vec4 Output;
+out vec4 Output;
 
 
 void main()

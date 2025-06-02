@@ -2024,8 +2024,8 @@ DoWorldEditor(engine_resources *Engine)
 #endif
 
   { // All Brushes Window
-    local_persist window_layout BrushSettingsWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
-    PushWindowStart(Ui, &BrushSettingsWindow);
+    local_persist window_layout AllBrushesWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, &AllBrushesWindow);
 
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
@@ -2037,7 +2037,7 @@ DoWorldEditor(engine_resources *Engine)
           Style = &DefaultSelectedStyle;
         }
 
-        if (Button(Ui, CS(Brush->NameBuf), UiId(&BrushSettingsWindow, "brush select", Brush), Style))
+        if (Button(Ui, CS(Brush->NameBuf), UiId(&AllBrushesWindow, "brush select", Brush), Style))
         {
           Editor->CurrentBrush = Brush;
           CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
@@ -2045,7 +2045,7 @@ DoWorldEditor(engine_resources *Engine)
         PushNewRow(Ui);
       }
     }
-    PushWindowEnd(Ui, &BrushSettingsWindow);
+    PushWindowEnd(Ui, &AllBrushesWindow);
 
     if (Editor->CurrentBrush)
     {

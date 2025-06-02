@@ -731,6 +731,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
         if (FacesRequired)
         {
+          /* Info("Chunk faces (%d)", FacesRequired); */
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(RenderQ, DataType_v3_u8, u32(FacesRequired*6), &SynChunk->Mesh, SynChunk, DestChunk);
         }
         else
@@ -745,6 +746,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       }
       else
       {
+        /* Info("Chunk had no mesh : ChunkSum(%d)", ChunkSum); */
         if (HasGpuMesh(&DestChunk->Mesh))
         {
           PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
@@ -824,7 +826,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
         Assert(Chunk->Dim == World->ChunkDim);
         u32 Octaves = 1;
-        InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves);
+        /* InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves); */
+        NotImplemented;
       }
 
     } break;

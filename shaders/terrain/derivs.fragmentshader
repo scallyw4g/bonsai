@@ -4,7 +4,7 @@ uniform v3 ChunkResolution;
 uniform sampler2D InputTex;
 
 in vec2 UV;
-out layout(location = 0) vec3 Output;
+out vec3 Output;
 
 
 void main()

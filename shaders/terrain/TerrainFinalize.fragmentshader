@@ -1,7 +1,7 @@
 uniform sampler2D InputTex;
 
 in vec2 UV;
-out layout(location = 0) uint Output;
+out uint Output;
 
 
 void main()
@@ -9,12 +9,14 @@ void main()
   v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
 
   f32 NoiseValue = TexLookup.a;
-  v3 ColorValue = TexLookup.rgb;
+  v3  ColorValue = TexLookup.rgb;
+  /* v3  ColorValue = V3(1.f,0.f,0.f); */
 
   uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
   uint PackedColor = PackRGB(ColorValue);
+
+  /* uint SolidBit = 1u & uint(white_noise(v3(gl_FragCoord.xy, 1.f)) > 0.f); */
   /* uint PackedColor = 3543u; */
 
   Output = (SolidBit << 15) | PackedColor;
-  /* Output = uint(white_noise(v3(gl_FragCoord.xy, 1.f))*100000.f); */
 }

@@ -80,7 +80,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
          texture  DestTex;
      framebuffer  FBO;
 
-         texture *InputTex; poof(@uniform)
+     u32 Ignored; poof(@uniform)
+         /* texture *InputTex; poof(@uniform) */
 };
 
 poof(shader_magic(terrain_finalize_render_context))

@@ -1,15 +1,15 @@
-// src/engine/graphics.h:86:0
+// src/engine/graphics.h:87:0
 
 link_internal void
-InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct    , texture *InputTex  )
+InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct    , u32 Ignored  )
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;
 
-      Struct->InputTex = InputTex;
-  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->InputTex, "InputTex");
+      Struct->Ignored = Ignored;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Ignored, "Ignored");
 
 
 

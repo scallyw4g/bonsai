@@ -309,6 +309,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
                 GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
                 UseShader(RC);
+
+                // @derivs_texture_binding_to_shader_unit_0
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 0);
 
                 v2i DestTextureDim = RC->DestTex.Dim;
@@ -334,8 +336,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 TIMED_NAMED_BLOCK(TerrainDrawCall);
                 GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
                 UseShader(RC);
-                // Using texture unit 1 because the DerivsTex is automatically bound in
-                // UseShader to unit 0
+                // Using texture unit 1 because the DerivsTex is automatically bound in UseShader to unit 0
+                // @derivs_texture_binding_to_shader_unit_0
                 BindUniformByName(&RC->Program, "InputTex", InputTex, 1);
 
                 RenderQuad();
@@ -398,6 +400,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                       {
                         GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
 
+                        // @derivs_texture_binding_to_shader_unit_0
                         BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
 
                         brush_layer *Layer = Brush->Layers + LayerIndex;
@@ -534,6 +537,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 UseShader(&Graphics->TerrainFinalizeRC);
 
+                // NOTE(Jesse): The other inputtex calls bind to texture unit 1 .. it is correct that
+                // this bind to unit 0 because there's no derivs texture being bound here.
+                //
+                // @derivs_texture_binding_to_shader_unit_0
                 BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", InputTex, 0);
 
                 /* gpu_timer Timer = StartGpuTimer(); */

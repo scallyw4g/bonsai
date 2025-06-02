@@ -70,6 +70,9 @@ DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
 
+# COMPILER="clang++-19"
+COMPILER="clang++"
+
 function BuildExecutables
 {
   echo ""
@@ -77,7 +80,7 @@ function BuildExecutables
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                       \
       $SANITIZER                                     \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
@@ -104,7 +107,7 @@ function BuildDebugOnlyTests
   for executable in $DEBUG_TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                          \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
@@ -129,7 +132,7 @@ function BuildTests
   for executable in $TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                          \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
@@ -153,7 +156,7 @@ function BuildExamples
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN_GAME_LIBS"
-    clang++                     \
+    $COMPILER                                          \
       $SANITIZER                \
       -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
@@ -177,8 +180,8 @@ function BuildExamples
 
 function BuildWithClang
 {
-  which clang++ > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
+  which $COMPILER > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install $COMPILER" && exit 1
 
   echo -e ""
   echo -e "$Delimeter"

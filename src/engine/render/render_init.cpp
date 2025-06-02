@@ -270,6 +270,7 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
   for (s32 Index = 0; Index < 2; ++Index)
   {
     GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
+    AssertNoGlErrors;
 
     u32 Channels = 4;
     u32 Slices = 1;
@@ -277,8 +278,12 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
     Result.Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), StorageFormat, Channels, Slices);
     GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
 
+    AssertNoGlErrors;
+
     FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
+    AssertNoGlErrors;
     SetDrawBuffers(&Result.FBOs[Index]);
+    AssertNoGlErrors;
 
     Ensure(CheckAndClearFramebuffer());
   }
@@ -830,7 +835,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
 
 
-    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex);
+    /* InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex); */
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, 0);
     Ensure(CheckAndClearFramebuffer());
   }
 

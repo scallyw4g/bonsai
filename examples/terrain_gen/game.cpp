@@ -4,6 +4,7 @@
 
 #include "game_types.h"
 
+#if 0
 link_internal u32
 Terrain_Debug( world_chunk *Chunk,
                        v3i  NoiseBasis,
@@ -360,6 +361,7 @@ WarpedTerrain( world_chunk *Chunk,
 
   return ChunkSum;
 }
+#endif
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
@@ -396,6 +398,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
         auto Ignored = MeshBit_Lod0;
 
+#if 0
         /* Info("%S", ToString(GenType)); */
         switch (GenType)
         {
@@ -744,6 +747,7 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
 
 
         }
+#endif
 
       }
 

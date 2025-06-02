@@ -280,28 +280,28 @@ MapNoiseValueToFinal(f32 Value)
 }
 
 
-link_internal void
-ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+/* link_internal void */
+/* ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim); */
 
-link_internal void
-ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+/* link_internal void */
+/* ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim); */
 
 
-link_internal u32
-Terrain_WhiteNoise( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+/* link_internal u32 */
+/* Terrain_WhiteNoise( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
-link_internal u32
-Terrain_Perlin3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+/* link_internal u32 */
+/* Terrain_Perlin3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
-link_internal u32
-Terrain_Perlin2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+/* link_internal u32 */
+/* Terrain_Perlin2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
-link_internal u32
+/* link_internal u32 */
 
-Terrain_Voronoi3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+/* Terrain_Voronoi3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
-link_internal u32
-Terrain_Voronoi2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData );
+/* link_internal u32 */
+/* Terrain_Voronoi2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
 link_internal u32
 FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin);
