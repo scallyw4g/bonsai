@@ -1448,9 +1448,8 @@ EditWorldSelection(engine_resources *Engine)
           /* Info("%S", ToString(SelectionMode)); */
           /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
 
-          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
-
 #if 1
+          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
           if (Input->LMB.Pressed == False)
           {
             // If we actually changed the selection region
@@ -1458,7 +1457,6 @@ EditWorldSelection(engine_resources *Engine)
 
             // Make ModifiedSelection permanent
             Editor->Selection.Region = ProposedSelection;
-            /* Editor->Selection.ModState.ClickedFace = FaceIndex_None; */
           }
 #endif
         }
@@ -1481,6 +1479,7 @@ EditWorldSelection(engine_resources *Engine)
     }
     else
     {
+      Editor->Selection.InitialSelect;
       Editor->Selection.Changed = True;
     }
     Editor->Selection.PrevRegion = Editor->Selection.Region;
@@ -1869,6 +1868,7 @@ DoWorldEditor(engine_resources *Engine)
   //
   //
 
+  Editor->Selection.InitialSelect = False;
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
@@ -1895,6 +1895,8 @@ DoWorldEditor(engine_resources *Engine)
             case 1:
             {
               Editor->Selection.Clicks += 1;
+              /* Info("Editor->Selection.InitialSelect"); */
+              Editor->Selection.InitialSelect = True;
 
               if (Editor->PreviousTool)
               {
@@ -2082,11 +2084,21 @@ DoWorldEditor(engine_resources *Engine)
       // settings window detects and initializes new brushes
       if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
       {
-        if (Editor->Selection.Changed)
+        if (Editor->Selection.InitialSelect)
+        {
+          Assert(AtElements(&Editor->SelectedEdits).Index == 1);
+
+          auto EditIndex = GetPtr(&Editor->SelectedEdits, {});
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+        }
+        else if (Editor->Selection.Changed)
         {
           Info("Applying diff to edit buffer");
           ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
+          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
         }
+
         /* if (Editor->Selection.Changed && CurrentEdit(Editor)) */
         /* { */
         /*   UpdateWorldEditBounds(Engine, CurrentEdit(Editor), Editor->Selection.Region, GetTranArena()); */

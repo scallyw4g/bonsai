@@ -1193,6 +1193,7 @@ struct selection_region poof(@do_editor_ui)
 
   v3 Diff; // When Changed is set, this should be nonzero.
   b32 Changed;
+  b32 InitialSelect; // Set when we go from a partial selection state -> fully selected
 
   selection_modification_state ModState;
 };
