@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:420:0
+// src/engine/editor.cpp:407:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)

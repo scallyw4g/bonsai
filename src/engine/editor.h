@@ -1176,7 +1176,7 @@ struct asset_brush
 // NOTE(Jesse): This isn't really meant to be used outside the the level_editor
 // I just packed all the things together such that it's a bit more obvious
 // they're all for doing the selection
-struct selection_region
+struct selection_region poof(@do_editor_ui)
 {
   u32 Clicks;
 
@@ -1190,6 +1190,8 @@ struct selection_region
 
   rect3cp Region;
   rect3cp PrevRegion; // Change detection
+
+  v3 Diff; // When Changed is set, this should be nonzero.
   b32 Changed;
 
   selection_modification_state ModState;
@@ -1375,6 +1377,40 @@ ComputeShapeAxisFromEditDim(v3 Dim)
   Assert(Result != ShapeAxis_Count);
 
   return Result;
+}
+
+link_internal world_edit_selection_mode
+ComputeSelectionMode(input *Input)
+{
+  world_edit_selection_mode SelectionMode = {};
+
+  // Intentionally an el-if chain from most specific, to least.  What's the alternative?
+  //
+  // Shift is resize
+  // Ctrl  is move
+  //
+  if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
+  {
+    SelectionMode = SelectionMode_ResizeAllAxies;
+  }
+  else if (Input->Shift.Pressed && Input->Alt.Pressed)
+  {
+    SelectionMode = SelectionMode_ResizeBothLinearAxies;
+  }
+  else if (Input->Ctrl.Pressed && Input->Alt.Pressed)
+  {
+    SelectionMode = SelectionMode_TranslateLinear;
+  }
+  else if (Input->Shift.Pressed)
+  {
+    SelectionMode = SelectionMode_ResizeSingleLinearAxis;
+  }
+  else if (Input->Ctrl.Pressed)
+  {
+    SelectionMode =  SelectionMode_TranslatePlanar;
+  }
+
+  return SelectionMode;
 }
 
 link_internal b32

@@ -84,13 +84,6 @@ InitEditor(level_editor *Editor)
   Editor->Edits.Memory = Editor->Memory;
   Editor->SelectedEdits.Memory = Editor->Memory;
 
-/*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
-/*   { */
-/*     Editor->LayeredBrush.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
-/*   } */
-/*   Editor->LayeredBrush.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
-/*   Editor->LayeredBrush.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM); */
-
   return Result;
 }
 
@@ -101,12 +94,6 @@ HardResetEditor(level_editor *Editor)
   {
     DeleteTexture(&Thumb->Texture);
   }
-
-  // @editor_chunk_memory_question
-  //
-  // I guess here we can actually just not worry about clearing it because
-  // it'll get realloc'd in the update path ..?  Seems fine..
-  /* DeallocateWorldChunk(&Editor->Noise.Chunk, &GetEngineResources()->MeshFreelist); */
 
   VaporizeArena(Editor->Memory);
 
@@ -488,6 +475,20 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 
 
 
+poof(
+  for_datatypes(all)
+  func (struct_t) {
+    struct_t.has_tag(do_editor_ui)?
+    {
+      do_editor_ui_for_compound_type(struct_t)
+    }
+  }
+  func (enum_t) {}
+)
+#include <generated/for_datatypes_Bxw4Q7AW.h>
+
+
+
 
 poof(do_editor_ui_for_compound_type(render_buffers_2d))
 #include <generated/do_editor_ui_for_compound_type_render_buffers_2d.h>
@@ -773,6 +774,8 @@ DoSelectonModification( engine_resources *Engine,
 
   v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, SelectionState->ClickedFace, SelectionMode);
           Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
+
+  Editor->Selection.Diff = UpdateVector;
 
   {
     /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED); */
@@ -1440,57 +1443,37 @@ EditWorldSelection(engine_resources *Engine)
 
         if (Editor->Selection.ModState.ClickedFace)
         {
-          world_edit_selection_mode SelectionMode = {};
-
-          // Intentionally an el-if chain from most specific, to least.  What's the alternative?
-          //
-          // Shift is resize
-          // Ctrl  is move
-          //
-          if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeAllAxies;
-          }
-          else if (Input->Shift.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeBothLinearAxies;
-          }
-          else if (Input->Ctrl.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_TranslateLinear;
-          }
-          else if (Input->Shift.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeSingleLinearAxis;
-          }
-          else if (Input->Ctrl.Pressed)
-          {
-            SelectionMode =  SelectionMode_TranslatePlanar;
-          }
+          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
 
           /* Info("%S", ToString(SelectionMode)); */
           /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
 
           rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
 
-          if (!Input->LMB.Pressed)
+#if 1
+          if (Input->LMB.Pressed == False)
           {
             // If we actually changed the selection region
             rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
 
             // Make ModifiedSelection permanent
             Editor->Selection.Region = ProposedSelection;
-            Editor->Selection.ModState.ClickedFace = FaceIndex_None;
-
+            /* Editor->Selection.ModState.ClickedFace = FaceIndex_None; */
           }
+#endif
         }
       }
     }
   }
 
 
+  // TODO(Jesse): Can we actually just cache the PrevRegion at the top of this
+  // function and check if we changed it like that?  I guess that's not robust
+  // if we change it in other ways, but I don't think that's likely..
+
   // Don't fire selection changed event when dragging selection with selection edit tool
   if (Editor->Selection.Clicks != 1)
+  /* if (SelectionComplete(Editor->Selection.Clicks)) */ // NOTE(Jesse): Should be able to be this .. Didn't test
   {
     if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
     {
@@ -1676,7 +1659,7 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(Edit->Tombstone == False);
 
-  Info("Updating Edit(%p)", Edit);
+  Info("Applying Edit(%p) to Octree", Edit);
 
   // Gather newly overlapping nodes and add the edit
 
@@ -1792,6 +1775,28 @@ GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem)
   return {EditCount, Keys};
 }
 #endif
+
+
+link_internal void
+ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_index_block_array *Edits)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  IterateOver(Edits, EditI, EditII)
+  {
+    world_edit *Edit = GetPtr(&Editor->Edits, *EditI);
+
+    world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+
+    Assert(Engine->MaybeMouseRay.Tag == Maybe_Yes);
+    ray *Ray = &Engine->MaybeMouseRay.Ray;
+    aabb SelectionAABB = GetSimSpaceAABB(World, &Edit->Region);
+    rect3i ModifiedSelection = DoSelectonModification(Engine, Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
+
+    rect3cp NewRegion = SimSpaceToCanonical(World, &ModifiedSelection);
+    UpdateWorldEditBounds(Engine, Edit, NewRegion, GetTranArena());
+  }
+}
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -2077,6 +2082,11 @@ DoWorldEditor(engine_resources *Engine)
       // settings window detects and initializes new brushes
       if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
       {
+        if (Editor->Selection.Changed)
+        {
+          Info("Applying diff to edit buffer");
+          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
+        }
         /* if (Editor->Selection.Changed && CurrentEdit(Editor)) */
         /* { */
         /*   UpdateWorldEditBounds(Engine, CurrentEdit(Editor), Editor->Selection.Region, GetTranArena()); */
@@ -2336,6 +2346,7 @@ DoWorldEditor(engine_resources *Engine)
                   /* ++Duplicated->Ordinal; */
 
               ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+
               /* Editor->CurrentEdit = Duplicated; */
             } break;
 
