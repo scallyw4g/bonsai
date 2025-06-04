@@ -3,9 +3,9 @@
 // NOTE(Jesse): Resolution of the back-buffers the renderer allocates
 //
 
-// resolution = ResolutionSetting_4096x2160
+   resolution = ResolutionSetting_4096x2160
 // resolution = ResolutionSetting_1920x1080
-   resolution = ResolutionSetting_1280x720
+// resolution = ResolutionSetting_1280x720
 
 
 

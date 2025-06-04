@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:526:0
+// src/engine/editor.cpp:534:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -492,11 +492,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         
         
         
-        cs MemberName = CSz("CurrentEdit");
+        cs MemberName = CSz("SelectedEdits");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit*, Element->CurrentEdit),
+          Cast(world_edit_block_array_index_block_array*, &Element->SelectedEdits),
           MemberName,
           Params
           );

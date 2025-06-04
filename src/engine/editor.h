@@ -1306,7 +1306,7 @@ struct level_editor
   world_edit_layer *CurrentLayer;
   world_edit_layer *HotLayer;
 
-  world_edit *CurrentEdit;
+  world_edit_block_array_index_block_array SelectedEdits;
   world_edit *HotEdit;
 
   world_edit_brush_hashtable  LoadedBrushes;

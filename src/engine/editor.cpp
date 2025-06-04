@@ -19,7 +19,7 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
 }
 
 link_internal world_edit *
-NewEdit(level_editor *Editor, world_edit_layer *Layer)
+NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_index *IndexOut = 0)
 {
   world_edit_block_array_index Index = {};
   world_edit *Result = {};
@@ -33,8 +33,6 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer)
     }
   }
 
-
-
   if (Result == 0)
   {
     Result = Push(&Editor->Edits);
@@ -42,6 +40,9 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer)
   }
 
   Push(&Layer->EditIndices, &Index);
+
+  if (IndexOut)
+    *IndexOut = Index;
 
   return Result;
 }
@@ -81,6 +82,7 @@ InitEditor(level_editor *Editor)
   }
 
   Editor->Edits.Memory = Editor->Memory;
+  Editor->SelectedEdits.Memory = Editor->Memory;
 
 /*   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS) */
 /*   { */
@@ -390,6 +392,12 @@ poof(do_editor_ui_for_compound_type(world_edit))
 
 poof(do_editor_ui_for_container(world_edit_ptr_block_array))
 #include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h>
+
+poof(do_editor_ui_for_compound_type(world_edit_block_array_index))
+#include <generated/do_editor_ui_for_compound_type_world_edit_block_array_index.h>
+
+poof(do_editor_ui_for_container(world_edit_block_array_index_block_array))
+#include <generated/do_editor_ui_for_container_world_edit_block_array_index_block_array.h>
 
 poof(do_editor_ui_for_enum(chunk_flag))
 #include <generated/do_editor_ui_for_enum_chunk_flag.h>
@@ -1373,9 +1381,18 @@ EditWorldSelection(engine_resources *Engine)
 
   aabb_intersect_result AABBTest = {};
 
+#if 0
+  aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
+  IterateOver(&Editor->SelectedEdits, EditIndex, EditIndexIndex)
+  {
+    world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+    aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
+    TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
+  }
+#endif
+
   if (Editor->Selection.Clicks)
   {
-
     if (SelectionIncomplete(Editor->Selection.Clicks))
     {
       if (Engine->MousedOverVoxel.Tag)
@@ -1391,6 +1408,7 @@ EditWorldSelection(engine_resources *Engine)
     }
 
     aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+    /* SelectionAABB = TotalEditAreas; */
     {
       if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
       {
@@ -1984,9 +2002,12 @@ DoWorldEditor(engine_resources *Engine)
     Editor->Tool = WorldEdit_Tool_Select;
     ResetSelection(Editor);
 
-    Editor->CurrentEdit = NewEdit(Editor, Editor->CurrentLayer);
+    world_edit_block_array_index Index;
+    auto E = NewEdit(Editor, Editor->CurrentLayer, &Index);
+    E->Brush = Editor->CurrentBrush;
 
-    Editor->CurrentEdit->Brush = Editor->CurrentBrush;
+    Editor->SelectedEdits.ElementCount = 0;
+    Push(&Editor->SelectedEdits, &Index);
   }
 
 #if 0
@@ -2056,10 +2077,10 @@ DoWorldEditor(engine_resources *Engine)
       // settings window detects and initializes new brushes
       if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
       {
-        if (Editor->Selection.Changed && Editor->CurrentEdit)
-        {
-          UpdateWorldEditBounds(Engine, Editor->CurrentEdit, Editor->Selection.Region, GetTranArena());
-        }
+        /* if (Editor->Selection.Changed && CurrentEdit(Editor)) */
+        /* { */
+        /*   UpdateWorldEditBounds(Engine, CurrentEdit(Editor), Editor->Selection.Region, GetTranArena()); */
+        /* } */
 
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
         if (SettingsChanged)
@@ -2100,11 +2121,11 @@ DoWorldEditor(engine_resources *Engine)
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
-      b32 Selected = Editor->CurrentLayer == Layer;
+      b32 LayerSelected = Editor->CurrentLayer == Layer;
 
       PushTableStart(Ui);
       {
-        ui_style *Style = Selected ? &DefaultSelectedStyle : &DefaultStyle;
+        ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
         if (Button(Ui, Name, UiId(&LayersWindow, Layer, Layer), Style))
         {
           Editor->CurrentLayer = Layer;
@@ -2136,10 +2157,11 @@ DoWorldEditor(engine_resources *Engine)
 
                 ApplyEditToOctree(Engine, Duplicated, GetTranArena());
 
-                if (Editor->CurrentEdit == Edit)
-                {
-                  Editor->CurrentEdit = Duplicated;
-                }
+                NotImplemented;
+                /* if (Editor->CurrentEdit == Edit) */
+                /* { */
+                /*   Editor->CurrentEdit = Duplicated; */
+                /* } */
               }
             } break;
 
@@ -2180,12 +2202,6 @@ DoWorldEditor(engine_resources *Engine)
           Assert(Edit->Tombstone == False);
 
           const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
-
-          ui_render_params Params = DefaultUiRenderParams_Button;
-          if (Edit == Editor->CurrentEdit)
-          {
-            Params.FStyle = &DefaultSelectedStyle;
-          }
 
           ui_reorder_action EditReorderAction = {};
           PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
@@ -2244,15 +2260,47 @@ DoWorldEditor(engine_resources *Engine)
             break;
           }
 
-          /* auto EditSelectButton = PushSimpleButton(Ui, FSz("(%d)(%d) (%s)", KeyIndex, Key->Value, NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params); */
-          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &Params);
+
+          ui_render_params ButtonParams = DefaultUiRenderParams_Button;
+
+          b32 EditIsSelected = False;
+          world_edit_block_array_index_block_array_index I;
+          IterateOver(&Editor->SelectedEdits, SelEditIndex, SEII)
+          {
+            if (*SelEditIndex == *EditIndex)
+            {
+              ButtonParams.FStyle = &DefaultSelectedStyle;
+              EditIsSelected = True;
+              I = SEII;
+            }
+          }
+
+          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
           if (Clicked(Ui, &EditSelectButton))
           {
             Editor->Selection.Clicks = 2;
             Editor->Selection.Region = Edit->Region;
             Editor->Selection.PrevRegion = Edit->Region;
 
-            Editor->CurrentEdit = Edit;
+            if (Input->Ctrl.Pressed)
+            {
+              if (EditIsSelected)
+              {
+                RemoveUnordered(&Editor->SelectedEdits, I);
+              }
+              else
+              {
+                Push(&Editor->SelectedEdits, EditIndex);
+              }
+            }
+            else
+            {
+              Editor->SelectedEdits.ElementCount = 0;
+              Push(&Editor->SelectedEdits, EditIndex);
+            }
+
+
+            /* Editor->CurrentEdit = Edit; */
             Editor->CurrentLayer = Layer;
 
             if (Edit->Brush)
@@ -2288,15 +2336,15 @@ DoWorldEditor(engine_resources *Engine)
                   /* ++Duplicated->Ordinal; */
 
               ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-              Editor->CurrentEdit = Duplicated;
+              /* Editor->CurrentEdit = Duplicated; */
             } break;
 
             case UiLayerEditAction_Delete:
             {
-              if (Editor->CurrentEdit == Edit)
-              {
-                Editor->CurrentEdit = 0;
-              }
+              /* if (Editor->CurrentEdit == Edit) */
+              /* { */
+              /*   Editor->CurrentEdit = 0; */
+              /* } */
 
               DropEditFromOctree(Engine, Edit, GetTranArena());
               RemoveOrdered(&Layer->EditIndices, EditIndex);
@@ -2369,7 +2417,7 @@ DoWorldEditor(engine_resources *Engine)
         { // But otherwise only highlight the edits on the current layer.
           if (Layer == Editor->CurrentLayer)
           {
-            if (Edit == Editor->CurrentEdit) { Size *= 2.f; }
+            /* if (Edit == Editor->CurrentEdit) { Size *= 2.f; } */
             DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
           }
         }

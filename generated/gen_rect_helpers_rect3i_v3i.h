@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/rect.h:144:0
+// external/bonsai_stdlib/src/rect.h:154:0
 
 link_internal rect3i
 RectMinMax(v3i Min, v3i Max)

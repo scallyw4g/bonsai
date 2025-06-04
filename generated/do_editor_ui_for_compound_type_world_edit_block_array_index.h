@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:152:0
+// src/engine/editor.cpp:396:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_cylinder *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_update_op_shape_params_cylinder", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_block_array_index", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,35 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Axis");
+        cs MemberName = CSz("Index");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shape_axis*, &Element->Axis),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Radius");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->Radius),
+          Cast(umm*, &Element->Index),
           MemberName,
           Params
           );
@@ -75,6 +51,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
             PushNewRow(Ui);
+
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

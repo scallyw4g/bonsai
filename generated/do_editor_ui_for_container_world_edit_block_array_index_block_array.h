@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:231:0
+// src/engine/editor.cpp:399:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_ptr_block_array *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index_block_array *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   if (Container)
   {
