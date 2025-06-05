@@ -710,6 +710,7 @@ poof(do_editor_ui_for_compound_type(maybe_ray))
 
 struct selection_modification_state
 {
+  // NOTE(Jesse): This is the source of truth for if we're modifying the selection
   face_index ClickedFace;
   v3 ClickedP[2];
 };

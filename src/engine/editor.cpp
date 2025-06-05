@@ -1403,6 +1403,8 @@ EditWorldSelection(engine_resources *Engine)
 
   if (Editor->Selection.Clicks)
   {
+    // Hot update selection region before we click the second point
+    //
     if (SelectionIncomplete(Editor->Selection.Clicks))
     {
       if (Engine->MousedOverVoxel.Tag)
@@ -1417,8 +1419,13 @@ EditWorldSelection(engine_resources *Engine)
       }
     }
 
+    // Edit the selection region
+    //
+    aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
     {
-      aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+      // If we're hovering a face and click, set ClickedFace, which is the
+      // source of truth that signals we're editing the selection region
+      //
       if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
       {
         ray Ray = Engine->MaybeMouseRay.Ray;
@@ -1427,13 +1434,6 @@ EditWorldSelection(engine_resources *Engine)
         face_index Face = AABBTest.Face;
         if (Face)
         {
-          /* r32 InsetWidth = 0.25f; */
-          r32 InsetWidth  = 0.f;
-          v3  HiColor     = RGB_GREEN;
-          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
-
-          HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
-
           if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
           {
             v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
@@ -1442,6 +1442,9 @@ EditWorldSelection(engine_resources *Engine)
           }
         }
 
+        // If we're editing the selection region, Compute the proposed modification
+        // and make it permanent when we release the LMB
+        //
         if (Editor->Selection.ModState.ClickedFace)
         {
           world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
@@ -1458,52 +1461,68 @@ EditWorldSelection(engine_resources *Engine)
           }
         }
       }
+
+      // Draw
+      {
+        auto Face = Editor->Selection.ModState.ClickedFace;
+        if (Face)
+        {
+          /* r32 InsetWidth = 0.25f; */
+          r32 InsetWidth  = 0.f;
+          v3  HiColor     = RGB_GREEN;
+          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+
+          HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
+        }
+      }
     }
   }
 
   // Detect changes
+  //
 
   // TODO(Jesse): Can we actually just cache the PrevRegion at the top of this
   // function and check if we changed it like that?  I guess that's not robust
   // if we change it in other ways, but I don't think that's likely..
-
-  if (Input->LMB.Clicked)
   {
-    switch (Editor->Selection.Clicks)
+    if (Input->LMB.Clicked)
     {
-      case 0:
+      switch (Editor->Selection.Clicks)
       {
-        if (Engine->MousedOverVoxel.Tag)
+        case 0:
+        {
+          if (Engine->MousedOverVoxel.Tag)
+          {
+            Editor->Selection.Clicks += 1;
+            auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+            MouseP.Offset = Floor(MouseP.Offset);
+            Editor->Selection.Base = MouseP;
+          }
+        } break;
+
+        case 1:
         {
           Editor->Selection.Clicks += 1;
-          auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-          MouseP.Offset = Floor(MouseP.Offset);
-          Editor->Selection.Base = MouseP;
-        }
-      } break;
+          Editor->Selection.InitialSelect = True;
+        } break;
 
-      case 1:
+      }
+    }
+
+    // Don't fire selection changed event when dragging selection with selection edit tool
+    if (Editor->Selection.Clicks != 1)
+    /* if (SelectionComplete(Editor->Selection.Clicks)) */ // NOTE(Jesse): Should be able to be this .. Didn't test
+    {
+      if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
       {
-        Editor->Selection.Clicks += 1;
-        Editor->Selection.InitialSelect = True;
-      } break;
-
+        // Same as prev frame, Changed already reset at top of function
+      }
+      else
+      {
+        Editor->Selection.Changed = True;
+      }
+      Editor->Selection.PrevRegion = Editor->Selection.Region;
     }
-  }
-
-  // Don't fire selection changed event when dragging selection with selection edit tool
-  if (Editor->Selection.Clicks != 1)
-  /* if (SelectionComplete(Editor->Selection.Clicks)) */ // NOTE(Jesse): Should be able to be this .. Didn't test
-  {
-    if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
-    {
-      // Same as prev frame, Changed already reset at top of function
-    }
-    else
-    {
-      Editor->Selection.Changed = True;
-    }
-    Editor->Selection.PrevRegion = Editor->Selection.Region;
   }
 
   if (Editor->Selection.InitialSelect)
