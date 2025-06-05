@@ -770,7 +770,8 @@ DoSelectonModification( engine_resources *Engine,
                         ray *MouseRay,
                         world_edit_selection_mode SelectionMode,
                         selection_modification_state *SelectionState,
-                        aabb SelectionAABB )
+                        aabb SelectionAABB,
+                        v3 *Diff = 0)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -779,10 +780,12 @@ DoSelectonModification( engine_resources *Engine,
   v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, SelectionState->ClickedFace, SelectionMode);
   rect3i Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
 
-  Editor->Selection.Diff = UpdateVector;
+  if (Diff)
+  {
+    *Diff = UpdateVector;
+  }
 
   Assert(Result.Min <= Result.Max);
-
   return Result;
 }
 
@@ -1378,15 +1381,20 @@ EditWorldSelection(engine_resources *Engine)
   aabb_intersect_result AABBTest = {};
 
   Editor->Selection.InitialSelect = False;
-  Editor->Selection.Changed = False;
+  Editor->Selection.Changed       = False;
+  Editor->Selection.Diff          = {};
 
-#if 0
+#if 1
   aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
-  IterateOver(&Editor->SelectedEdits, EditIndex, EditIndexIndex)
+  if (AtElements(&Editor->SelectedEdits).Index)
   {
-    world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-    aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
-    TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
+    IterateOver(&Editor->SelectedEdits, EditIndex, EditIndexIndex)
+    {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
+      TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
+    }
+    Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
   }
 #endif
 
@@ -1440,7 +1448,8 @@ EditWorldSelection(engine_resources *Engine)
           world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
 
           UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
-          ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
+          v3 UpdateVector = {};
+          ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
           if (Input->LMB.Pressed == False)
           {
             // If we actually changed the selection region
@@ -1448,21 +1457,26 @@ EditWorldSelection(engine_resources *Engine)
 
             // Make ModifiedSelection permanent
             Editor->Selection.Region = ProposedSelection;
+            Editor->Selection.Diff   = UpdateVector;
           }
         }
       }
 
       // Draw
       {
-        auto Face = Editor->Selection.ModState.ClickedFace;
-        if (Face)
         {
-          /* r32 InsetWidth = 0.25f; */
-          r32 InsetWidth  = 0.f;
-          v3  HiColor     = RGB_GREEN;
-          r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+          auto Face = Editor->Selection.ModState.ClickedFace;
+          if (Face == FaceIndex_None) { Face = AABBTest.Face; }
 
-          HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
+          if (Face)
+          {
+            /* r32 InsetWidth = 0.25f; */
+            r32 InsetWidth  = 0.f;
+            v3  HiColor     = RGB_GREEN;
+            r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+
+            HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
+          }
         }
 
         // Draw selection modification region
@@ -1502,6 +1516,9 @@ EditWorldSelection(engine_resources *Engine)
           Editor->Selection.InitialSelect = True;
         } break;
 
+        case 2: {} break;
+
+        InvalidDefaultCase;
       }
     }
 
@@ -2104,9 +2121,16 @@ DoWorldEditor(engine_resources *Engine)
         }
         else if (Editor->Selection.Changed)
         {
-          Info("Applying diff to edit buffer");
-          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
-          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+          if (LengthSq(Editor->Selection.Diff) > 0.f)
+          {
+            Info("Applying diff to edit buffer");
+            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
+            Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+          }
+          else
+          {
+            // The selection area was probably just resizing to enclose multiple selected edits
+          }
         }
 
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);

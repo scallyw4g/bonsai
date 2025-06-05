@@ -1115,7 +1115,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   {
     world_chunk *Chunk = DestChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
+    auto SimSpaceIntersectionRect = Intersection(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -1180,7 +1180,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   {
     world_chunk *Chunk = DestChunkBuffer[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
+    auto SimSpaceIntersectionRect = Intersection(&SimSpaceChunkRect, &SimSpaceUpdateBounds);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -1311,7 +1311,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         /* DrawStandingSpot(Mesh, V3(QueryRelChunkSpot), V3(Global_StandingSpotDim), TEAL, DEFAULT_STANDING_SPOT_THICKNESS*1.5f); */
       }
 
-      auto SimSpaceSpotUnion = Union(&SimSpotAABB, &SimSpaceUpdateBounds);
+      auto SimSpaceSpotUnion = Intersection(&SimSpotAABB, &SimSpaceUpdateBounds);
       auto SimSpaceUnionDim = GetDim(SimSpaceSpotUnion);
       if (Volume(SimSpaceSpotUnion) == Volume(Global_StandingSpotDim)) // Cull
       {
@@ -1349,7 +1349,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
         voxel_position ChunkSpot = Chunk->StandingSpots.Start[ChunkStandingSpotIndex];
         voxel_position ChunkSimSpot = ChunkSpot + SimSpaceChunkMin;
         rect3i ChunkSimSpotAABB = Rect3iMinDim(ChunkSimSpot, Global_StandingSpotDim);
-        if (Volume(Union(&SimSpotAABB, &ChunkSimSpotAABB)))
+        if (Volume(Intersection(&SimSpotAABB, &ChunkSimSpotAABB)))
         {
           Skip = true;
           break;

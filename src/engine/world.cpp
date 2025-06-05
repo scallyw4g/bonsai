@@ -150,7 +150,7 @@ GatherRangesOverlapping(world *World, rect3i SimSpaceAABB, world_chunk_ptr_buffe
   {
     world_chunk *Chunk = ChunkBuffer->Start[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceAABB);
+    auto SimSpaceIntersectionRect = Intersection(&SimSpaceChunkRect, &SimSpaceAABB);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;
@@ -188,7 +188,7 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
   {
     world_chunk *Chunk = ChunkBuffer->Start[ChunkIndex];
     auto SimSpaceChunkRect = GetSimSpaceAABBi(World, Chunk);
-    auto SimSpaceIntersectionRect = Union(&SimSpaceChunkRect, &SimSpaceAABB);
+    auto SimSpaceIntersectionRect = Intersection(&SimSpaceChunkRect, &SimSpaceAABB);
 
     auto SimSpaceIntersectionMin = SimSpaceIntersectionRect.Min;
     auto SimSpaceIntersectionMax = SimSpaceIntersectionRect.Max;

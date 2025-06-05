@@ -68,6 +68,15 @@ SimSpaceToCanonical(world *World, v3 P)
 }
 
 link_internal rect3cp
+SimSpaceToCanonical(world *World, rect3 *Rect)
+{
+  rect3cp Result = {};
+  Result.Min = SimSpaceToCanonical(World, Rect->Min);
+  Result.Max = SimSpaceToCanonical(World, Rect->Max);
+  return Result;
+}
+
+link_internal rect3cp
 SimSpaceToCanonical(world *World, rect3i *Rect)
 {
   rect3cp Result = {};
