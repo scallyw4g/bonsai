@@ -781,17 +781,6 @@ DoSelectonModification( engine_resources *Engine,
 
   Editor->Selection.Diff = UpdateVector;
 
-  {
-    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED); */
-    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE); */
-    DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, RGB_GREEN);
-  }
-
-  // Draw selection modification region
-  //
-  rect3 Draw = Rect3(&Result);
-  DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
-
   Assert(Result.Min <= Result.Max);
 
   return Result;
@@ -1422,6 +1411,7 @@ EditWorldSelection(engine_resources *Engine)
     // Edit the selection region
     //
     aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+    rect3i ModifiedSelection = {};
     {
       // If we're hovering a face and click, set ClickedFace, which is the
       // source of truth that signals we're editing the selection region
@@ -1450,7 +1440,7 @@ EditWorldSelection(engine_resources *Engine)
           world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
 
           UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
-          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
+          ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
           if (Input->LMB.Pressed == False)
           {
             // If we actually changed the selection region
@@ -1474,6 +1464,12 @@ EditWorldSelection(engine_resources *Engine)
 
           HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
         }
+
+        // Draw selection modification region
+        //
+        rect3 Draw = Rect3(&ModifiedSelection);
+        DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
+
       }
     }
   }
