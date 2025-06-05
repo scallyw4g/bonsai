@@ -724,36 +724,31 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
   }
 }
 
-link_internal rect3i
-DoSelectonModification( engine_resources *Engine,
-                        ray *MouseRay,
-                        world_edit_selection_mode SelectionMode,
-                        selection_modification_state *SelectionState,
-                        aabb SelectionAABB )
+link_internal void
+UpdateSelectionStateForFrame( ray *MouseRay,
+    camera *Camera,
+    input *Input,
+        world_edit_selection_mode  SelectionMode,
+     selection_modification_state *SelectionState)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-  rect3i Result  = Rect3i(SelectionAABB);
-
-  v3 Normal = {};
+  v3 Normal = NormalForFace(SelectionState->ClickedFace);
   v3 PlaneN = {};
 
   switch (SelectionMode)
   {
-    case SelectionMode_Noop: { return Result; }
+    case SelectionMode_Noop: { return; }
 
     case SelectionMode_TranslateLinear:
     case SelectionMode_ResizeSingleLinearAxis:
     case SelectionMode_ResizeBothLinearAxies:
     case SelectionMode_ResizeAllAxies:
     {
-      Normal   = NormalForFace(SelectionState->ClickedFace);
       v3 PerpN = Cross(Normal, Camera->Front);
       PlaneN   = Cross(Normal, PerpN);
     } break;
 
     case SelectionMode_TranslatePlanar:
     {
-      Normal = NormalForFace(SelectionState->ClickedFace);
       PlaneN = Normal;
     } break;
   }
@@ -768,12 +763,21 @@ DoSelectonModification( engine_resources *Engine,
       SelectionState->ClickedP[1] = PlaneIntersect;
     }
   }
+}
 
+link_internal rect3i
+DoSelectonModification( engine_resources *Engine,
+                        ray *MouseRay,
+                        world_edit_selection_mode SelectionMode,
+                        selection_modification_state *SelectionState,
+                        aabb SelectionAABB )
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   v3 RoughUpdateVector = (SelectionState->ClickedP[1] - SelectionState->ClickedP[0]);
 
   v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, SelectionState->ClickedFace, SelectionMode);
-          Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
+  rect3i Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
 
   Editor->Selection.Diff = UpdateVector;
 
@@ -1384,6 +1388,9 @@ EditWorldSelection(engine_resources *Engine)
 
   aabb_intersect_result AABBTest = {};
 
+  Editor->Selection.InitialSelect = False;
+  Editor->Selection.Changed = False;
+
 #if 0
   aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
   IterateOver(&Editor->SelectedEdits, EditIndex, EditIndexIndex)
@@ -1410,20 +1417,14 @@ EditWorldSelection(engine_resources *Engine)
       }
     }
 
-    aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-    /* SelectionAABB = TotalEditAreas; */
     {
+      aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
       if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
       {
         ray Ray = Engine->MaybeMouseRay.Ray;
 
-        /* Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {})); */
         AABBTest = Intersect(&SelectionAABB, &Ray);
-
         face_index Face = AABBTest.Face;
-        /* PushColumn(Ui, CS(Face)); */
-        /* PushNewRow(Ui); */
-
         if (Face)
         {
           /* r32 InsetWidth = 0.25f; */
@@ -1445,10 +1446,7 @@ EditWorldSelection(engine_resources *Engine)
         {
           world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
 
-          /* Info("%S", ToString(SelectionMode)); */
-          /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
-
-#if 1
+          UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
           rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
           if (Input->LMB.Pressed == False)
           {
@@ -1458,16 +1456,40 @@ EditWorldSelection(engine_resources *Engine)
             // Make ModifiedSelection permanent
             Editor->Selection.Region = ProposedSelection;
           }
-#endif
         }
       }
     }
   }
 
+  // Detect changes
 
   // TODO(Jesse): Can we actually just cache the PrevRegion at the top of this
   // function and check if we changed it like that?  I guess that's not robust
   // if we change it in other ways, but I don't think that's likely..
+
+  if (Input->LMB.Clicked)
+  {
+    switch (Editor->Selection.Clicks)
+    {
+      case 0:
+      {
+        if (Engine->MousedOverVoxel.Tag)
+        {
+          Editor->Selection.Clicks += 1;
+          auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+          MouseP.Offset = Floor(MouseP.Offset);
+          Editor->Selection.Base = MouseP;
+        }
+      } break;
+
+      case 1:
+      {
+        Editor->Selection.Clicks += 1;
+        Editor->Selection.InitialSelect = True;
+      } break;
+
+    }
+  }
 
   // Don't fire selection changed event when dragging selection with selection edit tool
   if (Editor->Selection.Clicks != 1)
@@ -1475,14 +1497,18 @@ EditWorldSelection(engine_resources *Engine)
   {
     if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
     {
-      Editor->Selection.Changed = False;
+      // Same as prev frame, Changed already reset at top of function
     }
     else
     {
-      Editor->Selection.InitialSelect;
       Editor->Selection.Changed = True;
     }
     Editor->Selection.PrevRegion = Editor->Selection.Region;
+  }
+
+  if (Editor->Selection.InitialSelect)
+  {
+    Assert(Editor->Selection.Changed);
   }
 
   return AABBTest;
@@ -1868,46 +1894,15 @@ DoWorldEditor(engine_resources *Engine)
   //
   //
 
-  Editor->Selection.InitialSelect = False;
   if ( UiCapturedMouseInput(Ui) == False &&
        UiHoveredMouseInput(Ui)  == False  )
   {
     switch (Editor->Tool)
     {
-      case WorldEdit_Tool_Disabled:
+      case WorldEdit_Tool_Disabled: {} break;
 
       case WorldEdit_Tool_Select:
       {
-        if (Input->LMB.Clicked)
-        { switch (Editor->Selection.Clicks)
-          {
-            case 0:
-            {
-              if (Engine->MousedOverVoxel.Tag)
-              {
-                Editor->Selection.Clicks += 1;
-                auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                MouseP.Offset = Floor(MouseP.Offset);
-                Editor->Selection.Base = MouseP;
-              }
-            } break;
-
-            case 1:
-            {
-              Editor->Selection.Clicks += 1;
-              /* Info("Editor->Selection.InitialSelect"); */
-              Editor->Selection.InitialSelect = True;
-
-              if (Editor->PreviousTool)
-              {
-                Editor->Tool = Editor->PreviousTool;
-                Editor->PreviousTool = {};
-              }
-            } break;
-
-          }
-        }
-
       } break;
 
       case WorldEdit_Tool_Eyedropper:
@@ -2086,8 +2081,8 @@ DoWorldEditor(engine_resources *Engine)
       {
         if (Editor->Selection.InitialSelect)
         {
+          Info("Setting Initial edit state");
           Assert(AtElements(&Editor->SelectedEdits).Index == 1);
-
           auto EditIndex = GetPtr(&Editor->SelectedEdits, {});
           world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
           UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
@@ -2098,11 +2093,6 @@ DoWorldEditor(engine_resources *Engine)
           ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
           Editor->Selection.ModState.ClickedFace = FaceIndex_None;
         }
-
-        /* if (Editor->Selection.Changed && CurrentEdit(Editor)) */
-        /* { */
-        /*   UpdateWorldEditBounds(Engine, CurrentEdit(Editor), Editor->Selection.Region, GetTranArena()); */
-        /* } */
 
         b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
         if (SettingsChanged)
