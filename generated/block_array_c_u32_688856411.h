@@ -97,7 +97,7 @@ RemoveOrdered( u32_block_array *Array, u32 *Element )
 link_internal u32_block_array_index
 Find( u32_block_array *Array, u32 *Query)
 {
-  u32_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  u32_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( u32_block_array *Array, u32 *Query)
 link_internal b32
 IsValid(u32_block_array_index *Index)
 {
-  u32_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  u32_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

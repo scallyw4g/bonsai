@@ -1,18 +1,18 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:22:0
 
 maybe_window_layout_ptr
-GetPtrByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
+GetPtrByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   maybe_window_layout_ptr Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&HashtableKey)), Table);
+  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
 
-    if (Bucket->Tombstoned == False && AreEqual(E->HashtableKey, HashtableKey))
+    if (Bucket->Tombstoned == False && AreEqual(E->HashtableKey, Query))
     {
       Result.Tag = Maybe_Yes;
       Result.Value = E;

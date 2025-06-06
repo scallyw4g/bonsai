@@ -184,4 +184,5 @@ TryGetPtr(world_edit_brush_hashtable *Hashtable, world_edit_brush_hashtable_iter
 {
   return GetPtr(Hashtable, Iterator);
 }
+
  

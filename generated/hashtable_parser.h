@@ -184,4 +184,5 @@ TryGetPtr(parser_hashtable *Hashtable, parser_hashtable_iterator Iterator)
 {
   return GetPtr(Hashtable, Iterator);
 }
+
  

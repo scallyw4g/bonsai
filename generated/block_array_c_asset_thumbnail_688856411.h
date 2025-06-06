@@ -97,7 +97,7 @@ RemoveOrdered( asset_thumbnail_block_array *Array, asset_thumbnail *Element )
 link_internal asset_thumbnail_block_array_index
 Find( asset_thumbnail_block_array *Array, asset_thumbnail *Query)
 {
-  asset_thumbnail_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  asset_thumbnail_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( asset_thumbnail_block_array *Array, asset_thumbnail *Query)
 link_internal b32
 IsValid(asset_thumbnail_block_array_index *Index)
 {
-  asset_thumbnail_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  asset_thumbnail_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

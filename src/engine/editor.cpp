@@ -1479,10 +1479,14 @@ EditWorldSelection(engine_resources *Engine)
           }
         }
 
-        // Draw selection modification region
+        // Draw proposed modification region
         //
-        rect3 Draw = Rect3(&ModifiedSelection);
-        DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
+        rect3 ModifiedAABB = Rect3(&ModifiedSelection);
+        DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS*0.75f);
+
+        // And finally the selection region
+        //
+        DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
 
       }
     }

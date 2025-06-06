@@ -97,7 +97,7 @@ RemoveOrdered( gpu_timer_block_array *Array, gpu_timer *Element )
 link_internal gpu_timer_block_array_index
 Find( gpu_timer_block_array *Array, gpu_timer *Query)
 {
-  gpu_timer_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  gpu_timer_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( gpu_timer_block_array *Array, gpu_timer *Query)
 link_internal b32
 IsValid(gpu_timer_block_array_index *Index)
 {
-  gpu_timer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  gpu_timer_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

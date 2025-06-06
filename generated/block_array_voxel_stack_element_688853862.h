@@ -286,7 +286,7 @@ RemoveOrdered( voxel_stack_element_block_array *Array, voxel_stack_element *Elem
 link_internal voxel_stack_element_block_array_index
 Find( voxel_stack_element_block_array *Array, voxel_stack_element *Query)
 {
-  voxel_stack_element_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  voxel_stack_element_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( voxel_stack_element_block_array *Array, voxel_stack_element *Query)
 link_internal b32
 IsValid(voxel_stack_element_block_array_index *Index)
 {
-  voxel_stack_element_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  voxel_stack_element_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

@@ -286,7 +286,7 @@ RemoveOrdered( picked_octree_node_block_array *Array, picked_octree_node *Elemen
 link_internal picked_octree_node_block_array_index
 Find( picked_octree_node_block_array *Array, picked_octree_node *Query)
 {
-  picked_octree_node_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  picked_octree_node_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( picked_octree_node_block_array *Array, picked_octree_node *Query)
 link_internal b32
 IsValid(picked_octree_node_block_array_index *Index)
 {
-  picked_octree_node_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  picked_octree_node_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

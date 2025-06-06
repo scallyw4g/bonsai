@@ -752,6 +752,14 @@ WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
 
 
 
+
+
+
+
+
+
+
+
 struct draw_lod_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( draw_lod_async_params *Params )
@@ -762,6 +770,7 @@ WorkQueueEntryAsyncFunction( draw_lod_async_params *Params )
   Result.work_queue_entry_async_function_call.draw_lod_async_params = *Params;
   return Result;
 }
+
 
 
 

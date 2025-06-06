@@ -286,7 +286,7 @@ RemoveOrdered( member_info_block_array *Array, member_info *Element )
 link_internal member_info_block_array_index
 Find( member_info_block_array *Array, member_info *Query)
 {
-  member_info_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  member_info_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( member_info_block_array *Array, member_info *Query)
 link_internal b32
 IsValid(member_info_block_array_index *Index)
 {
-  member_info_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  member_info_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

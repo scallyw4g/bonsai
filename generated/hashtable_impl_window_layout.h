@@ -172,3 +172,4 @@ TryGetPtr(window_layout_hashtable *Hashtable, window_layout_hashtable_iterator I
   return GetPtr(Hashtable, Iterator);
 }
 
+

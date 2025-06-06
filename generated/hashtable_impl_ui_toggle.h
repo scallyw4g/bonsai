@@ -172,3 +172,4 @@ TryGetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
   return GetPtr(Hashtable, Iterator);
 }
 
+

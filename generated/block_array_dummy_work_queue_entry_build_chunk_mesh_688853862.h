@@ -286,7 +286,7 @@ RemoveOrdered( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy
 link_internal dummy_work_queue_entry_build_chunk_mesh_block_array_index
 Find( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_queue_entry_build_chunk_mesh *Query)
 {
-  dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_que
 link_internal b32
 IsValid(dummy_work_queue_entry_build_chunk_mesh_block_array_index *Index)
 {
-  dummy_work_queue_entry_build_chunk_mesh_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  dummy_work_queue_entry_build_chunk_mesh_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

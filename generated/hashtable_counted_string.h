@@ -184,4 +184,5 @@ TryGetPtr(counted_string_hashtable *Hashtable, counted_string_hashtable_iterator
 {
   return GetPtr(Hashtable, Iterator);
 }
+
  

@@ -172,3 +172,4 @@ TryGetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
   return GetPtr(Hashtable, Iterator);
 }
 
+

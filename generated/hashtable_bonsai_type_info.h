@@ -184,4 +184,5 @@ TryGetPtr(bonsai_type_info_hashtable *Hashtable, bonsai_type_info_hashtable_iter
 {
   return GetPtr(Hashtable, Iterator);
 }
+
  

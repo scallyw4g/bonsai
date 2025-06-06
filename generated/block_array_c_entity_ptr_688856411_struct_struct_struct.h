@@ -97,7 +97,7 @@ RemoveOrdered( entity_ptr_block_array *Array, entity_ptr Element )
 link_internal entity_ptr_block_array_index
 Find( entity_ptr_block_array *Array, entity_ptr Query)
 {
-  entity_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  entity_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( entity_ptr_block_array *Array, entity_ptr Query)
 link_internal b32
 IsValid(entity_ptr_block_array_index *Index)
 {
-  entity_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  entity_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

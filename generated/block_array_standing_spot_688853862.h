@@ -286,7 +286,7 @@ RemoveOrdered( standing_spot_block_array *Array, standing_spot *Element )
 link_internal standing_spot_block_array_index
 Find( standing_spot_block_array *Array, standing_spot *Query)
 {
-  standing_spot_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  standing_spot_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( standing_spot_block_array *Array, standing_spot *Query)
 link_internal b32
 IsValid(standing_spot_block_array_index *Index)
 {
-  standing_spot_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  standing_spot_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

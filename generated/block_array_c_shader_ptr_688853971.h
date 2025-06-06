@@ -97,7 +97,7 @@ RemoveOrdered( shader_ptr_block_array *Array, shader_ptr Element )
 link_internal shader_ptr_block_array_index
 Find( shader_ptr_block_array *Array, shader_ptr Query)
 {
-  shader_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  shader_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( shader_ptr_block_array *Array, shader_ptr Query)
 link_internal b32
 IsValid(shader_ptr_block_array_index *Index)
 {
-  shader_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  shader_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

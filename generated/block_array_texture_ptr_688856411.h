@@ -97,7 +97,7 @@ RemoveOrdered( texture_ptr_block_array *Array, texture_ptr Element )
 link_internal texture_ptr_block_array_index
 Find( texture_ptr_block_array *Array, texture_ptr Query)
 {
-  texture_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  texture_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( texture_ptr_block_array *Array, texture_ptr Query)
 link_internal b32
 IsValid(texture_ptr_block_array_index *Index)
 {
-  texture_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  texture_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

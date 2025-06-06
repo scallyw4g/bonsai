@@ -286,7 +286,7 @@ RemoveOrdered( entity_block_array *Array, entity *Element )
 link_internal entity_block_array_index
 Find( entity_block_array *Array, entity *Query)
 {
-  entity_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  entity_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( entity_block_array *Array, entity *Query)
 link_internal b32
 IsValid(entity_block_array_index *Index)
 {
-  entity_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  entity_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

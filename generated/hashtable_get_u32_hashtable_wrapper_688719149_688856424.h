@@ -1,18 +1,18 @@
-// src/engine/bonsai_type_info.h:46:0
+// external/bonsai_stdlib/src/primitive_containers.cpp:8:0
 
-bonsai_type_info_linked_list_node*
-GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
+u32_linked_list_node*
+GetBucketByValue( u32_hashtable *Table, u32 Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
-  bonsai_type_info_linked_list_node* Result = {};
+  u32_linked_list_node* Result = {};
 
   auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
 
-        if (Bucket->Tombstoned == False && AreEqual(E->Name, Query))
+        if (Bucket->Tombstoned == False && AreEqual(*E, Query))
 
     {
       Result = Bucket;
@@ -27,14 +27,14 @@ GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
   return Result;
 }
 
-maybe_bonsai_type_info
-GetByName( bonsai_type_info_hashtable *Table, cs Query )
+maybe_u32
+GetByValue( u32_hashtable *Table, u32 Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
-  maybe_bonsai_type_info Result = {};
+  maybe_u32 Result = {};
 
-  bonsai_type_info_linked_list_node *Bucket = GetBucketByName(Table, Query);
+  u32_linked_list_node *Bucket = GetBucketByValue(Table, Query);
   if (Bucket)
   {
     Result.Tag = Maybe_Yes;
@@ -46,10 +46,10 @@ GetByName( bonsai_type_info_hashtable *Table, cs Query )
 
 
 link_internal b32
-Tombstone(cs Key, bonsai_type_info_hashtable *Table, memory_arena *Memory)
+Tombstone(u32 Key, u32_hashtable *Table, memory_arena *Memory)
 {
   b32 Result = False;
-  bonsai_type_info_linked_list_node *Bucket = GetBucketByName(Table, Key);
+  u32_linked_list_node *Bucket = GetBucketByValue(Table, Key);
   if (Bucket)
   {
     Assert(Bucket->Tombstoned == False);
@@ -60,7 +60,7 @@ Tombstone(cs Key, bonsai_type_info_hashtable *Table, memory_arena *Memory)
 }
 
 link_internal b32
-Drop( bonsai_type_info_hashtable *Table, cs Key )
+Drop( u32_hashtable *Table, u32 Key )
 {
   return Tombstone(Key, Table, 0);
 }

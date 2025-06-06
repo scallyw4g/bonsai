@@ -286,7 +286,7 @@ RemoveOrdered( vox_data_block_array *Array, vox_data *Element )
 link_internal vox_data_block_array_index
 Find( vox_data_block_array *Array, vox_data *Query)
 {
-  vox_data_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  vox_data_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( vox_data_block_array *Array, vox_data *Query)
 link_internal b32
 IsValid(vox_data_block_array_index *Index)
 {
-  vox_data_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  vox_data_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

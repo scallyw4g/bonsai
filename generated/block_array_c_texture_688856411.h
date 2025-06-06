@@ -97,7 +97,7 @@ RemoveOrdered( texture_block_array *Array, texture *Element )
 link_internal texture_block_array_index
 Find( texture_block_array *Array, texture *Query)
 {
-  texture_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  texture_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( texture_block_array *Array, texture *Query)
 link_internal b32
 IsValid(texture_block_array_index *Index)
 {
-  texture_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  texture_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

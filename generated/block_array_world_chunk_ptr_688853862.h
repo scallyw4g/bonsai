@@ -97,7 +97,7 @@ RemoveOrdered( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
 link_internal world_chunk_ptr_block_array_index
 Find( world_chunk_ptr_block_array *Array, world_chunk_ptr Query)
 {
-  world_chunk_ptr_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  world_chunk_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( world_chunk_ptr_block_array *Array, world_chunk_ptr Query)
 link_internal b32
 IsValid(world_chunk_ptr_block_array_index *Index)
 {
-  world_chunk_ptr_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  world_chunk_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

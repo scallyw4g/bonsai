@@ -286,7 +286,7 @@ RemoveOrdered( bitmap_block_array *Array, bitmap *Element )
 link_internal bitmap_block_array_index
 Find( bitmap_block_array *Array, bitmap *Query)
 {
-  bitmap_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  bitmap_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( bitmap_block_array *Array, bitmap *Query)
 link_internal b32
 IsValid(bitmap_block_array_index *Index)
 {
-  bitmap_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  bitmap_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

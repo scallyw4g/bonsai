@@ -97,7 +97,7 @@ RemoveOrdered( u8_cursor_block_array *Array, u8_cursor *Element )
 link_internal u8_cursor_block_array_index
 Find( u8_cursor_block_array *Array, u8_cursor *Query)
 {
-  u8_cursor_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  u8_cursor_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -112,7 +112,7 @@ Find( u8_cursor_block_array *Array, u8_cursor *Query)
 link_internal b32
 IsValid(u8_cursor_block_array_index *Index)
 {
-  u8_cursor_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  u8_cursor_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

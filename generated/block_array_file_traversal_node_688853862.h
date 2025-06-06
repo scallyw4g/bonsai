@@ -286,7 +286,7 @@ RemoveOrdered( file_traversal_node_block_array *Array, file_traversal_node *Elem
 link_internal file_traversal_node_block_array_index
 Find( file_traversal_node_block_array *Array, file_traversal_node *Query)
 {
-  file_traversal_node_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  file_traversal_node_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( file_traversal_node_block_array *Array, file_traversal_node *Query)
 link_internal b32
 IsValid(file_traversal_node_block_array_index *Index)
 {
-  file_traversal_node_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  file_traversal_node_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }

@@ -286,7 +286,7 @@ RemoveOrdered( world_edit_layer_block_array *Array, world_edit_layer *Element )
 link_internal world_edit_layer_block_array_index
 Find( world_edit_layer_block_array *Array, world_edit_layer *Query)
 {
-  world_edit_layer_block_array_index Result = INVALID_BLOCK_ARRAY_INDEX;
+  world_edit_layer_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query)
@@ -301,7 +301,7 @@ Find( world_edit_layer_block_array *Array, world_edit_layer *Query)
 link_internal b32
 IsValid(world_edit_layer_block_array_index *Index)
 {
-  world_edit_layer_block_array_index Test = INVALID_BLOCK_ARRAY_INDEX;
+  world_edit_layer_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
