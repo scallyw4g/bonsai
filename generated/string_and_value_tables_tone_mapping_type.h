@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:261:0
+// src/engine/editor.cpp:269:0
 
 link_internal counted_string
 ToStringPrefixless(tone_mapping_type Type)

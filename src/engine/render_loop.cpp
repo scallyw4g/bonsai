@@ -1,11 +1,6 @@
-debug_global u32_hashtable Global_DebugPBOTable = {};
-
 link_internal void
 RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 {
-  auto Global_DebugPBOTable_Memory = AllocateArena();
-  Global_DebugPBOTable = Allocate_u32_hashtable(4096, Global_DebugPBOTable_Memory);
-
   // Map immediate GPU buffers for first frame
   MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
   MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
@@ -131,7 +126,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               gpu_readback_buffer PBOBuf = Command->PBOBuf;
 
-              Info("Binding and Deallocating PBO (%u)", PBOBuf.PBO);
+              /* Info("(%d) Binding and Deallocating PBO (%u)", ThreadLocal_ThreadIndex, PBOBuf.PBO); */
               GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
               AssertNoGlErrors;
               GL.UnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -140,11 +135,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               AssertNoGlErrors;
               GL.DeleteSync(PBOBuf.Fence);
               AssertNoGlErrors;
-
-              maybe_u32 I = GetByValue(&Global_DebugPBOTable, PBOBuf.PBO);
-              Assert(I.Tag == Maybe_Yes);
-
-              Drop(&Global_DebugPBOTable, PBOBuf.PBO);
 
             } break;
 
@@ -578,18 +568,13 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 GL.GenBuffers(1, &PBO);
                 AssertNoGlErrors;
 
-                Info("Allocated PBO (%u)", PBO);
-
+                /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
                 GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
                 AssertNoGlErrors;
                 GL.ReadPixels(0, 0, InputTex->Dim.x, InputTex->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
                 AssertNoGlErrors;
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-                maybe_u32 I = GetByValue(&Global_DebugPBOTable, PBO);
-                Assert(I.Tag == Maybe_No);
-                Insert(PBO, &Global_DebugPBOTable, Global_DebugPBOTable_Memory);
 
                 gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
@@ -778,7 +763,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
       {
         Assert(PBOJob);
 
+        /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
         /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
+
         u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
         AssertNoGlErrors;
         switch(SyncStatus)
@@ -788,17 +775,16 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           {
             TIMED_NAMED_BLOCK(MapBuffer);
 
-            {
-              maybe_u32 I = GetByValue(&Global_DebugPBOTable, PBOJob->PBOBuf.PBO);
-              Assert(I.Tag == Maybe_Yes);
-            }
-
             AssertNoGlErrors;
-            Info("Binding and Mapping PBO (%u)", PBOJob->PBOBuf.PBO);
+            /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
+            /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
             GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
             AssertNoGlErrors;
             u16 *NoiseValues = Cast(u16*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
             AssertNoGlErrors;
+
+            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
+            PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
 
             // TODO(Jesse): This actually makes the loop skip a job because we
             // shorten the array, but never update the index we're looking at.
@@ -806,15 +792,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             // It doesn't matter in this case because this runs every frame, so
             // the skipped job is just a frame late.  But, it would be nice if
             // this was better.
+            // 
+            // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
             RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
-            {
-              auto I = Find(&Graphics->NoiseReadbackJobs, PBOJob);
-              Assert(I.Index == INVALID_BLOCK_ARRAY_INDEX);
-            }
-
-            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
-            PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
-
           } break;
 
           case GL_TIMEOUT_EXPIRED:

@@ -2,19 +2,24 @@
 link_internal void
 LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
 {
+  Assert(FileNode->Type == FileTraversalType_File);
   cs Filename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, TempMemory);
 
   u8_cursor Bytes = BeginDeserialization(Filename, TempMemory);
 
-  world_edit_brush B = {};
-  CopyString( FileNode->Name.Start, B.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len)));
-  Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
-
-  if (Deserialize(&Bytes, Editor->CurrentBrush, TempMemory) == False)
+  if (Bytes.Start)
   {
-    SoftError("While deserializing brush (%S).", Filename);
-    *Editor->CurrentBrush = {};
+    world_edit_brush B = {};
+    CopyString( FileNode->Name.Start, B.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len)));
+    Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
+
+    if (Deserialize(&Bytes, Editor->CurrentBrush, TempMemory) == False)
+    {
+      SoftError("While deserializing brush (%S).", Filename);
+      *Editor->CurrentBrush = {};
+    }
   }
+
   FinalizeDeserialization(&Bytes);
 }
 
@@ -78,7 +83,10 @@ InitEditor(level_editor *Editor)
 
   IterateOver(&Nodes, Node, NodeIndex)
   {
-    LoadBrushFromFile(Editor, Node, GetTranArena());
+    if (Node->Type == FileTraversalType_File)
+    {
+      LoadBrushFromFile(Editor, Node, GetTranArena());
+    }
   }
 
   Editor->Edits.Memory = Editor->Memory;
@@ -1446,18 +1454,20 @@ EditWorldSelection(engine_resources *Engine)
         if (Editor->Selection.ModState.ClickedFace)
         {
           world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
-
-          UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
-          v3 UpdateVector = {};
-          ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
-          if (Input->LMB.Pressed == False)
+          if (SelectionMode) // We could have started a selection edit and released the accelerator key
           {
-            // If we actually changed the selection region
-            rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+            UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
+            v3 UpdateVector = {};
+            ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
+            if (Input->LMB.Pressed == False)
+            {
+              // If we actually changed the selection region
+              rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
 
-            // Make ModifiedSelection permanent
-            Editor->Selection.Region = ProposedSelection;
-            Editor->Selection.Diff   = UpdateVector;
+              // Make ModifiedSelection permanent
+              Editor->Selection.Region = ProposedSelection;
+              Editor->Selection.Diff   = UpdateVector;
+            }
           }
         }
       }
@@ -1839,15 +1849,13 @@ GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem)
 
 
 link_internal void
-ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_index_block_array *Edits)
+ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_index_block_array *Edits, world_edit_selection_mode SelectionMode)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   IterateOver(Edits, EditI, EditII)
   {
     world_edit *Edit = GetPtr(&Editor->Edits, *EditI);
-
-    world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
 
     Assert(Engine->MaybeMouseRay.Tag == Maybe_Yes);
     ray *Ray = &Engine->MaybeMouseRay.Ray;
@@ -2128,7 +2136,9 @@ DoWorldEditor(engine_resources *Engine)
           if (LengthSq(Editor->Selection.Diff) > 0.f)
           {
             Info("Applying diff to edit buffer");
-            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits);
+            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+            Assert(SelectionMode);
+            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits, SelectionMode);
             Editor->Selection.ModState.ClickedFace = FaceIndex_None;
           }
           else

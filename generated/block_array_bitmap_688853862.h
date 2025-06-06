@@ -242,7 +242,10 @@ NewBlock( bitmap_block_array *Arr )
 link_internal void
 RemoveUnordered( bitmap_block_array *Array, bitmap_block_array_index Index)
 {
-  auto LastElement = GetPtr(Array, LastIndex(Array));
+  auto LastI = LastIndex(Array);
+  Assert(Index.Index <= LastI.Index);
+
+  auto LastElement = GetPtr(Array, LastI);
   Set(Array, LastElement, Index);
   Array->ElementCount -= 1;
 }

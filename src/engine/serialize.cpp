@@ -70,6 +70,8 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
       // TODO(Jesse): Audit .level savefiles and remove this.. it's hella legacy
       case 0:
       {
+        Assert(Global_SerializeTypeTable.Size == 0);
+        Assert(Global_SerializeTypeTable.Elements == 0);
         Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
 
         {
@@ -109,7 +111,7 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
         }
       } break;
 
-      default: { SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
+      default: { SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); LevelBytes = {}; }
     }
   }
   return LevelBytes;
