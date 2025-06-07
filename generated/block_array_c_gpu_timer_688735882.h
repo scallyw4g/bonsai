@@ -4,13 +4,6 @@
 
 
 
-/* link_internal block_t * */
-/* Allocate_(element_t.name)_block(memory_arena *Memory) */
-/* { */
-/*   block_t *Result = Allocate( block_t, Memory, 1); */
-/*   return Result; */
-/* } */
-
 link_internal cs
 CS( gpu_timer_block_array_index Index )
 {
@@ -103,7 +96,7 @@ Find( gpu_timer_block_array *Array, gpu_timer *Query)
   gpu_timer_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query)
+    if ( E == Query )
     {
       Result = Index;
       break;
@@ -111,6 +104,8 @@ Find( gpu_timer_block_array *Array, gpu_timer *Query)
   }
   return Result;
 }
+
+
 
 link_internal b32
 IsValid(gpu_timer_block_array_index *Index)

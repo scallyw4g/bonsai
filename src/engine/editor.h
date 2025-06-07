@@ -1189,8 +1189,8 @@ struct selection_region poof(@do_editor_ui)
   // really a big deal.
   cp Base;
 
-  rect3cp Region;
-  rect3cp PrevRegion; // Change detection
+  rect3cp Region     = InvertedInfinityRectangle_rect3cp();
+  rect3cp PrevRegion = InvertedInfinityRectangle_rect3cp(); // Change detection
 
   v3 Diff; // When Changed is set, this should be nonzero.
   b32 Changed;
@@ -1237,24 +1237,28 @@ poof(hashtable(world_edit_brush))
 
 struct world_edit
 {
-  rect3cp Region; // TODO(Jesse): Rename to bounds
+  // TODO(Jesse): Rename to Bounds?
+  rect3cp Region = InvertedInfinityRectangle_rect3cp();
   world_edit_brush *Brush;
 
   // Instance params
 
+  // TODO(Jesse): Do we actually need Tombstone or LayerIndex?
   b32 Tombstone;
   u32 LayerIndex;
-  /* u32 Ordinal; // monotonically increasing integer sourced from level_editor::NextEditOrdinal */
 };
 
 typedef world_edit* world_edit_ptr;
 
-poof(block_array(world_edit, {128}))
+// TODO(Jesse): Add `add_tag` to poof so we can reinstate this
+//
+/* poof(block_array(world_edit, {128})) */
 #include <generated/block_array_world_edit_688735882.h>
 
 poof(block_array(world_edit_ptr, {128}))
 #include <generated/block_array_world_edit_ptr_688735882.h>
 
+/* poof(add_tag(world_edit_block_array_index, block_array_IndexOfValue)) */
 poof(block_array(world_edit_block_array_index, {128}))
 #include <generated/block_array_world_edit_block_array_index_688735882.h>
 
@@ -1310,7 +1314,7 @@ struct level_editor
   world_edit_layer *CurrentLayer;
   world_edit_layer *HotLayer;
 
-  world_edit_block_array_index_block_array SelectedEdits;
+  world_edit_block_array_index_block_array SelectedEditIndices;
   world_edit *HotEdit;
 
   world_edit_brush_hashtable  LoadedBrushes;

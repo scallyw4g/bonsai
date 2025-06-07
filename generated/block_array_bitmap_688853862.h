@@ -193,13 +193,6 @@ TryGetPtr(bitmap_block_array *Arr, umm Index)
 
 
 
-/* link_internal block_t * */
-/* Allocate_(element_t.name)_block(memory_arena *Memory) */
-/* { */
-/*   block_t *Result = Allocate( block_t, Memory, 1); */
-/*   return Result; */
-/* } */
-
 link_internal cs
 CS( bitmap_block_array_index Index )
 {
@@ -292,7 +285,7 @@ Find( bitmap_block_array *Array, bitmap *Query)
   bitmap_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query)
+    if ( E == Query )
     {
       Result = Index;
       break;
@@ -300,6 +293,8 @@ Find( bitmap_block_array *Array, bitmap *Query)
   }
   return Result;
 }
+
+
 
 link_internal b32
 IsValid(bitmap_block_array_index *Index)

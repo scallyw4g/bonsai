@@ -193,13 +193,6 @@ TryGetPtr(member_info_block_array *Arr, umm Index)
 
 
 
-/* link_internal block_t * */
-/* Allocate_(element_t.name)_block(memory_arena *Memory) */
-/* { */
-/*   block_t *Result = Allocate( block_t, Memory, 1); */
-/*   return Result; */
-/* } */
-
 link_internal cs
 CS( member_info_block_array_index Index )
 {
@@ -292,7 +285,7 @@ Find( member_info_block_array *Array, member_info *Query)
   member_info_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query)
+    if ( E == Query )
     {
       Result = Index;
       break;
@@ -300,6 +293,8 @@ Find( member_info_block_array *Array, member_info *Query)
   }
   return Result;
 }
+
+
 
 link_internal b32
 IsValid(member_info_block_array_index *Index)

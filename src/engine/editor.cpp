@@ -90,7 +90,7 @@ InitEditor(level_editor *Editor)
   }
 
   Editor->Edits.Memory = Editor->Memory;
-  Editor->SelectedEdits.Memory = Editor->Memory;
+  Editor->SelectedEditIndices.Memory = Editor->Memory;
 
   return Result;
 }
@@ -1394,9 +1394,11 @@ EditWorldSelection(engine_resources *Engine)
 
 #if 1
   aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
-  if (AtElements(&Editor->SelectedEdits).Index)
+  // NOTE(Jesse): We can't predicate this because when we deselect everything
+  // we want this to automagically resize
+  /* if (AtElements(&Editor->SelectedEditIndices).Index) */
   {
-    IterateOver(&Editor->SelectedEdits, EditIndex, EditIndexIndex)
+    IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
     {
       world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
       aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
@@ -1551,6 +1553,9 @@ EditWorldSelection(engine_resources *Engine)
       Editor->Selection.PrevRegion = Editor->Selection.Region;
     }
   }
+
+  if (Editor->Selection.InitialSelect) { Info("InitialSelect"); }
+  if (Editor->Selection.Changed)       { Info("Changed"); }
 
   if (Editor->Selection.InitialSelect)
   {
@@ -2052,8 +2057,8 @@ DoWorldEditor(engine_resources *Engine)
     auto E = NewEdit(Editor, Editor->CurrentLayer, &Index);
     E->Brush = Editor->CurrentBrush;
 
-    Editor->SelectedEdits.ElementCount = 0;
-    Push(&Editor->SelectedEdits, &Index);
+    Editor->SelectedEditIndices.ElementCount = 0;
+    Push(&Editor->SelectedEditIndices, &Index);
   }
 
 #if 0
@@ -2126,8 +2131,8 @@ DoWorldEditor(engine_resources *Engine)
         if (Editor->Selection.InitialSelect)
         {
           Info("Setting Initial edit state");
-          Assert(AtElements(&Editor->SelectedEdits).Index == 1);
-          auto EditIndex = GetPtr(&Editor->SelectedEdits, {});
+          Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+          auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
           world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
           UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
         }
@@ -2138,7 +2143,7 @@ DoWorldEditor(engine_resources *Engine)
             Info("Applying diff to edit buffer");
             world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
             Assert(SelectionMode);
-            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEdits, SelectionMode);
+            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
             Editor->Selection.ModState.ClickedFace = FaceIndex_None;
           }
           else
@@ -2217,16 +2222,11 @@ DoWorldEditor(engine_resources *Engine)
               {
                 world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
 
-                auto *Duplicated = NewEdit(Editor, DstLayer);
+                world_edit_block_array_index DupIndex = {};
+                auto *Duplicated = NewEdit(Editor, DstLayer, &DupIndex);
                      *Duplicated = *Edit;
 
                 ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-
-                NotImplemented;
-                /* if (Editor->CurrentEdit == Edit) */
-                /* { */
-                /*   Editor->CurrentEdit = Duplicated; */
-                /* } */
               }
             } break;
 
@@ -2239,7 +2239,14 @@ DoWorldEditor(engine_resources *Engine)
 
                 DropEditFromOctree(Engine, Edit, GetTranArena());
                 Edit->Tombstone = False;
+
+                umm SelIndex = IndexOfValue(&Editor->SelectedEditIndices, EditIndex).Index;
+                if (SelIndex != INVALID_BLOCK_ARRAY_INDEX)
+                {
+                  RemoveUnordered(&Editor->SelectedEditIndices, {SelIndex});
+                }
               }
+
               RemoveOrdered(&Editor->Layers, Layer);
               Editor->CurrentLayer = 0;
             } break;
@@ -2330,7 +2337,7 @@ DoWorldEditor(engine_resources *Engine)
 
           b32 EditIsSelected = False;
           world_edit_block_array_index_block_array_index I;
-          IterateOver(&Editor->SelectedEdits, SelEditIndex, SEII)
+          IterateOver(&Editor->SelectedEditIndices, SelEditIndex, SEII)
           {
             if (*SelEditIndex == *EditIndex)
             {
@@ -2351,17 +2358,17 @@ DoWorldEditor(engine_resources *Engine)
             {
               if (EditIsSelected)
               {
-                RemoveUnordered(&Editor->SelectedEdits, I);
+                RemoveUnordered(&Editor->SelectedEditIndices, I);
               }
               else
               {
-                Push(&Editor->SelectedEdits, EditIndex);
+                Push(&Editor->SelectedEditIndices, EditIndex);
               }
             }
             else
             {
-              Editor->SelectedEdits.ElementCount = 0;
-              Push(&Editor->SelectedEdits, EditIndex);
+              Editor->SelectedEditIndices.ElementCount = 0;
+              Push(&Editor->SelectedEditIndices, EditIndex);
             }
 
 

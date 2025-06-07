@@ -492,11 +492,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         
         
         
-        cs MemberName = CSz("SelectedEdits");
+        cs MemberName = CSz("SelectedEditIndices");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_block_array_index_block_array*, &Element->SelectedEdits),
+          Cast(world_edit_block_array_index_block_array*, &Element->SelectedEditIndices),
           MemberName,
           Params
           );

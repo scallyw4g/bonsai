@@ -280,6 +280,17 @@ Rect3CP(rect3 *Rect)
   return Result;
 }
 
+link_internal rect3cp
+InvertedInfinityRectangle_rect3cp()
+{
+  rect3cp Result = {
+    .Min = Canonical_Position(V3(f32_MAX), V3i(s32_MAX)),
+    .Max = Canonical_Position(V3(-f32_MAX), V3i(s32_MIN)),
+  };
+  return Result;
+}
+
+
 /* poof(gen_rect_helpers(rect3cp, cp)) */
 /* #include <generated/gen_rect_helpers_struct_cp.h> */
 

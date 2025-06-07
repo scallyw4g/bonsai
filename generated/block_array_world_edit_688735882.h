@@ -11,7 +11,7 @@ struct world_edit_block
   world_edit Elements[8];
 };
 
-struct world_edit_block_array_index
+struct world_edit_block_array_index poof(@block_array_IndexOfValue)
 {
   umm Index; 
   /* block_t *Block; */
@@ -193,13 +193,6 @@ TryGetPtr(world_edit_block_array *Arr, umm Index)
 
 
 
-/* link_internal block_t * */
-/* Allocate_(element_t.name)_block(memory_arena *Memory) */
-/* { */
-/*   block_t *Result = Allocate( block_t, Memory, 1); */
-/*   return Result; */
-/* } */
-
 link_internal cs
 CS( world_edit_block_array_index Index )
 {
@@ -292,7 +285,7 @@ Find( world_edit_block_array *Array, world_edit *Query)
   world_edit_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
-    if ( E == Query)
+    if ( E == Query )
     {
       Result = Index;
       break;
@@ -300,6 +293,8 @@ Find( world_edit_block_array *Array, world_edit *Query)
   }
   return Result;
 }
+
+
 
 link_internal b32
 IsValid(world_edit_block_array_index *Index)
