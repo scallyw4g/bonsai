@@ -10,6 +10,7 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
     case WorldEdit_ValueModifier_Surface: { Result = CSz("Surface"); } break;
     case WorldEdit_ValueModifier_ClampPos: { Result = CSz("ClampPos"); } break;
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
+    case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
     case WorldEdit_ColorModifier_Discard: { Result = CSz("Discard"); } break;
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -57,6 +58,7 @@ ToString(world_edit_blend_mode_modifier Type)
     case WorldEdit_ValueModifier_Surface: { Result = CSz("WorldEdit_ValueModifier_Surface"); } break;
     case WorldEdit_ValueModifier_ClampPos: { Result = CSz("WorldEdit_ValueModifier_ClampPos"); } break;
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
+    case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
     case WorldEdit_ColorModifier_Discard: { Result = CSz("WorldEdit_ColorModifier_Discard"); } break;
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -90,6 +92,7 @@ WorldEditBlendModeModifier(counted_string S)
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Surface"))) { return WorldEdit_ValueModifier_Surface; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampPos"))) { return WorldEdit_ValueModifier_ClampPos; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampNeg"))) { return WorldEdit_ValueModifier_ClampNeg; }
+  if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Threshold"))) { return WorldEdit_ValueModifier_Threshold; }
   if (StringsMatch(S, CSz("WorldEdit_ColorModifier_Discard"))) { return WorldEdit_ColorModifier_Discard; }
 
   return Result;

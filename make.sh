@@ -6,6 +6,7 @@
 
 # SANITIZER="-fsanitize=undefined"
 # SANITIZER="-fsanitize=address"
+# SANITIZER="-fsanitize=thread"
 
 BUILD_EVERYTHING=0
 

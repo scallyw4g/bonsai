@@ -213,9 +213,8 @@ void main()
             z > 0 && z < 65)
         {
           f32 ThisCell = sign(TexLookup.a);
-          if (ThisCell < 0.f)
+          if (ThisCell < 0.f) // Current value is Air
           {
-            // only consider cells that are air
             s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) > 0.f);
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) > 0.f);
 
@@ -227,9 +226,18 @@ void main()
 
             if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
           }
-          else
+          else // Current NoiseValue is Solid
           {
-            NoiseSample = 0.f; ColorSample = V3(0,0,0);
+            s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) < 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) < 0.f);
+
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a ) < 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a ) < 0.f);
+
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) < 0.f);
+                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) < 0.f);
+
+            if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
           }
         }
         else
@@ -248,10 +256,19 @@ void main()
         NoiseSample = min(0.f, NoiseSample);
       }
 
+      if ( (Modifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
+      {
+        if (NoiseSample > Threshold) NoiseValue = NoiseSample;
+      }
+
+
+
       if (abs(NoiseSample) < Threshold)
       {
         NoiseSample = 0.f;
       }
+
+
 
       if (Invert)
       {
@@ -267,9 +284,6 @@ void main()
 
         case 1: // Subtractive
         { NoiseValue = NoiseValue - NoiseSample; } break;
-
-        case 2: // Threshold
-        { if (NoiseSample > Threshold) NoiseValue = Threshold; } break;
       }
 
 

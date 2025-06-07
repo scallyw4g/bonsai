@@ -969,7 +969,6 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
   switch (WorldEditMode)
   {
     case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Threshold:
     case WorldEdit_Mode_Additive:
     {
       Pos = PickedVoxel_LastEmpty;
@@ -1362,7 +1361,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
         {
           // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
           // delete a layer if there aren't any to delete!
-          Assert(LayeredBrush->LayerCount < 0);
+          Assert(LayeredBrush->LayerCount > 0);
 
           // Shuffle layers backwards, overwriting EditLayerIndex
           RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
@@ -1873,6 +1872,30 @@ ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_
 }
 
 link_internal void
+DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_index *EditIndex, world_edit_layer *Layer = 0)
+{
+  Assert(Edit->Tombstone == False);
+
+  level_editor *Editor = &Engine->Editor;
+
+  DropEditFromOctree(Engine, Edit, GetTranArena());
+
+  umm SelIndex = IndexOfValue(&Editor->SelectedEditIndices, EditIndex).Index;
+  if (SelIndex != INVALID_BLOCK_ARRAY_INDEX)
+  {
+    RemoveUnordered(&Editor->SelectedEditIndices, {SelIndex});
+  }
+
+  if (Layer)
+  {
+    RemoveOrdered(&Layer->EditIndices, EditIndex);
+  }
+
+  *Edit = {};
+   Edit->Tombstone = True;
+}
+
+link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2199,6 +2222,12 @@ DoWorldEditor(engine_resources *Engine)
         if (Button(Ui, Name, UiId(&LayersWindow, Layer, Layer), Style))
         {
           Editor->CurrentLayer = Layer;
+
+          Editor->SelectedEditIndices.ElementCount = 0;
+          IterateOver(&Layer->EditIndices, EditIndex, EII)
+          {
+            Push(&Editor->SelectedEditIndices, EditIndex);
+          }
         }
 
         ui_layer_toolbar_actions LayerToolbarAction = {};
@@ -2235,20 +2264,18 @@ DoWorldEditor(engine_resources *Engine)
               IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
               {
                 world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-                Assert(Edit->Tombstone == False);
-
-                DropEditFromOctree(Engine, Edit, GetTranArena());
-                Edit->Tombstone = False;
-
-                umm SelIndex = IndexOfValue(&Editor->SelectedEditIndices, EditIndex).Index;
-                if (SelIndex != INVALID_BLOCK_ARRAY_INDEX)
-                {
-                  RemoveUnordered(&Editor->SelectedEditIndices, {SelIndex});
-                }
+                // NOTE(Jesse): We're deleting the layer here so we don't need
+                // to remove the edits one-by-one .. we'll clear the whole thing.
+                DeleteEdit(Engine, Edit, EditIndex);
               }
 
+              Layer->EditIndices.ElementCount = 0;
+
               RemoveOrdered(&Editor->Layers, Layer);
+              Layer = 0;
+
               Editor->CurrentLayer = 0;
+              LayerIndex = AtElements(&Editor->Layers);
             } break;
           }
         }
@@ -2256,182 +2283,171 @@ DoWorldEditor(engine_resources *Engine)
       }
       PushTableEnd(Ui);
 
+      if (Layer)
       {
-        auto I = AtElements(&Layer->EditIndices);
-        if (GetIndex(&I) == 0)
+        PushTableStart(Ui);
+        if (AtElements(&Layer->EditIndices).Index == 0)
         {
           PushColumn(Ui, CSz("--- no edits ---"));
           PushNewRow(Ui);
         }
-      }
-
-      PushTableStart(Ui);
-      {
-        world_edit_block_array_index *PrevEditIndex = {};
-        IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+        else
         {
-          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-          Assert(Edit->Tombstone == False);
-
-          const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
-
-          ui_reorder_action EditReorderAction = {};
-          PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
-
-          switch(EditReorderAction)
           {
-            case UiReorderAction_NoAction: break;
-
-            case UiReorderAction_ReorderUp:
+            world_edit_block_array_index *PrevEditIndex = {};
+            IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
-              if (PrevEditIndex)
+              world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+              Assert(Edit->Tombstone == False);
+
+              const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
+
+              ui_reorder_action EditReorderAction = {};
+              PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+
+              switch(EditReorderAction)
               {
-                auto Tmp = *PrevEditIndex;
-                *PrevEditIndex = *EditIndex;
-                *EditIndex = Tmp;
-              }
-              else if (PrevLayer)
-              {
-                Push(&PrevLayer->EditIndices, EditIndex);
-                RemoveOrdered(&Layer->EditIndices, EditIndex);
-              }
+                case UiReorderAction_NoAction: break;
 
-            } break;
-
-            case UiReorderAction_ReorderDown:
-            {
-              auto NextEditIndexIndex = EditIndexIndex;
-                 ++NextEditIndexIndex;
-
-              if (NextEditIndexIndex < AtElements(&Layer->EditIndices))
-              {
-                auto NextEditIndex = GetPtr(&Layer->EditIndices, NextEditIndexIndex);
-
-                auto Tmp = *NextEditIndex;
-                *NextEditIndex = *EditIndex;
-                *EditIndex = Tmp;
-
-                EditIndexIndex = AtElements(&Layer->EditIndices);
-              }
-              else
-              {
-                auto NextLayerIndex = LayerIndex;
-                   ++NextLayerIndex;
-
-                auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex));
-                if (NextLayer)
+                case UiReorderAction_ReorderUp:
                 {
-                  RemoveOrdered(&Layer->EditIndices, EditIndex);
-                  Shift(&NextLayer->EditIndices, EditIndex);
+                  if (PrevEditIndex)
+                  {
+                    auto Tmp = *PrevEditIndex;
+                    *PrevEditIndex = *EditIndex;
+                    *EditIndex = Tmp;
+                  }
+                  else if (PrevLayer)
+                  {
+                    Push(&PrevLayer->EditIndices, EditIndex);
+                    RemoveOrdered(&Layer->EditIndices, EditIndex);
+                  }
+
+                } break;
+
+                case UiReorderAction_ReorderDown:
+                {
+                  auto NextEditIndexIndex = EditIndexIndex;
+                     ++NextEditIndexIndex;
+
+                  if (NextEditIndexIndex < AtElements(&Layer->EditIndices))
+                  {
+                    auto NextEditIndex = GetPtr(&Layer->EditIndices, NextEditIndexIndex);
+
+                    auto Tmp = *NextEditIndex;
+                    *NextEditIndex = *EditIndex;
+                    *EditIndex = Tmp;
+
+                    EditIndexIndex = AtElements(&Layer->EditIndices);
+                  }
+                  else
+                  {
+                    auto NextLayerIndex = LayerIndex;
+                       ++NextLayerIndex;
+
+                    auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex));
+                    if (NextLayer)
+                    {
+                      RemoveOrdered(&Layer->EditIndices, EditIndex);
+                      Shift(&NextLayer->EditIndices, EditIndex);
+                    }
+
+                    EditIndexIndex = AtElements(&Layer->EditIndices);
+                  }
                 }
 
-                EditIndexIndex = AtElements(&Layer->EditIndices);
+                break;
               }
-            }
-
-            break;
-          }
 
 
-          ui_render_params ButtonParams = DefaultUiRenderParams_Button;
+              ui_render_params ButtonParams = DefaultUiRenderParams_Button;
 
-          b32 EditIsSelected = False;
-          world_edit_block_array_index_block_array_index I;
-          IterateOver(&Editor->SelectedEditIndices, SelEditIndex, SEII)
-          {
-            if (*SelEditIndex == *EditIndex)
-            {
-              ButtonParams.FStyle = &DefaultSelectedStyle;
-              EditIsSelected = True;
-              I = SEII;
-            }
-          }
-
-          auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
-          if (Clicked(Ui, &EditSelectButton))
-          {
-            Editor->Selection.Clicks = 2;
-            Editor->Selection.Region = Edit->Region;
-            Editor->Selection.PrevRegion = Edit->Region;
-
-            if (Input->Ctrl.Pressed)
-            {
-              if (EditIsSelected)
+              b32 EditIsSelected = False;
+              world_edit_block_array_index_block_array_index I;
+              IterateOver(&Editor->SelectedEditIndices, SelEditIndex, SEII)
               {
-                RemoveUnordered(&Editor->SelectedEditIndices, I);
+                if (*SelEditIndex == *EditIndex)
+                {
+                  ButtonParams.FStyle = &DefaultSelectedStyle;
+                  EditIsSelected = True;
+                  I = SEII;
+                }
               }
-              else
+
+              auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
+              if (Clicked(Ui, &EditSelectButton))
               {
-                Push(&Editor->SelectedEditIndices, EditIndex);
+                Editor->Selection.Clicks = 2;
+                Editor->Selection.Region = Edit->Region;
+                Editor->Selection.PrevRegion = Edit->Region;
+
+                if (Input->Ctrl.Pressed)
+                {
+                  if (EditIsSelected)
+                  {
+                    RemoveUnordered(&Editor->SelectedEditIndices, I);
+                  }
+                  else
+                  {
+                    Push(&Editor->SelectedEditIndices, EditIndex);
+                  }
+                }
+                else
+                {
+                  Editor->SelectedEditIndices.ElementCount = 0;
+                  Push(&Editor->SelectedEditIndices, EditIndex);
+                }
+
+
+                /* Editor->CurrentEdit = Edit; */
+                Editor->CurrentLayer = Layer;
+
+                if (Edit->Brush)
+                {
+                  Editor->CurrentBrush = Edit->Brush;
+                  CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+                }
               }
-            }
-            else
-            {
-              Editor->SelectedEditIndices.ElementCount = 0;
-              Push(&Editor->SelectedEditIndices, EditIndex);
-            }
 
+              if (Hover(Ui, &EditSelectButton))
+              {
+                Editor->HotEdit = Edit;
+              }
 
-            /* Editor->CurrentEdit = Edit; */
-            Editor->CurrentLayer = Layer;
+              ui_layer_edit_actions LayerEditAction = {};
+              PushToolbar( Ui, &LayersWindow, {}, &LayerEditAction, u64(Edit));
+              switch (LayerEditAction)
+              {
+                case UiLayerEditAction_NoAction: {} break;
 
-            if (Edit->Brush)
-            {
-              Editor->CurrentBrush = Edit->Brush;
-              CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+                case UiLayerEditAction_SetBrush:
+                {
+                  Edit->Brush = Editor->CurrentBrush;
+                  UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
+                } break;
+
+                case UiLayerEditAction_Duplicate:
+                {
+                  auto *Duplicated = NewEdit(Editor, Layer);
+                       *Duplicated = *Edit;
+                  ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+                } break;
+
+                case UiLayerEditAction_Delete:
+                {
+                  DeleteEdit(Engine, Edit, EditIndex, Layer);
+                } break;
+              }
+
+              PrevEditIndex = EditIndex;
             }
           }
-
-          if (Hover(Ui, &EditSelectButton))
-          {
-            Editor->HotEdit = Edit;
-          }
-
-          ui_layer_edit_actions LayerEditAction = {};
-          PushToolbar( Ui, &LayersWindow, {}, &LayerEditAction, u64(Edit));
-          switch (LayerEditAction)
-          {
-            case UiLayerEditAction_NoAction: {} break;
-
-            case UiLayerEditAction_SetBrush:
-            {
-              Edit->Brush = Editor->CurrentBrush;
-              UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
-            } break;
-
-            case UiLayerEditAction_Duplicate:
-            {
-              /* IncrementAllEditOrdinalsAbove(&Editor->Layers, Edit->Ordinal+1); */
-
-              auto *Duplicated = NewEdit(Editor, Layer);
-                   *Duplicated = *Edit;
-                  /* ++Duplicated->Ordinal; */
-
-              ApplyEditToOctree(Engine, Duplicated, GetTranArena());
-
-              /* Editor->CurrentEdit = Duplicated; */
-            } break;
-
-            case UiLayerEditAction_Delete:
-            {
-              /* if (Editor->CurrentEdit == Edit) */
-              /* { */
-              /*   Editor->CurrentEdit = 0; */
-              /* } */
-
-              DropEditFromOctree(Engine, Edit, GetTranArena());
-              RemoveOrdered(&Layer->EditIndices, EditIndex);
-              Edit->Tombstone = True;
-            } break;
-          }
-
-          PrevEditIndex = EditIndex;
         }
-      }
-      PushTableEnd(Ui);
-      PushNewRow(Ui);
+        PushTableEnd(Ui);
+        PushNewRow(Ui);
 
-      PrevLayer = Layer;
+        PrevLayer = Layer;
+      }
     }
 
     PushNewRow(Ui);

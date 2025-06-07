@@ -782,9 +782,7 @@ enum world_edit_blend_mode
 {
   WorldEdit_Mode_Additive,    // Adds layer value to noise value
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
-  WorldEdit_Mode_Threshold,   // Sets noise value to layer value if above threshold
-
-  WorldEdit_Mode_Disabled, // Useful for turning the layer off
+  WorldEdit_Mode_Disabled,    // Useful for turning the layer off
 };
 
 enum world_edit_color_blend_mode
@@ -805,11 +803,13 @@ enum world_edit_color_blend_mode
 enum world_edit_blend_mode_modifier poof(@bitfield)
 {
   WorldEdit_Modifier_Default  =     0,
-  WorldEdit_ValueModifier_Surface  = (1<<0),
-  WorldEdit_ValueModifier_ClampPos = (1<<1),
-  WorldEdit_ValueModifier_ClampNeg = (1<<2),
 
-  WorldEdit_ColorModifier_Discard  = (1<<3),
+  WorldEdit_ValueModifier_Surface   = (1<<0),
+  WorldEdit_ValueModifier_ClampPos  = (1<<1),
+  WorldEdit_ValueModifier_ClampNeg  = (1<<2),
+  WorldEdit_ValueModifier_Threshold = (1<<3),
+
+  WorldEdit_ColorModifier_Discard   = (1<<4),
   // NOTE(Jesse): Unsupported for now, unclear if it will be again ..
   // WorldEdit_Modifier_Flood    = xxxx,
 };
@@ -1240,12 +1240,7 @@ struct world_edit
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
   world_edit_brush *Brush;
-
-  // Instance params
-
-  // TODO(Jesse): Do we actually need Tombstone or LayerIndex?
   b32 Tombstone;
-  u32 LayerIndex;
 };
 
 typedef world_edit* world_edit_ptr;

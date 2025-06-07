@@ -96,31 +96,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
       }
 
             PushNewRow(Ui);
-
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("LayerIndex");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->LayerIndex),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

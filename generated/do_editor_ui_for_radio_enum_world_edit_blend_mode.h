@@ -20,7 +20,6 @@ RadioButtonGroup_world_edit_blend_mode( renderer_2d *Ui,
   {
         { CSz("Additive"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Additive")), WorldEdit_Mode_Additive },
     { CSz("Subtractive"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Subtractive")), WorldEdit_Mode_Subtractive },
-    { CSz("Threshold"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Threshold")), WorldEdit_Mode_Threshold },
     { CSz("Disabled"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_blend_mode WorldEdit_Mode_Disabled")), WorldEdit_Mode_Disabled },
   };
 

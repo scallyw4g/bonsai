@@ -48,13 +48,6 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Tombstone); // default
 
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->LayerIndex); // default
-
                     if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
@@ -96,14 +89,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Tombstone, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->LayerIndex, Memory);
 
         if (HadBrushPointer)
   {
