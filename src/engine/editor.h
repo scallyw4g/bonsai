@@ -969,6 +969,14 @@ struct world_update_op_shape_params_cylinder
   r32 Radius = 10.f;
 };
 
+struct world_update_op_shape_params_plane
+{
+  v3 Pos;
+  v3 Normal;
+  f32 d;
+  f32 Thickness;
+};
+
 
 // @sdf_shape_step(2): Add new asset struct here
 //
@@ -1021,6 +1029,7 @@ enum shape_type
   ShapeType_Sphere,
   ShapeType_Line,
   ShapeType_Cylinder,
+  ShapeType_Plane,
 
   // @sdf_shape_step(1): Add shape types here
   //
@@ -1038,6 +1047,7 @@ struct shape_layer
   world_update_op_shape_params_sphere   Sphere;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Sphere))
   world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
+  world_update_op_shape_params_plane    Plane;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Plane))
 
   // @sdf_shape_step(6): Add an instance of the new shape here
   //

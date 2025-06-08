@@ -508,6 +508,28 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
                               } break;
 
+                              case ShapeType_Plane:
+                              {
+                                auto Plane = &Shape->Plane;
+
+                                v3 Rad = (SimEditRect.Max-SimEditRect.Min)/2.f;
+                                v3 Pos = SimEditRect.Min + Rad;
+
+                                v3 NRad = Normalize(Rad);
+                                v3 Normal = Cross(NRad, -1.f*NRad);
+
+
+                                Plane->d = -1.0f * (Normal.x*Pos.x + Normal.y*Pos.y + Normal.z*Pos.z);
+                                Plane->Thickness = 5.f;
+                                Plane->Normal = Normal;
+                                Plane->Pos = Pos;
+
+                                BindUniformByName(&WorldEditRC->Program, "P",      &Plane->Pos);
+                                BindUniformByName(&WorldEditRC->Program, "Normal", &Plane->Normal);
+                                BindUniformByName(&WorldEditRC->Program, "r",      Plane->d);
+                                BindUniformByName(&WorldEditRC->Program, "Thickness", Plane->Thickness);
+                              } break;
+
                               // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
                               //
                             }

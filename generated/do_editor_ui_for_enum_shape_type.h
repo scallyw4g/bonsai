@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:152:0
+// src/engine/editor.cpp:154:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -41,6 +41,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name,
     if (Button(Ui, CSz("Cylinder"), UiId(Window, "enum ShapeType_Cylinder", Element), Params))
     {
             *Element = ShapeType_Cylinder;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Plane"), UiId(Window, "enum ShapeType_Plane", Element), Params))
+    {
+            *Element = ShapeType_Plane;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

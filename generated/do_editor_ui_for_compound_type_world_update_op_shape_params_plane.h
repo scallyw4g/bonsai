@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:252:0
+// src/engine/editor.cpp:148:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_plane *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle bonsai_stdlib", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_update_op_shape_params_plane", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,11 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
-        cs MemberName = CSz("Os");
+        cs MemberName = CSz("Pos");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(os*, &Element->Os),
+          Cast(v3*, &Element->Pos),
           MemberName,
           Params
           );
@@ -57,11 +57,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
-        cs MemberName = CSz("Plat");
+        cs MemberName = CSz("Normal");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(platform*, &Element->Plat),
+          Cast(v3*, &Element->Normal),
           MemberName,
           Params
           );
@@ -81,11 +81,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
-        cs MemberName = CSz("ThreadStates");
+        cs MemberName = CSz("d");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(thread_local_state*, Element->ThreadStates),
+          Cast(f32*, &Element->d),
           MemberName,
           Params
           );
@@ -98,18 +98,19 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
       }
 
-      
+            PushNewRow(Ui);
+
       
 
       { 
         
         
         
-        cs MemberName = CSz("AllTextures");
+        cs MemberName = CSz("Thickness");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(texture_block_array*, &Element->AllTextures),
+          Cast(f32*, &Element->Thickness),
           MemberName,
           Params
           );
@@ -122,53 +123,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
       }
 
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("AllShaders");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(shader_ptr_block_array*, &Element->AllShaders),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("DebugState");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(debug_state*, &Element->DebugState),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
+            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

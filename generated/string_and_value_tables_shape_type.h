@@ -1,4 +1,4 @@
-// src/engine/editor.h:1028:0
+// src/engine/editor.h:1037:0
 
 link_internal counted_string
 ToStringPrefixless(shape_type Type)
@@ -10,6 +10,7 @@ ToStringPrefixless(shape_type Type)
     case ShapeType_Sphere: { Result = CSz("Sphere"); } break;
     case ShapeType_Line: { Result = CSz("Line"); } break;
     case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
+    case ShapeType_Plane: { Result = CSz("Plane"); } break;
 
     
   }
@@ -27,6 +28,7 @@ ToString(shape_type Type)
     case ShapeType_Sphere: { Result = CSz("ShapeType_Sphere"); } break;
     case ShapeType_Line: { Result = CSz("ShapeType_Line"); } break;
     case ShapeType_Cylinder: { Result = CSz("ShapeType_Cylinder"); } break;
+    case ShapeType_Plane: { Result = CSz("ShapeType_Plane"); } break;
 
     
   }
@@ -43,6 +45,7 @@ ShapeType(counted_string S)
   if (StringsMatch(S, CSz("ShapeType_Sphere"))) { return ShapeType_Sphere; }
   if (StringsMatch(S, CSz("ShapeType_Line"))) { return ShapeType_Line; }
   if (StringsMatch(S, CSz("ShapeType_Cylinder"))) { return ShapeType_Cylinder; }
+  if (StringsMatch(S, CSz("ShapeType_Plane"))) { return ShapeType_Plane; }
 
   return Result;
 }
