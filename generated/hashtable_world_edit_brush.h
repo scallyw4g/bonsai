@@ -1,4 +1,4 @@
-// src/engine/editor.h:1245:0
+// src/engine/editor.h:1242:0
 
 struct world_edit_brush_linked_list_node
 {

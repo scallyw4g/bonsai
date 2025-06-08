@@ -971,10 +971,7 @@ struct world_update_op_shape_params_cylinder
 
 struct world_update_op_shape_params_plane
 {
-  v3 Pos;
-  v3 Normal;
-  f32 d;
-  f32 Thickness;
+  f32 Thickness = 2.f;
 };
 
 

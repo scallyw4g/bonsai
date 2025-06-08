@@ -359,9 +359,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               //
 
 
-              static v3 Plane_SimShapeOrigin;
-              static v3 Plane_Normal;
-
               {
                 auto WorldEditRC = &Graphics->WorldEditRC;
                 AcquireFutex(&Node->Lock);
@@ -514,26 +511,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                               case ShapeType_Plane:
                               {
-                                auto Plane = &Shape->Plane;
-
-                                Plane_SimShapeOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
+                                v3 Plane_SimShapeOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
                                 v3 ChunkRelLocation = Plane_SimShapeOrigin - SimChunkMin;
 
                                 v3 NRad = Normalize(EditRectRad);
-                                Plane_Normal = Cross(NRad, V3(1,0,0));
+                                v3 Plane_Normal = Cross(NRad, V3(1,0,0));
 
-
+                                auto Plane = &Shape->Plane;
+                                auto PlaneRadius = Plane->Thickness/2.f;
                                 auto Planed = -1.0f * (Plane_Normal.x*ChunkRelLocation.x + Plane_Normal.y*ChunkRelLocation.y + Plane_Normal.z*ChunkRelLocation.z);
-                                auto PlaneThickness = 5.f;
                                 auto PlaneNormal = Plane_Normal;
                                 auto PlanePos = ChunkRelLocation;
 
-
-
-                                BindUniformByName(&WorldEditRC->Program, "PlaneP",      &PlanePos);
+                                /* BindUniformByName(&WorldEditRC->Program, "PlaneP",      &PlanePos); */
                                 BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
-                                BindUniformByName(&WorldEditRC->Program, "Planed",      Planed);
-                                BindUniformByName(&WorldEditRC->Program, "PlaneThickness", PlaneThickness);
+                                BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
+                                BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
                               } break;
 
                               // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
@@ -558,12 +551,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 ReleaseFutex(&Node->Lock);
               }
 #endif
-
-            DEBUG_DrawSimSpaceVectorAt(
-                Engine,
-                Plane_SimShapeOrigin, 
-                Plane_Normal*100.f, V3(1,0,0), DEFAULT_LINE_THICKNESS*3.f );
-
 
               //
               // Terrain Finalize

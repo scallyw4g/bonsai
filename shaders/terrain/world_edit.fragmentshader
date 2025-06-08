@@ -37,10 +37,9 @@ uniform s32 Axis; // voxel_rule_direction
 //
 // Plane Params
 //
-uniform v3 PlaneP;
 uniform v3 PlaneNormal;
 uniform f32 Planed;
-uniform f32 PlaneThickness;
+uniform f32 PlaneRadius;
 
 
 
@@ -66,12 +65,8 @@ uniform sampler2D InputTex;
 in vec2 UV;
 out vec4 Output;
 
-r32 DistanceToPlane(v3 PlaneP, v3 PlaneNormal, f32 Planed, v3 P)
+r32 DistanceToPlane(v3 PlaneNormal, f32 Planed, v3 P)
 {
-  r32 x = PlaneP.x;
-  r32 y = PlaneP.y;
-  r32 z = PlaneP.z;
-
   r32 a = PlaneNormal.x;
   r32 b = PlaneNormal.y;
   r32 c = PlaneNormal.z;
@@ -217,8 +212,8 @@ void main()
             // ShapeType_Plane
             case 4:
             {
-              f32 Dist = DistanceToPlane(PlaneP, PlaneNormal, Planed, xyz);
-              if (abs(Dist) < PlaneThickness)
+              f32 Dist = DistanceToPlane(PlaneNormal, Planed, xyz);
+              if (abs(Dist) < PlaneRadius)
               {
                 NoiseSample = 1.f;
               }

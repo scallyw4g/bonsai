@@ -34,28 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *Base
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_plane *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Pos); // default
+                                Result &= Serialize(Bytes, &Element->Thickness); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Normal); // default
 
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->d); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Thickness); // default
 
     
 
@@ -80,31 +66,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Pos, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Normal, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->d, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Thickness, Memory);
+
+
+
+
+
+
 
   
 

@@ -33,79 +33,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Pos");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->Pos),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Normal");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->Normal),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("d");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->d),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
-
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Thickness");
                                                                 DoEditorUi(Ui,
           Window,
@@ -124,6 +51,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
             PushNewRow(Ui);
+
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
