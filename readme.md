@@ -53,7 +53,6 @@ See the docs on the [build process](docs/01_build_process.md).
 * Asset Loaders
 * Primitive Physics
 
-
 ![banner]( screenshots/platapus.png)
 
 ## Terrain Generation
@@ -107,40 +106,30 @@ See the docs on the [build process](docs/01_build_process.md).
 -------------------------------------------------------------------------------
 ## Renderer
 
-[ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
-
-[ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
-
-[ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
-
-[ ] Screen Space Shadows : https://panoskarabelas.com/posts/screen_space_shadows/
-
-[ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
-
-[ ] TAA?
-
-[ ] FXAA : http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
-
-[ ] Water : https://www.youtube.com/watch?v=5yhDb9dzJ58
-
-[ ] Fluids : https://andrewkchan.dev/posts/fire.html
-
-[ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
-
-[ ] Lumen-style GI screen-space radiance caching : https://www.youtube.com/watch?v=2GYXuM10riw
+- [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
+- [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard
+- [ ] Better shadows : https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-8-summed-area-variance-shadow-maps
+- [ ] Screen Space Shadows : https://panoskarabelas.com/posts/screen_space_shadows/
+- [ ] Motion Blur : https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
+- [ ] TAA?
+- [ ] FXAA : http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
+- [ ] Water : https://www.youtube.com/watch?v=5yhDb9dzJ58
+- [ ] Fluids : https://andrewkchan.dev/posts/fire.html
+- [ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
+- [ ] Lumen-style GI screen-space radiance caching : https://www.youtube.com/watch?v=2GYXuM10riw
 
 -------------------------------------------------------------------------------
 ## Terrain
 
-[ ] Erosion simulation
+- [ ] Erosion simulation
 * https://inria.hal.science/hal-01262376/document
 * https://xing-mei.github.io/files/erosion.pdf
 * https://nickmcd.me/2020/04/15/procedural-hydrology/
 
-[ ] Biomes
+- [ ] Biomes
 * https://en.wikipedia.org/wiki/Holdridge_life_zones
 
-[ ] Meshing
+- [ ] Meshing
 * Isotropic surface meshing
 * https://graphics.stanford.edu/courses/cs164-10-spring/Handouts/isotropic.pdf
 * https://inria.hal.science/inria-00071612/document
@@ -148,45 +137,33 @@ See the docs on the [build process](docs/01_build_process.md).
 -------------------------------------------------------------------------------
 ## Assets
 
-[ ] MCA importer
+- [ ] MCA importer
 * https://github.com/GabeRundlett/gvox/blob/old/src/formats/minecraft.cpp
 
-[ ] Sound : mp3, ogg, ..? decompresser
+- [ ] Sound : mp3, ogg, ..? decompresser
 
 -------------------------------------------------------------------------------
 ## Datastructures
 
-[ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
-
-[ ] Better disk/sphere sampling patterns : https://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
-
-[ ] Better hash function! : https://nullprogram.com/blog/2018/07/31/
-
-[ ] Better GPU hashing! : https://arugl.medium.com/hash-noise-in-gpu-shaders-210188ac3a3e
-
-[ ] Hash-trie as alternative to a table : https://nullprogram.com/blog/2023/09/30/
-
-[ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
-
-[ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
-
-[ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
-
-[ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
-
+- [ ] Better low-discrepency sequences : https://blog.demofox.org/2017/05/29/when-random-numbers-are-too-random-low-discrepancy-sequences/
+- [ ] Better disk/sphere sampling patterns : https://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
+- [ ] Better hash function! : https://nullprogram.com/blog/2018/07/31/
+- [ ] Better GPU hashing! : https://arugl.medium.com/hash-noise-in-gpu-shaders-210188ac3a3e
+- [ ] Hash-trie as alternative to a table : https://nullprogram.com/blog/2023/09/30/
+- [ ] Octree ? https://graphics.tudelft.nl/Publications-new/2020/CBE20/ModifyingCompressedVoxels-main.pdf
+- [ ] Better floating-point rng : https://www.corsix.org/content/higher-quality-random-floats
+- [ ] Better greedy meshing? https://www.youtube.com/watch?v=4xs66m1Of4A
+- [ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
 
 ## Goodies
 
-[ ] Better (faster) Sin/Cos ? https://www.shadertoy.com/view/432yWW
-
-[ ] Look into using this Intel tooling for dual CPU/GPU world-gen?
+- [ ] Better (faster) Sin/Cos ? https://www.shadertoy.com/view/432yWW
+- [ ] Look into using this Intel tooling for dual CPU/GPU world-gen?
     https://www.intel.com/content/dam/develop/external/us/en/documents/spir-vtointe-ispcgpu-compute-on-the-cpu.pdf
     https://ispc.github.io/
 
 -------------------------------------------------------------------------------
 ## Profiler
 
-[ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
-
-[ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object
-
+- [ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
+- [ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object
