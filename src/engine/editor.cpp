@@ -1118,264 +1118,264 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  layered_brush *LayeredBrush = &Brush->Layered;
-  b32 IsNewBrush = False;
-#if 1
+  PushWindowStart(Ui, BrushSettingsWindow);
+  Assert(Brush);
   {
-    b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0;
-    if (BrushUninitialized)
+    b32 IsNewBrush = False;
+    layered_brush *LayeredBrush = &Brush->Layered;
     {
-      NewBrush(Brush);
-      IsNewBrush = True;
-    }
-  }
-#endif
-
-  //
-  // Brush toolbar buttons
-  //
-  {
-    PushWindowStart(Ui, BrushSettingsWindow);
-    memory_arena *Tran = GetTranArena();
-
-    if (LayeredBrush->LayerCount)
-    {
-      ui_brush_actions BrushAction = {};
-      ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
-      switch (BrushAction)
+      b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0;
+      if (BrushUninitialized)
       {
-        case UiBrushAction_NoAction: {} break;
-
-        case UiBrushAction_New:
-        {
-          world_edit_brush ThisBrush = NewBrush();
-          Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
-        } break;
-
-        case UiBrushAction_Save:
-        {
-          cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
-          SaveBrush(Brush, BrushFilepath.Start);
-        } break;
-
-        case UiBrushAction_Duplicate:
-        {
-          world_edit_brush Duplicated = *Brush;
-
-          cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', Tran);
-
-          if (Pieces.Count > 2)
-          {
-            cs BrushNameString = Pieces.Start[0];
-            cs VersionString   = Pieces.Start[Pieces.Count-2];
-
-            s32 VersionNumber;
-            if ( ParseInteger(VersionString, &VersionNumber) )
-            {
-              cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-              while (FileExists(BrushFilepath.Start))
-              {
-                ++VersionNumber;
-                BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-              }
-
-              SaveBrush(&Duplicated, BrushFilepath.Start);
-            }
-          }
-          else
-          {
-            cs BrushFilepath = GetFilenameForBrush(CS(Duplicated.NameBuf), 1);
-            SaveBrush(&Duplicated, BrushFilepath.Start);
-          }
-
-          Editor->CurrentBrush = Insert(Duplicated, &Editor->LoadedBrushes, Editor->Memory);
-        } break;
-
-#if 0
-        case UiBrushAction_Import:
-        {
-          ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
-          if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
-          {
-            PushNewRow(Ui);
-
-            filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
-            maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
-
-            if (ClickedFileNode.Tag)
-            {
-              LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
-              SetToggleButton(Ui, ImportToggleId, False);
-            }
-          }
-        } break;
-#endif
-
+        NewBrush(Brush);
+        IsNewBrush = True;
       }
     }
 
+    //
+    // Brush toolbar buttons
+    //
     {
+      memory_arena *Tran = GetTranArena();
 
       if (LayeredBrush->LayerCount)
       {
-        PushNewRow(Ui);
-        PushNewRow(Ui);
-
+        ui_brush_actions BrushAction = {};
+        ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
+        switch (BrushAction)
         {
-          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
-          cs NameBuf = CS(Brush->NameBuf);
-          TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
-          PushNewRow(Ui);
+          case UiBrushAction_NoAction: {} break;
 
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-          // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
-          LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
-          LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
-          PushNewRow(Ui);
-          PushNewRow(Ui);
+          case UiBrushAction_New:
+          {
+            world_edit_brush ThisBrush = NewBrush();
+            Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+          } break;
+
+          case UiBrushAction_Save:
+          {
+            cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
+            SaveBrush(Brush, BrushFilepath.Start);
+          } break;
+
+          case UiBrushAction_Duplicate:
+          {
+            world_edit_brush Duplicated = *Brush;
+
+            cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', Tran);
+
+            if (Pieces.Count > 2)
+            {
+              cs BrushNameString = Pieces.Start[0];
+              cs VersionString   = Pieces.Start[Pieces.Count-2];
+
+              s32 VersionNumber;
+              if ( ParseInteger(VersionString, &VersionNumber) )
+              {
+                cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+                while (FileExists(BrushFilepath.Start))
+                {
+                  ++VersionNumber;
+                  BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+                }
+
+                SaveBrush(&Duplicated, BrushFilepath.Start);
+              }
+            }
+            else
+            {
+              cs BrushFilepath = GetFilenameForBrush(CS(Duplicated.NameBuf), 1);
+              SaveBrush(&Duplicated, BrushFilepath.Start);
+            }
+
+            Editor->CurrentBrush = Insert(Duplicated, &Editor->LoadedBrushes, Editor->Memory);
+          } break;
+
+#if 0
+          case UiBrushAction_Import:
+          {
+            ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
+            if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
+            {
+              PushNewRow(Ui);
+
+              filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
+              maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+              if (ClickedFileNode.Tag)
+              {
+                LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
+                SetToggleButton(Ui, ImportToggleId, False);
+              }
+            }
+          } break;
+#endif
+
         }
-
-        {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-          PushNewRow(Ui);
-        }
-
-        {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox);
-          PushNewRow(Ui);
-
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox);
-          PushNewRow(Ui);
-          PushNewRow(Ui);
-        }
-
       }
 
       {
-        s32 EditLayerIndex = 0;
-        ui_brush_layer_actions BrushLayerAction = {};
 
-        PushTableStart(Ui);
-
-        brush_layer *BrushLayers = Brush->Layered.Layers;
-        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+        if (LayeredBrush->LayerCount)
         {
-          brush_layer *BrushLayer = BrushLayers + LayerIndex;
+          PushNewRow(Ui);
+          PushNewRow(Ui);
 
-          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex));
-          cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
-
-          if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
           {
-            ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex));
-            if (Toolbar.AnyElementClicked)
+            ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
+            cs NameBuf = CS(Brush->NameBuf);
+            TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
+            PushNewRow(Ui);
+
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+            // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
+            LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
+            LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
+            PushNewRow(Ui);
+            PushNewRow(Ui);
+          }
+
+          {
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
+            PushNewRow(Ui);
+          }
+
+          {
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox);
+            PushNewRow(Ui);
+
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox);
+            PushNewRow(Ui);
+            PushNewRow(Ui);
+          }
+
+        }
+
+        {
+          s32 EditLayerIndex = 0;
+          ui_brush_layer_actions BrushLayerAction = {};
+
+          PushTableStart(Ui);
+
+          brush_layer *BrushLayers = Brush->Layered.Layers;
+          RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+          {
+            brush_layer *BrushLayer = BrushLayers + LayerIndex;
+
+            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex));
+            cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
+
+            if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
             {
-              EditLayerIndex = LayerIndex;
-
-              if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
-
-              b32 ThisState = GetToggleState(Ui, ToggleId);
-
-              if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+              ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex));
+              if (Toolbar.AnyElementClicked)
               {
-                ui_id NextId = ToggleId;
-                NextId.ElementBits -= 1;
-                b32 NextState = GetToggleState(Ui, NextId);
+                EditLayerIndex = LayerIndex;
 
-                SetToggleButton(Ui, ToggleId, NextState);
-                SetToggleButton(Ui, NextId, ThisState);
+                if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+
+                b32 ThisState = GetToggleState(Ui, ToggleId);
+
+                if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+                {
+                  ui_id NextId = ToggleId;
+                  NextId.ElementBits -= 1;
+                  b32 NextState = GetToggleState(Ui, NextId);
+
+                  SetToggleButton(Ui, ToggleId, NextState);
+                  SetToggleButton(Ui, NextId, ThisState);
+                }
+
+                if (BrushLayerAction == UiBrushLayerAction_MoveDown)
+                {
+                  ui_id NextId = ToggleId;
+                  NextId.ElementBits += 1;
+                  b32 NextState = GetToggleState(Ui, NextId);
+
+                  SetToggleButton(Ui, ToggleId, NextState);
+                  SetToggleButton(Ui, NextId, ThisState);
+                }
+
               }
 
-              if (BrushLayerAction == UiBrushLayerAction_MoveDown)
-              {
-                ui_id NextId = ToggleId;
-                NextId.ElementBits += 1;
-                b32 NextState = GetToggleState(Ui, NextId);
-
-                SetToggleButton(Ui, ToggleId, NextState);
-                SetToggleButton(Ui, NextId, ThisState);
-              }
-
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {});
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            else
+            {
+              DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
             }
 
-            OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-              DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {});
-            CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-          }
-          else
-          {
-            DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
-          }
+            if (IsNewBrush && LayerIndex == 0)
+            {
+              SetToggleButton(Ui, ToggleId, True);
+            }
 
-          if (IsNewBrush && LayerIndex == 0)
-          {
-            SetToggleButton(Ui, ToggleId, True);
+            PushNewRow(Ui);
           }
+          PushTableEnd(Ui);
 
-          PushNewRow(Ui);
-        }
-        PushTableEnd(Ui);
-
-        if (BrushLayerAction == UiBrushLayerAction_MoveUp)
-        {
-          if (EditLayerIndex > 0)
+          if (BrushLayerAction == UiBrushLayerAction_MoveUp)
           {
-            brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
-            brush_layer Tmp = BrushLayers[EditLayerIndex-1];
-            BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
-            BrushLayer->Settings = Tmp.Settings;
-          }
-        }
-
-        if (BrushLayerAction == UiBrushLayerAction_MoveDown)
-        {
-          if (LayeredBrush->LayerCount)
-          {
-            if (EditLayerIndex < LayeredBrush->LayerCount-1)
+            if (EditLayerIndex > 0)
             {
               brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
-              brush_layer Tmp = BrushLayers[EditLayerIndex+1];
-              BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
+              brush_layer Tmp = BrushLayers[EditLayerIndex-1];
+              BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
               BrushLayer->Settings = Tmp.Settings;
             }
           }
-        }
 
-        if (BrushLayerAction == UiBrushLayerAction_Duplicate)
-        {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+          if (BrushLayerAction == UiBrushLayerAction_MoveDown)
           {
-            LayeredBrush->LayerCount += 1;
-
-            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
-            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            if (LayeredBrush->LayerCount)
             {
-              BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
+              if (EditLayerIndex < LayeredBrush->LayerCount-1)
+              {
+                brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+                brush_layer Tmp = BrushLayers[EditLayerIndex+1];
+                BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
+                BrushLayer->Settings = Tmp.Settings;
+              }
             }
           }
-        }
 
-        if (BrushLayerAction == UiBrushLayerAction_Delete)
-        {
-          // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
-          // delete a layer if there aren't any to delete!
-          Assert(LayeredBrush->LayerCount > 0);
-
-          // Shuffle layers backwards, overwriting EditLayerIndex
-          RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+          if (BrushLayerAction == UiBrushLayerAction_Duplicate)
           {
-            Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
-            BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
+            if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+            {
+              LayeredBrush->LayerCount += 1;
+
+              // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
+              RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+              {
+                BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
+              }
+            }
           }
 
-          LayeredBrush->LayerCount -= 1;
+          if (BrushLayerAction == UiBrushLayerAction_Delete)
+          {
+            // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
+            // delete a layer if there aren't any to delete!
+            Assert(LayeredBrush->LayerCount > 0);
+
+            // Shuffle layers backwards, overwriting EditLayerIndex
+            RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            {
+              Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
+              BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
+            }
+
+            LayeredBrush->LayerCount -= 1;
+          }
         }
       }
+
     }
-
   }
-
   PushWindowEnd(Ui, BrushSettingsWindow);
 }
 
@@ -1900,6 +1900,13 @@ DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  if (Editor->CurrentBrush == 0)
+  {
+    world_edit_brush ThisBrush = NewBrush();
+    Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+  }
+
+
   // @selection_changed_flag
   //
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
@@ -2151,52 +2158,49 @@ DoWorldEditor(engine_resources *Engine)
     }
     PushWindowEnd(Ui, &AllBrushesWindow);
 
-    if (Editor->CurrentBrush)
+    local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
+    DoBrushSettingsWindow(Engine, Editor->CurrentBrush, &BrushSettingsWindow);
+
+    // NOTE(Jesse): Must come after the settings window draws because the
+    // settings window detects and initializes new brushes
+    if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
     {
-      local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-      DoBrushSettingsWindow(Engine, Editor->CurrentBrush, &BrushSettingsWindow);
-
-      // NOTE(Jesse): Must come after the settings window draws because the
-      // settings window detects and initializes new brushes
-      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
+      if (Editor->Selection.InitialSelect)
       {
-        if (Editor->Selection.InitialSelect)
+        Info("Setting Initial edit state");
+        Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+        auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
+        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+        UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+      }
+      else if (Editor->Selection.Changed)
+      {
+        if (LengthSq(Editor->Selection.Diff) > 0.f)
         {
-          Info("Setting Initial edit state");
-          Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
-          auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
-          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-          UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+          Info("Applying diff to edit buffer");
+          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+          Assert(SelectionMode);
+          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
+          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
         }
-        else if (Editor->Selection.Changed)
+        else
         {
-          if (LengthSq(Editor->Selection.Diff) > 0.f)
-          {
-            Info("Applying diff to edit buffer");
-            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
-            Assert(SelectionMode);
-            ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
-            Editor->Selection.ModState.ClickedFace = FaceIndex_None;
-          }
-          else
-          {
-            // The selection area was probably just resizing to enclose multiple selected edits
-          }
+          // The selection area was probably just resizing to enclose multiple selected edits
         }
+      }
 
-        b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
-        if (SettingsChanged)
+      b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
+      if (SettingsChanged)
+      {
+        IterateOver(&Editor->Edits, Edit, EditIndex)
         {
-          IterateOver(&Editor->Edits, Edit, EditIndex)
-          {
-            if (Edit->Tombstone) { continue; }
+          if (Edit->Tombstone) { continue; }
 
-            if (Edit->Brush == Editor->CurrentBrush)
-            {
-              // TODO(Jesse): We should be able to just mark the overlapping
-              // nodes dirty because we're not actually updating the edit bounds here..
-              UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
-            }
+          if (Edit->Brush == Editor->CurrentBrush)
+          {
+            // TODO(Jesse): We should be able to just mark the overlapping
+            // nodes dirty because we're not actually updating the edit bounds here..
+            UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
           }
         }
       }
@@ -2431,6 +2435,7 @@ DoWorldEditor(engine_resources *Engine)
 
                 case UiLayerEditAction_SetBrush:
                 {
+                  Assert(Editor->CurrentBrush);
                   Edit->Brush = Editor->CurrentBrush;
                   UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
                 } break;

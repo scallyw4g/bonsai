@@ -1312,6 +1312,9 @@ struct level_editor
   world_edit_block_array_index_block_array SelectedEditIndices;
   world_edit *HotEdit;
 
+  // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
+  // up, we just keep pointers into it.  Change to a paged-array and store the
+  // indices such that we save space when doing serialize/deserialize;
   world_edit_brush_hashtable  LoadedBrushes;
   world_edit_brush           *CurrentBrush;
 };
