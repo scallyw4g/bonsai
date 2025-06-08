@@ -449,3 +449,12 @@ poof(serdes_struct(world_edit_brush))
 
 poof(serdes_struct(world_edit))
 #include <generated/serdes_struct_world_edit.h>
+
+poof(serdes_struct(world_edit_block_array_index))
+#include <generated/serdes_struct_world_edit_block_array_index.h>
+
+poof(serdes_collection(world_edit_block_array_index, {block_array}))
+#include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
+
+poof(serdes_struct(world_edit_layer))
+#include <generated/serdes_struct_world_edit_layer.h>

@@ -222,6 +222,13 @@ HardResetWorld(engine_resources *Engine)
 }
 
 link_internal void
+SoftResetGraphics(graphics *Graphics)
+{
+  Graphics->MainDrawList.ElementCount = 0;;
+  Graphics->ShadowMapDrawList.ElementCount = 0;
+}
+
+link_internal void
 HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -242,6 +249,8 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   HardResetEditor(&Engine->Editor);
 
   HardResetWorld(Engine);
+
+  SoftResetGraphics(Graphics);
 
   // TODO(Jesse)(leak): This leaks the texture handles; make a HardResetEngineDebug()
   Leak("?");

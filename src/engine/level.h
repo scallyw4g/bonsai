@@ -3,6 +3,7 @@
 struct level_header
 {
   u32 LayerCount;
+  u32 EditCount;
   u32 EntityCount;
 
   // World Params

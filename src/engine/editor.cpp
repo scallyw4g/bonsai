@@ -73,7 +73,6 @@ InitEditor(level_editor *Editor)
 
   Editor->Layers = WorldEditLayerBlockArray(Editor->Memory);
   Assert(Editor->NextLayerIndex == 0);
-  NewLayer(Editor);
 
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
@@ -1404,6 +1403,7 @@ EditWorldSelection(engine_resources *Engine)
       TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
     }
     Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
+    /* Info("%V3 %V3i", Editor->Selection.Region.Min.Offset); */
   }
 #endif
 
@@ -2063,7 +2063,16 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
 
-  if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
+  if (Input->Ctrl.Pressed && Input->G.Clicked)
+  {
+    if (AtElements(&Editor->SelectedEditIndices).Index)
+    {
+      if (entity *Ghost = GetCameraGhost(Engine))
+      {
+        Ghost->P = GetSelectionCenterP(World, Editor);
+      }
+    }
+  }
 
   if (Input->Ctrl.Pressed && Input->S.Clicked)
   {
@@ -2562,7 +2571,8 @@ DoLevelWindow(engine_resources *Engine)
       Header.Camera            = *Camera;
       Header.RenderSettings    =  Graphics->Settings;
       Header.EntityCount       =  EntityCount;
-      Header.LayerCount        =  u32(TotalElements(&Editor->Layers));
+      Header.LayerCount        =  u32(AtElements(&Editor->Layers).Index);
+      Header.EditCount         =  u32(AtElements(&Editor->Edits).Index);
 
       {
         cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
@@ -2580,21 +2590,16 @@ DoLevelWindow(engine_resources *Engine)
       u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
       Ensure(Serialize(&OutputStream, &Delimeter));
 
-#if 0
-      IterateOver(&Editor->Layers, Layer, LayerIndex)
+      IterateOver(&Editor->Layers, Layer, LI)
       {
-        u32 EditCount = u32(TotalElements(&Layer->EditIndices));
-        Serialize(&OutputStream, &EditCount);
-        IterateOver(&Layer->Edits, Edit, EditIndex)
-        {
-          if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
-          Serialize(&OutputStream, Edit);
-        }
+        Serialize(&OutputStream, Layer);
       }
-#else
-      NotImplemented;
-#endif
+      Ensure(Serialize(&OutputStream, &Delimeter));
 
+      IterateOver(&Editor->Edits, Edit, EI)
+      {
+        Serialize(&OutputStream, Edit);
+      }
       Ensure(Serialize(&OutputStream, &Delimeter));
 
       RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
@@ -2679,21 +2684,28 @@ DoLevelWindow(engine_resources *Engine)
         s32 ChunkCount = 0;
         /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
 
-        NotImplemented;
-        /* RangeIterator_t(u32, EditIndex, LevelHeader.EditCount) */
-        /* { */
-        /*   world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this? */
-        /*   Deserialize(&LevelBytes, &DeserEdit, GetTranArena()); */
+        RangeIterator_t(u32, LayerIndex, LevelHeader.LayerCount)
+        {
+          world_edit_layer DeserLayer =  {};
+          Deserialize(&LevelBytes, &DeserLayer, Editor->Memory);
+          world_edit_layer *FinalLayer = Push(&Editor->Layers, &DeserLayer);
+          FinalLayer->EditIndices.Memory = Editor->Memory;
+        }
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
 
-        /*   world_edit *FinalEdit = Push(&Editor->WorldEdits, &DeserEdit); */
-        /*   if (FinalEdit->Brush) */
-        /*   { */
-        /*     FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory); */
-        /*   } */
+        RangeIterator_t(u32, EditIndex, LevelHeader.EditCount)
+        {
+          world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this?
+          Deserialize(&LevelBytes, &DeserEdit, Editor->Memory);
 
-        /*   ApplyEditToOctree(Engine, FinalEdit, GetTranArena()); */
-        /* } */
+          world_edit *FinalEdit = Push(&Editor->Edits, &DeserEdit);
+          if (FinalEdit->Brush)
+          {
+            FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+          }
 
+          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+        }
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 
         b32 Error = False;

@@ -23,6 +23,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->EditCount, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EntityCount, Memory);
 
 

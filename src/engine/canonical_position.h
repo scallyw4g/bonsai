@@ -284,8 +284,8 @@ link_internal rect3cp
 InvertedInfinityRectangle_rect3cp()
 {
   rect3cp Result = {
-    .Min = Canonical_Position(V3(f32_MAX), V3i(s32_MAX)),
-    .Max = Canonical_Position(V3(-f32_MAX), V3i(s32_MIN)),
+    .Min = Canonical_Position(V3( 1024.f), V3i(s32_MAX)),
+    .Max = Canonical_Position(V3(-1024.f), V3i(s32_MIN)),
   };
   return Result;
 }

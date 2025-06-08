@@ -451,6 +451,47 @@ poof(
 )
 
 poof(
+  func serdes_collection(element_type, type_poof_symbol collection_name )
+  {
+    @var collection_type (element_type.name)_(collection_name)
+
+    link_internal b32
+    Serialize( u8_cursor_block_array *Bytes, collection_type *Collection)
+    {
+      auto i = AtElements(Collection);
+      u64 ElementCount = u64(GetIndex(&i));
+      b32 Result = Write(Bytes, ElementCount);
+
+      IterateOver(Collection, Element, EIndex)
+      {
+        Result &= Serialize(Bytes, Element);
+      }
+
+      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+      return Result;
+    }
+
+    link_internal b32
+    Deserialize( u8_cursor *Bytes, collection_type *Collection, memory_arena *Memory)
+    {
+      u64 ElementCount = Read_u64(Bytes);
+      Collection->Memory = Memory;
+
+      b32 Result = True;
+      RangeIterator_t(u64, EIndex, ElementCount)
+      {
+        element_type.name Element = {};
+        Result &= Deserialize(Bytes, &Element, Memory);
+        Push(Collection, &Element);
+      }
+
+      MAYBE_READ_DEBUG_OBJECT_DELIM();
+      return Result;
+    }
+  }
+)
+
+poof(
   func serdes_struct(type)
   {
     serialize_struct(type)

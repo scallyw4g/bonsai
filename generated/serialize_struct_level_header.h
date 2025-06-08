@@ -41,6 +41,13 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
 
 
 
+                            Result &= Serialize(Bytes, &Element->EditCount); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->EntityCount); // default
 
 
