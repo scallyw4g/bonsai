@@ -7,19 +7,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
   auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
 
+#if 0
   static v3 xAxis = V3(0,0,0);
   static v3 yAxis = V3(0,0,0);
   static v3 zAxis = V3(0,0,0);
 
-
   static rect3 SimEditRect = {};
   static v3 EditRectRad = {};
 
-  static v4 DrawNormal = {};
   static v3 PlaneNormal = {};
+#endif
 
-  os *Os         = &Engine->Stdlib.Os;
-  /* platform *Plat = &Engine->Stdlib.Plat; */
   while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
   {
     UNPACK_ENGINE_RESOURCES(Engine);
@@ -431,9 +429,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
                         BindUniformByName(&WorldEditRC->Program, "Invert",    Layer->Settings.Invert);
 
-                        SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-                           EditRectRad = GetRadius(&SimEditRect);
+                           v3 EditRectRad = GetRadius(&SimEditRect);
 
                         // NOTE(Jesse): Must call bind explicitly because the
                         // driver doesn't cache these values otherwise .. it
@@ -524,9 +522,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 auto Plane = &Shape->Plane;
                                 auto Orientation = Plane->Orientation;
 
-                                xAxis = V3(0,0,0);
-                                yAxis = V3(0,0,0);
-                                zAxis = V3(0,0,0);
+                                v3 xAxis = V3(0,0,0);
+                                v3 yAxis = V3(0,0,0);
+                                v3 zAxis = V3(0,0,0);
 
                                 switch (Orientation)
                                 {
@@ -581,7 +579,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 }
 
                                 v3 Plane_SimShapeOrigin = EditRectRad;
-                                PlaneNormal = zAxis;
+                                v3 PlaneNormal = zAxis;
 
                                 auto PlaneRadius = Plane->Thickness/2.f;
                                 auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
@@ -618,11 +616,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 ReleaseFutex(&Node->Lock);
               }
 
-              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f );
-              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f );
-              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f );
-
-              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f );
+              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f ); */
+              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f ); */
+              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
+              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
               //
               // Terrain Finalize
