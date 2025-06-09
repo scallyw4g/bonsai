@@ -510,25 +510,25 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                               case ShapeType_Cylinder:
                               {
                                 auto Cylinder = &Shape->Cylinder;
-                                shape_axis Axis = Cylinder->Axis;
-                                if (Axis == ShapeAxis_InferFromMajorAxis)
+                                shape_axis Orientation = Cylinder->Orientation;
+                                if (Orientation == ShapeAxis_InferFromMajorAxis)
                                 {
-                                  Axis = ComputeShapeAxisFromEditDim(EditDim);
+                                  Orientation = ComputeShapeAxisFromEditDim(EditDim);
                                 }
-                                BindUniformByName(&WorldEditRC->Program, "Axis", Axis);
+                                BindUniformByName(&WorldEditRC->Program, "Orientation", Orientation);
                                 BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
                               } break;
 
                               case ShapeType_Plane:
                               {
                                 auto Plane = &Shape->Plane;
-                                auto Axis = Plane->Axis;
+                                auto Orientation = Plane->Orientation;
 
                                 xAxis = V3(0,0,0);
                                 yAxis = V3(0,0,0);
                                 zAxis = V3(0,0,0);
 
-                                switch (Axis)
+                                switch (Orientation)
                                 {
                                   InvalidCase(ShapeAxis_Count);
 

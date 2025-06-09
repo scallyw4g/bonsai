@@ -965,13 +965,13 @@ struct world_update_op_shape_params_line
 
 struct world_update_op_shape_params_cylinder
 {
-  shape_axis Axis;
+  shape_axis Orientation;
   r32 Radius = 10.f;
 };
 
 struct world_update_op_shape_params_plane
 {
-  shape_axis Axis;
+  shape_axis Orientation;
   f32 Thickness = 2.f;
 };
 

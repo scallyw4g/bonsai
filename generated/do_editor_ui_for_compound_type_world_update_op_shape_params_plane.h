@@ -33,11 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Axis");
+        cs MemberName = CSz("Orientation");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shape_axis*, &Element->Axis),
+          Cast(shape_axis*, &Element->Orientation),
           MemberName,
           Params
           );

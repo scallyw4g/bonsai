@@ -34,7 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *Base
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_plane *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Axis); // enum
+                        Result &= Serialize(Bytes, (u32*)&Element->Orientation); // enum
 
 
 
@@ -62,7 +62,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Axis = Cast(shape_axis, Read_u32(Bytes));
+            Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
 
 
 
