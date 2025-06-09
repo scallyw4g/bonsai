@@ -515,11 +515,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 v3 ChunkRelLocation = Plane_SimShapeOrigin - SimChunkMin;
 
                                 v3 NRad = Normalize(EditRectRad);
-                                v3 Plane_Normal = Cross(NRad, V3(1,0,0));
+                                v3 Plane_Normal = Normalize(Cross(NRad, V3(1,0,0)));
 
                                 auto Plane = &Shape->Plane;
                                 auto PlaneRadius = Plane->Thickness/2.f;
-                                auto Planed = -1.0f * (Plane_Normal.x*ChunkRelLocation.x + Plane_Normal.y*ChunkRelLocation.y + Plane_Normal.z*ChunkRelLocation.z);
+                                auto Planed = -1.0f * ( Plane_Normal.x*ChunkRelLocation.x +
+                                                        Plane_Normal.y*ChunkRelLocation.y +
+                                                        Plane_Normal.z*ChunkRelLocation.z );
+
                                 auto PlaneNormal = Plane_Normal;
                                 auto PlanePos = ChunkRelLocation;
 
