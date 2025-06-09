@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:220:0
+// external/bonsai_stdlib/src/vector.h:235:0
 
 link_internal void
 DeepCopy(v3_u8 *Src, v3_u8 *Dest)
@@ -30,6 +30,13 @@ inline b32
 operator!=( v3_u8 P1, v3_u8 P2 )
 {
   b32 Result = !(P1 == P2);
+  return Result;
+}
+
+inline u8
+Sum( v3_u8 P1 )
+{
+  u8 Result = (  P1.E[0]  + P1.E[1]  + P1.E[2]  );
   return Result;
 }
 

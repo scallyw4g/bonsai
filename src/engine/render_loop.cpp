@@ -7,6 +7,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
   auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
 
+  static v3 xAxis = V3(0,0,0);
+  static v3 yAxis = V3(0,0,0);
+  static v3 zAxis = V3(0,0,0);
+
+
+  static rect3 SimEditRect = {};
+  static v3 EditRectRad = {};
+
+  static v4 DrawNormal = {};
+  static v3 PlaneNormal = {};
+
   os *Os         = &Engine->Stdlib.Os;
   /* platform *Plat = &Engine->Stdlib.Plat; */
   while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
@@ -353,7 +364,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               s32 PingPongIndex = 1;
 
-#if 1
               //
               // Apply edits
               //
@@ -421,9 +431,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
                         BindUniformByName(&WorldEditRC->Program, "Invert",    Layer->Settings.Invert);
 
-                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                        SimEditRect = GetSimSpaceRect(World, Edit->Region);
                            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-                           v3 EditRectRad = GetRadius(&SimEditRect);
+                           EditRectRad = GetRadius(&SimEditRect);
 
                         // NOTE(Jesse): Must call bind explicitly because the
                         // driver doesn't cache these values otherwise .. it
@@ -511,25 +521,79 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                               case ShapeType_Plane:
                               {
-                                v3 Plane_SimShapeOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
-                                v3 ChunkRelLocation = Plane_SimShapeOrigin - SimChunkMin;
-
-                                v3 NRad = Normalize(EditRectRad);
-                                v3 Plane_Normal = Normalize(Cross(NRad, V3(1,0,0)));
-
                                 auto Plane = &Shape->Plane;
+                                auto Axis = Plane->Axis;
+
+                                xAxis = V3(0,0,0);
+                                yAxis = V3(0,0,0);
+                                zAxis = V3(0,0,0);
+
+                                switch (Axis)
+                                {
+                                  InvalidCase(ShapeAxis_Count);
+
+                                  case ShapeAxis_InferFromMajorAxis:
+                                  {} break;
+
+                                  // Traverses the X axis and ascends
+                                  case ShapeAxis_PosX:
+                                  {
+                                    xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
+                                    yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+                                  // Traverses the X axis and descends
+                                  case ShapeAxis_NegX:
+                                  {
+                                    xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
+                                    yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+
+
+                                  case ShapeAxis_PosY:
+                                  {
+                                    xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
+                                    yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+                                  case ShapeAxis_NegY:
+                                  {
+                                    xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
+                                    yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+
+
+                                  case ShapeAxis_PosZ:
+                                  {
+                                    xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                                    yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+
+                                  case ShapeAxis_NegZ:
+                                  {
+                                    xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                                    yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
+                                    zAxis = Normalize(Cross(xAxis, yAxis));
+                                  } break;
+                                }
+
+                                v3 Plane_SimShapeOrigin = EditRectRad;
+                                PlaneNormal = zAxis;
+
                                 auto PlaneRadius = Plane->Thickness/2.f;
-                                auto Planed = -1.0f * ( Plane_Normal.x*ChunkRelLocation.x +
-                                                        Plane_Normal.y*ChunkRelLocation.y +
-                                                        Plane_Normal.z*ChunkRelLocation.z );
+                                auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
+                                                        PlaneNormal.y*Plane_SimShapeOrigin.y +
+                                                        PlaneNormal.z*Plane_SimShapeOrigin.z );
 
-                                auto PlaneNormal = Plane_Normal;
-                                auto PlanePos = ChunkRelLocation;
+                                auto PlanePos = Plane_SimShapeOrigin;
 
-                                /* BindUniformByName(&WorldEditRC->Program, "PlaneP",      &PlanePos); */
                                 BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
                                 BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
                                 BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+
                               } break;
 
                               // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
@@ -553,7 +617,12 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 }
                 ReleaseFutex(&Node->Lock);
               }
-#endif
+
+              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f );
+              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f );
+              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f );
+
+              DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f );
 
               //
               // Terrain Finalize

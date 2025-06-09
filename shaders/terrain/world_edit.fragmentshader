@@ -1,5 +1,5 @@
 uniform  v3 WorldspaceChunkBasis;
-uniform  v3 ChunkResolution;
+uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 uniform int BrushType;
 uniform int BlendMode;
@@ -192,7 +192,6 @@ void main()
                   AxisMask    = V3(0,0,1);
                   InvAxisMask = V3(1.f,1.f,0.f)*0.5f;
                 } break;
-
               }
 
               v3 MajorAxis  = EditDim*AxisMask;
@@ -212,8 +211,8 @@ void main()
             // ShapeType_Plane
             case 4:
             {
-              f32 Dist = DistanceToPlane(PlaneNormal, Planed, xyz);
-              if (abs(Dist) < PlaneRadius)
+              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelPosition);
+              if (abs(Dist) < PlaneRadius*ChunkResolution.x)
               {
                 NoiseSample = 1.f;
               }

@@ -971,6 +971,7 @@ struct world_update_op_shape_params_cylinder
 
 struct world_update_op_shape_params_plane
 {
+  shape_axis Axis;
   f32 Thickness = 2.f;
 };
 

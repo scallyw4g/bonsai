@@ -33,6 +33,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
+        cs MemberName = CSz("Axis");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(shape_axis*, &Element->Axis),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("Thickness");
                                                                 DoEditorUi(Ui,
           Window,
@@ -51,8 +75,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
       }
 
             PushNewRow(Ui);
-
-
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
