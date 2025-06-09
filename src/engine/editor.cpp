@@ -2706,12 +2706,15 @@ DoLevelWindow(engine_resources *Engine)
           Deserialize(&LevelBytes, &DeserEdit, Editor->Memory);
 
           world_edit *FinalEdit = Push(&Editor->Edits, &DeserEdit);
-          if (FinalEdit->Brush)
+          if (FinalEdit->Tombstone == False)
           {
-            FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
-          }
+            if (FinalEdit->Brush)
+            {
+              FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+            }
 
-          ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+            ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+          }
         }
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 
