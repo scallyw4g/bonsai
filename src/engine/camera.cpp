@@ -156,13 +156,13 @@ UpdateGameCamera( world *World,
   {
     if (DoPositionDelta)
     {
-      UpdateMouseDelta = Input->LMB.Pressed ? MouseDelta : V2(0);
+      UpdateMouseDelta = Input->RMB.Pressed ? MouseDelta : V2(0);
     }
 
     if (DoZoomDelta)
     {
       CameraZoomDelta = -1.f*Input->MouseWheelDelta/500.f;
-      if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; }
+      /* if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; } */
     }
 
   }
