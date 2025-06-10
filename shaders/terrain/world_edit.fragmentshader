@@ -32,7 +32,7 @@ uniform f32 Radius;
 // Cylinder Params
 //
 
-uniform s32 Axis; // voxel_rule_direction
+uniform s32 Orientation; // voxel_rule_direction
 
 //
 // Plane Params
@@ -170,7 +170,7 @@ void main()
               v3 InvAxisMask;
               v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
 
-              switch (Axis)
+              switch (Orientation)
               {
                 case 0: // VoxelRuleDir_PosX
                 case 1: // VoxelRuleDir_NegX
