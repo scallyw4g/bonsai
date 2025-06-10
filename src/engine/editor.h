@@ -1189,31 +1189,6 @@ struct asset_brush
 
 
 
-// NOTE(Jesse): This isn't really meant to be used outside the the level_editor
-// I just packed all the things together such that it's a bit more obvious
-// they're all for doing the selection
-struct selection_region poof(@do_editor_ui)
-{
-  u32 Clicks;
-
-  // NOTE(Jesse): We need to save the first point we clicked such that we can
-  // synthetically construct the region and construct it while we're clicking
-  // on a second point.  The problem without this Base point is that we don't
-  // know if the point we clicked is the min or the max of the current box.
-  // There's probably a way to get around having this Base point, but it's not
-  // really a big deal.
-  cp Base;
-
-  rect3cp Region     = InvertedInfinityRectangle_rect3cp();
-
-  v3 Diff;           // When Changed is set, this should be nonzero.
-  b32 InitialSelect; // Set when we go from a partial selection state -> fully selected
-
-  selection_modification_mode ModMode;
-  selection_modification_state ModState;
-};
-
-
 
 struct world_edit_brush
 {
@@ -1291,6 +1266,31 @@ struct world_edit_layer
 };
 poof(block_array(world_edit_layer, {128}))
 #include <generated/block_array_world_edit_layer_688735882.h>
+
+
+// NOTE(Jesse): This isn't really meant to be used outside the the level_editor
+// I just packed all the things together such that it's a bit more obvious
+// they're all for doing the selection
+struct selection_region poof(@do_editor_ui)
+{
+  u32 Clicks;
+
+  // NOTE(Jesse): We need to save the first point we clicked such that we can
+  // synthetically construct the region and construct it while we're clicking
+  // on a second point.  The problem without this Base point is that we don't
+  // know if the point we clicked is the min or the max of the current box.
+  // There's probably a way to get around having this Base point, but it's not
+  // really a big deal.
+  cp Base;
+
+  rect3cp Region     = InvertedInfinityRectangle_rect3cp();
+
+  v3 Diff;           // When Changed is set, this should be nonzero.
+  b32 InitialSelect; // Set when we go from a partial selection state -> fully selected
+
+  selection_modification_mode  ModMode;
+  selection_modification_state ModState;
+};
 
 struct level_editor
 {
@@ -1391,13 +1391,13 @@ ComputeSelectionMode(input *Input)
   // Intentionally an el-if chain from most specific, to least.  What's the alternative?
   //
   // Shift is resize
-  // Ctrl  is move
+  // Alt   is move
   //
   if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
   {
     SelectionMode = SelectionMode_ResizeAllAxies;
   }
-  else if (Input->Shift.Pressed && Input->Alt.Pressed)
+  else if (Input->Shift.Pressed && Input->Ctrl.Pressed)
   {
     SelectionMode = SelectionMode_ResizeBothLinearAxies;
   }
@@ -1409,7 +1409,7 @@ ComputeSelectionMode(input *Input)
   {
     SelectionMode = SelectionMode_ResizeSingleLinearAxis;
   }
-  else if (Input->Ctrl.Pressed)
+  else if (Input->Alt.Pressed)
   {
     SelectionMode =  SelectionMode_TranslatePlanar;
   }

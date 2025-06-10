@@ -1387,7 +1387,7 @@ EditWorldSelection(engine_resources *Engine)
           face_index Face = AABBTest.Face;
           if (Face)
           {
-            if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
+            if ( Input->LMB.Clicked && (Input->Shift.Pressed || Input->Alt.Pressed) )
             {
               v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
               Editor->Selection.ModState.ClickedFace = Face;
@@ -1463,13 +1463,6 @@ GetSelectionCenterP(world *World, level_editor *Editor)
 {
   v3i Dim = GetSelectionDim(World, Editor);
   cp Result = Canonicalize(World, Editor->Selection.Region.Min + V3(Dim/2));
-  return Result;
-}
-
-link_internal b32
-InputStateIsValidToApplyEdit(input *Input)
-{
-  b32 Result = Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed && !Input->Alt.Pressed;
   return Result;
 }
 
@@ -1872,6 +1865,14 @@ DoWorldEditor(engine_resources *Engine)
     Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
   }
 
+  // This can happen for all kinds of reasons so we just detect it here instead
+  // of having to remember to set this ModMode flag
+  if (Count(&Editor->SelectedEditIndices))
+  {
+    Editor->Selection.ModMode = SelectionModificationMode_Modify;
+    Editor->Selection.Clicks = 2;
+  }
+
 
   // @selection_changed_flag
   //
@@ -1894,7 +1895,7 @@ DoWorldEditor(engine_resources *Engine)
   //
 
 
-  if (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
+  if (Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
 
   if (Input->Ctrl.Pressed && Input->G.Clicked)
   {
@@ -2171,22 +2172,14 @@ DoWorldEditor(engine_resources *Engine)
               if (EditIsSelected)
               {
                 ButtonParams.FStyle = &DefaultSelectedStyle;
-#if BONSAI_INTERNAL
-
-#endif
               }
 
               auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
               if (Clicked(Ui, &EditSelectButton))
               {
                 // NOTE(Jesse): We do SelectEdit on the HotEdit later
-#if 0
-                Editor->Selection.Clicks = 2;
-                Editor->Selection.Region = Edit->Region;
-
-                b32 MultiSelect = Input->Ctrl.Pressed;
-                SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
-#endif
+                /* b32 MultiSelect = Input->Ctrl.Pressed; */
+                /* SelectEdit(Editor, Edit, *EditIndex, MultiSelect); */
 
                 Editor->CurrentLayer = Layer;
                 if (Edit->Brush)
@@ -2297,10 +2290,13 @@ DoWorldEditor(engine_resources *Engine)
   //
   if (Editor->HotEdit)
   {
-    if (Input->LMB.Clicked)
+    if (Input->Shift.Pressed == False && Input->Alt.Pressed == False)
     {
-      b32 MultiSelect = Input->Ctrl.Pressed;
-      SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+      if (Input->LMB.Clicked)
+      {
+        b32 MultiSelect = Input->Ctrl.Pressed;
+        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+      }
     }
 
     auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
