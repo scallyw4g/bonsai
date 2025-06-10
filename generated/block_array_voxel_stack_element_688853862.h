@@ -14,9 +14,6 @@ struct voxel_stack_element_block
 struct voxel_stack_element_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct voxel_stack_element_block_array

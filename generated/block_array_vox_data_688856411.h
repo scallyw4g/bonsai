@@ -14,9 +14,6 @@ struct vox_data_block
 struct vox_data_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct vox_data_block_array

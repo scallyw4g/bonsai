@@ -14,9 +14,6 @@ struct member_info_block
 struct member_info_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct member_info_block_array

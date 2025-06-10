@@ -14,9 +14,6 @@ struct entity_block
 struct entity_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct entity_block_array

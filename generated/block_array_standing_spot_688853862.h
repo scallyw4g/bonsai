@@ -14,9 +14,6 @@ struct standing_spot_block
 struct standing_spot_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct standing_spot_block_array

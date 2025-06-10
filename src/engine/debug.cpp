@@ -56,6 +56,7 @@ DoEntityWindow(engine_resources *Engine)
     PushWindowEnd(Ui, &EntityWindow);
 
 
+#if 0
     aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
 
     if (Engine->MaybeMouseRay.Tag)
@@ -104,6 +105,7 @@ DoEntityWindow(engine_resources *Engine)
 
       }
     }
+#endif
   }
 
   if (Input->Delete.Clicked && Engine->HoverEntity.Tag) { Unspawn(Engine->HoverEntity.Value); }
@@ -267,6 +269,8 @@ DoAssetWindow(engine_resources *Engine)
       PushNewRow(Ui);
     }
 #endif
+
+#if 0
     if (Button(Ui, CSz("New Asset From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
     {
       Engine->Editor.NewAssetFromSelection = True;
@@ -303,6 +307,7 @@ DoAssetWindow(engine_resources *Engine)
         /* SerializeChunk(&SaveChunk, Concat(CSz("models/"), SaveName, GetTranArena())); */
       }
     }
+#endif
     PushNewRow(Ui);
 
     DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);

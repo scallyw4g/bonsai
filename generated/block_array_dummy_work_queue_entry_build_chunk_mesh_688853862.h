@@ -14,9 +14,6 @@ struct dummy_work_queue_entry_build_chunk_mesh_block
 struct dummy_work_queue_entry_build_chunk_mesh_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct dummy_work_queue_entry_build_chunk_mesh_block_array

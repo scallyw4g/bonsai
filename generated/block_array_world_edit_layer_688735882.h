@@ -14,9 +14,6 @@ struct world_edit_layer_block
 struct world_edit_layer_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct world_edit_layer_block_array

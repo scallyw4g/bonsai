@@ -14,9 +14,6 @@ struct file_traversal_node_block
 struct file_traversal_node_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct file_traversal_node_block_array

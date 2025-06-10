@@ -14,9 +14,6 @@ struct texture_ptr_block
 struct texture_ptr_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct texture_ptr_block_array

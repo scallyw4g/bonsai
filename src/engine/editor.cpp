@@ -1864,7 +1864,7 @@ DoWorldEditor(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   Editor->HotEdit = 0;
-  Editor->HotEditIndex = {};
+  Editor->HotEditIndex = {INVALID_BLOCK_ARRAY_INDEX};
 
   if (Editor->CurrentBrush == 0)
   {
@@ -1877,31 +1877,6 @@ DoWorldEditor(engine_resources *Engine)
   //
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
   aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-
-  ui_toggle_button_group WorldEditToolButtonGroup = {};
-  ui_toggle_button_group WorldEditModeButtonGroup = {};
-  ui_toggle_button_group WorldEditBrushTypeButtonGroup = {};
-  ui_toggle_button_group WorldEditModifierButtonGroup = {};
-
-  {
-    local_persist window_layout Window = WindowLayout("World Edit");
-    PushWindowStart(Ui, &Window);
-
-    PushTableStart(Ui);
-      ui_render_params Params = DefaultUiRenderParams_Button;
-      Params.Padding = V4(6, 3, 6, 3);
-      /* ui_element_reference CurrentRef = {}; */
-
-      {
-        WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &Editor->Tool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        /* CurrentRef = WorldEditToolButtonGroup.UiRef; */
-      }
-
-    PushTableEnd(Ui);
-    PushWindowEnd(Ui, &Window);
-  }
-
-
 
 
   if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
@@ -1921,8 +1896,6 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
-
   if (Input->Ctrl.Pressed && Input->G.Clicked)
   {
     if (AtElements(&Editor->SelectedEditIndices).Index)
@@ -1940,9 +1913,6 @@ DoWorldEditor(engine_resources *Engine)
     {
       NewLayer(Editor);
     }
-
-    Editor->PreviousTool = Editor->Tool;
-    Editor->Tool = WorldEdit_Tool_Select;
 
     ResetSelection(Editor);
     Editor->Selection.ModMode = SelectionModificationMode_Initialize;
@@ -2209,15 +2179,16 @@ DoWorldEditor(engine_resources *Engine)
               auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
               if (Clicked(Ui, &EditSelectButton))
               {
+                // NOTE(Jesse): We do SelectEdit on the HotEdit later
+#if 0
                 Editor->Selection.Clicks = 2;
                 Editor->Selection.Region = Edit->Region;
 
                 b32 MultiSelect = Input->Ctrl.Pressed;
                 SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
+#endif
 
-                /* Editor->CurrentEdit = Edit; */
                 Editor->CurrentLayer = Layer;
-
                 if (Edit->Brush)
                 {
                   Editor->CurrentBrush = Edit->Brush;
@@ -2228,6 +2199,7 @@ DoWorldEditor(engine_resources *Engine)
               if (Hover(Ui, &EditSelectButton))
               {
                 Editor->HotEdit = Edit;
+                Editor->HotEditIndex = *EditIndex;
               }
 
               ui_layer_edit_actions LayerEditAction = {};
@@ -2335,6 +2307,22 @@ DoWorldEditor(engine_resources *Engine)
     DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, EDITOR_DEFAULT_SELECTION_THICKNESS*2.f);
   }
 
+
+#if BONSAI_INTERNAL
+  // NOTE(Jesse): Sanity check we keep the selected flag in sync with the array
+  IterateOver(&Editor->Edits, Edit, EI)
+  {
+    auto SelectedEditIndex = IndexOfValue(&Editor->SelectedEditIndices, &EI);
+    if (SelectedEditIndex.Index == INVALID_BLOCK_ARRAY_INDEX)
+    {
+      Assert(Edit->Selected == False);
+    }
+    else
+    {
+      Assert(Edit->Selected == True);
+    }
+  }
+#endif
 }
 
 link_internal void
@@ -2515,6 +2503,12 @@ DoLevelWindow(engine_resources *Engine)
             if (FinalEdit->Brush)
             {
               FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+            }
+
+            if (FinalEdit->Selected)
+            {
+              FinalEdit->Selected = False; // Minor hack so SelectEdit doesn't assert
+              SelectEdit(Editor, FinalEdit, {EditIndex}, True);
             }
 
             ApplyEditToOctree(Engine, FinalEdit, GetTranArena());

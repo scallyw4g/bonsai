@@ -1296,46 +1296,20 @@ struct level_editor
 {
   memory_arena *Memory;
 
-  world_edit_tool Tool;
-  world_edit_tool PreviousTool; // So we can 'pop' back to the last tool on select/eyedropper
-
-  b8 SelectionFollowsCursor;
-
-  b32 RootChunkNeedsNewMesh;
-
-  u64 EngineDebugViewModeToggleBits;
-
-  u16 HoverColorIndex;
-
   selection_region Selection;
-
-  rect3cp CopyRegion;
-
-  // Recorded when accel-clicking on the selection to manipulate it
-  /* selection_modification_state Selection; */
-  selection_modification_state Entity;
 
   asset_thumbnail_block_array AssetThumbnails;
 
-  b32 NewAssetFromSelection;
-  char NewAssetFromSelectionFilename[512];
-
-  b32 MaskSelection;
-
-  /* u32 NextEditOrdinal; */
+  // Used for naming layers during NewLayer
   u32 NextLayerIndex;
 
+  world_edit_layer_block_array  Layers;
+  world_edit_layer             *CurrentLayer;
 
-
-  world_edit_layer_block_array Layers;
-  world_edit_block_array       Edits;
-
-  world_edit_layer *CurrentLayer;
-  world_edit_layer *HotLayer;
-
+  world_edit_block_array                   Edits;
   world_edit_block_array_index_block_array SelectedEditIndices;
 
-  world_edit                   *HotEdit;
+  world_edit                   *HotEdit;      // Hovered
   world_edit_block_array_index  HotEditIndex;
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything

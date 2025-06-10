@@ -14,9 +14,6 @@ struct bitmap_block
 struct bitmap_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct bitmap_block_array

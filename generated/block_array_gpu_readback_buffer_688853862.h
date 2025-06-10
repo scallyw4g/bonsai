@@ -14,9 +14,6 @@ struct gpu_readback_buffer_block
 struct gpu_readback_buffer_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct gpu_readback_buffer_block_array

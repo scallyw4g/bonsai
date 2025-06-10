@@ -14,9 +14,6 @@ struct world_chunk_ptr_block
 struct world_chunk_ptr_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct world_chunk_ptr_block_array

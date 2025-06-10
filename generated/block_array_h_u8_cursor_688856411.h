@@ -14,9 +14,6 @@ struct u8_cursor_block
 struct u8_cursor_block_array_index
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct u8_cursor_block_array
