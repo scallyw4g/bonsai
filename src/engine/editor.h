@@ -1390,8 +1390,8 @@ ComputeSelectionMode(input *Input)
 
   // Intentionally an el-if chain from most specific, to least.  What's the alternative?
   //
-  // Shift is resize
   // Alt   is move
+  // Shift is resize
   //
   if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
   {
@@ -1401,7 +1401,7 @@ ComputeSelectionMode(input *Input)
   {
     SelectionMode = SelectionMode_ResizeBothLinearAxies;
   }
-  else if (Input->Ctrl.Pressed && Input->Alt.Pressed)
+  else if (Input->Alt.Pressed && Input->Ctrl.Pressed)
   {
     SelectionMode = SelectionMode_TranslateLinear;
   }

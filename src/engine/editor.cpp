@@ -1428,31 +1428,6 @@ EditWorldSelection(engine_resources *Engine)
     } break;
   }
 
-  // Draw
-  //
-  if (Editor->Selection.Clicks > 0)
-  {
-    aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-    auto Face = Editor->Selection.ModState.ClickedFace;
-    /* if (Face == FaceIndex_None) { Face = AABBTest.Face; } */
-
-    if (Face)
-    {
-      /* r32 InsetWidth = 0.25f; */
-      r32 InsetWidth  = 0.f;
-      v3  HiColor     = RGB_GREEN;
-      r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
-
-      HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, HiThickness);
-    }
-
-    // And finally the selection region
-    //
-    DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
-  }
-
-  // Detect changes
-  //
   if (Editor->Selection.InitialSelect) { Info("InitialSelect"); }
 
   return AABBTest;
@@ -1873,12 +1848,7 @@ DoWorldEditor(engine_resources *Engine)
     Editor->Selection.Clicks = 2;
   }
 
-
-  // @selection_changed_flag
-  //
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
-  aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-
 
   if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
   {
@@ -1993,7 +1963,6 @@ DoWorldEditor(engine_resources *Engine)
         }
       }
     }
-
   }
 
   {
@@ -2239,19 +2208,46 @@ DoWorldEditor(engine_resources *Engine)
     PushNewRow(Ui);
     PushTableEnd(Ui);
     PushWindowEnd(Ui, &LayersWindow);
-
   }
 
 
 
+  //
+  //
+  // Draw
+  //
+  //
+
+  auto Face = Editor->Selection.ModState.ClickedFace;
+  if (Face == FaceIndex_None) { Face = AABBTest.Face; }
+
+
+  // Selection region
+  //
+  if (Editor->Selection.ModMode && Editor->Selection.Clicks > 0)
+  {
+    aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+
+    if (Face)
+    {
+      /* r32 InsetWidth = 0.25f; */
+      r32 InsetWidth  = 0.f;
+      v3  HiColor     = RGB_RED;
+      r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+
+      HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, HiThickness);
+    }
+
+    DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
+  }
+
+  // Highlight moused over voxel
+  //
   if (Engine->MousedOverVoxel.Tag)
   {
-    /* v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) ); */
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Additive );
+    v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Subtractive );
     DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
   }
-
-
 
   // Highlight edits in the current layer
   //
@@ -2266,6 +2262,7 @@ DoWorldEditor(engine_resources *Engine)
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
+
         DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, EDITOR_DEFAULT_SELECTION_THICKNESS);
       }
     }
@@ -2282,6 +2279,17 @@ DoWorldEditor(engine_resources *Engine)
       auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
       random_series S = {u64(Edit)};
       v3 BaseColor = RandomV3Unilateral(&S);
+
+      if (Face)
+      {
+        /* r32 InsetWidth = 0.25f; */
+        r32 InsetWidth  = 0.f;
+        v3  HiColor     = RGB_RED;
+        r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+
+        HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, HiThickness);
+      }
+
       DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, EDITOR_DEFAULT_SELECTION_THICKNESS*1.5f);
     }
   }

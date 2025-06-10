@@ -514,11 +514,6 @@ DoEngineDebug(engine_resources *Engine)
 
   /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
 
-  // NOTE(Jesse): Do the world editor first so the SelectionChanged flag gets
-  // set before the rest of the UI code runs.  This is not strictly necessary
-  // for correctness, but  avoids a frame of lag.
-  // @selection_changed_flag
-  //
   if (ViewMode & EngineDebugViewMode_WorldEdit)
   {
     DoWorldEditor(Engine);
