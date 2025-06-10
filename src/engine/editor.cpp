@@ -362,10 +362,21 @@ poof(
   for_datatypes(all)
   func (struct_t) {}
   func (enum_t) {
+
     enum_t.has_tag(gen_ui_toolbar)?
     {
       string_and_value_tables(enum_t)
       toolbar_for_enum(enum_t)
+    }
+
+    enum_t.has_tag(gen_string_and_value_tables)?
+    {
+      string_and_value_tables(enum_t)
+    }
+
+    enum_t.has_tag(do_editor_ui)?
+    {
+      do_editor_ui_for_enum(enum_t)
     }
   }
 )
@@ -1386,13 +1397,13 @@ EditWorldSelection(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  auto PrevRegion = Editor->Selection.Region;
+
   aabb_intersect_result AABBTest = {};
 
   Editor->Selection.InitialSelect = False;
-  Editor->Selection.Changed       = False;
   Editor->Selection.Diff          = {};
 
-#if 1
   aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
   // NOTE(Jesse): We can't predicate this because when we deselect everything
   // we want this to automagically resize
@@ -1405,16 +1416,26 @@ EditWorldSelection(engine_resources *Engine)
       TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
     }
     Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
-    /* Info("%V3 %V3i", Editor->Selection.Region.Min.Offset); */
   }
-#endif
 
-  if (Editor->Selection.Clicks)
+
+  if (AtElements(&Editor->SelectedEditIndices).Index == 0)
   {
-    // Hot update selection region before we click the second point
-    //
-    if (SelectionIncomplete(Editor->Selection.Clicks))
+    Editor->Selection.ModMode = SelectionModificationMode_None;
+  }
+
+
+  switch (Editor->Selection.ModMode)
+  {
+    case SelectionModificationMode_None: {} break;
+
+    case SelectionModificationMode_Initialize:
     {
+      Assert(SelectionIncomplete(Editor->Selection.Clicks));
+
+      // Hot update selection region before we click the second point
+      // Must come first or we get a frame of lag.
+      //
       if (Engine->MousedOverVoxel.Tag)
       {
         auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
@@ -1425,143 +1446,121 @@ EditWorldSelection(engine_resources *Engine)
         /* Assert(MinP <= MaxP); */
         Editor->Selection.Region = RectMinMax(MinP, MaxP);
       }
-    }
 
-    // Edit the selection region
-    //
-    aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
-    rect3i ModifiedSelection = {};
-    {
-      // If we're hovering a face and click, set ClickedFace, which is the
-      // source of truth that signals we're editing the selection region
+      // Update Clicks and initial position
       //
-      if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+      if (Input->LMB.Clicked)
       {
-        ray Ray = Engine->MaybeMouseRay.Ray;
-
-        AABBTest = Intersect(&SelectionAABB, &Ray);
-        face_index Face = AABBTest.Face;
-        if (Face)
+        switch (Editor->Selection.Clicks)
         {
-          if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
+          case 0:
           {
-            v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->Selection.ModState.ClickedFace = Face;
-            Editor->Selection.ModState.ClickedP[0] = PlaneBaseP;
-          }
-        }
-
-        // If we're editing the selection region, Compute the proposed modification
-        // and make it permanent when we release the LMB
-        //
-        if (Editor->Selection.ModState.ClickedFace)
-        {
-          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
-          if (SelectionMode) // We could have started a selection edit and released the accelerator key
-          {
-            UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
-            v3 UpdateVector = {};
-            ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
-            if (Input->LMB.Pressed == False)
+            if (Engine->MousedOverVoxel.Tag)
             {
-              // If we actually changed the selection region
-              rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+              Editor->Selection.Clicks += 1;
+              auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+              MouseP.Offset = Floor(MouseP.Offset);
+              Editor->Selection.Base = MouseP;
+            }
+          } break;
 
-              // Make ModifiedSelection permanent
-              Editor->Selection.Region = ProposedSelection;
-              Editor->Selection.Diff   = UpdateVector;
+          case 1:
+          {
+            Editor->Selection.Clicks += 1;
+            Editor->Selection.InitialSelect = True;
+            Editor->Selection.ModMode = SelectionModificationMode_Modify;
+          } break;
+
+          InvalidDefaultCase;
+        }
+      }
+    } break;
+
+    case SelectionModificationMode_Modify:
+    {
+      // Edit the selection region
+      //
+      rect3i ModifiedSelection = {};
+      {
+        // If we're hovering a face and click, set ClickedFace, which is the
+        // source of truth that signals we're editing the selection region
+        //
+        if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+        {
+          ray Ray = Engine->MaybeMouseRay.Ray;
+
+          aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+          AABBTest = Intersect(&SelectionAABB, &Ray);
+          face_index Face = AABBTest.Face;
+          if (Face)
+          {
+            if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
+            {
+              v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+              Editor->Selection.ModState.ClickedFace = Face;
+              Editor->Selection.ModState.ClickedP[0] = PlaneBaseP;
+            }
+          }
+
+          // If we're editing the selection region, Compute the proposed modification
+          // and make it permanent when we release the LMB
+          //
+          if (Editor->Selection.ModState.ClickedFace)
+          {
+            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+            if (SelectionMode) // We could have started a selection edit and released the accelerator key
+            {
+              UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
+              v3 UpdateVector = {};
+              ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
+              if (Input->LMB.Pressed == False)
+              {
+                // If we actually changed the selection region
+                rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+
+                // Make ModifiedSelection permanent
+                Editor->Selection.Region = ProposedSelection;
+                Editor->Selection.Diff   = UpdateVector;
+              }
+
+              // Draw proposed modification region
+              //
+              rect3 ModifiedAABB = Rect3(&ModifiedSelection);
+              DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS*0.75f);
             }
           }
         }
-      }
-
-      // Draw
-      {
-        {
-          auto Face = Editor->Selection.ModState.ClickedFace;
-          if (Face == FaceIndex_None) { Face = AABBTest.Face; }
-
-          if (Face)
-          {
-            /* r32 InsetWidth = 0.25f; */
-            r32 InsetWidth  = 0.f;
-            v3  HiColor     = RGB_GREEN;
-            r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
-
-            HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
-          }
-        }
-
-        // Draw proposed modification region
-        //
-        rect3 ModifiedAABB = Rect3(&ModifiedSelection);
-        DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS*0.75f);
-
-        // And finally the selection region
-        //
-        DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
 
       }
+    } break;
+  }
+
+  // Draw
+  //
+  if (Editor->Selection.Clicks > 0)
+  {
+    aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+    auto Face = Editor->Selection.ModState.ClickedFace;
+    /* if (Face == FaceIndex_None) { Face = AABBTest.Face; } */
+
+    if (Face)
+    {
+      /* r32 InsetWidth = 0.25f; */
+      r32 InsetWidth  = 0.f;
+      v3  HiColor     = RGB_GREEN;
+      r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+
+      HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, HiThickness);
     }
+
+    // And finally the selection region
+    //
+    DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
   }
 
   // Detect changes
   //
-
-  // TODO(Jesse): Can we actually just cache the PrevRegion at the top of this
-  // function and check if we changed it like that?  I guess that's not robust
-  // if we change it in other ways, but I don't think that's likely..
-  {
-    if (Input->LMB.Clicked)
-    {
-      switch (Editor->Selection.Clicks)
-      {
-        case 0:
-        {
-          if (Engine->MousedOverVoxel.Tag)
-          {
-            Editor->Selection.Clicks += 1;
-            auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-            MouseP.Offset = Floor(MouseP.Offset);
-            Editor->Selection.Base = MouseP;
-          }
-        } break;
-
-        case 1:
-        {
-          Editor->Selection.Clicks += 1;
-          Editor->Selection.InitialSelect = True;
-        } break;
-
-        case 2: {} break;
-
-        InvalidDefaultCase;
-      }
-    }
-
-    // Don't fire selection changed event when dragging selection with selection edit tool
-    if (Editor->Selection.Clicks != 1)
-    /* if (SelectionComplete(Editor->Selection.Clicks)) */ // NOTE(Jesse): Should be able to be this .. Didn't test
-    {
-      if (AreEqual(Editor->Selection.Region, Editor->Selection.PrevRegion))
-      {
-        // Same as prev frame, Changed already reset at top of function
-      }
-      else
-      {
-        Editor->Selection.Changed = True;
-      }
-      Editor->Selection.PrevRegion = Editor->Selection.Region;
-    }
-  }
-
   if (Editor->Selection.InitialSelect) { Info("InitialSelect"); }
-  if (Editor->Selection.Changed)       { Info("Changed"); }
-
-  if (Editor->Selection.InitialSelect)
-  {
-    Assert(Editor->Selection.Changed);
-  }
 
   return AABBTest;
 }
@@ -1897,10 +1896,33 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
    Edit->Tombstone = True;
 }
 
+link_internal world_edit *
+GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *Ray)
+{
+  world_edit *Result = {};
+
+  r32 tMin = f32_MAX;
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    aabb Box = GetSimSpaceAABB(World, Edit->Region);
+    aabb_intersect_result I = Intersect(Box, Ray);
+    if (I.t < tMin)
+    {
+      tMin = I.t;
+      Result = Edit;
+    }
+  }
+
+  return Result;
+}
+
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  Editor->HotEdit = 0;
 
   if (Editor->CurrentBrush == 0)
   {
@@ -1940,124 +1962,11 @@ DoWorldEditor(engine_resources *Engine)
 
 
 
-
-
-
-
-  //
-  //
-  // Do tool selection actions (what happens when we change a tool selection)
-  //
-  //
-
-  if (WorldEditToolButtonGroup.AnyElementClicked)
+  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
   {
-    switch (Editor->Tool)
-    {
-      case WorldEdit_Tool_Disabled:
-      /* case WorldEdit_Tool_Brush: */
-      case WorldEdit_Tool_Eyedropper:
-      case WorldEdit_Tool_BlitEntity:
-      /* case WorldEdit_Tool_StandingSpots: */
-      { } break;
-
-      case WorldEdit_Tool_Select:
-      {
-        ResetSelection(Editor);
-      } break;
-    }
+    ray *Ray = &Engine->MaybeMouseRay.Ray;
+    Editor->HotEdit = GetClosestEditIntersectingRay(World, &Editor->Edits, Ray);
   }
-
-
-  //
-  //
-  // Edit tool interactions in the world
-  //
-  //
-
-  if ( UiCapturedMouseInput(Ui) == False &&
-       UiHoveredMouseInput(Ui)  == False  )
-  {
-    switch (Editor->Tool)
-    {
-      case WorldEdit_Tool_Disabled: {} break;
-
-      case WorldEdit_Tool_Select:
-      {
-      } break;
-
-      case WorldEdit_Tool_Eyedropper:
-      {
-        if (Engine->MousedOverVoxel.Tag)
-        {
-          auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-          voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-          Engine->Editor.HoverColorIndex = V->Color;
-
-          if (Input->LMB.Clicked)
-          {
-            /* Info("Selecting Color (%S)", CS(V->Color)); */
-            /* Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color); */
-
-            if (Editor->PreviousTool)
-            {
-              Editor->Tool = Editor->PreviousTool;
-              Editor->PreviousTool = {};
-            }
-          }
-        }
-        else
-        {
-          Engine->Editor.HoverColorIndex = INVALID_COLOR_INDEX;
-        }
-      } break;
-
-      case WorldEdit_Tool_BlitEntity:
-      {
-        entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
-        if (SelectedEntity)
-        {
-          aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
-          if (Engine->MaybeMouseRay.Tag)
-          {
-            ray *Ray = &Engine->MaybeMouseRay.Ray;
-            aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
-            if (Input->LMB.Clicked && IntersectionResult.Face)
-            {
-              NotImplemented;
-#if 0
-              world_update_op_shape_params_asset AssetUpdateShape =
-              {
-                SelectedEntity->AssetId,
-                SelectedEntity->ModelIndex,
-                SelectedEntity->P,
-              };
-
-              world_edit_shape Shape =
-              {
-                type_world_update_op_shape_params_asset,
-                .world_update_op_shape_params_asset = AssetUpdateShape,
-              };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Additive, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
-#endif
-            }
-          }
-        }
-      } break;
-
-    }
-  }
-
-
-  // NOTE(Jesse): This has to come after the tool interactions because of a trivial
-  // but important interaction.  If there's a previous tool to pop back to, we
-  // need to do that pop back before the brush settings get updated and the
-  // brush preview gets drawn or else when we pop back the settings window thinks
-  // the Select tool is active, doesn't update any of the brush stuff, then
-  // the preview gets drawn because we pop back to the Layered brush tool and
-  // there's a frame of lag.
-  /* DoBrushSettingsWindow(Engine, Editor->Tool, Editor->Brush.Type); */
 
 
 
@@ -2092,7 +2001,9 @@ DoWorldEditor(engine_resources *Engine)
 
     Editor->PreviousTool = Editor->Tool;
     Editor->Tool = WorldEdit_Tool_Select;
+
     ResetSelection(Editor);
+    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
 
     world_edit_block_array_index Index;
     auto E = NewEdit(Editor, Editor->CurrentLayer, &Index);
@@ -2102,39 +2013,6 @@ DoWorldEditor(engine_resources *Engine)
     Push(&Editor->SelectedEditIndices, &Index);
   }
 
-#if 0
-  if (Editor->Selection.Clicks == 2)
-  {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Subtractive, WorldEdit_Modifier_Default); }
-
-    if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->Selection.Region; }
-
-    if (Input->Ctrl.Pressed && Input->V.Clicked)
-    {
-      v3 CopyDim = GetDim(World, Editor->CopyRegion);
-      s32 VoxelCount = s32(Volume(CopyDim));
-      Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
-      voxel *V = Allocate(voxel, Engine->WorldUpdateMemory, VoxelCount);
-
-      Leak("");
-      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
-      GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Editor->CopyRegion), &Chunks, V, VoxelCount);
-
-      chunk_data D = {};
-      D.Dim = V3i(CopyDim);
-      D.Voxels = V;
-
-      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->Selection.Region.Min) };
-
-      world_edit_shape Shape =
-      {
-        type_world_update_op_shape_params_chunk_data,
-        .world_update_op_shape_params_chunk_data = ChunkDataShape,
-      };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Additive, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
-    }
-  }
-#endif
 
   { // All Brushes Window
     local_persist window_layout AllBrushesWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
@@ -2171,24 +2049,20 @@ DoWorldEditor(engine_resources *Engine)
       {
         Info("Setting Initial edit state");
         Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+        Assert(LengthSq(Editor->Selection.Diff) == 0.f);
+
         auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
         world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
         UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
       }
-      else if (Editor->Selection.Changed)
+
+      if (LengthSq(Editor->Selection.Diff) > 0.f)
       {
-        if (LengthSq(Editor->Selection.Diff) > 0.f)
-        {
-          Info("Applying diff to edit buffer");
-          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
-          Assert(SelectionMode);
-          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
-          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
-        }
-        else
-        {
-          // The selection area was probably just resizing to enclose multiple selected edits
-        }
+        Info("Applying diff to edit buffer");
+        world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+        Assert(SelectionMode);
+        ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
+        Editor->Selection.ModState.ClickedFace = FaceIndex_None;
       }
 
       b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
@@ -2394,7 +2268,6 @@ DoWorldEditor(engine_resources *Engine)
               {
                 Editor->Selection.Clicks = 2;
                 Editor->Selection.Region = Edit->Region;
-                Editor->Selection.PrevRegion = Edit->Region;
 
                 if (Input->Ctrl.Pressed)
                 {
@@ -2498,8 +2371,11 @@ DoWorldEditor(engine_resources *Engine)
   }
 
 
+
+  // Highlight edits in the current layer
+  //
   {
-    IterateOver(&Editor->Layers, Layer, LayerIndex)
+    if (auto Layer = Editor->CurrentLayer)
     {
       IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
       {
@@ -2509,28 +2385,34 @@ DoWorldEditor(engine_resources *Engine)
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
-
-        f32 Size = EDITOR_DEFAULT_SELECTION_THICKNESS;
-
-        // Always highlight the hot edit
-        if (Edit == Editor->HotEdit)
-        {
-          Size *= 3.f;
-          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
-        }
-        else
-        { // But otherwise only highlight the edits on the current layer.
-          if (Layer == Editor->CurrentLayer)
-          {
-            /* if (Edit == Editor->CurrentEdit) { Size *= 2.f; } */
-            DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, Size);
-          }
-        }
-
+        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, EDITOR_DEFAULT_SELECTION_THICKNESS);
       }
     }
-    Editor->HotEdit = 0;
   }
+
+  // Highlight currently selected edits
+  //
+  {
+    IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
+    {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      Assert(Edit->Tombstone == False);
+
+      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+      random_series S = {u64(Edit)};
+      v3 BaseColor = RandomV3Unilateral(&S);
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, EDITOR_DEFAULT_SELECTION_THICKNESS*1.5f);
+    }
+  }
+
+  // Highlight the hot edit
+  //
+  if (Editor->HotEdit)
+  {
+    auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
+    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, EDITOR_DEFAULT_SELECTION_THICKNESS*2.f);
+  }
+
 }
 
 link_internal void

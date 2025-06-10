@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:488:0
+// src/engine/editor.cpp:499:0
 
 
 
@@ -464,30 +464,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         
         
         
-        cs MemberName = CSz("PrevRegion");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(rect3cp*, &Element->PrevRegion),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Diff");
                                                                 DoEditorUi(Ui,
           Window,
@@ -512,10 +488,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         
         
         
-        cs MemberName = CSz("Changed");
+        cs MemberName = CSz("InitialSelect");
                                                 DoEditorUi(Ui,
           Window,
-          Cast(b8*, &Element->Changed),
+          Cast(b8*, &Element->InitialSelect),
           MemberName,
           &DefaultUiRenderParams_Checkbox
           );
@@ -534,13 +510,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
         
         
         
-        cs MemberName = CSz("InitialSelect");
-                                                DoEditorUi(Ui,
+        cs MemberName = CSz("ModMode");
+                                                                DoEditorUi(Ui,
           Window,
-          Cast(b8*, &Element->InitialSelect),
+          // Cast to remove const/volatile keywords if they're there
+          Cast(selection_modification_mode*, &Element->ModMode),
           MemberName,
-          &DefaultUiRenderParams_Checkbox
+          Params
           );
+
+
 
 
 
@@ -548,8 +527,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
       }
 
-            PushNewRow(Ui);
-
+      
       
 
       { 

@@ -16,6 +16,87 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_brush_layer_actions Type)
 {
@@ -187,6 +268,132 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+
+
+
+
+
+
+
+
+link_internal counted_string
+ToStringPrefixless(selection_modification_mode Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+        case SelectionModificationMode_None: { Result = CSz("None"); } break;
+    case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
+    case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
+ToString(selection_modification_mode Type)
+{
+  counted_string Result = {};
+  switch (Type)
+  {
+        case SelectionModificationMode_None: { Result = CSz("SelectionModificationMode_None"); } break;
+    case SelectionModificationMode_Initialize: { Result = CSz("SelectionModificationMode_Initialize"); } break;
+    case SelectionModificationMode_Modify: { Result = CSz("SelectionModificationMode_Modify"); } break;
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  return Result;
+}
+
+link_internal selection_modification_mode
+SelectionModificationMode(counted_string S)
+{
+  selection_modification_mode Result = {};
+
+    if (StringsMatch(S, CSz("SelectionModificationMode_None"))) { return SelectionModificationMode_None; }
+  if (StringsMatch(S, CSz("SelectionModificationMode_Initialize"))) { return SelectionModificationMode_Initialize; }
+  if (StringsMatch(S, CSz("SelectionModificationMode_Modify"))) { return SelectionModificationMode_Modify; }
+
+  return Result;
+}
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+{
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  {
+    PushNewRow(Ui);
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element), Params))
+    {
+            *Element = SelectionModificationMode_None;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element), Params))
+    {
+            *Element = SelectionModificationMode_Initialize;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element), Params))
+    {
+            *Element = SelectionModificationMode_Modify;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushNewRow(Ui);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_layer_edit_actions Type)
 {
@@ -337,6 +544,11 @@ PushToolbar(     renderer_2d *Ui,
 }
 
 
+
+
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_reorder_action Type)
 {
@@ -469,6 +681,56 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -641,6 +903,66 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_layer_toolbar_actions Type)
 {
@@ -789,6 +1111,220 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

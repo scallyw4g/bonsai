@@ -1,4 +1,4 @@
-#define EDITOR_DEFAULT_SELECTION_THICKNESS (0.5f)
+#define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f)
 
 enum ui_layer_toolbar_actions
 poof(@gen_ui_toolbar)
@@ -708,6 +708,13 @@ poof(do_editor_ui_for_compound_type(ray))
 poof(do_editor_ui_for_compound_type(maybe_ray))
 #include <generated/do_editor_ui_for_compound_type_maybe_ray.h>
 
+enum selection_modification_mode poof(@gen_string_and_value_tables @do_editor_ui)
+{
+  SelectionModificationMode_None,       // Not modifying the selection
+  SelectionModificationMode_Initialize, // Initializing a new selection area
+  SelectionModificationMode_Modify,     // Modifying the current selection area
+};
+
 struct selection_modification_state
 {
   // NOTE(Jesse): This is the source of truth for if we're modifying the selection
@@ -1198,12 +1205,11 @@ struct selection_region poof(@do_editor_ui)
   cp Base;
 
   rect3cp Region     = InvertedInfinityRectangle_rect3cp();
-  rect3cp PrevRegion = InvertedInfinityRectangle_rect3cp(); // Change detection
 
-  v3 Diff; // When Changed is set, this should be nonzero.
-  b32 Changed;
+  v3 Diff;           // When Changed is set, this should be nonzero.
   b32 InitialSelect; // Set when we go from a partial selection state -> fully selected
 
+  selection_modification_mode ModMode;
   selection_modification_state ModState;
 };
 
