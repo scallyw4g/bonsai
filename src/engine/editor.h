@@ -1,4 +1,4 @@
-#define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f)
+/* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
 enum ui_layer_toolbar_actions
 poof(@gen_ui_toolbar)
@@ -1416,6 +1416,14 @@ ComputeSelectionMode(input *Input)
 
   return SelectionMode;
 }
+
+link_internal f32
+GetSelectionThicknessForDistance(f32 Distance)
+{
+  f32 Result = Clamp(0.25f, Distance / 3000.f, 12.f);
+  return Result;
+}
+
 
 link_internal b32
 CheckSettingsChanged(layered_brush *);

@@ -1419,7 +1419,9 @@ EditWorldSelection(engine_resources *Engine)
               // Draw proposed modification region
               //
               rect3 ModifiedAABB = Rect3(&ModifiedSelection);
-              DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS*0.75f);
+              v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
+              r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&ModifiedAABB)) );
+              DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, BaseThicc*0.75f);
             }
           }
         }
@@ -2218,99 +2220,122 @@ DoWorldEditor(engine_resources *Engine)
   //
   //
 
-  auto Face = Editor->Selection.ModState.ClickedFace;
-  if (Face == FaceIndex_None) { Face = AABBTest.Face; }
-
-
-  // Selection region
-  //
-  if (Editor->Selection.ModMode && Editor->Selection.Clicks > 0)
   {
-    aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+    v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
 
-    if (Face)
+    auto Face = Editor->Selection.ModState.ClickedFace;
+    if (Face == FaceIndex_None) { Face = AABBTest.Face; }
+
+    f32 HiThicknessMod           = 2.5f;
+
+    f32 LayerEditThicknessMod    = 1.0f;
+    f32 HotEditThicknessMod      = 1.5f;
+    f32 SelectedEditThicknessMod = 2.0f;
+    f32 SelectionThicknessMod    = 3.0f;
+
+
+    b32 ShiftOrAltPressed = Input->Shift.Pressed | Input->Alt.Pressed;
+
+    // Selection region
+    //
+    if (Editor->Selection.ModMode && Editor->Selection.Clicks > 0)
     {
-      /* r32 InsetWidth = 0.25f; */
-      r32 InsetWidth  = 0.f;
-      v3  HiColor     = RGB_RED;
-      r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
+      aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+      r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&FinalSelectionAABB)) );
 
-      HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, HiThickness);
+      if (Face && ShiftOrAltPressed)
+      {
+        /* r32 InsetWidth = 0.25f; */
+        r32 InsetWidth  = 0.f;
+        v3  HiColor     = RGB_RED;
+
+        HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, BaseThicc*SelectionThicknessMod*HiThicknessMod);
+      }
+
+      DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, BaseThicc*SelectionThicknessMod);
     }
 
-    DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, EDITOR_DEFAULT_SELECTION_THICKNESS);
-  }
-
-  // Highlight moused over voxel
-  //
-  if (Engine->MousedOverVoxel.Tag)
-  {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Subtractive );
-    DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
-  }
-
-  // Highlight edits in the current layer
-  //
-  {
-    if (auto Layer = Editor->CurrentLayer)
+    // Highlight moused over voxel
+    //
+    if (Engine->MousedOverVoxel.Tag)
     {
-      IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+      v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Subtractive );
+      DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
+    }
+
+    // Highlight edits in the current layer
+    //
+    {
+      if (auto Layer = Editor->CurrentLayer)
+      {
+        IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+        {
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          Assert(Edit->Tombstone == False);
+
+          if (Edit == Editor->HotEdit) continue;
+          if (Edit->Selected)          continue;
+
+          auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+          random_series S = {u64(Edit)};
+          v3 BaseColor = RandomV3Unilateral(&S);
+
+          r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc*LayerEditThicknessMod);
+        }
+      }
+    }
+
+    // Highlight currently selected edits
+    //
+    {
+      IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
       {
         world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
         Assert(Edit->Tombstone == False);
+
 
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
         random_series S = {u64(Edit)};
         v3 BaseColor = RandomV3Unilateral(&S);
 
-        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, EDITOR_DEFAULT_SELECTION_THICKNESS);
+        r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+        if (Face && ShiftOrAltPressed)
+        {
+          /* r32 InsetWidth = 0.25f; */
+          r32 InsetWidth  = 0.f;
+          v3  HiColor     = RGB_RED;
+
+          HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, BaseThicc*SelectedEditThicknessMod*HiThicknessMod);
+        }
+
+        // NOTE(Jesse): This is intentionally after the HighlightFace call; we
+        // always wanna highlight that no matter if we're hovering or not
+        if (Edit == Editor->HotEdit) continue;
+
+        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, BaseThicc*SelectedEditThicknessMod);
       }
     }
-  }
 
-  // Highlight currently selected edits
-  //
-  {
-    IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
+    // Highlight the hot edit
+    //
+    if (Editor->HotEdit)
     {
-      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-      Assert(Edit->Tombstone == False);
-
-      auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
-      random_series S = {u64(Edit)};
-      v3 BaseColor = RandomV3Unilateral(&S);
-
-      if (Face)
+      if (Input->Shift.Pressed == False && Input->Alt.Pressed == False)
       {
-        /* r32 InsetWidth = 0.25f; */
-        r32 InsetWidth  = 0.f;
-        v3  HiColor     = RGB_RED;
-        r32 HiThickness = EDITOR_DEFAULT_SELECTION_THICKNESS*2.5f;
-
-        HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, HiThickness);
+        if (Input->LMB.Clicked)
+        {
+          b32 MultiSelect = Input->Ctrl.Pressed;
+          SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+        }
       }
 
-      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, EDITOR_DEFAULT_SELECTION_THICKNESS*1.5f);
-    }
-  }
-
-  // Highlight the hot edit
-  //
-  if (Editor->HotEdit)
-  {
-    if (Input->Shift.Pressed == False && Input->Alt.Pressed == False)
-    {
-      if (Input->LMB.Clicked)
-      {
-        b32 MultiSelect = Input->Ctrl.Pressed;
-        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
-      }
+      auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
+      r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, BaseThicc*HotEditThicknessMod);
     }
 
-    auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
-    DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, EDITOR_DEFAULT_SELECTION_THICKNESS*2.f);
   }
-
 
 #if BONSAI_INTERNAL
   // NOTE(Jesse): Sanity check we keep the selected flag in sync with the array
