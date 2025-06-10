@@ -52,6 +52,20 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   return Result;
 }
 
+link_internal world_edit *
+DuplicateEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit, world_edit_block_array_index *IndexOut)
+{
+  world_edit_block_array_index DupIndex = {};
+  auto *Duplicated = NewEdit(Editor, Layer, &DupIndex);
+       *Duplicated = *Edit;
+        Duplicated->Selected = False;
+
+  *IndexOut = DupIndex;
+
+  return Duplicated;
+}
+
+
 link_internal world_edit_layer*
 NewLayer(level_editor *Editor)
 {
@@ -1897,9 +1911,10 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
 }
 
 link_internal world_edit *
-GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *Ray)
+GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *Ray, world_edit_block_array_index *ResultIndex = 0)
 {
   world_edit *Result = {};
+  world_edit_block_array_index Index = {INVALID_BLOCK_ARRAY_INDEX};
 
   r32 tMin = f32_MAX;
   IterateOver(Edits, Edit, EditIndex)
@@ -1910,12 +1925,59 @@ GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *
     {
       tMin = I.t;
       Result = Edit;
+      Index = EditIndex;
     }
   }
+
+  if (ResultIndex)
+    *ResultIndex = Index;
 
   return Result;
 }
 
+link_internal void
+DeselectAllEdits(level_editor *Editor)
+{
+  IterateOver(&Editor->SelectedEditIndices, EI, EII)
+  {
+    auto SelEdit = GetPtr(&Editor->Edits, *EI);
+    SelEdit->Selected = False;
+  }
+  Editor->SelectedEditIndices.ElementCount = 0;
+}
+
+link_internal void
+SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index EditIndex, b32 MultiSelect = False)
+{
+  world_edit_block_array_index_block_array *SelectedEditIndices = &Editor->SelectedEditIndices;
+  Assert(Edit);
+  Assert(EditIndex.Index != INVALID_BLOCK_ARRAY_INDEX);
+
+  if (MultiSelect)
+  {
+    if (Edit->Selected)
+    {
+      Assert(Edit->Selected == True);
+      Edit->Selected = False;
+
+      auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
+      Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
+      RemoveUnordered(SelectedEditIndices, I);
+    }
+    else
+    {
+      Assert(Edit->Selected == False);
+      Edit->Selected = True;
+      Push(SelectedEditIndices, &EditIndex);
+    }
+  }
+  else
+  {
+    DeselectAllEdits(Editor);
+    Push(SelectedEditIndices, &EditIndex);
+    Edit->Selected = True;
+  }
+}
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
@@ -1923,6 +1985,7 @@ DoWorldEditor(engine_resources *Engine)
   UNPACK_ENGINE_RESOURCES(Engine);
 
   Editor->HotEdit = 0;
+  Editor->HotEditIndex = {};
 
   if (Editor->CurrentBrush == 0)
   {
@@ -1965,7 +2028,7 @@ DoWorldEditor(engine_resources *Engine)
   if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
   {
     ray *Ray = &Engine->MaybeMouseRay.Ray;
-    Editor->HotEdit = GetClosestEditIntersectingRay(World, &Editor->Edits, Ray);
+    Editor->HotEdit = GetClosestEditIntersectingRay(World, &Editor->Edits, Ray, &Editor->HotEditIndex);
   }
 
 
@@ -2005,12 +2068,11 @@ DoWorldEditor(engine_resources *Engine)
     ResetSelection(Editor);
     Editor->Selection.ModMode = SelectionModificationMode_Initialize;
 
-    world_edit_block_array_index Index;
+    world_edit_block_array_index Index = {};
     auto E = NewEdit(Editor, Editor->CurrentLayer, &Index);
     E->Brush = Editor->CurrentBrush;
 
-    Editor->SelectedEditIndices.ElementCount = 0;
-    Push(&Editor->SelectedEditIndices, &Index);
+    SelectEdit(Editor, E, Index);
   }
 
 
@@ -2112,10 +2174,13 @@ DoWorldEditor(engine_resources *Engine)
         {
           Editor->CurrentLayer = Layer;
 
-          Editor->SelectedEditIndices.ElementCount = 0;
+          // NOTE(Jesse): Clear the list if we didn't have ctrl pressed
+          b32 MultiSelect = Input->Ctrl.Pressed;
           IterateOver(&Layer->EditIndices, EditIndex, EII)
           {
-            Push(&Editor->SelectedEditIndices, EditIndex);
+            auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+            SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
+            MultiSelect = True;
           }
         }
 
@@ -2136,15 +2201,17 @@ DoWorldEditor(engine_resources *Engine)
               auto SrcLayer = Layer;
               auto DstLayer = NewLayer(Editor);
 
+              b32 MultiSelect = Input->Ctrl.Pressed;
               IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
               {
                 world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-
                 world_edit_block_array_index DupIndex = {};
-                auto *Duplicated = NewEdit(Editor, DstLayer, &DupIndex);
-                     *Duplicated = *Edit;
+                auto *Duplicated = DuplicateEdit(Editor, DstLayer, Edit, &DupIndex);
+
+                SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
 
                 ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+                MultiSelect = True;
               }
             } break;
 
@@ -2251,16 +2318,13 @@ DoWorldEditor(engine_resources *Engine)
 
               ui_render_params ButtonParams = DefaultUiRenderParams_Button;
 
-              b32 EditIsSelected = False;
-              world_edit_block_array_index_block_array_index I;
-              IterateOver(&Editor->SelectedEditIndices, SelEditIndex, SEII)
+              b32 EditIsSelected = Edit->Selected;
+              if (EditIsSelected)
               {
-                if (*SelEditIndex == *EditIndex)
-                {
-                  ButtonParams.FStyle = &DefaultSelectedStyle;
-                  EditIsSelected = True;
-                  I = SEII;
-                }
+                ButtonParams.FStyle = &DefaultSelectedStyle;
+#if BONSAI_INTERNAL
+
+#endif
               }
 
               auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
@@ -2269,23 +2333,8 @@ DoWorldEditor(engine_resources *Engine)
                 Editor->Selection.Clicks = 2;
                 Editor->Selection.Region = Edit->Region;
 
-                if (Input->Ctrl.Pressed)
-                {
-                  if (EditIsSelected)
-                  {
-                    RemoveUnordered(&Editor->SelectedEditIndices, I);
-                  }
-                  else
-                  {
-                    Push(&Editor->SelectedEditIndices, EditIndex);
-                  }
-                }
-                else
-                {
-                  Editor->SelectedEditIndices.ElementCount = 0;
-                  Push(&Editor->SelectedEditIndices, EditIndex);
-                }
-
+                b32 MultiSelect = Input->Ctrl.Pressed;
+                SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
 
                 /* Editor->CurrentEdit = Edit; */
                 Editor->CurrentLayer = Layer;
@@ -2317,8 +2366,12 @@ DoWorldEditor(engine_resources *Engine)
 
                 case UiLayerEditAction_Duplicate:
                 {
-                  auto *Duplicated = NewEdit(Editor, Layer);
-                       *Duplicated = *Edit;
+                  world_edit_block_array_index DupIndex = {};
+                  auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+
+                  b32 MultiSelect = Input->Ctrl.Pressed;
+                  SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+
                   ApplyEditToOctree(Engine, Duplicated, GetTranArena());
                 } break;
 
@@ -2409,6 +2462,12 @@ DoWorldEditor(engine_resources *Engine)
   //
   if (Editor->HotEdit)
   {
+    if (Input->LMB.Clicked)
+    {
+      b32 MultiSelect = Input->Ctrl.Pressed;
+      SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+    }
+
     auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
     DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, EDITOR_DEFAULT_SELECTION_THICKNESS*2.f);
   }

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:397:0
+// src/engine/editor.cpp:411:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -85,6 +85,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
                                                 DoEditorUi(Ui,
           Window,
           Cast(b8*, &Element->Tombstone),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+      }
+
+            PushNewRow(Ui);
+
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Selected");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->Selected),
           MemberName,
           &DefaultUiRenderParams_Checkbox
           );

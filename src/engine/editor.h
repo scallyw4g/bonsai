@@ -1254,7 +1254,17 @@ struct world_edit
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
   world_edit_brush *Brush;
-  b32 Tombstone;
+
+  // TODO(Jese): Pack these into a Flags field
+  // {
+    b32 Tombstone;
+
+    // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing
+    // SelectEdit such that we can also makes
+    //
+    // Not my favorite, but it's also not the end of the world.
+    b32 Selected;
+  // }
 };
 
 typedef world_edit* world_edit_ptr;
@@ -1324,7 +1334,9 @@ struct level_editor
   world_edit_layer *HotLayer;
 
   world_edit_block_array_index_block_array SelectedEditIndices;
-  world_edit *HotEdit;
+
+  world_edit                   *HotEdit;
+  world_edit_block_array_index  HotEditIndex;
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
   // up, we just keep pointers into it.  Change to a paged-array and store the
