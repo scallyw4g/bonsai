@@ -4,7 +4,7 @@ uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 uniform int BrushType;
 uniform int BlendMode;
 uniform int ColorMode;
-uniform int Modifiers;
+uniform int ValueModifiers;
 
 uniform int GenerateNormals;
 
@@ -83,7 +83,7 @@ void main()
 
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
-  f32 NoiseValue = TexLookup.a;
+  f32  CurrentSample = TexLookup.a;
 
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
@@ -108,7 +108,7 @@ void main()
 
     {
       v3 ColorSample = RGBColor;
-      f32 NoiseSample = 0.f;
+      f32 ThisSample = 0.f;
 
       s32 Octaves = 1;
       switch (BrushType)
@@ -120,12 +120,12 @@ void main()
           {
             case 0: // NoiseType_Perlin:
             {
-              NoiseSample = value_noise_derivs(NoiseBasis).x;
+              ThisSample = value_noise_derivs(NoiseBasis).x;
             } break;
 
             case 1: // NoiseType_Voronoi:
             {
-              NoiseSample = voronoi_noise(NoiseBasis, Squareness).x;
+              ThisSample = voronoi_noise(NoiseBasis, Squareness).x;
             } break;
 
             case 2: // NoiseType_White:
@@ -141,13 +141,13 @@ void main()
           switch (ShapeType)
           {
             // ShapeType_Rect
-            case 0: { NoiseSample = 1.f; } break;
+            case 0: { ThisSample = Power; } break;
 
             // ShapeType_Sphere
             case 1:
             {
               f32 Dist = 0.5f+distance(ChunkRelLocation, xyz);
-              if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; }
+              if (Dist < Radius) { ThisSample = ((Radius-Dist)/Radius)*Power; }
             } break;
 
             // ShapeType_Line
@@ -158,9 +158,9 @@ void main()
               v3 Line = normalize(ChunkRelEditMax-ChunkRelEditMin);
               v3 X = cross(Line, EditRelPosition);
               f32 Dist = length(X)/length(Line);
-              /* if (Dist < Radius) { NoiseSample = ((Radius-Dist)/Radius)*Power; } */
-              /* if (Dist < Radius) { NoiseSample = Dist*Power; } */
-              if (Dist < Radius) { NoiseSample = Power; }
+              /* if (Dist < Radius) { ThisSample = ((Radius-Dist)/Radius)*Power; } */
+              /* if (Dist < Radius) { ThisSample = Dist*Power; } */
+              if (Dist < Radius) { ThisSample = Power; }
             } break;
 
             // ShapeType_Cylinder
@@ -205,7 +205,7 @@ void main()
 
               v3 X = cross(Line, LineRelativeXYZ);
               f32 Dist = length(X)/length(Line);
-              if (Dist < Radius) { NoiseSample = Power; }
+              if (Dist < Radius) { ThisSample = Power; }
             } break;
 
             // ShapeType_Plane
@@ -214,7 +214,7 @@ void main()
               f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelPosition);
               if (abs(Dist) < PlaneRadius*ChunkResolution.x)
               {
-                NoiseSample = 1.f;
+                ThisSample = Power;
               }
             } break;
 
@@ -224,7 +224,7 @@ void main()
           }
         } break;
 
-        default: {ColorValue = V3(1.f, 0.f, 0.f); NoiseValue = 1.f;} break;
+        default: {ColorValue = V3(1.f, 0.f, 0.f);  CurrentSample = 1.f;} break;
       }
 
       // TODO(Jesse): This is buggy; it generates extra geometry on the edges
@@ -233,7 +233,7 @@ void main()
       // visible artifacts.  At the moment I just want anything 'working', but
       // this should definitely be improved in the future.
       //
-      if ( (Modifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
+      if ( (ValueModifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
       {
         if (x > 0 && x < 65 &&
             y > 0 && y < 65 &&
@@ -251,9 +251,9 @@ void main()
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) > 0.f);
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) > 0.f);
 
-            if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
+            if (IsSurface == 0) { ThisSample = 0.f; ColorSample = V3(0,0,0); }
           }
-          else // Current NoiseValue is Solid
+          else // Current CurrentSample is Solid
           {
             s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) < 0.f);
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) < 0.f);
@@ -264,63 +264,76 @@ void main()
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) < 0.f);
                 IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) < 0.f);
 
-            if (IsSurface == 0) { NoiseSample = 0.f; ColorSample = V3(0,0,0); }
+            if (IsSurface == 0) { ThisSample = 0.f; ColorSample = V3(0,0,0); }
           }
         }
         else
         {
-          NoiseSample = 0.f; ColorSample = V3(0,0,0);
+          ThisSample = 0.f; ColorSample = V3(0,0,0);
         }
-      }
-
-      if ( (Modifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
-      {
-        NoiseSample = max(0.f, NoiseSample);
-      }
-
-      if ( (Modifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
-      {
-        NoiseSample = min(0.f, NoiseSample);
-      }
-
-      if ( (Modifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
-      {
-        if (NoiseSample > Threshold) NoiseValue = NoiseSample;
-      }
-
-
-
-      if (abs(NoiseSample) < Threshold)
-      {
-        NoiseSample = 0.f;
       }
 
 
 
       if (Invert)
       {
-        NoiseSample *= -1.f;
+        ThisSample *= -1.f;
       }
 
-      NoiseSample *= max(Power, 1.f);
 
+
+
+      if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+      {
+        ThisSample = max(0.f, ThisSample);
+      }
+
+      if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+      {
+        ThisSample = min(0.f, ThisSample);
+      }
+
+      if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
+      {
+        if (abs(ThisSample) >= Threshold) { ThisSample = Power; }
+      }
+
+      if (abs(ThisSample) < Threshold)
+      {
+        ThisSample = 0.f;
+      }
+
+
+
+      /* ThisSample *= Power; */
+
+      // Blend
+      //
       switch (BlendMode)
       {
-        case 0: // Addative
-        { NoiseValue = NoiseValue + NoiseSample; } break;
+        case 0: // WorldEdit_Mode_Additive
+        { CurrentSample = CurrentSample + ThisSample; } break;
 
-        case 1: // Subtractive
-        { NoiseValue = NoiseValue - NoiseSample; } break;
+        case 1: // WorldEdit_Mode_Subtractive
+        { CurrentSample = CurrentSample - ThisSample; } break;
+
+        case 2: // WorldEdit_Mode_Threshold
+        { if (abs(ThisSample) >= Threshold) { CurrentSample = ThisSample; } } break;
+
+        case 3: // WorldEdit_Mode_Disabled
+        { CurrentSample = CurrentSample; } break;
       }
 
 
+      // Blend Color
+      //
       switch (ColorMode)
       {
         case 0: // ThresholdPositive
-        { if (NoiseSample > 0.f) { ColorValue = ColorSample; } } break;
+        { if (ThisSample > 0.f) { ColorValue = ColorSample; } } break;
 
         case 1: // ThresholdNegative
-        { if (NoiseSample < 0.f) { ColorValue = ColorSample; } } break;
+        { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
 
         case 2: // Addative
         { ColorValue = ColorValue + ColorSample; } break;
@@ -344,5 +357,5 @@ void main()
   }
 
   Output.rgb = ColorValue;
-  Output.a = NoiseValue;
+  Output.a = CurrentSample;
 }

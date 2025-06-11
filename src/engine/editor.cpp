@@ -409,11 +409,11 @@ poof(do_editor_ui_for_compound_type(layered_brush))
 poof(do_editor_ui_for_compound_type(world_edit_brush))
 #include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
 
-poof(do_editor_ui_for_compound_type(world_edit))
-#include <generated/do_editor_ui_for_compound_type_struct_world_edit.h>
+/* poof(do_editor_ui_for_compound_type(world_edit)) */
+/* #include <generated/do_editor_ui_for_compound_type_struct_world_edit.h> */
 
-poof(do_editor_ui_for_container(world_edit_ptr_block_array))
-#include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h>
+/* poof(do_editor_ui_for_container(world_edit_ptr_block_array)) */
+/* #include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h> */
 
 poof(do_editor_ui_for_compound_type(world_edit_block_array_index))
 #include <generated/do_editor_ui_for_compound_type_world_edit_block_array_index.h>
@@ -870,24 +870,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
 link_internal v3
 GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode)
 {
-  picked_voxel_position Pos = PickedVoxel_FirstFilled;
-
-  switch (WorldEditMode)
-  {
-    case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Additive:
-    {
-      Pos = PickedVoxel_LastEmpty;
-    } break;
-
-    /* case WorldEdit_Mode_Paint: */
-    case WorldEdit_Mode_Subtractive:
-    {
-      Pos = PickedVoxel_FirstFilled;
-    } break;
-  }
-
-  v3 Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
+  v3 Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
   return Result;
 }
 
@@ -1614,14 +1597,16 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 
     rect3cp QueryRegion = Edit->Region;
 
-    // NOTE(Jesse): I would expect to need this, but it appears we don't for
-    // some reason..
-#if 0
-    QueryRegion.Min.Offset -= 1.f;
-    QueryRegion.Max.Offset += 1.f;
 
-    Canonicalize(World, &QueryRegion.Min);
-    Canonicalize(World, &QueryRegion.Max);
+    // NOTE(Jesse):
+#if 0
+    {
+      QueryRegion.Min.Offset -= 1.f;
+      QueryRegion.Max.Offset += 1.f;
+
+      Canonicalize(World, &QueryRegion.Min);
+      Canonicalize(World, &QueryRegion.Max);
+    }
 #endif
 
     GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
@@ -1654,6 +1639,40 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
   }
 }
 
+#if BONSAI_INTERNAL
+link_internal void
+SanityCheckOctreeDoesNotContainEdit_Recursive(world *World, octree_node *Current, world_edit *Edit)
+{
+  Assert(Current);
+
+  IterateOver(&Current->Edits, TestEdit, EditIndex)
+  {
+    Assert(Edit != TestEdit);
+  }
+
+  switch(Current->Type)
+  {
+    InvalidCase(OctreeNodeType_Undefined);
+
+    case OctreeNodeType_Leaf:
+    {
+    } break;
+
+    case OctreeNodeType_Branch:
+    {
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[0], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[1], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[2], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[3], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[4], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[5], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[6], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[7], Edit);
+    } break;
+  }
+}
+#endif
+
 link_internal void
 DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
@@ -1661,7 +1680,23 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
   Assert(Edit->Tombstone == False);
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
-  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Edit->Region, &Nodes);
+
+  rect3cp QueryRegion = Edit->Region;
+
+
+  // NOTE(Jesse):
+#if 0
+  {
+    QueryRegion.Min.Offset -= 1.f;
+    QueryRegion.Max.Offset += 1.f;
+
+    Canonicalize(World, &QueryRegion.Min);
+    Canonicalize(World, &QueryRegion.Max);
+  }
+#endif
+
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+
 
   IterateOver(&Nodes, Node, NodeIndex)
   {
@@ -1675,6 +1710,10 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
     Node->Dirty = True;;
     ReleaseFutex(&Node->Lock);
   }
+
+#if BONSAI_INTERNAL
+  SanityCheckOctreeDoesNotContainEdit_Recursive(World, &World->Root, Edit);
+#endif
 }
 
 link_internal void
@@ -2097,6 +2136,7 @@ DoWorldEditor(engine_resources *Engine)
                   if (PrevEditIndex)
                   {
                     world_edit *PrevEdit = GetPtr(&Editor->Edits, *PrevEditIndex);
+                    Assert(Edit != PrevEdit);
                     ReapplyEditToOctree(Engine, Edit, GetTranArena());
                     ReapplyEditToOctree(Engine, PrevEdit, GetTranArena());
 
@@ -2124,6 +2164,7 @@ DoWorldEditor(engine_resources *Engine)
                   if (auto NextEditIndex = TryGetPtr(&Layer->EditIndices, NextEditIndexIndex))
                   {
                     world_edit *NextEdit = GetPtr(&Editor->Edits, *NextEditIndex);
+                    Assert(Edit != NextEdit);
                     ReapplyEditToOctree(Engine, Edit, GetTranArena());
                     ReapplyEditToOctree(Engine, NextEdit, GetTranArena());
 
@@ -2353,6 +2394,7 @@ DoWorldEditor(engine_resources *Engine)
     }
 
   }
+
 
 #if BONSAI_INTERNAL
   // NOTE(Jesse): Sanity check we keep the selected flag in sync with the array

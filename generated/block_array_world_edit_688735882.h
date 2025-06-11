@@ -1,4 +1,4 @@
-// src/engine/editor.h:1252:0
+// src/engine/editor.h:1250:0
 
 
 
@@ -14,9 +14,6 @@ struct world_edit_block
 struct world_edit_block_array_index poof(@block_array_IndexOfValue)
 {
   umm Index; 
-  /* block_t *Block; */
-  /* u32 BlockIndex; */
-  /* u32 ElementIndex; */
 };
 
 struct world_edit_block_array
@@ -158,17 +155,6 @@ GetPtr( world_edit_block_array *Arr, world_edit_block_array_index Index )
   return Result;
 }
 
-link_internal world_edit *
-TryGetPtr(world_edit_block_array *Arr, world_edit_block_array_index Index)
-{
-  world_edit * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal world_edit *
 GetPtr( world_edit_block_array *Arr, umm Index )
@@ -177,15 +163,22 @@ GetPtr( world_edit_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal world_edit *
-TryGetPtr(world_edit_block_array *Arr, umm Index)
+TryGetPtr( world_edit_block_array *Arr, world_edit_block_array_index Index)
 {
   world_edit * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    world_edit_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal world_edit *
+TryGetPtr( world_edit_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, world_edit_block_array_index{Index});
   return Result;
 }
 
@@ -348,5 +341,31 @@ Shift( world_edit_block_array *Array, world_edit *Element )
 
   *Prev = *Element;
 }
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        DoEditorUi(Ui, Window, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+        PushNewRow(Ui);
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
+
+
 
 

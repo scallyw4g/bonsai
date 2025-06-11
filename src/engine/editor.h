@@ -789,6 +789,7 @@ enum world_edit_blend_mode
 {
   WorldEdit_Mode_Additive,    // Adds layer value to noise value
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
+  WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue
   WorldEdit_Mode_Disabled,    // Useful for turning the layer off
 };
 
@@ -1113,9 +1114,9 @@ struct brush_settings
   //
   // Common across brush types
   //
-  world_edit_blend_mode          Mode;
-  world_edit_blend_mode_modifier Modifier;
+  world_edit_blend_mode_modifier ValueModifier;
   world_edit_color_blend_mode    ColorMode;
+  world_edit_blend_mode          BlendMode;
   b8 Invert;
   s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
 
@@ -1224,7 +1225,7 @@ poof(are_equal(world_edit_brush))
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
 
-struct world_edit
+struct world_edit poof(@do_editor_ui)
 {
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();

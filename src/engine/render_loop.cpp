@@ -423,11 +423,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
                         }
 
-                        BindUniformByName(&WorldEditRC->Program, "BrushType", Layer->Settings.Type);
-                        BindUniformByName(&WorldEditRC->Program, "BlendMode", Layer->Settings.Mode);
-                        BindUniformByName(&WorldEditRC->Program, "Modifiers", Layer->Settings.Modifier);
-                        BindUniformByName(&WorldEditRC->Program, "ColorMode", Layer->Settings.ColorMode);
-                        BindUniformByName(&WorldEditRC->Program, "Invert",    Layer->Settings.Invert);
+                        BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
+                        BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
+                        BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
+                        BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
+                        BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
 
                         rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);

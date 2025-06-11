@@ -343,3 +343,5 @@ Shift( standing_spot_block_array *Array, standing_spot *Element )
 }
 
 
+
+

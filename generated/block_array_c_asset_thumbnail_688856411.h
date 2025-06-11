@@ -160,3 +160,5 @@ Shift( asset_thumbnail_block_array *Array, asset_thumbnail *Element )
   *Prev = *Element;
 }
 
+
+

@@ -105,35 +105,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
-        cs MemberName = CSz("Mode");
+        cs MemberName = CSz("ValueModifier");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode*, &Element->Mode),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Modifier");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
+          Cast(world_edit_blend_mode_modifier*, &Element->ValueModifier),
           MemberName,
           Params
           );
@@ -158,6 +134,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_color_blend_mode*, &Element->ColorMode),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+      }
+
+      
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("BlendMode");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_blend_mode*, &Element->BlendMode),
           MemberName,
           Params
           );

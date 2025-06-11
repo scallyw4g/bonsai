@@ -1,4 +1,4 @@
-// src/engine/editor.h:1268:0
+// src/engine/editor.h:1269:0
 
 
 
@@ -341,5 +341,7 @@ Shift( world_edit_layer_block_array *Array, world_edit_layer *Element )
 
   *Prev = *Element;
 }
+
+
 
 

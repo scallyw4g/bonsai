@@ -343,3 +343,5 @@ Shift( bitmap_block_array *Array, bitmap *Element )
 }
 
 
+
+
