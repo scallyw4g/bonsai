@@ -235,9 +235,9 @@ void main()
       //
       if ( (ValueModifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
       {
-        if (x > 0 && x < 65 &&
-            y > 0 && y < 65 &&
-            z > 0 && z < 65)
+        if (x > 0 && x <= 64 &&
+            y > 0 && y <= 64 &&
+            z > 0 && z <= 64)
         {
           f32 ThisCell = sign(TexLookup.a);
           if (ThisCell < 0.f) // Current value is Air
@@ -321,7 +321,7 @@ void main()
         { if (abs(ThisSample) >= Threshold) { CurrentSample = ThisSample; } } break;
 
         case 3: // WorldEdit_Mode_Disabled
-        { CurrentSample = CurrentSample; } break;
+        { CurrentSample = CurrentSample; ThisSample = 0.f; } break;
       }
 
 
