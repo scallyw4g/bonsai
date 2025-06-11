@@ -635,6 +635,12 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
     IdealListIndex = Max(0, IdealListIndex-3);
   }
 
+  // Prefer chunks who have been edited
+  if (Count(&Node->Edits))
+  {
+    IdealListIndex = Max(0, IdealListIndex-10);
+  }
+
   Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
   if (Remaining(&Queue->Lists[IdealListIndex]))
   {
