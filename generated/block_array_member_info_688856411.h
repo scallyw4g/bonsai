@@ -155,17 +155,6 @@ GetPtr( member_info_block_array *Arr, member_info_block_array_index Index )
   return Result;
 }
 
-link_internal member_info *
-TryGetPtr(member_info_block_array *Arr, member_info_block_array_index Index)
-{
-  member_info * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal member_info *
 GetPtr( member_info_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( member_info_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal member_info *
-TryGetPtr(member_info_block_array *Arr, umm Index)
+TryGetPtr( member_info_block_array *Arr, member_info_block_array_index Index)
 {
   member_info * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    member_info_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal member_info *
+TryGetPtr( member_info_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, member_info_block_array_index{Index});
   return Result;
 }
 

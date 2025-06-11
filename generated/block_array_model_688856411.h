@@ -155,17 +155,6 @@ GetPtr( model_block_array *Arr, model_block_array_index Index )
   return Result;
 }
 
-link_internal model *
-TryGetPtr(model_block_array *Arr, model_block_array_index Index)
-{
-  model * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal model *
 GetPtr( model_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( model_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal model *
-TryGetPtr(model_block_array *Arr, umm Index)
+TryGetPtr( model_block_array *Arr, model_block_array_index Index)
 {
   model * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    model_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal model *
+TryGetPtr( model_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, model_block_array_index{Index});
   return Result;
 }
 

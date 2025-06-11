@@ -155,17 +155,6 @@ GetPtr( bitmap_block_array *Arr, bitmap_block_array_index Index )
   return Result;
 }
 
-link_internal bitmap *
-TryGetPtr(bitmap_block_array *Arr, bitmap_block_array_index Index)
-{
-  bitmap * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal bitmap *
 GetPtr( bitmap_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( bitmap_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal bitmap *
-TryGetPtr(bitmap_block_array *Arr, umm Index)
+TryGetPtr( bitmap_block_array *Arr, bitmap_block_array_index Index)
 {
   bitmap * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    bitmap_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal bitmap *
+TryGetPtr( bitmap_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, bitmap_block_array_index{Index});
   return Result;
 }
 

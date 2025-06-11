@@ -1614,17 +1614,22 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 
     rect3cp QueryRegion = Edit->Region;
 
-    /* QueryRegion.Min.Offset -= 1.f; */
-    /* QueryRegion.Max.Offset += 1.f; */
+    // NOTE(Jesse): I would expect to need this, but it appears we don't for
+    // some reason..
+#if 0
+    QueryRegion.Min.Offset -= 1.f;
+    QueryRegion.Max.Offset += 1.f;
 
-    /* Canonicalize(World, &QueryRegion.Min); */
-    /* Canonicalize(World, &QueryRegion.Max); */
+    Canonicalize(World, &QueryRegion.Min);
+    Canonicalize(World, &QueryRegion.Max);
+#endif
 
     GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
       AcquireFutex(&Node->Lock);
+
       /* auto EditAABB = GetSimSpaceAABB(World, Node); */
       /* random_series S = {u64(Node)}; */
       /* v3 BaseColor = RandomV3Unilateral(&S); */
@@ -1642,8 +1647,6 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
       }
 
       Push(&Node->Edits, Edit);
-
-      /* Assert(Node->Type == OctreeNodeType_Leaf); */
 
       Node->Dirty = True;
       ReleaseFutex(&Node->Lock);
@@ -1677,14 +1680,18 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 link_internal void
 UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
   Assert(Edit->Tombstone == False);
 
   DropEditFromOctree(Engine, Edit, TempMemory);
-
   Edit->Region = Region;
-
   ApplyEditToOctree(Engine, Edit, TempMemory);
+}
+
+link_internal void
+ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
+{
+  // TODO(Jesse): Is there a better way to do this, or do we even care?
+  UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory);
 }
 
 #if 0
@@ -1959,9 +1966,7 @@ DoWorldEditor(engine_resources *Engine)
 
           if (Edit->Brush == Editor->CurrentBrush)
           {
-            // TODO(Jesse): We should be able to just mark the overlapping
-            // nodes dirty because we're not actually updating the edit bounds here..
-            UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
+            ReapplyEditToOctree(Engine, Edit, GetTranArena());
           }
         }
       }
@@ -2091,6 +2096,10 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   if (PrevEditIndex)
                   {
+                    world_edit *PrevEdit = GetPtr(&Editor->Edits, *PrevEditIndex);
+                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                    ReapplyEditToOctree(Engine, PrevEdit, GetTranArena());
+
                     auto Tmp = *PrevEditIndex;
                     *PrevEditIndex = *EditIndex;
                     *EditIndex = Tmp;
@@ -2099,6 +2108,10 @@ DoWorldEditor(engine_resources *Engine)
                   {
                     Push(&PrevLayer->EditIndices, EditIndex);
                     RemoveOrdered(&Layer->EditIndices, EditIndex);
+
+                    // NOTE(Jesse): No need to reapply because we didn't change
+                    // the ordering, just shifted up a layer
+                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
                   }
 
                 } break;
@@ -2108,9 +2121,11 @@ DoWorldEditor(engine_resources *Engine)
                   auto NextEditIndexIndex = EditIndexIndex;
                      ++NextEditIndexIndex;
 
-                  if (NextEditIndexIndex < AtElements(&Layer->EditIndices))
+                  if (auto NextEditIndex = TryGetPtr(&Layer->EditIndices, NextEditIndexIndex))
                   {
-                    auto NextEditIndex = GetPtr(&Layer->EditIndices, NextEditIndexIndex);
+                    world_edit *NextEdit = GetPtr(&Editor->Edits, *NextEditIndex);
+                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                    ReapplyEditToOctree(Engine, NextEdit, GetTranArena());
 
                     auto Tmp = *NextEditIndex;
                     *NextEditIndex = *EditIndex;
@@ -2123,11 +2138,14 @@ DoWorldEditor(engine_resources *Engine)
                     auto NextLayerIndex = LayerIndex;
                        ++NextLayerIndex;
 
-                    auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex));
-                    if (NextLayer)
+                    if (auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex)))
                     {
                       RemoveOrdered(&Layer->EditIndices, EditIndex);
                       Shift(&NextLayer->EditIndices, EditIndex);
+
+                    // NOTE(Jesse): No need to reapply because we didn't change
+                    // the ordering, just shifted up a layer
+                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
                     }
 
                     EditIndexIndex = AtElements(&Layer->EditIndices);
@@ -2177,7 +2195,7 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   Assert(Editor->CurrentBrush);
                   Edit->Brush = Editor->CurrentBrush;
-                  UpdateWorldEditBounds(Engine, Edit, Edit->Region, GetTranArena());
+                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
                 } break;
 
                 case UiLayerEditAction_Duplicate:
@@ -2351,6 +2369,18 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 #endif
+
+
+  u32 Ordinal = 0;
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
+  {
+    IterateOver(&Layer->EditIndices, EditIndex, EII)
+    {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      Edit->Ordinal = Ordinal++;
+    }
+  }
+
 }
 
 link_internal void

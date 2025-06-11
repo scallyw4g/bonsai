@@ -155,17 +155,6 @@ GetPtr( shader_ptr_block_array *Arr, shader_ptr_block_array_index Index )
   return Result;
 }
 
-link_internal shader_ptr 
-TryGetPtr(shader_ptr_block_array *Arr, shader_ptr_block_array_index Index)
-{
-  shader_ptr  Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal shader_ptr 
 GetPtr( shader_ptr_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( shader_ptr_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal shader_ptr 
-TryGetPtr(shader_ptr_block_array *Arr, umm Index)
+TryGetPtr( shader_ptr_block_array *Arr, shader_ptr_block_array_index Index)
 {
   shader_ptr  Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    shader_ptr_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal shader_ptr 
+TryGetPtr( shader_ptr_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, shader_ptr_block_array_index{Index});
   return Result;
 }
 

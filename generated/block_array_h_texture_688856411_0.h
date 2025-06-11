@@ -155,17 +155,6 @@ GetPtr( texture_block_array *Arr, texture_block_array_index Index )
   return Result;
 }
 
-link_internal texture *
-TryGetPtr(texture_block_array *Arr, texture_block_array_index Index)
-{
-  texture * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal texture *
 GetPtr( texture_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( texture_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal texture *
-TryGetPtr(texture_block_array *Arr, umm Index)
+TryGetPtr( texture_block_array *Arr, texture_block_array_index Index)
 {
   texture * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    texture_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal texture *
+TryGetPtr( texture_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, texture_block_array_index{Index});
   return Result;
 }
 

@@ -155,17 +155,6 @@ GetPtr( vox_data_block_array *Arr, vox_data_block_array_index Index )
   return Result;
 }
 
-link_internal vox_data *
-TryGetPtr(vox_data_block_array *Arr, vox_data_block_array_index Index)
-{
-  vox_data * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal vox_data *
 GetPtr( vox_data_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( vox_data_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal vox_data *
-TryGetPtr(vox_data_block_array *Arr, umm Index)
+TryGetPtr( vox_data_block_array *Arr, vox_data_block_array_index Index)
 {
   vox_data * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    vox_data_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal vox_data *
+TryGetPtr( vox_data_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, vox_data_block_array_index{Index});
   return Result;
 }
 

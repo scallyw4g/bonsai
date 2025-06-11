@@ -155,17 +155,6 @@ GetPtr( picked_octree_node_block_array *Arr, picked_octree_node_block_array_inde
   return Result;
 }
 
-link_internal picked_octree_node *
-TryGetPtr(picked_octree_node_block_array *Arr, picked_octree_node_block_array_index Index)
-{
-  picked_octree_node * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal picked_octree_node *
 GetPtr( picked_octree_node_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( picked_octree_node_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal picked_octree_node *
-TryGetPtr(picked_octree_node_block_array *Arr, umm Index)
+TryGetPtr( picked_octree_node_block_array *Arr, picked_octree_node_block_array_index Index)
 {
   picked_octree_node * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    picked_octree_node_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal picked_octree_node *
+TryGetPtr( picked_octree_node_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, picked_octree_node_block_array_index{Index});
   return Result;
 }
 

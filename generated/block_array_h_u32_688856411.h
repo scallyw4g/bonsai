@@ -155,17 +155,6 @@ GetPtr( u32_block_array *Arr, u32_block_array_index Index )
   return Result;
 }
 
-link_internal u32 *
-TryGetPtr(u32_block_array *Arr, u32_block_array_index Index)
-{
-  u32 * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal u32 *
 GetPtr( u32_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( u32_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal u32 *
-TryGetPtr(u32_block_array *Arr, umm Index)
+TryGetPtr( u32_block_array *Arr, u32_block_array_index Index)
 {
   u32 * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    u32_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal u32 *
+TryGetPtr( u32_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, u32_block_array_index{Index});
   return Result;
 }
 

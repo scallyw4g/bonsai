@@ -155,17 +155,6 @@ GetPtr( standing_spot_block_array *Arr, standing_spot_block_array_index Index )
   return Result;
 }
 
-link_internal standing_spot *
-TryGetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
-{
-  standing_spot * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal standing_spot *
 GetPtr( standing_spot_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( standing_spot_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal standing_spot *
-TryGetPtr(standing_spot_block_array *Arr, umm Index)
+TryGetPtr( standing_spot_block_array *Arr, standing_spot_block_array_index Index)
 {
   standing_spot * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    standing_spot_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal standing_spot *
+TryGetPtr( standing_spot_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, standing_spot_block_array_index{Index});
   return Result;
 }
 

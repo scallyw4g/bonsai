@@ -1,4 +1,4 @@
-// src/engine/editor.h:1252:0
+// src/engine/editor.h:1253:0
 
 
 
@@ -155,17 +155,6 @@ GetPtr( world_edit_ptr_block_array *Arr, world_edit_ptr_block_array_index Index 
   return Result;
 }
 
-link_internal world_edit_ptr 
-TryGetPtr(world_edit_ptr_block_array *Arr, world_edit_ptr_block_array_index Index)
-{
-  world_edit_ptr  Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal world_edit_ptr 
 GetPtr( world_edit_ptr_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( world_edit_ptr_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal world_edit_ptr 
-TryGetPtr(world_edit_ptr_block_array *Arr, umm Index)
+TryGetPtr( world_edit_ptr_block_array *Arr, world_edit_ptr_block_array_index Index)
 {
   world_edit_ptr  Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    world_edit_ptr_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal world_edit_ptr 
+TryGetPtr( world_edit_ptr_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, world_edit_ptr_block_array_index{Index});
   return Result;
 }
 

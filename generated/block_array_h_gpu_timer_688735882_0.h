@@ -155,17 +155,6 @@ GetPtr( gpu_timer_block_array *Arr, gpu_timer_block_array_index Index )
   return Result;
 }
 
-link_internal gpu_timer *
-TryGetPtr(gpu_timer_block_array *Arr, gpu_timer_block_array_index Index)
-{
-  gpu_timer * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal gpu_timer *
 GetPtr( gpu_timer_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( gpu_timer_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal gpu_timer *
-TryGetPtr(gpu_timer_block_array *Arr, umm Index)
+TryGetPtr( gpu_timer_block_array *Arr, gpu_timer_block_array_index Index)
 {
   gpu_timer * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    gpu_timer_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal gpu_timer *
+TryGetPtr( gpu_timer_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, gpu_timer_block_array_index{Index});
   return Result;
 }
 

@@ -155,17 +155,6 @@ GetPtr( gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_in
   return Result;
 }
 
-link_internal gpu_readback_buffer *
-TryGetPtr(gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
-{
-  gpu_readback_buffer * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal gpu_readback_buffer *
 GetPtr( gpu_readback_buffer_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( gpu_readback_buffer_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal gpu_readback_buffer *
-TryGetPtr(gpu_readback_buffer_block_array *Arr, umm Index)
+TryGetPtr( gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
 {
   gpu_readback_buffer * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    gpu_readback_buffer_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal gpu_readback_buffer *
+TryGetPtr( gpu_readback_buffer_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, gpu_readback_buffer_block_array_index{Index});
   return Result;
 }
 

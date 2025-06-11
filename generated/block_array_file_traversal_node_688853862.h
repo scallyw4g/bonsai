@@ -155,17 +155,6 @@ GetPtr( file_traversal_node_block_array *Arr, file_traversal_node_block_array_in
   return Result;
 }
 
-link_internal file_traversal_node *
-TryGetPtr(file_traversal_node_block_array *Arr, file_traversal_node_block_array_index Index)
-{
-  file_traversal_node * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal file_traversal_node *
 GetPtr( file_traversal_node_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( file_traversal_node_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal file_traversal_node *
-TryGetPtr(file_traversal_node_block_array *Arr, umm Index)
+TryGetPtr( file_traversal_node_block_array *Arr, file_traversal_node_block_array_index Index)
 {
   file_traversal_node * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    file_traversal_node_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal file_traversal_node *
+TryGetPtr( file_traversal_node_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, file_traversal_node_block_array_index{Index});
   return Result;
 }
 

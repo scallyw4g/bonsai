@@ -1240,6 +1240,7 @@ struct world_edit
     // Not my favorite, but it's also not the end of the world.
     b32 Selected;
   // }
+  u32 Ordinal;
 };
 
 typedef world_edit* world_edit_ptr;

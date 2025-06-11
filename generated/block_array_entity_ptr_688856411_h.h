@@ -155,17 +155,6 @@ GetPtr( entity_ptr_block_array *Arr, entity_ptr_block_array_index Index )
   return Result;
 }
 
-link_internal entity_ptr 
-TryGetPtr(entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
-{
-  entity_ptr  Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal entity_ptr 
 GetPtr( entity_ptr_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( entity_ptr_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal entity_ptr 
-TryGetPtr(entity_ptr_block_array *Arr, umm Index)
+TryGetPtr( entity_ptr_block_array *Arr, entity_ptr_block_array_index Index)
 {
   entity_ptr  Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    entity_ptr_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal entity_ptr 
+TryGetPtr( entity_ptr_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, entity_ptr_block_array_index{Index});
   return Result;
 }
 

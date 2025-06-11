@@ -155,17 +155,6 @@ GetPtr( voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_in
   return Result;
 }
 
-link_internal voxel_stack_element *
-TryGetPtr(voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
-{
-  voxel_stack_element * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal voxel_stack_element *
 GetPtr( voxel_stack_element_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( voxel_stack_element_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal voxel_stack_element *
-TryGetPtr(voxel_stack_element_block_array *Arr, umm Index)
+TryGetPtr( voxel_stack_element_block_array *Arr, voxel_stack_element_block_array_index Index)
 {
   voxel_stack_element * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    voxel_stack_element_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal voxel_stack_element *
+TryGetPtr( voxel_stack_element_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, voxel_stack_element_block_array_index{Index});
   return Result;
 }
 

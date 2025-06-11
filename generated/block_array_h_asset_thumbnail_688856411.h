@@ -155,17 +155,6 @@ GetPtr( asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Inde
   return Result;
 }
 
-link_internal asset_thumbnail *
-TryGetPtr(asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
-{
-  asset_thumbnail * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal asset_thumbnail *
 GetPtr( asset_thumbnail_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( asset_thumbnail_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal asset_thumbnail *
-TryGetPtr(asset_thumbnail_block_array *Arr, umm Index)
+TryGetPtr( asset_thumbnail_block_array *Arr, asset_thumbnail_block_array_index Index)
 {
   asset_thumbnail * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    asset_thumbnail_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal asset_thumbnail *
+TryGetPtr( asset_thumbnail_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, asset_thumbnail_block_array_index{Index});
   return Result;
 }
 

@@ -155,17 +155,6 @@ GetPtr( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_que
   return Result;
 }
 
-link_internal dummy_work_queue_entry_build_chunk_mesh *
-TryGetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
-{
-  dummy_work_queue_entry_build_chunk_mesh * Result = {};
-  if (Arr->BlockPtrs && Index.Index < Capacity(Arr).Index)
-  {
-    Result = GetPtr(Arr, Index);
-  }
-  return Result;
-}
-
 
 link_internal dummy_work_queue_entry_build_chunk_mesh *
 GetPtr( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, umm Index )
@@ -174,15 +163,22 @@ GetPtr( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, umm Index )
   return GetPtr(Arr, I);
 }
 
+
 link_internal dummy_work_queue_entry_build_chunk_mesh *
-TryGetPtr(dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, umm Index)
+TryGetPtr( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index Index)
 {
   dummy_work_queue_entry_build_chunk_mesh * Result = {};
-  if (Arr->BlockPtrs && Index < AtElements(Arr).Index)
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    dummy_work_queue_entry_build_chunk_mesh_block_array_index I = {Index};
-    Result = GetPtr(Arr, I);
+    Result = GetPtr(Arr, Index);
   }
+  return Result;
+}
+
+link_internal dummy_work_queue_entry_build_chunk_mesh *
+TryGetPtr( dummy_work_queue_entry_build_chunk_mesh_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, dummy_work_queue_entry_build_chunk_mesh_block_array_index{Index});
   return Result;
 }
 
