@@ -1303,8 +1303,8 @@ struct level_editor
   // Used for naming layers during NewLayer
   u32 NextLayerIndex;
 
-  world_edit_layer_block_array  Layers;
-  world_edit_layer             *CurrentLayer;
+  world_edit_layer_block_array       Layers;
+  world_edit_layer_block_array_index SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
 
   world_edit_block_array                   Edits;
   world_edit_block_array_index_block_array SelectedEditIndices;
@@ -1424,6 +1424,12 @@ GetSelectionThicknessForDistance(f32 Distance)
   return Result;
 }
 
+link_internal world_edit_layer *
+TryGetSelectedLayer(level_editor *Editor)
+{
+  world_edit_layer *Result = TryGetPtr(&Editor->Layers, Editor->SelectedLayerIndex);
+  return Result;
+}
 
 link_internal b32
 CheckSettingsChanged(layered_brush *);

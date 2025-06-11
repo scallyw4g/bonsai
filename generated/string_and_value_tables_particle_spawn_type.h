@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:278:0
+// src/engine/editor.cpp:279:0
 
 link_internal counted_string
 ToStringPrefixless(particle_spawn_type Type)

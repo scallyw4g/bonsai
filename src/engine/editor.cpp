@@ -66,16 +66,17 @@ DuplicateEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit, w
 }
 
 
-link_internal world_edit_layer*
+link_internal world_edit_layer *
 NewLayer(level_editor *Editor)
 {
+  auto ResultIndex         = AtElements(&Editor->Layers);
   auto Result              = Push(&Editor->Layers);
        Result->EditIndices = WorldEditBlockArrayIndexBlockArray(Editor->Memory);
 
   cs DefaultName = FSz("layer_%d", Editor->NextLayerIndex++);
   CopyString(DefaultName.Start, Result->NameBuf, DefaultName.Count);
 
-  Editor->CurrentLayer = Result;
+  Editor->SelectedLayerIndex = ResultIndex;
   return Result;
 }
 
@@ -1312,7 +1313,7 @@ EditWorldSelection(engine_resources *Engine)
   }
 
 
-  if (AtElements(&Editor->SelectedEditIndices).Index == 0)
+  if (Count(&Editor->SelectedEditIndices) == 0)
   {
     Editor->Selection.ModMode = SelectionModificationMode_None;
   }
@@ -1320,11 +1321,15 @@ EditWorldSelection(engine_resources *Engine)
 
   switch (Editor->Selection.ModMode)
   {
-    case SelectionModificationMode_None: {} break;
+    case SelectionModificationMode_None:
+    {
+      Assert(Count(&Editor->SelectedEditIndices) == 0);
+    } break;
 
     case SelectionModificationMode_Initialize:
     {
       Assert(SelectionIncomplete(Editor->Selection.Clicks));
+      Assert(Count(&Editor->SelectedEditIndices) == 1);
 
       // Hot update selection region before we click the second point
       // Must come first or we get a frame of lag.
@@ -1371,6 +1376,8 @@ EditWorldSelection(engine_resources *Engine)
 
     case SelectionModificationMode_Modify:
     {
+      Assert(SelectionComplete(Editor->Selection.Clicks));
+      Assert(Count(&Editor->SelectedEditIndices) > 0);
       // Edit the selection region
       //
       rect3i ModifiedSelection = {};
@@ -1826,6 +1833,9 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
     Push(SelectedEditIndices, &EditIndex);
     Edit->Selected = True;
   }
+
+  Editor->Selection.Clicks  = 2;
+  Editor->Selection.ModMode = SelectionModificationMode_Modify;
 }
 
 link_internal void
@@ -1840,14 +1850,6 @@ DoWorldEditor(engine_resources *Engine)
   {
     world_edit_brush ThisBrush = NewBrush();
     Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
-  }
-
-  // This can happen for all kinds of reasons so we just detect it here instead
-  // of having to remember to set this ModMode flag
-  if (Count(&Editor->SelectedEditIndices))
-  {
-    Editor->Selection.ModMode = SelectionModificationMode_Modify;
-    Editor->Selection.Clicks = 2;
   }
 
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
@@ -1882,19 +1884,18 @@ DoWorldEditor(engine_resources *Engine)
 
   if (Input->Ctrl.Pressed && Input->S.Clicked)
   {
-    if (Editor->CurrentLayer == 0)
-    {
-      NewLayer(Editor);
-    }
-
-    ResetSelection(Editor);
-    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
+    world_edit_layer *Layer = TryGetSelectedLayer(Editor);
+    if (Layer == 0)  { Layer = NewLayer(Editor); }
 
     world_edit_block_array_index Index = {};
-    auto E = NewEdit(Editor, Editor->CurrentLayer, &Index);
+    auto E = NewEdit(Editor, Layer, &Index);
     E->Brush = Editor->CurrentBrush;
 
     SelectEdit(Editor, E, Index);
+
+    // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
+    ResetSelection(Editor);
+    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
   }
 
 
@@ -1986,14 +1987,14 @@ DoWorldEditor(engine_resources *Engine)
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
-      b32 LayerSelected = Editor->CurrentLayer == Layer;
+      b32 LayerSelected = Editor->SelectedLayerIndex == LayerIndex;
 
       PushTableStart(Ui);
       {
         ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
         if (Button(Ui, Name, UiId(&LayersWindow, Layer, Layer), Style))
         {
-          Editor->CurrentLayer = Layer;
+          Editor->SelectedLayerIndex = LayerIndex;
 
           // NOTE(Jesse): Clear the list if we didn't have ctrl pressed
           b32 MultiSelect = Input->Ctrl.Pressed;
@@ -2051,7 +2052,7 @@ DoWorldEditor(engine_resources *Engine)
               RemoveOrdered(&Editor->Layers, Layer);
               Layer = 0;
 
-              Editor->CurrentLayer = 0;
+              Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
               LayerIndex = AtElements(&Editor->Layers);
             } break;
           }
@@ -2152,7 +2153,7 @@ DoWorldEditor(engine_resources *Engine)
                 /* b32 MultiSelect = Input->Ctrl.Pressed; */
                 /* SelectEdit(Editor, Edit, *EditIndex, MultiSelect); */
 
-                Editor->CurrentLayer = Layer;
+                Editor->SelectedLayerIndex = LayerIndex;
                 if (Edit->Brush)
                 {
                   Editor->CurrentBrush = Edit->Brush;
@@ -2226,11 +2227,7 @@ DoWorldEditor(engine_resources *Engine)
     auto Face = Editor->Selection.ModState.ClickedFace;
     if (Face == FaceIndex_None) { Face = AABBTest.Face; }
 
-    f32 HiThicknessMod           = 2.5f;
-
-    f32 LayerEditThicknessMod    = 1.0f;
-    f32 HotEditThicknessMod      = 1.5f;
-    f32 SelectedEditThicknessMod = 2.0f;
+    f32 HiThicknessMod           = 1.5f;
     f32 SelectionThicknessMod    = 3.0f;
 
 
@@ -2266,7 +2263,7 @@ DoWorldEditor(engine_resources *Engine)
     // Highlight edits in the current layer
     //
     {
-      if (auto Layer = Editor->CurrentLayer)
+      if ( world_edit_layer *Layer = TryGetSelectedLayer(Editor) )
       {
         IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
         {
@@ -2281,7 +2278,7 @@ DoWorldEditor(engine_resources *Engine)
           v3 BaseColor = RandomV3Unilateral(&S);
 
           r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
-          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc*LayerEditThicknessMod);
+          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc);
         }
       }
     }
@@ -2306,14 +2303,14 @@ DoWorldEditor(engine_resources *Engine)
           r32 InsetWidth  = 0.f;
           v3  HiColor     = RGB_RED;
 
-          HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, BaseThicc*SelectedEditThicknessMod*HiThicknessMod);
+          HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, BaseThicc*HiThicknessMod);
         }
 
         // NOTE(Jesse): This is intentionally after the HighlightFace call; we
         // always wanna highlight that no matter if we're hovering or not
         if (Edit == Editor->HotEdit) continue;
 
-        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, BaseThicc*SelectedEditThicknessMod);
+        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, BaseThicc);
       }
     }
 
@@ -2321,7 +2318,9 @@ DoWorldEditor(engine_resources *Engine)
     //
     if (Editor->HotEdit)
     {
-      if (Input->Shift.Pressed == False && Input->Alt.Pressed == False)
+      if ( Input->Shift.Pressed  == False &&
+           Input->Alt.Pressed    == False &&
+           Editor->Selection.ModMode != SelectionModificationMode_Initialize )
       {
         if (Input->LMB.Clicked)
         {
@@ -2332,7 +2331,7 @@ DoWorldEditor(engine_resources *Engine)
 
       auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
       r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
-      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, BaseThicc*HotEditThicknessMod);
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, BaseThicc);
     }
 
   }
@@ -2394,13 +2393,14 @@ DoLevelWindow(engine_resources *Engine)
 
       level_header Header = {};
 
-      Header.WorldCenter       =  World->Center;
-      Header.VisibleRegionSize =  World->VisibleRegionSize;
-      Header.Camera            = *Camera;
-      Header.RenderSettings    =  Graphics->Settings;
-      Header.EntityCount       =  EntityCount;
-      Header.LayerCount        =  u32(AtElements(&Editor->Layers).Index);
-      Header.EditCount         =  u32(AtElements(&Editor->Edits).Index);
+      Header.WorldCenter        =  World->Center;
+      Header.VisibleRegionSize  =  World->VisibleRegionSize;
+      Header.Camera             = *Camera;
+      Header.RenderSettings     =  Graphics->Settings;
+      Header.EntityCount        =  EntityCount;
+      Header.SelectedLayerIndex =  u32(Editor->SelectedLayerIndex.Index);
+      Header.LayerCount         =  u32(AtElements(&Editor->Layers).Index);
+      Header.EditCount          =  u32(AtElements(&Editor->Edits).Index);
 
       {
         cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
@@ -2507,6 +2507,8 @@ DoLevelWindow(engine_resources *Engine)
         HardResetEngine(Engine);
         Global_SerializeTypeTable = Tmp;
 
+        Engine->Editor.SelectedLayerIndex = {LevelHeader.SelectedLayerIndex};
+
 
         /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
         s32 ChunkCount = 0;
@@ -2538,6 +2540,7 @@ DoLevelWindow(engine_resources *Engine)
             {
               FinalEdit->Selected = False; // Minor hack so SelectEdit doesn't assert
               SelectEdit(Editor, FinalEdit, {EditIndex}, True);
+              Editor->Selection.ModMode == SelectionModificationMode_Modify;
             }
 
             ApplyEditToOctree(Engine, FinalEdit, GetTranArena());

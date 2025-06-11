@@ -6,13 +6,16 @@ struct level_header
   u32 EditCount;
   u32 EntityCount;
 
+  // Editor Params
+  //
+  u32 SelectedLayerIndex;
+
   // World Params
+  //
   v3i WorldCenter;
-  /* v3i VisibleRegion; */
   visible_region_size VisibleRegionSize;
 
   camera Camera;
-
   render_settings RenderSettings;
 
   char TerrainShapingShader[NameBuf_Len];

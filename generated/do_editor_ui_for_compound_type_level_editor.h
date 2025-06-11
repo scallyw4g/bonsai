@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:569:0
+// src/engine/editor.cpp:570:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -154,11 +154,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         
         
         
-        cs MemberName = CSz("CurrentLayer");
+        cs MemberName = CSz("SelectedLayerIndex");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_layer*, Element->CurrentLayer),
+          Cast(world_edit_layer_block_array_index*, &Element->SelectedLayerIndex),
           MemberName,
           Params
           );
