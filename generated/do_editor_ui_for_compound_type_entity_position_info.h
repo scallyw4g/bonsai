@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -96,10 +96,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -121,6 +121,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

@@ -27,32 +27,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Threshold");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->Threshold),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
-
-
+      
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

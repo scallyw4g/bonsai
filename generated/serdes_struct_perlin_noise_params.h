@@ -34,21 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, perlin_noise_params *BaseElement, umm Co
   RangeIterator_t(umm, ElementIndex, Count)
   {
     perlin_noise_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Threshold); // default
+                                Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Period); // default
 
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Amplitude); // default
 
     
 
@@ -73,23 +66,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, perlin_noise_params *Element, memory
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Period, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Amplitude, Memory);
+
 
   
 

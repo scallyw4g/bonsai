@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == NoiseType_White) 
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == NoiseType_Perlin) 
 
       { 
@@ -96,9 +96,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == NoiseType_Voronoi) 
 
       { 
@@ -120,6 +120,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

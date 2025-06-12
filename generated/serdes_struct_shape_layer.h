@@ -69,20 +69,6 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Plane); // default
 
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Threshold); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Power); // default
-
     
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -144,22 +130,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Plane, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Power, Memory);
 
   
 

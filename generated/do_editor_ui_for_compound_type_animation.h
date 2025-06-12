@@ -48,10 +48,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -73,10 +73,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -98,10 +98,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -123,9 +123,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -147,10 +147,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -172,9 +172,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -196,10 +196,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -221,6 +221,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

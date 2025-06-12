@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -76,9 +76,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -100,9 +100,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -124,9 +124,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -148,9 +148,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -172,9 +172,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -196,9 +196,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -220,6 +220,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

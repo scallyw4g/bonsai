@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -96,9 +96,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -120,9 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -144,9 +144,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -168,9 +168,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -179,9 +179,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
         
         cs MemberName = CSz("ChunkFreelistFutex");
         
-      }
 
-      
+        
+      }
       
 
       { 
@@ -190,9 +190,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
         
         cs MemberName = CSz("ChunkFreelistSentinal");
         
-      }
 
-      
+        
+      }
       
 
       { 
@@ -214,10 +214,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -226,9 +226,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
         
         cs MemberName = CSz("ChunkDim");
         
-      }
 
-      
+        
+      }
       
 
       { 
@@ -236,6 +236,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
         
         
         cs MemberName = CSz("ChunkMemory");
+        
+
         
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

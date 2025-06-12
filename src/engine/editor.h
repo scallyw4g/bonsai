@@ -415,11 +415,11 @@ poof(
                     }
                   }
                 }
-              }
 
-              member.is_primitive?
-              {
-                PushNewRow(Ui);
+                member.is_primitive?
+                {
+                  PushNewRow(Ui);
+                }
               }
             }
           if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
@@ -795,29 +795,31 @@ enum world_edit_blend_mode
 
 enum world_edit_color_blend_mode
 {
-  WorldEdit_ColorBlendMode_ThresholdPositive,
-  WorldEdit_ColorBlendMode_ThresholdNegative,
+  WorldEdit_ColorBlendMode_ValuePositive,
+  WorldEdit_ColorBlendMode_ValueNegative,
 
-  WorldEdit_ColorBlendMode_Additive,
-  WorldEdit_ColorBlendMode_Subtractive,
-  WorldEdit_ColorBlendMode_Multiply,
-  WorldEdit_ColorBlendMode_Divide,
+  WorldEdit_ColorBlendMode_Surface,
 
-  WorldEdit_ColorBlendMode_Average,
+  // TODO(Jesse): Put back in?
+  /* WorldEdit_ColorBlendMode_Additive, */
+  /* WorldEdit_ColorBlendMode_Subtractive, */
+  /* WorldEdit_ColorBlendMode_Multiply, */
+  /* WorldEdit_ColorBlendMode_Divide, */
 
   WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
 };
 
 enum world_edit_blend_mode_modifier poof(@bitfield)
 {
-  WorldEdit_Modifier_Default  =     0,
+  WorldEdit_Modifier_None           =     0,
 
-  WorldEdit_ValueModifier_Surface   = (1<<0),
+  /* WorldEdit_ValueModifier_Surface   = (1<<0), */
   WorldEdit_ValueModifier_ClampPos  = (1<<1),
   WorldEdit_ValueModifier_ClampNeg  = (1<<2),
   WorldEdit_ValueModifier_Threshold = (1<<3),
 
   WorldEdit_ColorModifier_Discard   = (1<<4),
+
   // NOTE(Jesse): Unsupported for now, unclear if it will be again ..
   // WorldEdit_Modifier_Flood    = xxxx,
 };
@@ -853,15 +855,12 @@ struct generic_noise_params
 
 struct white_noise_params
 {
-  r32 Threshold = 0.5f;
 };
 
 
 struct perlin_noise_params
 {
-  r32 Threshold = 0.f;               poof(@ui_value_range(0.f,   1.f))
-  v3  Period    = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
-  r32 Amplitude = 8.f;               poof(@ui_value_range(0.1f, 20.f))
+  v3 Period = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
 };
 
 poof(are_equal(perlin_noise_params))
@@ -869,10 +868,7 @@ poof(are_equal(perlin_noise_params))
 
 struct voronoi_noise_params
 {
-  r32 Threshold = 0.0f;                 poof(@ui_value_range(0.f,   1.f))
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
-  r32 Amplitude = 8.f;                  poof(@ui_value_range(0.1f, 20.f))
-
   r32 Squareness;
   r32 MaskChance;
 };
@@ -1054,12 +1050,9 @@ struct shape_layer
   world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
   world_update_op_shape_params_plane    Plane;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Plane))
-
   // @sdf_shape_step(6): Add an instance of the new shape here
   //
 
-  f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f))
-  f32     Power = 10.f; poof(@ui_value_range(0.f, 25.f))
 };
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
@@ -1114,19 +1107,29 @@ struct brush_settings
   //
   // Common across brush types
   //
+
+  f32     Power = 10.f; poof(@ui_value_range(0.f, 25.f))
+  r32 ValueBias; poof(@ui_value_range(-1.f, 1.f))
+  f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f) @ui_display_condition(Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold))
   world_edit_blend_mode_modifier ValueModifier;
   world_edit_color_blend_mode    ColorMode;
   world_edit_blend_mode          BlendMode;
   b8 Invert;
-  s32 Iterations = 1; // NOTE(Jesse): How many times to do the filter.
+
+
+
+
+
+
+  s32 Iterations = 1; poof(@ui_skip)
 
   // NOTE(Jesse): This is the relative offset from the base selection.
   // Used to inflate or contract the area affected by the brush.
   //
   // TODO(Jesse): Rename to dilation
-  rect3i Offset;
+  rect3i Offset; poof(@ui_skip)
 
-  v3i NoiseBasisOffset;
+  v3i NoiseBasisOffset; poof(@ui_skip)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False)))
@@ -1157,12 +1160,12 @@ struct layered_brush
   /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
   /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */
 
-  b8 SeedBrushWithSelection;
-  b8 BrushFollowsCursor;
+  /* b8 SeedBrushWithSelection; */
+  /* b8 BrushFollowsCursor; */
 
   // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.
-  world_edit_blend_mode          Mode;
-  world_edit_blend_mode_modifier Modifier;
+  /* world_edit_blend_mode          Mode; */
+  /* world_edit_blend_mode_modifier Modifier; */
 
   // NOTE(Jesse): This is actually just using the chunk .. should probably change it
   /* chunk_thumbnail Preview; poof(@no_serialize) */

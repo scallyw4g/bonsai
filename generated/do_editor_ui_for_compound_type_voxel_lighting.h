@@ -48,10 +48,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs N
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

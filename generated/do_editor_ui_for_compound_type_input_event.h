@@ -45,10 +45,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -67,9 +67,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
 
 
 
-      }
 
-            PushNewRow(Ui);
+                PushNewRow(Ui);
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

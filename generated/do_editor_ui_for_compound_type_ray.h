@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ray *Element, cs Name, ui_ren
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -72,6 +72,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ray *Element, cs Name, ui_ren
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

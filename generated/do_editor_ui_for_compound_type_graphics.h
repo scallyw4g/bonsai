@@ -45,10 +45,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -67,10 +67,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -92,9 +92,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -116,9 +116,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -140,9 +140,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -164,9 +164,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -188,10 +188,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -213,9 +213,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -237,9 +237,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -261,9 +261,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -285,9 +285,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -296,9 +296,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         cs MemberName = CSz("Camera");
         
-      }
 
-      
+        
+      }
       
 
       { 
@@ -320,10 +320,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -345,9 +345,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -369,9 +369,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -393,9 +393,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -417,9 +417,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -441,9 +441,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -465,9 +465,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -489,9 +489,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -500,9 +500,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         cs MemberName = CSz("ColorPalette");
         
-      }
 
-      
+        
+      }
       
 
       { 
@@ -524,9 +524,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -548,9 +548,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -572,9 +572,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -596,9 +596,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -620,9 +620,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -644,9 +644,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -668,9 +668,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -692,9 +692,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -716,9 +716,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -740,9 +740,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -764,10 +764,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -789,9 +789,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -817,9 +817,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -841,10 +841,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -866,9 +866,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -890,6 +890,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

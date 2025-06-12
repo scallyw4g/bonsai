@@ -1,4 +1,4 @@
-// src/engine/editor.h:881:0
+// src/engine/editor.h:877:0
 
 link_internal counted_string
 ToStringPrefixless(world_edit_blend_mode_modifier Type)
@@ -6,8 +6,7 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
   counted_string Result = {};
   switch (Type)
   {
-        case WorldEdit_Modifier_Default: { Result = CSz("Default"); } break;
-    case WorldEdit_ValueModifier_Surface: { Result = CSz("Surface"); } break;
+        case WorldEdit_Modifier_None: { Result = CSz("None"); } break;
     case WorldEdit_ValueModifier_ClampPos: { Result = CSz("ClampPos"); } break;
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
     case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
@@ -54,8 +53,7 @@ ToString(world_edit_blend_mode_modifier Type)
   counted_string Result = {};
   switch (Type)
   {
-        case WorldEdit_Modifier_Default: { Result = CSz("WorldEdit_Modifier_Default"); } break;
-    case WorldEdit_ValueModifier_Surface: { Result = CSz("WorldEdit_ValueModifier_Surface"); } break;
+        case WorldEdit_Modifier_None: { Result = CSz("WorldEdit_Modifier_None"); } break;
     case WorldEdit_ValueModifier_ClampPos: { Result = CSz("WorldEdit_ValueModifier_ClampPos"); } break;
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
     case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
@@ -88,8 +86,7 @@ WorldEditBlendModeModifier(counted_string S)
 {
   world_edit_blend_mode_modifier Result = {};
 
-    if (StringsMatch(S, CSz("WorldEdit_Modifier_Default"))) { return WorldEdit_Modifier_Default; }
-  if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Surface"))) { return WorldEdit_ValueModifier_Surface; }
+    if (StringsMatch(S, CSz("WorldEdit_Modifier_None"))) { return WorldEdit_Modifier_None; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampPos"))) { return WorldEdit_ValueModifier_ClampPos; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampNeg"))) { return WorldEdit_ValueModifier_ClampNeg; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Threshold"))) { return WorldEdit_ValueModifier_Threshold; }

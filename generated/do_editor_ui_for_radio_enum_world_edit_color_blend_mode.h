@@ -1,4 +1,4 @@
-// src/engine/editor.h:906:0
+// src/engine/editor.h:902:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -11,63 +11,27 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("ThresholdPositive"), UiId(Window, "enum WorldEdit_ColorBlendMode_ThresholdPositive", Element), Params))
+    if (Button(Ui, CSz("ValuePositive"), UiId(Window, "enum WorldEdit_ColorBlendMode_ValuePositive", Element), Params))
     {
-            *Element = WorldEdit_ColorBlendMode_ThresholdPositive;
+            *Element = WorldEdit_ColorBlendMode_ValuePositive;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("ThresholdNegative"), UiId(Window, "enum WorldEdit_ColorBlendMode_ThresholdNegative", Element), Params))
+    if (Button(Ui, CSz("ValueNegative"), UiId(Window, "enum WorldEdit_ColorBlendMode_ValueNegative", Element), Params))
     {
-            *Element = WorldEdit_ColorBlendMode_ThresholdNegative;
+            *Element = WorldEdit_ColorBlendMode_ValueNegative;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Additive"), UiId(Window, "enum WorldEdit_ColorBlendMode_Additive", Element), Params))
+    if (Button(Ui, CSz("Surface"), UiId(Window, "enum WorldEdit_ColorBlendMode_Surface", Element), Params))
     {
-            *Element = WorldEdit_ColorBlendMode_Additive;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Subtractive"), UiId(Window, "enum WorldEdit_ColorBlendMode_Subtractive", Element), Params))
-    {
-            *Element = WorldEdit_ColorBlendMode_Subtractive;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Multiply"), UiId(Window, "enum WorldEdit_ColorBlendMode_Multiply", Element), Params))
-    {
-            *Element = WorldEdit_ColorBlendMode_Multiply;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Divide"), UiId(Window, "enum WorldEdit_ColorBlendMode_Divide", Element), Params))
-    {
-            *Element = WorldEdit_ColorBlendMode_Divide;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Average"), UiId(Window, "enum WorldEdit_ColorBlendMode_Average", Element), Params))
-    {
-            *Element = WorldEdit_ColorBlendMode_Average;
+            *Element = WorldEdit_ColorBlendMode_Surface;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

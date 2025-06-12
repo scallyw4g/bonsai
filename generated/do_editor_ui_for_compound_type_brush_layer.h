@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -58,6 +58,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
         
         
         cs MemberName = CSz("PrevSettings");
+        
+
         
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, u
 
 
 
-      }
 
-      
+        
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

@@ -34,14 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Cou
   RangeIterator_t(umm, ElementIndex, Count)
   {
     white_noise_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Threshold); // default
-
-
-
-
-
-
-
+    
 
     
 
@@ -64,15 +57,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
-
-
-
-
-
-
+  
 
   
 

@@ -423,11 +423,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
                         }
 
+                        BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
                         BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
                         BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
                         BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
                         BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
                         BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
+                        BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
+                        BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
 
                         rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                            v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
@@ -458,18 +461,14 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                               case NoiseType_Perlin:
                               {
                                 auto *Perlin = &Noise->Perlin;
-                                BindUniformByName(&WorldEditRC->Program, "Threshold", Perlin->Threshold);
                                 BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
-                                BindUniformByName(&WorldEditRC->Program, "Power", Perlin->Amplitude);
                               } break;
 
                               case NoiseType_Voronoi:
                               {
                                 auto *Voronoi = &Noise->Voronoi;
                                 BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
-                                BindUniformByName(&WorldEditRC->Program, "Threshold", Voronoi->Threshold);
                                 BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
-                                BindUniformByName(&WorldEditRC->Program, "Power", Voronoi->Amplitude);
                               } break;
 
                               case NoiseType_White:
@@ -482,8 +481,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           {
                             shape_layer *Shape = &Layer->Settings.Shape;
                             BindUniformByName(&WorldEditRC->Program, "ShapeType", Shape->Type);
-                            BindUniformByName(&WorldEditRC->Program, "Threshold", Shape->Threshold);
-                            BindUniformByName(&WorldEditRC->Program, "Power",     Shape->Power);
                             switch(Shape->Type)
                             {
                               case ShapeType_Rect:     { /* No special uniforms needed for Rect .. */ } break;

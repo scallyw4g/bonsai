@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == BrushLayerType_Noise) 
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == BrushLayerType_Shape) 
 
       { 
@@ -96,9 +96,84 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
+        
+      }
       
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Power");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->Power),
+          MemberName,
+          Params
+          , 0.f, 25.f );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ValueBias");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->ValueBias),
+          MemberName,
+          Params
+          , -1.f, 1.f );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+       if (Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold) 
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Threshold");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(f32*, &Element->Threshold),
+          MemberName,
+          Params
+          , 0.f,  1.f );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
       
 
       { 
@@ -120,9 +195,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -144,9 +219,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -168,9 +243,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -192,10 +267,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -203,24 +278,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("Iterations");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s32*, &Element->Iterations),
-          MemberName,
-          Params
-          );
+        
 
-
-
-
-
-
+                PushNewRow(Ui);
 
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -228,23 +290,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("Offset");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(rect3i*, &Element->Offset),
-          MemberName,
-          Params
-          );
+        
 
-
-
-
-
-
-
+        
       }
-
-      
       
 
       { 
@@ -252,23 +301,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("NoiseBasisOffset");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3i*, &Element->NoiseBasisOffset),
-          MemberName,
-          Params
-          );
+        
 
-
-
-
-
-
-
+        
       }
-
-      
       
 
       { 
@@ -281,6 +317,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
 
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

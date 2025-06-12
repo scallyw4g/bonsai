@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == ShapeType_Rect) 
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == ShapeType_Sphere) 
 
       { 
@@ -96,9 +96,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == ShapeType_Line) 
 
       { 
@@ -120,9 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == ShapeType_Cylinder) 
 
       { 
@@ -144,9 +144,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
-      }
 
-      
+        
+      }
        if (Element->Type == ShapeType_Plane) 
 
       { 
@@ -168,58 +168,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
 
 
 
+
+        
       }
-
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Threshold");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->Threshold),
-          MemberName,
-          Params
-          , 0.f,  1.f );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
-
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Power");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->Power),
-          MemberName,
-          Params
-          , 0.f, 25.f );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

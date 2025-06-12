@@ -34,21 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, voronoi_noise_params *BaseElement, umm C
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voronoi_noise_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Threshold); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Period); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Amplitude); // default
+                                Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
@@ -87,23 +73,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Period, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Amplitude, Memory);
 
 
 

@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -76,9 +76,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -104,9 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -132,9 +132,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -156,9 +156,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -180,9 +180,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -204,9 +204,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -228,9 +228,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
 
 
-      }
 
-            PushNewRow(Ui);
+                PushNewRow(Ui);
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

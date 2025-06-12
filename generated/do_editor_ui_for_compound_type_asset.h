@@ -48,9 +48,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -72,9 +72,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -96,10 +96,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
+
+                PushNewRow(Ui);
+
       }
-
-            PushNewRow(Ui);
-
       
 
       { 
@@ -121,9 +121,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
 
 
 
-      }
 
-      
+        
+      }
       
 
       { 
@@ -131,6 +131,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, ui_r
         
         
         cs MemberName = CSz("(anonymous)");
+        
+
         
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

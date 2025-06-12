@@ -33,31 +33,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
         
         
         
-        cs MemberName = CSz("Threshold");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->Threshold),
-          MemberName,
-          Params
-          , 0.f,   1.f );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
-
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Period");
                                                                 DoEditorUi(Ui,
           Window,
@@ -73,33 +48,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
 
 
 
+
+        
       }
 
-      
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Amplitude");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->Amplitude),
-          MemberName,
-          Params
-          , 0.1f, 20.f );
-
-
-
-
-
-
-
-      }
-
-            PushNewRow(Ui);
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

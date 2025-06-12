@@ -53,6 +53,27 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
+                            Result &= Serialize(Bytes, &Element->Power); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->ValueBias); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Threshold); // default
+
+
+
+
+
+
                     Result &= Serialize(Bytes, (u32*)&Element->ValueModifier); // enum
 
 
@@ -135,6 +156,30 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Shape, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Power, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
 
 
 

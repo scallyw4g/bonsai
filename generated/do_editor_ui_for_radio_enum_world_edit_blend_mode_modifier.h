@@ -1,4 +1,4 @@
-// src/engine/editor.h:884:0
+// src/engine/editor.h:880:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifier *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -11,44 +11,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Default"), UiId(Window, "enum WorldEdit_Modifier_Default", Element), Params))
+    if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEdit_Modifier_None", Element), Params))
     {
-            if (WorldEdit_Modifier_Default == world_edit_blend_mode_modifier(0))
+            if (WorldEdit_Modifier_None == world_edit_blend_mode_modifier(0))
       {
         *Element = world_edit_blend_mode_modifier(0);
       }
       else
       {
-        if ((*Element & WorldEdit_Modifier_Default) == WorldEdit_Modifier_Default)
+        if ((*Element & WorldEdit_Modifier_None) == WorldEdit_Modifier_None)
         {
-          *Element = world_edit_blend_mode_modifier(*Element&~WorldEdit_Modifier_Default);
+          *Element = world_edit_blend_mode_modifier(*Element&~WorldEdit_Modifier_None);
         }
         else
         {
-          *Element = world_edit_blend_mode_modifier(*Element|WorldEdit_Modifier_Default);
-        }
-      }
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Surface"), UiId(Window, "enum WorldEdit_ValueModifier_Surface", Element), Params))
-    {
-            if (WorldEdit_ValueModifier_Surface == world_edit_blend_mode_modifier(0))
-      {
-        *Element = world_edit_blend_mode_modifier(0);
-      }
-      else
-      {
-        if ((*Element & WorldEdit_ValueModifier_Surface) == WorldEdit_ValueModifier_Surface)
-        {
-          *Element = world_edit_blend_mode_modifier(*Element&~WorldEdit_ValueModifier_Surface);
-        }
-        else
-        {
-          *Element = world_edit_blend_mode_modifier(*Element|WorldEdit_ValueModifier_Surface);
+          *Element = world_edit_blend_mode_modifier(*Element|WorldEdit_Modifier_None);
         }
       }
 
