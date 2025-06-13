@@ -11,6 +11,8 @@ uniform int GenerateNormals;
 uniform f32 Power;
 uniform f32 ValueBias;
 
+uniform v3 Axis;
+
 //
 // Clipping params
 //
@@ -41,6 +43,11 @@ uniform s32 Orientation; // voxel_rule_direction
 uniform v3 PlaneNormal;
 uniform f32 Planed;
 uniform f32 PlaneRadius;
+
+//
+// Torus Params
+//
+uniform f32 MinorRadius;
 
 
 
@@ -87,6 +94,16 @@ f32 iq_sdBox(vec3 p, vec3 b)
 {
   vec3 q = abs(p) - b;
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+// p   == origin
+// t.x == major radius
+// t.y == minor radius
+//
+float iq_sdTorus( vec3 p, vec2 t )
+{
+  vec2 q = vec2(length(p.xz)-t.x,p.y);
+  return length(q)-t.y;
 }
 
 #if 1
@@ -172,7 +189,6 @@ void main()
             {
 #if 1
               v3  BoxR     = EditDim/4.f;
-
               v3  SampleP  = BoxR - (EditRelxyz-BoxR);
 
               // NOTE(Jesse): Remap by box radius such that we get a 0-1 value out
@@ -264,6 +280,22 @@ void main()
               {
                 InitialSample = 1.f;
               }
+            } break;
+
+            // ShapeType_Torus
+            case 5:
+            {
+              v2  t    = v2(Radius, MinorRadius);
+              v3  p;
+
+              v3  BoxR = EditDim/2.f;
+              p = EditRelxyz;
+
+              p   -= BoxR;
+
+              f32 n = iq_sdTorus( p, t );
+              InitialSample = -n;
+
             } break;
 
             // @sdf_shape_step(7): Add more cases and implementations here
@@ -380,7 +412,7 @@ void main()
 
         case 1: // WorldEdit_Mode_Subtractive
         {
-          if (Accumulator > 0.f)
+          if (ThisSample > 0.f)
           {
             Accumulator = Accumulator - ThisSample;
           }
@@ -404,7 +436,7 @@ void main()
             }
             else
             {
-              Accumulator = ThisSample;
+              Accumulator = max(Accumulator, ThisSample);
             }
           }
           else

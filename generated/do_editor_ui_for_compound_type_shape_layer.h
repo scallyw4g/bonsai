@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:171:0
+// src/engine/editor.cpp:173:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -158,6 +158,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(world_update_op_shape_params_plane*, &Element->Plane),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+       if (Element->Type == ShapeType_Torus) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_update_op_shape_params_torus*, &Element->Torus),
           MemberName,
           Params
           );

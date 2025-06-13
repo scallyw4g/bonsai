@@ -423,12 +423,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
                         }
 
-                        f32 Power = Layer->Settings.Power ;
-                        if (HasThresholdModifier(&Layer->Settings))
-                        {
-                          Power = GetPowerFor(World, Edit, &Layer->Settings);
-                        }
-
                         BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
                         BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
                         BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
@@ -436,7 +430,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
                         BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
                         BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
-                        BindUniformByName(&WorldEditRC->Program, "Power",          Power);
+                        BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
 
 
                         rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
@@ -595,6 +589,16 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
                                 BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
                                 BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+
+                              } break;
+
+                              case ShapeType_Torus:
+                              {
+                                auto Torus = &Shape->Torus;
+
+                                BindUniformByName(&WorldEditRC->Program, "Axis",        &Torus->Axis);
+                                BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
+                                BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
 
                               } break;
 

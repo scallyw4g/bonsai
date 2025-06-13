@@ -162,6 +162,8 @@ poof(do_editor_ui_for_compound_type(world_update_op_shape_params_cylinder))
 #include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_cylinder.h>
 poof(do_editor_ui_for_compound_type(world_update_op_shape_params_plane))
 #include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_plane.h>
+poof(do_editor_ui_for_compound_type(world_update_op_shape_params_torus))
+#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_torus.h>
 
 // @sdf_shape_step(4): Add the editor shit here ..
 

@@ -978,6 +978,13 @@ struct world_update_op_shape_params_plane
   f32 Thickness = 2.f;
 };
 
+struct world_update_op_shape_params_torus
+{
+   v3 Axis;
+  f32 MajorRadius = 20.f;
+  f32 MinorRadius = 3.f;
+};
+
 
 // @sdf_shape_step(2): Add new asset struct here
 //
@@ -1026,11 +1033,12 @@ poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 
 enum shape_type
 {
-  ShapeType_Rect,
-  ShapeType_Sphere,
-  ShapeType_Line,
-  ShapeType_Cylinder,
-  ShapeType_Plane,
+  ShapeType_Rect     = 0,
+  ShapeType_Sphere   = 1,
+  ShapeType_Line     = 2,
+  ShapeType_Cylinder = 3,
+  ShapeType_Plane    = 4,
+  ShapeType_Torus    = 5,
 
   // @sdf_shape_step(1): Add shape types here
   //
@@ -1049,6 +1057,7 @@ struct shape_layer
   world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
   world_update_op_shape_params_plane    Plane;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Plane))
+  world_update_op_shape_params_torus    Torus;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Torus))
   // @sdf_shape_step(6): Add an instance of the new shape here
   //
 
@@ -1476,6 +1485,11 @@ GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
         {
           NotImplemented;
           Result = 0.f;
+        } break;
+
+        case ShapeType_Torus:
+        {
+          Result = Settings->Shape.Torus.MajorRadius;
         } break;
       }
     } break;
