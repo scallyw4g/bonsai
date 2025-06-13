@@ -40,6 +40,18 @@ Sum( v3 P1 )
   return Result;
 }
 
+
+
+inline r32
+MaxChannel( v3 P1 )
+{
+  r32 Result = P1.E[0];
+    Result = Cast(r32, Max(Result, P1.E[0]));
+  Result = Cast(r32, Max(Result, P1.E[1]));
+  Result = Cast(r32, Max(Result, P1.E[2]));;
+  return Result;
+}
+
 inline b32
 operator<( v3 P1, v3 P2 )
 {

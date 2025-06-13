@@ -34,20 +34,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         cs MemberName = CSz("Region");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(rect3*, &Element->Region),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
+        
 
         
       }

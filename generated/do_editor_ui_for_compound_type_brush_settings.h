@@ -112,7 +112,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           Cast(f32*, &Element->Power),
           MemberName,
           Params
-          , 0.f, 25.f );
+          );
 
 
 
@@ -137,7 +137,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           Cast(r32*, &Element->ValueBias),
           MemberName,
           Params
-          , -1.f, 1.f );
+          , -1.f,  1.f );
 
 
 
@@ -149,7 +149,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
                 PushNewRow(Ui);
 
       }
-       if (Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold) 
+       if (HasThresholdModifier(Element)) 
 
       { 
         
@@ -162,7 +162,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           Cast(f32*, &Element->Threshold),
           MemberName,
           Params
-          , 0.f,  1.f );
+          ,  0.f,  1.f );
 
 
 

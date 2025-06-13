@@ -26,7 +26,7 @@ uniform s32 ShapeType; // shape_type
 //
 // Sphere Params
 //
-uniform  v3 ChunkRelLocation;
+uniform  v3 EditRelativeSphereCenter;
 uniform f32 Radius;
 
 //
@@ -78,6 +78,29 @@ r32 DistanceToPlane(v3 PlaneNormal, f32 Planed, v3 P)
   return Distance;
 }
 
+f32 iq_sdSphere(v3 p, f32 r)
+{
+  return length(p) - Radius;
+}
+
+f32 iq_sdBox(vec3 p, vec3 b)
+{
+  vec3 q = abs(p) - b;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+#if 1
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Radius)
+{
+  return (1.f-IQSample)/Radius;
+}
+#else
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Radius)
+{
+  return (1.f-IQSample);
+}
+#endif
+
 void main()
 {
   v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
@@ -106,7 +129,8 @@ void main()
       xyz.z <= ChunkRelEditMax.z  )
   {
     v3 Basis = WorldspaceChunkBasis + xyz;
-    v3 EditRelPosition = xyz - ChunkRelEditMin;
+    v3 EditRelxyz = xyz - ChunkRelEditMin;
+    v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
 
 
     {
@@ -144,13 +168,35 @@ void main()
           switch (ShapeType)
           {
             // ShapeType_Rect
-            case 0: { InitialSample = 1.f; } break;
+            case 0:
+            {
+#if 1
+              v3  BoxR     = EditDim/4.f;
+
+              v3  SampleP  = BoxR - (EditRelxyz-BoxR);
+
+              // NOTE(Jesse): Remap by box radius such that we get a 0-1 value out
+              SampleP /= BoxR;
+
+              f32 IQSample = iq_sdBox(SampleP, V3(1.f));
+              /* InitialSample = IQSampleToBonsaiSample(IQSample, 1.f); */
+              InitialSample = -IQSample;
+#else
+              InitialSample = 1.f;
+#endif
+            } break;
 
             // ShapeType_Sphere
             case 1:
             {
-              f32 DistFromCenter = distance(ChunkRelLocation, xyz);
+#if 1
+              v3  P         = EditRelxyz - EditRelativeSphereCenter;
+              f32 IQSample  = iq_sdSphere(P, Radius);
+              InitialSample = IQSampleToBonsaiSample(IQSample, Radius);
+#else
+              f32 DistFromCenter = distance(EditRelativeSphereCenter, EditRelxyz);
               InitialSample = ((Radius-DistFromCenter)/Radius);
+#endif
             } break;
 
             // ShapeType_Line
@@ -159,7 +205,7 @@ void main()
               // TODO(Jesse): Mr. Jippity said this is how to do distance to
               // line and it works, although I'm not sure it's necessarily a very good way to do it ..
               v3 Line = normalize(ChunkRelEditMax-ChunkRelEditMin);
-              v3 X = cross(Line, EditRelPosition);
+              v3 X = cross(Line, EditRelxyz);
               f32 Dist = length(X)/length(Line);
               /* if (Dist < Radius) { InitialSample = ((Radius-Dist)/Radius)*Power; } */
               /* if (Dist < Radius) { InitialSample = Dist*Power; } */
@@ -171,7 +217,6 @@ void main()
             {
               v3 AxisMask;
               v3 InvAxisMask;
-              v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
 
               switch (Orientation)
               {
@@ -204,7 +249,7 @@ void main()
               v3 ChunkRelP1 = MinorAxies + MajorAxis;
 
               v3 Line = ChunkRelP1 - ChunkRelP0;
-              v3 LineRelativeXYZ = EditRelPosition - ChunkRelP0;
+              v3 LineRelativeXYZ = EditRelxyz - ChunkRelP0;
 
               v3 X = cross(Line, LineRelativeXYZ);
               f32 Dist = length(X)/length(Line);
@@ -214,7 +259,7 @@ void main()
             // ShapeType_Plane
             case 4:
             {
-              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelPosition);
+              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
               if (abs(Dist) < PlaneRadius*ChunkResolution.x)
               {
                 InitialSample = 1.f;
@@ -281,6 +326,8 @@ void main()
 
 
 
+      /* InitialSample = Clamp01(InitialSample); */
+
       f32 ThisSample = (InitialSample + ValueBias) * Power;
       if (Invert)
       {
@@ -318,18 +365,54 @@ void main()
 
 
 
-      // Blend
+      // Blend Value
       //
       switch (BlendMode)
       {
         case 0: // WorldEdit_Mode_Additive
-        { Accumulator = Accumulator + ThisSample; } break;
+        {
+          if (ThisSample > 0.f)
+          /* if (Accumulator > 0.f) */
+          {
+            Accumulator = Accumulator + ThisSample;
+          }
+        } break;
 
         case 1: // WorldEdit_Mode_Subtractive
-        { Accumulator = Accumulator - ThisSample; } break;
+        {
+          if (Accumulator > 0.f)
+          {
+            Accumulator = Accumulator - ThisSample;
+          }
+        } break;
+
 
         case 2: // WorldEdit_Mode_Threshold
-        { if (abs(ThisSample) >= Threshold) { Accumulator = ThisSample; } } break;
+        {
+          f32 AbsSampleValue = abs(ThisSample);
+
+          /* if (ThisSample >= Threshold) */
+
+          /* if (AbsSampleValue >= Threshold) */
+
+          /* if (Accumulator < 0.f && AbsSampleValue >= Threshold) */
+          if (Accumulator < 0.f)
+          {
+            if(ThisSample >= Threshold)
+            {
+              Accumulator = ThisSample;
+            }
+            else
+            {
+              Accumulator = ThisSample;
+            }
+          }
+          else
+          {
+            /* Accumulator += ThisSample; */
+          }
+
+        } break;
 
         case 3: // WorldEdit_Mode_Disabled
         { Accumulator = Accumulator; ThisSample = 0.f; } break;
@@ -352,7 +435,8 @@ void main()
           {
             if (Accumulator > 0.f)
             {
-              ColorValue = ColorSample * (1.f-InitialSample);
+              ColorValue = ColorSample;
+              /* ColorValue = ColorSample * (InitialSample); */
             }
           }
         } break;

@@ -949,21 +949,20 @@ struct world_update_op_shape_params_chunk_data
 
 struct world_update_op_shape_params_rect
 {
-  // Sim-space positions
-  rect3 Region; poof(@ui_disable)
+  rect3 Region; poof(@ui_skip) // NOTE(Jesse): Unused & deprecated, remove
 };
 
 struct world_update_op_shape_params_sphere
 {
-   cp Location; poof(@ui_disable)
+   cp Location;      poof(@ui_skip)
   f32 Radius = 10.f;
 };
 
 
 struct world_update_op_shape_params_line
 {
-   cp P0; poof(@ui_disable)
-   cp P1; poof(@ui_disable)
+   cp P0; poof(@ui_skip)
+   cp P1; poof(@ui_skip)
   r32 Radius = 10.f;
 };
 
@@ -1108,12 +1107,13 @@ struct brush_settings
   // Common across brush types
   //
 
-  f32     Power = 10.f; poof(@ui_value_range(0.f, 25.f))
-  r32 ValueBias; poof(@ui_value_range(-1.f, 1.f))
-  f32 Threshold =  0.f; poof(@ui_value_range(0.f,  1.f) @ui_display_condition(Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold))
+  f32 Power     = 10.f; // poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element)))
+  r32 ValueBias =  0.f; poof(@ui_value_range(-1.f,  1.f))
+  f32 Threshold =  0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
   world_edit_blend_mode_modifier ValueModifier;
   world_edit_color_blend_mode    ColorMode;
   world_edit_blend_mode          BlendMode;
+
   b8 Invert;
 
 
@@ -1435,6 +1435,55 @@ TryGetSelectedLayer(level_editor *Editor)
   world_edit_layer *Result = TryGetPtr(&Editor->Layers, Editor->SelectedLayerIndex);
   return Result;
 }
+
+link_internal b32
+HasThresholdModifier(brush_settings *Element)
+{
+  b32 Result = (Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold);
+  return Result;
+}
+
+link_internal r32
+GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
+{
+  r32 Result = 0.f;
+  switch (Settings->Type)
+  {
+    case BrushLayerType_Noise:
+    {
+      Result = Settings->Power;
+    } break;
+
+    case BrushLayerType_Shape:
+    {
+      switch (Settings->Shape.Type)
+      {
+        case ShapeType_Rect:
+        {
+          aabb Rect   = GetSimSpaceRect(World, Edit->Region);
+            v3 Dim    = GetDim(Rect);
+               Result = MaxChannel(Dim)/4.f;
+        } break;
+
+        case ShapeType_Sphere:
+        {
+          Result = Settings->Shape.Sphere.Radius;
+        } break;
+
+        case ShapeType_Line:
+        case ShapeType_Cylinder:
+        case ShapeType_Plane:
+        {
+          NotImplemented;
+          Result = 0.f;
+        } break;
+      }
+    } break;
+  }
+
+  return Result;
+}
+
 
 link_internal b32
 CheckSettingsChanged(layered_brush *);
