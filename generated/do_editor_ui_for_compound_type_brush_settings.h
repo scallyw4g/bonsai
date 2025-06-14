@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:175:0
+// src/engine/editor.cpp:176:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -204,11 +204,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
-        cs MemberName = CSz("ColorMode");
+        cs MemberName = CSz("BlendMode");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_color_blend_mode*, &Element->ColorMode),
+          Cast(world_edit_blend_mode*, &Element->BlendMode),
           MemberName,
           Params
           );
@@ -228,11 +228,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
-        cs MemberName = CSz("BlendMode");
+        cs MemberName = CSz("ColorMode");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode*, &Element->BlendMode),
+          Cast(world_edit_color_blend_mode*, &Element->ColorMode),
           MemberName,
           Params
           );

@@ -34,14 +34,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_torus *Base
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_torus *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Axis); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->MajorRadius); // default
+                                Result &= Serialize(Bytes, &Element->MajorRadius); // default
 
 
 
@@ -72,14 +65,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_torus *
 {
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Axis, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->MajorRadius, Memory);
 

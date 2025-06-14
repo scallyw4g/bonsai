@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:242:0
+// src/engine/editor.cpp:172:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shape_layer_advanced_params", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,11 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         
         
         
-        cs MemberName = CSz("ID");
+        cs MemberName = CSz("Rounding");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->ID),
+          Cast(r32*, &Element->Rounding),
           MemberName,
           Params
           );
@@ -58,11 +58,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         
         
         
-        cs MemberName = CSz("Uniforms");
+        cs MemberName = CSz("Stretch");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shader_uniform_buffer*, &Element->Uniforms),
+          Cast(v3*, &Element->Stretch),
           MemberName,
           Params
           );
@@ -82,11 +82,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         
         
         
-        cs MemberName = CSz("VertexSourceFilename");
+        cs MemberName = CSz("Repeat");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(cs*, &Element->VertexSourceFilename),
+          Cast(v3*, &Element->Repeat),
           MemberName,
           Params
           );
@@ -98,8 +98,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-                PushNewRow(Ui);
-
+        
       }
       
 
@@ -107,14 +106,14 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
         
         
         
-        cs MemberName = CSz("FragSourceFilename");
+        cs MemberName = CSz("Axis");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(cs*, &Element->FragSourceFilename),
+          Cast(v3*, &Element->Axis),
           MemberName,
           Params
-          );
+          , -1.f, 1.f );
 
 
 
@@ -123,80 +122,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
 
 
 
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
         
-        
-        
-        cs MemberName = CSz("VertexTimeModifiedWhenLoaded");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s64*, &Element->VertexTimeModifiedWhenLoaded),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("FragmentTimeModifiedWhenLoaded");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("HotReloaded");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->HotReloaded),
-          MemberName,
-          &DefaultUiRenderParams_Checkbox
-          );
-
-
-
-
-
-
-                PushNewRow(Ui);
-
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

@@ -481,10 +481,22 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                           case BrushLayerType_Shape:
                           {
                             shape_layer *Shape = &Layer->Settings.Shape;
-                            BindUniformByName(&WorldEditRC->Program, "ShapeType", Shape->Type);
+                            BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
+
+
+                            BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
+                            BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
+                            BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
+
+                            m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
+                            BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
+
                             switch(Shape->Type)
                             {
-                              case ShapeType_Rect:     { /* No special uniforms needed for Rect .. */ } break;
+                              case ShapeType_Rect:
+                              {
+                                auto Sphere = &Shape->Rect;
+                              } break;
 
                               case ShapeType_Sphere:
                               {
@@ -506,13 +518,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                               case ShapeType_Cylinder:
                               {
                                 auto Cylinder = &Shape->Cylinder;
-                                shape_axis Orientation = Cylinder->Orientation;
-                                if (Orientation == ShapeAxis_InferFromMajorAxis)
-                                {
-                                  Orientation = ComputeShapeAxisFromEditDim(EditDim);
-                                }
-                                BindUniformByName(&WorldEditRC->Program, "Orientation", Orientation);
                                 BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
+                                BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
                               } break;
 
                               case ShapeType_Plane:
@@ -596,7 +603,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                               {
                                 auto Torus = &Shape->Torus;
 
-                                BindUniformByName(&WorldEditRC->Program, "Axis",        &Torus->Axis);
                                 BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
                                 BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
 

@@ -33,11 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Orientation");
+        cs MemberName = CSz("Radius");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shape_axis*, &Element->Orientation),
+          Cast(r32*, &Element->Radius),
           MemberName,
           Params
           );
@@ -49,7 +49,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 
-        
+                PushNewRow(Ui);
+
       }
       
 
@@ -57,11 +58,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Radius");
+        cs MemberName = CSz("Height");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->Radius),
+          Cast(r32*, &Element->Height),
           MemberName,
           Params
           );

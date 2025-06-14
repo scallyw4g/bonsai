@@ -167,9 +167,10 @@ poof(do_editor_ui_for_compound_type(world_update_op_shape_params_torus))
 
 // @sdf_shape_step(4): Add the editor shit here ..
 
-
 poof(do_editor_ui_for_enum(shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
+poof(do_editor_ui_for_compound_type(shape_layer_advanced_params))
+#include <generated/do_editor_ui_for_compound_type_shape_layer_advanced_params.h>
 poof(do_editor_ui_for_compound_type(shape_layer))
 #include <generated/do_editor_ui_for_compound_type_shape_layer.h>
 poof(do_editor_ui_for_compound_type(brush_settings))

@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:439:0
+// src/engine/serdes.cpp:442:0
 
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
@@ -79,12 +79,12 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
-
-
-
-
                     Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
 
 
 
@@ -190,12 +190,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
-
-
-
-
           Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+
+
+
+
+          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
 
 
 

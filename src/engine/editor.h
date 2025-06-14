@@ -789,6 +789,7 @@ enum world_edit_blend_mode
 {
   WorldEdit_Mode_Additive,    // Adds layer value to noise value
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
+  WorldEdit_Mode_Multiply,
   WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue
   WorldEdit_Mode_Disabled,    // Useful for turning the layer off
 };
@@ -949,7 +950,7 @@ struct world_update_op_shape_params_chunk_data
 
 struct world_update_op_shape_params_rect
 {
-  rect3 Region; poof(@ui_skip) // NOTE(Jesse): Unused & deprecated, remove
+  v3 Dim;
 };
 
 struct world_update_op_shape_params_sphere
@@ -968,8 +969,8 @@ struct world_update_op_shape_params_line
 
 struct world_update_op_shape_params_cylinder
 {
-  shape_axis Orientation;
-  r32 Radius = 10.f;
+  r32 Radius = 4.f;
+  r32 Height = 25.f;
 };
 
 struct world_update_op_shape_params_plane
@@ -980,7 +981,6 @@ struct world_update_op_shape_params_plane
 
 struct world_update_op_shape_params_torus
 {
-   v3 Axis;
   f32 MajorRadius = 20.f;
   f32 MinorRadius = 3.f;
 };
@@ -1046,6 +1046,15 @@ enum shape_type
 poof(string_and_value_tables(shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
 
+struct shape_layer_advanced_params
+/* poof(@do_editor_ui) */
+{
+  r32 Rounding;
+   v3 Stretch;
+   v3 Repeat;
+   v3 Axis; poof(@ui_value_range(-1.f, 1.f))
+};
+
 struct shape_layer
 {
   shape_type Type; poof(@ui_display_name(CSz("Shape Type")))
@@ -1061,6 +1070,9 @@ struct shape_layer
   // @sdf_shape_step(6): Add an instance of the new shape here
   //
 
+
+  // NOTE(Jesse): Just in another struct for the UI
+  shape_layer_advanced_params Advanced;
 };
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
@@ -1120,8 +1132,8 @@ struct brush_settings
   r32 ValueBias =  0.f; poof(@ui_value_range(-1.f,  1.f))
   f32 Threshold =  0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
   world_edit_blend_mode_modifier ValueModifier;
-  world_edit_color_blend_mode    ColorMode;
   world_edit_blend_mode          BlendMode;
+  world_edit_color_blend_mode    ColorMode;
 
   b8 Invert;
 

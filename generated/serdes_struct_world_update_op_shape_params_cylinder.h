@@ -34,12 +34,14 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_cylinder *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Orientation); // enum
+                                Result &= Serialize(Bytes, &Element->Radius); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Radius); // default
+
+
+                            Result &= Serialize(Bytes, &Element->Height); // default
 
     
 
@@ -62,14 +64,17 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+
 
 
 
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+  Result &= Deserialize(Bytes, &Element->Height, Memory);
 
   
 
