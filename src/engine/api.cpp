@@ -430,7 +430,6 @@ Bonsai_Simulate(engine_resources *Resources)
   //
 
   cp CameraTargetP = {};
-  input *InputForCamera = &Plat->Input;
 
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   if (CameraGhost == 0)
@@ -453,7 +452,7 @@ Bonsai_Simulate(engine_resources *Resources)
   b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
+  UpdateGameCamera(World, MouseDelta, &Plat->Input, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
 
   // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
 
@@ -498,10 +497,10 @@ UpdateKeyLightColor(graphics *Graphics, r32 tDay)
 
   lighting_settings *Lighting = &Graphics->Settings.Lighting;
 
-  v3 DawnColor = Normalize(Lighting->DawnColor) * Lighting->DawnIntensity;
-  v3 SunColor  = Normalize(Lighting->SunColor ) * Lighting->SunIntensity;
-  v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
-  v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
+  v3 DawnColor = HSVtoRGB(Lighting->DawnHSV) * Lighting->DawnIntensity;
+  v3 SunColor  = HSVtoRGB(Lighting->SunHSV ) * Lighting->SunIntensity;
+  v3 DuskColor = HSVtoRGB(Lighting->DuskHSV) * Lighting->DuskIntensity;
+  v3 MoonColor = HSVtoRGB(Lighting->MoonHSV) * Lighting->MoonIntensity;
 
   Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
   Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
@@ -557,7 +556,7 @@ Bonsai_Render(engine_resources *Engine)
 
   if (Graphics->Settings.Lighting.AutoDayNightCycle)
   {
-    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
+    Graphics->Settings.Lighting.tDay += SafeDivide0(Plat->dt, Graphics->Settings.Lighting.tDaySpeed);
   }
   UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
 

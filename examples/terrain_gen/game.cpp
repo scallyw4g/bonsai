@@ -769,7 +769,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   auto VisibleRegionSize = VisibleRegionSize_128;
   v3i VisibleRegion = V3i(VisibleRegionSize);
-  f32 DistanceFromTarget = Length(VisibleRegion/2.f);
+  f32 DistanceFromTarget = 5000.f;
   f32 FarClip = 150000.f;
   StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 

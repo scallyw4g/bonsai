@@ -330,6 +330,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, ui_
         
         
         
+        cs MemberName = CSz("Speed");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Speed),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("Front");
                                                                 DoEditorUi(Ui,
           Window,

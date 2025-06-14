@@ -530,19 +530,19 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
     {
       lighting_settings *Lighting = &Settings->Lighting;
 
-      Lighting->tDay = 0.75f;
+      Lighting->tDay = -1.5f;
 
       Lighting->SunP = V3(-1.f, -1.f, 0.35f);
 
-      Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-      Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-      Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-      Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
+      Lighting->DawnHSV = V3(0.11f, 0.48f, 0.87f);
+      Lighting->SunHSV  = V3(0.00f, 0.00f, 0.00f);
+      Lighting->DuskHSV = V3(0.74f, 0.35f, 0.38f);
+      Lighting->MoonHSV = V3(0.63f, 0.15f, 0.22f);
 
+      Lighting->DawnIntensity = 0.78f;
       Lighting->SunIntensity  = 1.10f;
-      Lighting->MoonIntensity = 0.10f;
-      Lighting->DawnIntensity = 0.70f;
-      Lighting->DuskIntensity = 0.50f;
+      Lighting->DuskIntensity = 0.66f;
+      Lighting->MoonIntensity = 0.18f;
     }
 }
 

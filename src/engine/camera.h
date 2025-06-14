@@ -14,7 +14,7 @@ struct plane
     Assert(Normal.x*P.x + Normal.y*P.y + Normal.z*P.z + this->d == 0);
   }
 
-  plane() {}
+  plane() { Clear(this); }
 };
 
 struct frustum
@@ -51,6 +51,7 @@ struct camera poof(@version(2))
   r32 TargetDistanceFromTarget;
 
   r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
+  r32 Speed = 2.25f; // How fast the camera ghost moves
 
   v3 Front;
   v3 Right;

@@ -11,22 +11,24 @@ enum tone_mapping_type
 struct lighting_settings
 {
   b8 AutoDayNightCycle;
+  r32 tDaySpeed = 10.f; poof(@ui_value_range(1.f, 30.f))
 
   r32 tDay;      poof(@ui_value_range(-PI32, PI32))
 
   v3 SunP;       poof(@ui_skip)
 
   f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 DawnColor;
+  v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False)))
 
   f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
-  v3 SunColor;
+  v3 SunHSV; poof(@custom_ui(PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False)))
 
   f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
   v3 DuskColor;
+  v3 DuskHSV; poof(@custom_ui(PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False)))
 
   f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 MoonColor;
+  v3 MoonHSV; poof(@custom_ui(PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False)))
 
   // Computed from the above parameters and passed to the shader
   v3 CurrentSunColor;

@@ -41,6 +41,13 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
+                            Result &= Serialize(Bytes, &Element->tDaySpeed); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->tDay); // default
 
 
@@ -62,7 +69,7 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
-                            Result &= Serialize(Bytes, &Element->DawnColor); // default
+                            Result &= Serialize(Bytes, &Element->DawnHSV); // default
 
 
 
@@ -76,7 +83,7 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
-                            Result &= Serialize(Bytes, &Element->SunColor); // default
+                            Result &= Serialize(Bytes, &Element->SunHSV); // default
 
 
 
@@ -97,6 +104,13 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
+                            Result &= Serialize(Bytes, &Element->DuskHSV); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->MoonIntensity); // default
 
 
@@ -104,7 +118,7 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
-                            Result &= Serialize(Bytes, &Element->MoonColor); // default
+                            Result &= Serialize(Bytes, &Element->MoonHSV); // default
 
 
 
@@ -144,6 +158,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->tDaySpeed, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->tDay, Memory);
 
 
@@ -168,7 +190,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->DawnColor, Memory);
+  Result &= Deserialize(Bytes, &Element->DawnHSV, Memory);
 
 
 
@@ -184,7 +206,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->SunColor, Memory);
+  Result &= Deserialize(Bytes, &Element->SunHSV, Memory);
 
 
 
@@ -208,6 +230,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->DuskHSV, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->MoonIntensity, Memory);
 
 
@@ -216,7 +246,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->MoonColor, Memory);
+  Result &= Deserialize(Bytes, &Element->MoonHSV, Memory);
 
 
 

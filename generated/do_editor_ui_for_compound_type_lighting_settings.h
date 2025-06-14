@@ -58,6 +58,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
+        cs MemberName = CSz("tDaySpeed");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->tDaySpeed),
+          MemberName,
+          Params
+          , 1.f, 30.f );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("tDay");
                                                                 DoEditorUi(Ui,
           Window,
@@ -119,17 +144,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
-        cs MemberName = CSz("DawnColor");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->DawnColor),
-          MemberName,
-          Params
-          );
-
-
-
+        cs MemberName = CSz("DawnHSV");
+                                        PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False);
 
 
 
@@ -168,17 +184,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
-        cs MemberName = CSz("SunColor");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->SunColor),
-          MemberName,
-          Params
-          );
-
-
-
+        cs MemberName = CSz("SunHSV");
+                                        PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False);
 
 
 
@@ -241,6 +248,21 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
+        cs MemberName = CSz("DuskHSV");
+                                        PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False);
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("MoonIntensity");
                                                                 DoEditorUi(Ui,
           Window,
@@ -266,17 +288,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
-        cs MemberName = CSz("MoonColor");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->MoonColor),
-          MemberName,
-          Params
-          );
-
-
-
+        cs MemberName = CSz("MoonHSV");
+                                        PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False);
 
 
 

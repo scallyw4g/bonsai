@@ -174,6 +174,7 @@ link_internal void
 StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
 {
   Clear(Camera);
+  *Camera = {};
 
   Camera->Blend = Blend;
 
@@ -184,7 +185,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   // Someone already set FOV .. probably when deserializing stored runtime settings.
   if (Camera->Frust.FOV == 0.f)
   {
-    Camera->Frust.FOV = 45.0f;
+    Camera->Frust.FOV = 75.0f;
   }
 
   Camera->Up = WORLD_Z;

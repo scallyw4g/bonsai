@@ -93,6 +93,13 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
 
 
+                            Result &= Serialize(Bytes, &Element->Speed); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->Front); // default
 
 
@@ -224,6 +231,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Blend, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
 
 
