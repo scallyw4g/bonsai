@@ -456,8 +456,10 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 }
 
 link_internal void
-ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node)
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
   Assert(!FutexIsSignaled(&Node->Lock));
   AcquireFutex(&Node->Lock);
 
@@ -472,10 +474,14 @@ ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node)
   }
 
   Node->HadNoVisibleSurface = False;
-  Node->Dirty = 0;
-
   WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
+#if 0
   QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
+  ++Stats->NewQueues;
+#else
+  Info("pushed");
+  PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
+#endif
 
   ReleaseFutex(&Node->Lock);
 }
@@ -4113,7 +4119,6 @@ GetChunksIntersectingRay(world *World, ray *Ray, picked_world_chunk_static_buffe
       {
         world_position P = World_Position(x,y,z);
         /* world_chunk *Chunk = GetWorldChunkFromHashtable( World, P ); */
-        
         if (octree_node *Node = GetWorldChunkFromOctree( World, P ))
         {
           if (world_chunk *Chunk = Node->Chunk)

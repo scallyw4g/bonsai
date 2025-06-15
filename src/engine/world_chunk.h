@@ -620,12 +620,14 @@ MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
 }
 
 struct octree_node;
+struct octree_stats;
+struct octree_node_priority_queue;
 
 link_internal void
 DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk);
 
 link_internal void
-ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node);
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats);
 
 link_internal s32
 MarkBoundaryVoxels_MakeExteriorFaces(u64 *Occupancy, voxel *Voxels, chunk_dimension SrcChunkDim, chunk_dimension SrcChunkMin, chunk_dimension SrcChunkMax );

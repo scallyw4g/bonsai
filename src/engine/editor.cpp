@@ -1710,7 +1710,7 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 
     // Need to reinitialize chunks that no longer have the edit so that it
     // doesn't stay intact in chunks that lose it entirely
-    Node->Dirty = True;;
+    Node->Dirty = True;
     ReleaseFutex(&Node->Lock);
   }
 

@@ -731,7 +731,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         if (FacesRequired)
         {
           /* Info("Chunk faces (%d)", FacesRequired); */
-          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(RenderQ, DataType_v3_u8, u32(FacesRequired*6), &SynChunk->Mesh, SynChunk, DestChunk);
+          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, SynChunk, DestChunk);
         }
         else
         {
@@ -775,10 +776,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf->Buffer, Thread->TempMemory);
 
-      if (HasGpuMesh(&DestChunk->Mesh) == True)
-      {
-        PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
-      }
+      auto HandlesToDeallocate = DestChunk->Mesh.Handles;
+      b32 DeallocateHandles = HasGpuMesh(&DestChunk->Mesh) == True;
+      if (DeallocateHandles) { Assert(DestChunk->Flags&Chunk_VoxelsInitialized); }
 
       DestChunk->Mesh = *GpuMappedBuf;
       SynChunk->Mesh = {};
@@ -790,6 +790,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
       PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestChunk);
+      if (DeallocateHandles)
+      {
+        PushDeallocateBuffersCommand(RenderQ, &HandlesToDeallocate);
+      }
+
 
       // TODO(Jesse)(bug, race): There's a race here; the chunk can get deallocated on the
       // main thread and clear the Mesh before the Unmap job happens.  Have to somehow
@@ -805,6 +810,10 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     } break;
 
     { tmatch(work_queue_entry_init_world_chunk, Entry, Job)
+
+#if 1
+      NotImplemented;
+#else
       world_chunk *Chunk = Job->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
@@ -826,8 +835,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         Assert(Chunk->Dim == World->ChunkDim);
         u32 Octaves = 1;
         /* InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves); */
-        NotImplemented;
       }
+#endif
 
     } break;
 

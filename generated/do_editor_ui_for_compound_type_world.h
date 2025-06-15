@@ -177,6 +177,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
         
         
         
+        cs MemberName = CSz("MaxOctreeNodesToQueuePerFrame");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->MaxOctreeNodesToQueuePerFrame),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("ChunkFreelistFutex");
         
 

@@ -109,15 +109,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
-              /* Assert(HasGpuMesh(Command->Dest) == 0); */
-              /* Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 0); */
-              /* Command->Dest[0] = AllocateAndMapGpuBuffer(Command->Type, Command->ElementCount); */
-
               ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
               MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
 
               Assert(HasGpuMesh(Command->Dest) == 1);
-              /* Assert(HasGpuMesh(&Command->DestChunk->Mesh) == 1); */
 
               auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestChunk));
               PushWorkQueueEntry(LowPriorityQ, &Next);
@@ -125,9 +120,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
             { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
-              FlushBuffersToCard(Command->Buf);
 
+              FlushBuffersToCard(Command->Buf);
               FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, Command->Chunk)));
+
             } break;
 
             { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
@@ -735,7 +731,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
 #endif
 
-              /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
+              DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine);
 
               // TODO(Jesse): Move into engine debug
               world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
@@ -753,7 +749,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (GpuMap->Buffer.At)
               {
                 RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-                /* RenderImmediateGeometryToShadowMap(GpuMap, Graphics); */
+                RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
               }
               Clear(&GpuMap->Buffer);
 

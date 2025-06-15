@@ -3,9 +3,9 @@ debug_global u32 DeferrFreedNodes;
 debug_global u32 FreedNodes;
 
 link_internal world *
-AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegionSize)
+AllocateWorld(world *World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegionSize)
 {
-  Clear(World);
+  *World = {};
 
   memory_arena *WorldChunkMemory = AllocateArena(Gigabytes(2));
   World->ChunkMemory = WorldChunkMemory;
@@ -428,17 +428,20 @@ GetParentNodeFor(world *World, octree_node *QueryNode)
 }
 
 link_internal b32
-CountsAsDrawableOrUnmeshed(octree_node *Node)
+CanDrawOrHadNoSurface(octree_node *Node)
 {
-  b32 Result = True;
+  b32 Result = False;
 
-  if (world_chunk *Chunk = Node->Chunk)
+  if (Node->HadNoVisibleSurface)
   {
-    Result = HasGpuMesh(&Chunk->Mesh);
+    Result = True;
   }
   else
   {
-    Result = Node->HadNoVisibleSurface;
+    if (world_chunk *Chunk = Node->Chunk)
+    {
+      Result = HasGpuMesh(&Chunk->Mesh);
+    }
   }
 
   return Result;
@@ -609,13 +612,14 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 }
 
 
-link_internal void
+link_internal b32
 PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent)
 {
-  if (Node->Chunk)
-  {
-    Assert(Node->Chunk->Flags == Chunk_Uninitialized);
-  }
+  b32 Result = False;
+  /* if (Node->Chunk) */
+  /* { */
+  /*   Assert(Node->Chunk->Flags == Chunk_Uninitialized); */
+  /* } */
 
   s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1,
                            2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
@@ -641,11 +645,20 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
     IdealListIndex = Max(0, IdealListIndex-10);
   }
 
+  // Prefer chunks who are dirty
+  if (Node->Dirty)
+  {
+    IdealListIndex = Max(0, IdealListIndex-10);
+  }
+
   Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
   if (Remaining(&Queue->Lists[IdealListIndex]))
   {
     Push(&Queue->Lists[IdealListIndex], Node);
+    Result = True;
   }
+
+  return Result;
 }
 
 
@@ -682,7 +695,7 @@ FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
           while (TestNode) { Assert(TestNode != Node); TestNode = TestNode->Next; }
         }
 
-        // NOTE(Jesse): This is a bug waiting to happen.  Pretty sure this could
+        // TODO(Jesse, bug): This is a bug waiting to happen.  Pretty sure this could
         // accidentally persist the Chunk_Queued flag after the worker thread had
         // un-set it and therefore jam up the DeferFreelist (forever waiting on
         // a "Queued" chunk that's not actually queued).
@@ -730,8 +743,6 @@ FreeOctreeChildren(engine_resources *Engine, octree_node *Node)
   FreeOctreeNode(Engine, Node->Children+6);
   FreeOctreeNode(Engine, Node->Children+7);
 
-  /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
-
   u32 Result = 1;
   return Result;
 }
@@ -756,7 +767,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
     {
       if (HasGpuMesh(&Chunk->Mesh) == False)
       {
-        Assert( (Chunk->Flags & Chunk_Queued) == False);
+        /* Assert( (Chunk->Flags & Chunk_Queued) == False); */
         /* if (Chunk->WorldP == V3i(0,0,0)) { RuntimeBreak(); } */
         Assert(Chunk->FilledCount == 0 || Chunk->FilledCount == Volume(Chunk->Dim));
         Assert(HasGpuMesh(&Chunk->Mesh) == 0);
@@ -848,20 +859,27 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 link_internal b32
 ChildrenCanDrawOrHadNoMesh(octree_node *Node)
 {
-  b32 Result  = CountsAsDrawableOrUnmeshed(Node->Children[0]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[1]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[2]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[3]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[4]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[5]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[6]);
-      Result &= CountsAsDrawableOrUnmeshed(Node->Children[7]);
+  b32 Result  = CanDrawOrHadNoSurface(Node->Children[0]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[1]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[2]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[3]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[4]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[5]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[6]);
+      Result &= CanDrawOrHadNoSurface(Node->Children[7]);
 
   return Result;
 }
 
 link_internal void
-DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_ptr_paged_list *MainDrawList, world_chunk_ptr_paged_list *ShadowMapDrawList, u32 Depth = 0)
+DrawOctreeRecursive( engine_resources *Engine,
+                          octree_node *Node,
+                          octree_node *Parent,
+           octree_node_priority_queue *Queue,
+           world_chunk_ptr_paged_list *MainDrawList,
+           world_chunk_ptr_paged_list *ShadowMapDrawList,
+                         octree_stats *Stats,
+                                  u32  Depth = 0 )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   world_chunk *Chunk = Node->Chunk;
@@ -892,23 +910,26 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
 
         if (ChildrenCanDrawOrHadNoMesh(Node))
         {
-          DrawOctreeRecursive(Engine, Node->Children[0], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[1], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[2], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[3], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[4], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[5], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[6], MainDrawList, ShadowMapDrawList, Depth+1);
-          DrawOctreeRecursive(Engine, Node->Children[7], MainDrawList, ShadowMapDrawList, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[0], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[1], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[2], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[3], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[4], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[5], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[6], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
+          DrawOctreeRecursive(Engine, Node->Children[7], Node, Queue, MainDrawList, ShadowMapDrawList, Stats, Depth+1);
         }
         else
         { // Draw ourselves; the mesh composed of the children has a hole.
 
           if (Node->Dirty)
           {
-            ReinitializeOctreeNode(Engine, Node);
+            // Don't reinit dirty branch chunks; it causes a feedback loop and
+            // causes the whole tree up to the root node to reinit, which we
+            // don't want or need.
+            /* ReinitializeOctreeNode(Engine, Node, Stats); */
           }
-          else
+          /* else */
           {
             if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
             {
@@ -939,29 +960,27 @@ DrawOctreeRecursive( engine_resources *Engine, octree_node *Node, world_chunk_pt
       {
         if (Node->Dirty)
         {
-          ReinitializeOctreeNode(Engine, Node);
+          ReinitializeOctreeNode(Engine, Node, Parent, Queue, Stats);
         }
-        else
+
+        if (Chunk)
         {
-          if (Chunk)
+          if (EngineDebug->DrawLeafNodes)
           {
-            if (EngineDebug->DrawLeafNodes)
+            DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
+          }
+
+          if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
+          {
+            if (EngineDebug->DrawNodesWithChunks)
             {
               DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
             }
 
-            if (Depth == EngineDebug->OctreeDrawDepth || EngineDebug->OctreeDrawDepth == 0xFFFFFFFF)
+            if (HasGpuMesh(&Chunk->Mesh))
             {
-              if (EngineDebug->DrawNodesWithChunks)
-              {
-                DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
-              }
-
-              if (HasGpuMesh(&Chunk->Mesh))
-              {
-                Push(MainDrawList, Chunk);
-                Push(ShadowMapDrawList, Chunk);
-              }
+              Push(MainDrawList, Chunk);
+              Push(ShadowMapDrawList, Chunk);
             }
           }
         }
@@ -1044,8 +1063,14 @@ MaintainWorldOctree(engine_resources *Engine)
 
   // NOTE(Jesse): Must be signed because we can force queue chunks in different
   // ways (editing), which can cause (MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued) to be negative
-  s32 MaxToQueueThisFrame = Max(0, MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued);
-  Assert(MaxToQueueThisFrame <= MAX_OCTREE_NODES_QUEUED_PER_FRAME);
+  s32 MaxToQueueThisFrame = Max(0, World->MaxOctreeNodesToQueuePerFrame - ChunksCurrentlyQueued);
+
+  /* if (MaxToQueueThisFrame != MAX_OCTREE_NODES_QUEUED_PER_FRAME) */
+  /* { */
+  /*   Info("MaxToQueueThisFrame(%d)", MaxToQueueThisFrame); */
+  /* } */
+
+  Assert(MaxToQueueThisFrame <= World->MaxOctreeNodesToQueuePerFrame);
   /* DEBUG_VALUE_u32(MaxToQueueThisFrame); */
 
 /*   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
@@ -1060,21 +1085,35 @@ MaintainWorldOctree(engine_resources *Engine)
   /* DEBUG_VALUE_u32(ReusedNode); */
   /* DEBUG_VALUE_u32(AllocatedNode); */
 
+
+
+  DrawOctreeRecursive(Engine, &World->Root, 0, &Queue, MainDrawList, ShadowMapDrawList, &Stats);
+
+  {
+    octree_node_ptr_cursor List = Queue.Lists[498];
+    /* Info("(%p) (%p) (%p)", List.Start, List.At, List.End); */
+  }
+
   s32 NumQueuedThisFrame = 0;
   if (MaxToQueueThisFrame)
   {
     RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
+    /* IterateOver(Queue.Lists, List, ListIndex) */
     {
       octree_node_ptr_cursor List = Queue.Lists[ListIndex];
-      RangeIterator(BucketIndex, OCTREE_PRIORITY_QUEUE_LIST_LENGTH)
+      /* RangeIterator(BucketIndex, OCTREE_PRIORITY_QUEUE_LIST_LENGTH) */
+      IterateOver(&List, NodeP, NPIndex)
       {
-        octree_node **NodeP = GetPtr(&List, umm(BucketIndex));
+        /* octree_node **NodeP = GetPtr(&List, umm(BucketIndex)); */
+        /* Info("ListIndex(%d) NodeP(%p)", ListIndex, NodeP); */
         if (NodeP)
         {
           octree_node *Node = *NodeP;
+          /* Info("Node(%p)", Node); */
           if (Node->HadNoVisibleSurface)
           {
-            Assert(Node->Chunk == 0);
+            // We can actually have a chunk when we reallocate for an edit
+            /* Assert(Node->Chunk == 0); */
           }
           else
           {
@@ -1086,13 +1125,15 @@ MaintainWorldOctree(engine_resources *Engine)
             {
               Node->Chunk = GetFreeWorldChunk(World);
               WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
-              /* Node->Chunk = AllocateWorldChunk(Node->WorldP, World->ChunkDim, Node->Resolution, World->ChunkMemory); */
             }
 
-            /* QueueChunkForInit(&Plat->LowPriority, Node->Chunk, MeshBit_Lod0); */
-            QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
-            ++Stats.NewQueues;
-            if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+            if ( NotSet(Node->Chunk->Flags, Chunk_Queued) )
+            {
+              Node->Dirty = False;
+              QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
+              ++Stats.NewQueues;
+              if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+            }
           }
         }
         else
@@ -1104,10 +1145,15 @@ MaintainWorldOctree(engine_resources *Engine)
   }
 done_queueing_nodes:
 
-  DrawOctreeRecursive(Engine, &World->Root, MainDrawList, ShadowMapDrawList);
-
   DEBUG_OctreeTraversal(Engine, &World->Root, &Stats);
-  /* Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)", Stats.TotalLeaves, Stats.TotalBranches, Stats.TotalQueued, Stats.NewQueues); */
+  if (Stats.TotalQueued || Stats.NewQueues)
+  {
+    Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)",
+      Stats.TotalLeaves,
+      Stats.TotalBranches,
+      Stats.TotalQueued,
+      Stats.NewQueues);
+  }
 }
 
 
