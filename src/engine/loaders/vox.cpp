@@ -444,7 +444,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
           FullBarrier;
 
-          Current.ChunkData->Flags = Chunk_VoxelsInitialized;
+          /* Current.ChunkData->Flags = Chunk_VoxelsInitialized; */
 
           /* MarkBoundaryVoxels_NoExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
           MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);

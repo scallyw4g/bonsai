@@ -168,7 +168,7 @@ struct boundary_voxel
 
 struct chunk_data
 {
-  chunk_flag Flags;
+  /* chunk_flag Flags; */
   v3i Dim;       // TODO(Jesse): can (should?) be 3x u8 instead of 3x s32
   u64            *Occupancy;
   u64            *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
@@ -316,7 +316,7 @@ struct world_chunk poof(@version(1))
   world_chunk *Next;                  poof(@no_serialize)
 
   // chunk_data {
-          chunk_flag  Flags;          poof(@no_serialize)
+          /* chunk_flag  Flags;          poof(@no_serialize) */
                  v3i  Dim;            // could/should be compressed?
                  u64 *Occupancy;
                  u64 *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
@@ -325,6 +325,7 @@ struct world_chunk poof(@version(1))
       voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
   // }
 
+  b32 IsOnFreelist;
 
   gpu_mapped_element_buffer Mesh; poof(@no_serialize)
 
@@ -372,7 +373,7 @@ struct world_chunk_0
   world_chunk *Next;                  poof(@no_serialize)
 
   // chunk_data {
-          chunk_flag  Flags;          poof(@no_serialize)
+          /* chunk_flag  Flags;          poof(@no_serialize) */
                  v3i  Dim; // could be compressed?
                voxel *Voxels;         poof(@custom_marshal(MarshalMagicaVoxelEncodedColors(Stored->Voxels, Live->Voxels, Stored->Dim);)
                                            @array_length( Cast(umm, Volume(Element->Dim))))
@@ -635,11 +636,11 @@ MarkBoundaryVoxels_MakeExteriorFaces(u64 *Occupancy, voxel *Voxels, chunk_dimens
 /* link_internal world_chunk_geometry_buffer* */
 /* AllocateTempWorldChunkMesh(memory_arena* TempMemory); */
 
-link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem, v3 VertexOffset);
+/* link_internal void */
+/* RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *TempMesh, memory_arena *TempMem, v3 VertexOffset); */
 
 link_internal void
-FinalizeChunkInitialization(world_chunk *Chunk);
+FinalizeNodeInitializaion(octree_node *Chunk);
 
 link_internal untextured_3d_geometry_buffer*
 AllocateTempMesh(memory_arena* TempMemory, data_type Type);

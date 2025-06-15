@@ -34,6 +34,7 @@ enum octree_node_type
 struct world_edit_ptr_block_array;
 struct octree_node
 {
+  chunk_flag Flags;
   octree_node_type Type;
 
   // TODO(Jesse): Pack into something else

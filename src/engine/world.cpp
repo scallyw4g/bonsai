@@ -531,7 +531,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
 
   }
 
-  if (Chunk && (Chunk->Flags & Chunk_Queued) )
+  if (Chunk && Node->Flags & Chunk_Queued)
   {
     if (EngineDebug->DrawQueuedNodes)
     {
@@ -575,7 +575,7 @@ OctreeBranchShouldCollapse(engine_resources *Engine, octree_node *Node)
   {
     Assert(Node->Resolution == Chunk->DimInChunks);
     Assert(Node->WorldP == Chunk->WorldP);
-    if (Chunk->Flags & Chunk_Queued) return Result;
+    if (Node->Flags & Chunk_Queued) return Result;
   }
 
   v3i Res = ComputeNodeDesiredResolution(Engine, Node);
@@ -686,9 +686,9 @@ FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
 
   if (world_chunk *Chunk = Node->Chunk)
   {
-    if (Chunk->Flags & Chunk_Queued)
+    if (Node->Flags & Chunk_Queued)
     {
-      if ( (Chunk->Flags & Chunk_Deallocate) == 0)
+      if ( (Node->Flags & Chunk_Deallocate) == 0)
       {
         { // debug
           octree_node *TestNode = Engine->World->OctreeNodeDeferFreelist.First;
@@ -699,15 +699,15 @@ FreeOctreeNode(engine_resources *Engine, octree_node **Bucket)
         // accidentally persist the Chunk_Queued flag after the worker thread had
         // un-set it and therefore jam up the DeferFreelist (forever waiting on
         // a "Queued" chunk that's not actually queued).
-        Chunk->Flags = chunk_flag(Chunk->Flags|Chunk_Deallocate);
+        Node->Flags = chunk_flag(Node->Flags|Chunk_Deallocate);
         Free(&Engine->World->OctreeNodeDeferFreelist, Node);
         ++DeferrFreedNodes;
       }
     }
     else
     {
-      Assert(Chunk->Flags & Chunk_VoxelsInitialized);
-      Assert( (Chunk->Flags & Chunk_Queued) == False);
+      Assert(Node->Flags & Chunk_VoxelsInitialized);
+      Assert( (Node->Flags & Chunk_Queued) == False);
       FreeWorldChunk(Engine, Chunk);
 
       Clear(Node);
@@ -763,7 +763,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
     Assert(Chunk->Dim % World->ChunkDim == V3i(0));
 
-    if (Chunk->Flags & Chunk_VoxelsInitialized)
+    if (NodeToSplit->Flags & Chunk_VoxelsInitialized)
     {
       if (HasGpuMesh(&Chunk->Mesh) == False)
       {
@@ -781,8 +781,8 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
       }
     }
 
-    if ( (Chunk->Flags & Chunk_Queued) == 0 &&
-         (Chunk->Flags & Chunk_VoxelsInitialized) == 0 )
+    if ( (NodeToSplit->Flags & Chunk_Queued) == 0 &&
+         (NodeToSplit->Flags & Chunk_VoxelsInitialized) == 0 )
 
     {
       PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent);
@@ -1012,14 +1012,14 @@ MaintainWorldOctree(engine_resources *Engine)
       octree_node *Node = World->OctreeNodeDeferFreelist.First;
       octree_node *Next = Node->Next;
 
-      if (Node->Chunk->Flags & Chunk_Queued)
+      if (Node->Flags & Chunk_Queued)
       {
         break;
       }
       else
       {
-        Assert(Node->Chunk->Flags & Chunk_VoxelsInitialized);
-        Assert( (Node->Chunk->Flags & Chunk_Queued) == False);
+        Assert(Node->Flags & Chunk_VoxelsInitialized);
+        Assert( (Node->Flags & Chunk_Queued) == False);
 
         FreeWorldChunk(Engine, Node->Chunk);
 
@@ -1101,15 +1101,11 @@ MaintainWorldOctree(engine_resources *Engine)
     /* IterateOver(Queue.Lists, List, ListIndex) */
     {
       octree_node_ptr_cursor List = Queue.Lists[ListIndex];
-      /* RangeIterator(BucketIndex, OCTREE_PRIORITY_QUEUE_LIST_LENGTH) */
       IterateOver(&List, NodeP, NPIndex)
       {
-        /* octree_node **NodeP = GetPtr(&List, umm(BucketIndex)); */
-        /* Info("ListIndex(%d) NodeP(%p)", ListIndex, NodeP); */
         if (NodeP)
         {
           octree_node *Node = *NodeP;
-          /* Info("Node(%p)", Node); */
           if (Node->HadNoVisibleSurface)
           {
             // We can actually have a chunk when we reallocate for an edit
@@ -1127,7 +1123,7 @@ MaintainWorldOctree(engine_resources *Engine)
               WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
             }
 
-            if ( NotSet(Node->Chunk->Flags, Chunk_Queued) )
+            if ( NotSet(Node->Flags, Chunk_Queued) )
             {
               Node->Dirty = False;
               QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);

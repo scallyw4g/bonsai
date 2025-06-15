@@ -57,30 +57,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         
         
         
-        cs MemberName = CSz("Flags");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(chunk_flag*, &Element->Flags),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Dim");
                                                                 DoEditorUi(Ui,
           Window,
@@ -221,6 +197,28 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
 
         
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("IsOnFreelist");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->IsOnFreelist),
+          MemberName,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+
+                PushNewRow(Ui);
+
       }
       
 

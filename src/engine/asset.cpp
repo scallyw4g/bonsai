@@ -358,7 +358,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, memory_arena *PermMe
   /* Tag = Read_u32(FileBytes); */
   /* Assert(Tag ==  WorldChunkFileTag_END); */
 
-  Result->Flags = Chunk_VoxelsInitialized;
+  /* Result->Flags = Chunk_VoxelsInitialized; */
 
   /* DebugLine("Loaded Chunk : P (%d,%d,%d) Standing Spots (%d)", Result->WorldP.x, Result->WorldP.y, Result->WorldP.z, Header.StandingSpotElementCount); */
 }
@@ -609,12 +609,13 @@ InitAsset(asset *Asset, thread_local_state *Thread)
 
     MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Occupancy, Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
 
-    FinalizeChunkInitialization(Chunk);
+    /* FinalizeChunkInitialization(Chunk); */
 
     data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
     auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
 
-    RebuildWorldChunkMesh(Thread, Chunk, V3i(0), Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory, Chunk->Dim/-2.f);
+    NotImplemented;
+    /* RebuildWorldChunkMesh(Thread, Chunk, V3i(0), Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory, Chunk->Dim/-2.f); */
 
     Asset->Type = AssetType_WorldChunk;
     Asset->Chunk = *Chunk;

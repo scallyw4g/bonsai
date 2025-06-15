@@ -53,11 +53,11 @@ SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *Me
 #endif
 
 link_internal void
-FinalizeChunkInitialization(world_chunk *Chunk)
+FinalizeNodeInitializaion(octree_node *Node)
 {
   FullBarrier;
 
-  u32 Flags = Chunk->Flags ;
+  u32 Flags = Node->Flags;
   if ( (Flags & Chunk_Freelist) != 0)
   {
     Info("%d", Flags);
@@ -70,13 +70,14 @@ FinalizeChunkInitialization(world_chunk *Chunk)
     RuntimeBreak();
   }
 
-  /* UnSetFlag(Chunk, Chunk_Garbage); */
-  UnSetFlag(&Chunk->Flags, Chunk_Queued);
-  SetFlag(&Chunk->Flags, Chunk_VoxelsInitialized);
+  /* UnSetFlag(Node, Chunk_Garbage); */
+  UnSetFlag(&Node->Flags, Chunk_Queued);
+  SetFlag(&Node->Flags, Chunk_VoxelsInitialized);
 
   FullBarrier;
 }
 
+#if 0
 inline b32
 ChunkIsGarbage(world_chunk* Chunk)
 {
@@ -86,6 +87,7 @@ ChunkIsGarbage(world_chunk* Chunk)
   b32 Garbage = IsSet(Chunk, Chunk_Garbage);
   return Garbage;
 }
+#endif
 
 link_internal void
 WorldChunk(world_chunk *Chunk, v3i WorldP, v3i Dim, v3i DimInChunks)
@@ -318,17 +320,14 @@ GetFreeWorldChunk(world *World)
     World->FreeChunkCount -= 1;
 
     Result = (world_chunk*)Next;
-    u32 Flags = Result->Flags;
-    if (Flags != Chunk_Freelist) { Info("%d", Flags); RuntimeBreak(); }
-    Assert(Result->Flags == Chunk_Freelist);
-    Result->Flags = {};
+    if (Result->IsOnFreelist == False) { RuntimeBreak(); }
+    Result->IsOnFreelist = False;
     ReleaseFutex(&World->ChunkFreelistFutex);
   }
   else
   {
     /* Info("Allocated World Chunk"); */
     Result = AllocateWorldChunk({}, World->ChunkDim, {}, World->ChunkMemory);
-    Assert(Result->Flags == Chunk_Uninitialized);
     ++TotalWorldChunksAllocated;
   }
 
@@ -373,7 +372,6 @@ GetAndInsertFreeWorldChunk(world *World, world_position P)
       Assert(Result->WorldP == P);
       Assert(Result->Voxels);
       Assert(Result->Dim == World->ChunkDim);
-      Assert(Result->Flags == Chunk_Uninitialized);
     }
 
   }
@@ -399,30 +397,31 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  u32 Flags = Chunk->Flags;
+  /* u32 Flags = Chunk->Flags; */
 
-  if ( (Flags & Chunk_Queued) != 0)
-  {
-    Info("%d", Flags);
-    RuntimeBreak();
-  }
+  /* if ( (Flags & Chunk_Queued) != 0) */
+  /* { */
+  /*   Info("%d", Flags); */
+  /*   RuntimeBreak(); */
+  /* } */
 
-  if ( (Flags & Chunk_Freelist) != 0)
-  {
-    Info("%d", Flags);
-    RuntimeBreak();
-  }
+  /* if ( (Flags & Chunk_Freelist) != 0) */
+  /* { */
+  /*   Info("%d", Flags); */
+  /*   RuntimeBreak(); */
+  /* } */
 
-  if ( (Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized)) == 0)
-  {
-    Info("%d", Flags);
-    RuntimeBreak();
-  }
+  /* if ( (Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized)) == 0) */
+  /* { */
+  /*   Info("%d", Flags); */
+  /*   RuntimeBreak(); */
+  /* } */
 
   Assert(Chunk->Next == 0);
-  Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized);
+  /* Assert(Chunk->Flags & Chunk_Deallocate|Chunk_VoxelsInitialized); */
 
   /* Assert(NotSet(Chunk->Flags, Chunk_Queued)); */
+  Assert(Chunk->IsOnFreelist == False);
 
   // NOTE(Jesse): Have to mark this chunk so the thing that collects unused
   // chunks doesn't free this multiple times.
@@ -437,13 +436,13 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   AcquireFutex(&World->ChunkFreelistFutex);
   world_chunk *Next = World->ChunkFreelistSentinal.Next;
 
-  Chunk->Flags = Chunk_Freelist;
+  Assert(Chunk->IsOnFreelist == False);
+  Chunk->IsOnFreelist = True;
   if (Next)
   {
-    u32 nFlags = Next->Flags;
-    if (nFlags != Chunk_Freelist)
+    if (Next->IsOnFreelist == False)
     {
-      Info("%d", nFlags);
+      Info("%d", Next->IsOnFreelist);
       RuntimeBreak();
     }
   }
@@ -459,31 +458,27 @@ link_internal void
 ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
   Assert(!FutexIsSignaled(&Node->Lock));
-  AcquireFutex(&Node->Lock);
 
-  if (Node->Chunk)
+  if ( (Node->Flags & Chunk_Queued) == False )
   {
-    // Skip chunks that are already queued
-    if (Node->Chunk->Flags & Chunk_Queued) { ReleaseFutex(&Node->Lock); return; }
-  }
-  else
-  {
-    Node->Chunk = GetFreeWorldChunk(Engine->World);
-  }
+    AcquireFutex(&Node->Lock);
 
-  Node->HadNoVisibleSurface = False;
-  WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
+    if (Node->Chunk == 0) { Node->Chunk = GetFreeWorldChunk(Engine->World); }
+
+    WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
 #if 0
-  QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
-  ++Stats->NewQueues;
+    QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
+    ++Stats->NewQueues;
 #else
-  Info("pushed");
-  PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
+    Info("pushed");
+    /* Node->Dirty = False; */
+    /* Node->HadNoVisibleSurface = False; */
+    PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
 #endif
 
-  ReleaseFutex(&Node->Lock);
+    ReleaseFutex(&Node->Lock);
+  }
 }
 
 link_internal world_chunk*
@@ -2622,8 +2617,9 @@ GetClosestPointRelativeTo(voxel_position* Query, voxel_position* Start, voxel_po
   return Result;
 }
 
+#if 0
 link_internal b32
-HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
+HasUnfilledNeighbors(s32 Index, world_chunk *Chunk, chunk_dimension ChunkDim)
 {
   TIMED_FUNCTION();
 
@@ -2670,6 +2666,7 @@ HasUnfilledNeighbors(s32 Index, world_chunk* Chunk, chunk_dimension ChunkDim)
 
   return Result;
 }
+#endif
 
 link_internal void
 GetBoundingVoxelsClippedTo(world_chunk* Chunk, chunk_dimension ChunkDim, boundary_voxels* Dest, aabb Clip)
@@ -3482,6 +3479,7 @@ ComputeLodMesh( thread_local_state *Thread,
 #if 1
 #endif
 
+#if 0
 link_internal void
 InitializeWorldChunkEmpty(world_chunk *DestChunk)
 {
@@ -3508,6 +3506,7 @@ InitializeWorldChunkEmpty(world_chunk *DestChunk)
 
   return;
 }
+#endif
 
 debug_global u32 TotalChunksQueued;
 
@@ -3518,7 +3517,7 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   Assert(Node->Chunk);
   Assert(Node->Chunk->Dim.x);
-  Assert( NotSet(Node->Chunk->Flags, Chunk_Queued) );
+  Assert( NotSet(Node->Flags, Chunk_Queued) );
 
   ++TotalChunksQueued;
 
@@ -3552,11 +3551,11 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
   PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node);
 #endif
 
-  Assert( NotSet(Node->Chunk->Flags, Chunk_Queued) );
-  SetFlag(&Node->Chunk->Flags, Chunk_Queued);
+  Assert( NotSet(Node->Flags, Chunk_Queued) );
+  SetFlag(&Node->Flags, Chunk_Queued);
 }
 
-#if 1
+#if 0
 inline void
 QueueChunkForMeshRebuild(work_queue *Queue, world_chunk *Chunk, chunk_init_flags Flags = ChunkInitFlag_Noop)
 {
@@ -3639,7 +3638,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
   TIMED_FUNCTION();
 
   engine_resources *Engine = GetEngineResources();
-  Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) );
+  /* Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) ); */
   Assert( MeshBit == MeshBit_Lod0 );
 
   BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
@@ -3649,6 +3648,7 @@ RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOff
 #endif
 
 
+#if 0
 link_internal void
 InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
                            thread_local_state *Thread,
@@ -3685,7 +3685,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   Assert(Global_ChunkApronDim.y == Global_ChunkApronMinDim.y + Global_ChunkApronMaxDim.y);
   Assert(Global_ChunkApronDim.z == Global_ChunkApronMinDim.z + Global_ChunkApronMaxDim.z);
 
-  Assert(!ChunkIsGarbage(DestChunk));
+  /* Assert(!ChunkIsGarbage(DestChunk)); */
 
   untextured_3d_geometry_buffer* Mesh = 0;
 
@@ -3731,6 +3731,7 @@ InitializeChunkWithNoise( chunk_init_callback  NoiseCallback,
   generic_noise_params Params = {r32(Thresh), Period, r32(Amp), RGBColor};
   InitializeChunkWithNoise(NoiseCallback, Thread, DestChunk, &Params, Flags, UserData, MakeExteriorFaces, NoiseBasisOffset);
 }
+#endif
 
 // nochecking Move as much out of this block as possible.  Only the last few of
 // the things in this block are actually related to drawing
@@ -3742,14 +3743,14 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
 }
 
 link_internal work_queue_entry_build_chunk_mesh
-WorkQueueEntryBuildWorldChunkMesh(world_chunk *SynChunk, world_chunk *DestChunk)
+WorkQueueEntryBuildWorldChunkMesh(world_chunk *SynChunk, octree_node *DestNode)
 {
-  work_queue_entry_build_chunk_mesh Result = {SynChunk, DestChunk};
+  work_queue_entry_build_chunk_mesh Result = {SynChunk, DestNode};
   return Result;
 }
 
 link_internal work_queue_entry_finalize_noise_values
-WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u16 *NoiseData, v3i NoiseDim, world_chunk *Chunk)
+WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u16 *NoiseData, v3i NoiseDim, octree_node *Chunk)
 {
   work_queue_entry_finalize_noise_values Result = { PBOBuf, NoiseData, NoiseDim, Chunk };
   return Result;
@@ -4265,6 +4266,7 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
     if (Done) break;
 
     octree_node *Node = PickedNode->Node;
+
     r32 tChunk = PickedNode->t;
     world_chunk *ClosestChunk = Node->Chunk;
 
@@ -4288,69 +4290,66 @@ RayTraceCollision(engine_resources *Engine, ray *Ray)
       DEBUG_DrawSimSpaceAABB(Engine, &AABB, Color, 1.f);
     }
 #endif
-
-    if (Node->Chunk == 0)
+    if ( Node->Chunk && (Node->Flags & Chunk_VoxelsInitialized) )
     {
-      continue;
-    }
+      v3 Advance = Ray->Dir*0.01f;
 
-    v3 Advance = Ray->Dir*0.01f;
+      // TODO(Jesse): This should pass.
+      /* Assert (ClosestChunk->FilledCount > 0); */
 
-    // TODO(Jesse): This should pass.
-    /* Assert (ClosestChunk->FilledCount > 0); */
+      v3 CollisionP = Ray->Origin + (Ray->Dir*tChunk);
 
-    v3 CollisionP = Ray->Origin + (Ray->Dir*tChunk);
+      v3 StartP = CollisionP + (Advance*0.1f);
 
-    v3 StartP = CollisionP + (Advance*0.1f);
+      v3 ChunkSimP = GetSimSpaceP(World, Canonical_Position(V3(0), ClosestChunk->WorldP));
+      v3 AtP = (StartP - ChunkSimP) / V3(ClosestChunk->DimInChunks);
 
-    v3 ChunkSimP = GetSimSpaceP(World, Canonical_Position(V3(0), ClosestChunk->WorldP));
-    v3 AtP = (StartP - ChunkSimP) / V3(ClosestChunk->DimInChunks);
-
-    u32 AxisIndex = 0;
-    for (;;)
-    {
-      if ( AtP.x < 0 || AtP.x >= WorldChunkDim.x ||
-           AtP.y < 0 || AtP.y >= WorldChunkDim.y ||
-           AtP.z < 0 || AtP.z >= WorldChunkDim.z )
+      u32 AxisIndex = 0;
+      for (;;)
       {
-        // Hit = False;
-        break;
-      }
+        if ( AtP.x < 0 || AtP.x >= WorldChunkDim.x ||
+             AtP.y < 0 || AtP.y >= WorldChunkDim.y ||
+             AtP.z < 0 || AtP.z >= WorldChunkDim.z )
+        {
+          // Hit = False;
+          break;
+        }
 
-      // TODO(Jesse): Instead of trucating, make ClosestCentroid(AtP)
-      voxel_position LocalTestP = Voxel_Position(AtP);
-      if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
-      {
-        Done = True;
+        // TODO(Jesse): Instead of trucating, make ClosestCentroid(AtP)
+        voxel_position LocalTestP = Voxel_Position(AtP);
+        if (IsFilledInChunk(ClosestChunk, LocalTestP, World->ChunkDim))
+        {
+          Done = True;
 
-        Result.Chunks[PickedVoxel_FirstFilled] = {Node, r64(tChunk)};
-        Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
+          Result.Chunks[PickedVoxel_FirstFilled] = {Node, r64(tChunk)};
+          Result.Picks[PickedVoxel_FirstFilled] = Canonical_Position(AtP, ClosestChunk->WorldP);
 
 #if 0
-        {
-          untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-          v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks);
-          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
-          DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_GREEN, V3(ClosestChunk->DimInChunks));
-        }
+          {
+            untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+            v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks);
+            /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
+            DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_GREEN, V3(ClosestChunk->DimInChunks));
+          }
 #endif
 
-        break;
-      }
-      else
-      {
-        Result.Chunks[PickedVoxel_LastEmpty] = {Node, r64(tChunk)};
-        Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
-        {
-          /* untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
-          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks); */
-          /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
-          /* DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_BLUE, V3(ClosestChunk->DimInChunks)); */
+          break;
         }
-      }
+        else
+        {
+          Result.Chunks[PickedVoxel_LastEmpty] = {Node, r64(tChunk)};
+          Result.Picks[PickedVoxel_LastEmpty] = Canonical_Position(AtP, ClosestChunk->WorldP);
+          {
+            /* untextured_3d_geometry_buffer VoxMesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+            /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP*ClosestChunk->DimInChunks); */
+            /* v3 RenderMin = GetRenderP(Engine, ClosestChunk->WorldP) + V3(LocalTestP); */
+            /* DrawVoxel_MinDim( &VoxMesh, RenderMin, RGB_BLUE, V3(ClosestChunk->DimInChunks)); */
+          }
+        }
 
-      AtP.E[AxisIndex] += Advance.E[AxisIndex];
-      AxisIndex = (AxisIndex + 1) % 3;
+        AtP.E[AxisIndex] += Advance.E[AxisIndex];
+        AxisIndex = (AxisIndex + 1) % 3;
+      }
     }
 
 #if 0

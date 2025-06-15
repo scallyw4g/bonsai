@@ -119,9 +119,9 @@ UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
 }
 
 inline void
-UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
+UnSetFlag( octree_node *Node, chunk_flag Flag )
 {
-  UnSetFlag(&Chunk->Flags, Flag);
+  UnSetFlag(&Node->Flags, Flag);
   return;
 }
 
@@ -148,9 +148,9 @@ SetFlag( chunk_flag *Flags, chunk_flag Flag )
 /* } */
 
 inline void
-SetFlag( world_chunk *Chunk, chunk_flag Flag )
+SetFlag( octree_node *Node, chunk_flag Flag )
 {
-  Chunk->Flags = (chunk_flag)(Chunk->Flags | Flag);
+  Node->Flags = (chunk_flag)(Node->Flags | Flag);
   return;
 }
 
@@ -169,7 +169,7 @@ IsSet( chunk_flag Flags, chunk_flag Flag )
 /* } */
 
 inline b32
-IsSet( world_chunk *Chunk, chunk_flag Flag )
+IsSet( octree_node *Chunk, chunk_flag Flag )
 {
   b32 Result = IsSet(Chunk->Flags, Flag);
   return Result;
@@ -190,7 +190,7 @@ NotSet( chunk_flag Flags, chunk_flag Flag )
 /* } */
 
 inline b32
-NotSet( world_chunk *Chunk, chunk_flag Flag )
+NotSet( octree_node *Chunk, chunk_flag Flag )
 {
   b32 Result = !(IsSet(Chunk, Flag));
   return Result;
@@ -262,7 +262,6 @@ ClearWorldChunk( world_chunk *Chunk )
 
   Clear(&Chunk->Mesh);
 
-  Chunk->Flags = {};
   Chunk->DimInChunks = {};
 }
 

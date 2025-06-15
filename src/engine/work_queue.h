@@ -65,15 +65,15 @@ struct work_queue_entry_finalize_noise_values
   gpu_readback_buffer PBOBuf;
 
   u16 *NoiseData;
-  v3i NoiseDim;
+  v3i  NoiseDim;
 
-  world_chunk *Chunk;
+  octree_node *DestNode;
 };
 
 struct work_queue_entry_build_chunk_mesh
 {
   world_chunk *SynChunk;
-  world_chunk *DestChunk;
+  octree_node *DestNode;
 };
 
 #if 1

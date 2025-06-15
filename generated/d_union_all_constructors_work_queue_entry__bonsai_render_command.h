@@ -291,10 +291,10 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_cancel_all_noise_readba
 
 
 link_internal bonsai_render_command_initialize_noise_buffer
-BonsaiRenderCommandInitializeNoiseBuffer(  octree_node *  Node  )
+BonsaiRenderCommandInitializeNoiseBuffer(  octree_node *  DestNode  )
 {
   bonsai_render_command_initialize_noise_buffer Reuslt = {
-            .Node = Node
+            .DestNode = DestNode
 
 
   };
@@ -413,7 +413,7 @@ BonsaiRenderCommandDoStuff(  u32   Ignored  )
 }
 
 link_internal bonsai_render_command_allocate_and_map_gpu_element_buffer
-BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   ElementCount , gpu_mapped_element_buffer *  Dest , world_chunk *  SynChunk , world_chunk *  DestChunk  )
+BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   ElementCount , gpu_mapped_element_buffer *  Dest , world_chunk *  SynChunk , octree_node *  DestNode  )
 {
   bonsai_render_command_allocate_and_map_gpu_element_buffer Reuslt = {
             .Type = Type
@@ -424,7 +424,7 @@ BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   Ele
 ,
         .SynChunk = SynChunk
 ,
-        .DestChunk = DestChunk
+        .DestNode = DestNode
   };
 
   
@@ -432,12 +432,12 @@ BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   Ele
 }
 
 link_internal bonsai_render_command_unmap_gpu_element_buffer
-BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_mapped_element_buffer *  Buf , world_chunk *  Chunk  )
+BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_mapped_element_buffer *  Buf , octree_node *  DestNode  )
 {
   bonsai_render_command_unmap_gpu_element_buffer Reuslt = {
             .Buf = Buf
 
-,        .Chunk = Chunk
+,        .DestNode = DestNode
   };
 
   

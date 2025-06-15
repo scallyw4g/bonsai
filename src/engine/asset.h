@@ -258,9 +258,12 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
     {
       if (ModelIndex != 0) { Warn("Requested Dim for ModelIndex(%d) on an asset with Type(AssetType_WorldChunk), ignoring ModelIndex", ModelIndex); }
 
+      // NOTE(Jesse): Removed Flags from chunk_data .. does that matter here?
+      NotImplemented;
+
       Result.Tag = Maybe_Yes;
       Result.Value = {
-        .Flags         = Asset->Chunk.Flags,
+        /* .Flags         = Asset->Chunk.Flags, */
         .Dim           = Asset->Chunk.Dim,
         .Voxels        = Asset->Chunk.Voxels,
         .Occupancy     = Asset->Chunk.Occupancy,

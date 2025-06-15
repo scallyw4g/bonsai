@@ -547,12 +547,12 @@ DoEngineDebug(engine_resources *Engine)
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
 
-      if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) )
-      {
-        MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
-        QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
-      }
-      PushNewRow(Ui);
+      /* if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) ) */
+      /* { */
+      /*   MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim); */
+      /*   QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk); */
+      /* } */
+      /* PushNewRow(Ui); */
 
       if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
       {

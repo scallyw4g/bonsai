@@ -3,11 +3,11 @@
 link_internal void
 PushBonsaiRenderCommandInitializeNoiseBuffer(
   work_queue *RenderQueue
-   , octree_node* Node  
+   , octree_node* DestNode  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  Node  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandInitializeNoiseBuffer(  DestNode  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
@@ -102,22 +102,22 @@ PushBonsaiRenderCommandDoStuff(
 link_internal void
 PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
   work_queue *RenderQueue
-   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , world_chunk* SynChunk   , world_chunk* DestChunk  
+   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , world_chunk* SynChunk   , octree_node* DestNode  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  Type , ElementCount , Dest , SynChunk , DestChunk  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  Type , ElementCount , Dest , SynChunk , DestNode  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
 PushBonsaiRenderCommandUnmapGpuElementBuffer(
   work_queue *RenderQueue
-   , gpu_mapped_element_buffer* Buf   , world_chunk* Chunk  
+   , gpu_mapped_element_buffer* Buf   , octree_node* DestNode  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer(  Buf , Chunk  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapGpuElementBuffer(  Buf , DestNode  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

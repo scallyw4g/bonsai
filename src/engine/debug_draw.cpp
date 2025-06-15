@@ -333,6 +333,17 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, wo
 }
 
 link_internal void
+DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, octree_node *Node,
+                     chunk_dimension WorldChunkDim, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+  v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Node->WorldP), Graphics->Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim*Node->Resolution, Node->WorldP), Graphics->Camera);
+
+
+  DEBUG_DrawAABB(Mesh, MinP, MaxP, RGBColor, Thickness);
+}
+
+link_internal void
 DEBUG_HighlightChunk(world_chunk *Chunk, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   UNPACK_ENGINE_RESOURCES(GetEngineResources());

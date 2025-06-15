@@ -3,8 +3,10 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  Assert( (Chunk->Flags & Chunk_Queued) == 0);
-  Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized));
+  Assert(Chunk->IsOnFreelist == False);
+
+  /* Assert( (Chunk->Flags & Chunk_Queued) == 0); */
+  /* Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized)); */
 
   if (HasGpuMesh(&Chunk->Mesh))
   {
@@ -13,7 +15,7 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   ClearWorldChunk(Chunk);
 
-  Assert(Chunk->Flags == 0);
+  /* Assert(Chunk->Flags == 0); */
   Assert(Chunk->Next == 0);
 
   FullBarrier;

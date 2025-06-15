@@ -20,7 +20,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
     WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
     WorkerThread_BeforeJobStart(ThreadParams);
 
-    world_chunk_ptr_block_array UpdatedChunks = WorldChunkPtrBlockArray(Thread->TempMemory);
+    /* world_chunk_ptr_block_array UpdatedChunks = WorldChunkPtrBlockArray(Thread->TempMemory); */
 
     while (work_queue_entry *Entry = PopWorkQueueEntry(WorldUpdateQ))
     {
@@ -68,10 +68,10 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
 
     }
 
-    IterateOver(&UpdatedChunks, Chunk, ChunkIndex)
-    {
-      QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
-    }
+    /* IterateOver(&UpdatedChunks, Chunk, ChunkIndex) */
+    /* { */
+    /*   QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk); */
+    /* } */
 
     // NOTE(Jesse): This is intentionally after all the updates have completed
     // such that the UpdatedChunks block array persists between jobs and we

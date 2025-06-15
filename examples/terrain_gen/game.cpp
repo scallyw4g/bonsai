@@ -385,14 +385,16 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
       world_chunk *Chunk = Job->Chunk;
 
+      NotImplemented;
+#if 0
       if (ChunkIsGarbage(Chunk))
       {
         // NOTE(Jesse): This is an optimization; the engine marks chunks that
         // have moved outside of the visible region as garbage.
-        NotImplemented;
         /* Chunk->Flags = Chunk_Uninitialized; */
       }
       else
+#endif
       {
         auto GenType = GetEngineResources()->GameState->TerrainGenType;
 

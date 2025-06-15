@@ -33,30 +33,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
         
         
         
-        cs MemberName = CSz("Flags");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(chunk_flag*, &Element->Flags),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Dim");
                                                                 DoEditorUi(Ui,
           Window,

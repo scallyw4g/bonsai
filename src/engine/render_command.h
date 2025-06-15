@@ -113,7 +113,7 @@ struct bonsai_render_command_do_stuff
 struct octree_node;
 struct bonsai_render_command_initialize_noise_buffer
 {
-  octree_node *Node;
+  octree_node *DestNode;
 };
 
 struct bonsai_render_command_gl_timer_init
@@ -148,7 +148,7 @@ struct bonsai_render_command_allocate_and_map_gpu_element_buffer
   //
   // nopush
   world_chunk *SynChunk;
-  world_chunk *DestChunk;
+  octree_node *DestNode;
 };
 
 struct bonsai_render_command_unmap_gpu_element_buffer
@@ -159,7 +159,7 @@ struct bonsai_render_command_unmap_gpu_element_buffer
   // remove.
   //
   // nopush
-  world_chunk *Chunk;
+  octree_node *DestNode;
 };
 
 struct bonsai_render_command_unmap_and_deallocate_buffer

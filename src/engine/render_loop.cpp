@@ -114,7 +114,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(HasGpuMesh(Command->Dest) == 1);
 
-              auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestChunk));
+              auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
               PushWorkQueueEntry(LowPriorityQ, &Next);
             } break;
 
@@ -122,7 +122,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
 
               FlushBuffersToCard(Command->Buf);
-              FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, Command->Chunk)));
+              FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
 
             } break;
 
@@ -276,9 +276,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               bonsai_render_command_initialize_noise_buffer C = RenderCommand->bonsai_render_command_initialize_noise_buffer;
 
-              octree_node *Node = C.Node;
-              world_chunk **Chunk2 = &C.Node->Chunk;
-              world_chunk *Chunk1 = C.Node->Chunk;
+              octree_node *Node = C.DestNode;
+              world_chunk **Chunk2 = &C.DestNode->Chunk;
+              world_chunk *Chunk1 = C.DestNode->Chunk;
               world_chunk *Chunk = Chunk1;
 
               Assert(s64(Chunk) == s64(Chunk1));
@@ -677,7 +677,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
-                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Chunk};
+                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
                 Push(&Graphics->NoiseReadbackJobs, &Readback);
               }
 
@@ -882,7 +882,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             u16 *NoiseValues = Cast(u16*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
             AssertNoGlErrors;
 
-            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->Chunk));
+            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
             PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
 
             // TODO(Jesse): This actually makes the loop skip a job because we

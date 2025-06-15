@@ -1,4 +1,4 @@
-// src/engine/world.h:79:0
+// src/engine/world.h:80:0
 
 struct world_chunk_freelist
 {

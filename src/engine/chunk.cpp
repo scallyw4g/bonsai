@@ -24,7 +24,7 @@ IsFilledInChunk( world_chunk *Chunk, voxel_position VoxelP, chunk_dimension Dim)
 {
   b32 isFilled = True;
 
-  if (Chunk && ( IsSet(Chunk, Chunk_VoxelsInitialized) ))
+  if (Chunk)
   {
     s32 i = GetIndex(VoxelP, Dim);
 

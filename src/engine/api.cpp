@@ -685,14 +685,17 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     } break;
 
     { tmatch(work_queue_entry_finalize_noise_values, Entry, Job)
-      auto Chunk1 = Job->Chunk;
+      auto Node = Job->DestNode;
+      auto Chunk = Node->Chunk;
+
       u16 *NoiseValues = Job->NoiseData;
       v3i NoiseDim = Job->NoiseDim;
       Assert(NoiseValues);
+      Assert(Chunk);
 
-      world_chunk *DestChunk = Chunk1;
-      world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk1->Dim + V3i(0, 2, 2), Chunk1->DimInChunks, Thread->PermMemory);
-      SynChunk->Flags = Chunk_Queued;
+      world_chunk *DestChunk = Node->Chunk;
+      world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+      /* SynChunk->Flags = Chunk_Queued; */
 
       Assert(NoiseDim == V3i(66, 66, 66));
       Assert(SynChunk->Dim == V3i(64, 66, 66));
@@ -725,14 +728,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
         Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
 
-        FinalizeChunkInitialization(SynChunk);
+        /* FinalizeChunkInitialization(SynChunk); */
 
         s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
         if (FacesRequired)
         {
           /* Info("Chunk faces (%d)", FacesRequired); */
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, SynChunk, DestChunk);
+              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, SynChunk, Node);
         }
         else
         {
@@ -740,7 +743,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
           {
             PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
           }
-          FinalizeChunkInitialization(DestChunk);
+          FinalizeNodeInitializaion(Node);
           FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
         }
       }
@@ -751,7 +754,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         {
           PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
         }
-        FinalizeChunkInitialization(DestChunk);
+        FinalizeNodeInitializaion(Node);
         FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
       }
 
@@ -768,9 +771,15 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
     { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)
 
+#if 0
+      NotImplemented;
+#else
       world_chunk               *SynChunk     = Job->SynChunk;
-      world_chunk               *DestChunk    = Job->DestChunk;
+
+      octree_node               *DestNode     = Job->DestNode;
+      world_chunk               *DestChunk    = DestNode->Chunk;
       gpu_mapped_element_buffer *GpuMappedBuf = &SynChunk->Mesh;
+
       /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
       Assert(HasGpuMesh(GpuMappedBuf) == True);
 
@@ -778,7 +787,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       auto HandlesToDeallocate = DestChunk->Mesh.Handles;
       b32 DeallocateHandles = HasGpuMesh(&DestChunk->Mesh) == True;
-      if (DeallocateHandles) { Assert(DestChunk->Flags&Chunk_VoxelsInitialized); }
+      /* if (DeallocateHandles) { Assert(DestChunk->Flags&Chunk_VoxelsInitialized); } */
 
       DestChunk->Mesh = *GpuMappedBuf;
       SynChunk->Mesh = {};
@@ -789,7 +798,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestChunk);
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestNode);
       if (DeallocateHandles)
       {
         PushDeallocateBuffersCommand(RenderQ, &HandlesToDeallocate);
@@ -803,6 +812,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // nopush
 
       /* FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, DestChunk))); */
+#endif
     } break;
 
     { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)
