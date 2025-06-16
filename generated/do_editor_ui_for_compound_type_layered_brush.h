@@ -80,6 +80,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
         
       }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SeedBrushWithSelection");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->SeedBrushWithSelection),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

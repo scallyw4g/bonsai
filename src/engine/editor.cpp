@@ -1135,8 +1135,8 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
 
           {
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox); */
-            /* PushNewRow(Ui); */
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox);
+            PushNewRow(Ui);
 
             /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
             /* PushNewRow(Ui); */
