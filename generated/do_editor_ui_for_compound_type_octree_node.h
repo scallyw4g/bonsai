@@ -81,28 +81,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         
         
         
-        cs MemberName = CSz("HadNoVisibleSurface");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->HadNoVisibleSurface),
-          MemberName,
-          &DefaultUiRenderParams_Checkbox
-          );
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Dirty");
                                                 DoEditorUi(Ui,
           Window,

@@ -47,6 +47,25 @@ AllocateWorld(world *World, v3i Center, v3i WorldChunkDim, visible_region_size V
   return World;
 }
 
+link_internal void
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(!FutexIsSignaled(&Node->Lock));
+
+  Assert(NotSet(Node->Flags, Chunk_Queued));
+  {
+    AcquireFutex(&Node->Lock);
+
+    if (Node->Chunk == 0) { Node->Chunk = GetFreeWorldChunk(Engine->World); }
+
+    WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
+    PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
+
+    ReleaseFutex(&Node->Lock);
+  }
+}
+
 
 // TODO(Jesse): rect3cp should probably be a pointer..?
 //
@@ -427,26 +446,6 @@ GetParentNodeFor(world *World, octree_node *QueryNode)
   return Result;
 }
 
-link_internal b32
-CanDrawOrHadNoSurface(octree_node *Node)
-{
-  b32 Result = False;
-
-  if (Node->HadNoVisibleSurface)
-  {
-    Result = True;
-  }
-  else
-  {
-    if (world_chunk *Chunk = Node->Chunk)
-    {
-      Result = HasGpuMesh(&Chunk->Mesh);
-    }
-  }
-
-  return Result;
-}
-
 
 typedef void (*octree_traversal_callback)(octree_node *);
 
@@ -615,11 +614,9 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 link_internal b32
 PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent)
 {
+  Assert(NotSet(Node, Chunk_Queued));
+
   b32 Result = False;
-  /* if (Node->Chunk) */
-  /* { */
-  /*   Assert(Node->Chunk->Flags == Chunk_Uninitialized); */
-  /* } */
 
   s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1,
                            2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
@@ -757,41 +754,16 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
   world_chunk *Chunk = NodeToSplit->Chunk;
 
-  if (Chunk)
+  b32 Initialized = IsSet(NodeToSplit->Flags, Chunk_VoxelsInitialized);
+  b32 Queued      = IsSet(NodeToSplit->Flags, Chunk_Queued);
+  b32 Dirty       = NodeToSplit->Dirty;
+
+  if (!Queued)
   {
-    /* SyncGpuBuffersAsync(Engine, &Chunk->Meshes); */
-
-    Assert(Chunk->Dim % World->ChunkDim == V3i(0));
-
-    if (NodeToSplit->Flags & Chunk_VoxelsInitialized)
+    if (Initialized)
     {
-      if (HasGpuMesh(&Chunk->Mesh) == False)
-      {
-        /* Assert( (Chunk->Flags & Chunk_Queued) == False); */
-        /* if (Chunk->WorldP == V3i(0,0,0)) { RuntimeBreak(); } */
-        Assert(Chunk->FilledCount == 0 || Chunk->FilledCount == Volume(Chunk->Dim));
-        Assert(HasGpuMesh(&Chunk->Mesh) == 0);
-        NodeToSplit->HadNoVisibleSurface = True;
-        NodeToSplit->Chunk = 0;
-        FreeWorldChunk(Engine, Chunk);
-      }
-      else
-      {
-        /* Assert(Chunk->FilledCount > 0 && Chunk->FilledCount < Volume(Chunk->Dim)); */
-      }
-    }
-
-    if ( (NodeToSplit->Flags & Chunk_Queued) == 0 &&
-         (NodeToSplit->Flags & Chunk_VoxelsInitialized) == 0 )
-
-    {
-      PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent);
-    }
-  }
-  else
-  {
-    if (NodeToSplit->HadNoVisibleSurface)
-    {
+      if (Chunk) { if (HasGpuMesh(&Chunk->Mesh) == False) { NodeToSplit->Chunk = 0; FreeWorldChunk(Engine, Chunk); Chunk = 0; }}
+      if (Dirty) { PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent); }
     }
     else
     {
@@ -854,6 +826,13 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
 
     }
   }
+}
+
+link_internal b32
+CanDrawOrHadNoSurface(octree_node *Node)
+{
+  b32 Result = (Node->Flags & Chunk_VoxelsInitialized);
+  return Result;
 }
 
 link_internal b32
@@ -958,9 +937,9 @@ DrawOctreeRecursive( engine_resources *Engine,
 
       case OctreeNodeType_Leaf:
       {
-        if (Node->Dirty)
+        if (Node->Dirty && NotSet(Node->Flags, Chunk_Queued))
         {
-          ReinitializeOctreeNode(Engine, Node, Parent, Queue, Stats);
+          PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
         }
 
         if (Chunk)
@@ -1106,12 +1085,11 @@ MaintainWorldOctree(engine_resources *Engine)
         if (NodeP)
         {
           octree_node *Node = *NodeP;
-          if (Node->HadNoVisibleSurface)
-          {
-            // We can actually have a chunk when we reallocate for an edit
-            /* Assert(Node->Chunk == 0); */
-          }
-          else
+
+          // Even though we should check this before pushing nodes onto the
+          // priority queue, we could have pushed the node multiple times if we
+          // did an edit and it overlapped with an uninitialized part of the world.
+          if (NotSet(Node->Flags, Chunk_Queued))
           {
             if (Node->Chunk)
             {
@@ -1123,13 +1101,11 @@ MaintainWorldOctree(engine_resources *Engine)
               WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
             }
 
-            if ( NotSet(Node->Flags, Chunk_Queued) )
-            {
-              Node->Dirty = False;
-              QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
-              ++Stats.NewQueues;
-              if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
-            }
+            Node->Dirty = False;
+            Node->Chunk->FilledCount = 0;
+            QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
+            ++Stats.NewQueues;
+            if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
           }
         }
         else

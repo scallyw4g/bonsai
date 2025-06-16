@@ -454,33 +454,6 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   ReleaseFutex(&World->ChunkFreelistFutex);
 }
 
-link_internal void
-ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(!FutexIsSignaled(&Node->Lock));
-
-  if ( (Node->Flags & Chunk_Queued) == False )
-  {
-    AcquireFutex(&Node->Lock);
-
-    if (Node->Chunk == 0) { Node->Chunk = GetFreeWorldChunk(Engine->World); }
-
-    WorldChunk(Node->Chunk, Node->WorldP, Engine->World->ChunkDim, Node->Resolution);
-#if 0
-    QueueChunkForInit(&Engine->Stdlib.Plat.RenderQ, Node, MeshBit_None);
-    ++Stats->NewQueues;
-#else
-    Info("pushed");
-    /* Node->Dirty = False; */
-    /* Node->HadNoVisibleSurface = False; */
-    PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
-#endif
-
-    ReleaseFutex(&Node->Lock);
-  }
-}
-
 link_internal world_chunk*
 GetWorldChunkFromHashtable(world *World, world_position P)
 {
@@ -3548,11 +3521,12 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   PushWorkQueueEntry(Queue, &Entry);
 #else
+  Assert( NotSet(Node->Flags, Chunk_Queued) );
+  SetFlag(&Node->Flags, Chunk_Queued);
+
   PushBonsaiRenderCommandInitializeNoiseBuffer(Queue, Node);
 #endif
 
-  Assert( NotSet(Node->Flags, Chunk_Queued) );
-  SetFlag(&Node->Flags, Chunk_Queued);
 }
 
 #if 0

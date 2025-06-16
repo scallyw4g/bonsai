@@ -795,7 +795,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(GpuMappedBuf->Buffer.At == GpuMappedBuf->Buffer.End);
       Assert(HasGpuMesh(&DestChunk->Mesh) == True);
 
-
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
       PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestNode);

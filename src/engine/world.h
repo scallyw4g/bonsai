@@ -37,8 +37,7 @@ struct octree_node
   chunk_flag Flags;
   octree_node_type Type;
 
-  // TODO(Jesse): Pack into something else
-  b32 HadNoVisibleSurface;
+  // TODO(Jesse): Pack into flags
   b32 Dirty;
 
   v3i WorldP;
@@ -293,3 +292,7 @@ GetSimSpaceAABB(world *World, octree_node *Node);
 
 link_internal b32
 PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent);
+
+link_internal void
+ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats);
+

@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
@@ -11,7 +11,7 @@
 
 ./make.sh $OPT                                                 \
   BuildSingleExample examples/terrain_gen                      \
-  # BuildExecutables                                             \
+  BuildExecutables                                             \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/blank_project                    \
