@@ -1181,7 +1181,7 @@ struct layered_brush
   /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
   /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */
 
-  b8 SeedBrushWithSelection;
+  b8 AffectExisting;
   /* b8 BrushFollowsCursor; */
 
   // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.

@@ -260,20 +260,23 @@ void main()
   f32 z = floor(gl_FragCoord.y / 68);
   f32 y = floor(gl_FragCoord.y - (z*68));
 
+  ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
+  v4 TexLookup = V4(0.f);
+
   v3 Offset = V3(-2, -2, -2);
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.2f, 0.2f, 0.2f);
-  f32 NoiseValue = 1.f;
+  v3 ColorValue = TexLookup.rgb;
+  f32 NoiseValue = TexLookup.a;
 
   //
   // -- user code -- 
   //
   {
     f32 StartingZDepth = 800.f;
-    NoiseValue = StartingZDepth - Basis.z;
+    NoiseValue += StartingZDepth - Basis.z;
 
     f32 CliffMask = 1.f;
 #if 1

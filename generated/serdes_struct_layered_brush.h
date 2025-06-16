@@ -52,7 +52,7 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count = 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SeedBrushWithSelection); // default
+                            Result &= Serialize(Bytes, &Element->AffectExisting); // default
 
     
 
@@ -96,7 +96,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->SeedBrushWithSelection, Memory);
+  Result &= Deserialize(Bytes, &Element->AffectExisting, Memory);
 
   
 

@@ -740,7 +740,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceChunkBasis, &TerrainShapingRC->ChunkResolution, {});
     }
 
-    RangeIterator(Index, 2)
+    RangeIterator(Index, 3)
     {
       WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
       GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);

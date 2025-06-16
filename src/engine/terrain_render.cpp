@@ -4,7 +4,6 @@ link_internal texture *
 DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
 {
   texture *InputTex = 0;
-
   //
   // Launch terrain shaping shader
   //

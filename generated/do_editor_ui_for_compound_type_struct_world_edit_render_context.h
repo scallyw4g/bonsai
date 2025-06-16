@@ -88,11 +88,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         cs MemberName = CSz("PingPongFBOs");
                                 
 
-        if (ToggleButton(Ui, CSz("v PingPongFBOs[2]"), CSz("> PingPongFBOs[2]"), UiId(Window, "toggle world_edit_render_context framebuffer PingPongFBOs", Element->PingPongFBOs), Params ))
+        if (ToggleButton(Ui, CSz("v PingPongFBOs[3]"), CSz("> PingPongFBOs[3]"), UiId(Window, "toggle world_edit_render_context framebuffer PingPongFBOs", Element->PingPongFBOs), Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 2)
+          RangeIterator(ArrayIndex, 3)
           {
                         DoEditorUi(Ui, Window, Element->PingPongFBOs+ArrayIndex, FSz("PingPongFBOs[%d]", ArrayIndex), Params);
 
@@ -116,11 +116,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         cs MemberName = CSz("PingPongTextures");
                                 
 
-        if (ToggleButton(Ui, CSz("v PingPongTextures[2]"), CSz("> PingPongTextures[2]"), UiId(Window, "toggle world_edit_render_context texture PingPongTextures", Element->PingPongTextures), Params ))
+        if (ToggleButton(Ui, CSz("v PingPongTextures[3]"), CSz("> PingPongTextures[3]"), UiId(Window, "toggle world_edit_render_context texture PingPongTextures", Element->PingPongTextures), Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 2)
+          RangeIterator(ArrayIndex, 3)
           {
                         DoEditorUi(Ui, Window, Element->PingPongTextures+ArrayIndex, FSz("PingPongTextures[%d]", ArrayIndex), Params);
 

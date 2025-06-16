@@ -556,7 +556,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         /* EndGpuTimer(&Timer); */
                         /* Push(&Graphics->GpuTimers, &Timer); */
                         InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
-                        PingPongIndex = (PingPongIndex + 1) & 1;
+                        PingPongIndex = (PingPongIndex + 1) % s32(ArrayCount(WorldEditRC->PingPongTextures));
                       }
                     }
 

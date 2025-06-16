@@ -58,8 +58,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 {
           shader  Program;
   shader_uniform  Uniforms[4];
-     framebuffer  PingPongFBOs[2];
-         texture  PingPongTextures[2];
+     framebuffer  PingPongFBOs[3];
+         texture  PingPongTextures[3];
 
               v3 *ChunkDim;             poof(@uniform)
               v3 *WorldspaceChunkBasis; poof(@uniform)

@@ -86,11 +86,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
         
         
         
-        cs MemberName = CSz("SeedBrushWithSelection");
+        cs MemberName = CSz("AffectExisting");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(b8*, &Element->SeedBrushWithSelection),
+          Cast(b8*, &Element->AffectExisting),
           MemberName,
           Params
           );
