@@ -121,7 +121,18 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
             { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
 
-              FlushBuffersToCard(Command->Buf);
+              octree_node *Node = Command->DestNode;
+              gpu_mapped_element_buffer *Buf = &Command->Buf;
+
+              FlushBuffersToCard(Buf);
+
+              if (HasGpuMesh(&Node->Chunk->Mesh))
+              {
+                PushDeallocateBuffersCommand(RenderQ, &Node->Chunk->Mesh.Handles);
+              }
+
+              Node->Chunk->Mesh = *Buf;
+
               FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
 
             } break;

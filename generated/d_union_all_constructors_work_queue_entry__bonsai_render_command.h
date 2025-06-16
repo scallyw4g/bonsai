@@ -432,7 +432,7 @@ BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   Ele
 }
 
 link_internal bonsai_render_command_unmap_gpu_element_buffer
-BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_mapped_element_buffer *  Buf , octree_node *  DestNode  )
+BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_mapped_element_buffer   Buf , octree_node *  DestNode  )
 {
   bonsai_render_command_unmap_gpu_element_buffer Reuslt = {
             .Buf = Buf

@@ -778,39 +778,19 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       octree_node               *DestNode     = Job->DestNode;
       world_chunk               *DestChunk    = DestNode->Chunk;
-      gpu_mapped_element_buffer *GpuMappedBuf = &SynChunk->Mesh;
+      gpu_mapped_element_buffer GpuMappedBuf  = SynChunk->Mesh;
 
       /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
-      Assert(HasGpuMesh(GpuMappedBuf) == True);
+      Assert(HasGpuMesh(&GpuMappedBuf) == True);
 
-      RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf->Buffer, Thread->TempMemory);
+      RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf.Buffer, Thread->TempMemory);
 
-      auto HandlesToDeallocate = DestChunk->Mesh.Handles;
-      b32 DeallocateHandles = HasGpuMesh(&DestChunk->Mesh) == True;
-      /* if (DeallocateHandles) { Assert(DestChunk->Flags&Chunk_VoxelsInitialized); } */
-
-      DestChunk->Mesh = *GpuMappedBuf;
       SynChunk->Mesh = {};
 
-      Assert(GpuMappedBuf->Buffer.At == GpuMappedBuf->Buffer.End);
-      Assert(HasGpuMesh(&DestChunk->Mesh) == True);
-
+      Assert(GpuMappedBuf.Buffer.At == GpuMappedBuf.Buffer.End);
       FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
 
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, &DestChunk->Mesh, DestNode);
-      if (DeallocateHandles)
-      {
-        PushDeallocateBuffersCommand(RenderQ, &HandlesToDeallocate);
-      }
-
-
-      // TODO(Jesse)(bug, race): There's a race here; the chunk can get deallocated on the
-      // main thread and clear the Mesh before the Unmap job happens.  Have to somehow
-      // wait for that job to finish to call Finalize
-      //
-      // nopush
-
-      /* FinalizeChunkInitialization(Cast(world_chunk*, Cast(void*, DestChunk))); */
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, GpuMappedBuf, DestNode);
 #endif
     } break;
 

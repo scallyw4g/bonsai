@@ -153,7 +153,7 @@ struct bonsai_render_command_allocate_and_map_gpu_element_buffer
 
 struct bonsai_render_command_unmap_gpu_element_buffer
 {
-  gpu_mapped_element_buffer *Buf;
+  gpu_mapped_element_buffer Buf;
 
   // TODO(Jesse): This is a crutch for not being able to define the next job
   // remove.
