@@ -294,17 +294,17 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
               Assert(s64(Chunk) == s64(Chunk1));
 
-              texture *InputTex = DispatchTerrainShaders(Graphics, Chunk);
+              DispatchTerrainShaders(Graphics, Chunk);
 
-              s32 PingPongIndex = 1;
+              s32 CurrentAccumulationTextureIndex = 0;
 
               //
               // Apply edits
               //
 
 
+              auto WorldEditRC = &Graphics->WorldEditRC;
               {
-                auto WorldEditRC = &Graphics->WorldEditRC;
                 AcquireFutex(&Node->Lock);
                 if (TotalElements(&Node->Edits))
                 {
@@ -334,6 +334,10 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 #endif
                   // }
 
+
+#define AdvanceIndex(i) i = ((i+1) % 3)
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+
                   RangeIterator(KeyIndex, EditCount)
                   /* IterateOver(&Node->Edits, Edit, EditIndex) */
                   {
@@ -345,12 +349,44 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                     if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                     {
                       layered_brush *Brush = &Edit->Brush->Layered;
+
+
+                      b32 BindInputTexture = Brush->AffectExisting;
+
+                      s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex;
+                      s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex;
+
+                      AdvanceIndex(CurrentWriteTextureIndex);
+
+                      // If we're not trying to seed the brush with the current
+                      // accumulator texture, set to the empty one
+                      if (BindInputTexture == False)
+                      {
+                        AdvanceIndex(CurrentReadTextureIndex);
+                        AdvanceIndex(CurrentReadTextureIndex);
+                      }
+
                       RangeIterator(LayerIndex, Brush->LayerCount)
                       {
-                        GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[PingPongIndex].ID);
+                        GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[CurrentWriteTextureIndex].ID);
 
-                        // @derivs_texture_binding_to_shader_unit_0
-                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
+                        BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
+                        if (BindInputTexture)
+                        {
+                          texture *InputTex = &WorldEditRC->PingPongTextures[CurrentReadTextureIndex];
+                          // @derivs_texture_binding_to_shader_unit_0
+                          BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
+                        }
+                        BindInputTexture = True;
+
+                        b32 LastLayer = LayerIndex == Brush->LayerCount-1;
+                        b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
+                        BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
+                        if (BindBlendTex)
+                        {
+                          texture *BlendTex = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
+                          BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
+                        }
 
                         brush_layer *Layer = Brush->Layers + LayerIndex;
 
@@ -555,9 +591,11 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                         RenderQuad();
                         /* EndGpuTimer(&Timer); */
                         /* Push(&Graphics->GpuTimers, &Timer); */
-                        InputTex = &WorldEditRC->PingPongTextures[PingPongIndex];
-                        PingPongIndex = (PingPongIndex + 1) % s32(ArrayCount(WorldEditRC->PingPongTextures));
+
+                        Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex);
                       }
+
+                      CurrentAccumulationTextureIndex = CurrentReadTextureIndex;
                     }
 
                     AssertNoGlErrors;
@@ -570,6 +608,8 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f ); */
               /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
               /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
+
+              texture *CurrentAccumulationTexture = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
 
               //
               // Terrain Finalize
@@ -584,7 +624,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 // this bind to unit 0 because there's no derivs texture being bound here.
                 //
                 // @derivs_texture_binding_to_shader_unit_0
-                BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", InputTex, 0);
+                BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", CurrentAccumulationTexture, 0);
 
                 /* gpu_timer Timer = StartGpuTimer(); */
                 RenderQuad();
@@ -598,7 +638,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               /* Assert(NoiseDim == V3(66)); */
               v3i NoiseDim = V3i(66);
 
-              s32 NoiseElementCount = s32(Volume(InputTex->Dim));
+              s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
               s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
 
               {
@@ -611,7 +651,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
                 GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
                 AssertNoGlErrors;
-                GL.ReadPixels(0, 0, InputTex->Dim.x, InputTex->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+                GL.ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
                 AssertNoGlErrors;
                 GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 

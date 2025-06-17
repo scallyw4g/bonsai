@@ -79,7 +79,11 @@ uniform f32 Squareness; // 0 == not square, 1 == square
 
 
 
+uniform       int SampleInputTex;
 uniform sampler2D InputTex;
+
+uniform       int SampleBlendTex;
+uniform sampler2D BlendTex;
 
 in vec2 UV;
 out vec4 Output;
@@ -180,7 +184,11 @@ f32 IQSampleToBonsaiSample(f32 IQSample, f32 Radius)
 
 void main()
 {
-  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+  v4 TexLookup = vec4(0);
+  if (SampleInputTex > 0)
+  {
+    TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+  }
 
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
@@ -587,6 +595,17 @@ void main()
 
     }
 
+  }
+
+  if (SampleBlendTex > 0)
+  {
+    v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
+
+    if (Accumulator < TexLookup.a)
+    {
+      Accumulator = TexLookup.a;
+      ColorValue  = TexLookup.rgb;
+    }
   }
 
   Output.rgb = ColorValue;
