@@ -126,6 +126,17 @@ float iq_sdCylinder( vec3 p, vec3 c )
   return length(p.xz-c.xy)-c.z;
 }
 
+// p == sample point
+// a == start point
+// b == end point
+// r == radius
+float iq_sdRoundedLine( vec3 p, vec3 a, vec3 b, float r )
+{
+  vec3 pa = p - a, ba = b - a;
+  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+  return length( pa - ba*h ) - r;
+}
+
 // p   == sample point
 // t.x == major radius
 // t.y == minor radius
@@ -244,6 +255,7 @@ void main()
 
             case 2: // NoiseType_White:
             {
+              InitialSample = white_noise(NoiseBasis);
             } break;
           }
 
@@ -257,56 +269,32 @@ void main()
             // ShapeType_Rect
             case 0:
             {
-#if 1
               v3 BoxR = (EditDim/4.f);
-              v3 p    = BoxR - (EditRelxyz-BoxR);
-
-              // NOTE(Jesse): Remap by box radius such that we get a 0-1 value out
-              p /= BoxR;
-
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-
+              v3 p    = (BoxR - (EditRelxyz-BoxR)) / BoxR;
+              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
               f32 IQSample = w.w+iq_sdBox(w.xyz, V3(1.f));
-              /* InitialSample = IQSampleToBonsaiSample(IQSample, 1.f); */
               InitialSample = -IQSample;
-#else
-              InitialSample = 1.f;
-#endif
             } break;
 
             // ShapeType_Sphere
             case 1:
             {
-#if 1
               v3 p  = (EditRelxyz - EditRelativeSphereCenter)/Radius;
-
-#if 1
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-#else
-                 p *= RotMatrix;
-                 p  = iq_opRepetition(p, Repeat);
-              v4 w  = iq_opElongate(p, Stretch);
-#endif
-
               f32 IQSample  = w.w+iq_sdSphere(w.xyz, Radius);
-              InitialSample = -IQSample; //IQSampleToBonsaiSample(IQSample, Radius);
-#else
-              f32 DistFromCenter = distance(EditRelativeSphereCenter, EditRelxyz);
-              InitialSample = ((Radius-DistFromCenter)/Radius);
-#endif
+              InitialSample = -IQSample;
             } break;
 
             // ShapeType_Line
             case 2:
             {
-              // TODO(Jesse): Mr. Jippity said this is how to do distance to
-              // line and it works, although I'm not sure it's necessarily a very good way to do it ..
-              v3 Line = normalize(ChunkRelEditMax-ChunkRelEditMin);
-              v3 X = cross(Line, EditRelxyz);
-              f32 Dist = length(X)/length(Line);
-              /* if (Dist < Radius) { InitialSample = ((Radius-Dist)/Radius)*Power; } */
-              /* if (Dist < Radius) { InitialSample = Dist*Power; } */
-              if (Dist < Radius) { InitialSample = 1.f; }
+              v3 p = EditRelxyz;
+              v3 start = v3(Radius);
+              v3 end = EditDim-v3(Radius);
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
+              InitialSample = -IQSample;
             } break;
 
             // ShapeType_Cylinder
@@ -317,53 +305,11 @@ void main()
 
               f32 r = 4.f;
               f32 h = 102.f;
-              /* f32 IQSample = iq_sdCylinder(p, c); */
 
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
               f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
               InitialSample = -IQSample;
-#if 0
-              v3 AxisMask;
-              v3 InvAxisMask;
-
-              switch (Orientation)
-              {
-                case 0: // VoxelRuleDir_PosX
-                case 1: // VoxelRuleDir_NegX
-                {
-                  AxisMask    = V3(1,0,0);
-                  InvAxisMask = V3(0.f,1.f,1.f)*0.5f;
-                } break;
-
-                case 2: // VoxelRuleDir_PosY
-                case 3: // VoxelRuleDir_NegY
-                {
-                  AxisMask    = V3(0,1,0);
-                  InvAxisMask = V3(1.f,0.f,1.f)*0.5f;
-                } break;
-
-                case 4: // VoxelRuleDir_PosZ
-                case 5: // VoxelRuleDir_NegZ
-                {
-                  AxisMask    = V3(0,0,1);
-                  InvAxisMask = V3(1.f,1.f,0.f)*0.5f;
-                } break;
-              }
-
-              v3 MajorAxis  = EditDim*AxisMask;
-              v3 MinorAxies = EditDim*InvAxisMask;
-
-              v3 ChunkRelP0 = MinorAxies;
-              v3 ChunkRelP1 = MinorAxies + MajorAxis;
-
-              v3 Line = ChunkRelP1 - ChunkRelP0;
-              v3 LineRelativeXYZ = EditRelxyz - ChunkRelP0;
-
-              v3 X = cross(Line, LineRelativeXYZ);
-              f32 Dist = length(X)/length(Line);
-              if (Dist < Radius) { InitialSample = 1.f; }
-#endif
             } break;
 
             // ShapeType_Plane
@@ -601,10 +547,15 @@ void main()
   {
     v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
 
-    if (Accumulator < TexLookup.a)
+    if (Accumulator <= 0.f)
+    /* if (TexLookup.a > 0.f) */
     {
-      Accumulator = TexLookup.a;
-      ColorValue  = TexLookup.rgb;
+      // Take Max of Accumulator or current world value
+      if (Accumulator < TexLookup.a)
+      {
+        Accumulator = TexLookup.a;
+        ColorValue  = TexLookup.rgb;
+      }
     }
   }
 
