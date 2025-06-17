@@ -115,7 +115,73 @@ Bonsai_FrameBegin(engine_resources *Resources)
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }
 
-  MaintainWorldOctree(Resources);
+
+  // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
+  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
+  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
+
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+
+  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
+  // frame of camera-jank if the UI captures mouse input
+  //
+  // The specific case here is that if the camera updates, then the UI draws,
+  // and we're in paint-single mode (which captures the input) there's a frame
+  // where the camera updates, then freezes, which feels ultra-janky.  Updating
+  // the UI, then the camera, avoids this order-of-operations issue.
+  //
+  // @camera-update-ui-update-frame-jank
+  //
+  // Unfortunately, this actually re-introduces another order-of-operations issue
+  // which I've fixed in the past, which is that the immediate geometry is a
+  // frame late. 
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // NOTE(Jesse): This has to come before we draw any of the game geometry.
+  // Specifically, if it comes after we draw bounding boxes for anything
+  // the bounding box lines shift when we move the camera because they're
+  // then a frame late.
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
+  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
+  //
+  // UPDATE(Jesse): I fixed this again because the @camera-update-ui-update-frame-jank bug is
+  // gone.  Got rid of paint-single mode in the way it was being done, and the new way shouldn't
+  // have that problem, when I get around to implementing it.
+  //
+  // {
+
+  cp CameraTargetP = {};
+
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  if (CameraGhost == 0)
+  {
+    // Allocate default camera ghost
+    Camera->GhostId = GetFreeEntity(EntityTable);
+    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
+    SpawnEntity(CameraGhost);
+  }
+
+  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
+
+  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
+
+  // NOTE(Jesse): Don't remember what bug I fixed by changing this to DoPositionDelta,
+  // but it broke scrolling on laptop trackpads (where nothing is clicked).  Going to
+  // remove it until I remember what the bug was ..
+  /* b32 DoZoomDelta = DoPositionDelta; */
+  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
+
+  v2 MouseDelta = GetMouseDelta(Plat);
+  UpdateGameCamera(World, MouseDelta, &Plat->Input, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
+  // }
+
 
   /* Resources->World->ChunkHash = CurrentWorldHashtable(Resources); */
 
@@ -134,12 +200,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
-  // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
-  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
-
-
-  UNPACK_ENGINE_RESOURCES(Resources);
+  MaintainWorldOctree(Resources);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -185,7 +246,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   {
     if (Camera == &Graphics->GameCamera)
     {
-      Resources->MaybeMouseRay   = ComputeCameraSpaceRayFromCursor(Resources, &gBuffer->ViewProjection, &Resources->Graphics.GameCamera, World->ChunkDim);
+      Resources->MaybeMouseRay = ComputeCameraSpaceRayFromCursor(Resources, &gBuffer->ViewProjection, &Resources->Graphics.GameCamera, World->ChunkDim);
 
       ray *Ray = &Resources->MaybeMouseRay.Ray;
       v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
@@ -401,59 +462,6 @@ Bonsai_Simulate(engine_resources *Resources)
     }
     Camera = Graphics->Camera;
   }
-
-  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
-  // frame of camera-jank if the UI captures mouse input
-  //
-  // The specific case here is that if the camera updates, then the UI draws,
-  // and we're in paint-single mode (which captures the input) there's a frame
-  // where the camera updates, then freezes, which feels ultra-janky.  Updating
-  // the UI, then the camera, avoids this order-of-operations issue.
-  //
-  // @camera-update-ui-update-frame-jank
-  //
-  // Unfortunately, this actually re-introduces another order-of-operations issue
-  // which I've fixed in the past, which is that the immediate geometry is a
-  // frame late. 
-  //
-  // @immediate-geometry-is-a-frame-late
-  //
-  // NOTE(Jesse): This has to come before we draw any of the game geometry.
-  // Specifically, if it comes after we draw bounding boxes for anything
-  // the bounding box lines shift when we move the camera because they're
-  // then a frame late.
-  //
-  // @immediate-geometry-is-a-frame-late
-  //
-  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
-  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
-  //
-
-  cp CameraTargetP = {};
-
-  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  if (CameraGhost == 0)
-  {
-    // Allocate default camera ghost
-    Camera->GhostId = GetFreeEntity(EntityTable);
-    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
-    SpawnEntity(CameraGhost);
-  }
-
-  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
-
-  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
-
-  // NOTE(Jesse): Don't remember what bug I fixed by changing this to DoPositionDelta,
-  // but it broke scrolling on laptop trackpads (where nothing is clicked).  Going to
-  // remove it until I remember what the bug was ..
-  /* b32 DoZoomDelta = DoPositionDelta; */
-  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
-
-  v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, &Plat->Input, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
-
   // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
 
 
