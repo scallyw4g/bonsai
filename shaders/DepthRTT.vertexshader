@@ -1,7 +1,7 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 
 // NOTE(Jesse): Camera transform
-uniform mat4 MVP;
+uniform mat4 ViewProjection;
 uniform mat4 ModelMatrix;
 
 out vec3 vertexP_worldspace;
@@ -9,6 +9,6 @@ out vec3 vertexP_worldspace;
 void main()
 {
   vertexP_worldspace = (ModelMatrix * vec4(vertexPosition_modelspace, 1)).xyz; // ??
-  gl_Position = MVP * V4(vertexP_worldspace, 1);
+  gl_Position = ViewProjection * V4(vertexP_worldspace, 1);
 }
 

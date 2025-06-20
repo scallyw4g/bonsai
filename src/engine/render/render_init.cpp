@@ -626,7 +626,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
                         &gBuffer->InverseViewMatrix,
                         &gBuffer->InverseProjectionMatrix,
-                        &SG->Shader.MVP,
+                        &SG->Shader.ViewProjection,
 
                         &Lighting->Lights,
                          Result->Camera,
@@ -697,7 +697,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
-                                                        &SG->Shader.MVP,
+                                                        &SG->Shader.ViewProjection,
                                                          Result->Camera,
                                                         &Result->Exposure,
                                                         &Result->Settings.UseLightingBloom,

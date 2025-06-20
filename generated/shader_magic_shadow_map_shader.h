@@ -1,9 +1,9 @@
-// src/engine/render/shadow_map.h:21:0
+// src/engine/render/shadow_map.h:19:0
 
 link_internal void
 InitializeShadowMapShader( shadow_map_shader *Struct
-    , m4 MVP
-  , m4 ModelMatrix
+    , m4 ModelMatrix
+  , m4 ViewProjection
   , v3 *MinClipP_worldspace
   , v3 *MaxClipP_worldspace
 )
@@ -13,11 +13,11 @@ InitializeShadowMapShader( shadow_map_shader *Struct
 
   u32 UniformIndex = 0;
 
-      Struct->MVP = MVP;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->MVP, "MVP");
-
-    Struct->ModelMatrix = ModelMatrix;
+      Struct->ModelMatrix = ModelMatrix;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ModelMatrix, "ModelMatrix");
+
+    Struct->ViewProjection = ViewProjection;
+  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ViewProjection, "ViewProjection");
 
     Struct->MinClipP_worldspace = MinClipP_worldspace;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MinClipP_worldspace, "MinClipP_worldspace");

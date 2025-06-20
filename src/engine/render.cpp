@@ -96,7 +96,7 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 
   // @duplicate_shadow_map_MVP_calculation
   /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
-  SG->Shader.MVP = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+  SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
 
   UseShader(&SG->Shader);
 
@@ -161,7 +161,7 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
-  Graphics->SG->Shader.MVP = NdcToScreenSpace * Graphics->SG->Shader.MVP;
+  Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
 
   /* GL.Enable(GL_BLEND); */
   /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
@@ -1150,7 +1150,7 @@ DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_el
 }
 #endif
 
-
+#if 1
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale )
 {
@@ -1177,6 +1177,7 @@ DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mes
     AssertNoGlErrors;
   }
 }
+#endif
 
 #if 0
 link_internal void
@@ -1409,7 +1410,7 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
   // TODO(Jesse): Duplicate MVP calculation
   // @duplicate_shadow_map_MVP_calculation
   /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
-  SG->Shader.MVP = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+  SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
 
   UseShader(&SG->Shader);
 
