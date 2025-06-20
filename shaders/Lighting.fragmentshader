@@ -42,6 +42,7 @@ uniform v2 ShadowMapResolution;
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
+/* fda */
 
 // NOTE(Jesse): Better shader noise function for when I need it : https://www.shadertoy.com/view/4djSRW
 
@@ -244,8 +245,8 @@ void main()
       f32 LinearDepth = Linearize(Depth, 5000.f, 0.1f);
       float acneBias = 0.045f * LinearDepth; // Fix acne
 
-      vec4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
-      float FragDepth = FragPShadowSpace.z - acneBias;
+      v4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
+      f32 FragDepth = FragPShadowSpace.z - acneBias;
       /* out_LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
       /* out_LightColor = abs(FragPShadowSpace); */
       /* return; */

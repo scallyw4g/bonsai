@@ -29,6 +29,8 @@ InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

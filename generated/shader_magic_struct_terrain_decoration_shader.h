@@ -33,6 +33,8 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

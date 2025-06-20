@@ -24,6 +24,8 @@ InitializeBloomDownsampleShader( bloom_downsample_shader *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

@@ -59,5 +59,6 @@ InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i Sha
 
   InitializeShadowMapShader( &SG->Shader , IdentityMatrix, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace );
 
+  AssertNoGlErrors;
   return true;
 }

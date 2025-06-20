@@ -124,6 +124,8 @@ InitializeLightingRenderGroup( lighting_render_group *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

@@ -33,6 +33,8 @@ InitializeShadowMapShader( shadow_map_shader *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

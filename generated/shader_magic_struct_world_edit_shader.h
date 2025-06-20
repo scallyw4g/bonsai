@@ -33,6 +33,8 @@ InitializeWorldEditRenderContext( world_edit_render_context *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

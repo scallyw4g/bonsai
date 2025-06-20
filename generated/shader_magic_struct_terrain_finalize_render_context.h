@@ -24,6 +24,8 @@ InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 

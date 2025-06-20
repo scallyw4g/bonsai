@@ -24,6 +24,8 @@ InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct
 
 
 
+  AssertNoGlErrors;
+
   RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
 }
 
