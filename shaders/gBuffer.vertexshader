@@ -45,7 +45,8 @@ void main()
 
   vertexP_worldspace = WorldVertex.xyz;
 
-  // NOTE(Jesse): We have to normalize because a scale factor will grow/shrink the normal!
+  // NOTE(Jesse): We have to normalize because a scale factor in the NormalMatrix will grow/shrink the normal!
+  // TODO(Jesse): Is there some way of avoiding this?  I guess hlhl
   vertexN_worldspace = normalize(mat3(NormalMatrix) * V3(vertexNormal_modelspace));
 
   gl_Position =  ViewProjection * WorldVertex;

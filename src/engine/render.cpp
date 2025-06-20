@@ -1152,23 +1152,23 @@ DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_el
 
 #if 1
 link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale )
+DrawLod( engine_resources *Engine,
+         shader *Shader,
+         gpu_mapped_element_buffer *Mesh,
+         v3 Basis,
+         Quaternion Rotation,
+         v3 Scale )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   AssertNoGlErrors;
   if (HasGpuMesh(Mesh) && Mesh->Handles.Mapped == False)
   {
-    m4 LocalTransform = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
-    m4 NormalMatrix = Transpose(Inverse(LocalTransform));
+    m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
+    TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
-    // @janky_model_matrix_bs
-    // nopush
-    TryBindUniform(Shader, "ModelMatrix", &LocalTransform);
-    /* Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform)); */
-    AssertNoGlErrors;
+    m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
-    AssertNoGlErrors;
 
     auto Handles = &Mesh->Handles;
 
@@ -1236,7 +1236,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_ele
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
-    DrawLod(Engine, &Engine->RTTGroup.Shader, Mesh, 0.f, Offset);
+    DrawLod(Engine, &Engine->RTTGroup.Shader, Mesh, Offset);
   }
   else
   {
@@ -1336,7 +1336,7 @@ DrawEntity(              shader *Shader,
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
-        DrawLod(GetEngineResources(), Shader, &Model->Mesh, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), Shader, &Model->Mesh, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }
@@ -1553,7 +1553,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
       {
         Basis = GetSimSpaceP(World, Chunk->WorldP);
       }
-      DrawLod(Engine, Shader, &Chunk->Mesh, 0.f, Basis, Quaternion(), V3(Chunk->DimInChunks));
+      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
   }

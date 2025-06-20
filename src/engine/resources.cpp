@@ -38,7 +38,7 @@ RenderOctree(engine_resources *Engine, shader *Shader)
 
     if (Node->Type == OctreeNodeType_Leaf)
     {
-      DrawLod(Engine, Shader, &Node->Chunk->Mesh, 0, {}, Quaternion(), V3(1));
+      DrawLod(Engine, Shader, &Node->Chunk->Mesh, {}, Quaternion(), V3(1));
     }
 
     if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }

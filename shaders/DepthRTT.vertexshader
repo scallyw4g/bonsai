@@ -1,6 +1,8 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 
-// NOTE(Jesse): Camera transform
+// NOTE(Jesse): It's not just an MVP because of a deficiency on the C++ side;
+// we don't have the facilities in the DrawLOD to differentiate between
+// this shader and the gBuffer shader, which needs them as two matrices.
 uniform mat4 ViewProjection;
 uniform mat4 ModelMatrix;
 

@@ -177,7 +177,7 @@ poof(asyncify_render_function_h(RenderToTexture))
 #include <generated/asyncify_render_function_h_RenderToTexture.h>
 
 link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
+DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
 
 poof(asyncify_render_function_h(DrawLod))
 #include <generated/asyncify_render_function_h_DrawLod.h>

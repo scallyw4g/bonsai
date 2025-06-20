@@ -235,7 +235,7 @@ RenderMeshPreviewIntoWorld(engine_resources *Engine, gpu_mapped_element_buffer *
 
         v3 AssetHalfDim = Dim/2.f;
         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, 0.f, Basis, Quaternion(), V3(1));
+        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, Basis, Quaternion(), V3(1));
 
         PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
       }
