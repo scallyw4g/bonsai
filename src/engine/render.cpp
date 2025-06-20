@@ -171,7 +171,7 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
 /*   GL.Disable(GL_BLEND); */
 
   {
-    UseShader(&Lighting->Shader);
+    UseShader(&Lighting->Program);
     RenderQuad();
   }
 

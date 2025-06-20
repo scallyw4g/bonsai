@@ -1115,6 +1115,7 @@ MaintainWorldOctree(engine_resources *Engine)
 done_queueing_nodes:
 
   DEBUG_OctreeTraversal(Engine, &World->Root, &Stats);
+#if 0
   if (Stats.TotalQueued || Stats.NewQueues)
   {
     Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)",
@@ -1123,6 +1124,7 @@ done_queueing_nodes:
       Stats.TotalQueued,
       Stats.NewQueues);
   }
+#endif
 }
 
 

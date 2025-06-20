@@ -38,7 +38,7 @@ InitBloomRenderGroup(bloom_render_group *Group, render_settings *Settings, memor
 link_internal void
 RunBloomRenderPass(graphics *Graphics)
 {
-  bloom_render_group *Group = &Graphics->Lighting.Bloom;
+  bloom_render_group *Group = &Graphics->Bloom;
 
   GL.BindFramebuffer(GL_FRAMEBUFFER, Group->BlurFBO.ID);
 

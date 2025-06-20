@@ -1,7 +1,11 @@
 // src/engine/graphics.h:46:0
 
 link_internal void
-InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct    , v3 ChunkDim     , v3 WorldspaceChunkBasis     , v3 ChunkResolution  )
+InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct
+    , v3 ChunkDim
+  , v3 WorldspaceChunkBasis
+  , v3 ChunkResolution
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/terrain_shaping.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -17,9 +21,10 @@ InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct   
     Struct->ChunkResolution = ChunkResolution;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
 
-  if (UniformIndex !=  3  )
+  u32 Expected =  3 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

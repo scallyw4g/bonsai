@@ -15,8 +15,8 @@ uniform r32 LightIndexToUV;
 uniform sampler2D LightColors;
 uniform sampler2D LightPositions;
 
-uniform sampler2D TransparencyAccum;
-uniform sampler2D TransparencyCount;
+uniform sampler2D TransparencyAccumTex;
+uniform sampler2D TransparencyCountTex;
 uniform bool BravoilMyersOIT;
 uniform bool BravoilMcGuireOIT;
 
@@ -26,7 +26,7 @@ uniform mat4 ShadowMVP;
 
 uniform vec3 SunPosition;
 uniform vec3 SunColor;
-uniform vec3 CameraP;
+uniform vec3 Camera;
 
 uniform r32  FogPower;
 uniform vec3 FogColor;
@@ -130,16 +130,16 @@ void main()
   /* return; */
 
 
-  vec4 TransAccum = texture(TransparencyAccum, gBufferUV);
-  float TransAccumCount = texture(TransparencyCount, gBufferUV).r;
-  float TransAccumEmission = texture(TransparencyCount, gBufferUV).g;
+  vec4 TransAccum = texture(TransparencyAccumTex, gBufferUV);
+  float TransAccumCount = texture(TransparencyCountTex, gBufferUV).r;
+  float TransAccumEmission = texture(TransparencyCountTex, gBufferUV).g;
 
   vec3 AmbientLightContrib = SunColor*0.06f;
   vec3 KeyLightContrib     = V3(0.f);
   vec3 BackLightContrib    = V3(0.f);
   vec3 PointLightsContrib  = V3(0.f);
 
-  vec3 CameraToFrag = normalize(FragWorldP - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
+  vec3 CameraToFrag = normalize(FragWorldP - Camera); // TODO(Jesse): Pass this to the lighting calc that needs it
 
   vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
 
@@ -173,10 +173,10 @@ void main()
       vec3 LightToFrag = -FragToLight;
 
       float LightAtt = SunIntensity;
-      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, CameraP);
-      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragWorldP, FragNormal, CameraP); */
+      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, Camera);
+      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragWorldP, FragNormal, Camera); */
 
-      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, CameraP);
+      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, Camera);
     }
 
 
@@ -198,7 +198,7 @@ void main()
       if (Distance > 0) { LightAtt = 1.0f/(Distance*Distance); }
 
       vec3 reflectionVector = reflect(FragToLight, FragNormal);
-      vec3 CameraToFrag = normalize(FragWorldP - CameraP);
+      vec3 CameraToFrag = normalize(FragWorldP - Camera);
       float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
       float SpecularPower = pow(cosAngle, materialShininess);
 
@@ -247,7 +247,7 @@ void main()
       vec4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
       float FragDepth = FragPShadowSpace.z - acneBias;
       /* out_LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-      /* out_LightColor = FragPShadowSpace; */
+      /* out_LightColor = abs(FragPShadowSpace); */
       /* return; */
 
       float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x; // + acneBias;
@@ -305,7 +305,7 @@ void main()
      *  Fog
      */
     // TODO(Jesse): Can do squared?
-    float DistanceToFrag = distance(CameraP, FragWorldP);
+    float DistanceToFrag = distance(Camera, FragWorldP);
     float MaxFogDist = 200000.f;
 
     float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);

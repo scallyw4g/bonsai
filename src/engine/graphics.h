@@ -185,6 +185,7 @@ struct graphics
 
   transparency_render_group Transparency;
   lighting_render_group     Lighting;
+  bloom_render_group        Bloom;
   gaussian_render_group     Gaussian;
   composite_render_group    CompositeGroup;
 

@@ -581,6 +581,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         
         
+        cs MemberName = CSz("Bloom");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bloom_render_group*, &Element->Bloom),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("Gaussian");
                                                                 DoEditorUi(Ui,
           Window,

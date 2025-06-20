@@ -1,7 +1,12 @@
 // src/engine/graphics.h:49:0
 
 link_internal void
-InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct    , texture *DerivsTex     , v3 ChunkDim     , v3 WorldspaceChunkBasis     , v3 ChunkResolution  )
+InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Struct
+    , texture *DerivsTex
+  , v3 ChunkDim
+  , v3 WorldspaceChunkBasis
+  , v3 ChunkResolution
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/terrain_decoration.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -20,9 +25,10 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
     Struct->ChunkResolution = ChunkResolution;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
 
-  if (UniformIndex !=  4  )
+  u32 Expected =  4 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

@@ -1,7 +1,10 @@
 // src/engine/graphics.h:87:0
 
 link_internal void
-InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct    , u32 Ignored  )
+InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct
+    , u32 Ignored
+
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -13,9 +16,10 @@ InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct 
 
 
 
-  if (UniformIndex !=  1  )
+  u32 Expected =  1 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

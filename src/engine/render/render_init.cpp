@@ -49,13 +49,6 @@ AllocateAndInitSsaoNoise(v2i ApplicationResolution, ao_render_group *AoGroup, me
   return SsaoNoiseTexture;
 }
 
-link_internal lighting_render_group
-MakeLightingRenderGroup()
-{
-  lighting_render_group Result = {};
-  return Result;
-}
-
 shader
 MakeCompositeShader( memory_arena *GraphicsMemory,
                      v2 *ApplicationResolution,
@@ -126,8 +119,8 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
   return Shader;
 }
 
-shader
-MakeLightingShader( memory_arena *GraphicsMemory,
+link_internal void
+MakeLightingShader( lighting_render_group *Group,
 
                     v2 *ApplicationResolution,
                     g_buffer_textures *gTextures,
@@ -159,77 +152,62 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *UseLightingBloom
                   )
 {
-  shader Shader = CompileShaderPair( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
 
-  Shader.Uniforms = ShaderUniformBuffer(26, GraphicsMemory);
+  InitializeLightingRenderGroup( Group,
 
-  SetShaderUniform(&Shader, 0, &gTextures->Color, "gColor");
+   &gTextures->Color,
 
-  SetShaderUniform(&Shader, 1, &gTextures->Normal, "gNormal");
+   &gTextures->Normal,
 
-/*   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
-  /* Current = &(*Current)->Next; */
+   &gTextures->Depth,
 
-  SetShaderUniform(&Shader, 2, &gTextures->Depth, "gDepth");
+   ShadowMap,
 
-  SetShaderUniform(&Shader, 3, ShadowMap, "shadowMap");
+   Ssao,
 
-  SetShaderUniform(&Shader, 4, Ssao, "Ssao");
+   AccumTex,
 
-  SetShaderUniform(&Shader, 5, AccumTex, "TransparencyAccum");
+   CountTex,
 
-  SetShaderUniform(&Shader, 6, CountTex, "TransparencyCount");
+   BravoilMyersOIT,
 
-  SetShaderUniform(&Shader, 7, BravoilMyersOIT, "BravoilMyersOIT");
+   BravoilMcGuireOIT,
 
-  SetShaderUniform(&Shader, 8, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+   InverseViewMatrix,
 
-  SetShaderUniform(&Shader, 9, InverseViewMatrix, "InverseViewMatrix");
+   InverseProjectionMatrix,
 
-  SetShaderUniform(&Shader, 10, InverseProjectionMatrix, "InverseProjectionMatrix");
+   ShadowMVP,
 
-  SetShaderUniform(&Shader, 11, ShadowMVP, "ShadowMVP");
+   &Lights->ColorTex,
 
-  SetShaderUniform(&Shader, 12, &Lights->ColorTex, "LightColors");
+   &Lights->PositionTex,
 
-  SetShaderUniform(&Shader, 13, &Lights->PositionTex, "LightPositions");
+   &Lights->IndexToUV,
 
-  SetShaderUniform(&Shader, 14, &Lights->IndexToUV, "LightIndexToUV");
+   &Lights->Count,
 
-  SetShaderUniform(&Shader, 15, &Lights->Count, "LightCount");
+   Camera,
 
-  SetShaderUniform(&Shader, 16, Camera, "CameraP");
+   SunPosition,
 
-  SetShaderUniform(&Shader, 17, SunPosition, "SunPosition");
+   SunColor,
 
-  SetShaderUniform(&Shader, 18, SunColor, "SunColor");
+   FogColor,
 
-  SetShaderUniform(&Shader, 19, FogColor, "FogColor");
+   FogPower,
 
-  SetShaderUniform(&Shader, 20, FogPower, "FogPower");
+   (u32*)UseSsao,
 
-  SetShaderUniform(&Shader, 21, (u32*)UseSsao, "UseSsao");
+   (u32*)UseShadowMapping,
 
-  SetShaderUniform(&Shader, 22, (u32*)UseShadowMapping, "UseShadowMapping");
+   (u32*)UseLightingBloom,
 
-  SetShaderUniform(&Shader, 23, (u32*)UseLightingBloom, "UseLightingBloom");
+   ApplicationResolution,
 
-  SetShaderUniform(&Shader, 24, ApplicationResolution, "ApplicationResolution");
+   ShadowMapResolution
+  );
 
-  SetShaderUniform(&Shader, 25, ShadowMapResolution, "ShadowMapResolution");
-
-  AssertNoGlErrors;
-
-#if 0
-  if (Lights)
-  {
-    SetShaderUniform(&Shader, 26, Lights->Lights, "Lights");
-
-    SetShaderUniform(&Shader, 27, &Lights->Count, "LightCount");
-  }
-#endif
-
-  return Shader;
 }
 
 framebuffer
@@ -609,7 +587,13 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Error("Initializing ao_render_group"); return False;
   }
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, &Result->ColorPaletteTexture, GraphicsMemory);
+  InitTransparencyRenderGroup( &Result->Settings,
+                               &Result->Transparency,
+                                Result->Settings.iApplicationResolution,
+                               &gBuffer->ViewProjection,
+                               &gBuffer->Textures.Depth,
+                               &Result->ColorPaletteTexture,
+                                GraphicsMemory);
 
   // Initialize the lighting group
   {
@@ -625,38 +609,36 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     Lights->IndexToUV = 1.0f / MAX_LIGHTS;
 
-    Lighting->Shader =
-      MakeLightingShader( GraphicsMemory,
+    MakeLightingShader( Lighting,
 
-                         &Result->Settings.ApplicationResolution,
-                         &gBuffer->Textures,
+                        &Result->Settings.ApplicationResolution,
+                        &gBuffer->Textures,
 
-                         &Result->Settings.ShadowMapResolution,
-                         &SG->ShadowMap,
+                        &Result->Settings.ShadowMapResolution,
+                        &SG->ShadowMap,
 
-                         &AoGroup->Texture,
+                        &AoGroup->Texture,
 
-                         &Result->Transparency.AccumTex,
-                         &Result->Transparency.RevealTex,
-                         &Result->Settings.BravoilMyersOIT,
-                         &Result->Settings.BravoilMcGuireOIT,
+                        &Result->Transparency.AccumTex,
+                        &Result->Transparency.RevealTex,
+                        &Result->Settings.BravoilMyersOIT,
+                        &Result->Settings.BravoilMcGuireOIT,
 
-                         &gBuffer->InverseViewMatrix,
-                         &gBuffer->InverseProjectionMatrix,
-                         &SG->Shader.MVP,
+                        &gBuffer->InverseViewMatrix,
+                        &gBuffer->InverseProjectionMatrix,
+                        &SG->Shader.MVP,
 
-                         &Lighting->Lights,
+                        &Lighting->Lights,
                          Result->Camera,
-                         &Result->Settings.Lighting.SunP,
-                         &Result->Settings.Lighting.CurrentSunColor,
+                        &Result->Settings.Lighting.SunP,
+                        &Result->Settings.Lighting.CurrentSunColor,
 
-                         &Result->FogColor,
-                         &Result->FogPower,
+                        &Result->FogColor,
+                        &Result->FogPower,
 
-                         &Result->Settings.UseSsao,
-                         &Result->Settings.UseShadowMapping,
-                         &Result->Settings.UseLightingBloom
-                        );
+                        &Result->Settings.UseSsao,
+                        &Result->Settings.UseShadowMapping,
+                        &Result->Settings.UseLightingBloom );
 
     // Luminance FBO
     {
@@ -672,7 +654,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     }
 
 
-    InitBloomRenderGroup(&Lighting->Bloom, &Result->Settings, GraphicsMemory);
+    InitBloomRenderGroup(&Result->Bloom, &Result->Settings, GraphicsMemory);
   }
 
   engine_resources *Resources = GetEngineResources();
@@ -712,7 +694,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &SG->ShadowMap,
                                                         &AoGroup->Texture,
                                                         &Result->Lighting.LuminanceTex,
-                                                        &Result->Lighting.Bloom.Tex,
+                                                        &Result->Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
                                                         &SG->Shader.MVP,

@@ -1,7 +1,10 @@
 // src/engine/graphics.h:52:0
 
 link_internal void
-InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct    , v3 Ignored  )
+InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct
+    , v3 Ignored
+
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -13,9 +16,10 @@ InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct    ,
 
 
 
-  if (UniformIndex !=  1  )
+  u32 Expected =  1 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (terrain_derivs_render_context) had an incorrect number of uniform slots!");
+    Error("Shader (terrain_derivs_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

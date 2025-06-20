@@ -25,6 +25,7 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/mesh.h>
 #include <engine/world_chunk.h>
 
+#include <engine/shader.h>
 #include <engine/render/gpu_timer.h>
 #include <engine/render/render_init.h>
 #include <engine/bloom.h>

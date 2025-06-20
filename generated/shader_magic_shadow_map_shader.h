@@ -1,7 +1,12 @@
 // src/engine/render/shadow_map.h:21:0
 
 link_internal void
-InitializeShadowMapShader( shadow_map_shader *Struct    , m4 MVP     , m4 ModelMatrix     , v3 *MinClipP_worldspace     , v3 *MaxClipP_worldspace  )
+InitializeShadowMapShader( shadow_map_shader *Struct
+    , m4 MVP
+  , m4 ModelMatrix
+  , v3 *MinClipP_worldspace
+  , v3 *MaxClipP_worldspace
+)
 {
       Struct->Program = CompileShaderPair(CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -20,9 +25,10 @@ InitializeShadowMapShader( shadow_map_shader *Struct    , m4 MVP     , m4 ModelM
     Struct->MaxClipP_worldspace = MaxClipP_worldspace;
   SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MaxClipP_worldspace, "MaxClipP_worldspace");
 
-  if (UniformIndex !=  4  )
+  u32 Expected =  4 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+    Error("Shader (shadow_map_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

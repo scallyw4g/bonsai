@@ -1,7 +1,12 @@
 // src/engine/graphics.h:71:0
 
 link_internal void
-InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *ChunkDim     , v3 *WorldspaceChunkBasis     , v3 *ChunkResolution     , s32 Type  )
+InitializeWorldEditRenderContext( world_edit_render_context *Struct
+    , v3 *ChunkDim
+  , v3 *WorldspaceChunkBasis
+  , v3 *ChunkResolution
+  , s32 Type
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -20,9 +25,10 @@ InitializeWorldEditRenderContext( world_edit_render_context *Struct    , v3 *Chu
     Struct->Type = Type;
   SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Type, "Type");
 
-  if (UniformIndex !=  4  )
+  u32 Expected =  4 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (world_edit_render_context) had an incorrect number of uniform slots!");
+    Error("Shader (world_edit_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 

@@ -1,7 +1,10 @@
 // src/engine/bloom.h:25:0
 
 link_internal void
-InitializeBloomUpsampleShader( bloom_upsample_shader *Struct    , f32 *FilterRadius  )
+InitializeBloomUpsampleShader( bloom_upsample_shader *Struct
+    , f32 *FilterRadius
+
+)
 {
       Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
@@ -13,9 +16,10 @@ InitializeBloomUpsampleShader( bloom_upsample_shader *Struct    , f32 *FilterRad
 
 
 
-  if (UniformIndex !=  1  )
+  u32 Expected =  1 ;
+  if (UniformIndex != Expected )
   {
-    Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots!");
+    Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 
