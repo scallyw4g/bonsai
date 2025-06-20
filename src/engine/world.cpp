@@ -610,6 +610,48 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
   return Result;
 }
 
+#define RatioToListIndex(i) (OCTREE_PRIORITY_QUEUE_LIST_COUNT-1) - Min(s32(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1), s32(i));
+
+link_internal s32
+ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camera *GameCamera)
+{
+  s32 IdealListIndex = RatioToListIndex(2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
+
+  // Penalize nodes not in the frustum
+  if (IsInFrustum(World, GameCamera, Node) == False)
+  {
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+15);
+  }
+
+  // Prefer chunks closer to the camera
+
+  v3 SimP = GetSimSpaceP(World, Node->WorldP);
+  v3 CameraSimP = GetSimSpaceP(World, GameCamera->CurrentP);
+  s32 DistanceFactor = RatioToListIndex(Abs(Distance(SimP, CameraSimP)) / 500.f);
+
+  IdealListIndex = Max(0, IdealListIndex-DistanceFactor);
+
+  // Prefer chunks who have a higher chance of having geometry
+  if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
+  {
+    IdealListIndex = Max(0, IdealListIndex-30);
+  }
+
+  // Prefer chunks who have been edited
+  if (Count(&Node->Edits))
+  {
+    IdealListIndex = Max(0, IdealListIndex-100);
+  }
+
+  // Prefer chunks who are dirty
+  if (Node->Dirty)
+  {
+    IdealListIndex = Max(0, IdealListIndex-100);
+  }
+
+  Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
+  return IdealListIndex;
+}
 
 link_internal b32
 PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_priority_queue *Queue, octree_node *Node, octree_node *Parent)
@@ -618,37 +660,7 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
 
   b32 Result = False;
 
-  s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1,
-                           2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
-
-  // Flip such that the larger a node was in world space, the higher it is in the priority list
-  IdealListIndex = (OCTREE_PRIORITY_QUEUE_LIST_COUNT-1)-IdealListIndex;
-
-  // Penalize nodes not in the frustum
-  if (IsInFrustum(World, GameCamera, Node) == False)
-  {
-    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+15);
-  }
-
-  // Prefer chunks who have a higher chance of having geometry
-  if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
-  {
-    IdealListIndex = Max(0, IdealListIndex-3);
-  }
-
-  // Prefer chunks who have been edited
-  if (Count(&Node->Edits))
-  {
-    IdealListIndex = Max(0, IdealListIndex-10);
-  }
-
-  // Prefer chunks who are dirty
-  if (Node->Dirty)
-  {
-    IdealListIndex = Max(0, IdealListIndex-10);
-  }
-
-  Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
+  s32 IdealListIndex = ComputePriorityIndex(World, Node, Parent, GameCamera);
   if (Remaining(&Queue->Lists[IdealListIndex]))
   {
     Push(&Queue->Lists[IdealListIndex], Node);
@@ -762,7 +774,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
   {
     if (Initialized)
     {
-      if (Chunk) { if (HasGpuMesh(&Chunk->Mesh) == False) { NodeToSplit->Chunk = 0; FreeWorldChunk(Engine, Chunk); Chunk = 0; }}
+      if (Chunk) { if (HasGpuMesh(&Chunk->Mesh) == False) { NodeToSplit->Chunk = 0; FreeWorldChunk(Engine, Chunk); Chunk = 0; /* Info("%d", ComputePriorityIndex(World, NodeToSplit, Parent, GameCamera)); */ }}
       if (Dirty) { PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent); }
     }
     else
