@@ -47,7 +47,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
           InvalidCodePath();
         } break;
 
-
         { tmatch(work_queue_entry_async_function_call, Job, RPC)
           TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
           DispatchAsyncFunctionCall(RPC);
@@ -230,7 +229,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
                 case BonsaiRenderCommand_ShaderId_ShadowMap:
                 {
-                  SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+                  SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
                 } break;
               }
             } break;
@@ -269,7 +268,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
 
             { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
               TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
-              RenderDrawList(Engine, Command->DrawList, Command->Shader);
+              RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
             } break;
 
             { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
@@ -455,7 +454,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                             shape_layer *Shape = &Layer->Settings.Shape;
                             BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
 
-
                             BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
                             BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
                             BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
@@ -499,9 +497,9 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                                 auto Plane = &Shape->Plane;
                                 auto Orientation = Plane->Orientation;
 
-                                v3 xAxis = V3(0,0,0);
-                                v3 yAxis = V3(0,0,0);
-                                v3 zAxis = V3(0,0,0);
+                                v3 xAxis = V3(1,0,0);
+                                v3 yAxis = V3(0,1,0);
+                                v3 zAxis = V3(0,0,1);
 
                                 switch (Orientation)
                                 {
@@ -660,7 +658,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                 dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
                 Push(&Graphics->NoiseReadbackJobs, &Readback);
               }
-
             } break;
 
 
@@ -711,7 +708,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               }
 #endif
 
-              DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine);
+              /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
 
               // TODO(Jesse): Move into engine debug
               world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
@@ -729,7 +726,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               if (GpuMap->Buffer.At)
               {
                 RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-                RenderImmediateGeometryToShadowMap(GpuMap, Graphics);
+                RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
               }
               Clear(&GpuMap->Buffer);
 
@@ -783,8 +780,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
                   }
                 }
               }
-
-
             } break;
 
             { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)

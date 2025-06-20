@@ -77,12 +77,22 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
   r32 f = Zmax;
   r32 n = Zmin;
 
+#if 1
+  // TODO(Jesse): Pretty sure this should use floats ..
   m4 Result = {
     V4(2/(r-l), 0      , 0       , -1*((r+l)/(r-l)) ),
     V4(0      , 2/(t-b), 0       , -1*((t+b)/(t-b)) ),
     V4(0      , 0      , -2/(f-n), -1*((f+n)/(f-n)) ),
     V4(0      , 0      , 0       ,                  1)
   };
+#else
+  m4 Result = {
+    V4(2.f/(r-l), 0.f      ,  0.f      , -1.f*((r+l)/(r-l)) ),
+    V4(0.f      , 2.f/(t-b),  0.f      , -1.f*((t+b)/(t-b)) ),
+    V4(0.f      , 0.f      , -2.f/(f-n), -1.f*((f+n)/(f-n)) ),
+    V4(0.f      , 0.f      ,  0.f      ,                 1.f)
+  };
+#endif
 
   return Result;
 }

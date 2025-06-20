@@ -168,11 +168,11 @@ PushBonsaiRenderCommandSetShaderUniform(
 link_internal void
 PushBonsaiRenderCommandDrawWorldChunkDrawList(
   work_queue *RenderQueue
-   , world_chunk_ptr_paged_list* DrawList   , shader* Shader  
+   , world_chunk_ptr_paged_list* DrawList   , shader* Shader   , camera* Camera  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawWorldChunkDrawList(  DrawList , Shader  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDrawWorldChunkDrawList(  DrawList , Shader , Camera  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

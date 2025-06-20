@@ -462,10 +462,10 @@ Bonsai_Simulate(engine_resources *Resources)
     }
     Camera = Graphics->Camera;
   }
-  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
-
 
   m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
+
+  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
   m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
 
   Resources->Graphics.gBuffer->InverseViewMatrix = Inverse(ViewMat);
@@ -482,11 +482,11 @@ Bonsai_Simulate(engine_resources *Resources)
   PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
   PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
   PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
   PushBonsaiRenderCommandGlTimerEnd(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
@@ -585,6 +585,13 @@ Bonsai_Render(engine_resources *Engine)
     .ID = INVALID_SHADER_UNIFORM,
     .Name = "DrawMajorGrid",
   };
+
+
+  auto SunP = Graphics->Settings.Lighting.SunP;
+  auto Target = GetRenderP(World->ChunkDim, ComputeTarget(&Graphics->GameCamera), &Graphics->GameCamera);
+
+  DEBUG_VALUE(&SunP);
+  DEBUG_VALUE(&Target);
 
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);

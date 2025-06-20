@@ -1,4 +1,4 @@
-// src/engine/render_command.h:219:0
+// src/engine/render_command.h:220:0
 
 
 link_internal work_queue_entry__bonsai_render_command
@@ -499,12 +499,14 @@ BonsaiRenderCommandSetShaderUniform(  shader_uniform   Uniform , shader *  Shade
 }
 
 link_internal bonsai_render_command_draw_world_chunk_draw_list
-BonsaiRenderCommandDrawWorldChunkDrawList(  world_chunk_ptr_paged_list *  DrawList , shader *  Shader  )
+BonsaiRenderCommandDrawWorldChunkDrawList(  world_chunk_ptr_paged_list *  DrawList , shader *  Shader , camera *  Camera  )
 {
   bonsai_render_command_draw_world_chunk_draw_list Reuslt = {
             .DrawList = DrawList
 
 ,        .Shader = Shader
+,
+        .Camera = Camera
   };
 
   

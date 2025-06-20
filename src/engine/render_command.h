@@ -102,6 +102,7 @@ struct bonsai_render_command_draw_world_chunk_draw_list
 {
   world_chunk_ptr_paged_list *DrawList;
   shader *Shader;
+  camera *Camera;
 };
 
 // NOTE(Jesse): Temporary

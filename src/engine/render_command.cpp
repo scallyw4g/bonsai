@@ -75,9 +75,9 @@ PushSetupShaderCommand(work_queue *RenderQueue, bonsai_render_command_shader_id 
 }
 
 link_internal void
-PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, world_chunk_ptr_paged_list *DrawList, shader *Shader)
+PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
-  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader)));
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader, Camera)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 

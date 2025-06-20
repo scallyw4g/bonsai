@@ -69,27 +69,22 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 #endif
 
 inline m4
-GetShadowMapMVP(v3 SunP, v3 FrustumCenter)
+GetShadowMapMVP(world *World, camera *Camera, v3 SunP)
 {
-  // Compute the MVP matrix from the light's point of view
-  /* v3 Translate = GetRenderP(Camera->Target, Camera); */
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
                                           SHADOW_MAP_Z_MAX);
 
-  v3 Front = Normalize(SunP);
-  v3 Right = Cross(Front, V3(0,1,0));
-  v3 Up = Cross(Right, Front);
-
-  v3 Target = FrustumCenter;
+  v3 Target = {};
+  v3 Up = V3(0.f, 1.f, 0.f);
   m4 depthViewMatrix =  LookAt(SunP, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
 
 link_internal void
-RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
 
@@ -100,14 +95,10 @@ RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *
 
 
   // @duplicate_shadow_map_MVP_calculation
-  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
-
-  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
+  /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
+  SG->Shader.MVP = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
 
   UseShader(&SG->Shader);
-
-  /* BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix); */
 
   Draw(GpuMap->Buffer.At);
 
@@ -1393,7 +1384,7 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 link_internal void
-SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
+SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
   shadow_render_group *SG = Graphics->SG;
 
@@ -1417,12 +1408,10 @@ SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectio
 
   // TODO(Jesse): Duplicate MVP calculation
   // @duplicate_shadow_map_MVP_calculation
-  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
+  /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
+  SG->Shader.MVP = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
 
   UseShader(&SG->Shader);
-
-  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
   GL.Disable(GL_CULL_FACE);
 
@@ -1545,18 +1534,24 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 }
 
 link_internal void
-RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader)
+RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
+  world *World = Engine->World;;
+
   IterateOver(DrawList, Chunk, ChunkIndex)
   {
-
     // In case gpu meshes got deallocated after the chunk was added to the draw list
     if (HasGpuMesh(&Chunk->Mesh))
     {
-      v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-
-      v3 Basis = GetRenderP(Engine, Chunk->WorldP);
+      v3 Basis;
+      if (Camera)
+      {
+        Basis = GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
+      }
+      else
+      {
+        Basis = GetSimSpaceP(World, Chunk->WorldP);
+      }
       DrawLod(Engine, Shader, &Chunk->Mesh, 0.f, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
@@ -1628,7 +1623,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
   shadow_render_group *SG = Graphics->SG;
 
   b32 MaskSelection = False;
-  SetupShadowMapShader(Graphics, ShadowMapResolution, MaskSelection);
+  SetupShadowMapShader(World, Graphics, ShadowMapResolution, MaskSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */

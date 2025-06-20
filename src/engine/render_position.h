@@ -6,7 +6,7 @@ ComputeTarget(camera *Camera)
 }
 
 inline v3
-GetRenderP(cp P, camera *Camera, world_position WorldChunkDim)
+GetRenderP(cp P, camera *Camera, v3i WorldChunkDim)
 {
   cp CameraRelative = P-Camera->CurrentP;
   v3 Result = CameraRelative.Offset + (V3(CameraRelative.WorldP) * WorldChunkDim);
@@ -14,16 +14,16 @@ GetRenderP(cp P, camera *Camera, world_position WorldChunkDim)
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, cp P, camera *Camera)
+GetRenderP( v3i WorldChunkDim, cp P, camera *Camera)
 {
   v3 Result = GetRenderP(P, Camera, WorldChunkDim);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, v3 Offset, camera *Camera)
+GetRenderP( v3i WorldChunkDim, v3 Offset, camera *Camera)
 {
-  v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(Offset, World_Position(0)), Camera);
+  v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(Offset, {}), Camera);
   return Result;
 }
 
@@ -49,28 +49,28 @@ GetRenderP( engine_resources *Engine, v3 Offset )
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, world_position WorldP, camera *Camera)
+GetRenderP( v3i WorldChunkDim, v3i WorldP, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), WorldP), Camera);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, standing_spot *Spot, camera *Camera)
+GetRenderP( v3i WorldChunkDim, standing_spot *Spot, camera *Camera)
 {
   v3 Result = Spot->P.Offset + GetRenderP(WorldChunkDim, Spot->P.WorldP, Camera);
   return Result;
 }
 
 inline v3
-GetRenderP( chunk_dimension WorldChunkDim, entity *entity, camera *Camera)
+GetRenderP( v3i WorldChunkDim, entity *entity, camera *Camera)
 {
   v3 Result = GetRenderP(WorldChunkDim, entity->P, Camera);
   return Result;
 }
 
 inline aabb
-GetRenderSpaceAABB(chunk_dimension WorldChunkDim, entity *Entity, camera *Camera)
+GetRenderSpaceAABB(v3i WorldChunkDim, entity *Entity, camera *Camera)
 {
   v3 Radius = Entity->_CollisionVolumeRadius;
   v3 Center = GetRenderP(WorldChunkDim, Entity->P, Camera) + Radius;
@@ -100,7 +100,7 @@ LookAt(v3 P, v3 Target, v3 Up)
 }
 
 inline m4
-ViewMatrix(chunk_dimension WorldChunkDim, camera *Camera)
+ViewMatrix(v3i WorldChunkDim, camera *Camera)
 {
   m4 Result = LookAt(
     GetRenderP(WorldChunkDim, Camera->CurrentP, Camera),

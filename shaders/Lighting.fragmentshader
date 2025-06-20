@@ -250,11 +250,12 @@ void main()
       /* out_LightColor = FragPShadowSpace; */
       /* return; */
 
-
-      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
-
-      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
+      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x; // + acneBias;
       if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
+
+      /* out_LightColor = vec4(ShadowSampleDepth, ShadowSampleDepth, ShadowSampleDepth, 1.f); */
+      /* return; */
+
 
       // NOTE(Jesse): This is misguided.  The correct thing to do is to write
       // shadow information to a buffer, then sample that buffer using a box filter
@@ -270,6 +271,8 @@ void main()
       // Might be fine if the sun location was a fixed point, but that seems lame.
       //
 #if 0
+      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
+
       // TODO(Jesse): Does this produce better results using texelFetch?
       vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
       ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
