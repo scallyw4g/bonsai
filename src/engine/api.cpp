@@ -477,6 +477,17 @@ Bonsai_Simulate(engine_resources *Resources)
 #endif
 
 
+  { // Update tDay and key-light such that we can start drawing
+    if (Graphics->Settings.Lighting.AutoDayNightCycle)
+    {
+      Graphics->Settings.Lighting.tDay += SafeDivide0(Plat->dt, Graphics->Settings.Lighting.tDaySpeed);
+    }
+
+    UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
+    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+  }
+
+
 
   // Draw terrain
   PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
@@ -496,78 +507,11 @@ Bonsai_Simulate(engine_resources *Resources)
   return Result;
 }
 
-link_internal void
-UpdateKeyLightColor(graphics *Graphics, r32 tDay)
-{
-  auto SG = Graphics->SG;
-  r32 tDaytime = Cos(tDay);
-  r32 tPostApex = Sin(tDay);
-
-  lighting_settings *Lighting = &Graphics->Settings.Lighting;
-
-  v3 DawnColor = HSVtoRGB(Lighting->DawnHSV) * Lighting->DawnIntensity;
-  v3 SunColor  = HSVtoRGB(Lighting->SunHSV ) * Lighting->SunIntensity;
-  v3 DuskColor = HSVtoRGB(Lighting->DuskHSV) * Lighting->DuskIntensity;
-  v3 MoonColor = HSVtoRGB(Lighting->MoonHSV) * Lighting->MoonIntensity;
-
-  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
-  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
-  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
-
-  if (tDaytime > 0.f)
-  {
-    if (tPostApex > 0.f)
-    {
-      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
-    }
-    else
-    {
-      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
-    }
-  }
-  else
-  {
-    if (tPostApex > 0.f)
-    {
-      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
-    }
-    else
-    {
-      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
-    }
-  }
-
-  switch (Graphics->Settings.ToneMappingType)
-  {
-    case ToneMappingType_None:
-    case ToneMappingType_Reinhard:
-    case ToneMappingType_Exposure:
-      { } break;
-
-    case ToneMappingType_AGX:
-    case ToneMappingType_AGX_Sepia:
-    case ToneMappingType_AGX_Punchy:
-    {
-      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
-      {
-        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
-      }
-    } break;
-  }
-}
-
 link_export b32
 Bonsai_Render(engine_resources *Engine)
 {
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
-
-  if (Graphics->Settings.Lighting.AutoDayNightCycle)
-  {
-    Graphics->Settings.Lighting.tDay += SafeDivide0(Plat->dt, Graphics->Settings.Lighting.tDaySpeed);
-  }
-  UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
-
 
   /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
   shader_uniform MinorGridUniform =
@@ -587,11 +531,13 @@ Bonsai_Render(engine_resources *Engine)
   };
 
 
-  auto SunP = Graphics->Settings.Lighting.SunP;
-  auto Target = GetRenderP(World->ChunkDim, ComputeTarget(&Graphics->GameCamera), &Graphics->GameCamera);
+  /* { */
+    /* auto SunP = Graphics->Settings.Lighting.SunP; */
+    /* auto Target = GetRenderP(World->ChunkDim, ComputeTarget(&Graphics->GameCamera), &Graphics->GameCamera); */
 
-  DEBUG_VALUE(&SunP);
-  DEBUG_VALUE(&Target);
+    /* DEBUG_VALUE(&SunP); */
+    /* DEBUG_VALUE(&Target); */
+  /* } */
 
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);

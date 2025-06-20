@@ -669,7 +669,6 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               //
 
               ao_render_group     *AoGroup = Graphics->AoGroup;
-              shadow_render_group *SG      = Graphics->SG;
 
               EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
               EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
@@ -692,6 +691,7 @@ RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
               // Editor preview
               /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
               {
+                shadow_render_group *SG      = Graphics->SG;
                 v3i Radius = World->VisibleRegion/2;
                 v3i Min = World->Center - Radius;
                 v3i Max = World->Center + Radius;

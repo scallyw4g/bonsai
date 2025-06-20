@@ -93,11 +93,6 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
   GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
 
-
-  // @duplicate_shadow_map_MVP_calculation
-  /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
-  SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
-
   UseShader(&SG->Shader);
 
   Draw(GpuMap->Buffer.At);
@@ -1407,11 +1402,6 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
 
   SetViewport(ShadowMapResolution);
 
-  // TODO(Jesse): Duplicate MVP calculation
-  // @duplicate_shadow_map_MVP_calculation
-  /* v3 FrustCenter = GetFrustumCenter(&Graphics->GameCamera); */
-  SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
-
   UseShader(&SG->Shader);
 
   GL.Disable(GL_CULL_FACE);
@@ -1637,3 +1627,64 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   TeardownShadowMapShader(Graphics);
 }
+
+link_internal void
+UpdateKeyLight(graphics *Graphics, r32 tDay)
+{
+  auto SG = Graphics->SG;
+  r32 tDaytime = Cos(tDay);
+  r32 tPostApex = Sin(tDay);
+
+  lighting_settings *Lighting = &Graphics->Settings.Lighting;
+
+  v3 DawnColor = HSVtoRGB(Lighting->DawnHSV) * Lighting->DawnIntensity;
+  v3 SunColor  = HSVtoRGB(Lighting->SunHSV ) * Lighting->SunIntensity;
+  v3 DuskColor = HSVtoRGB(Lighting->DuskHSV) * Lighting->DuskIntensity;
+  v3 MoonColor = HSVtoRGB(Lighting->MoonHSV) * Lighting->MoonIntensity;
+
+  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
+  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
+  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
+
+  if (tDaytime > 0.f)
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
+    }
+  }
+  else
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+    }
+  }
+
+  switch (Graphics->Settings.ToneMappingType)
+  {
+    case ToneMappingType_None:
+    case ToneMappingType_Reinhard:
+    case ToneMappingType_Exposure:
+      { } break;
+
+    case ToneMappingType_AGX:
+    case ToneMappingType_AGX_Sepia:
+    case ToneMappingType_AGX_Punchy:
+    {
+      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
+      {
+        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
+      }
+    } break;
+  }
+}
+
