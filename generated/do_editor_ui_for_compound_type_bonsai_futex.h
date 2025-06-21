@@ -77,28 +77,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
                 PushNewRow(Ui);
 
       }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Initialized");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->Initialized),
-          MemberName,
-          &DefaultUiRenderParams_Checkbox
-          );
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

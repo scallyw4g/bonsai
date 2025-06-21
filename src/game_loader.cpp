@@ -157,8 +157,8 @@ main( s32 ArgCount, const char ** Args )
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
                                   BonsaiInit_LaunchThreadPool      |
-                                  BonsaiInit_InitDebugSystem       );
-                                  /* BonsaiInit_ProfileContextSwitches ); */
+                                  BonsaiInit_InitDebugSystem       |
+                                  BonsaiInit_ProfileContextSwitches );
 
   Ensure( InitializeBonsaiStdlib( Flags,
                                   GameApi,
