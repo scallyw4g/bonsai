@@ -33,30 +33,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         
         
         
-        cs MemberName = CSz("Settings");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(engine_settings*, &Element->Settings),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Stdlib");
                                                                 DoEditorUi(Ui,
           Window,
@@ -81,59 +57,59 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         
         
         
-        cs MemberName = CSz("Ui");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(renderer_2d*, &Element->Ui),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("GameApi");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(application_api*, &Element->GameApi),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("EngineApi");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(engine_api*, &Element->EngineApi),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Settings");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(engine_settings*, &Element->Settings),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Ui");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(renderer_2d*, &Element->Ui),
           MemberName,
           Params
           );

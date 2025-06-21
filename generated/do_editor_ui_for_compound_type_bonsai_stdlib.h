@@ -81,6 +81,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
+        cs MemberName = CSz("AppApi");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(application_api*, &Element->AppApi),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("ThreadStates");
                                                                 DoEditorUi(Ui,
           Window,

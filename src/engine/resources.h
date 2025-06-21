@@ -35,15 +35,13 @@ struct asset_system
 
 struct engine_resources
 {
-  engine_settings Settings;
-
   bonsai_stdlib Stdlib;
+     engine_api EngineApi;
+
+  engine_settings Settings;
 
   // TODO(Jesse): Should this go in stdlib?
   renderer_2d Ui;
-
-  application_api GameApi;
-       engine_api EngineApi;
 
   // Engine
   hotkeys     Hotkeys;
@@ -125,18 +123,6 @@ link_internal v3i
 GetWorldChunkDim()
 {
   return GetWorld()->ChunkDim;
-}
-
-// NOTE(Jesse): We have to fail on this for avoiding stackoverflows on startup
-link_weak bonsai_stdlib *
-GetStdlib()
-{
-  bonsai_stdlib *Result = 0;
-  if (auto Engine = TryGetEngineResources())
-  {
-    Result = &Engine->Stdlib;
-  }
-  return Result;
 }
 
 

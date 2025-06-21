@@ -41,7 +41,7 @@ InitializeShadowMapShader( shadow_map_shader *Struct
 link_internal void
 UseShader( shadow_map_shader *Struct )
 {
-  GetStdlib()->GL.UseProgram(Struct->Program.ID);
+  GetGL()->UseProgram(Struct->Program.ID);
 
   s32 TextureUnit = 0;
   s32 UniformIndex = 0;

@@ -129,7 +129,7 @@ main( s32 ArgCount, const char ** Args )
   // kick off the worker threads.
   //
   shared_lib       GameLib   = {};
-  application_api *GameApi   = &EngineResources->GameApi;
+  application_api *GameApi   = &EngineResources->Stdlib.AppApi;
   engine_api      *EngineApi = &EngineResources->EngineApi;
   {
     FileIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics

@@ -2,12 +2,12 @@
 void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
   SetViewport(ApplicationResolution/2);
 
-  GetStdlib()->GL.UseProgram(AoGroup->Shader.ID);
+  GetGL()->UseProgram(AoGroup->Shader.ID);
 
-  GetStdlib()->GL.Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
+  GetGL()->Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
 
   BindShaderUniforms(&AoGroup->Shader);
 
@@ -35,14 +35,14 @@ UpdateLightingTextures(game_lights *Lights)
 
   u32 Type = GL_TEXTURE_2D;
 
-  GetStdlib()->GL.BindTexture(Type, Lights->PositionTex.ID);
-  GetStdlib()->GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetGL()->BindTexture(Type, Lights->PositionTex.ID);
+  GetGL()->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->PositionTex.Dim.x, Lights->PositionTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, PosData);
   AssertNoGlErrors;
 
-  GetStdlib()->GL.BindTexture(Type, Lights->ColorTex.ID);
-  GetStdlib()->GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetGL()->BindTexture(Type, Lights->ColorTex.ID);
+  GetGL()->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->ColorTex.Dim.x, Lights->ColorTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, ColorData);
   AssertNoGlErrors;
@@ -54,10 +54,10 @@ UpdateLightingTextures(game_lights *Lights)
 link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(256));
 
-  GetStdlib()->GL.UseProgram(DebugShader->ID);
+  GetGL()->UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
 
   RenderQuad();
@@ -90,14 +90,14 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 
   shadow_render_group *SG = Graphics->SG;
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
 
   UseShader(&SG->Shader);
 
   Draw(GpuMap->Buffer.At);
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
@@ -109,18 +109,18 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   auto GBufferRenderGroup = Graphics->gBuffer;
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GetStdlib()->GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
   // TODO(Jesse): Hoist this check out of here
-  GetStdlib()->GL.Disable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
   /* DrawGpuBufferImmediate(GpuMap->Handles); */
-  GetStdlib()->GL.Enable(GL_CULL_FACE);
+  GetGL()->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
 
@@ -130,15 +130,15 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 link_internal void
 CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 {
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(Plat->ScreenDim);
 
-  GetStdlib()->GL.Enable(GL_BLEND);
-  GetStdlib()->GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+  GetGL()->Enable(GL_BLEND);
+  GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
   UseShader(&Graphics->CompositeGroup.Shader);
 
-  GetStdlib()->GL.Disable(GL_BLEND);
+  GetGL()->Disable(GL_BLEND);
 
   RenderQuad();
 
@@ -158,12 +158,12 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   // TODO(Jesse): Explain this.
   Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
 
-  /* GetStdlib()->GL.Enable(GL_BLEND); */
-  /* GetStdlib()->GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
+  /* GetGL()->Enable(GL_BLEND); */
+  /* GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
 
-/*   GetStdlib()->GL.Disable(GL_BLEND); */
+/*   GetGL()->Disable(GL_BLEND); */
 
   {
     UseShader(&Lighting->Program);
@@ -198,11 +198,11 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
 
     if (last_iteration)
     {
-      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
     }
     else
     {
-      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
     AssertNoGlErrors;
@@ -218,7 +218,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       Tex = &Group->Textures[!horizontal];
     }
 
-    /* GetStdlib()->GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
+    /* GetGL()->BindTexture( GL_TEXTURE_2D, Tex->ID ); */
     BindUniformByName(&Group->Shader, "SrcImage", Tex, 0);
 
     AssertNoGlErrors;
@@ -228,7 +228,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     if (first_iteration) first_iteration = false;
   }
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 link_internal gpu_mapped_element_buffer *
@@ -329,20 +329,20 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
-  GetStdlib()->GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   SetDefaultFramebufferClearColors();
 
-  /* GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
-  /* GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+  /* GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
+  /* GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
-  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
-  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
@@ -350,32 +350,32 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   for (s32 Index = 0; Index < 2; ++Index)
   {
-    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
-    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   if (Graphics->Settings.BravoilMcGuireOIT)
   {
-    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
 
 #if 1
-    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #else
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0;
-      GetStdlib()->GL.DrawBuffers(1, &Attachments);
-      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetGL()->DrawBuffers(1, &Attachments);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0 + 1;
-      GetStdlib()->GL.DrawBuffers(1, &Attachments);
-      GetStdlib()->GL.ClearColor(1.f, 1.f, 1.f, 1.f);
-      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT);
+      GetGL()->DrawBuffers(1, &Attachments);
+      GetGL()->ClearColor(1.f, 1.f, 1.f, 1.f);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT);
     }
 
     {
@@ -386,8 +386,8 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   }
   else
   {
-    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
-    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
 
@@ -749,47 +749,47 @@ RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, 
 
   if (Group->GpuBuffer.Buffer.At)
   {
-    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
     UseShader(&Group->Shader);
 
     if (Settings->BravoilMcGuireOIT)
     {
       SetViewport(ApplicationResolution);
-      GetStdlib()->GL.Disable(GL_CULL_FACE);
+      GetGL()->Disable(GL_CULL_FACE);
 
-      GetStdlib()->GL.Enable(GL_BLEND);
-      /* GetStdlib()->GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetGL()->Enable(GL_BLEND);
+      /* GetGL()->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       // TODO(Jesse): The portable version requires changing the shader a bit
-      /* GetStdlib()->GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetGL()->BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
 
-      GetStdlib()->GL.BlendFunci(0, GL_ONE, GL_ONE);
-      GetStdlib()->GL.BlendFunci(1, GL_ONE, GL_ONE);
-      /* GetStdlib()->GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
-      /* GetStdlib()->GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetGL()->BlendFunci(0, GL_ONE, GL_ONE);
+      GetGL()->BlendFunci(1, GL_ONE, GL_ONE);
+      /* GetGL()->BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetGL()->BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GetStdlib()->GL.Disable(GL_BLEND);
+      GetGL()->Disable(GL_BLEND);
 
-      GetStdlib()->GL.Enable(GL_CULL_FACE);
+      GetGL()->Enable(GL_CULL_FACE);
     }
     else
     {
-      GetStdlib()->GL.Enable(GL_BLEND);
-      GetStdlib()->GL.BlendFunc(GL_ONE, GL_ONE);
-      GetStdlib()->GL.Disable(GL_CULL_FACE);
-      /* GetStdlib()->GL.DepthFunc(GL_LEQUAL); */
-      /* GetStdlib()->GL.DepthFunc(GL_ALWAYS); */
+      GetGL()->Enable(GL_BLEND);
+      GetGL()->BlendFunc(GL_ONE, GL_ONE);
+      GetGL()->Disable(GL_CULL_FACE);
+      /* GetGL()->DepthFunc(GL_LEQUAL); */
+      /* GetGL()->DepthFunc(GL_ALWAYS); */
 
       SetViewport(ApplicationResolution);
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GetStdlib()->GL.Disable(GL_BLEND);
-      GetStdlib()->GL.Enable(GL_CULL_FACE);
-      /* GetStdlib()->GL.DepthFunc(GL_LEQUAL); */
+      GetGL()->Disable(GL_BLEND);
+      GetGL()->Enable(GL_CULL_FACE);
+      /* GetGL()->DepthFunc(GL_LEQUAL); */
     }
 
     Group->GpuBuffer.Buffer.At = 0;
@@ -806,8 +806,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
     // GL stuff
     {
-      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-      GetStdlib()->GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+      GetGL()->BindTexture(GL_TEXTURE_2D, Texture->ID);
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
@@ -822,8 +822,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
       SetViewport(V2(Texture->Dim));
 
-      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      GetStdlib()->GL.Enable(GL_DEPTH_TEST);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetGL()->Enable(GL_DEPTH_TEST);
     }
   }
   return Result;
@@ -834,18 +834,18 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
 {
   AssertNoGlErrors;
 
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
-  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   AssertNoGlErrors;
 
 
@@ -854,10 +854,10 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GetStdlib()->GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 }
 
@@ -865,10 +865,10 @@ link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
 {
   AssertNoGlErrors;
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
 
@@ -877,23 +877,23 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
     InvalidCase(DataType_Undefinded);
     case DataType_v3:
     {
-      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
 
     case DataType_v3_u8:
     {
-      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
   }
@@ -904,10 +904,10 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GetStdlib()->GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 }
 
@@ -921,12 +921,12 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 
   Draw(Handles->ElementCount);
 
-  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, 0);
 
-  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetGL()->DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetGL()->DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetGL()->DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetGL()->DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
 poof(
@@ -1036,7 +1036,7 @@ ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 El
 {
   if (Handles->VertexHandle)
   {
-    GetStdlib()->GL.DeleteBuffers(3, &Handles->VertexHandle);
+    GetGL()->DeleteBuffers(3, &Handles->VertexHandle);
   }
   Clear(Handles);
 
@@ -1262,7 +1262,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
       FlushBuffersToCard(&RTTGroup->GeoBuffer);
     }
 
-    GetStdlib()->GL.Enable(GL_DEPTH_TEST);
+    GetGL()->Enable(GL_DEPTH_TEST);
     Draw(RTTGroup->GeoBuffer.Buffer.At);
     RTTGroup->GeoBuffer.Buffer.At = 0;
   }
@@ -1356,14 +1356,14 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GetStdlib()->GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  GetStdlib()->GL.Disable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1373,7 +1373,7 @@ TeardownGBufferShader(graphics *Graphics)
 {
   auto GBufferRenderGroup = Graphics->gBuffer;
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
-  GetStdlib()->GL.Enable(GL_CULL_FACE);
+  GetGL()->Enable(GL_CULL_FACE);
 }
 
 
@@ -1398,13 +1398,13 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SetViewport(ShadowMapResolution);
 
   UseShader(&SG->Shader);
 
-  GetStdlib()->GL.Disable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1412,7 +1412,7 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
 link_internal void
 TeardownShadowMapShader(graphics *Graphics)
 {
-  GetStdlib()->GL.Enable(GL_CULL_FACE);
+  GetGL()->Enable(GL_CULL_FACE);
   AssertNoGlErrors;
 }
 

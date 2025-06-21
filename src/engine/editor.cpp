@@ -2639,7 +2639,7 @@ DoLevelWindow(engine_resources *Engine)
         Ensure(Read_u64(&LevelBytes) == Delimeter);
 
         Assert(ThreadLocal_ThreadIndex == 0);
-        if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
+        if (Engine->Stdlib.AppApi.OnLibraryLoad) { Engine->Stdlib.AppApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
 
         UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       }

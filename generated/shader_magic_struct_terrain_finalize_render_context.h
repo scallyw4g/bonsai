@@ -32,7 +32,7 @@ InitializeTerrainFinalizeRenderContext( terrain_finalize_render_context *Struct
 link_internal void
 UseShader( terrain_finalize_render_context *Struct )
 {
-  GetStdlib()->GL.UseProgram(Struct->Program.ID);
+  GetGL()->UseProgram(Struct->Program.ID);
 
   s32 TextureUnit = 0;
   s32 UniformIndex = 0;
