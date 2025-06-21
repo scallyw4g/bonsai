@@ -155,7 +155,12 @@ main( s32 ArgCount, const char ** Args )
   thread_main_callback_type Procs[1] = { RenderThread_Main };
   thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
-  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
+  auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
+                                  BonsaiInit_LaunchThreadPool      |
+                                  BonsaiInit_InitDebugSystem       );
+                                  /* BonsaiInit_ProfileContextSwitches ); */
+
+  Ensure( InitializeBonsaiStdlib( Flags,
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
