@@ -867,19 +867,19 @@ DrainRenderQueue(engine_resources *Engine)
 link_export THREAD_MAIN_RETURN
 RenderThread_Main(void *ThreadStartupParams)
 {
-  thread_startup_params *ThreadParams = Cast(thread_startup_params*, ThreadStartupParams);
-  WorkerThread_BeforeJobStart(ThreadParams);
+  thread_local_state *Thread = Cast(thread_local_state*, ThreadStartupParams);
+  WorkerThread_BeforeJobStart(Thread);
 
 
   Global_ThreadStates = GetStdlib()->ThreadStates;
   Assert(Global_ThreadStates);
 
 
-  /* Assert(ThreadParams->ThreadIndex > 0); */
-  /* SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex); */
+  /* Assert(Thread->ThreadIndex > 0); */
+  /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 
   engine_resources *Engine    = GetEngineResources();
-   application_api *AppApi    = &ThreadParams->Stdlib->AppApi;
+   application_api *AppApi    = &Thread->Stdlib->AppApi;
                 os *Os        = &Engine->Stdlib.Os;
           platform *Plat      = &Engine->Stdlib.Plat;
         engine_api *EngineApi = &Engine->EngineApi;
@@ -908,17 +908,18 @@ RenderThread_Main(void *ThreadStartupParams)
 
   if (InitResult)
   {
-    while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
+    bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
+    while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
-      AppApi->WorkerBeforeJob(GetThreadLocalState(ThreadLocal_ThreadIndex), ThreadParams);
+      AppApi->WorkerBeforeJob(Thread);
       EngineApi->DrainRenderQueue(Engine);
-      if (FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex)) { WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex); }
+      if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex)) { WaitOnFutex(&Plat->WorkerThreadsSuspendFutex); }
       SleepMs(1);
     }
 
-    Info("Exiting Render Thread (%d)", ThreadParams->ThreadIndex);
-    WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
+    Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
+    WaitOnFutex(WorkerThreadsExitFutex);
   }
   else
   {
