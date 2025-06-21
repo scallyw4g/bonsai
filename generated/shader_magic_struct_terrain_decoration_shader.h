@@ -41,7 +41,7 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
 link_internal void
 UseShader( terrain_decoration_render_context *Struct )
 {
-  GL.UseProgram(Struct->Program.ID);
+  GetStdlib()->GL.UseProgram(Struct->Program.ID);
 
   s32 TextureUnit = 0;
   s32 UniformIndex = 0;

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:270:0
+// src/engine/editor.cpp:269:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -86,6 +86,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(thread_local_state*, Element->ThreadStates),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("GL");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(opengl*, &Element->GL),
           MemberName,
           Params
           );

@@ -8,11 +8,6 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
   Global_ThreadStates = Resources->Stdlib.ThreadStates;
-  Global_EngineResources = Resources;
-
-  /* Initialize_Global_UpdateWorldCallbackTable(); */
-
-  /* b32 Result = InitializeOpenglFunctions(); */
   return True;
 }
 
@@ -534,7 +529,6 @@ Bonsai_Render(engine_resources *Engine)
   /* { */
     /* auto SunP = Graphics->Settings.Lighting.SunP; */
     /* auto Target = GetRenderP(World->ChunkDim, ComputeTarget(&Graphics->GameCamera), &Graphics->GameCamera); */
-
     /* DEBUG_VALUE(&SunP); */
     /* DEBUG_VALUE(&Target); */
   /* } */
@@ -579,9 +573,7 @@ Bonsai_Render(engine_resources *Engine)
 struct bonsai_thread_user_data
 {
   u64 Magic0 = 0x69;
-
   world_chunk_freelist SynChunkFreelist;
-
   u64 Magic1 = 0x420;
 };
 
@@ -609,20 +601,9 @@ link_weak void
 WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
   engine_resources *EngineResources = GetEngineResources();
-  world *World = EngineResources->World;
+             world *World           = EngineResources->World;
 
   auto RenderQ = &EngineResources->Stdlib.Plat.RenderQ;
-
-  if (Thread->UserData == 0)
-  {
-    Thread->UserData = Allocate(bonsai_thread_user_data, Thread->PermMemory, 1);
-    bonsai_thread_user_data *UserData = Cast(bonsai_thread_user_data*, Thread->UserData);
-    *UserData = {};
-  }
-
-  bonsai_thread_user_data *UserData = Cast(bonsai_thread_user_data*, Thread->UserData);
-  Assert(UserData->Magic0 == 0x69);
-  Assert(UserData->Magic1 == 0x420);
 
   tswitch (Entry)
   {
@@ -655,7 +636,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(Chunk);
 
       world_chunk *DestChunk = Node->Chunk;
-      world_chunk *SynChunk = GetOrAllocate(&UserData->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+      world_chunk *SynChunk = GetOrAllocate(&EngineResources->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
       /* SynChunk->Flags = Chunk_Queued; */
 
       Assert(NoiseDim == V3i(66, 66, 66));
@@ -705,7 +686,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
             PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
           }
           FinalizeNodeInitializaion(Node);
-          FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
+          FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
         }
       }
       else
@@ -716,7 +697,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
           PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
         }
         FinalizeNodeInitializaion(Node);
-        FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
+        FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
       }
 
       auto Graphics = &EngineResources->Graphics;
@@ -749,7 +730,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       SynChunk->Mesh = {};
 
       Assert(GpuMappedBuf.Buffer.At == GpuMappedBuf.Buffer.End);
-      FreeWorldChunk(&UserData->SynChunkFreelist, SynChunk);
+      FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
 
       PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, GpuMappedBuf, DestNode);
 #endif

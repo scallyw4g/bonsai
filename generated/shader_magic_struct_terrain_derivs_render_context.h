@@ -32,7 +32,7 @@ InitializeTerrainDerivsRenderContext( terrain_derivs_render_context *Struct
 link_internal void
 UseShader( terrain_derivs_render_context *Struct )
 {
-  GL.UseProgram(Struct->Program.ID);
+  GetStdlib()->GL.UseProgram(Struct->Program.ID);
 
   s32 TextureUnit = 0;
   s32 UniformIndex = 0;

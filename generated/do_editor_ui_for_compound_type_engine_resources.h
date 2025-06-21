@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:588:0
+// src/engine/editor.cpp:587:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -110,6 +110,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(application_api*, &Element->GameApi),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EngineApi");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(engine_api*, &Element->EngineApi),
           MemberName,
           Params
           );
@@ -490,30 +514,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         
         
         
-        cs MemberName = CSz("DebugState");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(debug_state*, Element->DebugState),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("EngineDebug");
                                                                 DoEditorUi(Ui,
           Window,
@@ -639,6 +639,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(render_entity_to_texture_group*, &Element->RTTGroup),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SynChunkFreelist");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_chunk_freelist*, &Element->SynChunkFreelist),
           MemberName,
           Params
           );

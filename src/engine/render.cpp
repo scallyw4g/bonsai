@@ -2,12 +2,12 @@
 void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
   SetViewport(ApplicationResolution/2);
 
-  GL.UseProgram(AoGroup->Shader.ID);
+  GetStdlib()->GL.UseProgram(AoGroup->Shader.ID);
 
-  GL.Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
+  GetStdlib()->GL.Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
 
   BindShaderUniforms(&AoGroup->Shader);
 
@@ -35,14 +35,14 @@ UpdateLightingTextures(game_lights *Lights)
 
   u32 Type = GL_TEXTURE_2D;
 
-  GL.BindTexture(Type, Lights->PositionTex.ID);
-  GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetStdlib()->GL.BindTexture(Type, Lights->PositionTex.ID);
+  GetStdlib()->GL.TexImage2D( Type, 0, GL_RGB32F,
                 Lights->PositionTex.Dim.x, Lights->PositionTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, PosData);
   AssertNoGlErrors;
 
-  GL.BindTexture(Type, Lights->ColorTex.ID);
-  GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetStdlib()->GL.BindTexture(Type, Lights->ColorTex.ID);
+  GetStdlib()->GL.TexImage2D( Type, 0, GL_RGB32F,
                 Lights->ColorTex.Dim.x, Lights->ColorTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, ColorData);
   AssertNoGlErrors;
@@ -54,10 +54,10 @@ UpdateLightingTextures(game_lights *Lights)
 link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(256));
 
-  GL.UseProgram(DebugShader->ID);
+  GetStdlib()->GL.UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
 
   RenderQuad();
@@ -90,14 +90,14 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 
   shadow_render_group *SG = Graphics->SG;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
 
   UseShader(&SG->Shader);
 
   Draw(GpuMap->Buffer.At);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
@@ -109,18 +109,18 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   auto GBufferRenderGroup = Graphics->gBuffer;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetStdlib()->GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
   // TODO(Jesse): Hoist this check out of here
-  GL.Disable(GL_CULL_FACE);
+  GetStdlib()->GL.Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
   /* DrawGpuBufferImmediate(GpuMap->Handles); */
-  GL.Enable(GL_CULL_FACE);
+  GetStdlib()->GL.Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
 
@@ -130,15 +130,15 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 link_internal void
 CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(Plat->ScreenDim);
 
-  GL.Enable(GL_BLEND);
-  GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+  GetStdlib()->GL.Enable(GL_BLEND);
+  GetStdlib()->GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
   UseShader(&Graphics->CompositeGroup.Shader);
 
-  GL.Disable(GL_BLEND);
+  GetStdlib()->GL.Disable(GL_BLEND);
 
   RenderQuad();
 
@@ -158,12 +158,12 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   // TODO(Jesse): Explain this.
   Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
 
-  /* GL.Enable(GL_BLEND); */
-  /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
+  /* GetStdlib()->GL.Enable(GL_BLEND); */
+  /* GetStdlib()->GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
 
-/*   GL.Disable(GL_BLEND); */
+/*   GetStdlib()->GL.Disable(GL_BLEND); */
 
   {
     UseShader(&Lighting->Program);
@@ -198,11 +198,11 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
 
     if (last_iteration)
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
     }
     else
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
     AssertNoGlErrors;
@@ -218,7 +218,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       Tex = &Group->Textures[!horizontal];
     }
 
-    /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
+    /* GetStdlib()->GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
     BindUniformByName(&Group->Shader, "SrcImage", Tex, 0);
 
     AssertNoGlErrors;
@@ -228,7 +228,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     if (first_iteration) first_iteration = false;
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 link_internal gpu_mapped_element_buffer *
@@ -329,20 +329,20 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
-  GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetStdlib()->GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   SetDefaultFramebufferClearColors();
 
-  /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
-  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+  /* GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
+  /* GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
+  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
+  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
@@ -350,32 +350,32 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   for (s32 Index = 0; Index < 2; ++Index)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
+    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   if (Graphics->Settings.BravoilMcGuireOIT)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
 
 #if 1
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #else
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0;
-      GL.DrawBuffers(1, &Attachments);
-      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetStdlib()->GL.DrawBuffers(1, &Attachments);
+      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0 + 1;
-      GL.DrawBuffers(1, &Attachments);
-      GL.ClearColor(1.f, 1.f, 1.f, 1.f);
-      GL.Clear(GL_COLOR_BUFFER_BIT);
+      GetStdlib()->GL.DrawBuffers(1, &Attachments);
+      GetStdlib()->GL.ClearColor(1.f, 1.f, 1.f, 1.f);
+      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT);
     }
 
     {
@@ -386,8 +386,8 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   }
   else
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
 
@@ -749,47 +749,47 @@ RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, 
 
   if (Group->GpuBuffer.Buffer.At)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
     UseShader(&Group->Shader);
 
     if (Settings->BravoilMcGuireOIT)
     {
       SetViewport(ApplicationResolution);
-      GL.Disable(GL_CULL_FACE);
+      GetStdlib()->GL.Disable(GL_CULL_FACE);
 
-      GL.Enable(GL_BLEND);
-      /* GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetStdlib()->GL.Enable(GL_BLEND);
+      /* GetStdlib()->GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       // TODO(Jesse): The portable version requires changing the shader a bit
-      /* GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetStdlib()->GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
 
-      GL.BlendFunci(0, GL_ONE, GL_ONE);
-      GL.BlendFunci(1, GL_ONE, GL_ONE);
-      /* GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
-      /* GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetStdlib()->GL.BlendFunci(0, GL_ONE, GL_ONE);
+      GetStdlib()->GL.BlendFunci(1, GL_ONE, GL_ONE);
+      /* GetStdlib()->GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetStdlib()->GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GL.Disable(GL_BLEND);
+      GetStdlib()->GL.Disable(GL_BLEND);
 
-      GL.Enable(GL_CULL_FACE);
+      GetStdlib()->GL.Enable(GL_CULL_FACE);
     }
     else
     {
-      GL.Enable(GL_BLEND);
-      GL.BlendFunc(GL_ONE, GL_ONE);
-      GL.Disable(GL_CULL_FACE);
-      /* GL.DepthFunc(GL_LEQUAL); */
-      /* GL.DepthFunc(GL_ALWAYS); */
+      GetStdlib()->GL.Enable(GL_BLEND);
+      GetStdlib()->GL.BlendFunc(GL_ONE, GL_ONE);
+      GetStdlib()->GL.Disable(GL_CULL_FACE);
+      /* GetStdlib()->GL.DepthFunc(GL_LEQUAL); */
+      /* GetStdlib()->GL.DepthFunc(GL_ALWAYS); */
 
       SetViewport(ApplicationResolution);
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GL.Disable(GL_BLEND);
-      GL.Enable(GL_CULL_FACE);
-      /* GL.DepthFunc(GL_LEQUAL); */
+      GetStdlib()->GL.Disable(GL_BLEND);
+      GetStdlib()->GL.Enable(GL_CULL_FACE);
+      /* GetStdlib()->GL.DepthFunc(GL_LEQUAL); */
     }
 
     Group->GpuBuffer.Buffer.At = 0;
@@ -806,8 +806,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
     // GL stuff
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-      GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+      GetStdlib()->GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
@@ -822,8 +822,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
       SetViewport(V2(Texture->Dim));
 
-      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      GL.Enable(GL_DEPTH_TEST);
+      GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetStdlib()->GL.Enable(GL_DEPTH_TEST);
     }
   }
   return Result;
@@ -834,18 +834,18 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
 {
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   AssertNoGlErrors;
 
 
@@ -854,10 +854,10 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  /* GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GetStdlib()->GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 }
 
@@ -865,10 +865,10 @@ link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
 {
   AssertNoGlErrors;
-  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetStdlib()->GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
 
@@ -877,23 +877,23 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
     InvalidCase(DataType_Undefinded);
     case DataType_v3:
     {
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
 
     case DataType_v3_u8:
     {
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetStdlib()->GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+      GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetStdlib()->GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
   }
@@ -904,10 +904,10 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  /* GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GetStdlib()->GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GetStdlib()->GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 }
 
@@ -921,12 +921,12 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 
   Draw(Handles->ElementCount);
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
+  GetStdlib()->GL.BindBuffer(GL_ARRAY_BUFFER, 0);
 
-  GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetStdlib()->GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
 }
 
 poof(
@@ -1036,7 +1036,7 @@ ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 El
 {
   if (Handles->VertexHandle)
   {
-    GL.DeleteBuffers(3, &Handles->VertexHandle);
+    GetStdlib()->GL.DeleteBuffers(3, &Handles->VertexHandle);
   }
   Clear(Handles);
 
@@ -1262,7 +1262,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
       FlushBuffersToCard(&RTTGroup->GeoBuffer);
     }
 
-    GL.Enable(GL_DEPTH_TEST);
+    GetStdlib()->GL.Enable(GL_DEPTH_TEST);
     Draw(RTTGroup->GeoBuffer.Buffer.At);
     RTTGroup->GeoBuffer.Buffer.At = 0;
   }
@@ -1356,14 +1356,14 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetStdlib()->GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  GL.Disable(GL_CULL_FACE);
+  GetStdlib()->GL.Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1373,7 +1373,7 @@ TeardownGBufferShader(graphics *Graphics)
 {
   auto GBufferRenderGroup = Graphics->gBuffer;
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
-  GL.Enable(GL_CULL_FACE);
+  GetStdlib()->GL.Enable(GL_CULL_FACE);
 }
 
 
@@ -1398,13 +1398,13 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SetViewport(ShadowMapResolution);
 
   UseShader(&SG->Shader);
 
-  GL.Disable(GL_CULL_FACE);
+  GetStdlib()->GL.Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1412,7 +1412,7 @@ SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, 
 link_internal void
 TeardownShadowMapShader(graphics *Graphics)
 {
-  GL.Enable(GL_CULL_FACE);
+  GetStdlib()->GL.Enable(GL_CULL_FACE);
   AssertNoGlErrors;
 }
 

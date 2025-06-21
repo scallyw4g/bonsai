@@ -43,6 +43,7 @@ struct engine_resources
   renderer_2d Ui;
 
   application_api GameApi;
+       engine_api EngineApi;
 
   // Engine
   hotkeys     Hotkeys;
@@ -73,8 +74,6 @@ struct engine_resources
   // NOTE(Jesse): This is kinda-sorta all debug stuff
   //
 
-  debug_state *DebugState;
-
   engine_debug EngineDebug;
   level_editor Editor;
 
@@ -84,31 +83,42 @@ struct engine_resources
   maybe_entity_ptr HoverEntity;
 
   render_entity_to_texture_group RTTGroup;
+
+  world_chunk_freelist SynChunkFreelist;
 };
 
-// TODO(Jesse): Should this actually be a thing?
-global_variable engine_resources *Global_EngineResources;
 
+link_internal engine_resources *
+TryGetEngineResources()
+{
+  engine_resources *Result = 0;
+  if (ThreadLocal_ThreadIndex != INVALID_THREAD_LOCAL_THREAD_INDEX)
+  {
+    thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    Result = Cast(engine_resources*, Thread->UserData);
+  }
+  return Result;
+}
 
 link_internal engine_resources *
 GetEngineResources()
 {
-  Assert(Global_EngineResources);
-  return Global_EngineResources;
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+  return Cast(engine_resources*, Thread->UserData);
 }
 
 link_internal engine_debug *
 GetEngineDebug()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->EngineDebug;
+  auto Result = &GetEngineResources()->EngineDebug;
+  return Result;
 }
 
 link_internal world *
 GetWorld()
 {
-  Assert(Global_EngineResources);
-  return Global_EngineResources->World;
+  auto Result = GetEngineResources()->World;
+  return Result;
 }
 
 link_internal v3i
@@ -117,26 +127,24 @@ GetWorldChunkDim()
   return GetWorld()->ChunkDim;
 }
 
+// NOTE(Jesse): We have to fail on this for avoiding stackoverflows on startup
 link_weak bonsai_stdlib *
 GetStdlib()
 {
-  /* Assert(Global_EngineResources); */
-  if (Global_EngineResources)
+  bonsai_stdlib *Result = 0;
+  if (auto Engine = TryGetEngineResources())
   {
-    return &Global_EngineResources->Stdlib;
+    Result = &Engine->Stdlib;
   }
-  else
-  {
-    return 0;
-  }
+  return Result;
 }
 
 
 link_internal level_editor *
 GetLevelEditor()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->Editor;
+  auto Result = &GetEngineResources()->Editor;
+  return Result;
 }
 
 link_internal entity *

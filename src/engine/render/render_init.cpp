@@ -8,7 +8,7 @@ SetDrawBuffers(framebuffer *FBO)
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
 
-  GL.DrawBuffers((s32)FBO->Attachments, Attachments);
+  GetStdlib()->GL.DrawBuffers((s32)FBO->Attachments, Attachments);
 }
 
 void
@@ -214,7 +214,7 @@ framebuffer
 GenFramebuffer()
 {
   framebuffer Framebuffer = {};
-  GL.GenFramebuffers(1, &Framebuffer.ID);
+  GetStdlib()->GL.GenFramebuffers(1, &Framebuffer.ID);
 
   return Framebuffer;
 }
@@ -247,14 +247,14 @@ MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMem
   // TODO(Jesse)(make_texture_rgba): Can we use MakeTexture_RGBA
   for (s32 Index = 0; Index < 2; ++Index)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
     AssertNoGlErrors;
 
     u32 Channels = 4;
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RGBA32F;
     Result.Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
+    GetStdlib()->GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
 
     AssertNoGlErrors;
 
@@ -354,7 +354,7 @@ MakeSsaoShader(      memory_arena *GraphicsMemory,
 link_internal bool
 InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
   b32 IsDepthTexture = False;
   AoGroup->Texture = MakeTexture_SingleChannel( ApplicationResolution/2, CSz("AoTexture"), IsDepthTexture, TextureStorageFormat_R16F);
@@ -374,9 +374,9 @@ InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 bool
 InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer)
 {
-  GL.GenQueries(1, &gBuffer->GlTimerObject);
+  GetStdlib()->GL.GenQueries(1, &gBuffer->GlTimerObject);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures.Color  = MakeTexture_RGBA(ApplicationResolution, (v4*)0, CSz("gBufferColor"),  1, TextureStorageFormat_RGBA16F);
   gBuffer->Textures.Normal = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), 1, TextureStorageFormat_RGBA16F);
@@ -403,7 +403,7 @@ InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPa
   AllocateGpuElementBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   // TODO(Jesse): Should we not hard-code the depth texture size here?
   texture DepthTexture = MakeDepthTexture( V2i(1024), CSz("RenderToTexture Depth"));
@@ -445,7 +445,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   AllocateGpuElementBuffer(&Group->GpuBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   // TODO(Jesse)(make_texture_rgba) : ?
   {
@@ -453,7 +453,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RGBA16F;
     Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+    GetStdlib()->GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
 
   {
@@ -461,7 +461,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RG16F;
     Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+    GetStdlib()->GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
@@ -646,7 +646,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
       Lighting->FBO = GenFramebuffer();
 
-      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
       FramebufferTexture(&Lighting->FBO, &Lighting->LuminanceTex);
       /* FramebufferTexture(&Lighting->FBO, &Lighting->Bloom.Tex); */
       SetDrawBuffers(&Lighting->FBO);
@@ -725,7 +725,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     RangeIterator(Index, 3)
     {
       WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
-      GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
 
       WorldEditRC->PingPongTextures[Index] = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("PingPongTexture"), 1, TextureStorageFormat_RGBA32F);
 
@@ -747,7 +747,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     RC->DestFBO = GenFramebuffer();
     RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
 
     FramebufferTexture(&RC->DestFBO, &RC->DestTex);
     SetDrawBuffers(&RC->DestFBO);
@@ -766,7 +766,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     RC->DestFBO = GenFramebuffer();
     RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
 
     FramebufferTexture(&RC->DestFBO, &RC->DestTex);
     SetDrawBuffers(&RC->DestFBO);
@@ -785,7 +785,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
     TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[0];
 
-    GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
 
     FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
     SetDrawBuffers(TerrainDecorationRC->DestFBO);
@@ -802,16 +802,16 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   {
     terrain_finalize_render_context *TerrainFinalizeRC = &Result->TerrainFinalizeRC;
     Result->TerrainFinalizeRC.FBO = GenFramebuffer();
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainFinalizeRC.FBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainFinalizeRC.FBO.ID);
 
     {
       u32 Channels = 1;
       u32 Slices = 1;
       // @shared_terrain_texture
       TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
-      GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+      GetStdlib()->GL.TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
       AssertNoGlErrors;
-      GL.BindTexture(GL_TEXTURE_2D, 0);
+      GetStdlib()->GL.BindTexture(GL_TEXTURE_2D, 0);
     }
     FramebufferTexture(&Result->TerrainFinalizeRC.FBO, &TerrainFinalizeRC->DestTex);
     SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
@@ -822,8 +822,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Ensure(CheckAndClearFramebuffer());
   }
 
-  GL.Enable(GL_CULL_FACE);
-  GL.CullFace(GL_BACK);
+  GetStdlib()->GL.Enable(GL_CULL_FACE);
+  GetStdlib()->GL.CullFace(GL_BACK);
 
   AssertNoGlErrors;
 

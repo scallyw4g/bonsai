@@ -133,8 +133,7 @@ poof(block_array_c(asset_thumbnail, {8}))
 link_weak ui_debug *
 GetUiDebug()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->EngineDebug.UiDebug;
+  return &GetEngineResources()->EngineDebug.UiDebug;
 }
 
 

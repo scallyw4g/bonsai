@@ -17,17 +17,17 @@ StartGpuTimer(void)
   Global_ActiveGPUTimer = True;
 
   gpu_timer Result = {};
-  GL.GenQueries(1, &Result.Handle);
+  GetStdlib()->GL.GenQueries(1, &Result.Handle);
   Assert(Result.Handle != INVALID_GPU_TIMER_HANDLE);
 
-  GL.BeginQuery(GL_TIME_ELAPSED, Result.Handle);
+  GetStdlib()->GL.BeginQuery(GL_TIME_ELAPSED, Result.Handle);
   return Result;
 }
 
 link_internal void
 EndGpuTimer(gpu_timer *Timer)
 {
-  GL.EndQuery(GL_TIME_ELAPSED);
+  GetStdlib()->GL.EndQuery(GL_TIME_ELAPSED);
   Assert(Global_ActiveGPUTimer == True);
   Global_ActiveGPUTimer = False;
 }
@@ -37,12 +37,12 @@ QueryTimer(gpu_timer *Timer)
 {
   Assert(Timer->Handle != INVALID_GPU_TIMER_HANDLE);
   s32 Available = False;
-  GL.GetQueryObjectiv(Timer->Handle, GL_QUERY_RESULT_AVAILABLE, &Available);
+  GetStdlib()->GL.GetQueryObjectiv(Timer->Handle, GL_QUERY_RESULT_AVAILABLE, &Available);
 
   if (Available)
   {
-    GL.GetQueryObjectui64v(Timer->Handle, GL_QUERY_RESULT, &Timer->Ns);
-    GL.DeleteQueries(1, &Timer->Handle);
+    GetStdlib()->GL.GetQueryObjectui64v(Timer->Handle, GL_QUERY_RESULT, &Timer->Ns);
+    GetStdlib()->GL.DeleteQueries(1, &Timer->Handle);
     Timer->Handle = INVALID_GPU_TIMER_HANDLE;
   }
 

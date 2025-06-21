@@ -1,16 +1,17 @@
+#if 0
 link_export THREAD_MAIN_RETURN
 WorldUpdateThread_Main(void *ThreadStartupParams)
 {
   b32 InitResult = True;
+
   thread_startup_params *ThreadParams = Cast(thread_startup_params*, ThreadStartupParams);
-
-  engine_resources *Engine = Cast(engine_resources*, ThreadParams->EngineResources);
-
   SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex);
+
+  engine_resources *Engine = Cast(engine_resources*, GetEngineResources());
 
   thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
-  Assert(Global_EngineResources);
+  Assert(GetEngineResources());
   Assert(Global_ThreadStates);
 
   while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
@@ -92,6 +93,7 @@ WorldUpdateThread_Main(void *ThreadStartupParams)
   THREAD_MAIN_RETURN Result = ReinterpretCast(THREAD_MAIN_RETURN, InitResult);
   return Result;
 }
+#endif
 
 link_internal void
 QueueWorldUpdateForRegion( engine_resources *Engine,

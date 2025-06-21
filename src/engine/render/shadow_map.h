@@ -31,9 +31,9 @@ link_internal b32
 InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i ShadowMapResolution)
 {
   // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-  GL.GenFramebuffers(1, &SG->FramebufferName);
+  GetStdlib()->GL.GenFramebuffers(1, &SG->FramebufferName);
   Assert(SG->FramebufferName);
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
 
   SG->ShadowMap = MakeDepthTexture(ShadowMapResolution, CSz("ShadowDepth"));
@@ -49,11 +49,12 @@ InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i Sha
 
   AssertNoGlErrors;
 
-  if(GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+
+  if( GetStdlib()->GL.CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     return false;
 
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetStdlib()->GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   InitializeShadowMapShader( &SG->Shader , IdentityMatrix, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace );
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:262:0
+// src/engine/editor.cpp:261:0
 
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -207,30 +207,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Threads");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(thread_startup_params*, Element->Threads),
           MemberName,
           Params
           );

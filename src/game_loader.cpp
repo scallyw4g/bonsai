@@ -114,7 +114,6 @@ main( s32 ArgCount, const char ** Args )
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
-  Global_EngineResources = EngineResources;
 
   const char* GameLibName = Global_ProjectSwitcherGameLibName;
   switch (ArgCount)
@@ -131,7 +130,7 @@ main( s32 ArgCount, const char ** Args )
   //
   shared_lib       GameLib   = {};
   application_api *GameApi   = &EngineResources->GameApi;
-  engine_api       EngineApi = {};
+  engine_api      *EngineApi = &EngineResources->EngineApi;
   {
     FileIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
     FileIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
@@ -141,13 +140,10 @@ main( s32 ArgCount, const char ** Args )
 
     if (!InitializeGameApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-    if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
+    if (!InitializeEngineApi(EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
 
-
   memory_arena BootstrapArena = {};
-  memory_arena *GameMemory = AllocateArena();
-
 
   {
     temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
@@ -156,15 +152,14 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  thread_main_callback_type Procs[2] = { RenderThread_Main, WorldUpdateThread_Main };
-  thread_main_callback_type_buffer CustomWorkerProcs = {};
-  CustomWorkerProcs.Start = Procs;
-  CustomWorkerProcs.Count = 2;
+  thread_main_callback_type Procs[1] = { RenderThread_Main };
+  thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
+                                   EngineResources,
                                   &CustomWorkerProcs ));
 
   while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
@@ -174,7 +169,7 @@ main( s32 ArgCount, const char ** Args )
   Assert(EngineResources->Stdlib.ThreadStates);
   Assert(Global_ThreadStates);
 
-  Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+  Ensure( EngineApi->OnLibraryLoad(EngineResources) );
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
 
 #if BONSAI_DEBUG_SYSTEM_API
@@ -189,7 +184,6 @@ main( s32 ArgCount, const char ** Args )
   InitQueue(&Plat->RenderQ,      WorkQueueMemory);
   InitQueue(&Plat->WorldUpdateQ, WorkQueueMemory);
 
-  DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
 
@@ -274,11 +268,11 @@ main( s32 ArgCount, const char ** Args )
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
-      Ensure(InitializeEngineApi(&EngineApi, GameLib));
+      Ensure(InitializeEngineApi(EngineApi, GameLib));
       Ensure(InitializeGameApi(GameApi, GameLib));
 
       // Hook up global pointers
-      Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+      Ensure( EngineApi->OnLibraryLoad(EngineResources) );
 
       if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
       {
@@ -308,22 +302,22 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat->Network)) { ConnectToServer(&Plat->Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    EngineApi.FrameBegin(EngineResources);
+    EngineApi->FrameBegin(EngineResources);
 
       TIMED_BLOCK("GameMain");
         GameApi->GameMain(EngineResources, MainThread);
       END_BLOCK("GameMain");
 
-      EngineApi.Simulate(EngineResources);
+      EngineApi->Simulate(EngineResources);
 
       DrainQueue(&Plat->HighPriority, MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-      EngineApi.Render(EngineResources);
+      EngineApi->Render(EngineResources);
 
       DEBUG_FRAME_END(Plat->dt);
 
-    EngineApi.FrameEnd(EngineResources);
+    EngineApi->FrameEnd(EngineResources);
 
 
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered

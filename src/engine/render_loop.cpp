@@ -1,947 +1,924 @@
-link_internal void
-RenderLoop(thread_startup_params *ThreadParams, engine_resources *Engine)
+link_export void
+DrainRenderQueue(engine_resources *Engine)
 {
-  // Map immediate GPU buffers for first frame
-  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
-  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
+  UNPACK_ENGINE_RESOURCES(Engine);
 
-  auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
+  AssertNoGlErrors;
 
-#if 0
-  static v3 xAxis = V3(0,0,0);
-  static v3 yAxis = V3(0,0,0);
-  static v3 zAxis = V3(0,0,0);
-
-  static rect3 SimEditRect = {};
-  static v3 EditRectRad = {};
-
-  static v3 PlaneNormal = {};
-#endif
-
-  while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
+  while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
   {
-    UNPACK_ENGINE_RESOURCES(Engine);
-
-    WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
-    WorkerThread_BeforeJobStart(ThreadParams);
-
-    AssertNoGlErrors;
-
-    while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
+    /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
+    tswitch(Job)
     {
-      /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
-      tswitch(Job)
+      case type_work_queue_entry_noop:
+      case type_work_queue_entry_init_world_chunk:
+      case type_work_queue_entry_copy_buffer_set:
+      case type_work_queue_entry_copy_buffer_ref:
+      case type_work_queue_entry_init_asset:
+      /* case type_work_queue_entry_update_world_region: */
+      case type_work_queue_entry_rebuild_mesh:
+      case type_work_queue_entry_finalize_noise_values:
+      case type_work_queue_entry_build_chunk_mesh:
+      case type_work_queue_entry_sim_particle_system:
+      case type_work_queue_entry__align_to_cache_line_helper:
       {
-        case type_work_queue_entry_noop:
-        case type_work_queue_entry_init_world_chunk:
-        case type_work_queue_entry_copy_buffer_set:
-        case type_work_queue_entry_copy_buffer_ref:
-        case type_work_queue_entry_init_asset:
-        /* case type_work_queue_entry_update_world_region: */
-        case type_work_queue_entry_rebuild_mesh:
-        case type_work_queue_entry_finalize_noise_values:
-        case type_work_queue_entry_build_chunk_mesh:
-        case type_work_queue_entry_sim_particle_system:
-        case type_work_queue_entry__align_to_cache_line_helper:
+        InvalidCodePath();
+      } break;
+
+      { tmatch(work_queue_entry_async_function_call, Job, RPC)
+        TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
+        DispatchAsyncFunctionCall(RPC);
+      } break;
+
+      { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+        tswitch(RenderCommand)
         {
-          InvalidCodePath();
-        } break;
+          InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
-        { tmatch(work_queue_entry_async_function_call, Job, RPC)
-          TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
-          DispatchAsyncFunctionCall(RPC);
-        } break;
+          { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
+            TIMED_NAMED_BLOCK(CancelReadbackJobs);
 
-        { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
-          tswitch(RenderCommand)
-          {
-            InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
-
-            { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
-              TIMED_NAMED_BLOCK(CancelReadbackJobs);
-
-              IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+            IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+            {
+              b32 Done = False;
+              while (!Done)
               {
-                b32 Done = False;
-                while (!Done)
+                u32 SyncStatus = GetStdlib()->GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                switch(SyncStatus)
                 {
-                  u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-                  switch(SyncStatus)
+                  case GL_ALREADY_SIGNALED:
+                  case GL_CONDITION_SATISFIED:
                   {
-                    case GL_ALREADY_SIGNALED:
-                    case GL_CONDITION_SATISFIED:
-                    {
-                      AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
-                      TIMED_NAMED_BLOCK(MapBuffer);
-                      AssertNoGlErrors;
-                      GL.DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
-                      GL.DeleteSync(PBOJob->PBOBuf.Fence);
-                      AssertNoGlErrors;
-                      /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
-                      Done = True;
-                    } break;
+                    AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+                    TIMED_NAMED_BLOCK(MapBuffer);
+                    AssertNoGlErrors;
+                    GetStdlib()->GL.DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
+                    GetStdlib()->GL.DeleteSync(PBOJob->PBOBuf.Fence);
+                    AssertNoGlErrors;
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    Done = True;
+                  } break;
 
-                    case GL_WAIT_FAILED:
-                    {
-                      /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
-                      SoftError("Error waiting on gl sync object");
-                    } break;
+                  case GL_WAIT_FAILED:
+                  {
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    SoftError("Error waiting on gl sync object");
+                  } break;
 
-                    case GL_TIMEOUT_EXPIRED:
-                    {
-                      SleepMs(1);
-                    } break;
-                  }
+                  case GL_TIMEOUT_EXPIRED:
+                  {
+                    SleepMs(1);
+                  } break;
                 }
+              }
+              AssertNoGlErrors;
+            }
+
+            // Clear the jobs
+            umm C = Count(&Graphics->NoiseReadbackJobs);
+            auto Z = ZerothIndex(&Graphics->NoiseReadbackJobs);
+            RangeIterator_t(umm, Index, C) { RemoveUnordered(&Graphics->NoiseReadbackJobs, Z); }
+            Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
+
+            /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
+          } break;
+
+          { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
+
+            ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
+            MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
+
+            Assert(HasGpuMesh(Command->Dest) == 1);
+
+
+            auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
+            auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
+            PushWorkQueueEntry(LowPriorityQ, &Next);
+          } break;
+
+          { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
+
+            octree_node *Node = Command->DestNode;
+            gpu_mapped_element_buffer *Buf = &Command->Buf;
+
+            FlushBuffersToCard(Buf);
+
+            if (HasGpuMesh(&Node->Chunk->Mesh))
+            {
+              PushDeallocateBuffersCommand(RenderQ, &Node->Chunk->Mesh.Handles);
+            }
+
+            Node->Chunk->Mesh = *Buf;
+
+            FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
+
+          } break;
+
+          { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_buffer);
+
+            gpu_readback_buffer PBOBuf = Command->PBOBuf;
+
+            /* Info("(%d) Binding and Deallocating PBO (%u)", ThreadLocal_ThreadIndex, PBOBuf.PBO); */
+            GetStdlib()->GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
+            AssertNoGlErrors;
+            GetStdlib()->GL.UnmapBuffer(GL_PIXEL_PACK_BUFFER);
+            AssertNoGlErrors;
+            GetStdlib()->GL.DeleteBuffers(1, &PBOBuf.PBO);
+            AssertNoGlErrors;
+            GetStdlib()->GL.DeleteSync(PBOBuf.Fence);
+            AssertNoGlErrors;
+
+          } break;
+
+          { tmatch(bonsai_render_command_allocate_texture, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_allocate_texture);
+
+            texture *Texture = Command->Texture;
+            switch (Texture->Channels)
+            {
+              case 3:
+              {
+                *Texture = MakeTexture_RGB(Texture->Dim, (const v3*)Command->Data, Texture->DebugName, Texture->Slices, Texture->Format);
+              } break;
+
+              case 4:
+              {
+                *Texture = MakeTexture_RGBA(Texture->Dim, Cast(u32*, Command->Data), Texture->DebugName, Texture->Slices, Texture->Format);
+              } break;
+
+              InvalidDefaultCase;
+            }
+
+          } break;
+
+
+          { tmatch(bonsai_render_command_deallocate_texture, RenderCommand, Command)
+            NotImplemented;
+          } break;
+
+
+          { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
+            NotImplemented;
+          } break;
+
+          { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_reallocate_buffers);
+            auto *Handles = Command->Handles;
+            auto *Mesh    = Command->Mesh;
+
+            ReallocateAndSyncGpuBuffers(Handles, Mesh);
+            DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
+          } break;
+
+
+          { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_buffers);
+            if (*Command->Buffers) { GetStdlib()->GL.DeleteBuffers(Command->Count, Command->Buffers); }
+            RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
+          } break;
+
+
+          { tmatch(bonsai_render_command_deallocate_world_chunk, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_world_chunk);
+            world_chunk *Chunk = Command->Chunk;
+            FreeWorldChunk(Engine, Chunk);
+          } break;
+
+
+          { tmatch(bonsai_render_command_clear_all_framebuffers, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
+            ClearFramebuffers(Graphics, &Engine->RTTGroup);
+          } break;
+
+
+
+
+          { tmatch(bonsai_render_command_setup_shader, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
+            switch (Command->ShaderId)
+            {
+              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+              case BonsaiRenderCommand_ShaderId_gBuffer:
+              {
+                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+              } break;
+
+              case BonsaiRenderCommand_ShaderId_ShadowMap:
+              {
+                SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
+              } break;
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_teardown_shader, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
+            switch (Command->ShaderId)
+            {
+              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+              case BonsaiRenderCommand_ShaderId_gBuffer:
+              {
+                TeardownGBufferShader(Graphics);
+              } break;
+
+              case BonsaiRenderCommand_ShaderId_ShadowMap:
+              {
+                TeardownShadowMapShader(Graphics);
+              } break;
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_set_shader_uniform, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
+            shader *Shader = Command->Shader;
+            shader_uniform *Uniform = &Command->Uniform;
+            if (Uniform->ID >= 0)
+            {
+              BindUniformById(Uniform, &Command->TextureUnit);
+            }
+            else
+            {
+              BindUniformByName(Shader, Uniform, &Command->TextureUnit);
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
+            RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
+          } break;
+
+          { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
+            DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
+          } break;
+
+
+          { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
+            /* Command = 0; */
+
+
+            AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
+
+            bonsai_render_command_initialize_noise_buffer C = RenderCommand->bonsai_render_command_initialize_noise_buffer;
+
+            octree_node *Node = C.DestNode;
+            world_chunk **Chunk2 = &C.DestNode->Chunk;
+            world_chunk *Chunk1 = C.DestNode->Chunk;
+            world_chunk *Chunk = Chunk1;
+
+            Assert(s64(Chunk) == s64(Chunk1));
+
+            DispatchTerrainShaders(Graphics, Chunk);
+
+            s32 CurrentAccumulationTextureIndex = 0;
+
+            //
+            // Apply edits
+            //
+
+
+            auto WorldEditRC = &Graphics->WorldEditRC;
+            {
+              AcquireFutex(&Node->Lock);
+              if (TotalElements(&Node->Edits))
+              {
                 AssertNoGlErrors;
-              }
 
-              // Clear the jobs
-              umm C = Count(&Graphics->NoiseReadbackJobs);
-              auto Z = ZerothIndex(&Graphics->NoiseReadbackJobs);
-              RangeIterator_t(umm, Index, C) { RemoveUnordered(&Graphics->NoiseReadbackJobs, Z); }
-              Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
-
-              /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
-            } break;
-
-            { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
-
-              ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
-              MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
-
-              Assert(HasGpuMesh(Command->Dest) == 1);
-
-              auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
-              PushWorkQueueEntry(LowPriorityQ, &Next);
-            } break;
-
-            { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
-
-              octree_node *Node = Command->DestNode;
-              gpu_mapped_element_buffer *Buf = &Command->Buf;
-
-              FlushBuffersToCard(Buf);
-
-              if (HasGpuMesh(&Node->Chunk->Mesh))
-              {
-                PushDeallocateBuffersCommand(RenderQ, &Node->Chunk->Mesh.Handles);
-              }
-
-              Node->Chunk->Mesh = *Buf;
-
-              FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
-
-            } break;
-
-            { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_buffer);
-
-              gpu_readback_buffer PBOBuf = Command->PBOBuf;
-
-              /* Info("(%d) Binding and Deallocating PBO (%u)", ThreadLocal_ThreadIndex, PBOBuf.PBO); */
-              GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOBuf.PBO);
-              AssertNoGlErrors;
-              GL.UnmapBuffer(GL_PIXEL_PACK_BUFFER);
-              AssertNoGlErrors;
-              GL.DeleteBuffers(1, &PBOBuf.PBO);
-              AssertNoGlErrors;
-              GL.DeleteSync(PBOBuf.Fence);
-              AssertNoGlErrors;
-
-            } break;
-
-            { tmatch(bonsai_render_command_allocate_texture, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_allocate_texture);
-
-              texture *Texture = Command->Texture;
-              switch (Texture->Channels)
-              {
-                case 3:
-                {
-                  *Texture = MakeTexture_RGB(Texture->Dim, (const v3*)Command->Data, Texture->DebugName, Texture->Slices, Texture->Format);
-                } break;
-
-                case 4:
-                {
-                  *Texture = MakeTexture_RGBA(Texture->Dim, Cast(u32*, Command->Data), Texture->DebugName, Texture->Slices, Texture->Format);
-                } break;
-
-                InvalidDefaultCase;
-              }
-
-            } break;
+                UseShader(WorldEditRC);
+                AssertNoGlErrors;
 
 
-            { tmatch(bonsai_render_command_deallocate_texture, RenderCommand, Command)
-              NotImplemented;
-            } break;
-
-
-            { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
-              NotImplemented;
-            } break;
-
-            { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_reallocate_buffers);
-              auto *Handles = Command->Handles;
-              auto *Mesh    = Command->Mesh;
-
-              ReallocateAndSyncGpuBuffers(Handles, Mesh);
-              DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
-            } break;
-
-
-            { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_buffers);
-              if (*Command->Buffers) { GL.DeleteBuffers(Command->Count, Command->Buffers); }
-              RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
-            } break;
-
-
-            { tmatch(bonsai_render_command_deallocate_world_chunk, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_world_chunk);
-              world_chunk *Chunk = Command->Chunk;
-              FreeWorldChunk(Engine, Chunk);
-            } break;
-
-
-            { tmatch(bonsai_render_command_clear_all_framebuffers, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
-              ClearFramebuffers(Graphics, &Engine->RTTGroup);
-            } break;
-
-
-
-
-            { tmatch(bonsai_render_command_setup_shader, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
-              switch (Command->ShaderId)
-              {
-                InvalidCase(BonsaiRenderCommand_ShaderId_noop);
-
-                case BonsaiRenderCommand_ShaderId_gBuffer:
-                {
-                  SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
-                } break;
-
-                case BonsaiRenderCommand_ShaderId_ShadowMap:
-                {
-                  SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
-                } break;
-              }
-            } break;
-
-            { tmatch(bonsai_render_command_teardown_shader, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
-              switch (Command->ShaderId)
-              {
-                InvalidCase(BonsaiRenderCommand_ShaderId_noop);
-
-                case BonsaiRenderCommand_ShaderId_gBuffer:
-                {
-                  TeardownGBufferShader(Graphics);
-                } break;
-
-                case BonsaiRenderCommand_ShaderId_ShadowMap:
-                {
-                  TeardownShadowMapShader(Graphics);
-                } break;
-              }
-            } break;
-
-            { tmatch(bonsai_render_command_set_shader_uniform, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
-              shader *Shader = Command->Shader;
-              shader_uniform *Uniform = &Command->Uniform;
-              if (Uniform->ID >= 0)
-              {
-                BindUniformById(Uniform, &Command->TextureUnit);
-              }
-              else
-              {
-                BindUniformByName(Shader, Uniform, &Command->TextureUnit);
-              }
-            } break;
-
-            { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
-              RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
-            } break;
-
-            { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
-              DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
-            } break;
-
-
-            { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
-              /* Command = 0; */
-
-
-              AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
-
-              bonsai_render_command_initialize_noise_buffer C = RenderCommand->bonsai_render_command_initialize_noise_buffer;
-
-              octree_node *Node = C.DestNode;
-              world_chunk **Chunk2 = &C.DestNode->Chunk;
-              world_chunk *Chunk1 = C.DestNode->Chunk;
-              world_chunk *Chunk = Chunk1;
-
-              Assert(s64(Chunk) == s64(Chunk1));
-
-              DispatchTerrainShaders(Graphics, Chunk);
-
-              s32 CurrentAccumulationTextureIndex = 0;
-
-              //
-              // Apply edits
-              //
-
-
-              auto WorldEditRC = &Graphics->WorldEditRC;
-              {
-                AcquireFutex(&Node->Lock);
-                if (TotalElements(&Node->Edits))
-                {
-                  AssertNoGlErrors;
-
-                  UseShader(WorldEditRC);
-                  AssertNoGlErrors;
-
-
-                  // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
-                  // Was too lazy to make a templated overload for the sort
-                  // function.. so here we are.  Hopefully I don't pay for this
-                  // in the future.
-                  // {
+                // NOTE(Jesse): @duplicated_edit_ordinal_sort_code
+                // Was too lazy to make a templated overload for the sort
+                // function.. so here we are.  Hopefully I don't pay for this
+                // in the future.
+                // {
 #if 1
-                  s32 EditCount = s32(TotalElements(&Node->Edits));
-                  sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
+                s32 EditCount = s32(TotalElements(&Node->Edits));
+                sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
 
 
-                  IterateOver(&Node->Edits, Edit, EditIndex)
-                  {
-                    u32 KeyIndex = u32(GetIndex(&EditIndex));
-                    Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
-                  }
+                IterateOver(&Node->Edits, Edit, EditIndex)
+                {
+                  u32 KeyIndex = u32(GetIndex(&EditIndex));
+                  Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+                }
 
-                  BubbleSort_descending(Keys, u32(EditCount));
+                BubbleSort_descending(Keys, u32(EditCount));
 #endif
-                  // }
+                // }
 
 
 #define AdvanceIndex(i) i = ((i+1) % 3)
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
 
-                  RangeIterator(KeyIndex, EditCount)
-                  /* IterateOver(&Node->Edits, Edit, EditIndex) */
+                RangeIterator(KeyIndex, EditCount)
+                /* IterateOver(&Node->Edits, Edit, EditIndex) */
+                {
+                  TIMED_NAMED_BLOCK(WorldEditDrawCall);
+
+                  /* world_edit *Edit = GetPtr(&Editor->Edits, *Edit); */
+
+                  world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
+                  if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
-                    TIMED_NAMED_BLOCK(WorldEditDrawCall);
+                    layered_brush *Brush = &Edit->Brush->Layered;
 
-                    /* world_edit *Edit = GetPtr(&Editor->Edits, *Edit); */
 
-                    world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
-                    if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
+                    b32 BindInputTexture = Brush->AffectExisting;
+
+                    s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex;
+                    s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex;
+
+                    AdvanceIndex(CurrentWriteTextureIndex);
+
+                    // If we're not trying to seed the brush with the current
+                    // accumulator texture, set to the empty one
+                    if (BindInputTexture == False)
                     {
-                      layered_brush *Brush = &Edit->Brush->Layered;
-
-
-                      b32 BindInputTexture = Brush->AffectExisting;
-
-                      s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex;
-                      s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex;
-
-                      AdvanceIndex(CurrentWriteTextureIndex);
-
-                      // If we're not trying to seed the brush with the current
-                      // accumulator texture, set to the empty one
-                      if (BindInputTexture == False)
-                      {
-                        AdvanceIndex(CurrentReadTextureIndex);
-                        AdvanceIndex(CurrentReadTextureIndex);
-                      }
-
-                      RangeIterator(LayerIndex, Brush->LayerCount)
-                      {
-                        GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[CurrentWriteTextureIndex].ID);
-
-                        BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
-                        if (BindInputTexture)
-                        {
-                          texture *InputTex = &WorldEditRC->PingPongTextures[CurrentReadTextureIndex];
-                          // @derivs_texture_binding_to_shader_unit_0
-                          BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
-                        }
-                        BindInputTexture = True;
-
-                        b32 LastLayer = LayerIndex == Brush->LayerCount-1;
-                        b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
-                        BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
-                        if (BindBlendTex)
-                        {
-                          texture *BlendTex = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
-                          BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
-                        }
-
-                        brush_layer *Layer = Brush->Layers + LayerIndex;
-
-                        {
-                          v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-                          BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
-                        }
-
-                        BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
-                        BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
-                        BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
-                        BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
-                        BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
-                        BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
-                        BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
-                        BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
-
-
-                        rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
-                           v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-                           v3 EditRectRad = GetRadius(&SimEditRect);
-
-                        // NOTE(Jesse): Must call bind explicitly because the
-                        // driver doesn't cache these values otherwise .. it
-                        // just reads them whenever it wants through the pointer..
-                        v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
-                        AssertNoGlErrors;
-
-                        v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
-                        BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
-                        AssertNoGlErrors;
-
-                        v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
-
-                        switch (Layer->Settings.Type)
-                        {
-                          case BrushLayerType_Noise:
-                          {
-                            noise_layer *Noise = &Layer->Settings.Noise;
-                            BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
-
-                            switch (Noise->Type)
-                            {
-                              case NoiseType_Perlin:
-                              {
-                                auto *Perlin = &Noise->Perlin;
-                                BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
-                              } break;
-
-                              case NoiseType_Voronoi:
-                              {
-                                auto *Voronoi = &Noise->Voronoi;
-                                BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
-                                BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
-                              } break;
-
-                              case NoiseType_White:
-                              {} break;
-                            }
-
-                          } break;
-
-                          case BrushLayerType_Shape:
-                          {
-                            shape_layer *Shape = &Layer->Settings.Shape;
-                            BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
-
-                            BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
-                            BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
-                            BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
-
-                            m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
-                            BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
-
-                            switch(Shape->Type)
-                            {
-                              case ShapeType_Rect:
-                              {
-                                auto Sphere = &Shape->Rect;
-                              } break;
-
-                              case ShapeType_Sphere:
-                              {
-                                auto Sphere = &Shape->Sphere;
-
-                                v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
-                                v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
-
-                                BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
-                                BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
-                              } break;
-
-                              case ShapeType_Line:
-                              {
-                                auto Line = &Shape->Line;
-                                BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
-                              } break;
-
-                              case ShapeType_Cylinder:
-                              {
-                                auto Cylinder = &Shape->Cylinder;
-                                BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
-                                BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
-                              } break;
-
-                              case ShapeType_Plane:
-                              {
-                                auto Plane = &Shape->Plane;
-                                auto Orientation = Plane->Orientation;
-
-                                v3 xAxis = V3(1,0,0);
-                                v3 yAxis = V3(0,1,0);
-                                v3 zAxis = V3(0,0,1);
-
-                                switch (Orientation)
-                                {
-                                  InvalidCase(ShapeAxis_Count);
-
-                                  case ShapeAxis_InferFromMajorAxis:
-                                  {} break;
-
-                                  // Traverses the X axis and ascends
-                                  case ShapeAxis_PosX:
-                                  {
-                                    xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
-                                    yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-                                  // Traverses the X axis and descends
-                                  case ShapeAxis_NegX:
-                                  {
-                                    xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
-                                    yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-
-
-                                  case ShapeAxis_PosY:
-                                  {
-                                    xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
-                                    yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-                                  case ShapeAxis_NegY:
-                                  {
-                                    xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
-                                    yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-
-
-                                  case ShapeAxis_PosZ:
-                                  {
-                                    xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                                    yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-
-                                  case ShapeAxis_NegZ:
-                                  {
-                                    xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                                    yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
-                                    zAxis = Normalize(Cross(xAxis, yAxis));
-                                  } break;
-                                }
-
-                                v3 Plane_SimShapeOrigin = EditRectRad;
-                                v3 PlaneNormal = zAxis;
-
-                                auto PlaneRadius = Plane->Thickness/2.f;
-                                auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
-                                                        PlaneNormal.y*Plane_SimShapeOrigin.y +
-                                                        PlaneNormal.z*Plane_SimShapeOrigin.z );
-
-                                auto PlanePos = Plane_SimShapeOrigin;
-
-                                BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
-                                BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
-                                BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
-
-                              } break;
-
-                              case ShapeType_Torus:
-                              {
-                                auto Torus = &Shape->Torus;
-
-                                BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
-                                BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
-
-                              } break;
-
-                              // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
-                              //
-                            }
-                          } break;
-                        }
-
-
-                        /* gpu_timer Timer = StartGpuTimer(); */
-                        RenderQuad();
-                        /* EndGpuTimer(&Timer); */
-                        /* Push(&Graphics->GpuTimers, &Timer); */
-
-                        Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex);
-                      }
-
-                      CurrentAccumulationTextureIndex = CurrentReadTextureIndex;
+                      AdvanceIndex(CurrentReadTextureIndex);
+                      AdvanceIndex(CurrentReadTextureIndex);
                     }
 
-                    AssertNoGlErrors;
+                    RangeIterator(LayerIndex, Brush->LayerCount)
+                    {
+                      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[CurrentWriteTextureIndex].ID);
+
+                      BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
+                      if (BindInputTexture)
+                      {
+                        texture *InputTex = &WorldEditRC->PingPongTextures[CurrentReadTextureIndex];
+                        // @derivs_texture_binding_to_shader_unit_0
+                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
+                      }
+                      BindInputTexture = True;
+
+                      b32 LastLayer = LayerIndex == Brush->LayerCount-1;
+                      b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
+                      BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
+                      if (BindBlendTex)
+                      {
+                        texture *BlendTex = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
+                        BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
+                      }
+
+                      brush_layer *Layer = Brush->Layers + LayerIndex;
+
+                      {
+                        v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+                        BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+                      }
+
+                      BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
+                      BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
+                      BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
+                      BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
+                      BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
+                      BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
+                      BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
+                      BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
+
+
+                      rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                         v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+                         v3 EditRectRad = GetRadius(&SimEditRect);
+
+                      // NOTE(Jesse): Must call bind explicitly because the
+                      // driver doesn't cache these values otherwise .. it
+                      // just reads them whenever it wants through the pointer..
+                      v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
+                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
+                      AssertNoGlErrors;
+
+                      v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
+                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
+                      AssertNoGlErrors;
+
+                      v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
+
+                      switch (Layer->Settings.Type)
+                      {
+                        case BrushLayerType_Noise:
+                        {
+                          noise_layer *Noise = &Layer->Settings.Noise;
+                          BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
+
+                          switch (Noise->Type)
+                          {
+                            case NoiseType_Perlin:
+                            {
+                              auto *Perlin = &Noise->Perlin;
+                              BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+                            } break;
+
+                            case NoiseType_Voronoi:
+                            {
+                              auto *Voronoi = &Noise->Voronoi;
+                              BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
+                              BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
+                            } break;
+
+                            case NoiseType_White:
+                            {} break;
+                          }
+
+                        } break;
+
+                        case BrushLayerType_Shape:
+                        {
+                          shape_layer *Shape = &Layer->Settings.Shape;
+                          BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
+
+                          BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
+                          BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
+                          BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
+
+                          m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
+                          BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
+
+                          switch(Shape->Type)
+                          {
+                            case ShapeType_Rect:
+                            {
+                              auto Sphere = &Shape->Rect;
+                            } break;
+
+                            case ShapeType_Sphere:
+                            {
+                              auto Sphere = &Shape->Sphere;
+
+                              v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
+                              v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
+
+                              BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
+                              BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
+                            } break;
+
+                            case ShapeType_Line:
+                            {
+                              auto Line = &Shape->Line;
+                              BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
+                            } break;
+
+                            case ShapeType_Cylinder:
+                            {
+                              auto Cylinder = &Shape->Cylinder;
+                              BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
+                              BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
+                            } break;
+
+                            case ShapeType_Plane:
+                            {
+                              auto Plane = &Shape->Plane;
+                              auto Orientation = Plane->Orientation;
+
+                              v3 xAxis = V3(1,0,0);
+                              v3 yAxis = V3(0,1,0);
+                              v3 zAxis = V3(0,0,1);
+
+                              switch (Orientation)
+                              {
+                                InvalidCase(ShapeAxis_Count);
+
+                                case ShapeAxis_InferFromMajorAxis:
+                                {} break;
+
+                                // Traverses the X axis and ascends
+                                case ShapeAxis_PosX:
+                                {
+                                  xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
+                                  yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+                                // Traverses the X axis and descends
+                                case ShapeAxis_NegX:
+                                {
+                                  xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
+                                  yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+
+
+                                case ShapeAxis_PosY:
+                                {
+                                  xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
+                                  yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+                                case ShapeAxis_NegY:
+                                {
+                                  xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
+                                  yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+
+
+                                case ShapeAxis_PosZ:
+                                {
+                                  xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                                  yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+
+                                case ShapeAxis_NegZ:
+                                {
+                                  xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                                  yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
+                                  zAxis = Normalize(Cross(xAxis, yAxis));
+                                } break;
+                              }
+
+                              v3 Plane_SimShapeOrigin = EditRectRad;
+                              v3 PlaneNormal = zAxis;
+
+                              auto PlaneRadius = Plane->Thickness/2.f;
+                              auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
+                                                      PlaneNormal.y*Plane_SimShapeOrigin.y +
+                                                      PlaneNormal.z*Plane_SimShapeOrigin.z );
+
+                              auto PlanePos = Plane_SimShapeOrigin;
+
+                              BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
+                              BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
+                              BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+
+                            } break;
+
+                            case ShapeType_Torus:
+                            {
+                              auto Torus = &Shape->Torus;
+
+                              BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
+                              BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
+
+                            } break;
+
+                            // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
+                            //
+                          }
+                        } break;
+                      }
+
+
+                      /* gpu_timer Timer = StartGpuTimer(); */
+                      RenderQuad();
+                      /* EndGpuTimer(&Timer); */
+                      /* Push(&Graphics->GpuTimers, &Timer); */
+
+                      Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex);
+                    }
+
+                    CurrentAccumulationTextureIndex = CurrentReadTextureIndex;
                   }
-                }
-                ReleaseFutex(&Node->Lock);
-              }
 
-              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f ); */
-              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f ); */
-              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
-              /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
-
-              texture *CurrentAccumulationTexture = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
-
-              //
-              // Terrain Finalize
-              //
-              {
-                TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
-                GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
-
-                UseShader(&Graphics->TerrainFinalizeRC);
-
-                // NOTE(Jesse): The other inputtex calls bind to texture unit 1 .. it is correct that
-                // this bind to unit 0 because there's no derivs texture being bound here.
-                //
-                // @derivs_texture_binding_to_shader_unit_0
-                BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", CurrentAccumulationTexture, 0);
-
-                /* gpu_timer Timer = StartGpuTimer(); */
-                RenderQuad();
-                /* EndGpuTimer(&Timer); */
-                /* Push(&Graphics->GpuTimers, &Timer); */
-
-                AssertNoGlErrors;
-              }
-
-              /* Assert(Chunk1->Dim == V3i(64)); */
-              /* Assert(NoiseDim == V3(66)); */
-              v3i NoiseDim = V3i(66);
-
-              s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
-              s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
-
-              {
-                TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
-                u32 PBO;
-                GL.GenBuffers(1, &PBO);
-                AssertNoGlErrors;
-
-                /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
-                GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
-                GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
-                AssertNoGlErrors;
-                GL.ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
-                AssertNoGlErrors;
-                GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-                gl_fence Fence = GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
-                dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
-                Push(&Graphics->NoiseReadbackJobs, &Readback);
-              }
-            } break;
-
-
-            { tmatch(bonsai_render_command_do_stuff, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
-
-              //
-              // Render begin
-              //
-
-              ao_render_group     *AoGroup = Graphics->AoGroup;
-
-              EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
-              EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
-
-              // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
-              //
-              // Update color texture, if necessary
-              //
-              s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
-              if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
-              {
-                if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
-                Graphics->ColorPaletteTexture =
-                  MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
-              }
-
-
-#if 0
-              //
-              // Editor preview
-              /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
-              {
-                shadow_render_group *SG      = Graphics->SG;
-                v3i Radius = World->VisibleRegion/2;
-                v3i Min = World->Center - Radius;
-                v3i Max = World->Center + Radius;
-
-                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
-                shader *Shader = &Graphics->gBuffer->gBufferShader;
-                DrawEditorPreview(Engine, Shader);
-                TeardownGBufferShader(Graphics);
-
-                SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
-                Shader = &Graphics->SG->Shader.Program;
-                DrawEditorPreview(Engine, Shader);
-                TeardownShadowMapShader(Graphics);
-              }
-#endif
-
-              /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
-
-              // TODO(Jesse): Move into engine debug
-              world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
-              DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
-
-              AssertNoGlErrors;
-
-              if (Graphics->Settings.DrawCameraGhost)
-              {
-                untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-                DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
-              }
-
-              Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
-              if (GpuMap->Buffer.At)
-              {
-                RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-                RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
-              }
-              Clear(&GpuMap->Buffer);
-
-
-              // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
-              // after the transparency/luminance textures.  I have literally 0 ideas as to
-              // why that would be, but here we are.
-              if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
-
-              {
-                RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency);
-                RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), GpuMap, Lighting, Graphics);
-              }
-
-              if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
-              /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
-
-              CompositeGameTexturesAndDisplay(Plat, Graphics);
-
-
-              UiFrameEnd(&Engine->Ui);
-
-
-              BonsaiSwapBuffers(&Engine->Stdlib.Os);
-
-
-              HotReloadShaders(GetStdlib());
-
-
-              /* GpuMap = GetNextGpuMap(Graphics); */
-
-              // Map immediate GPU buffers for next frame
-              MapGpuBuffer_untextured_3d_geometry_buffer(GpuMap);
-              MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
-              Assert(GpuMap->Buffer.At == 0);
-
-              Graphics->RenderGate = False;
-
-              IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
-              {
-                if (Timer->Ns == 0)
-                {
-                  if (QueryGpuTimer(Timer))
-                  {
-#if BONSAI_DEBUG_SYSTEM_API
-                    GetDebugState()->PushHistogramDataPoint(Timer->Ns);
-                    // NOTE(Jesse): This skips the next timer, but it'll get
-                    // hit on the next frame, so no worries ..
-                    RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
-#endif
-                  }
+                  AssertNoGlErrors;
                 }
               }
-            } break;
+              ReleaseFutex(&Node->Lock);
+            }
 
-            { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_init);
-              AssertNoGlErrors;
-              GL.GenQueries(1, Command->GlTimerObject);
-              AssertNoGlErrors;
-            } break;
+            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f ); */
+            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f ); */
+            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
+            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
-            { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_start);
-              AssertNoGlErrors;
-              GL.BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
-              AssertNoGlErrors;
-            } break;
+            texture *CurrentAccumulationTexture = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
 
-            { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_end);
-              AssertNoGlErrors;
-              GL.EndQuery(GL_TIME_ELAPSED);
-              AssertNoGlErrors;
-            } break;
-
-            { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RenderCommand, Command)
-              TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_read_value_and_histogram);
-#if 0
-              AssertNoGlErrors;
-              u64 TimerNs = 0;
-
-              s32 Available = False;
-              while (!Available)
-              {
-                GL.GetQueryObjectiv(Command->GlTimerObject, GL_QUERY_RESULT_AVAILABLE, &Available);
-                /* if (Available == False) { Info("Waiting for query object to become available"); } */
-              }
-
-
-              GL.GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
-              /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
-              /* GetDebugState()->PushHistogramDataPoint(TimerNs); */
-              AssertNoGlErrors;
-#endif
-            } break;
-
-          }
-        } break;
-      }
-
-      RewindArena(GetTranArena());
-    }
-
-    {
-      TIMED_NAMED_BLOCK(CheckReadbackJobs);
-      IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
-      {
-        Assert(PBOJob);
-
-        /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
-        /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
-
-        u32 SyncStatus = GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-        AssertNoGlErrors;
-        switch(SyncStatus)
-        {
-          case GL_ALREADY_SIGNALED:
-          case GL_CONDITION_SATISFIED:
-          {
-            TIMED_NAMED_BLOCK(MapBuffer);
-
-            AssertNoGlErrors;
-            /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
-            /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
-            GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
-            AssertNoGlErrors;
-            u16 *NoiseValues = Cast(u16*, GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-            AssertNoGlErrors;
-
-            auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
-            PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
-
-            // TODO(Jesse): This actually makes the loop skip a job because we
-            // shorten the array, but never update the index we're looking at.
             //
-            // It doesn't matter in this case because this runs every frame, so
-            // the skipped job is just a frame late.  But, it would be nice if
-            // this was better.
-            // 
-            // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
-            RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
+            // Terrain Finalize
+            //
+            {
+              TIMED_NAMED_BLOCK(TerrainFinalizeDrawCall);
+              GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->TerrainFinalizeRC.FBO.ID);
+
+              UseShader(&Graphics->TerrainFinalizeRC);
+
+              // NOTE(Jesse): The other inputtex calls bind to texture unit 1 .. it is correct that
+              // this bind to unit 0 because there's no derivs texture being bound here.
+              //
+              // @derivs_texture_binding_to_shader_unit_0
+              BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", CurrentAccumulationTexture, 0);
+
+              /* gpu_timer Timer = StartGpuTimer(); */
+              RenderQuad();
+              /* EndGpuTimer(&Timer); */
+              /* Push(&Graphics->GpuTimers, &Timer); */
+
+              AssertNoGlErrors;
+            }
+
+            /* Assert(Chunk1->Dim == V3i(64)); */
+            /* Assert(NoiseDim == V3(66)); */
+            v3i NoiseDim = V3i(66);
+
+            s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
+            s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
+
+            {
+              TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
+              u32 PBO;
+              GetStdlib()->GL.GenBuffers(1, &PBO);
+              AssertNoGlErrors;
+
+              /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
+              GetStdlib()->GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
+              GetStdlib()->GL.BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
+              AssertNoGlErrors;
+              GetStdlib()->GL.ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+              AssertNoGlErrors;
+              GetStdlib()->GL.BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+              gl_fence Fence = GetStdlib()->GL.FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+              dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
+              Push(&Graphics->NoiseReadbackJobs, &Readback);
+            }
           } break;
 
-          case GL_TIMEOUT_EXPIRED:
-          {
+
+          { tmatch(bonsai_render_command_do_stuff, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
+
+            //
+            // Render begin
+            //
+
+            ao_render_group     *AoGroup = Graphics->AoGroup;
+
+            EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
+            EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
+
+            // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
+            //
+            // Update color texture, if necessary
+            //
+            s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+            if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
+            {
+              if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+              Graphics->ColorPaletteTexture =
+                MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
+            }
+
+
+#if 0
+            //
+            // Editor preview
+            /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
+            {
+              shadow_render_group *SG      = Graphics->SG;
+              v3i Radius = World->VisibleRegion/2;
+              v3i Min = World->Center - Radius;
+              v3i Max = World->Center + Radius;
+
+              SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+              shader *Shader = &Graphics->gBuffer->gBufferShader;
+              DrawEditorPreview(Engine, Shader);
+              TeardownGBufferShader(Graphics);
+
+              SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+              Shader = &Graphics->SG->Shader.Program;
+              DrawEditorPreview(Engine, Shader);
+              TeardownShadowMapShader(Graphics);
+            }
+#endif
+
+            /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
+
+            // TODO(Jesse): Move into engine debug
+            world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
+            DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
+
+            AssertNoGlErrors;
+
+            if (Graphics->Settings.DrawCameraGhost)
+            {
+              untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+              DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
+            }
+
+            Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
+            if (GpuMap->Buffer.At)
+            {
+              RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
+              RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
+            }
+            Clear(&GpuMap->Buffer);
+
+
+            // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
+            // after the transparency/luminance textures.  I have literally 0 ideas as to
+            // why that would be, but here we are.
+            if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
+
+            {
+              RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency);
+              RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), GpuMap, Lighting, Graphics);
+            }
+
+            if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+            /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
+
+            CompositeGameTexturesAndDisplay(Plat, Graphics);
+
+
+            UiFrameEnd(&Engine->Ui);
+
+
+            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+
+            HotReloadShaders(GetStdlib());
+
+
+            /* GpuMap = GetNextGpuMap(Graphics); */
+
+            // Map immediate GPU buffers for next frame
+            MapGpuBuffer_untextured_3d_geometry_buffer(GpuMap);
+            MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
+            Assert(GpuMap->Buffer.At == 0);
+
+            Graphics->RenderGate = False;
+
+            IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
+            {
+              if (Timer->Ns == 0)
+              {
+                if (QueryGpuTimer(Timer))
+                {
+#if BONSAI_DEBUG_SYSTEM_API
+                  GetDebugState()->PushHistogramDataPoint(Timer->Ns);
+                  // NOTE(Jesse): This skips the next timer, but it'll get
+                  // hit on the next frame, so no worries ..
+                  RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
+#endif
+                }
+              }
+            }
           } break;
 
-          case GL_WAIT_FAILED:
-          {
-            SoftError("Error waiting on gl sync object");
+          { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_init);
+            AssertNoGlErrors;
+            GetStdlib()->GL.GenQueries(1, Command->GlTimerObject);
+            AssertNoGlErrors;
           } break;
+
+          { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_start);
+            AssertNoGlErrors;
+            GetStdlib()->GL.BeginQuery(GL_TIME_ELAPSED, Command->GlTimerObject);
+            AssertNoGlErrors;
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_end);
+            AssertNoGlErrors;
+            GetStdlib()->GL.EndQuery(GL_TIME_ELAPSED);
+            AssertNoGlErrors;
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_gl_timer_read_value_and_histogram);
+#if 0
+            AssertNoGlErrors;
+            u64 TimerNs = 0;
+
+            s32 Available = False;
+            while (!Available)
+            {
+              GetStdlib()->GL.GetQueryObjectiv(Command->GlTimerObject, GL_QUERY_RESULT_AVAILABLE, &Available);
+              /* if (Available == False) { Info("Waiting for query object to become available"); } */
+            }
+
+
+            GetStdlib()->GL.GetQueryObjectui64v(Command->GlTimerObject, GL_QUERY_RESULT, &TimerNs);
+            /* Info("GL reported time of (%.2f)ms", f64(TimerNs)/1000000.0); */
+            /* GetDebugState()->PushHistogramDataPoint(TimerNs); */
+            AssertNoGlErrors;
+#endif
+          } break;
+
         }
-      }
+      } break;
     }
 
-    if (FutexIsSignaled(ThreadParams->WorkerThreadsExitFutex)) break;
-
-    if (FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex)) { WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex); }
-
-    SleepMs(1);
+    RewindArena(GetTranArena());
   }
 
-  Info("Exiting Render Thread (%d)", ThreadParams->ThreadIndex);
-  WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
+  {
+    TIMED_NAMED_BLOCK(CheckReadbackJobs);
+    IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+    {
+      Assert(PBOJob);
+
+      /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
+      /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
+
+      u32 SyncStatus = GetStdlib()->GL.ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+      AssertNoGlErrors;
+      switch(SyncStatus)
+      {
+        case GL_ALREADY_SIGNALED:
+        case GL_CONDITION_SATISFIED:
+        {
+          TIMED_NAMED_BLOCK(MapBuffer);
+
+          AssertNoGlErrors;
+          /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
+          /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
+          GetStdlib()->GL.BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
+          AssertNoGlErrors;
+          u16 *NoiseValues = Cast(u16*, GetStdlib()->GL.MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+          AssertNoGlErrors;
+
+          auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
+          PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
+
+          // TODO(Jesse): This actually makes the loop skip a job because we
+          // shorten the array, but never update the index we're looking at.
+          //
+          // It doesn't matter in this case because this runs every frame, so
+          // the skipped job is just a frame late.  But, it would be nice if
+          // this was better.
+          // 
+          // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
+          RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
+        } break;
+
+        case GL_TIMEOUT_EXPIRED:
+        {
+        } break;
+
+        case GL_WAIT_FAILED:
+        {
+          SoftError("Error waiting on gl sync object");
+        } break;
+      }
+    }
+  }
 }
 
 link_export THREAD_MAIN_RETURN
 RenderThread_Main(void *ThreadStartupParams)
 {
   thread_startup_params *ThreadParams = Cast(thread_startup_params*, ThreadStartupParams);
+  WorkerThread_BeforeJobStart(ThreadParams);
 
-  Global_EngineResources = (engine_resources*)ThreadParams->EngineResources;
-  Global_ThreadStates = Global_EngineResources->Stdlib.ThreadStates;
-  Assert(Global_EngineResources);
+
+  Global_ThreadStates = GetStdlib()->ThreadStates;
   Assert(Global_ThreadStates);
 
-  WorkerThread_BeforeJobStart(ThreadParams);
 
   /* Assert(ThreadParams->ThreadIndex > 0); */
   /* SetThreadLocal_ThreadIndex(ThreadParams->ThreadIndex); */
 
-  engine_resources *Engine = GetEngineResources();
-  os *Os = &Engine->Stdlib.Os;
-  platform *Plat = &Engine->Stdlib.Plat;
+  engine_resources *Engine    = GetEngineResources();
+  application_api *AppApi     = ThreadParams->AppApi;
+                os *Os        = &Engine->Stdlib.Os;
+          platform *Plat      = &Engine->Stdlib.Plat;
+        engine_api *EngineApi = &Engine->EngineApi;
 
   PlatformMakeRenderContextCurrent(Os);
 
-  // NOTE(Jesse): This now happens in stdlib startup
-  /* s32 VSyncFrames = 0; */
-  /* InitResult &= OpenAndInitializeWindow(Os, Plat, VSyncFrames); */
-  /* if (InitResult) { InitResult &= InitializeOpenglFunctions(); } */
-
-  b32 InitResult = True;
-  if (InitResult) { InitResult &= GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena()); }
+  b32 InitResult = GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena());
 
   if (InitResult)
   {
     memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
-    bitmap_block_array Bitmaps = {};
-    Bitmaps.Memory = GetTranArena();
+    bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/64x64_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     LoadBitmapsFromFolderOrdered(CSz("assets/mystic_rpg_icon_pack/Sprites/300%/44x44_sprites"), &Bitmaps, GetTranArena(), GetTranArena());
     Engine->Ui.SpriteTextureArray = CreateTextureArrayFromBitmapBlockArray(&Bitmaps, V2i(64,64));
   }
 
-  FullBarrier;
+  // Map immediate GPU buffers for first frame
+  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
+  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
 
+  FullBarrier;
   Engine->Graphics.Initialized = True;
 
   if (InitResult)
   {
-    RenderLoop(ThreadParams, Engine);
+    while ( FutexNotSignaled(ThreadParams->WorkerThreadsExitFutex) )
+    {
+      WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+      AppApi->WorkerBeforeJob(GetThreadLocalState(ThreadLocal_ThreadIndex), ThreadParams);
+      EngineApi->DrainRenderQueue(Engine);
+      if (FutexIsSignaled(ThreadParams->WorkerThreadsSuspendFutex)) { WaitOnFutex(ThreadParams->WorkerThreadsSuspendFutex); }
+      SleepMs(1);
+    }
+
+    Info("Exiting Render Thread (%d)", ThreadParams->ThreadIndex);
+    WaitOnFutex(ThreadParams->WorkerThreadsExitFutex);
   }
   else
   {

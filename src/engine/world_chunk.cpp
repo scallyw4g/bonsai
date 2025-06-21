@@ -4702,14 +4702,14 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
 
     {
       // Draw hotchunk to the GameGeo FBO
-      GL.BindFramebuffer(GL_FRAMEBUFFER, PickedChunksRenderGroup->GameGeoFBO.ID);
+      GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, PickedChunksRenderGroup->GameGeoFBO.ID);
       FlushBuffersToCard(&PickedChunksRenderGroup->GameGeo);
 
       PickedChunksRenderGroup->ViewProjection =
         ProjectionMatrix(PickedChunksRenderGroup->Camera, DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM) *
         ViewMatrix(ChunkDimension(HotChunk->Chunk), PickedChunksRenderGroup->Camera);
 
-      GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
+      GetStdlib()->GL.UseProgram(PickedChunksRenderGroup->GameGeoShader.ID);
 
       SetViewport(V2(DEBUG_TEXTURE_DIM, DEBUG_TEXTURE_DIM));
 

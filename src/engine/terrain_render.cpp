@@ -14,7 +14,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
     RC->ChunkResolution = V3(Chunk->DimInChunks);
 
     TIMED_NAMED_BLOCK(TerrainDrawCall);
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
     UseShader(RC);
 
     v2i DestTextureDim = RC->DestTex.Dim;
@@ -35,7 +35,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
     auto *RC = &Graphics->TerrainDerivsRC;
 
     TIMED_NAMED_BLOCK(TerrainDrawCall);
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
     UseShader(RC);
 
     // @derivs_texture_binding_to_shader_unit_0
@@ -62,7 +62,7 @@ DispatchTerrainShaders(graphics *Graphics, world_chunk *Chunk)
     RC->ChunkResolution = V3(Chunk->DimInChunks);
 
     TIMED_NAMED_BLOCK(TerrainDrawCall);
-    GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
+    GetStdlib()->GL.BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO->ID);
     UseShader(RC);
     // Using texture unit 1 because the DerivsTex is automatically bound in UseShader to unit 0
     // @derivs_texture_binding_to_shader_unit_0

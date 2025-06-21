@@ -26,7 +26,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  /* GL.Disable(GL_CULL_FACE); */
+  /* GetStdlib()->GL.Disable(GL_CULL_FACE); */
 
   entity *Player = GameState->Player;
 
