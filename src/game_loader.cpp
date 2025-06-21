@@ -172,7 +172,6 @@ main( s32 ArgCount, const char ** Args )
   /* EngineResources->DebugState = Global_DebugStatePointer; */
 
   Assert(EngineResources->Stdlib.ThreadStates);
-  Assert(Global_ThreadStates);
 
   Ensure( EngineApi->OnLibraryLoad(EngineResources) );
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized

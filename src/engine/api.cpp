@@ -7,7 +7,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-  Global_ThreadStates = Resources->Stdlib.ThreadStates;
+  Assert(Resources->Stdlib.ThreadStates);
   return True;
 }
 

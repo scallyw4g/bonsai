@@ -870,10 +870,7 @@ RenderThread_Main(void *ThreadStartupParams)
   thread_local_state *Thread = Cast(thread_local_state*, ThreadStartupParams);
   WorkerThread_BeforeJobStart(Thread);
 
-
-  Global_ThreadStates = GetStdlib()->ThreadStates;
-  Assert(Global_ThreadStates);
-
+  Assert(GetStdlib()->ThreadStates);
 
   /* Assert(Thread->ThreadIndex > 0); */
   /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */

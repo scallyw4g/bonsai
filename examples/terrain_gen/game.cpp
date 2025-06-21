@@ -365,8 +365,7 @@ WarpedTerrain( world_chunk *Chunk,
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
+  SetThreadLocal_ThreadIndex(Thread->Index);
 }
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
