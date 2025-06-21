@@ -11,7 +11,7 @@
 
 ./make.sh $OPT                                                 \
   BuildSingleExample examples/terrain_gen                      \
-  BuildExecutables                                             \
+  # BuildExecutables                                             \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/blank_project                    \
