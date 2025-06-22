@@ -768,10 +768,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
+  /* auto VisibleRegionSize = VisibleRegionSize_8; */
   auto VisibleRegionSize = VisibleRegionSize_128;
   /* auto VisibleRegionSize = VisibleRegionSize_8192; */
   v3i VisibleRegion = V3i(VisibleRegionSize);
-  f32 DistanceFromTarget = 5000.f;
+  f32 DistanceFromTarget = f32(VisibleRegionSize)*100.f;
   f32 FarClip = 500000.f;
   StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 
@@ -866,14 +867,4 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushWindowEnd(Ui, &Window);
   }
 
-
-
-  /* Info("%S :: %d", ToString(GameState->TerrainGenType), GameState->TerrainGenType); */
-
-  /* if (TerrainGenTypeRadio.AnyElementClicked) */
-  /* { */
-  /*   SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex); */
-  /*   SoftResetEngine(Resources, HardResetFlag_NoResetCamera); */
-  /*   UnsignalFutex(&Plat->WorkerThreadsSuspendFutex); */
-  /* } */
 }

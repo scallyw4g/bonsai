@@ -275,11 +275,23 @@ void main()
   // -- user code -- 
   //
   {
-    f32 StartingZDepth = 800.f;
+#if 1
+    f32 StartingZDepth = 100.f;
+    ColorValue = v3(.1,.8,.2);
+    NoiseValue += StartingZDepth - Basis.z;
+
+    float Amplitude = 100.f;
+    v3 Period = V3(100.f);
+    v3 xyz = Basis / Period;
+    v4 gn = gradient_noise_derivs(xyz) * Amplitude;
+
+    NoiseValue += gn.x;
+#else
+    f32 StartingZDepth = 1000.f;
     NoiseValue += StartingZDepth - Basis.z;
 
     f32 CliffMask = 1.f;
-#if 1
+#if 0
     {
       v3 Period = V3(12000.f);
       float Amplitude =  2000.f;
@@ -298,7 +310,7 @@ void main()
     }
 #endif
 
-#if 1
+#if 0
     {
       v3 Period = V3(2000.f);
       float Amplitude = 1200.f;
@@ -329,6 +341,7 @@ void main()
       /* f32 xyContrib = 0.f; */
       NoiseValue -= Basis.z - xyContrib;
     }
+#endif
 #endif
   }
 

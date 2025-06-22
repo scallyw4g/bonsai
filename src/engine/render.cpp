@@ -69,18 +69,47 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 #endif
 
 inline m4
-GetShadowMapMVP(world *World, camera *Camera, v3 SunP)
+GetShadowMapMVP(v3 SunP)
 {
-  m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
-                                          SHADOW_MAP_Y,
-                                          SHADOW_MAP_Z_MIN,
-                                          SHADOW_MAP_Z_MAX);
+#if 0
+  m4 Proj = IdentityMatrix;
+#else
+  m4 Proj = Orthographic(SHADOW_MAP_X,
+                         SHADOW_MAP_Y,
+                         SHADOW_MAP_Z_MIN,
+                         SHADOW_MAP_Z_MAX);
+#endif
 
-  v3 Target = {};
-  v3 Up = V3(0.f, 1.f, 0.f);
-  m4 depthViewMatrix =  LookAt(SunP, Target, Up);
+  v3i VisibleRegionCenter = V3i(GetWorld()->VisibleRegionSize)/2;
+  /* v3 Target = V3(VisibleRegionCenter); */
+  v3 Up     = V3(0.f, 0.f, 1.f);
+     SunP   = Normalize(V3(1.f, 1.f, 1.f));
+  v3 Target = -1.f*SunP;
 
-  return depthProjectionMatrix * depthViewMatrix;
+  /* m4 View   = LookAt(SunP, Target, Up); */
+  m4 View   = RotateTransform( SunP );
+
+   /* v3 Front = V3(); */
+  /* m4 View   = IdentityMatrix; */
+
+  DEBUG_VALUE(&View.E[0]);
+  DEBUG_VALUE(&View.E[1]);
+  DEBUG_VALUE(&View.E[2]);
+  DEBUG_VALUE(&View.E[3]);
+
+  r32 Blank = {};
+  DEBUG_VALUE(Blank);
+
+  DEBUG_VALUE(&Proj.E[0]);
+  DEBUG_VALUE(&Proj.E[1]);
+  DEBUG_VALUE(&Proj.E[2]);
+  DEBUG_VALUE(&Proj.E[3]);
+
+
+  m4 ViewProjection = Proj * View;
+  DEBUG_VALUE(&ViewProjection);
+
+  return ViewProjection;
 }
 
 link_internal void
@@ -156,7 +185,7 @@ RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *Gpu
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
-  Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
+  /* Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection; */
 
   /* GetGL()->Enable(GL_BLEND); */
   /* GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
@@ -1162,6 +1191,8 @@ DrawLod( engine_resources *Engine,
     m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
+    DEBUG_VALUE(&ModelMatrix);
+
     m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
 
@@ -1525,28 +1556,79 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 }
 
 link_internal void
-RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
+RenderDrawList(engine_resources *Engine, octree_node_ptr_block_array *DrawList, shader *Shader, camera *Camera)
 {
-  world *World = Engine->World;;
+  /* UNPACK_ENGINE_RESOURCES(Engine); */
+  renderer_2d *Ui    = &Engine->Ui;
+        world *World = Engine->World;
 
-  IterateOver(DrawList, Chunk, ChunkIndex)
+  local_persist auto Window = WindowLayout("Debug");
+  PushWindowStart(Ui, &Window);
+  PushTableStart(Ui, &DefaultUiRenderParams_Generic);
+
+  IterateOver(DrawList, Node, NodeIndex)
   {
+    world_chunk *Chunk = Node->Chunk;
+    Assert(Chunk);
     // In case gpu meshes got deallocated after the chunk was added to the draw list
     if (HasGpuMesh(&Chunk->Mesh))
     {
       v3 Basis;
+      v3 Scale = V3(Chunk->DimInChunks);
       if (Camera)
       {
         Basis = GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
       }
       else
       {
+        v3i VisibleRegionCenter = V3i(World->VisibleRegionSize)/2;
+
+        /* v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter); */
+        /* v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter) * World->ChunkDim; */
+        /* Basis = VisibleRegionRelativePosition; */
+        /* Info("Basis(%.2V3)", &Basis); */
         Basis = GetSimSpaceP(World, Chunk->WorldP);
+
+        if (NodeIndex.Index == 1)
+        {
+          GetEngineDebug()->PickedNode = Node;
+          /* v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter); */
+          v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter) * World->ChunkDim;
+          DEBUG_VALUE(&VisibleRegionRelativePosition);
+          DEBUG_VALUE(&Basis);
+
+          auto BasisToVRRelPos = VisibleRegionRelativePosition-Basis;
+          DEBUG_VALUE(&BasisToVRRelPos);
+
+          f32 Break = 0;
+          DEBUG_VALUE(Break);
+          /* Basis = VisibleRegionRelativePosition; */
+
+
+          /* Basis = V3(0.f); */
+          /* Scale = V3(1.f)/(V3(Chunk->Dim)*V3(Chunk->DimInChunks)); */
+
+          Basis = V3(-1.f);
+          Scale = V3(2.f)/(V3(Chunk->Dim)*V3(Chunk->DimInChunks));
+        }
       }
-      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+
+
+      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), Scale);
+
       AssertNoGlErrors;
+
+      if (NodeIndex.Index == 1)
+      {
+        if (GetEngineDebug()->ResetAssetNodeView)
+        {
+          break;
+        }
+      }
     }
   }
+  PushTableEnd(Ui);
+  PushWindowEnd(Ui, &Window);
 }
 
 #if 0
@@ -1631,6 +1713,8 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 link_internal void
 UpdateKeyLight(graphics *Graphics, r32 tDay)
 {
+  tDay *= PI32;
+
   auto SG = Graphics->SG;
   r32 tDaytime = Cos(tDay);
   r32 tPostApex = Sin(tDay);

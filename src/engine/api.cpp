@@ -8,6 +8,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
   Assert(Resources->Stdlib.ThreadStates);
+  Global_Stdlib = &Resources->Stdlib;
   return True;
 }
 
@@ -479,17 +480,19 @@ Bonsai_Simulate(engine_resources *Resources)
     }
 
     UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
-    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+    v3 KeyLightPos = Graphics->Settings.Lighting.SunP;
+    /* v3 KeyLightPos = Normalize(V3(1.f)); */
+    m4 ViewProjection = GetShadowMapMVP(KeyLightPos);
+    Graphics->SG->Shader.ViewProjection = ViewProjection;
   }
-
 
 
   // Draw terrain
   PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  /* PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
+  /* PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera); */
+  /* PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
 
   PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
   PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
@@ -534,29 +537,19 @@ Bonsai_Render(engine_resources *Engine)
   /* } */
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  /* PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
+  /* PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1); */
+  /* PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1); */
+  /* PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader); */
+  /* PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->SG->Shader.Program);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  /* PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
+  /* PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->SG->Shader.Program); */
+  /* PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
 
 
   /* DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim)); */
-
-
-  {
-    layout DefaultLayout = {};
-    render_state RenderState = {};
-    RenderState.Layout = &DefaultLayout;
-
-    SetWindowZDepths(Ui->CommandBuffer);
-    FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
-  }
 
 
   PushBonsaiRenderCommandDoStuff(&Plat->RenderQ);

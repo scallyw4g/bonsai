@@ -218,7 +218,10 @@ HardResetWorld(engine_resources *Engine)
   v3i ChunkDim           = World->ChunkDim;
   auto VisibleRegionSize = World->VisibleRegionSize;
 
-  Clear(World);
+ *World = {};
+
+  Engine->EngineDebug.PickedNode = 0;
+  Engine->EngineDebug.SelectedNode = 0;
 
   AllocateWorld(World, Center, ChunkDim, VisibleRegionSize);
 }

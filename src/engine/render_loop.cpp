@@ -727,7 +727,18 @@ DrainRenderQueue(engine_resources *Engine)
             CompositeGameTexturesAndDisplay(Plat, Graphics);
 
 
-            UiFrameEnd(&Engine->Ui);
+
+
+            {
+              layout DefaultLayout = {};
+              render_state RenderState = {};
+              RenderState.Layout = &DefaultLayout;
+
+              SetWindowZDepths(Ui->CommandBuffer);
+              FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
+              UiFrameEnd(&Engine->Ui);
+            }
+
 
 
             BonsaiSwapBuffers(&Engine->Stdlib.Os);
@@ -760,6 +771,8 @@ DrainRenderQueue(engine_resources *Engine)
                 }
               }
             }
+
+            RewindArena(GetTranArena());
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
@@ -807,8 +820,6 @@ DrainRenderQueue(engine_resources *Engine)
         }
       } break;
     }
-
-    RewindArena(GetTranArena());
   }
 
   {

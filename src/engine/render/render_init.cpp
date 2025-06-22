@@ -488,7 +488,7 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
     Settings->BravoilMyersOIT   = True;
     Settings->BravoilMcGuireOIT = True;
 
-    /* Settings->UseShadowMapping = True; */
+    Settings->UseShadowMapping = True;
     Settings->UseLightingBloom = True;
 
     /* Settings->DrawMajorGrid = True; */

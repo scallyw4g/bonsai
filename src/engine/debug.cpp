@@ -576,7 +576,8 @@ DoEngineDebug(engine_resources *Engine)
   {
     v2 DefaultTextureDim = V2(250);
 
-    local_persist window_layout TexturesWindow = WindowLayout("Textures", WindowLayoutFlag_Align_Bottom);
+    local_persist window_layout TexturesWindow = WindowLayout("Textures", V2(DefaultWindowSideOffset, 400.f), V2(450.f, 450.f), WindowLayoutFlag_Align_Bottom);
+    /* local_persist window_layout TexturesWindow = WindowLayout("Textures", WindowLayoutFlag_Align_Bottom); */
     PushWindowStart(Ui, &TexturesWindow);
 
     s32 xAdvance = 15;
@@ -589,7 +590,10 @@ DoEngineDebug(engine_resources *Engine)
       PushTableStart(Ui);
 
       auto Button = ToggleButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(0)));
-        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
+        PushColumn(Ui, FSz("(%u) %S (%dx%d)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y));
+        PushNewRow(Ui);
+        PushColumn(Ui, FSz("    Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign);
+        PushNewRow(Ui);
       ToggleButtonEnd(Ui);
 
       if (ToggledOn(Ui, &Button)) { Dim = V2(Texture->Dim) * 8.f; }

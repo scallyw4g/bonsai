@@ -90,7 +90,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           Cast(r32*, &Element->tDay),
           MemberName,
           Params
-          , -PI32, PI32 );
+          , -1.f, 1.f );
 
 
 

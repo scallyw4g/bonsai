@@ -90,23 +90,16 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
   }
 }
 
-/* #define LUMINANCE_MAP_RESOLUTION_X (SCR_WIDTH) */
-/* #define LUMINANCE_MAP_RESOLUTION_Y (SCR_HEIGHT) */
+/* #define SHADOW_WORLDSPACE_DIM (1024*16) */
+/* #define SHADOW_WORLDSPACE_DIM (1024*8) */
+/* #define SHADOW_WORLDSPACE_DIM (1024*4) */
+/* #define SHADOW_WORLDSPACE_DIM (1024*2) */
+/* #define SHADOW_WORLDSPACE_DIM (1024) */
+/* #define SHADOW_WORLDSPACE_DIM (1024/2) */
+#define SHADOW_WORLDSPACE_DIM (1.0f)
 
-// TODO(Jesse): Make a shadow.h ?
-// NOTE(Jesse): 32x1024 x2 == 64k at 32bit float
-/* #define SHADOW_MAP_RESOLUTION_X ((16*1024)/SCREEN_RATIO) */
-/* #define SHADOW_MAP_RESOLUTION_Y ((16*1024)/SCREEN_RATIO) */
-/* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
-/* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
-
-#define SHADOW_MAP_X 1024*4
-#define SHADOW_MAP_Y 1024*4
-#define SHADOW_MAP_Z_MIN -1024*4
-#define SHADOW_MAP_Z_MAX  1024*4
-
-/* #define SHADOW_MAP_X 512 */
-/* #define SHADOW_MAP_Y 512 */
-/* #define SHADOW_MAP_Z_MIN -512 */
-/* #define SHADOW_MAP_Z_MAX  512 */
+#define SHADOW_MAP_X SHADOW_WORLDSPACE_DIM
+#define SHADOW_MAP_Y SHADOW_WORLDSPACE_DIM
+#define SHADOW_MAP_Z_MIN -SHADOW_WORLDSPACE_DIM
+#define SHADOW_MAP_Z_MAX  SHADOW_WORLDSPACE_DIM
 

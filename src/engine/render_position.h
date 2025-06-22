@@ -80,6 +80,19 @@ GetRenderSpaceAABB(v3i WorldChunkDim, entity *Entity, camera *Camera)
 }
 
 inline m4
+RotationMatrixFor(v3 Front, v3 Right, v3 Up)
+{
+  m4 Result = {
+    V4(Right.x, Up.x, -Front.x, 0.f),
+    V4(Right.y, Up.y, -Front.y, 0.f),
+    V4(Right.z, Up.z, -Front.z, 0.f),
+    V4(    0.f, 0.f,      0.f,  1.f),
+  };
+
+  return Result;
+}
+
+inline m4
 LookAt(v3 P, v3 Target, v3 Up)
 {
   v3 Front = Normalize(Target - P);
@@ -89,12 +102,8 @@ LookAt(v3 P, v3 Target, v3 Up)
   // able to re-use the camera computed vectors?
   Up       = Normalize(Cross(Right, Front));
 
-  m4 Result = {
-    V4(Right.x       , Up.x       , -Front.x      , 0) ,
-    V4(Right.y       , Up.y       , -Front.y      , 0) ,
-    V4(Right.z       , Up.z       , -Front.z      , 0) ,
-    V4(-Dot(Right,P) , -Dot(Up,P) ,  Dot(Front,P) , 1)
-  };
+  m4 Result = RotationMatrixFor(Front, Right, Up);
+  Result.E[3] = V4(-Dot(Right,P) , -Dot(Up,P) ,  Dot(Front,P) , 1);
 
   return Result;
 }

@@ -13,7 +13,7 @@ struct lighting_settings
   b8 AutoDayNightCycle;
   r32 tDaySpeed = 10.f; poof(@ui_value_range(1.f, 30.f))
 
-  r32 tDay;      poof(@ui_value_range(-PI32, PI32))
+  r32 tDay;      poof(@ui_value_range(-1.f, 1.f))
 
   v3 SunP;       poof(@ui_skip)
 

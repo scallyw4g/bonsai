@@ -867,8 +867,8 @@ DrawOctreeRecursive( engine_resources *Engine,
                           octree_node *Node,
                           octree_node *Parent,
            octree_node_priority_queue *Queue,
-           world_chunk_ptr_paged_list *MainDrawList,
-           world_chunk_ptr_paged_list *ShadowMapDrawList,
+           octree_node_ptr_paged_list *MainDrawList,
+           octree_node_ptr_paged_list *ShadowMapDrawList,
                          octree_stats *Stats,
                                   u32  Depth = 0 )
 {
@@ -925,8 +925,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
             if (HasGpuMesh(&Chunk->Mesh))
             {
-              Push(MainDrawList, Chunk);
-              Push(ShadowMapDrawList, Chunk);
+              Push(MainDrawList, Node);
+              Push(ShadowMapDrawList, Node);
             }
           }
         }
@@ -956,8 +956,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
           if (HasGpuMesh(&Chunk->Mesh))
           {
-            Push(MainDrawList, Chunk);
-            Push(ShadowMapDrawList, Chunk);
+            Push(MainDrawList, Node);
+            Push(ShadowMapDrawList, Node);
           }
         }
       }
@@ -1012,8 +1012,8 @@ MaintainWorldOctree(engine_resources *Engine)
 #endif
 
 
-  world_chunk_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
-  world_chunk_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
+  octree_node_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
+  octree_node_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
 
   // Reset world_chunk draw lists
   {
