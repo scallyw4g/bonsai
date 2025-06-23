@@ -706,7 +706,7 @@ DrainRenderQueue(engine_resources *Engine)
             if (GpuMap->Buffer.At)
             {
               RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-              RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
+              /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
             }
             Clear(&GpuMap->Buffer);
 

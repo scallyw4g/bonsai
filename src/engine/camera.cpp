@@ -95,7 +95,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 link_inline v2
 GetMouseDelta(platform *Plat)
 {
-  r32 DPToWorldModifier = -0.001f;
+  r32 DPToWorldModifier = 0.001f;
   v2 Result = Plat->MouseDP * DPToWorldModifier;
   return Result;
 }

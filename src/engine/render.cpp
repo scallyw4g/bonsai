@@ -71,7 +71,7 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 inline m4
 GetShadowMapMVP(v3 SunP)
 {
-#if 0
+#if 1
   m4 Proj = IdentityMatrix;
 #else
   m4 Proj = Orthographic(SHADOW_MAP_X,
@@ -83,7 +83,7 @@ GetShadowMapMVP(v3 SunP)
   v3i VisibleRegionCenter = V3i(GetWorld()->VisibleRegionSize)/2;
   /* v3 Target = V3(VisibleRegionCenter); */
   v3 Up     = V3(0.f, 0.f, 1.f);
-     SunP   = Normalize(V3(1.f, 1.f, 1.f));
+     /* SunP   = Normalize(V3(1.f, 1.f, 1.f)); */
   v3 Target = -1.f*SunP;
 
   /* m4 View   = LookAt(SunP, Target, Up); */

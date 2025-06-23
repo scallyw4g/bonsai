@@ -15,7 +15,7 @@ struct lighting_settings
 
   r32 tDay;      poof(@ui_value_range(-1.f, 1.f))
 
-  v3 SunP;       poof(@ui_skip)
+  v3 SunP;      poof(@ui_value_range(-1.f, 1.f))
 
   f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
   v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False)))

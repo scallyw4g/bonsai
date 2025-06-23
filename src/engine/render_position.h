@@ -96,11 +96,15 @@ inline m4
 LookAt(v3 P, v3 Target, v3 Up)
 {
   v3 Front = Normalize(Target - P);
+  Assert(WithinTolerance(0.001f, Length(Front), 1.f));
+
   v3 Right = Normalize(Cross(Front, Up));
+  Assert(WithinTolerance(0.001f, Length(Right), 1.f));
 
   // FIXME(Jesse): I believe this is backwards!  Furthermore, shouldn't we be
   // able to re-use the camera computed vectors?
   Up       = Normalize(Cross(Right, Front));
+  Assert(WithinTolerance(0.001f, Length(Up), 1.f));
 
   m4 Result = RotationMatrixFor(Front, Right, Up);
   Result.E[3] = V4(-Dot(Right,P) , -Dot(Up,P) ,  Dot(Front,P) , 1);

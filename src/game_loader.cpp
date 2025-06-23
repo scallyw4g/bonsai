@@ -228,7 +228,7 @@ main( s32 ArgCount, const char ** Args )
 
       v2 LastMouseP = Plat->MouseP;
       while ( ProcessOsMessages(Os, Plat) );
-      Plat->MouseDP = LastMouseP - Plat->MouseP;
+      Plat->MouseDP = Plat->MouseP - LastMouseP;
       /* Assert(Plat->ScreenDim.x > 0); */
       /* Assert(Plat->ScreenDim.y > 0); */
 

@@ -510,7 +510,7 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
 
       Lighting->tDay = -1.5f;
 
-      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+      /* Lighting->SunP = V3(-1.f, -1.f, 0.35f); */
 
       Lighting->DawnHSV = V3(0.11f, 0.48f, 0.87f);
       Lighting->SunHSV  = V3(0.00f, 0.00f, 0.00f);

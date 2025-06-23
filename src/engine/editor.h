@@ -555,37 +555,43 @@ poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
 
 link_internal void
-DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *ValuePtr, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
     PushTableStart(Ui);
       if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
+      r32 Value = *ValuePtr;
+
       auto Range = Max-Min;
-      r32 PercFilled = ((*Value)-Min)/Range;
+      r32 PercFilled = ((Value)-Min)/Range;
 
       r32 Width = 50.f;
 
-      if (Value)
-      {
-        cs ValueText = CS(*Value);
-        v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
+      cs ValueText = CS(Value);
+      v2 TextDim = GetDim(GetDrawBounds(ValueText, &DefaultStyle));
 
-        v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
+      v2 Offset = V2(Width/2.f-TextDim.x/2.f, 0.f);
 
-        Text(Ui, ValueText, &DefaultStyle, UiElementLayoutFlag_NoAdvance, Offset);
-      }
+      Text(Ui, ValueText, &DefaultStyle, UiElementLayoutFlag_NoAdvance, Offset);
 
-      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", Value));
+      interactable_handle BargraphButton = PushButtonStart(Ui, UiId(Window, "debug_slider", ValuePtr));
         PushSliderBar(Ui, PercFilled, UI_WINDOW_BEZEL_DEFAULT_COLOR_SATURATED, UI_WINDOW_BEZEL_DEFAULT_COLOR_MUTED, Width); // Value marker
       PushButtonEnd(Ui);
 
-      v2 Offset = {};
-      if (Pressed(Ui, &BargraphButton, &Offset))
+      v2 DragOffset = {};
+      if (Pressed(Ui, &BargraphButton, &DragOffset))
       {
-        r32 NewPerc = Clamp01(Offset.x / Width);
-        r32 NewValue = (Range*NewPerc) + Min;
-        *Value = NewValue;
+        if (Ui->Input->Shift.Pressed)
+        {
+          *ValuePtr += Ui->MouseDP->x * 0.01f;
+        }
+        else
+        {
+          r32 NewPerc = Clamp01(DragOffset.x / Width);
+          r32 NewValue = (Range*NewPerc) + Min;
+          *ValuePtr = NewValue;
+        }
       }
     PushTableEnd(Ui);
   EndColumn(Ui, Start);

@@ -109,7 +109,20 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         cs MemberName = CSz("SunP");
-        
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->SunP),
+          MemberName,
+          Params
+          , -1.f, 1.f );
+
+
+
+
+
+
+
 
         
       }

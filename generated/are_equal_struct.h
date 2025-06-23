@@ -1,4 +1,4 @@
-// src/engine/editor.h:1159:0
+// src/engine/editor.h:1165:0
 
 link_internal b32
 AreEqual(brush_settings *Thing1, brush_settings *Thing2)

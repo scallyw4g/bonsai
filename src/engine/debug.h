@@ -58,7 +58,7 @@ struct engine_debug
   b8 DrawEntityCollisionVolumes;
   b8 DrawWorldAxies;
   b8 TriggerRuntimeBreak;
-  b8 ResetAssetNodeView;
+  b8 ResetAssetNodeView = 1;
 
   b8 DrawBranchNodesWithMeshes;
   b8 DrawBranchNodes;

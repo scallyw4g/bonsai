@@ -479,7 +479,7 @@ Bonsai_Simulate(engine_resources *Resources)
       Graphics->Settings.Lighting.tDay += SafeDivide0(Plat->dt, Graphics->Settings.Lighting.tDaySpeed);
     }
 
-    UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
+    /* UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay); */
     v3 KeyLightPos = Graphics->Settings.Lighting.SunP;
     /* v3 KeyLightPos = Normalize(V3(1.f)); */
     m4 ViewProjection = GetShadowMapMVP(KeyLightPos);
