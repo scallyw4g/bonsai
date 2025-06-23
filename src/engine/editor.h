@@ -584,7 +584,7 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *ValuePtr, cs Name, r32 
       {
         if (Ui->Input->Shift.Pressed)
         {
-          *ValuePtr += Ui->MouseDP->x * 0.01f;
+          *ValuePtr += Ui->MouseDP->x * 0.001f;
         }
         else
         {
