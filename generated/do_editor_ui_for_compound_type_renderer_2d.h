@@ -444,11 +444,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         
         
         
-        cs MemberName = CSz("TexturedQuadShader");
+        cs MemberName = CSz("TexturedQuadRenderPass");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shader*, &Element->TexturedQuadShader),
+          Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass),
           MemberName,
           Params
           );
