@@ -119,14 +119,23 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 
   shadow_render_group *SG = Graphics->SG;
 
-  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  auto GL = GetGL();
+
+  GL->Disable(GL_CULL_FACE);
+  GL->CullFace(GL_BACK);
+
+  GL->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
 
-  UseShader(&SG->Shader);
+  UseShader(&SG->RenderPass);
+
+  /* auto None = u32(GL_NONE); */
+  /* GL->DrawBuffers(1, &None); */
 
   Draw(GpuMap->Buffer.At);
 
-  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GL->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
@@ -145,10 +154,8 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  // TODO(Jesse): Hoist this check out of here
   GetGL()->Disable(GL_CULL_FACE);
   Draw(GpuMap->Buffer.At);
-  /* DrawGpuBufferImmediate(GpuMap->Handles); */
   GetGL()->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
@@ -364,18 +371,11 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   SetDefaultFramebufferClearColors();
 
-  /* GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
-  /* GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
-
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
   GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
   GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  // TODO(Jesse): Why exactly would this not be necessary?
-  /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
-  /* glClear(GL_DEPTH_BUFFER_BIT); */
 
   for (s32 Index = 0; Index < 2; ++Index)
   {
@@ -1410,35 +1410,17 @@ TeardownGBufferShader(graphics *Graphics)
 
 
 
+#if 0
 link_internal void
 SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
-  shadow_render_group *SG = Graphics->SG;
-
-  if (DoSelectionMasking)
-  {
-    auto SelectionRegion = GetLevelEditor()->Selection.Region;
-    SelectionRegion.Min.Offset += V3(0.0001f);
-    SelectionRegion.Max.Offset -= V3(0.0001f);
-    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
-    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
-  }
-  else
-  {
-    Graphics->MinClipP_worldspace = {};
-    Graphics->MaxClipP_worldspace = {};
-  }
-
-  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
-
-  SetViewport(ShadowMapResolution);
-
-  UseShader(&SG->Shader);
+  shadow_render_group *SG->RenderPass);
 
   GetGL()->Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
+#endif
 
 link_internal void
 TeardownShadowMapShader(graphics *Graphics)
@@ -1682,6 +1664,7 @@ DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
 
 }
 
+#if 0
 link_internal void
 DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
 {
@@ -1696,7 +1679,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
   shadow_render_group *SG = Graphics->SG;
 
   b32 MaskSelection = False;
-  SetupShadowMapShader(World, Graphics, ShadowMapResolution, MaskSelection);
+  /* SetupShadowMapShader(World, Graphics, ShadowMapResolution, MaskSelection); */
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */
@@ -1709,6 +1692,7 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   TeardownShadowMapShader(Graphics);
 }
+#endif
 
 link_internal void
 UpdateKeyLight(graphics *Graphics, r32 tDay)
@@ -1725,6 +1709,8 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
   v3 SunColor  = HSVtoRGB(Lighting->SunHSV ) * Lighting->SunIntensity;
   v3 DuskColor = HSVtoRGB(Lighting->DuskHSV) * Lighting->DuskIntensity;
   v3 MoonColor = HSVtoRGB(Lighting->MoonHSV) * Lighting->MoonIntensity;
+
+  Assert(LengthSq(Graphics->SunBasis) > 0.f);
 
   Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
   Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);

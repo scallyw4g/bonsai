@@ -483,7 +483,7 @@ Bonsai_Simulate(engine_resources *Resources)
     v3 KeyLightPos = Graphics->Settings.Lighting.SunP;
     /* v3 KeyLightPos = Normalize(V3(1.f)); */
     m4 ViewProjection = GetShadowMapMVP(KeyLightPos);
-    Graphics->SG->Shader.ViewProjection = ViewProjection;
+    Graphics->SG->RenderPass.ViewProjection = ViewProjection;
   }
 
 
@@ -494,9 +494,9 @@ Bonsai_Simulate(engine_resources *Resources)
   /* PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera); */
   /* PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer); */
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  /* PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
+  /* PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0); */
+  /* PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap); */
 
   PushBonsaiRenderCommandGlTimerEnd(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 

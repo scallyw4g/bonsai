@@ -15,8 +15,11 @@ void main()
       vertexP_worldspace.y < MaxClipP_worldspace.y &&
       vertexP_worldspace.z < MaxClipP_worldspace.z)
   {
-    discard;
+    /* discard; */
   }
+
+  /* gl_FragDepth = gl_FragCoord.z; */
+  /* gl_FragDepth = 1.0f; */
 
   /* Depth is written linearized to the texture; our projection is orthographic */
   /* color = vec4(1,0,0,1); */

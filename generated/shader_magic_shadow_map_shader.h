@@ -1,7 +1,7 @@
 // src/engine/render/shadow_map.h:19:0
 
 link_internal void
-InitializeShadowMapShader( shadow_map_shader *Struct
+InitializeShadowMapRenderPass( shadow_map_render_pass *Struct
     , m4 ModelMatrix
   , m4 ViewProjection
   , v3 *MinClipP_worldspace
@@ -28,7 +28,7 @@ InitializeShadowMapShader( shadow_map_shader *Struct
   u32 Expected =  4 ;
   if (UniformIndex != Expected )
   {
-    Error("Shader (shadow_map_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    Error("Shader (shadow_map_render_pass) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
   }
 
 
@@ -39,7 +39,7 @@ InitializeShadowMapShader( shadow_map_shader *Struct
 }
 
 link_internal void
-UseShader( shadow_map_shader *Struct )
+UseShader( shadow_map_render_pass *Struct )
 {
   GetGL()->UseProgram(Struct->Program.ID);
 
@@ -59,7 +59,7 @@ UseShader( shadow_map_shader *Struct )
 
   if (UniformIndex !=  4  )
   {
-    Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+    Error("Shader (shadow_map_render_pass) had an incorrect number of uniform slots!");
   }
 }
 

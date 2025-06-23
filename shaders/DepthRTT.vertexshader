@@ -12,6 +12,8 @@ void main()
   /* v3 VP = vertexPosition_modelspace - V3(32.f); */
   v3 VP = vertexPosition_modelspace;
   vertexP_worldspace = (ModelMatrix * V4(VP, 1.f)).xyz;
+  /* gl_Position  = v4(vertexPosition_modelspace, 1.f); */
+  /* gl_Position.z = 0.0f; */
   gl_Position  = v4(vertexP_worldspace, 1.f);
   gl_Position = ViewProjection * V4(vertexP_worldspace, 1);
 }

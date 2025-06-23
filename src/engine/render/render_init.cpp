@@ -532,7 +532,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
   {
-    v2i SR = V2i(1024*2);
+    v2i SR = GetShadowMapResolution(EngineSettings);
     if (!InitializeShadowRenderGroup(Result, SG, SR))
     {
       SoftError("Initializing Shadow Buffer");// return False;
@@ -563,6 +563,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   {
     DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
   }
+
+  /* UpdateKeyLight(Result, Result->Settings.Lighting.tDay); */
 
   Result->PrevSettings = Result->Settings;
 
@@ -626,7 +628,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
                         &gBuffer->InverseViewMatrix,
                         &gBuffer->InverseProjectionMatrix,
-                        &SG->Shader.ViewProjection,
+                        &SG->RenderPass.ViewProjection,
 
                         &Lighting->Lights,
                          Result->Camera,
@@ -697,7 +699,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                                                         &Result->Bloom.Tex,
                                                         &Result->Transparency.AccumTex,
                                                         &Result->Transparency.RevealTex, 
-                                                        &SG->Shader.ViewProjection,
+                                                        &SG->RenderPass.ViewProjection,
                                                          Result->Camera,
                                                         &Result->Exposure,
                                                         &Result->Settings.UseLightingBloom,
