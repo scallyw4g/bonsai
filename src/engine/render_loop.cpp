@@ -209,8 +209,7 @@ DrainRenderQueue(engine_resources *Engine)
 
               case BonsaiRenderCommand_ShaderId_ShadowMap:
               {
-                NotImplemented;
-                /* SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False); */
+                SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
               } break;
             }
           } break;
@@ -704,19 +703,19 @@ DrainRenderQueue(engine_resources *Engine)
             }
 
 
-            {
-              untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-              v3 Center = {};
-              v3 RGB = V3(1,0,0);
-              v3 Diameter = V3(0.7f);
-              DrawVoxel(&Mesh, Center, RGB, Diameter);
-            }
+/*             { */
+/*               untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL); */
+/*               v3 Center = {}; */
+/*               v3 RGB = V3(1,0,0); */
+/*               v3 Diameter = V3(0.7f); */
+/*               DrawVoxel(&Mesh, Center, RGB, Diameter); */
+/*             } */
 
             Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
             if (GpuMap->Buffer.At)
             {
-              RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-              RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
+              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
+              /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
             }
             Clear(&GpuMap->Buffer);
 

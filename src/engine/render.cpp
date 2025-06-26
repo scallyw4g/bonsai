@@ -1191,7 +1191,7 @@ DrawLod( engine_resources *Engine,
     m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
-    DEBUG_VALUE(&ModelMatrix);
+    /* DEBUG_VALUE(&ModelMatrix); */
 
     m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
@@ -1408,13 +1408,30 @@ TeardownGBufferShader(graphics *Graphics)
 }
 
 
-
-
-#if 0
+#if 1
 link_internal void
 SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
-  shadow_render_group *SG->RenderPass);
+  auto *SG = Graphics->SG;
+  auto *RenderPass = &SG->RenderPass;
+
+  if (DoSelectionMasking)
+  {
+    auto SelectionRegion = GetLevelEditor()->Selection.Region;
+    SelectionRegion.Min.Offset += V3(0.0001f);
+    SelectionRegion.Max.Offset -= V3(0.0001f);
+    Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
+    Graphics->MaxClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Max);
+  }
+  else
+  {
+    Graphics->MinClipP_worldspace = {};
+    Graphics->MaxClipP_worldspace = {};
+  }
+
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  UseShader(RenderPass);
+  SetViewport(ShadowMapResolution);
 
   GetGL()->Disable(GL_CULL_FACE);
 
@@ -1571,30 +1588,32 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_block_array *DrawList, 
         /* Info("Basis(%.2V3)", &Basis); */
         Basis = GetSimSpaceP(World, Chunk->WorldP);
 
-        if (NodeIndex.Index == 1)
+#if 1
+        /* if (NodeIndex.Index == 1) */
         {
           GetEngineDebug()->PickedNode = Node;
           /* v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter); */
           v3 VisibleRegionRelativePosition = V3(Chunk->WorldP - VisibleRegionCenter) * World->ChunkDim;
-          DEBUG_VALUE(&VisibleRegionRelativePosition);
-          DEBUG_VALUE(&Basis);
+          /* DEBUG_VALUE(&VisibleRegionRelativePosition); */
+          /* DEBUG_VALUE(&Basis); */
 
           auto BasisToVRRelPos = VisibleRegionRelativePosition-Basis;
-          DEBUG_VALUE(&BasisToVRRelPos);
+          /* DEBUG_VALUE(&BasisToVRRelPos); */
 
           f32 Break = 0;
-          DEBUG_VALUE(Break);
+          /* DEBUG_VALUE(Break); */
           /* Basis = VisibleRegionRelativePosition; */
 
 
           /* Basis = V3(0.f); */
-          /* Scale = V3(1.f)/(V3(Chunk->Dim)*V3(Chunk->DimInChunks)); */
+          /* Scale = {}; */
+          /* Scale = V3(Chunk->DimInChunks); */
 
-          Basis = V3(-1.f);
-          Scale = V3(2.f)/(V3(Chunk->Dim)*V3(Chunk->DimInChunks));
+          Basis = V3(-0.9f);
+          Scale = V3(1.8f)/(V3(Chunk->Dim));
         }
+#endif
       }
-
 
       DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), Scale);
 
@@ -1604,7 +1623,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_block_array *DrawList, 
       {
         if (GetEngineDebug()->ResetAssetNodeView)
         {
-          break;
+          /* break; */
         }
       }
     }

@@ -169,8 +169,6 @@ main( s32 ArgCount, const char ** Args )
 
   while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
 
-  /* EngineResources->DebugState = Global_DebugStatePointer; */
-
   Assert(EngineResources->Stdlib.ThreadStates);
 
   Ensure( EngineApi->OnLibraryLoad(EngineResources) );
@@ -295,7 +293,6 @@ main( s32 ArgCount, const char ** Args )
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
     }
-
 #endif // EMCC
 
     /* DEBUG_FRAME_RECORD(Debug_RecordingState, &Hotkeys); */

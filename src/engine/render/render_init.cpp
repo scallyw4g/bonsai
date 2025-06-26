@@ -357,7 +357,7 @@ InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
   b32 IsDepthTexture = False;
-  AoGroup->Texture = MakeTexture_SingleChannel( ApplicationResolution/2, CSz("AoTexture"), IsDepthTexture, TextureStorageFormat_R16F);
+  AoGroup->Texture = MakeTexture_SingleChannel( ApplicationResolution/2, 0, CSz("AoTexture"), IsDepthTexture, TextureStorageFormat_R16F);
 
   FramebufferTexture(&AoGroup->FBO, &AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
