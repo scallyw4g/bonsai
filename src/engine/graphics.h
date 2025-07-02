@@ -142,7 +142,7 @@ struct graphics
 
   v3 OffsetOfWorldCenterToGrid;
 
-  v3 SunBasis;
+  v3 SunBasis = V3(0.f, 0.f, 1.f);
 
   r32 FogPower;
   v3  FogColor;

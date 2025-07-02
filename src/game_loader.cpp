@@ -377,7 +377,7 @@ main( s32 ArgCount, const char ** Args )
 
   Terminate(Os, Plat);
 
-  Info("Exiting");
+  Info("Exiting Main   thread (%d)", ThreadLocal_ThreadIndex);
 
   return 0;
 }

@@ -96,7 +96,7 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 /* #define SHADOW_WORLDSPACE_DIM (1024*2) */
 /* #define SHADOW_WORLDSPACE_DIM (1024) */
 /* #define SHADOW_WORLDSPACE_DIM (1024/2) */
-#define SHADOW_WORLDSPACE_DIM (1.0f)
+#define SHADOW_WORLDSPACE_DIM (1024)
 
 #define SHADOW_MAP_X SHADOW_WORLDSPACE_DIM
 #define SHADOW_MAP_Y SHADOW_WORLDSPACE_DIM

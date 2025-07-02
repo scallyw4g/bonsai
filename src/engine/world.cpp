@@ -540,7 +540,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (6)
+#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (10)
 
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
@@ -549,11 +549,12 @@ ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
 
   v3i Result = {};
 
-  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
+  /* if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId)) */
   {
     rect3 NodeRect = GetSimSpaceAABB(World, Node);
-    v3 GhostP = GetSimSpaceP(World, Ghost);
-    r32 Distance = DistanceToBox(GhostP, NodeRect);
+    /* v3 GhostP = GetSimSpaceP(World, Ghost); */
+    v3 TargetP = GetSimSpaceP(World, GameCamera->CurrentP);
+    r32 Distance = DistanceToBox(TargetP, NodeRect);
     s32 DistanceInChunks = s32(Distance) / s32(World->ChunkDim.x);
 
     Result = Max(V3i(1), V3i(DistanceInChunks / OCTREE_CHUNKS_PER_RESOLUTION_STEP));

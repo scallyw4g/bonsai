@@ -71,7 +71,7 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 inline m4
 GetShadowMapMVP(v3 SunP)
 {
-#if 1
+#if 0
   m4 Proj = IdentityMatrix;
 #else
   m4 Proj = Orthographic(SHADOW_MAP_X,
@@ -86,25 +86,18 @@ GetShadowMapMVP(v3 SunP)
      /* SunP   = Normalize(V3(1.f, 1.f, 1.f)); */
   v3 Target = -1.f*SunP;
 
-  /* m4 View   = LookAt(SunP, Target, Up); */
-  m4 View   = RotateTransform( SunP );
+  m4 View   = LookAt(SunP, Target, Up);
+  /* m4 View   = RotateTransform( SunP ); */
 
    /* v3 Front = V3(); */
   /* m4 View   = IdentityMatrix; */
 
-  DEBUG_VALUE(&View.E[0]);
-  DEBUG_VALUE(&View.E[1]);
-  DEBUG_VALUE(&View.E[2]);
-  DEBUG_VALUE(&View.E[3]);
-
   r32 Blank = {};
+  DEBUG_VALUE(&View);
   DEBUG_VALUE(Blank);
 
-  DEBUG_VALUE(&Proj.E[0]);
-  DEBUG_VALUE(&Proj.E[1]);
-  DEBUG_VALUE(&Proj.E[2]);
-  DEBUG_VALUE(&Proj.E[3]);
-
+  DEBUG_VALUE(&Proj);
+  DEBUG_VALUE(Blank);
 
   m4 ViewProjection = Proj * View;
   DEBUG_VALUE(&ViewProjection);
@@ -1609,8 +1602,12 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_block_array *DrawList, 
           /* Scale = {}; */
           /* Scale = V3(Chunk->DimInChunks); */
 
-          Basis = V3(-0.9f);
-          Scale = V3(1.8f)/(V3(Chunk->Dim));
+          /* Basis = V3(-0.9f); */
+          /* Scale = V3(1.8f)/(V3(Chunk->Dim)); */
+
+          /* Basis = V3(-32.f); */
+          Basis = GetSimSpaceP(World, Chunk->WorldP);
+          Scale = V3(Chunk->DimInChunks);
         }
 #endif
       }

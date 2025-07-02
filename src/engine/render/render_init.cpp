@@ -564,7 +564,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
   }
 
-  /* UpdateKeyLight(Result, Result->Settings.Lighting.tDay); */
+  UpdateKeyLight(Result, 0.f);
 
   Result->PrevSettings = Result->Settings;
 
