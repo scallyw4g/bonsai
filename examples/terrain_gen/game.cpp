@@ -83,7 +83,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
           {
             // Force engine to reload new shader
             Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
@@ -106,7 +107,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++)))
+          b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
+          if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
           {
             // Force engine to reload new shader
             Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
