@@ -8,7 +8,7 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
   , v3 ChunkResolution
 )
 {
-      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/terrain_decoration.fragmentshader"));
+      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;

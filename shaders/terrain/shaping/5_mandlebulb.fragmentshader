@@ -2,7 +2,7 @@ uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out uint Output;
+out vec4 Output;
 
 vec4 mandlebulb(vec3 p)
 {
@@ -81,8 +81,6 @@ void main()
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
-  uint PackedColor = PackRGB(ColorValue);
-
-  Output = (SolidBit << 15) | PackedColor;
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
 }

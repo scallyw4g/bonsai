@@ -12,7 +12,7 @@ struct level_header
 
   // World Params
   //
-  v3i WorldCenter;
+  v3i WorldCenter; // in world chunks ..?
   visible_region_size VisibleRegionSize;
 
   camera Camera;

@@ -7,7 +7,7 @@ InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct
   , v3 ChunkResolution
 )
 {
-      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/terrain_shaping.fragmentshader"));
+      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
   Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
 
   u32 UniformIndex = 0;

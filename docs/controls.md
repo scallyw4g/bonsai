@@ -40,6 +40,23 @@ hold `rmouse` : rotate camera
 
 # Editor
 
-`<C-s>` : Begin selection
+`<C-s>` : Begin area selection
 
-`<C-c>` : Center camera on selection
+`lclick` : Finish area selection
+
+`<C-g>` : Center camera on selection
+
+`<C-lclick>` : Multi-select
+
+## With area selected
+
+`<S-lclick>` : Scale along axis
+
+`<S-C-lclick>` : Scale along axis; both sides
+
+`<S-C-A-lclick>` : Scale along all axies
+
+`<A-lclick` : Translate in plane
+
+`<A-C-lclick>` : Translate along axis
+

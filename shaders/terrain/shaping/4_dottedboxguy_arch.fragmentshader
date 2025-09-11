@@ -2,7 +2,7 @@ uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 in vec2 UV;
-out uint Output;
+out vec4 Output;
 
 float sstep(float init_x){
     float x = clamp(init_x,-1.,1.);
@@ -125,9 +125,12 @@ void main()
   // -- end user code --
   //
 
-  uint SolidBit = NoiseValue > 0.0f ? 1u : 0u;
-  uint PackedColor = PackRGB(ColorValue);
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+  /* uint SolidBit = NoiseValue > 0.0f ? 1u : 0u; */
+  /* uint PackedColor = PackRGB(ColorValue); */
   /* uint PackedColor = 3543u; */
 
-  Output = (SolidBit << 15) | PackedColor;
+  /* Output = (SolidBit << 15) | PackedColor; */
 }

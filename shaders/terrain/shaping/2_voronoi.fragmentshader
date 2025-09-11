@@ -1,3 +1,4 @@
+
 uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
@@ -11,7 +12,7 @@ vec3 vhash(vec3 UV, vec3 offset)
 	return vec3(sin(UV.z * +offset.x) * 0.5 + 0.5, cos(UV.x* offset.y) * 0.5 + 0.5,tan(UV.y * offset.z) * 0.5 + 0.5);
 }
 
-#if 0
+#if 1
 vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
 {
   vec3 g = floor(p * CellDensity);
@@ -68,7 +69,7 @@ void main()
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
 
-  v3 Offset = V3(-1, -1, -1);
+  v3 Offset = V3(-2);
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
   // NOTE(Jesse): Set these in the -- user code -- section
@@ -107,8 +108,4 @@ void main()
 
   Output.rgb = ColorValue;
   Output.a = NoiseValue;
-  /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
-  /* uint PackedColor = PackRGB(ColorValue); */
-
-  /* Output = (SolidBit << 15) | PackedColor; */
 }

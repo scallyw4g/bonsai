@@ -15,7 +15,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
-  /* world_position WorldCenter = V3i(s32_MAX-1000); */
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
@@ -74,7 +73,10 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
-      file_traversal_node_block_array Files = GetLexicographicallySortedListOfFilesInDirectory(CSz("shaders/terrain/shaping"), GetTranArena());
+
+      file_traversal_node_block_array Files =
+        GetLexicographicallySortedListOfFilesInDirectory(
+            CSz("shaders/terrain/shaping"), GetTranArena());
 
       u32 I = 0;
       IterateOver(&Files, FileNode, FileNodeIndex)

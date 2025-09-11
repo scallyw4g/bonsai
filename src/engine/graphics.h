@@ -2,7 +2,7 @@
 
 struct terrain_shaping_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/terrain/shaping/terrain_shaping.fragmentshader") )
+      @frag_source_file("shaders/terrain/shaping/default.fragmentshader") )
 {
           shader  Program;
   shader_uniform  Uniforms[3];
@@ -28,7 +28,7 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 
 struct terrain_decoration_render_context
 poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
-      @frag_source_file("shaders/terrain/decoration/terrain_decoration.fragmentshader") )
+      @frag_source_file("shaders/terrain/decoration/default.fragmentshader") )
 {
           shader  Program;
   shader_uniform  Uniforms[4];
