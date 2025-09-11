@@ -26,13 +26,12 @@ a few appropriate system headers.
 Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
 for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
 
-## New Project
+## Links
 
-TODO(Jesse): Docs for starting a new project
+### [Build From Source](docs/01_build_process.md).
 
-## Build from Source
+### [Controls](docs/controls.md).
 
-See the docs on the [build process](docs/01_build_process.md).
 
 ![banner](screenshots/orks.png)
 

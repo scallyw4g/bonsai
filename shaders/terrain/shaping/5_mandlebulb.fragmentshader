@@ -47,8 +47,8 @@ vec4 mandlebulb(vec3 p)
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
-  f32 z = floor(gl_FragCoord.y / 66);
-  f32 y = floor(gl_FragCoord.y - (z*66));
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
 
   v3 Offset = V3(-1, -1, -1);
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
