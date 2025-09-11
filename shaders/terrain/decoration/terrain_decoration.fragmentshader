@@ -168,10 +168,6 @@ void main()
   f32 y = floor(gl_FragCoord.y - (z*66));
 
 
-  /* if (x == 0 || x == 65) { Output = V4(1,0,0,1); return; } */
-  /* if (y == 0 || y == 65) { Output = V4(1,1,0,1); return; } */
-  /* if (z == 0 || z == 65) { Output = V4(1,0,1,1); return; } */
-
   /* v3 Offset = V3(-1, -1, -1); */
   v3 Offset = V3(0);
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
@@ -192,30 +188,11 @@ void main()
   {
 
     // Put random junk here
-
-    /* f32 White = Clamp01(1.5f+white_noise(Basis)); */
-    /* v3 Green = V3(0.1f, 0.7f, 0.1f)*White; */
-    /* /1* ColorValue = V3(White); *1/ */
     f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
 
-    /* ColorValue = abs(Derivs); */
-    /* ColorValue = v3(CosTheta); */
-    /* /1* ColorValue = Green*Clamp01(0.5+CosTheta); *1/ */
-
-    v4 Cliffs = DoCliffs(Basis, Derivs);
-    ColorValue = Cliffs.xyz*Clamp01(0.8f+CosTheta);
+    v4 Cliffs = V4(0);
+    ColorValue = V3(0.1f, 0.8f, 0.1f);
     NoiseValue += Cliffs.w;
-
-    /* v3 v = voronoi_noise(Basis/v3(200,200,1800)) * 100.f; */
-    /* NoiseValue += v.x * CosTheta; */
-    /* /1* NoiseValue += v.x; *1/ */
-    /* /1* if (CosTheta < 0.85f) NoiseValue += v.x; *1/ */
-
-    /* if (NoiseValue <= 0.f) ColorValue = V3(0); */
-
-    /* ColorValue = Derivs; */
-    /* ColorValue = abs(Derivs); */
-    /* ColorValue = NoiseValue/V3(5000.f); */
 
   }
 

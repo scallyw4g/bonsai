@@ -279,57 +279,16 @@ void main()
     NoiseValue += StartingZDepth - Basis.z;
 
     f32 CliffMask = 1.f;
-#if 1
     {
-      v3 Period = V3(12000.f);
-      float Amplitude =  2000.f;
+      v3 Period = V3(1800.f);
+      float Amplitude = 200.f;
 
       v3 xyz = Basis / Period;
       v4 gn = gradient_noise_derivs(xyz);
 
-      CliffMask = (gn.x+1.f)/2.f;
-      CliffMask += 0.3f;
-      CliffMask = min(CliffMask, 1.f);
-      CliffMask = pow(CliffMask, 8);
-      CliffMask = max(CliffMask, 0.f);
-      CliffMask = CliffMask;
-
-      NoiseValue += CliffMask * Amplitude;
+      NoiseValue += gn.x * Amplitude;
     }
-#endif
 
-#if 1
-    {
-      v3 Period = V3(2000.f);
-      float Amplitude = 1200.f;
-
-      v3 xyz = Basis / Period;
-      v4 gn = gradient_noise_derivs(xyz);
-
-      f32 N = 0.33f+(1.f+gn.x)/2.f;
-      NoiseValue += pow(N, 5) * Amplitude * CliffMask;
-    }
-#endif
-
-#if 0
-    {
-      v3 Period = V3(200.f);
-      float Amplitude = 150.f;
-
-      v3 xyz = Basis / Period;
-      v4 gn = gradient_noise_derivs(xyz);
-
-      /* NoiseValue += (CosineInterpolatePointSet((gn.x+1.f)/2.f)*2.f-1.f) * Amplitude; */
-      f32 N = 0.20f+(1.f+gn.x)/2.f;
-      NoiseValue += pow(N, 5) * Amplitude;
-
-      /* NoiseValue += Smoothstep(pow(Clamp01(gn.x), 0.1)) * Amplitude; */
-
-      f32 xyContrib = 0.2f*(max(abs(Basis.x), abs(Basis.y)));
-      /* f32 xyContrib = 0.f; */
-      NoiseValue -= Basis.z - xyContrib;
-    }
-#endif
   }
 
   //
