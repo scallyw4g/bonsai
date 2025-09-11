@@ -30,10 +30,7 @@ void main()
   //
 
   {
-    if (length(ColorValue) < 0.01f)
-    {
-      ColorValue = V3(0.1f, 0.8f, 0.1f);
-    }
+    ColorValue = abs(Derivs);
   }
 
   //
