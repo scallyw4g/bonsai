@@ -5,23 +5,30 @@
 
 # Welcome to Bonsai!
 
-Bonsai is a 3D voxel-based engine built with the intention of writing both
+Bonsai is a small voxel engine, in a pot.  It's been tended to with love and
+care over the years, and has been built with the intention of writing both
 fast-paced arcade games and tile/turn-based RPGs
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
-One external dependency is the C runtime library for program startup. I have a
-back-burner task to remove the CRT entirely, though it's unclear when/if I'll
-get around to it.
+One external dependency is the C runtime library for program startup. There is
+a back-burner task to remove the CRT entirely, athough it's unclear when/if
+anyone will ever get around to it.
 
-The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
-compiler, and a few appropriate system headers.
+The only external requirements to build Bonsai are clang++ (>= version 16) and
+a few appropriate system headers.
 
 ![banner](screenshots/two_doors.png)
 
-# Quickstart
+# Getting Started
+
+## Quickstart
 
 Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
 for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
+
+## New Project
+
+TODO(Jesse): Docs for starting a new project
 
 ## Build from Source
 
@@ -76,15 +83,15 @@ See the docs on the [build process](docs/01_build_process.md).
 ## SDF Brushes
 
 * Layer-based brush GUI
-* (coming soon) Fully programmable custom brush shaders
+* (coming soon) glsl brush shaders
 
 ![banner](screenshots/brush.png)
 
 ## Performance Profiler
 
 * Manual Instrumentation
-* Memory allocation tracing
-* Per frame call-graph tracing
+* Memory allocation tracking
+* Multithreaded callgraph tracing
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
