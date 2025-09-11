@@ -28,9 +28,9 @@ for your platform of your choice (as long as your platform of choice is Windows 
 
 ## Links
 
-### [Build From Source](docs/01_build_process.md).
+### [Build From Source](docs/01_build_process.md)
 
-### [Controls](docs/controls.md).
+### [Controls](docs/controls.md)
 
 
 ![banner](screenshots/orks.png)

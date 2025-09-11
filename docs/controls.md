@@ -15,9 +15,9 @@ This is notation for the chord 'Ctrl + s'
 <C-s> 
 ```
 
-This is notation for the chord 'Alt + s'
+This is notation for the chord 'Alt + Shift + s'
 ```
-<A-s> 
+<A-S-s> 
 ```
 
 
@@ -39,6 +39,8 @@ hold `rmouse` : rotate camera
 
 
 # Editor
+
+Select the 'World Edit' tab from the top menu
 
 `<C-s>` : Begin area selection
 
