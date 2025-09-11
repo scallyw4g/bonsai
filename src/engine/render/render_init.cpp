@@ -359,6 +359,7 @@ InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
   b32 IsDepthTexture = False;
   AoGroup->Texture = MakeTexture_SingleChannel(
       ApplicationResolution/2,
+      0,
       CSz("AoTexture"),
       IsDepthTexture,
       TextureStorageFormat_R16F );
