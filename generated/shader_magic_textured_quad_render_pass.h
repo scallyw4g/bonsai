@@ -41,25 +41,32 @@ InitializeTexturedQuadRenderPass( textured_quad_render_pass *Struct
 link_internal void
 UseShader( textured_quad_render_pass *Struct )
 {
-  GetGL()->UseProgram(Struct->Program.ID);
-
-  s32 TextureUnit = 0;
-  s32 UniformIndex = 0;
-      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-  if (UniformIndex !=  4  )
+  if (Struct->Program.ID != INVALID_SHADER)
   {
-    Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots!");
+    GetGL()->UseProgram(Struct->Program.ID);
+
+    s32 TextureUnit = 0;
+    s32 UniformIndex = 0;
+            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+    if (UniformIndex !=  4  )
+    {
+      Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots!");
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled Shader (STDLIB_SHADER_PATH \"FullPassthrough.vertexshader\") | (STDLIB_SHADER_PATH \"SimpleTexture.fragmentshader\")");
   }
 }
 

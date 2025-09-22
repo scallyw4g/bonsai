@@ -132,93 +132,100 @@ InitializeLightingRenderGroup( lighting_render_group *Struct
 link_internal void
 UseShader( lighting_render_group *Struct )
 {
-  GetGL()->UseProgram(Struct->Program.ID);
-
-  s32 TextureUnit = 0;
-  s32 UniformIndex = 0;
-      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-
-
-  if (UniformIndex !=  26  )
+  if (Struct->Program.ID != INVALID_SHADER)
   {
-    Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
+    GetGL()->UseProgram(Struct->Program.ID);
+
+    s32 TextureUnit = 0;
+    s32 UniformIndex = 0;
+            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+
+
+    if (UniformIndex !=  26  )
+    {
+      Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled Shader (BONSAI_SHADER_PATH \"Lighting.vertexshader\") | (BONSAI_SHADER_PATH \"Lighting.fragmentshader\")");
   }
 }
 

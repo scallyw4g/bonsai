@@ -64,12 +64,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     window_layout *Window = GetOrCreateWindow(Ui, UiId("EasingWindow"));
     PushWindowStart(Ui, Window);
-
-    /* PushSetCustomShader(Ui, ); */
-
-    PushUntexturedQuad(Ui, V2(0), V2(128), zDepth_Text);
-
-
+    /* PushUntexturedQuad(Ui, V2(0), V2(128), zDepth_Text, 0, {}, UiElementLayoutFlag_Default); */
+    PushUntexturedQuad(Ui, V2(0), V2(128), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, &GameState->Shader);
     PushWindowEnd(Ui, Window);
   }
 

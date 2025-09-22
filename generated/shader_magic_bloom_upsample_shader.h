@@ -32,18 +32,25 @@ InitializeBloomUpsampleShader( bloom_upsample_shader *Struct
 link_internal void
 UseShader( bloom_upsample_shader *Struct )
 {
-  GetGL()->UseProgram(Struct->Program.ID);
-
-  s32 TextureUnit = 0;
-  s32 UniformIndex = 0;
-      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-
-
-  if (UniformIndex !=  1  )
+  if (Struct->Program.ID != INVALID_SHADER)
   {
-    Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots!");
+    GetGL()->UseProgram(Struct->Program.ID);
+
+    s32 TextureUnit = 0;
+    s32 UniformIndex = 0;
+            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+
+
+    if (UniformIndex !=  1  )
+    {
+      Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots!");
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/bloom_upsample.fragmentshader\")");
   }
 }
 

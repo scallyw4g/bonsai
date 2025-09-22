@@ -41,25 +41,32 @@ InitializeTerrainDecorationRenderContext( terrain_decoration_render_context *Str
 link_internal void
 UseShader( terrain_decoration_render_context *Struct )
 {
-  GetGL()->UseProgram(Struct->Program.ID);
-
-  s32 TextureUnit = 0;
-  s32 UniformIndex = 0;
-      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-  if (UniformIndex !=  4  )
+  if (Struct->Program.ID != INVALID_SHADER)
   {
-    Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
+    GetGL()->UseProgram(Struct->Program.ID);
+
+    s32 TextureUnit = 0;
+    s32 UniformIndex = 0;
+            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+    if (UniformIndex !=  4  )
+    {
+      Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/decoration/default.fragmentshader\")");
   }
 }
 

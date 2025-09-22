@@ -41,25 +41,32 @@ InitializeShadowMapShader( shadow_map_shader *Struct
 link_internal void
 UseShader( shadow_map_shader *Struct )
 {
-  GetGL()->UseProgram(Struct->Program.ID);
-
-  s32 TextureUnit = 0;
-  s32 UniformIndex = 0;
-      BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-    BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
-  ++UniformIndex;
-
-  if (UniformIndex !=  4  )
+  if (Struct->Program.ID != INVALID_SHADER)
   {
-    Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+    GetGL()->UseProgram(Struct->Program.ID);
+
+    s32 TextureUnit = 0;
+    s32 UniformIndex = 0;
+            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
+
+    if (UniformIndex !=  4  )
+    {
+      Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+    }
+  }
+  else
+  {
+    SoftError("Attempted to bind uncompiled Shader (\"shaders/DepthRTT.vertexshader\") | (\"shaders/DepthRTT.fragmentshader\")");
   }
 }
 
