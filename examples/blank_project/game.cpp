@@ -2,8 +2,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
 
 // NOTE(Jesse): This is an optional function that gets called for each worker

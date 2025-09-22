@@ -1,8 +1,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include "game_constants.h"
 #include "game_types.h"
 
 global_variable v3
@@ -457,61 +455,11 @@ GameEntityUpdate(engine_resources *Engine, entity *Entity )
 }
 
 
-BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
-{
-  Global_ThreadStates = AllThreads;
-  SetThreadLocal_ThreadIndex(ThreadIndex);
-}
-
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  b32 Result = True;
-  switch (Entry->Type)
-  {
-    default: { Result = False; } break;
-
-    // NOTE(Jesse): Here we're going to provide an implementation for
-    // initializing a world chunk.
-    case type_work_queue_entry_init_world_chunk:
-    {
-      volatile work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
-      world_chunk *Chunk = Job->Chunk;
-
-      if (ChunkIsGarbage(Chunk))
-      {
-        // NOTE(Jesse): This is an optimization; the engine marks chunks that
-        // have moved outside of the visible region as garbage.
-        Chunk->Flags = Chunk_Uninitialized;
-      }
-      else
-      {
-        s32 Period = 0; // Ignored
-        s32 Amplititude = 0; // Ignored
-        s32 StartingZDepth = -400;
-        u32 OctaveCount = 3;
-
-        octave_buffer OctaveBuf = { OctaveCount, {} };
-        OctaveBuf.Octaves = Allocate(octave, Thread->TempMemory, OctaveCount);
-
-
-          OctaveBuf.Octaves[0] = {V3(800, 800, 1700), 350, V3(1.f)};
-          OctaveBuf.Octaves[1] = {V3(400, 400, 200),  350, V3(3.f)};
-          OctaveBuf.Octaves[2] = {V3(35, 35, 25),       6, V3(2.f)};
-
-        /* OctaveBuf.Octaves[0] = {V3(1000, 1000, 700), 150, V3(1)}; */
-        /* OctaveBuf.Octaves[1] = {V3(400, 400, 200), 150, V3(1,1,2)}; */
-        /* /1* OctaveBuf.Octaves[2] = {V3(6, 6, 200), 150, V3(1,1,2)}; *1/ */
-
-        chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots|ChunkInitFlag_GenLODs);
-        /* chunk_init_flags InitFlags = chunk_init_flags(ChunkInitFlag_ComputeStandingSpots); */
-        /* chunk_init_flags InitFlags = ChunkInitFlag_Noop; */
-        InitializeChunkWithNoise( GrassyTerracedTerrain4, Thread, Chunk, Chunk->Dim, 0, V3(Period), Amplititude, StartingZDepth, HSV_GRASS_GREEN, MeshBit_Lod0, InitFlags, (void*)&OctaveBuf);
-      }
-    }
-  }
-
-  return Result;
-}
+/* BONSAI_API_WORKER_THREAD_INIT_CALLBACK() */
+/* { */
+/*   Global_ThreadStates = AllThreads; */
+/*   SetThreadLocal_ThreadIndex(ThreadIndex); */
+/* } */
 
 link_internal physics
 FireballPhysics()
@@ -809,7 +757,8 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
 
-    b32 WorldEditMode = (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit));
+    /* b32 WorldEditMode = (Editor->EngineDebugViewModeToggleBits & (1<<EngineDebugViewMode_WorldEdit)); */
+    b32 WorldEditMode = False;
     if ( GameState->TurnMode == TurnMode_Default &&
          WorldEditMode == 0 )
     {
@@ -1198,7 +1147,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 
-  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
 
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->PlayerId = GetFreeEntity(EntityTable);
@@ -1215,7 +1164,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Graphics->GameCamera.GhostId = Player->Id;
 
   u32 EnemyCount = 3;
-  v3i HalfVisibleRegion = g_VisibleRegion / 2;
+  v3i HalfVisibleRegion = V3i(VisibleRegionSize_128) / 2;
   HalfVisibleRegion.z = 0;
   for (u32 EnemyIndex = 0; EnemyIndex < EnemyCount; ++EnemyIndex)
   {

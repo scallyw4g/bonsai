@@ -1,8 +1,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
 
 
@@ -55,7 +53,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Models = AllocateGameModels(GameState, Memory, Heap);
 
   world_position WorldCenter = World_Position(0, 0, 0);
-  AllocateAndInitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateAndInitWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
 
   GameState->Player = GetFreeEntity(EntityTable);
   SpawnPlayer( Plat,

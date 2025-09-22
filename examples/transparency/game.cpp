@@ -2,32 +2,7 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
-
-BONSAI_API_WORKER_THREAD_CALLBACK()
-{
-  switch (Entry->Type)
-  {
-    InvalidCase(type_work_queue_entry_noop);
-    InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-    InvalidCase(type_work_queue_entry__bonsai_render_command);
-
-    case type_work_queue_entry_async_function_call:
-    /* case type_work_queue_entry_update_world_region: */
-    case type_work_queue_entry_rebuild_mesh:
-    case type_work_queue_entry_init_asset:
-    case type_work_queue_entry_init_world_chunk:
-    case type_work_queue_entry_copy_buffer_ref:
-    case type_work_queue_entry_copy_buffer_set:
-    case type_work_queue_entry_sim_particle_system: {} break;
-  }
-
-  return False;
-}
-
-
 
 link_internal void
 SpawnSplosionEmitters(entity_block_array *Entities)
@@ -94,7 +69,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f);
 
-  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
 
   /* World->Flags = WorldFlag_WorldCenterFollowsCameraTarget; */
 

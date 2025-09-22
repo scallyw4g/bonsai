@@ -1,8 +1,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include "game_constants.h"
 #include "game_types.h"
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
@@ -722,7 +720,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 
   /* world_position WorldCenter = {{2,2,2}}; */
-  world_position WorldCenter = g_VisibleRegion/2;
+  world_position WorldCenter = V3i(VisibleRegionSize_128)/2;
   /* world_position WorldCenter = {{}}; */
 
   /* canonical_position CameraTargetP = Canonical_Position(V3(0), {{4,4,4}}); */
@@ -733,7 +731,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
 
   random_series WorldEntropy = {54930695483};
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);

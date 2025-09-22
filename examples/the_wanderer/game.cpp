@@ -1,8 +1,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
 
 
@@ -102,7 +100,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
   world_position WorldCenter = World_Position(0, 0, 0);
-  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
   /* Resources->World->Flags = world_flag(Resources->World->Flags|WorldFlag_WorldCenterFollowsCameraTarget); */
 
   GameState->Models = AllocateGameModels(GameState, Resources->GameMemory, Heap);

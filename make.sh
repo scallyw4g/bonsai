@@ -53,9 +53,9 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
   $EXAMPLES/transparency
-  $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/project_and_level_picker
 "
+  # $EXAMPLES/tools/voxel_synthesis_rule_baker
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
@@ -334,11 +334,11 @@ function RunPoof
   # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  # TrackPid "" $!
-
-  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   TrackPid "" $!
+
+  # RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # TrackPid "" $!
