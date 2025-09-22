@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:222:0
+// src/engine/work_queue.h:224:0
 
 
 
@@ -691,6 +691,8 @@ render_to_texture_async_params render_to_texture_async_params;
 
 
 
+
+compile_shader_pair_async_params compile_shader_pair_async_params;
 
 
 

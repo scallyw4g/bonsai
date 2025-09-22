@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:302:0
+// src/engine/work_queue.h:304:0
 
 
 
@@ -701,6 +701,17 @@ WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
 
 
 
+
+struct compile_shader_pair_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_compile_shader_pair_async_params;
+  Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
+  return Result;
+}
 
 
 
