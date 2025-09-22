@@ -6,7 +6,6 @@ struct u32_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u32 *At;
   u32 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,10 +14,11 @@ link_internal u32_cursor
 U32Cursor(umm ElementCount, memory_arena* Memory)
 {
   u32 *Start = (u32*)PushStruct(Memory, sizeof(u32)*ElementCount, 1, 0);
-  u32_cursor Result = {};
-  Result.Start = Start;
-  Result.End = Start+ElementCount;
-  Result.At = Start;
+  u32_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
   return Result;
 }
 

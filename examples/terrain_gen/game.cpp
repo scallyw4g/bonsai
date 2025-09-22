@@ -29,16 +29,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
 
-  /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain; */
-
-  /* GameState->TerrainGenType = TerrainGenType_Debug; */
-  /* GameState->TerrainGenType = TerrainGenType_SinCos; */
-  /* GameState->TerrainGenType = TerrainGenType_TerracedTerrain; */
-  GameState->TerrainGenType = TerrainGenType_FBM2D;
-  /* GameState->TerrainGenType = TerrainGenType_GrassyTerracedTerrain4; */
-  /* GameState->TerrainGenType = TerrainGenType_Voronoi; */
-  /* World->Center = V3i(-22, 101, 1); */
-
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
   /* CameraGhost->P.WorldP = V3i(-53, -93, 2); */ 
@@ -54,8 +44,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  SpawnEntity(CameraGhost);
+  GameState->Shader = CompileShaderPair(CSz(STDLIB_SHADER_PATH "passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"));
 
+
+  SpawnEntity(CameraGhost);
   return GameState;
 }
 
@@ -69,6 +61,18 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, UiId("EasingWindow"));
+    PushWindowStart(Ui, Window);
+
+    /* PushSetCustomShader(Ui, ); */
+
+    PushUntexturedQuad(Ui, V2(0), V2(128), zDepth_Text);
+
+
+    PushWindowEnd(Ui, Window);
+  }
 
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);

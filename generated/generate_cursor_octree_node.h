@@ -6,7 +6,6 @@ struct octree_node_ptr_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   octree_node_ptr *At;
   octree_node_ptr *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,10 +14,11 @@ link_internal octree_node_ptr_cursor
 OctreeNodePtrCursor(umm ElementCount, memory_arena* Memory)
 {
   octree_node_ptr *Start = (octree_node_ptr*)PushStruct(Memory, sizeof(octree_node_ptr)*ElementCount, 1, 0);
-  octree_node_ptr_cursor Result = {};
-  Result.Start = Start;
-  Result.End = Start+ElementCount;
-  Result.At = Start;
+  octree_node_ptr_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
   return Result;
 }
 

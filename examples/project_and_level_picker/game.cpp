@@ -1,6 +1,4 @@
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
 
 BONSAI_API_WORKER_THREAD_CALLBACK()
@@ -17,6 +15,8 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
       Result = True;
     } break;
 
+    case type_work_queue_entry_build_chunk_mesh:
+    case type_work_queue_entry_finalize_noise_values:
     case type_work_queue_entry_async_function_call:
     /* case type_work_queue_entry_update_world_region: */
     case type_work_queue_entry_rebuild_mesh:
@@ -33,7 +33,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  AllocateWorld(World, {}, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(World, {}, WORLD_CHUNK_DIM, VisibleRegionSize_128);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   return GameState;

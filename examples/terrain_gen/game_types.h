@@ -31,5 +31,7 @@ poof(string_and_value_tables(terrain_gen_type))
 struct game_state
 {
   terrain_gen_type TerrainGenType;
+
+  shader Shader;
 };
 

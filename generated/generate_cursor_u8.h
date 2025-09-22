@@ -6,7 +6,6 @@ struct u8_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u8 *At;
   u8 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,10 +14,11 @@ link_internal u8_cursor
 U8Cursor(umm ElementCount, memory_arena* Memory)
 {
   u8 *Start = (u8*)PushStruct(Memory, sizeof(u8)*ElementCount, 1, 0);
-  u8_cursor Result = {};
-  Result.Start = Start;
-  Result.End = Start+ElementCount;
-  Result.At = Start;
+  u8_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
   return Result;
 }
 

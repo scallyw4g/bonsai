@@ -6,7 +6,6 @@ struct debug_profile_scope_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   debug_profile_scope *At;
   debug_profile_scope *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,10 +14,11 @@ link_internal debug_profile_scope_cursor
 DebugProfileScopeCursor(umm ElementCount, memory_arena* Memory)
 {
   debug_profile_scope *Start = (debug_profile_scope*)PushStruct(Memory, sizeof(debug_profile_scope)*ElementCount, 1, 0);
-  debug_profile_scope_cursor Result = {};
-  Result.Start = Start;
-  Result.End = Start+ElementCount;
-  Result.At = Start;
+  debug_profile_scope_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
   return Result;
 }
 

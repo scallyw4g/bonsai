@@ -6,7 +6,6 @@ struct voxel_stack_element_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   voxel_stack_element *At;
   voxel_stack_element *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,10 +14,11 @@ link_internal voxel_stack_element_cursor
 VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
 {
   voxel_stack_element *Start = (voxel_stack_element*)PushStruct(Memory, sizeof(voxel_stack_element)*ElementCount, 1, 0);
-  voxel_stack_element_cursor Result = {};
-  Result.Start = Start;
-  Result.End = Start+ElementCount;
-  Result.At = Start;
+  voxel_stack_element_cursor Result = {
+    .Start = Start,
+    .End = Start+ElementCount,
+    .At = Start,
+  };
   return Result;
 }
 

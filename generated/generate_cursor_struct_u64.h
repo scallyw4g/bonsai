@@ -6,7 +6,6 @@ struct u64_cursor
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u64 *At;
   u64 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 

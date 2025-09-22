@@ -1,0 +1,206 @@
+out vec2 UV;
+out v4 Output;
+
+
+
+f32
+MapNoiseValueToFinal(f32 Value)
+{
+  // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.7f, 0.85f }}, */
+  /*   {{0.6f, 0.5f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.5f, 0.7f }}, */
+  /*   {{0.35f, 0.43f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  const s32 PointCount = 3;
+  v2 Points[PointCount];
+
+  /* Points[0] = v2(1.0f, 1.0f); */
+  /* Points[1] = v2(0.f, 0.0f); */
+
+
+  // Steep
+
+  Points[0] = v2(1.0f, 1.0f);
+  Points[1] = v2(0.5f, 0.85f);
+  Points[2] = v2(0.0f, 0.0f);
+
+  // Pretty nice
+
+  /* Points[0] = v2(1.0f, 1.0f); */
+  /* Points[1] = v2(0.7f, 0.7f); */
+  /* Points[2] = v2(0.65f, 0.43f); */
+  /* Points[3] = v2(0.6f, 0.4f); */
+  /* Points[4] = v2(0.5f, 0.2f); */
+  /* Points[5] = v2(0.0f, 0.1f); */
+
+  // Pillar-y
+
+    /* Points[0] = v2(2.0f, 0.5f); */
+    /* Points[1] = v2(0.6f, 0.3f); */
+    /* Points[2] = v2(0.1f, 0.2f); */
+    /* Points[3] = v2(0.05f, 0.45f); */
+    /* Points[4] = v2(0.0f , 0.5f); */
+
+/*   v2 Points[] = */
+/*   { */
+/*     {{1.0f, 0.0f }}, */
+/*     {{0.9f, 1.0f }}, */
+/*     {{0.6f, 0.3f }}, */
+/*     {{0.1f, 0.1f }}, */
+/*     {{0.05f, 0.45f }}, */
+/*     {{0.0f , 0.5f }}, */
+/*   }; */
+
+
+
+  r32 Result = Value;
+  for (int PointIndex = 0; PointIndex < PointCount-1; ++PointIndex)
+  {
+    v2 P = Points[PointIndex];
+
+    // This is sort of a hack to fix the degenerate case when the value is 0 or 1.
+    // TODO(Jesse): Make this branchless
+    if (Value == P.x) return P.y;
+
+    if (Value > P.x)
+    {
+      v2 PNext = Points[PointIndex + 1];
+
+      r32 Range = PNext.x - P.x;
+      r32 t = (Value-P.x) / Range;
+      Result = mix(t, P.y, PNext.y);
+      break;
+    }
+  }
+
+  Result = abs(max(Result, 1.0));
+  return Result;
+}
+
+f32
+RoundToNearestMultiple(f32 NumToRound, f32 Multiple)
+{
+  f32 Remainder = mod(NumToRound, Multiple);
+  if (Remainder == 0)
+    return NumToRound;
+
+  return NumToRound + Multiple - Remainder;
+}
+
+
+f32 MapToFinal(f32 tx)
+{
+  /* Assert(Value <= 1.f); */
+  /* Assert(Value >= 0.f); */
+
+  // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
+
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.7f, 0.85f }}, */
+  /*   {{0.6f, 0.5f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 1.0f }}, */
+  /*   {{0.5f, 0.7f }}, */
+  /*   {{0.35f, 0.43f }}, */
+  /*   {{0.3f, 0.4f }}, */
+  /*   {{0.2f, 0.1f }}, */
+  /*   {{0.0f, 0.0f }}, */
+  /* }; */
+
+  /* const s32 PointCount = 2; */
+  /* v2 Points[PointCount]; */
+  /* Points[0] = v2(0.f, 0.0f); */
+  /* Points[1] = v2(1.0f, 1.0f); */
+
+  const s32 PointCount = 3;
+  v2 Points[PointCount];
+  Points[0] = v2(0.0f, 0.0f);
+  Points[1] = v2(0.2f, 1.0f);
+  Points[2] = v2(1.0f, 1.0f);
+
+  // Pretty nice
+
+  /* s32 PointCount = 6; */
+  /* v2 Points[6]; */
+  /* Points[0] = v2(1.0f, 1.0f); */
+  /* Points[1] = v2(0.7f, 0.7f); */
+  /* Points[2] = v2(0.65f, 0.43f); */
+  /* Points[3] = v2(0.6f, 0.4f); */
+  /* Points[4] = v2(0.5f, 0.2f); */
+  /* Points[5] = v2(0.0f, 0.1f); */
+
+  // Pillar-y
+  /* v2 Points[] = */
+  /* { */
+  /*   {{2.0f, 0.5f }}, */
+  /*   {{0.6f, 0.3f }}, */
+  /*   {{0.1f, 0.2f }}, */
+  /*   {{0.05f, 0.45f }}, */
+  /*   {{0.0f , 0.5f }}, */
+  /* }; */
+
+/*   v2 Points[] = */
+/*   { */
+/*     {{1.0f, 0.0f }}, */
+/*     {{0.9f, 1.0f }}, */
+/*     {{0.6f, 0.3f }}, */
+/*     {{0.1f, 0.1f }}, */
+/*     {{0.05f, 0.45f }}, */
+/*     {{0.0f , 0.5f }}, */
+/*   }; */
+
+
+
+  r32 Result = Points[0].x;
+  for (int PointIndex = 0; PointIndex < PointCount-1; ++PointIndex)
+  {
+    v2 P = Points[PointIndex];
+
+    if (tx >= P.x)
+    {
+      v2 PNext = Points[PointIndex + 1];
+      v2 Tmp = P;
+
+      r32 Range = PNext.x - P.x;
+      r32 t = Clamp01((tx-P.x) / Range);
+      Result = CosineInterpolate(t, P.y, PNext.y);
+      /* Result = mix(P.y, PNext.y, t); */
+      break;
+    }
+  }
+
+  /* Result = abs(max(Result, 1.0)); */
+  return Result;
+}
+
+void main()
+{
+
+  Output.xy = UV;
+  Output.z = 0.f;
+  Output.w = 1.f
+}
