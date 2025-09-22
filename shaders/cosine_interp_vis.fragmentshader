@@ -1,4 +1,4 @@
-out vec2 UV;
+in vec2 UV;
 out v4 Output;
 
 
@@ -199,8 +199,11 @@ f32 MapToFinal(f32 tx)
 
 void main()
 {
+  Output = V4(0,0,0,1);
 
-  Output.xy = UV;
-  Output.z = 0.f;
-  Output.w = 1.f
+  Output.xy = v2(1.f, 1.f);
+  /* Output.r = gl_FragCoord.r/512.f; */
+  /* Output.g = gl_FragCoord.g/256.f; */
+  /* Output.rg = gl_FragCoord.rg/128.f; */
+  /* Output.rg = UV; */
 }

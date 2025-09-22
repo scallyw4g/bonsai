@@ -28,6 +28,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
+  *GameState = {};
 
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
@@ -51,12 +52,21 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 }
 
 
+static b32 temp_ShaderRegistered;
+
+
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
   Assert(ThreadLocal_ThreadIndex == 0);
 
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
+
+  if (GameState->Shader.ID != INVALID_SHADER && temp_ShaderRegistered == False)
+  {
+    temp_ShaderRegistered = True;
+    RegisterShaderForHotReload(&Resources->Stdlib, &GameState->Shader);
+  }
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
