@@ -52,13 +52,6 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
   return Result;
 }
 
-link_internal void
-MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest, umm Grow)
-{
-  NotImplemented;
-}
-
-
 poof(
   func grow_buffer(buffer_t)
   {

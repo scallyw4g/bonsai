@@ -209,7 +209,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(textured_2d_geometry_buffer*, &Element->Geo),
+          Cast(ui_geometry_buffer*, &Element->Geo),
           MemberName,
           Params
           );

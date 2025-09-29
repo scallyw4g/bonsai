@@ -1,4 +1,4 @@
-// src/engine/mesh.h:324:0
+// src/engine/mesh.h:317:0
 
 link_inline void
 CopyNormalBuffer( v3_u8 *Dest, v3_u8 *Src, u32 NumVerts, Quaternion Rot)
