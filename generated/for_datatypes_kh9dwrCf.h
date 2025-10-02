@@ -406,6 +406,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
 
 
 
+
+
+
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_layer_edit_actions Type)
 {
@@ -693,12 +699,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
 
 
 
