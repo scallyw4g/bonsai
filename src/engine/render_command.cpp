@@ -31,7 +31,7 @@ link_internal void
 PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
 {
   // @vertex_handle_primal
-  if (Handles->VertexHandle) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->VertexHandle, 3); }
+  if (Handles->Handles[mesh_VertexHandle]) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->Handles[mesh_VertexHandle], 3); }
   Clear(Handles);
 }
 

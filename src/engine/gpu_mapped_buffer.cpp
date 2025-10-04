@@ -28,12 +28,12 @@ FlushBuffersToCard(gpu_mapped_element_buffer *Buffer)
 
     case DataType_v3:
     {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       BufferUnmapped = GetGL()->UnmapBuffer(GL_ARRAY_BUFFER);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       BufferUnmapped &= GetGL()->UnmapBuffer(GL_ARRAY_BUFFER);
       AssertNoGlErrors;
@@ -41,12 +41,12 @@ FlushBuffersToCard(gpu_mapped_element_buffer *Buffer)
 
     case DataType_v3_u8:
     {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->VertexAttribIPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, 0, (void*)0);
       BufferUnmapped = GetGL()->UnmapBuffer(GL_ARRAY_BUFFER);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
       BufferUnmapped &= GetGL()->UnmapBuffer(GL_ARRAY_BUFFER);
       AssertNoGlErrors;
@@ -59,7 +59,7 @@ FlushBuffersToCard(gpu_mapped_element_buffer *Buffer)
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
   GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION,       1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(  ColorIndex, matl)) );
   GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE,  sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   BufferUnmapped &= GetGL()->UnmapBuffer(GL_ARRAY_BUFFER);
@@ -78,9 +78,9 @@ AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, data_type Type, u3
 
   u32 matlSize = sizeof(matl)*ElementCount;
 
-  Assert(Handles->VertexHandle == 0);
-  Assert(Handles->NormalHandle == 0);
-  Assert(Handles->MatHandle == 0);
+  Assert(Handles->Handles[mesh_VertexHandle] == 0);
+  Assert(Handles->Handles[mesh_NormalHandle] == 0);
+  Assert(Handles->Handles[mesh_MatHandle] == 0);
 
   Handles->ElementType = Type;
   Handles->ElementCount = ElementCount;
@@ -92,18 +92,18 @@ AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, data_type Type, u3
     case DataType_v3:
     {
       u32 v3Size   = sizeof(v3)*ElementCount;
-      GetGL()->GenBuffers(3, &Handles->VertexHandle);
+      GetGL()->GenBuffers(3, &Handles->Handles[mesh_VertexHandle]);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, v3Size, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, matlSize, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
@@ -112,18 +112,18 @@ AllocateGpuElementBuffer(gpu_element_buffer_handles *Handles, data_type Type, u3
     case DataType_v3_u8:
     {
       u32 v3u8Size   = sizeof(v3_u8)*ElementCount;
-      GetGL()->GenBuffers(3, &Handles->VertexHandle);
+      GetGL()->GenBuffers(3, &Handles->Handles[mesh_VertexHandle]);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, v3u8Size, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, v3u8Size, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
       GetGL()->BufferData(GL_ARRAY_BUFFER, matlSize, 0, GL_STATIC_DRAW);
       AssertNoGlErrors;
 
@@ -144,7 +144,7 @@ AllocateGpuElementBuffer(gpu_mapped_element_buffer *GpuMap, data_type Type, u32 
 link_internal void 
 DeallocateGpuElementBuffer(gpu_element_buffer_handles *Handles)
 {
-  GetGL()->DeleteBuffers(3, &Handles->VertexHandle);
+  GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
   Clear(Handles);
 }
 
@@ -178,18 +178,18 @@ MapGpuBuffer_untextured_3d_geometry_buffer(gpu_element_buffer_handles *Handles)
     {
       u32 BufferSize = sizeof(v3)*Handles->ElementCount;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       AssertNoGlErrors;
       Buffer.Verts = (v3*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, BufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       AssertNoGlErrors;
       Buffer.Normals = (v3*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, BufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;
 
       // Color data
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
       AssertNoGlErrors;
       Buffer.Mat = (matl*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, MaterialBufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;
@@ -200,18 +200,18 @@ MapGpuBuffer_untextured_3d_geometry_buffer(gpu_element_buffer_handles *Handles)
     {
       u32 BufferSize = sizeof(v3_u8)*Handles->ElementCount;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       AssertNoGlErrors;
       Buffer.Verts = (v3_u8*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, BufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       AssertNoGlErrors;
       Buffer.Normals = (v3_u8*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, BufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;
 
       // Color data
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
       AssertNoGlErrors;
       Buffer.Mat = (matl*) GetGL()->MapBufferRange(GL_ARRAY_BUFFER, 0, MaterialBufferSize, GL_MAP_WRITE_BIT);
       AssertNoGlErrors;

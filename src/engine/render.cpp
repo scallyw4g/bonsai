@@ -840,11 +840,11 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   GetGL()->EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
   GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
   GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   AssertNoGlErrors;
 
@@ -854,7 +854,7 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
   /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
   GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
   GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
@@ -877,22 +877,22 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
     InvalidCase(DataType_Undefinded);
     case DataType_v3:
     {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
 
     case DataType_v3_u8:
     {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
       GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
       AssertNoGlErrors;
 
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
+      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
       GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
       AssertNoGlErrors;
     } break;
@@ -904,7 +904,7 @@ SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
   /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
   GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
   GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
@@ -1034,9 +1034,9 @@ poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
 link_internal void
 ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
 {
-  if (Handles->VertexHandle)
+  if (Handles->Handles[mesh_VertexHandle])
   {
-    GetGL()->DeleteBuffers(3, &Handles->VertexHandle);
+    GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
   }
   Clear(Handles);
 

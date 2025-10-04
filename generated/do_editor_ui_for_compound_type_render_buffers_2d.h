@@ -33,81 +33,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         
         
         
-        cs MemberName = CSz("SolidUIVertexBuffer");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->SolidUIVertexBuffer),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("SolidUIUVBuffer");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->SolidUIUVBuffer),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("SolidUIColorBuffer");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->SolidUIColorBuffer),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("DebugTextureArray");
                                                                 DoEditorUi(Ui,
           Window,
@@ -181,35 +106,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         
         
         
-        cs MemberName = CSz("SolidUIShader");
+        cs MemberName = CSz("Buf");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shader*, &Element->SolidUIShader),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Geo");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(ui_geometry_buffer*, &Element->Geo),
+          Cast(gpu_mapped_ui_buffer*, &Element->Buf),
           MemberName,
           Params
           );

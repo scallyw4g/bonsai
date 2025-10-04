@@ -200,7 +200,7 @@ poof(
     link_internal b32
     HasGpuMesh((container_t.name) *Buf, world_chunk_mesh_bitfield MeshBit)
     {
-      b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+      b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].Handles[mesh_VertexHandle] != 0);
       return Result;
     }
 
@@ -211,7 +211,7 @@ poof(
       b32 Result = False;
       RangeIterator(MeshIndex, MeshIndex_Count)
       {
-        Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
+        Result |= (Buf->GpuBufferHandles[MeshIndex].Handles[mesh_VertexHandle] != 0);
       }
       return Result;
     }
@@ -230,7 +230,7 @@ poof(
     link_internal b32
     HasMesh((container_t.name) *Buf, world_chunk_mesh_bitfield MeshBit)
     {
-      b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
+      b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].Handles[0] != 0);
       return Result;
     }
   }
@@ -246,7 +246,7 @@ poof(threadsafe_mesh_container(lod_element_buffer, untextured_3d_geometry_buffer
 link_internal b32
 HasGpuMesh(gpu_mapped_element_buffer *Buf)
 {
-  b32 Result = (Buf->Handles.VertexHandle != 0);
+  b32 Result = (Buf->Handles.Handles[0] != 0);
   return Result;
 }
 

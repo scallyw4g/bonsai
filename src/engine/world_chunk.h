@@ -556,14 +556,14 @@ BufferWorld(platform* Plat, untextured_3d_geometry_buffer*, untextured_3d_geomet
 link_internal untextured_3d_geometry_buffer*
 GetMeshForChunk(mesh_freelist* Freelist, u32 Mesh, memory_arena* PermMemory);
 
-link_internal untextured_3d_geometry_buffer *
-ReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+/* link_internal untextured_3d_geometry_buffer * */
+/* ReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */
 
 /* link_internal untextured_3d_geometry_buffer * */
 /* ReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */
 
-link_internal untextured_3d_geometry_buffer *
-AtomicReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 );
+/* link_internal untextured_3d_geometry_buffer * */
+/* AtomicReplaceMesh(lod_element_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */
 
 /* link_internal untextured_3d_geometry_buffer * */
 /* AtomicReplaceMesh(threadsafe_geometry_buffer *, world_chunk_mesh_bitfield , untextured_3d_geometry_buffer *, u64 ); */

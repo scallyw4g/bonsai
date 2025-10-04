@@ -33,68 +33,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
         
         
         
-        cs MemberName = CSz("VertexHandle");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->VertexHandle),
-          MemberName,
-          Params
-          );
+        cs MemberName = CSz("Handles");
+                                
 
+        if (ToggleButton(Ui, CSz("v Handles[3]"), CSz("> Handles[3]"), UiId(Window, "toggle gpu_element_buffer_handles u32 Handles", Element->Handles), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 3)
+          {
+                        DoEditorUi(Ui, Window, Element->Handles+ArrayIndex, FSz("Handles[%d]", ArrayIndex), Params);
 
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("NormalHandle");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->NormalHandle),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("MatHandle");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->MatHandle),
-          MemberName,
-          Params
-          );
-
-
-
-
+             PushNewRow(Ui); 
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
 
 
 
