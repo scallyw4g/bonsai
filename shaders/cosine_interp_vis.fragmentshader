@@ -111,13 +111,13 @@ f32 MapToFinal(f32 SampleX)
   /* Points[0] = v2(0.f, 0.0f); */
   /* Points[1] = v2(1.0f, 1.0f); */
 
-  const s32 PointCount = 5;
-  v2 Points[PointCount];
-  Points[0] = v2(0.0f, 0.0f);
-  Points[1] = v2(0.25f, 0.25f);
-  Points[2] = v2(0.5f, 0.5f);
-  Points[3] = v2(0.75f, 0.75f);
-  Points[4] = v2(1.0f, 1.0f);
+  /* const s32 PointCount = 5; */
+  /* v2 Points[PointCount]; */
+  /* Points[0] = v2(0.0f, 0.0f); */
+  /* Points[1] = v2(0.25f, 0.25f); */
+  /* Points[2] = v2(0.5f, 0.5f); */
+  /* Points[3] = v2(0.75f, 0.75f); */
+  /* Points[4] = v2(1.0f, 1.0f); */
 
 
   /* const s32 PointCount = 5; */
@@ -127,6 +127,18 @@ f32 MapToFinal(f32 SampleX)
   /* Points[2] = v2(0.22f,0.46f); */
   /* Points[3] = v2(0.4f, 0.8f); */
   /* Points[4] = v2(1.0f, 1.0f); */
+
+
+  const s32 PointCount = 7;
+  v2 Points[PointCount];
+  Points[0] = v2(0.0f, 0.0f);
+  Points[1] = v2(0.2f, 0.5f);
+  Points[2] = v2(0.22f,0.46f);
+  Points[3] = v2(0.4f, 0.8f);
+  Points[4] = v2(0.8f, 1.0f);
+  Points[5] = v2(0.9f, 0.0f);
+  Points[6] = v2(1.0f, 1.0f);
+
 
   f32 Result = -1.f;
   v2 PrevP = Points[0];
