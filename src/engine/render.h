@@ -3,12 +3,6 @@ struct world_chunk;
 
 #define GLOBAL_RENDER_SCALE_FACTOR (1.00f)
 
-// NOTE(Jesse): Must match defines in header.glsl
-#define VERTEX_POSITION_LAYOUT_LOCATION 0
-#define VERTEX_NORMAL_LAYOUT_LOCATION 1
-#define VERTEX_COLOR_LAYOUT_LOCATION 2
-#define VERTEX_TRANS_EMISS_LAYOUT_LOCATION 3
-
 
 #define DEFAULT_LINE_THICKNESS (0.3f)
 

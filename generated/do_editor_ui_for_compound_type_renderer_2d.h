@@ -57,6 +57,78 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         
         
         
+        cs MemberName = CSz("SolidQuadGeometryBuffer");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TexturedQuadRenderPass");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("CustomQuadGeometryBuffer");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("SpriteTextureArray");
                                                                 DoEditorUi(Ui,
           Window,
@@ -420,54 +492,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         
         
         
-        cs MemberName = CSz("Geo");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(ui_geometry_buffer*, &Element->Geo),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("TexturedQuadRenderPass");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("CommandBuffer");
                                                                 DoEditorUi(Ui,
           Window,
@@ -585,56 +609,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
 
         
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("SolidGeoCountLastFrame");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->SolidGeoCountLastFrame),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("TextGeoCountLastFrame");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->TextGeoCountLastFrame),
-          MemberName,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
       }
       
 

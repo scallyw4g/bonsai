@@ -87,7 +87,7 @@ DrainRenderQueue(engine_resources *Engine)
             TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
             ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
-            MapGpuBuffer_untextured_3d_geometry_buffer(Command->Dest);
+            MapGpuBuffer(Command->Dest);
 
             Assert(HasGpuMesh(Command->Dest) == 1);
 
@@ -650,6 +650,7 @@ DrainRenderQueue(engine_resources *Engine)
 
             ao_render_group     *AoGroup = Graphics->AoGroup;
 
+#if 0
             EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
             EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
 
@@ -664,7 +665,7 @@ DrainRenderQueue(engine_resources *Engine)
               Graphics->ColorPaletteTexture =
                 MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
             }
-
+#endif
 
 #if 0
             //
@@ -738,9 +739,14 @@ DrainRenderQueue(engine_resources *Engine)
 
             /* GpuMap = GetNextGpuMap(Graphics); */
 
-            // Map immediate GPU buffers for next frame
-            MapGpuBuffer_untextured_3d_geometry_buffer(GpuMap);
-            MapGpuBuffer_untextured_3d_geometry_buffer(&Graphics->Transparency.GpuBuffer);
+            // Map GPU buffers for next frame
+            MapGpuBuffer(GpuMap);
+            MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
+
+            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+            MapGpuBuffer(&Ui->TextGroup->Buf);
+            MapGpuBuffer(&Ui->CustomQuadGeometryBuffer);
+
             Assert(GpuMap->Buffer.At == 0);
 
             Graphics->RenderGate = False;
@@ -897,8 +903,13 @@ RenderThread_Main(void *ThreadStartupParams)
   }
 
   // Map immediate GPU buffers for first frame
-  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.GpuBuffers[0]);
-  MapGpuBuffer_untextured_3d_geometry_buffer(&Engine->Graphics.Transparency.GpuBuffer);
+  MapGpuBuffer(&Engine->Graphics.GpuBuffers[0]);
+  MapGpuBuffer(&Engine->Graphics.Transparency.GpuBuffer);
+
+  auto Ui = &Engine->Ui;
+  MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+  MapGpuBuffer(&Ui->TextGroup->Buf);
+  MapGpuBuffer(&Ui->CustomQuadGeometryBuffer);
 
   FullBarrier;
   Engine->Graphics.Initialized = True;

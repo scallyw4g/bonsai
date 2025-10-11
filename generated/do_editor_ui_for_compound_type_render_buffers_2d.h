@@ -82,11 +82,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
         
         
         
-        cs MemberName = CSz("Text2DShader");
+        cs MemberName = CSz("UiShader");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(shader*, &Element->Text2DShader),
+          Cast(shader*, &Element->UiShader),
           MemberName,
           Params
           );

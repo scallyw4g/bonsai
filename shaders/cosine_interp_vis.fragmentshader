@@ -201,7 +201,8 @@ void main()
 {
   Output = V4(0,0,0,1);
 
-  Output.xy = v2(1.f, 1.f);
+  /* Output.rg = v2(1.f, 1.f); */
+  Output.xy = UV;
   /* Output.r = gl_FragCoord.r/512.f; */
   /* Output.g = gl_FragCoord.g/256.f; */
   /* Output.rg = gl_FragCoord.rg/128.f; */

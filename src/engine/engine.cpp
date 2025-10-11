@@ -30,7 +30,6 @@
 #include <engine/serialize.cpp> // NOTE(Jesse): Functions acting as basis for ser/des
 
 #include <engine/shader.cpp>
-#include <engine/gpu_mapped_buffer.cpp>
 #include <engine/bloom.cpp>
 #include <engine/render/render_init.cpp>
 #include <engine/render_command.cpp>

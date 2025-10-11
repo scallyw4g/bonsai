@@ -1050,20 +1050,12 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
   CopyToGpuBuffer(Mesh, Handles);
 }
 
-#if 0
-link_internal gpu_element_buffer_handles
-MapGpuElementBuffer(gpu_element_buffer_handles *Handles)
-{
-  NotImplemented;
-}
-#endif
-
 link_internal gpu_mapped_element_buffer
 AllocateAndMapGpuBuffer(data_type Type, u32 ElementCount)
 {
   gpu_mapped_element_buffer Buf = {};
   AllocateGpuElementBuffer(&Buf, Type, ElementCount);
-  MapGpuBuffer_untextured_3d_geometry_buffer(&Buf);
+  MapGpuBuffer(&Buf);
   return Buf;
 }
 
@@ -1255,7 +1247,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
 
     // Geometry stuff
     {
-      MapGpuBuffer_untextured_3d_geometry_buffer(&RTTGroup->GeoBuffer);
+      MapGpuBuffer(&RTTGroup->GeoBuffer);
       untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
       BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
