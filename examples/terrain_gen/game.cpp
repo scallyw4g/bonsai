@@ -45,7 +45,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  CompileShaderPair_Async(RenderQ, &GameState->Shader, CSz(STDLIB_SHADER_PATH "passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"), True, True, &GameState->ShaderCompileSuccess);
+  CompileShaderPair_Async(RenderQ, &GameState->Shader, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"), True, True, &GameState->ShaderCompileSuccess);
 
   SpawnEntity(CameraGhost);
   return GameState;

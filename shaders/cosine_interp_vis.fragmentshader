@@ -104,107 +104,83 @@ RoundToNearestMultiple(f32 NumToRound, f32 Multiple)
 }
 
 
-f32 MapToFinal(f32 tx)
+f32 MapToFinal(f32 SampleX)
 {
-  /* Assert(Value <= 1.f); */
-  /* Assert(Value >= 0.f); */
-
-  // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
-
-  /* v2 Points[] = */
-  /* { */
-  /*   {{1.0f, 1.0f }}, */
-  /*   {{0.7f, 0.85f }}, */
-  /*   {{0.6f, 0.5f }}, */
-  /*   {{0.3f, 0.4f }}, */
-  /*   {{0.2f, 0.1f }}, */
-  /*   {{0.0f, 0.0f }}, */
-  /* }; */
-
-  /* v2 Points[] = */
-  /* { */
-  /*   {{1.0f, 1.0f }}, */
-  /*   {{0.5f, 0.7f }}, */
-  /*   {{0.35f, 0.43f }}, */
-  /*   {{0.3f, 0.4f }}, */
-  /*   {{0.2f, 0.1f }}, */
-  /*   {{0.0f, 0.0f }}, */
-  /* }; */
-
   /* const s32 PointCount = 2; */
   /* v2 Points[PointCount]; */
   /* Points[0] = v2(0.f, 0.0f); */
   /* Points[1] = v2(1.0f, 1.0f); */
 
-  const s32 PointCount = 3;
+  const s32 PointCount = 5;
   v2 Points[PointCount];
   Points[0] = v2(0.0f, 0.0f);
-  Points[1] = v2(0.2f, 1.0f);
-  Points[2] = v2(1.0f, 1.0f);
-
-  // Pretty nice
-
-  /* s32 PointCount = 6; */
-  /* v2 Points[6]; */
-  /* Points[0] = v2(1.0f, 1.0f); */
-  /* Points[1] = v2(0.7f, 0.7f); */
-  /* Points[2] = v2(0.65f, 0.43f); */
-  /* Points[3] = v2(0.6f, 0.4f); */
-  /* Points[4] = v2(0.5f, 0.2f); */
-  /* Points[5] = v2(0.0f, 0.1f); */
-
-  // Pillar-y
-  /* v2 Points[] = */
-  /* { */
-  /*   {{2.0f, 0.5f }}, */
-  /*   {{0.6f, 0.3f }}, */
-  /*   {{0.1f, 0.2f }}, */
-  /*   {{0.05f, 0.45f }}, */
-  /*   {{0.0f , 0.5f }}, */
-  /* }; */
-
-/*   v2 Points[] = */
-/*   { */
-/*     {{1.0f, 0.0f }}, */
-/*     {{0.9f, 1.0f }}, */
-/*     {{0.6f, 0.3f }}, */
-/*     {{0.1f, 0.1f }}, */
-/*     {{0.05f, 0.45f }}, */
-/*     {{0.0f , 0.5f }}, */
-/*   }; */
+  Points[1] = v2(0.25f, 0.25f);
+  Points[2] = v2(0.5f, 0.5f);
+  Points[3] = v2(0.75f, 0.75f);
+  Points[4] = v2(1.0f, 1.0f);
 
 
+  /* const s32 PointCount = 5; */
+  /* v2 Points[PointCount]; */
+  /* Points[0] = v2(0.0f, 0.0f); */
+  /* Points[1] = v2(0.2f, 0.5f); */
+  /* Points[2] = v2(0.22f,0.46f); */
+  /* Points[3] = v2(0.4f, 0.8f); */
+  /* Points[4] = v2(1.0f, 1.0f); */
 
-  r32 Result = Points[0].x;
-  for (int PointIndex = 0; PointIndex < PointCount-1; ++PointIndex)
+  f32 Result = -1.f;
+  v2 PrevP = Points[0];
+  for (int PointIndex = 1; PointIndex < PointCount; ++PointIndex)
   {
-    v2 P = Points[PointIndex];
+    v2 NextP = Points[PointIndex];
 
-    if (tx >= P.x)
+    if (SampleX >= PrevP.x && SampleX < NextP.x)
     {
-      v2 PNext = Points[PointIndex + 1];
-      v2 Tmp = P;
+#if 0
+      Result = NextP.y;
+      /* Result = PrevP.y; */
+#else
+      r32 Range = PrevP.x - NextP.x;
+      r32 t = Clamp01((SampleX-NextP.x) / Range);
+      Result = CosineInterpolate(t, NextP.y, PrevP.y);
+      /* Result = mix(NextP.y, Next.y, t); */
+#endif
 
-      r32 Range = PNext.x - P.x;
-      r32 t = Clamp01((tx-P.x) / Range);
-      Result = CosineInterpolate(t, P.y, PNext.y);
-      /* Result = mix(P.y, PNext.y, t); */
       break;
     }
+
+    PrevP = NextP;
   }
 
   /* Result = abs(max(Result, 1.0)); */
   return Result;
 }
 
+b32
+WithinTolerance(f32 Epsilon, f32 A, f32 B)
+{
+  b32 Result = (A+Epsilon > B && A-Epsilon < B);
+  return Result;
+}
+
+
 void main()
 {
-  Output = V4(0,0,0,1);
+  Output = V4(1,1,1,1);
 
-  /* Output.rg = v2(1.f, 1.f); */
-  Output.xy = UV;
-  /* Output.r = gl_FragCoord.r/512.f; */
-  /* Output.g = gl_FragCoord.g/256.f; */
-  /* Output.rg = gl_FragCoord.rg/128.f; */
-  /* Output.rg = UV; */
+
+  f32 Mapped = MapToFinal(UV.x);
+
+  if (Mapped == -1.f)
+  {
+    Output.rgb = v3(1.0f, 0.f, 1.0f);
+  }
+  else
+  {
+    if (WithinTolerance(0.01f, Mapped, UV.y))
+    {
+      Output.rgb = v3(0.2f, 0.2f, 0.2f);
+    }
+  }
+
 }
