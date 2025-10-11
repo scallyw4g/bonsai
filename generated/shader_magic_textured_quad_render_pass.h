@@ -1,41 +1,45 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:10:0
 
-link_internal void
-InitializeTexturedQuadRenderPass( textured_quad_render_pass *Struct
+link_internal b32
+InitializeTexturedQuadRenderPass(
+  textured_quad_render_pass *Struct
     , b32 IsDepthTexture
   , b32 HasAlphaChannel
   , s32 TextureSlice
   , v3 Tint
 )
 {
-      Struct->Program = CompileShaderPair(CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(STDLIB_SHADER_PATH "SimpleTexture.fragmentshader"));
-  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+      b32 Result = CompileShaderPair(&Struct->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(STDLIB_SHADER_PATH "SimpleTexture.fragmentshader"));
 
-  u32 UniformIndex = 0;
-
-      Struct->IsDepthTexture = IsDepthTexture;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->IsDepthTexture, "IsDepthTexture");
-
-    Struct->HasAlphaChannel = HasAlphaChannel;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->HasAlphaChannel, "HasAlphaChannel");
-
-    Struct->TextureSlice = TextureSlice;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->TextureSlice, "TextureSlice");
-
-    Struct->Tint = Tint;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Tint, "Tint");
-
-  u32 Expected =  4 ;
-  if (UniformIndex != Expected )
+  if (Result)
   {
-    Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+
+    u32 UniformIndex = 0;
+
+            Struct->IsDepthTexture = IsDepthTexture;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->IsDepthTexture, "IsDepthTexture");
+
+        Struct->HasAlphaChannel = HasAlphaChannel;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->HasAlphaChannel, "HasAlphaChannel");
+
+        Struct->TextureSlice = TextureSlice;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->TextureSlice, "TextureSlice");
+
+        Struct->Tint = Tint;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Tint, "Tint");
+
+    u32 Expected =  4 ;
+    if (UniformIndex != Expected )
+    {
+      Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    }
   }
 
 
 
   AssertNoGlErrors;
-
-  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
+  return Result;
 }
 
 link_internal void

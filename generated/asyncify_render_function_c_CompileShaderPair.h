@@ -1,11 +1,11 @@
 // src/engine/work_queue.h:334:0
 
 link_internal void
-CompileShaderPair_Async(work_queue *Queue,  cs VertShaderPath , cs FragShaderPath , b32 DumpErrors   , shader* Dest )
+CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
   compile_shader_pair_async_params Params =
   {
-      Dest,   VertShaderPath,  FragShaderPath,  DumpErrors, 
+      Result,   Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
@@ -15,6 +15,6 @@ CompileShaderPair_Async(work_queue *Queue,  cs VertShaderPath , cs FragShaderPat
 link_internal void
 DoJob(compile_shader_pair_async_params *Params)
 {
-   *Params->Dest =  CompileShaderPair( Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors );
+   *Params->Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
 }
 

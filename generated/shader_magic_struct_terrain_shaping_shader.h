@@ -1,37 +1,41 @@
 // src/engine/graphics.h:46:0
 
-link_internal void
-InitializeTerrainShapingRenderContext( terrain_shaping_render_context *Struct
+link_internal b32
+InitializeTerrainShapingRenderContext(
+  terrain_shaping_render_context *Struct
     , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
 )
 {
-      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
-  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
 
-  u32 UniformIndex = 0;
-
-      Struct->ChunkDim = ChunkDim;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
-
-    Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
-
-    Struct->ChunkResolution = ChunkResolution;
-  SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
-
-  u32 Expected =  3 ;
-  if (UniformIndex != Expected )
+  if (Result)
   {
-    Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+
+    u32 UniformIndex = 0;
+
+            Struct->ChunkDim = ChunkDim;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
+
+        Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
+
+        Struct->ChunkResolution = ChunkResolution;
+    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
+
+    u32 Expected =  3 ;
+    if (UniformIndex != Expected )
+    {
+      Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    }
   }
 
 
 
   AssertNoGlErrors;
-
-  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
+  return Result;
 }
 
 link_internal void

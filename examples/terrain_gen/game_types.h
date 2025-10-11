@@ -33,5 +33,6 @@ struct game_state
   terrain_gen_type TerrainGenType;
 
   shader Shader;
+  b32 ShaderCompileSuccess;
 };
 

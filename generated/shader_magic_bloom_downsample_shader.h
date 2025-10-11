@@ -1,32 +1,36 @@
 // src/engine/bloom.h:11:0
 
-link_internal void
-InitializeBloomDownsampleShader( bloom_downsample_shader *Struct
+link_internal b32
+InitializeBloomDownsampleShader(
+  bloom_downsample_shader *Struct
     , v2 *SrcResolution
 
 )
 {
-      Struct->Program = CompileShaderPair(CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
-  Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
 
-  u32 UniformIndex = 0;
-
-      Struct->SrcResolution = SrcResolution;
-  SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SrcResolution, "SrcResolution");
-
-
-
-  u32 Expected =  1 ;
-  if (UniformIndex != Expected )
+  if (Result)
   {
-    Error("Shader (bloom_downsample_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+
+    u32 UniformIndex = 0;
+
+            Struct->SrcResolution = SrcResolution;
+    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SrcResolution, "SrcResolution");
+
+
+
+    u32 Expected =  1 ;
+    if (UniformIndex != Expected )
+    {
+      Error("Shader (bloom_downsample_shader) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
+    }
   }
 
 
 
   AssertNoGlErrors;
-
-  RegisterShaderForHotReload(GetStdlib(), &Struct->Program);
+  return Result;
 }
 
 link_internal void

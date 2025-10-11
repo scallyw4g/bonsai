@@ -745,7 +745,6 @@ DrainRenderQueue(engine_resources *Engine)
 
             MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
             MapGpuBuffer(&Ui->TextGroup->Buf);
-            MapGpuBuffer(&Ui->CustomQuadGeometryBuffer);
 
             Assert(GpuMap->Buffer.At == 0);
 
@@ -909,7 +908,6 @@ RenderThread_Main(void *ThreadStartupParams)
   auto Ui = &Engine->Ui;
   MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
   MapGpuBuffer(&Ui->TextGroup->Buf);
-  MapGpuBuffer(&Ui->CustomQuadGeometryBuffer);
 
   FullBarrier;
   Engine->Graphics.Initialized = True;

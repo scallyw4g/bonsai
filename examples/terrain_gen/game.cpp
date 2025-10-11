@@ -45,14 +45,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  CompileShaderPair_Async(RenderQ, CSz(STDLIB_SHADER_PATH "passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"), True, &GameState->Shader);
+  CompileShaderPair_Async(RenderQ, &GameState->Shader, CSz(STDLIB_SHADER_PATH "passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"), True, True, &GameState->ShaderCompileSuccess);
 
   SpawnEntity(CameraGhost);
   return GameState;
 }
 
-
-static b32 temp_ShaderRegistered;
 
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
@@ -61,12 +59,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Resources);
-
-  if (GameState->Shader.ID != INVALID_SHADER && temp_ShaderRegistered == False)
-  {
-    temp_ShaderRegistered = True;
-    RegisterShaderForHotReload(&Resources->Stdlib, &GameState->Shader);
-  }
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
