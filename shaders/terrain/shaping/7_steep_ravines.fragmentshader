@@ -4,82 +4,6 @@ uniform v3 ChunkResolution;
 in vec2 UV;
 out v4 Output;
 
-f32
-RoundToNearestMultiple(f32 NumToRound, f32 Multiple)
-{
-  f32 Remainder = mod(NumToRound, Multiple);
-  if (Remainder == 0)
-    return NumToRound;
-
-  return NumToRound + Multiple - Remainder;
-}
-
-
-f32 MapToFinal(f32 SampleX)
-{
-
-  /* const s32 PointCount = 2; */
-  /* v2 Points[PointCount]; */
-  /* Points[0] = v2(0.f, 0.0f); */
-  /* Points[1] = v2(1.0f, 1.0f); */
-
-  /* const s32 PointCount = 5; */
-  /* v2 Points[PointCount]; */
-  /* Points[0] = v2(0.0f, 0.0f); */
-  /* Points[1] = v2(0.25f, 0.25f); */
-  /* Points[2] = v2(0.5f, 0.5f); */
-  /* Points[3] = v2(0.75f, 0.75f); */
-  /* Points[4] = v2(1.0f, 1.0f); */
-
-
-  /* const s32 PointCount = 5; */
-  /* v2 Points[PointCount]; */
-  /* Points[0] = v2(0.0f, 0.0f); */
-  /* Points[1] = v2(0.2f, 0.5f); */
-  /* Points[2] = v2(0.22f,0.46f); */
-  /* Points[3] = v2(0.4f, 0.8f); */
-  /* Points[4] = v2(0.8f, 1.0f); */
-  /* /1* Points[5] = v2(1.0f, 0.0f); *1/ */
-
-  const s32 PointCount = 7;
-  v2 Points[PointCount];
-  Points[0] = v2(0.0f, 0.0f);
-  Points[1] = v2(0.2f, 0.5f);
-  Points[2] = v2(0.22f,0.46f);
-  Points[3] = v2(0.4f, 0.8f);
-  Points[4] = v2(0.8f, 1.0f);
-  Points[5] = v2(0.9f, 0.0f);
-  Points[6] = v2(1.0f, 1.0f);
-
-  f32 Result = -1.f;
-  v2 PrevP = Points[0];
-  for (int PointIndex = 1; PointIndex < PointCount; ++PointIndex)
-  {
-    v2 NextP = Points[PointIndex];
-
-    if (SampleX >= PrevP.x && SampleX < NextP.x)
-    {
-#if 0
-      Result = NextP.y;
-      /* Result = PrevP.y; */
-#else
-      r32 Range = PrevP.x - NextP.x;
-      r32 t = Clamp01((SampleX-NextP.x) / Range);
-      Result = CosineInterpolate(t, NextP.y, PrevP.y);
-      /* Result = mix(NextP.y, Next.y, t); */
-#endif
-
-      break;
-    }
-
-    PrevP = NextP;
-  }
-
-  /* Result = abs(max(Result, 1.0)); */
-  return Result;
-}
-
-
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
@@ -102,22 +26,20 @@ void main()
     /* f32 StartingZDepth = 10000; */
     f32 StartingZDepth = 2000;
     /* f32 StartingZDepth = 0; */
-    s32 Octaves = 3;
+    s32 Octaves = 1;
     NoiseValue = StartingZDepth;
 
     v3 Deriv = v3(0.f);
     /* f32 warp = 0.f; */
 
-    v3 warp = v3(gradient_noise_derivs(Basis).x);
-    /* NoiseValue += gn.x*Amplitude; */
-    /* NoiseValue += MapToFinal((gn.x+1.f)/2.f)*Amplitude; */
+    /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
+    v3 warp = v3(0.f);
 
 
     for (s32 Octave = 1; Octave <= Octaves; ++Octave)
     {
       v3 xyz = Basis / (Period/Octave);
       v4 gn = gradient_noise_derivs(xyz+warp);
-      /* NoiseValue += gn.x*(Amplitude/Octave); */
       NoiseValue += MapToFinal((gn.x+1.f)/2.f)*(Amplitude/Octave);
     }
 

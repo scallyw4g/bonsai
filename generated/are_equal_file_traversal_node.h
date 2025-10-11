@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/file.h:57:0
+// external/bonsai_stdlib/src/file.h:28:0
 
 link_internal b32
 AreEqual(file_traversal_node *Thing1, file_traversal_node *Thing2)

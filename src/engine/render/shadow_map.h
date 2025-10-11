@@ -56,7 +56,7 @@ InitializeShadowRenderGroup(graphics *Graphics, shadow_render_group *SG, v2i Sha
   GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  InitializeShadowMapShader( &SG->Shader , IdentityMatrix, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace );
+  Ensure(InitializeShadowMapShader( &SG->Shader , IdentityMatrix, IdentityMatrix, &Graphics->MinClipP_worldspace, &Graphics->MaxClipP_worldspace ));
 
   AssertNoGlErrors;
   return true;
