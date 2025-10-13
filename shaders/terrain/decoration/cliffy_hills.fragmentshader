@@ -26,7 +26,7 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
   /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
 
   // Grassy ripples
-#if 1
+#if 0
   {
     v4 gWobble = gradient_noise_derivs(Basis/v3(30, 30, 80));
     NoiseValue += gWobble.x*Grassness*50;
@@ -41,13 +41,15 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
   v3 BaseCliffColor = V3(0.08f);
   v3 CliffColor = BaseCliffColor;
   f32 CliffValue = 0.f;
+
   // Main cliffs
   {
     v3 v = voronoi_noise(Basis/v3(200,200,1800));
-    CliffValue += (v.x*200)*Cliffness;
-    CliffValue += (v.y*50)*Cliffness;
-    CliffColor = mix(CliffColor, BaseCliffColor, clamp(10*Cliffness*v.x,0,1));
+    CliffValue += (v.x*100)*Cliffness;
+    CliffValue += (v.y*20)*Cliffness;
+    CliffColor = mix(CliffColor, BaseCliffColor, clamp(10.f*Cliffness*v.x,0,1));
   }
+
 #if 0
   {
     v3 v = voronoi_noise(Basis/v3(100,100,600));
@@ -79,13 +81,13 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
   }
 #endif
 
-  if (CliffValue > 12.f)
+  /* if (CliffValue > 12.f) */
   {
     NoiseValue += CliffValue;
     ColorValue = CliffColor;
   }
 
-#if 1
+#if 0
 
   f32 gravel_patch_stregth  = value_noise_derivs(150+(Basis/300)).x;
       gravel_patch_stregth += value_noise_derivs(150+(Basis/160)).x;
@@ -97,6 +99,7 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
 
 
   // Grass & Flowers
+#if 0
   {
     f32 n = clamp(rng2d-0.7f, 0.f, 1.f);
 
@@ -132,6 +135,7 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
     /* ColorValue = V3(tFlower); */
     /* ColorValue = V3(GrassValue/1.f); */
   }
+#endif
 
   // Rocky edges
   /* { */
@@ -161,6 +165,45 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
   return V4(ColorValue, NoiseValue);
 }
 
+v4 DoCliffs_v2(v3 Basis, v3 Deriv)
+{
+  v3 Down = V3(0, 0, -1);
+
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  /* NoiseValue = 100.f+MapNoiseValueToFinal(NoiseValue); */
+
+  /* Deriv = normalize(Deriv); */
+  /* Deriv.xy = abs(Deriv.xy); */
+  f32 Cliffness = Clamp01(0.8f+dot(Down, Deriv));
+  f32 Grassness = Clamp01(.15f-Cliffness);
+
+  ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness);
+  /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
+  /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
+
+  /* f32 rng2d = white_noise(Basis.xy); */
+  /* f32 rng3d = white_noise(Basis); */
+
+  v3 BaseCliffColor = V3(0.08f);
+  v3 CliffColor = BaseCliffColor;
+  f32 CliffValue = 0.f;
+
+  /* CliffColor = mix(V3(1,0,0), BaseCliffColor, Cliffness); */
+
+  /* // Main cliffs */
+  /* { */
+  /*   v3 v = voronoi_noise(Basis/v3(200,200,1800)); */
+  /*   CliffValue += (v.x*100)*Cliffness; */
+  /*   CliffValue += (v.y*20)*Cliffness; */
+  /*   CliffColor = mix(CliffColor, BaseCliffColor, clamp(10.f*Cliffness*v.x,0,1)); */
+  /* } */
+
+
+  return V4(CliffColor, CliffValue);
+}
+
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
@@ -187,8 +230,9 @@ void main()
     // Put random junk here
     f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
 
-    v4 Cliffs = DoCliffs(ColorValue, Derivs);
-    ColorValue = V3(0.1f, 0.8f, 0.1f);
+    v4 Cliffs = DoCliffs_v2(Basis, Derivs);
+    /* ColorValue = V3(0.1f, 0.8f, 0.1f); */
+    ColorValue = Cliffs.rgb;
     NoiseValue += Cliffs.w;
 
   }

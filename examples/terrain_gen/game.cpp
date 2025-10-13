@@ -45,13 +45,25 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  CompileShaderPair_Async(RenderQ, &GameState->Shader, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "cosine_interp_vis.fragmentshader"), True, True, &GameState->ShaderCompileSuccess);
+  CompileShaderPair_Async( RenderQ,
+                          &GameState->Shader,
+                           CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"),
+                           CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"),
+                           True, True, &GameState->ShaderCompileSuccess);
 
   SpawnEntity(CameraGhost);
   return GameState;
 }
 
 
+#define MAX_EASING_POINTS 8
+
+struct easing_function
+{
+  cs Name;
+  v2 Points[MAX_EASING_POINTS];
+  u32 PointCount;
+};
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
@@ -64,7 +76,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 Speed = 80.f;
 
   {
-    window_layout *Window = GetOrCreateWindow(Ui, UiId("EasingWindow"));
+    window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");
     PushWindowStart(Ui, Window);
     PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, &GameState->Shader);
     PushWindowEnd(Ui, Window);

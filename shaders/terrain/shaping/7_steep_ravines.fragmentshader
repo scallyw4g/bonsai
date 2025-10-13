@@ -40,7 +40,7 @@ void main()
     {
       v3 xyz = Basis / (Period/Octave);
       v4 gn = gradient_noise_derivs(xyz+warp);
-      NoiseValue += MapToFinal((gn.x+1.f)/2.f)*(Amplitude/Octave);
+      NoiseValue += RemapSample((gn.x+1.f)/2.f)*(Amplitude/Octave);
     }
 
     v3 Up = V3(0, 0, 1);

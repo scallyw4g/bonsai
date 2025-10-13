@@ -32,6 +32,10 @@ for your platform of your choice (as long as your platform of choice is Windows 
 
 ### [Controls](docs/controls.md)
 
+### Discord Server
+
+https://discord.gg/kmRpgXBh75
+
 
 ![banner](screenshots/orks.png)
 

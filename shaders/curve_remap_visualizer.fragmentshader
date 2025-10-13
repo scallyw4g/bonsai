@@ -1,0 +1,43 @@
+in vec2 UV;
+out v4 Output;
+
+
+b32
+WithinTolerance(f32 Epsilon, f32 A, f32 B)
+{
+  b32 Result = (A+Epsilon > B && A-Epsilon < B);
+  return Result;
+}
+
+
+void main()
+{
+  Output = V4(1,1,1,1);
+
+
+  f32 Mapped = RemapSample(UV.x);
+
+  if (Mapped == -1.f)
+  {
+    Output.rgb = v3(1.0f, 0.f, 1.0f);
+  }
+  else
+  {
+    r32 ThicknessInUVCoordinates = 0.01f;
+#if 0
+    if (Mapped > UV.y)
+    {
+      Output.rgb = V3(0.2);
+    }
+#else
+    if (WithinTolerance(0.01f, Mapped, UV.y))
+    {
+      r32 Dist = abs(UV.y - Mapped);
+
+      r32 t = Dist/ThicknessInUVCoordinates;
+      Output.rgb = mix(v3(0), V3(1), t);
+    }
+#endif
+  }
+
+}
