@@ -88,6 +88,36 @@ poof(shader_magic(terrain_finalize_render_context))
 #include <generated/shader_magic_struct_terrain_finalize_render_context.h>
 
 
+struct easing_function_visualizer_render_pass
+poof(
+    @render_pass
+    @vert_source_file(STDLIB_SHADER_PATH "FullPassthrough.vertexshader")
+    @frag_source_file(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader")
+  )
+{
+  shader Program;
+  shader_uniform Uniforms[1];
+
+  b32 Ignored;    poof(@uniform)
+};
+
+poof(
+  for_datatypes(all) @code_fragment
+  func (struct_t)
+  {
+    struct_t.has_tag(render_pass)?
+    {
+      shader_magic(struct_t)
+    }
+  }
+  func (enum_t) {}
+)
+#include <generated/for_datatypes_IXWy6K9V.h>
+
+/* poof(asyncify_render_function_h(InitializeEasingFunctionVisualizerRenderPass)) */
+/* #include <generated/asyncify_render_function_h_InitializeEasingFunctionVisualizerRenderPass.h> */
+
+
 struct composite_render_group
 {
   shader Shader;

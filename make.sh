@@ -334,11 +334,11 @@ function RunPoof
   # RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   # TrackPid "" $!
 
-  RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
-  TrackPid "" $!
-
-  # RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
+
+  RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  TrackPid "" $!
 
   # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # TrackPid "" $!

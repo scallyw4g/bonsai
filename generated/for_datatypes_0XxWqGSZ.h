@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:304:0
+// src/engine/work_queue.h:269:0
 
 
 
@@ -41,6 +41,17 @@
 
 
 
+
+struct use_shader_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( use_shader_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_use_shader_async_params;
+  Result.work_queue_entry_async_function_call.use_shader_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -702,7 +713,6 @@ WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
 
 
 
-
 struct compile_shader_pair_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
@@ -713,6 +723,8 @@ WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
+
+
 
 
 

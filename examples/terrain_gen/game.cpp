@@ -4,6 +4,8 @@
 
 #include "game_types.h"
 
+
+
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
   SetThreadLocal_ThreadIndex(Thread->Index);
@@ -56,14 +58,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 }
 
 
-#define MAX_EASING_POINTS 8
-
 struct easing_function
 {
   cs Name;
-  v2 Points[MAX_EASING_POINTS];
-  u32 PointCount;
+  v2_static_cursor_16 Points;
 };
+
+
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
@@ -78,9 +79,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");
     PushWindowStart(Ui, Window);
-    PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, &GameState->Shader);
+    PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseShader, &GameState->Shader);
     PushWindowEnd(Ui, Window);
   }
+
+  easing_function Test = {
+    .Name = CSz("Test"),
+    .Points = {
+      .Start = {
+        V2(0,0),
+        V2(1,1),
+      },
+      .At = 2,
+    },
+  };
 
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);

@@ -103,12 +103,6 @@
 
 
 
-
-
-
-
-
-
 link_internal counted_string
 ToStringPrefixless(ui_brush_layer_actions Type)
 {
@@ -273,12 +267,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
 
 
 
@@ -1129,12 +1117,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
 
 
 

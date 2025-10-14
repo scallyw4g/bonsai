@@ -55,9 +55,9 @@ struct work_queue_entry_copy_buffer_set
 };
 
 struct world_chunk;
-struct work_queue_entry_init_world_chunk {
+struct work_queue_entry_init_world_chunk
+{
   world_chunk *Chunk;
-  /* world_chunk_mesh_bitfield MeshBit; */
 };
 
 struct work_queue_entry_finalize_noise_values
@@ -76,36 +76,16 @@ struct work_queue_entry_build_chunk_mesh
   octree_node *DestNode;
 };
 
-#if 1
 struct work_queue_entry_rebuild_mesh
 {
   world_chunk *Chunk;
   chunk_init_flags Flags;
 };
-#endif
 
 
 
 
 
-
-#if 0
-struct work_queue_entry_update_world_region
-{
-  world_edit_brush_constraints Brush;
-
-  // TODO(Jesse): These feel like part of the brush?
-  v3  HSVColor;
-  u8  Transparency;
-  b32 PersistWhitespace;
-
-  cp MinP;
-  cp MaxP;
-
-  world_chunk **DestChunkBuffer;
-  u32 ChunkCount;
-};
-#endif
 
 struct asset;
 struct work_queue_entry_init_asset
@@ -122,14 +102,6 @@ struct work_queue_entry__align_to_cache_line_helper
   u8 Pad[(CACHE_LINE_SIZE*4) -8];
 };
 CAssert( (sizeof(work_queue_entry__align_to_cache_line_helper)+8) % CACHE_LINE_SIZE == 0);
-
-
-
-
-
-
-global_variable voxel Global_UnsetVoxel = { 0xff, 0xffff };
-
 
 
 
@@ -180,22 +152,15 @@ poof(asyncify_render_function_h(RenderToTexture))
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
 
+
 poof(asyncify_render_function_h(DrawLod))
 #include <generated/asyncify_render_function_h_DrawLod.h>
 
 poof(asyncify_render_function_h(CompileShaderPair))
 #include <generated/asyncify_render_function_h_CompileShaderPair.h>
 
-
-
-
-
-
-
-
-
-
-
+poof(asyncify_render_function_h(UseShader))
+#include <generated/asyncify_render_function_h_UseShader.h>
 
 
 
@@ -334,25 +299,42 @@ poof(asyncify_render_function_c(DrawLod))
 poof(asyncify_render_function_c(CompileShaderPair))
 #include <generated/asyncify_render_function_c_CompileShaderPair.h>
 
+poof(asyncify_render_function_c(UseShader))
+#include <generated/asyncify_render_function_c_UseShader.h>
+
+/* poof(asyncify_render_function_c(InitializeEasingFunctionVisualizerRenderPass)) */
+/* #include <generated/asyncify_render_function_c_InitializeEasingFunctionVisualizerRenderPass.h> */
+
 link_internal void
-DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Job)
+DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
 {
-  tswitch(Job)
+  tswitch(Task)
   {
     {
-      tmatch(render_to_texture_async_params, Job, RenderToTexture);
-      DoJob(RenderToTexture);
+      tmatch(render_to_texture_async_params, Task, Job);
+      DoJob(Job);
     } break;
 
     {
-      tmatch(draw_lod_async_params, Job, DrawLodParams);
-      DoJob(DrawLodParams);
+      tmatch(draw_lod_async_params, Task, Job);
+      DoJob(Job);
     } break;
 
     {
-      tmatch(compile_shader_pair_async_params, Job, RenderToTexture);
-      DoJob(RenderToTexture);
+      tmatch(compile_shader_pair_async_params, Task, Job);
+      DoJob(Job);
     } break;
+
+    {
+      tmatch(use_shader_async_params, Task, Job);
+      DoJob(Job);
+    } break;
+
+    /* { */
+      /* tmatch(easing_function_visualizer_render_pass_async_params, Task, Job); */
+      /* DoJob(Job); */
+    /* } break; */
+
   }
 }
 
