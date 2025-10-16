@@ -32,8 +32,7 @@ struct game_state
 {
   terrain_gen_type TerrainGenType;
 
+  easing_function EasingFunction;
   easing_function_visualizer_render_pass EasingFunctionVisRP;
-  /* shader Shader; */
-  /* b32 ShaderCompileSuccess; */
 };
 

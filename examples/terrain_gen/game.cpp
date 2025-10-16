@@ -46,25 +46,17 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  InitializeEasingFunctionVisualizerRenderPass_Async( RenderQ, &GameState->EasingFunctionVisRP, False, 0);
-
-  /* CompileShaderPair_Async( RenderQ, */
-  /*                         &GameState->Shader, */
-  /*                          CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), */
-  /*                          CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"), */
-  /*                          True, True, &GameState->ShaderCompileSuccess); */
+  auto *EasingFunction = &GameState->EasingFunction;
+  InitializeEasingFunctionVisualizerRenderPass_Async(
+       RenderQ,
+      &GameState->EasingFunctionVisRP,
+       EasingFunction->Points.Start,
+       EasingFunction->Points.At,
+       0);
 
   SpawnEntity(CameraGhost);
   return GameState;
 }
-
-
-struct easing_function
-{
-  cs Name;
-  v2_static_cursor_16 Points;
-};
-
 
 
 BONSAI_API_MAIN_THREAD_CALLBACK()

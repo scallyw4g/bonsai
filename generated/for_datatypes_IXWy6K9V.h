@@ -1,4 +1,4 @@
-// src/engine/graphics.h:98:0
+// src/engine/graphics.h:104:0
 
 
 
@@ -12,7 +12,7 @@ link_internal b32
 poof()
 InitializeLightingRenderGroup
 (
-  lighting_render_group *Struct
+  lighting_render_group *Element
     , texture *gColor
   , texture *gNormal
   , texture *gDepth
@@ -42,91 +42,91 @@ InitializeLightingRenderGroup
 
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->gColor = gColor;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->gColor, "gColor");
+            Element->gColor = gColor;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->gColor, "gColor" );
 
-        Struct->gNormal = gNormal;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->gNormal, "gNormal");
+        Element->gNormal = gNormal;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->gNormal, "gNormal" );
 
-        Struct->gDepth = gDepth;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->gDepth, "gDepth");
+        Element->gDepth = gDepth;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->gDepth, "gDepth" );
 
-        Struct->shadowMap = shadowMap;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->shadowMap, "shadowMap");
+        Element->shadowMap = shadowMap;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->shadowMap, "shadowMap" );
 
-        Struct->Ssao = Ssao;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->Ssao, "Ssao");
+        Element->Ssao = Ssao;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->Ssao, "Ssao" );
 
-        Struct->TransparencyAccumTex = TransparencyAccumTex;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->TransparencyAccumTex, "TransparencyAccumTex");
+        Element->TransparencyAccumTex = TransparencyAccumTex;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->TransparencyAccumTex, "TransparencyAccumTex" );
 
-        Struct->TransparencyCountTex = TransparencyCountTex;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->TransparencyCountTex, "TransparencyCountTex");
+        Element->TransparencyCountTex = TransparencyCountTex;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->TransparencyCountTex, "TransparencyCountTex" );
 
-        Struct->BravoilMyersOIT = BravoilMyersOIT;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->BravoilMyersOIT, "BravoilMyersOIT");
+        Element->BravoilMyersOIT = BravoilMyersOIT;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->BravoilMyersOIT, "BravoilMyersOIT" );
 
-        Struct->BravoilMcGuireOIT = BravoilMcGuireOIT;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->BravoilMcGuireOIT, "BravoilMcGuireOIT");
+        Element->BravoilMcGuireOIT = BravoilMcGuireOIT;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->BravoilMcGuireOIT, "BravoilMcGuireOIT" );
 
-        Struct->InverseViewMatrix = InverseViewMatrix;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->InverseViewMatrix, "InverseViewMatrix");
+        Element->InverseViewMatrix = InverseViewMatrix;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->InverseViewMatrix, "InverseViewMatrix" );
 
-        Struct->InverseProjectionMatrix = InverseProjectionMatrix;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->InverseProjectionMatrix, "InverseProjectionMatrix");
+        Element->InverseProjectionMatrix = InverseProjectionMatrix;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->InverseProjectionMatrix, "InverseProjectionMatrix" );
 
-        Struct->ShadowMVP = ShadowMVP;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ShadowMVP, "ShadowMVP");
+        Element->ShadowMVP = ShadowMVP;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->ShadowMVP, "ShadowMVP" );
 
-        Struct->LightColors = LightColors;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->LightColors, "LightColors");
+        Element->LightColors = LightColors;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightColors, "LightColors" );
 
-        Struct->LightPositions = LightPositions;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->LightPositions, "LightPositions");
+        Element->LightPositions = LightPositions;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightPositions, "LightPositions" );
 
-        Struct->LightIndexToUV = LightIndexToUV;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->LightIndexToUV, "LightIndexToUV");
+        Element->LightIndexToUV = LightIndexToUV;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightIndexToUV, "LightIndexToUV" );
 
-        Struct->LightCount = LightCount;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->LightCount, "LightCount");
+        Element->LightCount = LightCount;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightCount, "LightCount" );
 
-        Struct->Camera = Camera;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->Camera, "Camera");
+        Element->Camera = Camera;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->Camera, "Camera" );
 
-        Struct->SunPosition = SunPosition;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SunPosition, "SunPosition");
+        Element->SunPosition = SunPosition;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->SunPosition, "SunPosition" );
 
-        Struct->SunColor = SunColor;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SunColor, "SunColor");
+        Element->SunColor = SunColor;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->SunColor, "SunColor" );
 
-        Struct->FogColor = FogColor;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->FogColor, "FogColor");
+        Element->FogColor = FogColor;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->FogColor, "FogColor" );
 
-        Struct->FogPower = FogPower;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->FogPower, "FogPower");
+        Element->FogPower = FogPower;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->FogPower, "FogPower" );
 
-        Struct->UseSsao = UseSsao;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->UseSsao, "UseSsao");
+        Element->UseSsao = UseSsao;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseSsao, "UseSsao" );
 
-        Struct->UseShadowMapping = UseShadowMapping;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->UseShadowMapping, "UseShadowMapping");
+        Element->UseShadowMapping = UseShadowMapping;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseShadowMapping, "UseShadowMapping" );
 
-        Struct->UseLightingBloom = UseLightingBloom;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->UseLightingBloom, "UseLightingBloom");
+        Element->UseLightingBloom = UseLightingBloom;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseLightingBloom, "UseLightingBloom" );
 
-        Struct->ApplicationResolution = ApplicationResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ApplicationResolution, "ApplicationResolution");
+        Element->ApplicationResolution = ApplicationResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->ApplicationResolution, "ApplicationResolution" );
 
-        Struct->ShadowMapResolution = ShadowMapResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ShadowMapResolution, "ShadowMapResolution");
+        Element->ShadowMapResolution = ShadowMapResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->ShadowMapResolution, "ShadowMapResolution" );
 
 
 
@@ -145,90 +145,90 @@ InitializeLightingRenderGroup
 
 link_internal void
 UseRenderPass_lighting_render_group
-( lighting_render_group *Struct )
+( lighting_render_group *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
 
@@ -246,22 +246,22 @@ UseRenderPass_lighting_render_group
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_lighting_render_group( void *Struct )
+UseRenderPass_lighting_render_group( void *Element )
 {
-  UseRenderPass_lighting_render_group( Cast(lighting_render_group *, Struct) );
+  UseRenderPass_lighting_render_group( Cast(lighting_render_group *, Element) );
 }
 
 link_internal void
-UseRenderPass( lighting_render_group *Struct )
+UseRenderPass( lighting_render_group *Element )
 {
-  UseRenderPass_lighting_render_group(Struct);
+  UseRenderPass_lighting_render_group(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( lighting_render_group *Struct )
+UseShader( lighting_render_group *Element )
 {
-  UseRenderPass_lighting_render_group(Struct);
+  UseRenderPass_lighting_render_group(Element);
 }
 
 
@@ -367,32 +367,32 @@ link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
 (
-  terrain_decoration_render_context *Struct
+  terrain_decoration_render_context *Element
     , texture *DerivsTex
   , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->DerivsTex = DerivsTex;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->DerivsTex, "DerivsTex");
+            Element->DerivsTex = DerivsTex;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->DerivsTex, "DerivsTex" );
 
-        Struct->ChunkDim = ChunkDim;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
+        Element->ChunkDim = ChunkDim;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkDim, "ChunkDim" );
 
-        Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
+        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
 
-        Struct->ChunkResolution = ChunkResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
+        Element->ChunkResolution = ChunkResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkResolution, "ChunkResolution" );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -409,24 +409,24 @@ InitializeTerrainDecorationRenderContext
 
 link_internal void
 UseRenderPass_terrain_decoration_render_context
-( terrain_decoration_render_context *Struct )
+( terrain_decoration_render_context *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
     if (UniformIndex !=  4  )
@@ -442,22 +442,22 @@ UseRenderPass_terrain_decoration_render_context
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_terrain_decoration_render_context( void *Struct )
+UseRenderPass_terrain_decoration_render_context( void *Element )
 {
-  UseRenderPass_terrain_decoration_render_context( Cast(terrain_decoration_render_context *, Struct) );
+  UseRenderPass_terrain_decoration_render_context( Cast(terrain_decoration_render_context *, Element) );
 }
 
 link_internal void
-UseRenderPass( terrain_decoration_render_context *Struct )
+UseRenderPass( terrain_decoration_render_context *Element )
 {
-  UseRenderPass_terrain_decoration_render_context(Struct);
+  UseRenderPass_terrain_decoration_render_context(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( terrain_decoration_render_context *Struct )
+UseShader( terrain_decoration_render_context *Element )
 {
-  UseRenderPass_terrain_decoration_render_context(Struct);
+  UseRenderPass_terrain_decoration_render_context(Element);
 }
 
 
@@ -481,21 +481,21 @@ link_internal b32
 poof()
 InitializeTerrainFinalizeRenderContext
 (
-  terrain_finalize_render_context *Struct
+  terrain_finalize_render_context *Element
     , u32 Ignored
 
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/TerrainFinalize.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->Ignored = Ignored;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Ignored, "Ignored");
+            Element->Ignored = Ignored;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Ignored, "Ignored" );
 
 
 
@@ -514,15 +514,15 @@ InitializeTerrainFinalizeRenderContext
 
 link_internal void
 UseRenderPass_terrain_finalize_render_context
-( terrain_finalize_render_context *Struct )
+( terrain_finalize_render_context *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
 
@@ -540,22 +540,22 @@ UseRenderPass_terrain_finalize_render_context
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_terrain_finalize_render_context( void *Struct )
+UseRenderPass_terrain_finalize_render_context( void *Element )
 {
-  UseRenderPass_terrain_finalize_render_context( Cast(terrain_finalize_render_context *, Struct) );
+  UseRenderPass_terrain_finalize_render_context( Cast(terrain_finalize_render_context *, Element) );
 }
 
 link_internal void
-UseRenderPass( terrain_finalize_render_context *Struct )
+UseRenderPass( terrain_finalize_render_context *Element )
 {
-  UseRenderPass_terrain_finalize_render_context(Struct);
+  UseRenderPass_terrain_finalize_render_context(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( terrain_finalize_render_context *Struct )
+UseShader( terrain_finalize_render_context *Element )
 {
-  UseRenderPass_terrain_finalize_render_context(Struct);
+  UseRenderPass_terrain_finalize_render_context(Element);
 }
 
 
@@ -629,32 +629,32 @@ link_internal b32
 poof()
 InitializeWorldEditRenderContext
 (
-  world_edit_render_context *Struct
+  world_edit_render_context *Element
     , v3 *ChunkDim
   , v3 *WorldspaceChunkBasis
   , v3 *ChunkResolution
   , s32 Type
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->ChunkDim = ChunkDim;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ChunkDim, "ChunkDim");
+            Element->ChunkDim = ChunkDim;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->ChunkDim, "ChunkDim" );
 
-        Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
+        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
 
-        Struct->ChunkResolution = ChunkResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->ChunkResolution, "ChunkResolution");
+        Element->ChunkResolution = ChunkResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->ChunkResolution, "ChunkResolution" );
 
-        Struct->Type = Type;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Type, "Type");
+        Element->Type = Type;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Type, "Type" );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -671,24 +671,24 @@ InitializeWorldEditRenderContext
 
 link_internal void
 UseRenderPass_world_edit_render_context
-( world_edit_render_context *Struct )
+( world_edit_render_context *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
     if (UniformIndex !=  4  )
@@ -704,22 +704,22 @@ UseRenderPass_world_edit_render_context
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_world_edit_render_context( void *Struct )
+UseRenderPass_world_edit_render_context( void *Element )
 {
-  UseRenderPass_world_edit_render_context( Cast(world_edit_render_context *, Struct) );
+  UseRenderPass_world_edit_render_context( Cast(world_edit_render_context *, Element) );
 }
 
 link_internal void
-UseRenderPass( world_edit_render_context *Struct )
+UseRenderPass( world_edit_render_context *Element )
 {
-  UseRenderPass_world_edit_render_context(Struct);
+  UseRenderPass_world_edit_render_context(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( world_edit_render_context *Struct )
+UseShader( world_edit_render_context *Element )
 {
-  UseRenderPass_world_edit_render_context(Struct);
+  UseRenderPass_world_edit_render_context(Element);
 }
 
 
@@ -847,25 +847,26 @@ link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
 (
-  easing_function_visualizer_render_pass *Struct
-    , b32 Ignored
-
+  easing_function_visualizer_render_pass *Element
+    , v2 *Points
+  , u32 Count
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->Ignored = Ignored;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Ignored, "Ignored");
+            Element->Points = Points;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->Points, "Points" , Cast(u16, Count));
 
+        Element->Count = Count;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Count, "Count" );
 
-
-    u32 Expected =  1 ;
+    u32 Expected =  2 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (easing_function_visualizer_render_pass) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -880,20 +881,21 @@ InitializeEasingFunctionVisualizerRenderPass
 
 link_internal void
 UseRenderPass_easing_function_visualizer_render_pass
-( easing_function_visualizer_render_pass *Struct )
+( easing_function_visualizer_render_pass *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
+    ++UniformIndex;
 
-
-    if (UniformIndex !=  1  )
+    if (UniformIndex !=  2  )
     {
       Error("Shader (easing_function_visualizer_render_pass) had an incorrect number of uniform slots!");
     }
@@ -906,22 +908,22 @@ UseRenderPass_easing_function_visualizer_render_pass
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_easing_function_visualizer_render_pass( void *Struct )
+UseRenderPass_easing_function_visualizer_render_pass( void *Element )
 {
-  UseRenderPass_easing_function_visualizer_render_pass( Cast(easing_function_visualizer_render_pass *, Struct) );
+  UseRenderPass_easing_function_visualizer_render_pass( Cast(easing_function_visualizer_render_pass *, Element) );
 }
 
 link_internal void
-UseRenderPass( easing_function_visualizer_render_pass *Struct )
+UseRenderPass( easing_function_visualizer_render_pass *Element )
 {
-  UseRenderPass_easing_function_visualizer_render_pass(Struct);
+  UseRenderPass_easing_function_visualizer_render_pass(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( easing_function_visualizer_render_pass *Struct )
+UseShader( easing_function_visualizer_render_pass *Element )
 {
-  UseRenderPass_easing_function_visualizer_render_pass(Struct);
+  UseRenderPass_easing_function_visualizer_render_pass(Element);
 }
 
 
@@ -988,32 +990,32 @@ link_internal b32
 poof()
 InitializeShadowMapShader
 (
-  shadow_map_shader *Struct
+  shadow_map_shader *Element
     , m4 ModelMatrix
   , m4 ViewProjection
   , v3 *MinClipP_worldspace
   , v3 *MaxClipP_worldspace
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->ModelMatrix = ModelMatrix;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ModelMatrix, "ModelMatrix");
+            Element->ModelMatrix = ModelMatrix;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ModelMatrix, "ModelMatrix" );
 
-        Struct->ViewProjection = ViewProjection;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ViewProjection, "ViewProjection");
+        Element->ViewProjection = ViewProjection;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ViewProjection, "ViewProjection" );
 
-        Struct->MinClipP_worldspace = MinClipP_worldspace;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MinClipP_worldspace, "MinClipP_worldspace");
+        Element->MinClipP_worldspace = MinClipP_worldspace;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->MinClipP_worldspace, "MinClipP_worldspace" );
 
-        Struct->MaxClipP_worldspace = MaxClipP_worldspace;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->MaxClipP_worldspace, "MaxClipP_worldspace");
+        Element->MaxClipP_worldspace = MaxClipP_worldspace;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->MaxClipP_worldspace, "MaxClipP_worldspace" );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -1030,24 +1032,24 @@ InitializeShadowMapShader
 
 link_internal void
 UseRenderPass_shadow_map_shader
-( shadow_map_shader *Struct )
+( shadow_map_shader *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
     if (UniformIndex !=  4  )
@@ -1063,22 +1065,22 @@ UseRenderPass_shadow_map_shader
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_shadow_map_shader( void *Struct )
+UseRenderPass_shadow_map_shader( void *Element )
 {
-  UseRenderPass_shadow_map_shader( Cast(shadow_map_shader *, Struct) );
+  UseRenderPass_shadow_map_shader( Cast(shadow_map_shader *, Element) );
 }
 
 link_internal void
-UseRenderPass( shadow_map_shader *Struct )
+UseRenderPass( shadow_map_shader *Element )
 {
-  UseRenderPass_shadow_map_shader(Struct);
+  UseRenderPass_shadow_map_shader(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( shadow_map_shader *Struct )
+UseShader( shadow_map_shader *Element )
 {
-  UseRenderPass_shadow_map_shader(Struct);
+  UseRenderPass_shadow_map_shader(Element);
 }
 
 
@@ -1087,21 +1089,21 @@ link_internal b32
 poof()
 InitializeBloomUpsampleShader
 (
-  bloom_upsample_shader *Struct
+  bloom_upsample_shader *Element
     , f32 *FilterRadius
 
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_upsample.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->FilterRadius = FilterRadius;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->FilterRadius, "FilterRadius");
+            Element->FilterRadius = FilterRadius;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->FilterRadius, "FilterRadius" );
 
 
 
@@ -1120,15 +1122,15 @@ InitializeBloomUpsampleShader
 
 link_internal void
 UseRenderPass_bloom_upsample_shader
-( bloom_upsample_shader *Struct )
+( bloom_upsample_shader *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
 
@@ -1146,22 +1148,22 @@ UseRenderPass_bloom_upsample_shader
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_bloom_upsample_shader( void *Struct )
+UseRenderPass_bloom_upsample_shader( void *Element )
 {
-  UseRenderPass_bloom_upsample_shader( Cast(bloom_upsample_shader *, Struct) );
+  UseRenderPass_bloom_upsample_shader( Cast(bloom_upsample_shader *, Element) );
 }
 
 link_internal void
-UseRenderPass( bloom_upsample_shader *Struct )
+UseRenderPass( bloom_upsample_shader *Element )
 {
-  UseRenderPass_bloom_upsample_shader(Struct);
+  UseRenderPass_bloom_upsample_shader(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( bloom_upsample_shader *Struct )
+UseShader( bloom_upsample_shader *Element )
 {
-  UseRenderPass_bloom_upsample_shader(Struct);
+  UseRenderPass_bloom_upsample_shader(Element);
 }
 
 
@@ -1379,21 +1381,21 @@ link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
 (
-  terrain_derivs_render_context *Struct
+  terrain_derivs_render_context *Element
     , v3 Ignored
 
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/derivs.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->Ignored = Ignored;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Ignored, "Ignored");
+            Element->Ignored = Ignored;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Ignored, "Ignored" );
 
 
 
@@ -1412,15 +1414,15 @@ InitializeTerrainDerivsRenderContext
 
 link_internal void
 UseRenderPass_terrain_derivs_render_context
-( terrain_derivs_render_context *Struct )
+( terrain_derivs_render_context *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
 
@@ -1438,22 +1440,22 @@ UseRenderPass_terrain_derivs_render_context
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_terrain_derivs_render_context( void *Struct )
+UseRenderPass_terrain_derivs_render_context( void *Element )
 {
-  UseRenderPass_terrain_derivs_render_context( Cast(terrain_derivs_render_context *, Struct) );
+  UseRenderPass_terrain_derivs_render_context( Cast(terrain_derivs_render_context *, Element) );
 }
 
 link_internal void
-UseRenderPass( terrain_derivs_render_context *Struct )
+UseRenderPass( terrain_derivs_render_context *Element )
 {
-  UseRenderPass_terrain_derivs_render_context(Struct);
+  UseRenderPass_terrain_derivs_render_context(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( terrain_derivs_render_context *Struct )
+UseShader( terrain_derivs_render_context *Element )
 {
-  UseRenderPass_terrain_derivs_render_context(Struct);
+  UseRenderPass_terrain_derivs_render_context(Element);
 }
 
 
@@ -1488,21 +1490,21 @@ link_internal b32
 poof()
 InitializeBloomDownsampleShader
 (
-  bloom_downsample_shader *Struct
+  bloom_downsample_shader *Element
     , v2 *SrcResolution
 
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/bloom_downsample.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->SrcResolution = SrcResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, Struct->SrcResolution, "SrcResolution");
+            Element->SrcResolution = SrcResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, Element->SrcResolution, "SrcResolution" );
 
 
 
@@ -1521,15 +1523,15 @@ InitializeBloomDownsampleShader
 
 link_internal void
 UseRenderPass_bloom_downsample_shader
-( bloom_downsample_shader *Struct )
+( bloom_downsample_shader *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
 
@@ -1547,22 +1549,22 @@ UseRenderPass_bloom_downsample_shader
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_bloom_downsample_shader( void *Struct )
+UseRenderPass_bloom_downsample_shader( void *Element )
 {
-  UseRenderPass_bloom_downsample_shader( Cast(bloom_downsample_shader *, Struct) );
+  UseRenderPass_bloom_downsample_shader( Cast(bloom_downsample_shader *, Element) );
 }
 
 link_internal void
-UseRenderPass( bloom_downsample_shader *Struct )
+UseRenderPass( bloom_downsample_shader *Element )
 {
-  UseRenderPass_bloom_downsample_shader(Struct);
+  UseRenderPass_bloom_downsample_shader(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( bloom_downsample_shader *Struct )
+UseShader( bloom_downsample_shader *Element )
 {
-  UseRenderPass_bloom_downsample_shader(Struct);
+  UseRenderPass_bloom_downsample_shader(Element);
 }
 
 
@@ -1667,28 +1669,28 @@ link_internal b32
 poof()
 InitializeTerrainShapingRenderContext
 (
-  terrain_shaping_render_context *Struct
+  terrain_shaping_render_context *Element
     , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->ChunkDim = ChunkDim;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkDim, "ChunkDim");
+            Element->ChunkDim = ChunkDim;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkDim, "ChunkDim" );
 
-        Struct->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->WorldspaceChunkBasis, "WorldspaceChunkBasis");
+        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
 
-        Struct->ChunkResolution = ChunkResolution;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->ChunkResolution, "ChunkResolution");
+        Element->ChunkResolution = ChunkResolution;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkResolution, "ChunkResolution" );
 
     u32 Expected =  3 ;
     if (UniformIndex != Expected )
@@ -1705,21 +1707,21 @@ InitializeTerrainShapingRenderContext
 
 link_internal void
 UseRenderPass_terrain_shaping_render_context
-( terrain_shaping_render_context *Struct )
+( terrain_shaping_render_context *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
     if (UniformIndex !=  3  )
@@ -1735,22 +1737,22 @@ UseRenderPass_terrain_shaping_render_context
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_terrain_shaping_render_context( void *Struct )
+UseRenderPass_terrain_shaping_render_context( void *Element )
 {
-  UseRenderPass_terrain_shaping_render_context( Cast(terrain_shaping_render_context *, Struct) );
+  UseRenderPass_terrain_shaping_render_context( Cast(terrain_shaping_render_context *, Element) );
 }
 
 link_internal void
-UseRenderPass( terrain_shaping_render_context *Struct )
+UseRenderPass( terrain_shaping_render_context *Element )
 {
-  UseRenderPass_terrain_shaping_render_context(Struct);
+  UseRenderPass_terrain_shaping_render_context(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( terrain_shaping_render_context *Struct )
+UseShader( terrain_shaping_render_context *Element )
 {
-  UseRenderPass_terrain_shaping_render_context(Struct);
+  UseRenderPass_terrain_shaping_render_context(Element);
 }
 
 

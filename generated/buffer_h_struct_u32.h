@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/shader.h:156:0
+// external/bonsai_stdlib/src/shader.h:161:0
 
 struct shader_uniform_buffer
 {

@@ -90,22 +90,22 @@ MakeCompositeShader(
     /* *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao"); */
     /* Current = &(*Current)->Next; */
 
-    /* SetShaderUniform(&Shader, 8, ShadowMVP, "ShadowMVP"); *1/ */
+    /* InitShaderUniform(&Shader, 8, ShadowMVP, "ShadowMVP"); *1/ */
 
-    /* SetShaderUniform(&Shader, 9, Camera, "CameraP"); *1/ */
+    /* InitShaderUniform(&Shader, 9, Camera, "CameraP"); *1/ */
 
 
-    SetShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
-    SetShaderUniform(Shader, 1, BloomTex, "BloomTex");
-    SetShaderUniform(Shader, 2, TransparencyAccum, "TransparencyAccum");
-    SetShaderUniform(Shader, 3, TransparencyCount, "TransparencyCount");
-    SetShaderUniform(Shader, 4, (u32*)UseLightingBloom, "UseLightingBloom");
-    SetShaderUniform(Shader, 5, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
-    SetShaderUniform(Shader, 6, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
-    SetShaderUniform(Shader, 7, LuminanceTex, "LuminanceTex");
-    SetShaderUniform(Shader, 8, Exposure, "Exposure");
-    SetShaderUniform(Shader, 9, (int*)ToneMappingType, "ToneMappingType");
-    SetShaderUniform(Shader, 10, ApplicationResolution, "ApplicationResolution");
+    InitShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
+    InitShaderUniform(Shader, 1, BloomTex, "BloomTex");
+    InitShaderUniform(Shader, 2, TransparencyAccum, "TransparencyAccum");
+    InitShaderUniform(Shader, 3, TransparencyCount, "TransparencyCount");
+    InitShaderUniform(Shader, 4, (u32*)UseLightingBloom, "UseLightingBloom");
+    InitShaderUniform(Shader, 5, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
+    InitShaderUniform(Shader, 6, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
+    InitShaderUniform(Shader, 7, LuminanceTex, "LuminanceTex");
+    InitShaderUniform(Shader, 8, Exposure, "Exposure");
+    InitShaderUniform(Shader, 9, (int*)ToneMappingType, "ToneMappingType");
+    InitShaderUniform(Shader, 10, ApplicationResolution, "ApplicationResolution");
   }
 
   AssertNoGlErrors;
@@ -229,7 +229,7 @@ InitGaussianBlurRenderGroup(gaussian_render_group *Result, v2 *ApplicationResolu
 
   {
     Result->Shader.Uniforms = ShaderUniformBuffer(1, GraphicsMemory);
-    SetShaderUniform(&Result->Shader, 0, ApplicationResolution, "ApplicationResolution");
+    InitShaderUniform(&Result->Shader, 0, ApplicationResolution, "ApplicationResolution");
   }
 
 
@@ -275,19 +275,19 @@ CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMe
 
   Shader->Uniforms = ShaderUniformBuffer(12, GraphicsMemory);
 
-  SetShaderUniform(Shader, 0, MinClipP_worldspace, "MinClipP_worldspace");
-  SetShaderUniform(Shader, 1, MaxClipP_worldspace, "MaxClipP_worldspace");
-  SetShaderUniform(Shader, 2, ViewProjection, "ViewProjection");
+  InitShaderUniform(Shader, 0, MinClipP_worldspace, "MinClipP_worldspace");
+  InitShaderUniform(Shader, 1, MaxClipP_worldspace, "MaxClipP_worldspace");
+  InitShaderUniform(Shader, 2, ViewProjection, "ViewProjection");
   // @janky_model_matrix_bs
-  SetShaderUniform(Shader, 3, &IdentityMatrix, "ModelMatrix");
-  SetShaderUniform(Shader, 4, ColorPaletteTexture, "ColorPalette");
-  SetShaderUniform(Shader, 5, &Camera->Frust.farClip, "FarClip");
-  SetShaderUniform(Shader, 6, &Camera->Frust.nearClip, "NearClip");
-  SetShaderUniform(Shader, 7, &Camera->RenderSpacePosition, "CameraToWorld");
-  SetShaderUniform(Shader, 8, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
-  SetShaderUniform(Shader, 9, &Graphics->Settings.MajorGridDim, "MajorGridDim");
-  SetShaderUniform(Shader, 10, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
-  SetShaderUniform(Shader, 11, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
+  InitShaderUniform(Shader, 3, &IdentityMatrix, "ModelMatrix");
+  InitShaderUniform(Shader, 4, ColorPaletteTexture, "ColorPalette");
+  InitShaderUniform(Shader, 5, &Camera->Frust.farClip, "FarClip");
+  InitShaderUniform(Shader, 6, &Camera->Frust.nearClip, "NearClip");
+  InitShaderUniform(Shader, 7, &Camera->RenderSpacePosition, "CameraToWorld");
+  InitShaderUniform(Shader, 8, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
+  InitShaderUniform(Shader, 9, &Graphics->Settings.MajorGridDim, "MajorGridDim");
+  InitShaderUniform(Shader, 10, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
+  InitShaderUniform(Shader, 11, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
 
   return Result;
 }
@@ -315,13 +315,13 @@ MakeSsaoShader(
     /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
     /* Current = &(*Current)->Next; */
 
-    SetShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
-    SetShaderUniform(Shader, 1, &gTextures->Depth, "gDepth");
-    SetShaderUniform(Shader, 2, SsaoNoiseTexture, "SsaoNoiseTexture");
-    SetShaderUniform(Shader, 3, SsaoNoiseTile, "SsaoNoiseTile");
-    SetShaderUniform(Shader, 4, InverseViewMatrix, "InverseViewMatrix");
-    SetShaderUniform(Shader, 5, InverseProjectionMatrix, "InverseProjectionMatrix");
-    SetShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
+    InitShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
+    InitShaderUniform(Shader, 1, &gTextures->Depth, "gDepth");
+    InitShaderUniform(Shader, 2, SsaoNoiseTexture, "SsaoNoiseTexture");
+    InitShaderUniform(Shader, 3, SsaoNoiseTile, "SsaoNoiseTile");
+    InitShaderUniform(Shader, 4, InverseViewMatrix, "InverseViewMatrix");
+    InitShaderUniform(Shader, 5, InverseProjectionMatrix, "InverseProjectionMatrix");
+    InitShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
   }
 
   AssertNoGlErrors;
@@ -404,14 +404,14 @@ MakeTransparencyShader(shader *Shader, v2 *ApplicationResolution, b32 *BravoilMy
 
   Shader->Uniforms = ShaderUniformBuffer(7, Memory);
 
-  SetShaderUniform(Shader, 0, ViewProjection, "ViewProjection");
+  InitShaderUniform(Shader, 0, ViewProjection, "ViewProjection");
   // @janky_model_matrix_bs
-  SetShaderUniform(Shader, 1, &IdentityMatrix, "ModelMatrix");
-  SetShaderUniform(Shader, 2, gBufferDepthTexture, "gBufferDepthTexture");
-  SetShaderUniform(Shader, 3, BravoilMyersOIT, "BravoilMyersOIT");
-  SetShaderUniform(Shader, 4, BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  SetShaderUniform(Shader, 5, ApplicationResolution, "ApplicationResolution");
-  SetShaderUniform(Shader, 6, ColorPaletteTexture, "ColorPalette");
+  InitShaderUniform(Shader, 1, &IdentityMatrix, "ModelMatrix");
+  InitShaderUniform(Shader, 2, gBufferDepthTexture, "gBufferDepthTexture");
+  InitShaderUniform(Shader, 3, BravoilMyersOIT, "BravoilMyersOIT");
+  InitShaderUniform(Shader, 4, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+  InitShaderUniform(Shader, 5, ApplicationResolution, "ApplicationResolution");
+  InitShaderUniform(Shader, 6, ColorPaletteTexture, "ColorPalette");
 
   return Result;
 }

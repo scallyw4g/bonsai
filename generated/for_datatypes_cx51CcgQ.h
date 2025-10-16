@@ -2891,11 +2891,11 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 link_internal void
-InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Struct , b32 Ignored   , b32* Result )
+InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , v2 *Points , u32 Count   , b32* Result )
 {
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {
-      Result,   Struct,  Ignored, 
+      Result,   Element,  Points,  Count, 
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
@@ -2905,9 +2905,26 @@ InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_fu
 link_internal void
 DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 {
-   auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Struct , Params->Ignored );
+   auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Points , Params->Count );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

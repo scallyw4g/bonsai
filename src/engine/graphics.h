@@ -78,18 +78,24 @@ poof( @render_pass
 };
 
 
+struct easing_function
+{
+  cs Name;
+  v2_static_cursor_16 Points;
+};
+
 struct easing_function_visualizer_render_pass
 poof(
-    @render_pass
-    @async
+    @render_pass @async
     @vert_source_file(STDLIB_SHADER_PATH "FullPassthrough.vertexshader")
     @frag_source_file(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader")
   )
 {
   shader Program;
-  shader_uniform Uniforms[1];
+  shader_uniform Uniforms[2];
 
-  b32 Ignored;    poof(@uniform)
+   v2 *Points; poof(@uniform @array_length(Cast(u16, Count)))
+  u32  Count;  poof(@uniform)
 };
 
 

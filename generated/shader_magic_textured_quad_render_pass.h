@@ -4,32 +4,32 @@ link_internal b32
 poof()
 InitializeTexturedQuadRenderPass
 (
-  textured_quad_render_pass *Struct
+  textured_quad_render_pass *Element
     , b32 IsDepthTexture
   , b32 HasAlphaChannel
   , s32 TextureSlice
   , v3 Tint
 )
 {
-      b32 Result = CompileShaderPair(&Struct->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(STDLIB_SHADER_PATH "SimpleTexture.fragmentshader"));
+      b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(STDLIB_SHADER_PATH "SimpleTexture.fragmentshader"));
 
   if (Result)
   {
-    Struct->Program.Uniforms = ShaderUniformBuffer(Struct->Uniforms, ArrayCount(Struct->Uniforms));
+    Element->Program.Uniforms = ShaderUniformBuffer(Element->Uniforms, ArrayCount(Element->Uniforms));
 
     u32 UniformIndex = 0;
 
-            Struct->IsDepthTexture = IsDepthTexture;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->IsDepthTexture, "IsDepthTexture");
+            Element->IsDepthTexture = IsDepthTexture;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->IsDepthTexture, "IsDepthTexture" );
 
-        Struct->HasAlphaChannel = HasAlphaChannel;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->HasAlphaChannel, "HasAlphaChannel");
+        Element->HasAlphaChannel = HasAlphaChannel;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->HasAlphaChannel, "HasAlphaChannel" );
 
-        Struct->TextureSlice = TextureSlice;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->TextureSlice, "TextureSlice");
+        Element->TextureSlice = TextureSlice;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->TextureSlice, "TextureSlice" );
 
-        Struct->Tint = Tint;
-    SetShaderUniform(&Struct->Program, UniformIndex++, &Struct->Tint, "Tint");
+        Element->Tint = Tint;
+    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Tint, "Tint" );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -46,24 +46,24 @@ InitializeTexturedQuadRenderPass
 
 link_internal void
 UseRenderPass_textured_quad_render_pass
-( textured_quad_render_pass *Struct )
+( textured_quad_render_pass *Element )
 {
-  if (Struct->Program.ID != INVALID_SHADER)
+  if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Struct->Program.ID);
+    GetGL()->UseProgram(Element->Program.ID);
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
-        BindUniformById(Struct->Uniforms+UniformIndex, &TextureUnit);
+        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
     ++UniformIndex;
 
     if (UniformIndex !=  4  )
@@ -79,21 +79,21 @@ UseRenderPass_textured_quad_render_pass
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
 link_internal void
-UseRenderPass_textured_quad_render_pass( void *Struct )
+UseRenderPass_textured_quad_render_pass( void *Element )
 {
-  UseRenderPass_textured_quad_render_pass( Cast(textured_quad_render_pass *, Struct) );
+  UseRenderPass_textured_quad_render_pass( Cast(textured_quad_render_pass *, Element) );
 }
 
 link_internal void
-UseRenderPass( textured_quad_render_pass *Struct )
+UseRenderPass( textured_quad_render_pass *Element )
 {
-  UseRenderPass_textured_quad_render_pass(Struct);
+  UseRenderPass_textured_quad_render_pass(Element);
 }
 
 // TODO(Jesse): Remove in favor of UseRenderPass
 link_internal void
-UseShader( textured_quad_render_pass *Struct )
+UseShader( textured_quad_render_pass *Element )
 {
-  UseRenderPass_textured_quad_render_pass(Struct);
+  UseRenderPass_textured_quad_render_pass(Element);
 }
 
