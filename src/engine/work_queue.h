@@ -140,29 +140,31 @@ poof(
     link_internal void
     DoJob((func_t.name.to_snake_case)_async_params *Params)
     {
-      func_t.value? { *Params->Result = } func_t.name((func_t.map(arg).sep(,) { Params->(arg.name) }));
+      func_t.value? { auto Result = } func_t.name((func_t.map(arg).sep(,) { Params->(arg.name) }));
+      func_t.value? { if (Params->Result) { *Params->Result = Result; } }
     }
   }
 )
 
+poof(
+  for_datatypes(all) @code_fragment
+  func (struct_t) {}
+  func (enum_t) {}
+  func (func_t)
+  {
+    func_t.has_tag(async)?
+    {
+      func_t.has_tag(render)?
+      {
+        asyncify_render_function_h(func_t)
+      }
+    }
+  }
+)
+#include <generated/for_datatypes_khY6kwEk.h>
 
-poof(asyncify_render_function_h(RenderToTexture))
-#include <generated/asyncify_render_function_h_RenderToTexture.h>
 
-link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
-
-
-poof(asyncify_render_function_h(DrawLod))
-#include <generated/asyncify_render_function_h_DrawLod.h>
-
-poof(asyncify_render_function_h(CompileShaderPair))
-#include <generated/asyncify_render_function_h_CompileShaderPair.h>
-
-poof(asyncify_render_function_h(UseShader))
-#include <generated/asyncify_render_function_h_UseShader.h>
-
-
+// Genereate tagged_union for async functions
 
 enum async_function_call_type
 {
@@ -239,32 +241,6 @@ poof(d_union_constructors(work_queue_entry))
 
 
 
-
-
-link_internal s32
-EventsCurrentlyInQueue(work_queue *Queue)
-{
-  u32 Enqueue = Queue->EnqueueIndex;
-  u32 Dequeue = Queue->DequeueIndex;
-
-  s32 Result = 0;
-  if (Dequeue < Enqueue)
-  {
-    Result = s32(Enqueue - Dequeue);
-  }
-
-  if (Enqueue < Dequeue)
-  {
-    Result = s32((WORK_QUEUE_SIZE - Dequeue) + Enqueue);
-  }
-
-  Assert(Result >= 0);
-  return Result;
-}
-
-
-
-
 poof(
   for_datatypes(all) @code_fragment
   func (struct_t)
@@ -287,54 +263,43 @@ poof(
 )
 #include <generated/for_datatypes_0XxWqGSZ.h>
 
-link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Meshes, v3 Offset, camera *Camera);
 
-poof(asyncify_render_function_c(RenderToTexture))
-#include <generated/asyncify_render_function_c_RenderToTexture.h>
 
-poof(asyncify_render_function_c(DrawLod))
-#include <generated/asyncify_render_function_c_DrawLod.h>
-
-poof(asyncify_render_function_c(CompileShaderPair))
-#include <generated/asyncify_render_function_c_CompileShaderPair.h>
-
-poof(asyncify_render_function_c(UseShader))
-#include <generated/asyncify_render_function_c_UseShader.h>
-
-/* poof(asyncify_render_function_c(InitializeEasingFunctionVisualizerRenderPass)) */
-/* #include <generated/asyncify_render_function_c_InitializeEasingFunctionVisualizerRenderPass.h> */
+poof(
+  for_datatypes(all) @code_fragment
+  func (struct_t) {}
+  func (enum_t) {}
+  func (func_t)
+  {
+    func_t.has_tag(async)?
+    {
+      func_t.has_tag(render)?
+      {
+        asyncify_render_function_c(func_t)
+      }
+    }
+  }
+)
+#include <generated/for_datatypes_cx51CcgQ.h>
 
 link_internal void
 DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
 {
   tswitch(Task)
   {
-    {
-      tmatch(render_to_texture_async_params, Task, Job);
-      DoJob(Job);
-    } break;
-
-    {
-      tmatch(draw_lod_async_params, Task, Job);
-      DoJob(Job);
-    } break;
-
-    {
-      tmatch(compile_shader_pair_async_params, Task, Job);
-      DoJob(Job);
-    } break;
-
-    {
-      tmatch(use_shader_async_params, Task, Job);
-      DoJob(Job);
-    } break;
-
-    /* { */
-      /* tmatch(easing_function_visualizer_render_pass_async_params, Task, Job); */
-      /* DoJob(Job); */
-    /* } break; */
-
+    poof(
+      func (async_function_call_type tag_t)
+      {
+        tag_t.map(tag_v)
+        {
+          {
+            tmatch( tag_v.name.strip_single_prefix, Task, Job );
+            DoJob(Job);
+          } break;
+        }
+      }
+    )
+#include <generated/anonymous_async_function_call_type_rQAZtEUA.h>
   }
 }
 
@@ -346,6 +311,30 @@ DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
 
 
 
+
+
+
+
+link_internal s32
+EventsCurrentlyInQueue(work_queue *Queue)
+{
+  u32 Enqueue = Queue->EnqueueIndex;
+  u32 Dequeue = Queue->DequeueIndex;
+
+  s32 Result = 0;
+  if (Dequeue < Enqueue)
+  {
+    Result = s32(Enqueue - Dequeue);
+  }
+
+  if (Enqueue < Dequeue)
+  {
+    Result = s32((WORK_QUEUE_SIZE - Dequeue) + Enqueue);
+  }
+
+  Assert(Result >= 0);
+  return Result;
+}
 
 // TODO(Jesse): Gen this from the constructors generator
 link_internal work_queue_entry
@@ -377,6 +366,4 @@ TakeOwnershipSync(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit);
 
 link_internal void
 ReleaseOwnership(lod_element_buffer *Src, world_chunk_mesh_bitfield MeshBit, untextured_3d_geometry_buffer *Buf);
-
-
 

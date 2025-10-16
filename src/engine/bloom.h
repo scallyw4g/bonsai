@@ -1,6 +1,7 @@
 
 struct bloom_downsample_shader
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/bloom_downsample.fragmentshader") )
 {
   shader Program;
@@ -8,11 +9,10 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
   v2 *SrcResolution; poof(@uniform)
 };
 
-poof(shader_magic(bloom_downsample_shader))
-#include <generated/shader_magic_bloom_downsample_shader.h>
 
 struct bloom_upsample_shader
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/bloom_upsample.fragmentshader") )
 {
   shader Program;
@@ -22,8 +22,6 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 };
 
 
-poof(shader_magic(bloom_upsample_shader))
-#include <generated/shader_magic_bloom_upsample_shader.h>
 
 
 #define BLOOM_MIP_CHAIN_COUNT (3)

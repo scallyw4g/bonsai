@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:170:0
+// src/engine/work_queue.h:172:0
 
 
 
@@ -42,7 +42,6 @@
 
 
 
-type_use_shader_async_params,
 
 
 
@@ -228,12 +227,11 @@ type_use_shader_async_params,
 
 
 
+type_initialize_easing_function_visualizer_render_pass_async_params,
 
 
 
 
-
-type_render_to_texture_async_params,
 
 
 

@@ -19,7 +19,8 @@ struct game_lights
 
 
 struct lighting_render_group
-poof( @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
+poof( @render_pass
+      @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
       @frag_source_file(BONSAI_SHADER_PATH "Lighting.fragmentshader")
     )
 {
@@ -70,9 +71,6 @@ poof( @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
   texture LuminanceTex;
   game_lights Lights;
 };
-
-poof(shader_magic(lighting_render_group))
-#include <generated/shader_magic_lighting_render_group.h>
 
 link_internal void
 DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)

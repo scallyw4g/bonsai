@@ -1139,6 +1139,7 @@ DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_el
 
 #if 1
 link_internal void
+poof(@async @render)
 DrawLod( engine_resources *Engine,
          shader *Shader,
          gpu_mapped_element_buffer *Mesh,

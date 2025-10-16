@@ -1,7 +1,8 @@
 
 
 struct terrain_shaping_render_context
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/shaping/default.fragmentshader") )
 {
           shader  Program;
@@ -15,7 +16,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 };
 
 struct terrain_derivs_render_context
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/derivs.fragmentshader") )
 {
           shader  Program;
@@ -27,7 +29,8 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 };
 
 struct terrain_decoration_render_context
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/decoration/default.fragmentshader") )
 {
           shader  Program;
@@ -43,17 +46,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
 
 
 
-poof(shader_magic(terrain_shaping_render_context))
-#include <generated/shader_magic_struct_terrain_shaping_shader.h>
-
-poof(shader_magic(terrain_decoration_render_context))
-#include <generated/shader_magic_struct_terrain_decoration_shader.h>
-
-poof(shader_magic(terrain_derivs_render_context))
-#include <generated/shader_magic_struct_terrain_derivs_render_context.h>
-
 struct world_edit_render_context
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
 {
           shader  Program;
@@ -68,11 +63,9 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
              s32  Type;                 poof(@uniform)
 };
 
-poof(shader_magic(world_edit_render_context))
-#include <generated/shader_magic_struct_world_edit_shader.h>
-
 struct terrain_finalize_render_context
-poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
+poof( @render_pass
+      @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/TerrainFinalize.fragmentshader") )
 {
           shader  Program;
@@ -84,13 +77,11 @@ poof( @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader
          /* texture *InputTex; poof(@uniform) */
 };
 
-poof(shader_magic(terrain_finalize_render_context))
-#include <generated/shader_magic_struct_terrain_finalize_render_context.h>
-
 
 struct easing_function_visualizer_render_pass
 poof(
     @render_pass
+    @async
     @vert_source_file(STDLIB_SHADER_PATH "FullPassthrough.vertexshader")
     @frag_source_file(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader")
   )
@@ -101,13 +92,21 @@ poof(
   b32 Ignored;    poof(@uniform)
 };
 
+
+
 poof(
   for_datatypes(all) @code_fragment
   func (struct_t)
   {
     struct_t.has_tag(render_pass)?
     {
-      shader_magic(struct_t)
+      struct_t.has_tag(async)?
+      {
+        shader_magic(struct_t, {@async @render})
+      }
+      {
+        shader_magic(struct_t, {})
+      }
     }
   }
   func (enum_t) {}

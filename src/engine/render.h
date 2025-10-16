@@ -226,3 +226,6 @@ DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);
 
 link_internal b32
 SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);
+
+link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));

@@ -166,6 +166,10 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+#if 1
+  NotImplemented;
+  return {};
+#else
   // TODO(Jesse): Do we still do this here?
   NotImplemented;
   /* SyncGpuBuffersAsync(Engine, Mesh); */
@@ -205,6 +209,8 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
   }
 
   return B;
+
+#endif
 }
 
 link_internal void

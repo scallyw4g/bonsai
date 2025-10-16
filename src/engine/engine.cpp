@@ -31,6 +31,7 @@
 
 #include <engine/shader.cpp>
 #include <engine/bloom.cpp>
+#include <engine/render/shadow_map.cpp>
 #include <engine/render/render_init.cpp>
 #include <engine/render_command.cpp>
 #include <engine/async_texture.cpp>

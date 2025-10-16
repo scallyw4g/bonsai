@@ -1,7 +1,9 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:10:0
 
 link_internal b32
-InitializeTexturedQuadRenderPass(
+poof()
+InitializeTexturedQuadRenderPass
+(
   textured_quad_render_pass *Struct
     , b32 IsDepthTexture
   , b32 HasAlphaChannel
@@ -43,7 +45,8 @@ InitializeTexturedQuadRenderPass(
 }
 
 link_internal void
-UseShader( textured_quad_render_pass *Struct )
+UseRenderPass_textured_quad_render_pass
+( textured_quad_render_pass *Struct )
 {
   if (Struct->Program.ID != INVALID_SHADER)
   {
@@ -72,5 +75,25 @@ UseShader( textured_quad_render_pass *Struct )
   {
     SoftError("Attempted to bind uncompiled Shader (STDLIB_SHADER_PATH \"FullPassthrough.vertexshader\") | (STDLIB_SHADER_PATH \"SimpleTexture.fragmentshader\")");
   }
+}
+
+// NOTE(Jesse): This is for binding when passing a custom RP through the UI 
+link_internal void
+UseRenderPass_textured_quad_render_pass( void *Struct )
+{
+  UseRenderPass_textured_quad_render_pass( Cast(textured_quad_render_pass *, Struct) );
+}
+
+link_internal void
+UseRenderPass( textured_quad_render_pass *Struct )
+{
+  UseRenderPass_textured_quad_render_pass(Struct);
+}
+
+// TODO(Jesse): Remove in favor of UseRenderPass
+link_internal void
+UseShader( textured_quad_render_pass *Struct )
+{
+  UseRenderPass_textured_quad_render_pass(Struct);
 }
 
