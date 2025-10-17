@@ -17,14 +17,16 @@ BindEngineUniform(shader_uniform *Uniform)
     case ShaderUniform_Light:
     {
       TIMED_BLOCK("ShaderUniform_Light");
-      GetGL()->Uniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
+      Assert(Uniform->Count);
+      GetGL()->Uniform3fv(Uniform->ID, Uniform->Count, &Uniform->Light->Position.E[0]);
       END_BLOCK();
     } break;
 
     case ShaderUniform_Camera:
     {
       TIMED_BLOCK("ShaderUniform_Camera");
-      GetGL()->Uniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
+      Assert(Uniform->Count);
+      GetGL()->Uniform3fv(Uniform->ID, Uniform->Count, &Uniform->Camera->RenderSpacePosition.E[0]);
       END_BLOCK();
     } break;
 
