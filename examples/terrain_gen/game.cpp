@@ -2,7 +2,7 @@
 
 #include <bonsai_types.h>
 
-#include "game_types.h"
+#include "game.h"
 
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
@@ -46,18 +46,27 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP = VisibleRegion/2;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
-  auto *EasingFunction = &GameState->EasingFunction;
+
+  easing_function *EasingFunction = &GameState->EasingFunction;
+
+  Push(&EasingFunction->Points, V2(0,0));
+  Push(&EasingFunction->Points, V2(0.5f));
+  Push(&EasingFunction->Points, V2(1,1));
+
   InitializeEasingFunctionVisualizerRenderPass_Async(
        RenderQ,
       &GameState->EasingFunctionVisRP,
        EasingFunction->Points.Start,
-       EasingFunction->Points.At,
+      &EasingFunction->Points.At,
        0);
 
   SpawnEntity(CameraGhost);
   return GameState;
 }
 
+
+poof(do_editor_ui_for_compound_type(game_state))
+#include <generated/do_editor_ui_for_compound_type_game_state.h>
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
@@ -68,6 +77,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "GameState");
+    PushWindowStart(Ui, Window);
+      DoEditorUi(Ui, Window, GameState, CSz("Game State"));
+    PushWindowEnd(Ui, Window);
+  }
+
+  /* GameState->EasingFunctionVisRP.Count = GameState->EasingFunction.Points.At; */
 
   {
     window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");

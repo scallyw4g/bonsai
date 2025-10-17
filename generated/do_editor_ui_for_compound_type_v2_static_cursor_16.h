@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:160:0
+// src/engine/editor.cpp:139:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_update_op_shape_params_sphere", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle v2_static_cursor_16", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,8 +33,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Location");
-        
+        cs MemberName = CSz("Start");
+                                
+
+        if (ToggleButton(Ui, CSz("v Start[16]"), CSz("> Start[16]"), UiId(Window, "toggle v2_static_cursor_16 v2 Start", Element->Start), Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+          RangeIterator(ArrayIndex, 16)
+          {
+                        DoEditorUi(Ui, Window, Element->Start+ArrayIndex, FSz("Start[%d]", ArrayIndex), Params);
+
+            
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
+
+
+
 
         
       }
@@ -44,11 +61,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Radius");
+        cs MemberName = CSz("At");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->Radius),
+          Cast(u32*, &Element->At),
           MemberName,
           Params
           );

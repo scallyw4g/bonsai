@@ -1,7 +1,7 @@
-// src/engine/editor.cpp:160:0
+// examples/terrain_gen/game.cpp:68:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_sphere *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
   if (Element)
   {
@@ -11,7 +11,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_update_op_shape_params_sphere", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle game_state", Element), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -33,22 +33,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
         
         
         
-        cs MemberName = CSz("Location");
-        
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Radius");
+        cs MemberName = CSz("EasingFunction");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->Radius),
+          Cast(easing_function*, &Element->EasingFunction),
           MemberName,
           Params
           );
@@ -60,8 +49,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
 
 
 
-                PushNewRow(Ui);
+        
+      }
+      
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("EasingFunctionVisRP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(easing_function_visualizer_render_pass*, &Element->EasingFunctionVisRP),
+          MemberName,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
       }
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

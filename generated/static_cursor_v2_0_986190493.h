@@ -52,3 +52,10 @@ Push( v2_static_cursor_16 *Buf, v2 *E )
   Buf->Start[Buf->At++] = *E;
 }
 
+link_inline void
+Push( v2_static_cursor_16 *Buf, v2 E )
+{
+  Assert(AtElements(Buf) < TotalElements(Buf));
+  Buf->Start[Buf->At++] = E;
+}
+

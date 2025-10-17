@@ -20,16 +20,36 @@ InitializeTexturedQuadRenderPass
     u32 UniformIndex = 0;
 
             Element->IsDepthTexture = IsDepthTexture;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->IsDepthTexture, "IsDepthTexture" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->IsDepthTexture,
+      "IsDepthTexture"
+      );
 
         Element->HasAlphaChannel = HasAlphaChannel;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->HasAlphaChannel, "HasAlphaChannel" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->HasAlphaChannel,
+      "HasAlphaChannel"
+      );
 
         Element->TextureSlice = TextureSlice;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->TextureSlice, "TextureSlice" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->TextureSlice,
+      "TextureSlice"
+      );
 
         Element->Tint = Tint;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Tint, "Tint" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->Tint,
+      "Tint"
+      );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -54,17 +74,33 @@ UseRenderPass_textured_quad_render_pass
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  4  )
     {
@@ -75,6 +111,8 @@ UseRenderPass_textured_quad_render_pass
   {
     SoftError("Attempted to bind uncompiled Shader (STDLIB_SHADER_PATH \"FullPassthrough.vertexshader\") | (STDLIB_SHADER_PATH \"SimpleTexture.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 

@@ -51,82 +51,212 @@ InitializeLightingRenderGroup
     u32 UniformIndex = 0;
 
             Element->gColor = gColor;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->gColor, "gColor" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->gColor,
+      "gColor"
+      );
 
         Element->gNormal = gNormal;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->gNormal, "gNormal" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->gNormal,
+      "gNormal"
+      );
 
         Element->gDepth = gDepth;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->gDepth, "gDepth" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->gDepth,
+      "gDepth"
+      );
 
         Element->shadowMap = shadowMap;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->shadowMap, "shadowMap" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->shadowMap,
+      "shadowMap"
+      );
 
         Element->Ssao = Ssao;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->Ssao, "Ssao" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->Ssao,
+      "Ssao"
+      );
 
         Element->TransparencyAccumTex = TransparencyAccumTex;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->TransparencyAccumTex, "TransparencyAccumTex" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->TransparencyAccumTex,
+      "TransparencyAccumTex"
+      );
 
         Element->TransparencyCountTex = TransparencyCountTex;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->TransparencyCountTex, "TransparencyCountTex" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->TransparencyCountTex,
+      "TransparencyCountTex"
+      );
 
         Element->BravoilMyersOIT = BravoilMyersOIT;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->BravoilMyersOIT, "BravoilMyersOIT" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->BravoilMyersOIT,
+      "BravoilMyersOIT"
+      );
 
         Element->BravoilMcGuireOIT = BravoilMcGuireOIT;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->BravoilMcGuireOIT, "BravoilMcGuireOIT" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->BravoilMcGuireOIT,
+      "BravoilMcGuireOIT"
+      );
 
         Element->InverseViewMatrix = InverseViewMatrix;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->InverseViewMatrix, "InverseViewMatrix" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->InverseViewMatrix,
+      "InverseViewMatrix"
+      );
 
         Element->InverseProjectionMatrix = InverseProjectionMatrix;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->InverseProjectionMatrix, "InverseProjectionMatrix" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->InverseProjectionMatrix,
+      "InverseProjectionMatrix"
+      );
 
         Element->ShadowMVP = ShadowMVP;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->ShadowMVP, "ShadowMVP" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->ShadowMVP,
+      "ShadowMVP"
+      );
 
         Element->LightColors = LightColors;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightColors, "LightColors" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->LightColors,
+      "LightColors"
+      );
 
         Element->LightPositions = LightPositions;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightPositions, "LightPositions" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->LightPositions,
+      "LightPositions"
+      );
 
         Element->LightIndexToUV = LightIndexToUV;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightIndexToUV, "LightIndexToUV" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->LightIndexToUV,
+      "LightIndexToUV"
+      );
 
         Element->LightCount = LightCount;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->LightCount, "LightCount" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->LightCount,
+      "LightCount"
+      );
 
         Element->Camera = Camera;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->Camera, "Camera" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->Camera,
+      "Camera"
+      );
 
         Element->SunPosition = SunPosition;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->SunPosition, "SunPosition" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->SunPosition,
+      "SunPosition"
+      );
 
         Element->SunColor = SunColor;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->SunColor, "SunColor" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->SunColor,
+      "SunColor"
+      );
 
         Element->FogColor = FogColor;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->FogColor, "FogColor" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->FogColor,
+      "FogColor"
+      );
 
         Element->FogPower = FogPower;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->FogPower, "FogPower" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->FogPower,
+      "FogPower"
+      );
 
         Element->UseSsao = UseSsao;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseSsao, "UseSsao" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->UseSsao,
+      "UseSsao"
+      );
 
         Element->UseShadowMapping = UseShadowMapping;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseShadowMapping, "UseShadowMapping" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->UseShadowMapping,
+      "UseShadowMapping"
+      );
 
         Element->UseLightingBloom = UseLightingBloom;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->UseLightingBloom, "UseLightingBloom" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->UseLightingBloom,
+      "UseLightingBloom"
+      );
 
         Element->ApplicationResolution = ApplicationResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->ApplicationResolution, "ApplicationResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->ApplicationResolution,
+      "ApplicationResolution"
+      );
 
         Element->ShadowMapResolution = ShadowMapResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->ShadowMapResolution, "ShadowMapResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->ShadowMapResolution,
+      "ShadowMapResolution"
+      );
 
 
 
@@ -153,83 +283,187 @@ UseRenderPass_lighting_render_group
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
 
@@ -242,6 +476,8 @@ UseRenderPass_lighting_render_group
   {
     SoftError("Attempted to bind uncompiled Shader (BONSAI_SHADER_PATH \"Lighting.vertexshader\") | (BONSAI_SHADER_PATH \"Lighting.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -383,16 +619,36 @@ InitializeTerrainDecorationRenderContext
     u32 UniformIndex = 0;
 
             Element->DerivsTex = DerivsTex;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->DerivsTex, "DerivsTex" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->DerivsTex,
+      "DerivsTex"
+      );
 
         Element->ChunkDim = ChunkDim;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkDim, "ChunkDim" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ChunkDim,
+      "ChunkDim"
+      );
 
         Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->WorldspaceChunkBasis,
+      "WorldspaceChunkBasis"
+      );
 
         Element->ChunkResolution = ChunkResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkResolution, "ChunkResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ChunkResolution,
+      "ChunkResolution"
+      );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -417,17 +673,33 @@ UseRenderPass_terrain_decoration_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  4  )
     {
@@ -438,6 +710,8 @@ UseRenderPass_terrain_decoration_render_context
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/decoration/default.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -495,7 +769,12 @@ InitializeTerrainFinalizeRenderContext
     u32 UniformIndex = 0;
 
             Element->Ignored = Ignored;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Ignored, "Ignored" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->Ignored,
+      "Ignored"
+      );
 
 
 
@@ -522,8 +801,12 @@ UseRenderPass_terrain_finalize_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
 
@@ -536,6 +819,8 @@ UseRenderPass_terrain_finalize_render_context
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/TerrainFinalize.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -645,16 +930,36 @@ InitializeWorldEditRenderContext
     u32 UniformIndex = 0;
 
             Element->ChunkDim = ChunkDim;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->ChunkDim, "ChunkDim" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->ChunkDim,
+      "ChunkDim"
+      );
 
         Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->WorldspaceChunkBasis,
+      "WorldspaceChunkBasis"
+      );
 
         Element->ChunkResolution = ChunkResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->ChunkResolution, "ChunkResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->ChunkResolution,
+      "ChunkResolution"
+      );
 
         Element->Type = Type;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Type, "Type" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->Type,
+      "Type"
+      );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -679,17 +984,33 @@ UseRenderPass_world_edit_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  4  )
     {
@@ -700,6 +1021,8 @@ UseRenderPass_world_edit_render_context
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/world_edit.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -849,7 +1172,7 @@ InitializeEasingFunctionVisualizerRenderPass
 (
   easing_function_visualizer_render_pass *Element
     , v2 *Points
-  , u32 Count
+  , u32 *Count
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
@@ -861,10 +1184,20 @@ InitializeEasingFunctionVisualizerRenderPass
     u32 UniformIndex = 0;
 
             Element->Points = Points;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->Points, "Points" , Cast(u16, Count));
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->Points,
+      "Points"
+      , Cast(u16, *Count));
 
         Element->Count = Count;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Count, "Count" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->Count,
+      "Count"
+      );
 
     u32 Expected =  2 ;
     if (UniformIndex != Expected )
@@ -889,11 +1222,19 @@ UseRenderPass_easing_function_visualizer_render_pass
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  2  )
     {
@@ -904,6 +1245,8 @@ UseRenderPass_easing_function_visualizer_render_pass
   {
     SoftError("Attempted to bind uncompiled Shader (STDLIB_SHADER_PATH \"FullPassthrough.vertexshader\") | (BONSAI_SHADER_PATH \"curve_remap_visualizer.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -1006,16 +1349,36 @@ InitializeShadowMapShader
     u32 UniformIndex = 0;
 
             Element->ModelMatrix = ModelMatrix;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ModelMatrix, "ModelMatrix" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ModelMatrix,
+      "ModelMatrix"
+      );
 
         Element->ViewProjection = ViewProjection;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ViewProjection, "ViewProjection" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ViewProjection,
+      "ViewProjection"
+      );
 
         Element->MinClipP_worldspace = MinClipP_worldspace;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->MinClipP_worldspace, "MinClipP_worldspace" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->MinClipP_worldspace,
+      "MinClipP_worldspace"
+      );
 
         Element->MaxClipP_worldspace = MaxClipP_worldspace;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->MaxClipP_worldspace, "MaxClipP_worldspace" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->MaxClipP_worldspace,
+      "MaxClipP_worldspace"
+      );
 
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
@@ -1040,17 +1403,33 @@ UseRenderPass_shadow_map_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  4  )
     {
@@ -1061,6 +1440,8 @@ UseRenderPass_shadow_map_shader
   {
     SoftError("Attempted to bind uncompiled Shader (\"shaders/DepthRTT.vertexshader\") | (\"shaders/DepthRTT.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -1103,7 +1484,12 @@ InitializeBloomUpsampleShader
     u32 UniformIndex = 0;
 
             Element->FilterRadius = FilterRadius;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->FilterRadius, "FilterRadius" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->FilterRadius,
+      "FilterRadius"
+      );
 
 
 
@@ -1130,8 +1516,12 @@ UseRenderPass_bloom_upsample_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
 
@@ -1144,6 +1534,8 @@ UseRenderPass_bloom_upsample_shader
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/bloom_upsample.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -1395,7 +1787,12 @@ InitializeTerrainDerivsRenderContext
     u32 UniformIndex = 0;
 
             Element->Ignored = Ignored;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->Ignored, "Ignored" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->Ignored,
+      "Ignored"
+      );
 
 
 
@@ -1422,8 +1819,12 @@ UseRenderPass_terrain_derivs_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
 
@@ -1436,6 +1837,8 @@ UseRenderPass_terrain_derivs_render_context
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/derivs.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -1504,7 +1907,12 @@ InitializeBloomDownsampleShader
     u32 UniformIndex = 0;
 
             Element->SrcResolution = SrcResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, Element->SrcResolution, "SrcResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      Element->SrcResolution,
+      "SrcResolution"
+      );
 
 
 
@@ -1531,8 +1939,12 @@ UseRenderPass_bloom_downsample_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
 
@@ -1545,6 +1957,8 @@ UseRenderPass_bloom_downsample_shader
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/bloom_downsample.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 
@@ -1684,13 +2098,28 @@ InitializeTerrainShapingRenderContext
     u32 UniformIndex = 0;
 
             Element->ChunkDim = ChunkDim;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkDim, "ChunkDim" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ChunkDim,
+      "ChunkDim"
+      );
 
         Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->WorldspaceChunkBasis, "WorldspaceChunkBasis" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->WorldspaceChunkBasis,
+      "WorldspaceChunkBasis"
+      );
 
         Element->ChunkResolution = ChunkResolution;
-    InitShaderUniform(&Element->Program, UniformIndex++, &Element->ChunkResolution, "ChunkResolution" );
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+      &Element->ChunkResolution,
+      "ChunkResolution"
+      );
 
     u32 Expected =  3 ;
     if (UniformIndex != Expected )
@@ -1715,14 +2144,26 @@ UseRenderPass_terrain_shaping_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
-        BindUniformById(Element->Uniforms+UniformIndex, &TextureUnit);
-    ++UniformIndex;
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
     if (UniformIndex !=  3  )
     {
@@ -1733,6 +2174,8 @@ UseRenderPass_terrain_shaping_render_context
   {
     SoftError("Attempted to bind uncompiled Shader (\"external/bonsai_stdlib/shaders/Passthrough.vertexshader\") | (\"shaders/terrain/shaping/default.fragmentshader\")");
   }
+
+  AssertNoGlErrors;
 }
 
 // NOTE(Jesse): This is for binding when passing a custom RP through the UI 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:379:0
+// src/engine/editor.cpp:385:0
 
 
 
@@ -1117,12 +1117,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
 
 
 

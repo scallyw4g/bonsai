@@ -136,6 +136,8 @@ GetUiDebug()
   return &GetEngineResources()->EngineDebug.UiDebug;
 }
 
+poof(do_editor_ui_for_compound_type(v2_static_cursor_16))
+#include <generated/do_editor_ui_for_compound_type_v2_static_cursor_16.h>
 
 poof(string_and_value_tables(visible_region_size))
 #include <generated/string_and_value_tables_visible_region_size.h>
@@ -213,27 +215,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
         case ShaderUniform_M4:        { DoEditorUi(Ui, Window, Element->M4, CSz("M4"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
         case ShaderUniform_V2:        { DoEditorUi(Ui, Window, Element->V2, CSz("V2"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
         case ShaderUniform_V3:        { DoEditorUi(Ui, Window, Element->V3, CSz("V3"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_S32:       { DoEditorUi(Ui, Window, Element->S32, CSz("S32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_U32:       { DoEditorUi(Ui, Window, Element->U32, CSz("U32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_R32:       { DoEditorUi(Ui, Window, Element->R32, CSz("R32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_S32:       { DoEditorUi(Ui, Window, Element->S32, CSz("S32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
+        case ShaderUniform_U32:       { DoEditorUi(Ui, Window, Element->U32, CSz("U32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
+        case ShaderUniform_R32:       { DoEditorUi(Ui, Window, Element->R32, CSz("R32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
         case ShaderUniform_Texture:   { DoEditorUi(Ui, Window, Element->Texture, CSz("Texture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
         case ShaderUniform_Light:     { DoEditorUi(Ui, Window, Element->Light, CSz("Light"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
         case ShaderUniform_Camera:    { DoEditorUi(Ui, Window, Element->Camera, CSz("Camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
       }
 
       DoEditorUi(Ui, Window, &Element->ID, CSz("s32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushTableEnd(Ui);
+      PushNewRow(Ui);
+      DoEditorUi(Ui, Window, &Element->Count, CSz("u32 Count"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
       PushNewRow(Ui);
 
+      PushTableEnd(Ui);
       /* DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
     }
+
   }
   else
   {
     PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
     PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushNewRow(Ui);
   }
+
+  PushNewRow(Ui);
 }
 poof(do_editor_ui_for_container(shader_uniform_buffer))
 #include <generated/do_editor_ui_for_container_struct.h>
