@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:363:0
+// src/engine/editor.cpp:369:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2A9389DB);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle plane", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle plane", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->P),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Normal),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->d),
           MemberName,
+          ThisHash,
           Params
           );
 

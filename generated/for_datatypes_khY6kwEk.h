@@ -2302,7 +2302,6 @@
 
 
 
-
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -5262,23 +5261,6 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 struct draw_lod_async_params poof(@async_function_params)
 {
   
@@ -5289,6 +5271,8 @@ struct draw_lod_async_params poof(@async_function_params)
   Quaternion Rotation;
   v3 Scale;
 };
+
+
 
 
 

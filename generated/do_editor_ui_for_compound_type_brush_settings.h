@@ -1,8 +1,10 @@
 // src/engine/editor.cpp:177:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2B34AC41);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle brush_settings", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle brush_settings", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(brush_layer_type*, &Element->Type),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(noise_layer*, &Element->Noise),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(shape_layer*, &Element->Shape),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->Power),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -136,6 +142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ValueBias),
           MemberName,
+          ThisHash,
           Params
           , -1.f,  1.f );
 
@@ -161,6 +168,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->Threshold),
           MemberName,
+          ThisHash,
           Params
           ,  0.f,  1.f );
 
@@ -186,6 +194,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_blend_mode_modifier*, &Element->ValueModifier),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -210,6 +219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_blend_mode*, &Element->BlendMode),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -234,6 +244,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_color_blend_mode*, &Element->ColorMode),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -258,6 +269,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           // Cast to remove const/volatile keywords if they're there
           Cast(b8*, &Element->Invert),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -312,7 +324,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("HSVColor");
-                                        PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False);
+                                        PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash);
 
 
 

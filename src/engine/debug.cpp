@@ -6,19 +6,20 @@ DoEntityWindow(engine_resources *Engine)
 
 #if 1
   {
-    local_persist window_layout EntityWindow = WindowLayout("All Entities");
+    window_layout *EntityWindow = GetOrCreateWindow(Ui, "All Entities");
 
-    PushWindowStart(Ui, &EntityWindow);
+    PushWindowStart(Ui, EntityWindow);
       PushTableStart(Ui);
 
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, &EntityWindow, Entity, FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name) );
+          cs Label = FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name);
+          DoEditorUi(Ui, EntityWindow, Entity, Label, u32(Hash(EntityWindow)) );
         }
       PushTableEnd(Ui);
 
-    PushWindowEnd(Ui, &EntityWindow);
+    PushWindowEnd(Ui, EntityWindow);
   }
 #endif
 
@@ -46,14 +47,14 @@ DoEntityWindow(engine_resources *Engine)
   {
     DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_WHITE);
 
-    local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_Align_Right);
+    window_layout *EntityWindow = GetOrCreateWindow(Ui, "Entity Details", WindowLayoutFlag_Align_Right);
 
-    PushWindowStart(Ui, &EntityWindow);
+    PushWindowStart(Ui, EntityWindow);
       PushTableStart(Ui);
-        DoEditorUi(Ui, &EntityWindow, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index));
+        DoEditorUi(Ui, EntityWindow, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index), u32(Hash(EntityWindow)) );
         PushNewRow(Ui);
       PushTableEnd(Ui);
-    PushWindowEnd(Ui, &EntityWindow);
+    PushWindowEnd(Ui, EntityWindow);
 
 
 #if 0
@@ -254,7 +255,9 @@ link_internal void
 DoAssetWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  NotImplemented;
 
+#if 0
   {
     local_persist window_layout Window = WindowLayout("Assets");
 
@@ -460,6 +463,7 @@ DoAssetWindow(engine_resources *Engine)
 
     PushWindowEnd(Ui, &AssetViewWindow);
   }
+#endif
 }
 
 #if 0
@@ -537,23 +541,23 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ViewMode & EngineDebugViewMode_WorldChunks)
   {
-    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
+    window_layout *WorldChunkWindow = GetOrCreateWindow(Ui, "World Chunks");
     auto *PickedNode = EngineDebug->PickedNode;
     auto *PickedChunk = PickedNode ? PickedNode->Chunk : 0;
 
-    WorldChunkWindow.Title = PickedChunk ?
+    WorldChunkWindow->Title = PickedChunk ?
       FSz("World Chunk : (%p)", PickedChunk) :
       CSz("World Chunk");
 
-    PushWindowStart(Ui, &WorldChunkWindow);
+    PushWindowStart(Ui, WorldChunkWindow);
 
       if ( Clicked(&EditorButtonGroup, CSz("WorldChunks")) ||
-           Button(Ui, CSz("PickNewChunk"), UiId(&WorldChunkWindow, "PickWorldChunkButton", 0ull) ) )
+           Button(Ui, CSz("PickNewChunk"), UiId(WorldChunkWindow, "PickWorldChunkButton", 0ull) ) )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
 
-      /* if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) ) */
+      /* if (Button(Ui, CSz("RebuildMesh"), UiId(WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) ) */
       /* { */
       /*   MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim); */
       /*   QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk); */
@@ -571,10 +575,10 @@ DoEngineDebug(engine_resources *Engine)
 
       if (EngineDebug->PickedNode)
       {
-        DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedNode, {});
+        DoEditorUi(Ui, WorldChunkWindow, EngineDebug->PickedNode, {}, u32(Hash(WorldChunkWindow)));
       }
 
-    PushWindowEnd(Ui, &WorldChunkWindow);
+    PushWindowEnd(Ui, WorldChunkWindow);
   }
 
 #if 1
@@ -657,12 +661,12 @@ DoEngineDebug(engine_resources *Engine)
   if (ViewMode & EngineDebugViewMode_RenderSettings)
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_Align_Right);
+    window_layout *RenderSettingsWindow = GetOrCreateWindow(Ui, "Graphics Settings", WindowLayoutFlag_Align_Right);
 
     render_settings *Settings = &Graphics->Settings;
-    PushWindowStart(Ui, &RenderSettingsWindow);
-      DoEditorUi(Ui, &RenderSettingsWindow, Settings, {});
-    PushWindowEnd(Ui, &RenderSettingsWindow);
+    PushWindowStart(Ui, RenderSettingsWindow);
+      DoEditorUi(Ui, RenderSettingsWindow, Settings, {}, u32(Hash(RenderSettingsWindow)));
+    PushWindowEnd(Ui, RenderSettingsWindow);
   }
 
   if (ViewMode & EngineDebugViewMode_EngineDebug)
@@ -670,16 +674,16 @@ DoEngineDebug(engine_resources *Engine)
     v2 WindowDim = {{1200.f, 250.f}};
 
     {
-      local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_Align_Right);
-      PushWindowStart(Ui, &Window);
-        DoEditorUi(Ui, &Window, EngineDebug, {});
-      PushWindowEnd(Ui, &Window);
+      window_layout *Window = GetOrCreateWindow(Ui, "Engine Debug", WindowLayoutFlag_Align_Right);
+      PushWindowStart(Ui, Window);
+        DoEditorUi(Ui, Window, EngineDebug, {}, u32(Hash(Window)) );
+      PushWindowEnd(Ui, Window);
     }
     {
-      local_persist window_layout Window = WindowLayout("Engine");
-      PushWindowStart(Ui, &Window);
-        DoEditorUi(Ui, &Window, Engine, {});
-      PushWindowEnd(Ui, &Window);
+      window_layout *Window = GetOrCreateWindow(Ui, "Engine");
+      PushWindowStart(Ui, Window);
+        DoEditorUi(Ui, Window, Engine, {}, u32(Hash(Window)));
+      PushWindowEnd(Ui, Window);
     }
 
     DoGraphicsDebugWindow(Engine);

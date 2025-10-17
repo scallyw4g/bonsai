@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:536:0
+// src/engine/editor.cpp:542:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x83E1CFD);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_buffers_2d", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_buffers_2d", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(texture*, &Element->DebugTextureArray),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(s32*, &Element->TextTextureUniform),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -88,6 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(shader*, &Element->UiShader),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -112,6 +117,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(gpu_mapped_ui_buffer*, &Element->Buf),
           MemberName,
+          ThisHash,
           Params
           );
 

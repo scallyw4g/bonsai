@@ -1,4 +1,4 @@
-// src/engine/editor.h:898:0
+// src/engine/editor.h:922:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_blend_mode Selection)
@@ -42,6 +42,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   world_edit_blend_mode *Element,
   cs GroupName,
+  u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {

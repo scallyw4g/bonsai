@@ -226,8 +226,10 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
+        u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
+
         type.member(0, (E) 
         {
           /* PushTableStart(Ui); */
@@ -239,7 +241,7 @@ poof(
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -259,8 +261,10 @@ poof(
     type_list.map(type)
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
+        u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
+
         Params = Params ? Params : &DefaultUiRenderParams_Blank;
 
         if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Column); }
@@ -269,9 +273,9 @@ poof(
         {
           u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
             PushTableStart(Ui);
-              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
+              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
                   PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
-              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
+              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
         }
@@ -283,12 +287,6 @@ poof(
 
       }
 
-      link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, volatile type.name *Value, cs Name, ui_render_params *Params)
-      {
-        DoEditorUi(Ui, Window, ((type.name)*) Value, Name, Params);
-      }
-
     }
   }
 )
@@ -297,8 +295,10 @@ poof(
   func do_editor_ui_for_compound_type(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
     {
+      u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
+
       if (Element)
       {
         // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -307,7 +307,7 @@ poof(
         b32 DidToggle = False;
         if (Name.Count)
         {
-          if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element), Params))
+          if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle type.name", Element, ThisHash), Params))
           {
             DidToggle = True;
             PushNewRow(Ui);
@@ -339,14 +339,18 @@ poof(
                   member.has_tag(ui_construct_as)?
                   {
                     auto Value = member.tag_value(ui_construct_as)(Element->member.name);
-                    DoEditorUi(Ui, Window, &Value, MemberName, Params);
+                    DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
                   }
                   {
                     member.is_array?
                     {
                       member.has_tag(ui_display_name)? {poof_error(ui_display_name tag is incompatible with array members )}
 
-                      if (ToggleButton(Ui, CSz("v member.name[member.array]"), CSz("> member.name[member.array]"), UiId(Window, "toggle type.name member.type member.name", Element->(member.name)), Params ))
+                      if (ToggleButton(Ui,
+                            CSz("v member.name[member.array]"),
+                            CSz("> member.name[member.array]"),
+                            UiId(Window, "toggle type.name member.type member.name", Element->(member.name), ThisHash),
+                            Params ))
                       {
                         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
                           PushNewRow(Ui);
@@ -357,7 +361,12 @@ poof(
                               member.tag_value(custom_ui);
                             }
                             {
-                              DoEditorUi(Ui, Window, Element->(member.name)+ArrayIndex, FSz("member.name[%d]", ArrayIndex), Params);
+                              DoEditorUi(Ui,
+                                  Window,
+                                  Element->(member.name)+ArrayIndex,
+                                  FSz("member.name[%d]", ArrayIndex),
+                                  ThisHash,
+                                  Params);
                             }
                             member.is_primitive?  { PushNewRow(Ui); }
                           }
@@ -377,6 +386,7 @@ poof(
                                      Window,
                                      Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
                                      MemberName,
+                                     ThisHash,
                                      &DefaultUiRenderParams_Checkbox
                                      member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                         }
@@ -390,6 +400,7 @@ poof(
                                          // Cast to remove const/volatile keywords if they're there
                                          Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
                                          MemberName,
+                                         ThisHash,
                                          Params
                                          member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                             }
@@ -406,6 +417,7 @@ poof(
                                          // Cast to remove const/volatile keywords if they're there
                                          Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
                                          MemberName,
+                                         ThisHash,
                                          Params
                                          member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                             }
@@ -451,19 +463,21 @@ poof(
     }
     {
       link_internal void
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
       {
+        u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(enum_t.hash));
+
         if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
         cs ElementName = ToStringPrefixless(*Element);
-        ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+        ui_id ToggleButtonId = UiId(Window, "toggle enum_t.name", Element, ThisHash);
         if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
         {
           PushNewRow(Ui);
           enum_t.map(value)
           {
             if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-            if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element), Params))
+            if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element, ThisHash), Params))
             {
               enum_t.has_tag(bitfield)?
               {
@@ -505,16 +519,18 @@ poof(
   func do_editor_ui_for_container(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
     {
+      u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
+
       if (Container)
       {
-        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+        if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
         {
           PushNewRow(Ui);
           IterateOver(Container, Element, ElementIndex)
           {
-            DoEditorUi(Ui, Window, Element, CS(ElementIndex), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+            DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
             PushNewRow(Ui);
           }
         }
@@ -541,6 +557,7 @@ poof(
                 window_layout *Window,
                 enum_t.name *Element,
                 cs GroupName,
+                u32 ParentHash,
                 ui_render_params *Params = &DefaultUiRenderParams_Generic,
                 ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
     {
@@ -592,17 +609,19 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
+
   if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
       if (Value)
       {
-        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value))) { *Value = *Value - 1.f; }
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash))) { *Value = *Value - 1.f; }
           DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
-        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value))) { *Value = *Value + 1.f; }
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash))) { *Value = *Value + 1.f; }
       }
       else
       {
@@ -613,11 +632,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, ui_rende
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Checkbox)
 {
   UNPACK_UI_RENDER_PARAMS(Params);
 
-  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value), BStyle);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
+
+  interactable_handle ButtonHandle = PushButtonStart(Ui, UiId(Window, "toggle", Value, ThisHash), BStyle);
 
     PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Generic);
 
@@ -644,7 +665,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, b8 *Value, cs Name, ui_render
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
   PushColumn(Ui, CS(Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
   Value ?
@@ -653,8 +674,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, cs *Value, cs Name, EDITOR_UI
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, void *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
+  /* u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(Name.Start)); */
   if (Name.Count) { PushColumn(Ui, CS(Name), Params); }
   Value ?
     PushColumn(Ui, FSz("0x%x",umm(Value)), &DefaultUiRenderParams_Column) :
@@ -668,10 +690,12 @@ poof(do_editor_ui_for_vector_type({v4i v4 v3i v3 v2i v2 Quaternion m4}));
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, cp *Value, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
-  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"));
-  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"));
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
+
+  DoEditorUi(Ui, Window, &Value->WorldP, CSz("WorldP"), ThisHash, Params);
+  DoEditorUi(Ui, Window, &Value->Offset, CSz("Offset"), ThisHash, Params);
 }
 
 poof(string_and_value_tables(maybe_tag))
@@ -1153,7 +1177,7 @@ struct brush_settings
   v3i NoiseBasisOffset; poof(@ui_skip)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False)))
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 };
 
 poof(are_equal(brush_settings))
@@ -1538,10 +1562,10 @@ link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);
 
 link_internal void
-DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash);
 
 link_internal void
-DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch);
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash);
 
 link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);

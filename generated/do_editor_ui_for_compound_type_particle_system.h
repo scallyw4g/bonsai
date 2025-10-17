@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:330:0
+// src/engine/editor.cpp:334:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x137DC8CC);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle_system", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle_system", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(random_series*, &Element->Entropy),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(particle_spawn_type*, &Element->SpawnType),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Drag),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -112,6 +117,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Lifetime),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -137,6 +143,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->EmissionDelay),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -162,6 +169,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->EmissionLifespan),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -187,6 +195,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->ActiveParticles),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -212,6 +221,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->LifespanMod),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -237,6 +247,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticleLifespan),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -262,6 +273,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticlesPerSecond),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -287,6 +299,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticleLightEmission),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -312,6 +325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticleLightEmissionChance),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -337,6 +351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticleStartingTransparency),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -362,6 +377,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ParticleEndingTransparency),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -387,6 +403,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ParticleStartingDim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -411,6 +428,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->ParticleEndingDim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -436,6 +454,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ParticleTurbMin),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -460,6 +479,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ParticleTurbMax),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -484,6 +504,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(aabb*, &Element->SpawnRegion),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -508,6 +529,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->SystemMovementCoefficient),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -533,6 +555,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->ElapsedSinceLastEmission),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -555,13 +578,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         cs MemberName = CSz("PackedHSVColors");
                                 
 
-        if (ToggleButton(Ui, CSz("v PackedHSVColors[6]"), CSz("> PackedHSVColors[6]"), UiId(Window, "toggle particle_system u16 PackedHSVColors", Element->PackedHSVColors), Params ))
+        if (ToggleButton(Ui,
+            CSz("v PackedHSVColors[6]"),
+            CSz("> PackedHSVColors[6]"),
+            UiId(Window, "toggle particle_system u16 PackedHSVColors", Element->PackedHSVColors, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, 6)
           {
-                        DoEditorUi(Ui, Window, Element->PackedHSVColors+ArrayIndex, FSz("PackedHSVColors[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->PackedHSVColors+ArrayIndex,
+              FSz("PackedHSVColors[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
              PushNewRow(Ui); 
           }
@@ -584,13 +616,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         cs MemberName = CSz("Particles");
                                 
 
-        if (ToggleButton(Ui, CSz("v Particles[(4096)]"), CSz("> Particles[(4096)]"), UiId(Window, "toggle particle_system particle Particles", Element->Particles), Params ))
+        if (ToggleButton(Ui,
+            CSz("v Particles[(4096)]"),
+            CSz("> Particles[(4096)]"),
+            UiId(Window, "toggle particle_system particle Particles", Element->Particles, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, (4096))
           {
-                        DoEditorUi(Ui, Window, Element->Particles+ArrayIndex, FSz("Particles[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->Particles+ArrayIndex,
+              FSz("Particles[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }

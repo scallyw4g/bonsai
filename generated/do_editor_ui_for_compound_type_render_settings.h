@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:315:0
+// src/engine/editor.cpp:319:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3A47CBF1);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_settings", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_settings", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -38,6 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->UseSsao),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -60,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->UseShadowMapping),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -82,6 +86,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->UseLightingBloom),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -104,6 +109,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->BravoilMyersOIT),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -126,6 +132,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->BravoilMcGuireOIT),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -148,6 +155,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->DrawMajorGrid),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -170,6 +178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->DrawMinorGrid),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -193,6 +202,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->MajorGridDim),
           MemberName,
+          ThisHash,
           Params
           , 0, 32 );
 
@@ -217,6 +227,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           Window,
           Cast(b8*, &Element->DrawCameraGhost),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -240,6 +251,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->CameraGhostSize),
           MemberName,
+          ThisHash,
           Params
           , 1, 100 );
 
@@ -288,6 +300,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(tone_mapping_type*, &Element->ToneMappingType),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -312,6 +325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->GameCameraFOV),
           MemberName,
+          ThisHash,
           Params
           , 5, 250 );
 
@@ -337,6 +351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(lighting_settings*, &Element->Lighting),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -361,6 +376,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->ApplicationResolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -385,6 +401,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->ShadowMapResolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -409,6 +426,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->LuminanceMapResolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -433,6 +451,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2i*, &Element->iApplicationResolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -457,6 +476,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2i*, &Element->iShadowMapResolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -481,6 +501,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
           // Cast to remove const/volatile keywords if they're there
           Cast(v2i*, &Element->iLuminanceMapResolution),
           MemberName,
+          ThisHash,
           Params
           );
 

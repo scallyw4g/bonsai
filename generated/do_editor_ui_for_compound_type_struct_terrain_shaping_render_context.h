@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:551:0
+// src/engine/editor.cpp:557:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1818B763);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_shaping_render_context", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle terrain_shaping_render_context", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(shader*, &Element->Program),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -60,13 +63,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
         cs MemberName = CSz("Uniforms");
                                 
 
-        if (ToggleButton(Ui, CSz("v Uniforms[3]"), CSz("> Uniforms[3]"), UiId(Window, "toggle terrain_shaping_render_context shader_uniform Uniforms", Element->Uniforms), Params ))
+        if (ToggleButton(Ui,
+            CSz("v Uniforms[3]"),
+            CSz("> Uniforms[3]"),
+            UiId(Window, "toggle terrain_shaping_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, 3)
           {
-                        DoEditorUi(Ui, Window, Element->Uniforms+ArrayIndex, FSz("Uniforms[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->Uniforms+ArrayIndex,
+              FSz("Uniforms[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -91,6 +103,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(texture*, &Element->DestTex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -115,6 +128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(framebuffer*, &Element->DestFBO),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -139,6 +153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ChunkDim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -163,6 +178,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->WorldspaceChunkBasis),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -187,6 +203,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ChunkResolution),
           MemberName,
+          ThisHash,
           Params
           );
 

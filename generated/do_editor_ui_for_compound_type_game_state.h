@@ -1,8 +1,10 @@
 // examples/terrain_gen/game.cpp:68:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x7825EE2);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name,
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle game_state", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle game_state", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(easing_function*, &Element->EasingFunction),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(easing_function_visualizer_render_pass*, &Element->EasingFunctionVisRP),
           MemberName,
+          ThisHash,
           Params
           );
 

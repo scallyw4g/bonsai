@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:417:0
+// src/engine/editor.cpp:423:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2083C45D);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_edit_brush", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -35,7 +37,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
         
         cs MemberName = CSz("NameBuf");
                         auto Value = CS(Element->NameBuf);
-        DoEditorUi(Ui, Window, &Value, MemberName, Params);
+        DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
 
 
 
@@ -54,6 +56,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_blend_mode*, &Element->Mode),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -102,6 +106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
           // Cast to remove const/volatile keywords if they're there
           Cast(layered_brush*, &Element->Layered),
           MemberName,
+          ThisHash,
           Params
           );
 

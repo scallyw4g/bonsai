@@ -81,11 +81,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     window_layout *Window = GetOrCreateWindow(Ui, "GameState");
     PushWindowStart(Ui, Window);
-      DoEditorUi(Ui, Window, GameState, CSz("Game State"));
+      DoEditorUi(Ui, Window, GameState, CSz("Game State"), u32(Hash(Window)));
     PushWindowEnd(Ui, Window);
   }
-
-  /* GameState->EasingFunctionVisRP.Count = GameState->EasingFunction.Points.At; */
 
   {
     window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");

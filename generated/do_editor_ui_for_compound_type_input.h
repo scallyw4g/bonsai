@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:264:0
+// src/engine/editor.cpp:268:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8A2F50A);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Enter),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Escape),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Alt),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Ctrl),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Shift),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -159,6 +166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Backspace),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -183,6 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Delete),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -207,6 +216,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F12),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -231,6 +241,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F11),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -255,6 +266,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F10),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -279,6 +291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F9),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -303,6 +316,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F8),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -327,6 +341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F7),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -351,6 +366,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F6),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -375,6 +391,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F5),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -399,6 +416,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F4),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -423,6 +441,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F3),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -447,6 +466,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F2),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -471,6 +491,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F1),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -495,6 +516,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Dot),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -519,6 +541,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Minus),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -543,6 +566,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->FSlash),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -567,6 +591,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Space),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -591,6 +616,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Underscore),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -615,6 +641,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N0),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -639,6 +666,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N1),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -663,6 +691,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N2),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -687,6 +716,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N3),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -711,6 +741,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N4),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -735,6 +766,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N5),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -759,6 +791,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N6),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -783,6 +816,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N7),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -807,6 +841,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N8),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -831,6 +866,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N9),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -855,6 +891,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->A),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -879,6 +916,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->B),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -903,6 +941,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->C),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -927,6 +966,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->D),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -951,6 +991,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->E),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -975,6 +1016,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->F),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -999,6 +1041,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->G),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1023,6 +1066,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->H),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1047,6 +1091,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->I),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1071,6 +1116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->J),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1095,6 +1141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->K),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1119,6 +1166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->L),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1143,6 +1191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->M),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1167,6 +1216,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->N),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1191,6 +1241,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->O),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1215,6 +1266,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->P),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1239,6 +1291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Q),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1263,6 +1316,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->R),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1287,6 +1341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->S),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1311,6 +1366,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->T),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1335,6 +1391,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->U),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1359,6 +1416,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->V),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1383,6 +1441,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->W),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1407,6 +1466,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->X),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1431,6 +1491,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Y),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1455,6 +1516,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->Z),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1479,6 +1541,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->RMB),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1503,6 +1566,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->LMB),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1527,6 +1591,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(input_event*, &Element->MMB),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -1551,6 +1616,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(s32*, &Element->MouseWheelDelta),
           MemberName,
+          ThisHash,
           Params
           );
 

@@ -1,17 +1,19 @@
-// src/engine/editor.h:687:0
+// src/engine/editor.h:711:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x29E6250C);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle shape_axis", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("InferFromMajorAxis"), UiId(Window, "enum ShapeAxis_InferFromMajorAxis", Element), Params))
+    if (Button(Ui, CSz("InferFromMajorAxis"), UiId(Window, "enum ShapeAxis_InferFromMajorAxis", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_InferFromMajorAxis;
 
@@ -20,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("PosX"), UiId(Window, "enum ShapeAxis_PosX", Element), Params))
+    if (Button(Ui, CSz("PosX"), UiId(Window, "enum ShapeAxis_PosX", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_PosX;
 
@@ -29,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("NegX"), UiId(Window, "enum ShapeAxis_NegX", Element), Params))
+    if (Button(Ui, CSz("NegX"), UiId(Window, "enum ShapeAxis_NegX", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_NegX;
 
@@ -38,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("PosY"), UiId(Window, "enum ShapeAxis_PosY", Element), Params))
+    if (Button(Ui, CSz("PosY"), UiId(Window, "enum ShapeAxis_PosY", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_PosY;
 
@@ -47,7 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("NegY"), UiId(Window, "enum ShapeAxis_NegY", Element), Params))
+    if (Button(Ui, CSz("NegY"), UiId(Window, "enum ShapeAxis_NegY", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_NegY;
 
@@ -56,7 +58,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("PosZ"), UiId(Window, "enum ShapeAxis_PosZ", Element), Params))
+    if (Button(Ui, CSz("PosZ"), UiId(Window, "enum ShapeAxis_PosZ", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_PosZ;
 
@@ -65,7 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("NegZ"), UiId(Window, "enum ShapeAxis_NegZ", Element), Params))
+    if (Button(Ui, CSz("NegZ"), UiId(Window, "enum ShapeAxis_NegZ", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_NegZ;
 
@@ -74,7 +76,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_axis *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Count"), UiId(Window, "enum ShapeAxis_Count", Element), Params))
+    if (Button(Ui, CSz("Count"), UiId(Window, "enum ShapeAxis_Count", Element, ThisHash), Params))
     {
             *Element = ShapeAxis_Count;
 

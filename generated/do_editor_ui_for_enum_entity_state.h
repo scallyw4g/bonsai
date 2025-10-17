@@ -1,17 +1,19 @@
-// src/engine/editor.cpp:300:0
+// src/engine/editor.cpp:304:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x12A84A89);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle entity_state", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Free"), UiId(Window, "enum EntityState_Free", Element), Params))
+    if (Button(Ui, CSz("Free"), UiId(Window, "enum EntityState_Free", Element, ThisHash), Params))
     {
             *Element = EntityState_Free;
 
@@ -20,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Spawned"), UiId(Window, "enum EntityState_Spawned", Element), Params))
+    if (Button(Ui, CSz("Spawned"), UiId(Window, "enum EntityState_Spawned", Element, ThisHash), Params))
     {
             *Element = EntityState_Spawned;
 
@@ -29,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Destroyed"), UiId(Window, "enum EntityState_Destroyed", Element), Params))
+    if (Button(Ui, CSz("Destroyed"), UiId(Window, "enum EntityState_Destroyed", Element, ThisHash), Params))
     {
             *Element = EntityState_Destroyed;
 
@@ -38,7 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_state *Element, cs Nam
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Reserved"), UiId(Window, "enum EntityState_Reserved", Element), Params))
+    if (Button(Ui, CSz("Reserved"), UiId(Window, "enum EntityState_Reserved", Element, ThisHash), Params))
     {
             *Element = EntityState_Reserved;
 

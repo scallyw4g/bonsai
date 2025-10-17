@@ -2302,7 +2302,6 @@
 
 
 
-
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
@@ -5293,23 +5292,6 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal void
 DrawLod_Async(work_queue *Queue,  engine_resources *Engine , shader *Shader , gpu_mapped_element_buffer *Mesh , v3 Basis , Quaternion Rotation , v3 Scale  )
 {
@@ -5328,6 +5310,8 @@ DoJob(draw_lod_async_params *Params)
    DrawLod( Params->Engine , Params->Shader , Params->Mesh , Params->Basis , Params->Rotation , Params->Scale );
   
 }
+
+
 
 
 

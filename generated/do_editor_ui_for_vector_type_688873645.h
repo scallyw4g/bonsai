@@ -1,8 +1,10 @@
-// src/engine/editor.h:666:0
+// src/engine/editor.h:688:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60E2);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -10,10 +12,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, ui_rende
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[3], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -23,8 +25,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, ui_rende
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F1413);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -32,10 +36,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, ui_render
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[3], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -45,8 +49,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, ui_render
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60AD);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -54,9 +60,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, ui_rende
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -66,8 +72,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, ui_rende
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13DE);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -75,9 +83,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, ui_render
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -87,8 +95,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, ui_render
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F6078);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -96,8 +106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, ui_rende
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -107,8 +117,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, ui_rende
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13A9);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -116,8 +128,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, ui_render
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -127,8 +139,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, ui_render
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x42A58E4);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -136,10 +150,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[3], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -149,8 +163,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u
   PushNewRow(Ui);
 }
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F140A);
+
     /* PushTableStart(Ui); */
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
 
@@ -158,10 +174,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, ui_render
   {
     u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     PushTableStart(Ui);
-        DoEditorUi(Ui, Window, &Value->E[0], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[1], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[2], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
-    DoEditorUi(Ui, Window, &Value->E[3], {}, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+        DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+    DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);

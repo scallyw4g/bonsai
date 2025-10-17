@@ -59,7 +59,7 @@ struct entity_position_info
 link_weak b32 EntityUserDataSerialize(u8_cursor_block_array *, u64 UserType, u64 UserData);
 link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserData, memory_arena*);
 
-link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
+link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
 
 struct entity poof(@version(2))
 {
@@ -74,7 +74,7 @@ struct entity poof(@version(2))
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-PI32, PI32))
   r32 Scale;
@@ -103,8 +103,8 @@ struct entity poof(@version(2))
 
   u64 UserType;
   poof(
-    @custom_ui(  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
-                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+    @custom_ui(  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     )
   )
 
@@ -114,7 +114,7 @@ struct entity poof(@version(2))
     @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})
 
     @custom_ui(  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
-                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     )
   )
 };
@@ -132,7 +132,7 @@ struct entity_1
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;
@@ -179,7 +179,7 @@ struct entity_0
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;

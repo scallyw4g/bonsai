@@ -18,17 +18,17 @@ struct lighting_settings
   v3 SunP;       poof(@ui_skip)
 
   f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False)))
+  v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False, ThisHash)))
 
   f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
-  v3 SunHSV; poof(@custom_ui(PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False)))
+  v3 SunHSV; poof(@custom_ui(PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False, ThisHash)))
 
   f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
   v3 DuskColor;
-  v3 DuskHSV; poof(@custom_ui(PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False)))
+  v3 DuskHSV; poof(@custom_ui(PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False, ThisHash)))
 
   f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 MoonHSV; poof(@custom_ui(PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False)))
+  v3 MoonHSV; poof(@custom_ui(PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False, ThisHash)))
 
   // Computed from the above parameters and passed to the shader
   v3 CurrentSunColor;

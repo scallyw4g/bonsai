@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:578:0
+// src/engine/editor.cpp:584:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x346D8421);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle level_editor", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle level_editor", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, Element->Memory),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(selection_region*, &Element->Selection),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(asset_thumbnail_block_array*, &Element->AssetThumbnails),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->NextLayerIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -136,6 +142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_layer_block_array*, &Element->Layers),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -160,6 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_layer_block_array_index*, &Element->SelectedLayerIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -184,6 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_block_array*, &Element->Edits),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -208,6 +217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_block_array_index_block_array*, &Element->SelectedEditIndices),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -232,6 +242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit*, Element->HotEdit),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -256,6 +267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_block_array_index*, &Element->HotEditIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -280,6 +292,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_brush_hashtable*, &Element->LoadedBrushes),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -304,6 +317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(world_edit_brush*, Element->CurrentBrush),
           MemberName,
+          ThisHash,
           Params
           );
 

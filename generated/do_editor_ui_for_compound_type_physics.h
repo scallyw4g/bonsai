@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:318:0
+// src/engine/editor.cpp:322:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x101A527C);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle physics", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle physics", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Velocity),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Force),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Delta),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Mass),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -136,6 +142,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Speed),
           MemberName,
+          ThisHash,
           Params
           );
 

@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:385:0
+// src/engine/editor.cpp:391:0
 
 
 
@@ -330,17 +330,19 @@ SelectionModificationMode(counted_string S)
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle selection_modification_mode", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element), Params))
+    if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
             *Element = SelectionModificationMode_None;
 
@@ -349,7 +351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element), Params))
+    if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
             *Element = SelectionModificationMode_Initialize;
 
@@ -358,7 +360,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element), Params))
+    if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
             *Element = SelectionModificationMode_Modify;
 

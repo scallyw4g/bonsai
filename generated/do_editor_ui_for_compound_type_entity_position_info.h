@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:514:0
+// src/engine/editor.cpp:520:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35BC40CA);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_position_info", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_position_info", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
           // Cast to remove const/volatile keywords if they're there
           Cast(cp*, &Element->P),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->_CollisionVolumeRadius),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Scale),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -112,6 +117,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->EulerAngles),
           MemberName,
+          ThisHash,
           Params
           );
 

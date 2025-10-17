@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:453:0
+// src/engine/editor.cpp:459:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x229F06E8);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lod_element_buffer", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lod_element_buffer", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->MeshMask),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -61,13 +64,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         cs MemberName = CSz("GpuBufferHandles");
                                 
 
-        if (ToggleButton(Ui, CSz("v GpuBufferHandles[MeshIndex_Count]"), CSz("> GpuBufferHandles[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles), Params ))
+        if (ToggleButton(Ui,
+            CSz("v GpuBufferHandles[MeshIndex_Count]"),
+            CSz("> GpuBufferHandles[MeshIndex_Count]"),
+            UiId(Window, "toggle lod_element_buffer gpu_element_buffer_handles GpuBufferHandles", Element->GpuBufferHandles, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, MeshIndex_Count)
           {
-                        DoEditorUi(Ui, Window, Element->GpuBufferHandles+ArrayIndex, FSz("GpuBufferHandles[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->GpuBufferHandles+ArrayIndex,
+              FSz("GpuBufferHandles[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -89,13 +101,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         cs MemberName = CSz("E");
                                 
 
-        if (ToggleButton(Ui, CSz("v E[MeshIndex_Count]"), CSz("> E[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E), Params ))
+        if (ToggleButton(Ui,
+            CSz("v E[MeshIndex_Count]"),
+            CSz("> E[MeshIndex_Count]"),
+            UiId(Window, "toggle lod_element_buffer geo_u3d_ptr E", Element->E, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, MeshIndex_Count)
           {
-                        DoEditorUi(Ui, Window, Element->E+ArrayIndex, FSz("E[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->E+ArrayIndex,
+              FSz("E[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -117,13 +138,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         cs MemberName = CSz("Locks");
                                 
 
-        if (ToggleButton(Ui, CSz("v Locks[MeshIndex_Count]"), CSz("> Locks[MeshIndex_Count]"), UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks), Params ))
+        if (ToggleButton(Ui,
+            CSz("v Locks[MeshIndex_Count]"),
+            CSz("> Locks[MeshIndex_Count]"),
+            UiId(Window, "toggle lod_element_buffer bonsai_futex Locks", Element->Locks, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, MeshIndex_Count)
           {
-                        DoEditorUi(Ui, Window, Element->Locks+ArrayIndex, FSz("Locks[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->Locks+ArrayIndex,
+              FSz("Locks[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }

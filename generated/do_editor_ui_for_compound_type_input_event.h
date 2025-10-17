@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:261:0
+// src/engine/editor.cpp:265:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1548FB6C);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input_event", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle input_event", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -38,6 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
           Window,
           Cast(b8*, &Element->Clicked),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -60,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
           Window,
           Cast(b8*, &Element->Pressed),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 

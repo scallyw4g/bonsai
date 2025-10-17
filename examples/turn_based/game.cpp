@@ -24,10 +24,10 @@ MoveToStandingSpot(world *World, canonical_position P)
 }
 
 link_weak void
-EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS)
+EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_ARGUMENTS)
 {
   entity_aggregate_type *AType = UserTypeToAggregateTypePtr(UserType);
-  DoEditorUi(Ui, Window, AType, CSz("entity_aggregate_type UserType"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  DoEditorUi(Ui, Window, AType, CSz("entity_aggregate_type UserType"), ParentHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
   switch (AType->Type)
   {

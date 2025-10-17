@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:312:0
+// src/engine/editor.cpp:316:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4B67FED);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lighting_settings", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle lighting_settings", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(b8*, &Element->AutoDayNightCycle),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->tDaySpeed),
           MemberName,
+          ThisHash,
           Params
           , 1.f, 30.f );
 
@@ -89,6 +93,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->tDay),
           MemberName,
+          ThisHash,
           Params
           , -PI32, PI32 );
 
@@ -125,6 +130,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->DawnIntensity),
           MemberName,
+          ThisHash,
           Params
           , 0.f, 3.f );
 
@@ -145,7 +151,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         cs MemberName = CSz("DawnHSV");
-                                        PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False);
+                                        PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False, ThisHash);
 
 
 
@@ -165,6 +171,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->SunIntensity),
           MemberName,
+          ThisHash,
           Params
           , 0.f, 3.f );
 
@@ -185,7 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         cs MemberName = CSz("SunHSV");
-                                        PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False);
+                                        PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False, ThisHash);
 
 
 
@@ -205,6 +212,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->DuskIntensity),
           MemberName,
+          ThisHash,
           Params
           , 0.f, 3.f );
 
@@ -230,6 +238,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->DuskColor),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -249,7 +258,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         cs MemberName = CSz("DuskHSV");
-                                        PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False);
+                                        PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False, ThisHash);
 
 
 
@@ -269,6 +278,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(f32*, &Element->MoonIntensity),
           MemberName,
+          ThisHash,
           Params
           , 0.f, 3.f );
 
@@ -289,7 +299,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         cs MemberName = CSz("MoonHSV");
-                                        PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False);
+                                        PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False, ThisHash);
 
 
 
@@ -309,6 +319,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->CurrentSunColor),
           MemberName,
+          ThisHash,
           Params
           );
 

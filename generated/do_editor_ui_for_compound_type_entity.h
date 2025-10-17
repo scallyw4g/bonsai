@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:480:0
+// src/engine/editor.cpp:486:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2D655F50);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(entity_id*, &Element->Id),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -58,7 +61,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
         
         
         cs MemberName = CSz("P");
-                                        DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                                        DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
 
 
 
@@ -78,6 +81,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->EulerAngles),
           MemberName,
+          ThisHash,
           Params
           , -PI32, PI32 );
 
@@ -102,6 +106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->Scale),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -127,6 +132,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->_CollisionVolumeRadius),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -151,6 +157,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(physics*, &Element->Physics),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -175,6 +182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(asset_id*, &Element->AssetId),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -199,6 +207,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(u64*, &Element->ModelIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -224,6 +233,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(collision_event*, &Element->LastResolvedCollision),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -248,6 +258,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(entity_position_info*, &Element->LastResolvedPosInfo),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -272,6 +283,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(particle_system*, Element->Emitter),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -296,6 +308,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(entity_state*, &Element->State),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -320,6 +333,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(entity_behavior_flags*, &Element->Behavior),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -344,6 +358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(entity_id*, &Element->Carrying),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -363,8 +378,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
         
         
         cs MemberName = CSz("UserType");
-                                          if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
-                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+                                          if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
 
 
@@ -382,7 +397,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_
         
         cs MemberName = CSz("UserData");
                                           if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
-                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     ;
 
 

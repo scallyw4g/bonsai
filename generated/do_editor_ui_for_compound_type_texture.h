@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:372:0
+// src/engine/editor.cpp:378:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1414405E);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle texture", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle texture", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->ID),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(v2i*, &Element->Dim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -88,6 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->Slices),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->Channels),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -137,6 +143,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           Window,
           Cast(b8*, &Element->IsDepthTexture),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -160,6 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(texture_storage_format*, &Element->Format),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -184,6 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           // Cast to remove const/volatile keywords if they're there
           Cast(cs*, &Element->DebugName),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -208,6 +217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, ui
           Window,
           Cast(b8*, &Element->Queued),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 

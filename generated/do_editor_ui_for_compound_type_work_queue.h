@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:258:0
+// src/engine/editor.cpp:262:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3AF675FC);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle work_queue", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(bonsai_futex*, &Element->EnqueueFutex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->EnqueueIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -88,6 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->DequeueIndex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
           // Cast to remove const/volatile keywords if they're there
           Cast(work_queue_entry*, Element->Entries),
           MemberName,
+          ThisHash,
           Params
           );
 

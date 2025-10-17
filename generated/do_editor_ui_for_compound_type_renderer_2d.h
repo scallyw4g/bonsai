@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:539:0
+// src/engine/editor.cpp:545:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1D97D1BB);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle renderer_2d", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle renderer_2d", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(render_buffers_2d*, Element->TextGroup),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(texture*, &Element->SpriteTextureArray),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -159,6 +166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(u64*, &Element->InteractionStackTop),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -184,6 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, Element->MouseP),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -208,6 +217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, Element->MouseDP),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -232,6 +242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, Element->ScreenDim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -256,6 +267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(input*, Element->Input),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -280,6 +292,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(ui_toggle_hashtable*, &Element->ToggleTable),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -304,6 +317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(window_layout_hashtable*, &Element->WindowTable),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -325,13 +339,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         cs MemberName = CSz("MinimizedWindowBuffer");
                                 
 
-        if (ToggleButton(Ui, CSz("v MinimizedWindowBuffer[64]"), CSz("> MinimizedWindowBuffer[64]"), UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer), Params ))
+        if (ToggleButton(Ui,
+            CSz("v MinimizedWindowBuffer[64]"),
+            CSz("> MinimizedWindowBuffer[64]"),
+            UiId(Window, "toggle renderer_2d window_layout MinimizedWindowBuffer", Element->MinimizedWindowBuffer, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, 64)
           {
-                        DoEditorUi(Ui, Window, Element->MinimizedWindowBuffer+ArrayIndex, FSz("MinimizedWindowBuffer[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->MinimizedWindowBuffer+ArrayIndex,
+              FSz("MinimizedWindowBuffer[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -356,6 +379,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(window_layout*, Element->HighestWindow),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -380,6 +404,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(interactable*, &Element->Hover),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -404,6 +429,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(interactable*, &Element->Clicked),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -428,6 +454,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(interactable*, &Element->Pressed),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -451,6 +478,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           Window,
           Cast(b8*, &Element->RequestedForceCapture),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 
@@ -474,6 +502,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(text_box_edit_state*, &Element->TextEdit),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -498,6 +527,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(ui_render_command_buffer*, Element->CommandBuffer),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -522,6 +552,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, &Element->RenderCommandArena),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -546,6 +577,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, &Element->UiToggleArena),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -570,6 +602,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, &Element->WindowTableArena),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -591,13 +624,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         cs MemberName = CSz("DebugColors");
                                 
 
-        if (ToggleButton(Ui, CSz("v DebugColors[128]"), CSz("> DebugColors[128]"), UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors), Params ))
+        if (ToggleButton(Ui,
+            CSz("v DebugColors[128]"),
+            CSz("> DebugColors[128]"),
+            UiId(Window, "toggle renderer_2d v3 DebugColors", Element->DebugColors, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, 128)
           {
-                        DoEditorUi(Ui, Window, Element->DebugColors+ArrayIndex, FSz("DebugColors[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->DebugColors+ArrayIndex,
+              FSz("DebugColors[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -622,6 +664,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
           // Cast to remove const/volatile keywords if they're there
           Cast(v3_cursor*, Element->ColorPalette),
           MemberName,
+          ThisHash,
           Params
           );
 

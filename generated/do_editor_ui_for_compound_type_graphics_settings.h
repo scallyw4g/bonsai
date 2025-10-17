@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:587:0
+// src/engine/editor.cpp:593:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x17D77224);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle graphics_settings", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle graphics_settings", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(resolution_setting*, &Element->Resolution),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(shadow_quality_setting*, &Element->ShadowQuality),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(lighting_quality_setting*, &Element->LightingQuality),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(shader_language_setting*, &Element->ShaderLanguage),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
           // Cast to remove const/volatile keywords if they're there
           Cast(resolution_setting*, &Element->WindowStartingSize),
           MemberName,
+          ThisHash,
           Params
           );
 

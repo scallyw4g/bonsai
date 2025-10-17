@@ -1,17 +1,19 @@
-// src/engine/editor.h:679:0
+// src/engine/editor.h:703:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_tag *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_tag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1FBAE2DF);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle maybe_tag", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("No"), UiId(Window, "enum Maybe_No", Element), Params))
+    if (Button(Ui, CSz("No"), UiId(Window, "enum Maybe_No", Element, ThisHash), Params))
     {
             *Element = Maybe_No;
 
@@ -20,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_tag *Element, cs Name, 
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Yes"), UiId(Window, "enum Maybe_Yes", Element), Params))
+    if (Button(Ui, CSz("Yes"), UiId(Window, "enum Maybe_Yes", Element, ThisHash), Params))
     {
             *Element = Maybe_Yes;
 

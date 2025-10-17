@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:493:0
+// src/engine/editor.cpp:499:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x108363A);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(v3i*, &Element->Center),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(visible_region_size*, &Element->VisibleRegionSize),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(octree_node*, &Element->Root),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, Element->OctreeMemory),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(octree_node_freelist*, &Element->OctreeNodeFreelist),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -159,6 +166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -183,6 +191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(s32*, &Element->MaxOctreeNodesToQueuePerFrame),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -230,6 +239,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(s32*, &Element->FreeChunkCount),
           MemberName,
+          ThisHash,
           Params
           );
 

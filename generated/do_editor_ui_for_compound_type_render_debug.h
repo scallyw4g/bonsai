@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:566:0
+// src/engine/editor.cpp:572:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1E3B3011);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_debug", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle render_debug", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->BytesSolidGeoLastFrame),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->BytesTransGeoLastFrame),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -89,6 +93,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->VertsDrawnLastFrame),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -114,6 +119,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->DrawCallsLastFrame),
           MemberName,
+          ThisHash,
           Params
           );
 

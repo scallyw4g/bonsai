@@ -1,17 +1,19 @@
-// src/engine/editor.h:881:0
+// src/engine/editor.h:905:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifier *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifier *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1AAA4276);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle world_edit_blend_mode_modifier", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEdit_Modifier_None", Element), Params))
+    if (Button(Ui, CSz("None"), UiId(Window, "enum WorldEdit_Modifier_None", Element, ThisHash), Params))
     {
             if (WorldEdit_Modifier_None == world_edit_blend_mode_modifier(0))
       {
@@ -34,7 +36,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("ClampPos"), UiId(Window, "enum WorldEdit_ValueModifier_ClampPos", Element), Params))
+    if (Button(Ui, CSz("ClampPos"), UiId(Window, "enum WorldEdit_ValueModifier_ClampPos", Element, ThisHash), Params))
     {
             if (WorldEdit_ValueModifier_ClampPos == world_edit_blend_mode_modifier(0))
       {
@@ -57,7 +59,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("ClampNeg"), UiId(Window, "enum WorldEdit_ValueModifier_ClampNeg", Element), Params))
+    if (Button(Ui, CSz("ClampNeg"), UiId(Window, "enum WorldEdit_ValueModifier_ClampNeg", Element, ThisHash), Params))
     {
             if (WorldEdit_ValueModifier_ClampNeg == world_edit_blend_mode_modifier(0))
       {
@@ -80,7 +82,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Threshold"), UiId(Window, "enum WorldEdit_ValueModifier_Threshold", Element), Params))
+    if (Button(Ui, CSz("Threshold"), UiId(Window, "enum WorldEdit_ValueModifier_Threshold", Element, ThisHash), Params))
     {
             if (WorldEdit_ValueModifier_Threshold == world_edit_blend_mode_modifier(0))
       {
@@ -103,7 +105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Discard"), UiId(Window, "enum WorldEdit_ColorModifier_Discard", Element), Params))
+    if (Button(Ui, CSz("Discard"), UiId(Window, "enum WorldEdit_ColorModifier_Discard", Element, ThisHash), Params))
     {
             if (WorldEdit_ColorModifier_Discard == world_edit_blend_mode_modifier(0))
       {

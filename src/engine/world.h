@@ -48,7 +48,7 @@ struct octree_node
 
   // NOTE(Jesse): Took the union out because the UI doesn't know how to deal..
   /* union { */
-    octree_node *Children[8]; poof(@custom_ui(if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), Params);}))
+    octree_node *Children[8]; poof(@custom_ui(if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), ThisHash, Params);}))
     octree_node *Next; // NOTE(Jesse): Freelist Next
   /* }; */
 

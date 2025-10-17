@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:414:0
+// src/engine/editor.cpp:420:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1F7B17CD);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle layered_brush", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle layered_brush", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
           // Cast to remove const/volatile keywords if they're there
           Cast(s32*, &Element->LayerCount),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -61,13 +64,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
         cs MemberName = CSz("Layers");
                                 
 
-        if (ToggleButton(Ui, CSz("v Layers[16]"), CSz("> Layers[16]"), UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers), Params ))
+        if (ToggleButton(Ui,
+            CSz("v Layers[16]"),
+            CSz("> Layers[16]"),
+            UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers, ThisHash),
+            Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
           RangeIterator(ArrayIndex, 16)
           {
-                        DoEditorUi(Ui, Window, Element->Layers+ArrayIndex, FSz("Layers[%d]", ArrayIndex), Params);
+                        DoEditorUi(Ui,
+              Window,
+              Element->Layers+ArrayIndex,
+              FSz("Layers[%d]", ArrayIndex),
+              ThisHash,
+              Params);
 
             
           }
@@ -92,6 +104,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
           // Cast to remove const/volatile keywords if they're there
           Cast(b8*, &Element->AffectExisting),
           MemberName,
+          ThisHash,
           Params
           );
 

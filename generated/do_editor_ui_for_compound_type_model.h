@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:456:0
+// src/engine/editor.cpp:462:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4BAE73F);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(vox_data*, &Element->Vox),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(lod_element_buffer*, &Element->Meshes),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(gpu_mapped_element_buffer*, &Element->Mesh),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(untextured_3d_geometry_buffer*, &Element->TransparentMesh),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(animation*, &Element->Animation),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -159,6 +166,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
           // Cast to remove const/volatile keywords if they're there
           Cast(v3i*, &Element->Dim),
           MemberName,
+          ThisHash,
           Params
           );
 

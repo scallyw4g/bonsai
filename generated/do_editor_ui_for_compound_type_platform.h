@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:267:0
+// src/engine/editor.cpp:271:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2477D8B8);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle platform", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle platform", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(work_queue*, &Element->LowPriority),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(work_queue*, &Element->HighPriority),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(work_queue*, &Element->RenderQ),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -111,6 +116,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(work_queue*, &Element->WorldUpdateQ),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -135,6 +141,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->HighPriorityWorkerCount),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -160,6 +167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(bonsai_futex*, &Element->HighPriorityModeFutex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -184,6 +192,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -208,6 +217,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -232,6 +242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->MouseP),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -256,6 +267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->MouseDP),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -280,6 +292,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(memory_arena*, Element->Memory),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -304,6 +317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->GameTime),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -329,6 +343,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->dt),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -354,6 +369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(v2*, &Element->ScreenDim),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -378,6 +394,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(input*, &Element->Input),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -402,6 +419,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(server_state*, Element->ServerState),
           MemberName,
+          ThisHash,
           Params
           );
 

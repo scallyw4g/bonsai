@@ -198,8 +198,9 @@ poof(do_editor_ui_for_container(ui_toggle_hashtable))
 
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
+#if 0
   if (Element)
   {
     if (ToggleButton(Ui, FSz("v %s", Element->Name), FSz("> %s", Element->Name), UiId(Window, "toggle shader_uniform", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
@@ -240,6 +241,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
   }
 
   PushNewRow(Ui);
+#else
+  NotImplemented;
+#endif
 }
 poof(do_editor_ui_for_container(shader_uniform_buffer))
 #include <generated/do_editor_ui_for_container_struct.h>
@@ -345,6 +349,7 @@ poof(do_editor_ui_for_compound_type(bonsai_futex))
 poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
 #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
 
+#if 0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
@@ -359,6 +364,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, 
     PushNewRow(Ui);
   }
 }
+#endif
 
 poof(do_editor_ui_for_compound_type(plane))
 #include <generated/do_editor_ui_for_compound_type_plane.h>
@@ -468,10 +474,10 @@ poof(do_editor_ui_for_compound_type(file_traversal_node))
 // @dirty_entity_P_format_hack
 //
 link_internal void
-DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), Params);
-  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), Params, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), ParentHash, Params);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -882,6 +888,7 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
   return Result;
 }
 
+#if 0
 link_internal void
 BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
 {
@@ -918,6 +925,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     }
   PushTableEnd(Ui);
 }
+#endif
 
 link_internal cs
 GetFilenameForBrush(cs Name, s32 Version = 0)
@@ -1015,6 +1023,8 @@ link_internal void
 DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
 
   PushWindowStart(Ui, BrushSettingsWindow);
   Assert(Brush);
@@ -1125,7 +1135,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
             TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
             PushNewRow(Ui);
 
-            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic);
             // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
             LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
             LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
@@ -1140,7 +1150,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
 
           {
-            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("AffectExisting"), &DefaultUiRenderParams_Checkbox);
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("AffectExisting"), ThisHash, &DefaultUiRenderParams_Checkbox);
             PushNewRow(Ui);
 
             /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
@@ -1161,7 +1171,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           {
             brush_layer *BrushLayer = BrushLayers + LayerIndex;
 
-            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex));
+            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex), ThisHash);
             cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
 
             if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
@@ -1198,7 +1208,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
               }
 
               OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {});
+                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
               CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
             }
             else
@@ -1457,7 +1467,7 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim)
 {
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
@@ -1475,7 +1485,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 HS
 
     b32 Selected = Value == CurrentValue;
     ui_style Style = FlatUiStyle(RGB);
-    ui_id Id = UiId(Window, Cast(void*, "ColorPicker value button"), Cast(void*, HSVDest), Cast(void*, u64(ColorIndex) | u64(HSVElementIndex<<16)));
+    ui_id Id = UiId( Window, "ColorPicker value button", u32(u64(HSVDest)), ThisHash ^ u32(u64(Cast(void*, u64(ColorIndex) | u64(HSVElementIndex<<16)))) );
 
     interactable_handle ColorPickerButton = PushButtonStart(Ui, Id);
       PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
@@ -1504,12 +1514,12 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, u32 HS
 }
 
 link_internal void
-DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
 {
-  /* u8 FourBits   = 0b1111; */
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
+
   u8 FiveBits   = 0b11111;
   u8 SixBits    = 0b111111;
-  /* u8 EightBits  = 0b11111111; */
 
   u16 HueSlices        = SixBits;
   u16 SaturationSlices = FiveBits;
@@ -1517,9 +1527,9 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Ui, Window, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
-  DoColorPickerSection(Ui, Window, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
-  DoColorPickerSection(Ui, Window, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
 
   PushNewRow(Ui);
 
@@ -1541,22 +1551,24 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 }
 
 link_internal void
-DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch)
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
 {
-  ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
+
+  ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest, ThisHash);
 
   u32 ColumnIndex = StartColumn(Ui);
     if (ToggledOn(Ui, InteractionId))
     {
       // NOTE(Jesse): Gotta use a discrete button id for this
-      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest))) { SetToggleButton(Ui, InteractionId, False); }
+      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash))) { SetToggleButton(Ui, InteractionId, False); }
       PushNewRow(Ui);
-      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch);
+      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash);
     }
     else
     {
       ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
-      interactable_handle Handle = ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
+      ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
         v2 Dim = V2(25);
         PushUntexturedQuad(Ui, V2(0), Dim, zDepth_Text, &BStyle);
       ToggleButtonEnd(Ui);

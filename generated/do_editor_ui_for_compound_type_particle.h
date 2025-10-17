@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:327:0
+// src/engine/editor.cpp:331:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3825E333);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle particle", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Velocity),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -63,6 +66,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->Offset),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(u8*, &Element->Color),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -112,6 +117,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(b8*, &Element->IsLight),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -137,6 +143,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
           // Cast to remove const/volatile keywords if they're there
           Cast(r32*, &Element->RemainingLifespan),
           MemberName,
+          ThisHash,
           Params
           );
 

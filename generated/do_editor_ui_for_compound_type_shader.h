@@ -1,8 +1,10 @@
-// src/engine/editor.cpp:247:0
+// src/engine/editor.cpp:251:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1813CD99);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +13,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle shader", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -39,6 +41,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(u32*, &Element->ID),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(shader_uniform_buffer*, &Element->Uniforms),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -88,6 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(cs*, &Element->VertexSourceFilename),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -113,6 +118,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(cs*, &Element->FragSourceFilename),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -138,6 +144,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(s64*, &Element->VertexTimeModifiedWhenLoaded),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -163,6 +170,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           // Cast to remove const/volatile keywords if they're there
           Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded),
           MemberName,
+          ThisHash,
           Params
           );
 
@@ -187,6 +195,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, ui_
           Window,
           Cast(b8*, &Element->HotReloaded),
           MemberName,
+          ThisHash,
           &DefaultUiRenderParams_Checkbox
           );
 

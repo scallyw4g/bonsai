@@ -1,17 +1,19 @@
-// src/engine/editor.cpp:462:0
+// src/engine/editor.cpp:468:0
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x8811EEF);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle file_traversal_type", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("None"), UiId(Window, "enum FileTraversalType_None", Element), Params))
+    if (Button(Ui, CSz("None"), UiId(Window, "enum FileTraversalType_None", Element, ThisHash), Params))
     {
             *Element = FileTraversalType_None;
 
@@ -20,7 +22,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_type *Element,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Dir"), UiId(Window, "enum FileTraversalType_Dir", Element), Params))
+    if (Button(Ui, CSz("Dir"), UiId(Window, "enum FileTraversalType_Dir", Element, ThisHash), Params))
     {
             *Element = FileTraversalType_Dir;
 
@@ -29,7 +31,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_type *Element,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("File"), UiId(Window, "enum FileTraversalType_File", Element), Params))
+    if (Button(Ui, CSz("File"), UiId(Window, "enum FileTraversalType_File", Element, ThisHash), Params))
     {
             *Element = FileTraversalType_File;
 

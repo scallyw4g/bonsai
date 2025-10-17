@@ -1,4 +1,4 @@
-// src/engine/editor.h:1117:0
+// src/engine/editor.h:1141:0
 
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_layer_type Selection)
@@ -39,6 +39,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   brush_layer_type *Element,
   cs GroupName,
+  u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
