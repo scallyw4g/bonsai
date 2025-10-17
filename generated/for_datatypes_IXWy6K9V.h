@@ -285,182 +285,182 @@ UseRenderPass_lighting_render_group
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -675,28 +675,28 @@ UseRenderPass_terrain_decoration_render_context
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -803,7 +803,7 @@ UseRenderPass_terrain_finalize_render_context
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -986,28 +986,28 @@ UseRenderPass_world_edit_render_context
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -1224,14 +1224,14 @@ UseRenderPass_easing_function_visualizer_render_pass
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -1405,28 +1405,28 @@ UseRenderPass_shadow_map_shader
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -1518,7 +1518,7 @@ UseRenderPass_bloom_upsample_shader
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -1821,7 +1821,7 @@ UseRenderPass_terrain_derivs_render_context
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -1941,7 +1941,7 @@ UseRenderPass_bloom_downsample_shader
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
@@ -2146,21 +2146,21 @@ UseRenderPass_terrain_shaping_render_context
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }

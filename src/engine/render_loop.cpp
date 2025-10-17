@@ -238,7 +238,7 @@ DrainRenderQueue(engine_resources *Engine)
             shader_uniform *Uniform = &Command->Uniform;
             if (Uniform->ID >= 0)
             {
-              BindUniformById(Uniform, &Command->TextureUnit, Uniform->Count);
+              BindUniformById(Uniform, &Command->TextureUnit);
             }
             else
             {

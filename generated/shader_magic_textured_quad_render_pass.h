@@ -76,28 +76,28 @@ UseRenderPass_textured_quad_render_pass
     s32 UniformIndex = 0;
             {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit, Uniform->Count);
+      BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
