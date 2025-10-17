@@ -128,6 +128,9 @@ poof(
     link_internal void
     (func_t.name)_Async(work_queue *Queue, func_t.map(arg).sep(,) { arg } func_t.value? { , func_t.value* Result })
     {
+      // Make sure we don't accidentally pass something that's not the render queue
+      Assert(Queue == &GetStdlib()->Plat.RenderQ);
+
       (func_t.name.to_snake_case)_async_params Params =
       {
         func_t.value? {  Result, } func_t.map(arg) { arg.name, }

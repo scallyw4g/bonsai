@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:269:0
+// src/engine/work_queue.h:272:0
 
 
 
@@ -2305,6 +2305,9 @@
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.RenderQ);
+
   compile_shader_pair_async_params Params =
   {
       Result,   Shader,  VertShaderPath,  FragShaderPath,  DumpErrors,  RegisterForHotReload, 
@@ -2890,6 +2893,9 @@ DoJob(compile_shader_pair_async_params *Params)
 link_internal void
 InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , v2 *Points , u32 *Count   , b32* Result )
 {
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.RenderQ);
+
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {
       Result,   Element,  Points,  Count, 
@@ -5295,6 +5301,9 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 link_internal void
 DrawLod_Async(work_queue *Queue,  engine_resources *Engine , shader *Shader , gpu_mapped_element_buffer *Mesh , v3 Basis , Quaternion Rotation , v3 Scale  )
 {
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.RenderQ);
+
   draw_lod_async_params Params =
   {
       Engine,  Shader,  Mesh,  Basis,  Rotation,  Scale, 

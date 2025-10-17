@@ -92,17 +92,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushWindowEnd(Ui, Window);
   }
 
-  easing_function Test = {
-    .Name = CSz("Test"),
-    .Points = {
-      .Start = {
-        V2(0,0),
-        V2(1,1),
-      },
-      .At = 2,
-    },
-  };
-
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
     PushWindowStart(Ui, &Window);
