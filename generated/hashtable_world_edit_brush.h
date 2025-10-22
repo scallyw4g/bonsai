@@ -14,6 +14,7 @@ struct world_edit_brush_hashtable
   /* OWNED_BY_THREAD_MEMBER() */
 };
 link_internal b32 AreEqual(world_edit_brush_linked_list_node *Node1, world_edit_brush_linked_list_node *Node2 );
+link_internal b32 AreEqual(world_edit_brush *Element1, world_edit_brush *Element2 );
 
 link_internal world_edit_brush_linked_list_node *
 Allocate_world_edit_brush_linked_list_node(memory_arena *Memory)
@@ -76,7 +77,7 @@ Insert(world_edit_brush_linked_list_node *Node, world_edit_brush_hashtable *Tabl
   world_edit_brush_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;

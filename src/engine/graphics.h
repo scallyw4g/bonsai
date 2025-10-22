@@ -127,10 +127,6 @@ poof(
 )
 #include <generated/for_datatypes_IXWy6K9V.h>
 
-/* poof(asyncify_render_function_h(InitializeEasingFunctionVisualizerRenderPass)) */
-/* #include <generated/asyncify_render_function_h_InitializeEasingFunctionVisualizerRenderPass.h> */
-
-
 struct composite_render_group
 {
   shader Shader;

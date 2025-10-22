@@ -104,10 +104,10 @@ VoxelSynthTile( tile_rule_id RuleId, u32 VoxelIndex, u64 HashValue, chunk_data *
 }
 
 
-link_internal u64
+link_internal b32
 AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 {
-  u64 Result = T0->HashValue == T1->HashValue;
+  b32 Result = T0->HashValue == T1->HashValue;
   if (Result)
   {
     /* umm TempVoxelsSizeInBytes = sizeof(voxel)*umm(Volume(Global_TileDim)); */

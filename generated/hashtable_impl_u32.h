@@ -1,6 +1,7 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:5:0
 
 link_internal b32 AreEqual(u32_linked_list_node *Node1, u32_linked_list_node *Node2 );
+link_internal b32 AreEqual(u32 *Element1, u32 *Element2 );
 
 link_internal u32_linked_list_node *
 Allocate_u32_linked_list_node(memory_arena *Memory)
@@ -63,7 +64,7 @@ Insert(u32_linked_list_node *Node, u32_hashtable *Table)
   u32_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;

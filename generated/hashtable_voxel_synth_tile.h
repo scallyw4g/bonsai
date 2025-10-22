@@ -14,6 +14,7 @@ struct voxel_synth_tile_hashtable
   /* OWNED_BY_THREAD_MEMBER() */
 };
 link_internal b32 AreEqual(voxel_synth_tile_linked_list_node *Node1, voxel_synth_tile_linked_list_node *Node2 );
+link_internal b32 AreEqual(voxel_synth_tile *Element1, voxel_synth_tile *Element2 );
 
 link_internal voxel_synth_tile_linked_list_node *
 Allocate_voxel_synth_tile_linked_list_node(memory_arena *Memory)
@@ -76,7 +77,7 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
   voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;

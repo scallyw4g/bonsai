@@ -14,6 +14,7 @@ struct counted_string_hashtable
   /* OWNED_BY_THREAD_MEMBER() */
 };
 link_internal b32 AreEqual(counted_string_linked_list_node *Node1, counted_string_linked_list_node *Node2 );
+link_internal b32 AreEqual(counted_string *Element1, counted_string *Element2 );
 
 link_internal counted_string_linked_list_node *
 Allocate_counted_string_linked_list_node(memory_arena *Memory)
@@ -76,7 +77,7 @@ Insert(counted_string_linked_list_node *Node, counted_string_hashtable *Table)
   counted_string_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
