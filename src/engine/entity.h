@@ -214,7 +214,7 @@ link_internal void
 FinalizeEntityUpdate(entity *Entity)
 {
   Assert(IsCanonical(GetWorld(), Entity->P));
-  poof( func (entity_position_info Info)
+  poof( func (entity_position_info Info) @code_fragment
   {
     Info.map(member)
     {

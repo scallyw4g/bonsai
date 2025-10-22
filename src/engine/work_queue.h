@@ -108,7 +108,7 @@ CAssert( (sizeof(work_queue_entry__align_to_cache_line_helper)+8) % CACHE_LINE_S
 
 
 poof(
-  func asyncify_render_function_h(func_t) @code_fragment
+  func asyncify_render_function_h(func_t)
   {
     struct (func_t.name.to_snake_case)_async_params poof(@async_function_params)
     {
@@ -150,9 +150,7 @@ poof(
 )
 
 poof(
-  for_datatypes(all) @code_fragment
-  func (struct_t) {}
-  func (enum_t) {}
+  for_datatypes(func)
   func (func_t)
   {
     func_t.has_tag(async)?
@@ -172,7 +170,7 @@ poof(
 enum async_function_call_type
 {
   poof(
-    for_datatypes(all) @code_fragment
+    for_datatypes(struct) @code_fragment
     func (struct_t)
     {
       struct_t.has_tag(async_function_params)?
@@ -180,7 +178,6 @@ enum async_function_call_type
         type_(struct_t.name),
       }
     }
-    func (enum_t) {}
   )
 #include <generated/for_datatypes_kv3WBTai.h>
 };
@@ -191,7 +188,7 @@ struct work_queue_entry_async_function_call
   union
   {
     poof(
-      for_datatypes(all) @code_fragment
+      for_datatypes(struct) @code_fragment
       func (struct_t)
       {
         struct_t.has_tag(async_function_params)?
@@ -199,7 +196,6 @@ struct work_queue_entry_async_function_call
           struct_t.name struct_t.name;
         }
       }
-      func (enum_t) {}
     )
 #include <generated/for_datatypes_fkubhsYl.h>
   };
@@ -245,7 +241,7 @@ poof(d_union_constructors(work_queue_entry))
 
 
 poof(
-  for_datatypes(all) @code_fragment
+  for_datatypes(struct) @code_fragment
   func (struct_t)
   {
     struct_t.has_tag(async_function_params)?
@@ -262,16 +258,13 @@ poof(
       }
     }
   }
-  func (enum_t) {}
 )
 #include <generated/for_datatypes_0XxWqGSZ.h>
 
 
 
 poof(
-  for_datatypes(all) @code_fragment
-  func (struct_t) {}
-  func (enum_t) {}
+  for_datatypes(func) @code_fragment
   func (func_t)
   {
     func_t.has_tag(async)?
@@ -291,7 +284,7 @@ DispatchAsyncFunctionCall(work_queue_entry_async_function_call *Task)
   tswitch(Task)
   {
     poof(
-      func (async_function_call_type tag_t)
+      func (async_function_call_type tag_t) @code_fragment
       {
         tag_t.map(tag_v)
         {

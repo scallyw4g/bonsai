@@ -78,7 +78,8 @@ poof( @render_pass
 };
 
 
-struct easing_function poof(@do_editor_ui)
+struct easing_function
+poof(@do_editor_ui)
 {
   cs Name;
   v2_static_cursor_16 Points;
@@ -86,7 +87,9 @@ struct easing_function poof(@do_editor_ui)
 
 struct easing_function_visualizer_render_pass
 poof(
-    @render_pass @async @do_editor_ui
+    @render_pass
+    @async
+    @do_editor_ui
     @vert_source_file(STDLIB_SHADER_PATH "FullPassthrough.vertexshader")
     @frag_source_file(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader")
   )
@@ -94,14 +97,20 @@ poof(
   shader Program;
   shader_uniform Uniforms[2];
 
-   v2 *Points; poof(@uniform @array_length(*Count))
-  u32 *Count;  poof(@uniform)
+  u32 Foo; poof(@uniform)
+  u32 Bar; poof(@uniform)
+  /* easing_function *Func; */
+  /* poof(@uniform(v2 *Points, Element->Func->Points.Start)) */
+  /* poof(@uniform(u32 Count,  Element->Func->Points.At)) */
+
+   /* v2 *Points; poof(@uniform @array_length(*Count)) */
+  /* u32 *Count;  poof(@uniform) */
 };
 
 
 
 poof(
-  for_datatypes(all) @code_fragment
+  for_datatypes(struct) @code_fragment
   func (struct_t)
   {
     struct_t.has_tag(render_pass)?
@@ -115,7 +124,6 @@ poof(
       }
     }
   }
-  func (enum_t) {}
 )
 #include <generated/for_datatypes_IXWy6K9V.h>
 

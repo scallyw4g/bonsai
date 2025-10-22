@@ -56,9 +56,15 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   InitializeEasingFunctionVisualizerRenderPass_Async(
        RenderQ,
       &GameState->EasingFunctionVisRP,
-       EasingFunction->Points.Start,
-      &EasingFunction->Points.At,
+      0,0,
        0);
+
+  /* InitializeEasingFunctionVisualizerRenderPass_Async( */
+  /*      RenderQ, */
+  /*     &GameState->EasingFunctionVisRP, */
+  /*      /1* EasingFunction->Points.Start, *1/ */
+  /*     /1* &EasingFunction->Points.At, *1/ */
+  /*      0); */
 
   SpawnEntity(CameraGhost);
   return GameState;

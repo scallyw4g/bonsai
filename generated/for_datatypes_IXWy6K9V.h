@@ -1,6 +1,4 @@
-// src/engine/graphics.h:104:0
-
-
+// src/engine/graphics.h:113:0
 
 
 
@@ -574,31 +572,6 @@ UseShader( lighting_render_group *Element )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
@@ -747,10 +720,6 @@ UseShader( terrain_decoration_render_context *Element )
 
 
 
-
-
-
-
 link_internal b32
 poof()
 InitializeTerrainFinalizeRenderContext
@@ -842,22 +811,6 @@ UseShader( terrain_finalize_render_context *Element )
 {
   UseRenderPass_terrain_finalize_render_context(Element);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1136,43 +1089,13 @@ UseShader( world_edit_render_context *Element )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
 (
   easing_function_visualizer_render_pass *Element
-    , v2 *Points
-  , u32 *Count
+    , u32 Foo
+  , u32 Bar
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
@@ -1183,20 +1106,20 @@ InitializeEasingFunctionVisualizerRenderPass
 
     u32 UniformIndex = 0;
 
-            Element->Points = Points;
+            Element->Foo = Foo;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Points,
-      "Points"
-      , Cast(u16, *Count));
+      &Element->Foo,
+      "Foo"
+      );
 
-        Element->Count = Count;
+        Element->Bar = Bar;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Count,
-      "Count"
+      &Element->Bar,
+      "Bar"
       );
 
     u32 Expected =  2 ;
@@ -1268,22 +1191,6 @@ UseShader( easing_function_visualizer_render_pass *Element )
 {
   UseRenderPass_easing_function_visualizer_render_pass(Element);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1715,60 +1622,6 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
@@ -1880,15 +1733,6 @@ UseShader( terrain_derivs_render_context *Element )
 
 
 
-
-
-
-
-
-
-
-
-
 link_internal b32
 poof()
 InitializeBloomDownsampleShader
@@ -1980,34 +1824,6 @@ UseShader( bloom_downsample_shader *Element )
 {
   UseRenderPass_bloom_downsample_shader(Element);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2197,20 +2013,6 @@ UseShader( terrain_shaping_render_context *Element )
 {
   UseRenderPass_terrain_shaping_render_context(Element);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

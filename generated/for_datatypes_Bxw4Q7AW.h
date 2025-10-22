@@ -1,6 +1,4 @@
-// src/engine/editor.cpp:528:0
-
-
+// src/engine/editor.cpp:527:0
 
 
 
@@ -103,86 +101,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -580,10 +498,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
 
 
 
-
-
-
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -681,11 +595,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         
         
         
-        cs MemberName = CSz("Points");
+        cs MemberName = CSz("Foo");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(v2*, Element->Points),
+          Cast(u32*, &Element->Foo),
           MemberName,
           ThisHash,
           Params
@@ -698,7 +612,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
 
 
-        
+                PushNewRow(Ui);
+
       }
       
 
@@ -706,11 +621,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         
         
         
-        cs MemberName = CSz("Count");
+        cs MemberName = CSz("Bar");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, Element->Count),
+          Cast(u32*, &Element->Bar),
           MemberName,
           ThisHash,
           Params
@@ -743,20 +658,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1013,125 +914,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

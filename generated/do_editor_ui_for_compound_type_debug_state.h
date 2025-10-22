@@ -453,7 +453,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         
-        cs MemberName = CSz("");
+        cs MemberName = CSz("(anonymous)");
         
 
         
@@ -464,7 +464,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         
-        cs MemberName = CSz("");
+        cs MemberName = CSz("(anonymous)");
         
 
         
@@ -475,7 +475,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         
-        cs MemberName = CSz("");
+        cs MemberName = CSz("(anonymous)");
         
 
         
