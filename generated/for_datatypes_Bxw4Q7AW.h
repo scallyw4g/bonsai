@@ -595,11 +595,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         
         
         
-        cs MemberName = CSz("Foo");
+        cs MemberName = CSz("Points");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->Foo),
+          Cast(v2*, Element->Points),
           MemberName,
           ThisHash,
           Params
@@ -612,8 +612,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
 
 
-                PushNewRow(Ui);
-
+        
       }
       
 
@@ -621,11 +620,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         
         
         
-        cs MemberName = CSz("Bar");
+        cs MemberName = CSz("Count");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->Bar),
+          Cast(u32*, Element->Count),
           MemberName,
           ThisHash,
           Params

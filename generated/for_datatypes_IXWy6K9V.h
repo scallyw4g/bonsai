@@ -1094,8 +1094,8 @@ poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
 (
   easing_function_visualizer_render_pass *Element
-    , u32 Foo
-  , u32 Bar
+    , v2 *Points
+  , u32 *Count
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
@@ -1106,20 +1106,20 @@ InitializeEasingFunctionVisualizerRenderPass
 
     u32 UniformIndex = 0;
 
-            Element->Foo = Foo;
+            Element->Points = Points;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Foo,
-      "Foo"
-      );
+      Element->Points,
+      "Points"
+      , Cast(u16, *Count));
 
-        Element->Bar = Bar;
+        Element->Count = Count;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Bar,
-      "Bar"
+      Element->Count,
+      "Count"
       );
 
     u32 Expected =  2 ;
