@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/simd_avx2.h:188:0
-
+// external/bonsai_stdlib/src/simd_avx2.h:148:0
 link_inline f32_8x
 operator+(f32_8x A, f32_8x B)
 {

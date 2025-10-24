@@ -1,9 +1,34 @@
-// src/engine/editor.cpp:300:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(engine_debug_view_mode Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case EngineDebugViewMode_Level:
+    case EngineDebugViewMode_WorldEdit:
+    case EngineDebugViewMode_Entities:
+    case EngineDebugViewMode_Assets:
+    case EngineDebugViewMode_WorldChunks:
+    case EngineDebugViewMode_Textures:
+    case EngineDebugViewMode_RenderSettings:
+    case EngineDebugViewMode_EngineDebug:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(engine_debug_view_mode Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
@@ -14,6 +39,7 @@ ToStringPrefixless(engine_debug_view_mode Type)
     case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
     case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -46,13 +72,15 @@ ToStringPrefixless(engine_debug_view_mode Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(engine_debug_view_mode Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -64,6 +92,7 @@ ToString(engine_debug_view_mode Type)
     case EngineDebugViewMode_Textures: { Result = CSz("EngineDebugViewMode_Textures"); } break;
     case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
     case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -83,7 +112,7 @@ ToString(engine_debug_view_mode Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -100,6 +129,7 @@ EngineDebugViewMode(counted_string S)
   if (StringsMatch(S, CSz("EngineDebugViewMode_Textures"))) { return EngineDebugViewMode_Textures; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_RenderSettings"))) { return EngineDebugViewMode_RenderSettings; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_EngineDebug"))) { return EngineDebugViewMode_EngineDebug; }
+
 
   return Result;
 }

@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:498:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -212,7 +211,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         
         
         cs MemberName = CSz("ChunkFreelistFutex");
-        
+                
 
         
       }
@@ -223,7 +222,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         
         
         cs MemberName = CSz("ChunkFreelistSentinal");
-        
+                
 
         
       }
@@ -260,7 +259,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         
         
         cs MemberName = CSz("ChunkDim");
-        
+                
 
         
       }
@@ -271,10 +270,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         
         
         cs MemberName = CSz("ChunkMemory");
-        
+                
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:283:0
-
+// src/engine/serdes.h:15:0
 Live->Entropy = Stored->Entropy;
 
 
@@ -89,6 +88,7 @@ RangeIterator(Index, 6)
      Live->PackedHSVColors[Index] = MagicaVoxelDefaultPaletteToPackedHSV(Stored->MCVColors[Index]);
 
 }
+
 
 
 

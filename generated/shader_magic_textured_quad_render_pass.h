@@ -1,14 +1,16 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:10:0
-
+// external/bonsai_stdlib/src/shader.h:6:0
 link_internal b32
 poof()
 InitializeTexturedQuadRenderPass
 (
   textured_quad_render_pass *Element
-    , b32 IsDepthTexture
+    
+  
+  , b32 IsDepthTexture
   , b32 HasAlphaChannel
   , s32 TextureSlice
   , v3 Tint
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(STDLIB_SHADER_PATH "SimpleTexture.fragmentshader"));
@@ -19,7 +21,9 @@ InitializeTexturedQuadRenderPass
 
     u32 UniformIndex = 0;
 
-            Element->IsDepthTexture = IsDepthTexture;
+        
+    
+        Element->IsDepthTexture = IsDepthTexture;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -51,6 +55,8 @@ InitializeTexturedQuadRenderPass
       "Tint"
       );
 
+
+
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
     {
@@ -74,13 +80,8 @@ UseRenderPass_textured_quad_render_pass
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -101,6 +102,15 @@ UseRenderPass_textured_quad_render_pass
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+
 
     if (UniformIndex !=  4  )
     {

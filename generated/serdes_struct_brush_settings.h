@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:442:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
 {
@@ -119,7 +118,42 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
                             Result &= Serialize(Bytes, &Element->HSVColor); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -236,7 +270,27 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

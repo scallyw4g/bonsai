@@ -1,5 +1,4 @@
-// src/engine/world_update.h:21:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1538:0
 struct voxel_stack_element_cursor
 {
   voxel_stack_element *Start;
@@ -14,11 +13,12 @@ link_internal voxel_stack_element_cursor
 VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
 {
   voxel_stack_element *Start = (voxel_stack_element*)PushStruct(Memory, sizeof(voxel_stack_element)*ElementCount, 1, 0);
-  voxel_stack_element_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  voxel_stack_element_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

@@ -1,5 +1,4 @@
-// src/engine/world_update.cpp:517:0
-
+// src/engine/world_update.cpp:308:0
 DimIterator(x, y, z, UpdateDim)
 {
   b32 OverwriteVoxel = False;

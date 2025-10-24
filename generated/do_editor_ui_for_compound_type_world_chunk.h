@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:492:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -381,6 +380,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

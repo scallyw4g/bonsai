@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:46:0
-
+// external/bonsai_stdlib/src/poof_functions.h:976:0
 bonsai_type_info_linked_list_node*
 GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
 {

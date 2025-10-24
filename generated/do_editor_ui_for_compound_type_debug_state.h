@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:275:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -212,7 +211,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("FrameEnd");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -223,7 +228,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("FrameBegin");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -234,7 +245,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("RegisterArena");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -245,7 +262,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("UnregisterArena");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -256,7 +279,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("WorkerThreadAdvanceDebugSystem");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -267,7 +296,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("MainThreadAdvanceDebugSystem");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -278,7 +313,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("MutexWait");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -289,7 +330,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("MutexAquired");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -300,7 +347,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("MutexReleased");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -311,7 +364,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("GetProfileScope");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -322,7 +381,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("Debug_Allocate");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -333,7 +398,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("RegisterThread");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -344,7 +415,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("WriteMemoryRecord");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -355,7 +432,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("ClearMemoryRecordsFor");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -366,7 +449,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("TrackDrawCall");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -377,7 +466,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("GetThreadLocalState");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -388,7 +483,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("DebugValue_r32");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -399,7 +500,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("DebugValue_u32");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -410,7 +517,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("DebugValue_u64");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -421,7 +534,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("DumpScopeTreeDataToConsole");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -432,7 +551,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("OpenAndInitializeDebugWindow");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -443,7 +568,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("ProcessInputAndRedrawWindow");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -454,7 +585,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("(anonymous)");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -465,7 +602,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("(anonymous)");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -476,7 +619,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("(anonymous)");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -487,7 +636,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("GetReadScopeTree");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -498,7 +653,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
         
         
         cs MemberName = CSz("GetWriteScopeTree");
-        
+                                                                
+
+
+
+
+
+
 
         
       }
@@ -1015,6 +1176,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

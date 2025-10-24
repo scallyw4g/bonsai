@@ -1,9 +1,33 @@
-// src/engine/editor.h:74:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(voxel_rule_direction Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case VoxelRuleDir_PosX:
+    case VoxelRuleDir_NegX:
+    case VoxelRuleDir_PosY:
+    case VoxelRuleDir_NegY:
+    case VoxelRuleDir_PosZ:
+    case VoxelRuleDir_NegZ:
+    case VoxelRuleDir_Count:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(voxel_rule_direction Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case VoxelRuleDir_PosX: { Result = CSz("PosX"); } break;
@@ -14,15 +38,18 @@ ToStringPrefixless(voxel_rule_direction Type)
     case VoxelRuleDir_NegZ: { Result = CSz("NegZ"); } break;
     case VoxelRuleDir_Count: { Result = CSz("Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(voxel_rule_direction Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -34,9 +61,10 @@ ToString(voxel_rule_direction Type)
     case VoxelRuleDir_NegZ: { Result = CSz("VoxelRuleDir_NegZ"); } break;
     case VoxelRuleDir_Count: { Result = CSz("VoxelRuleDir_Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -52,6 +80,7 @@ VoxelRuleDirection(counted_string S)
   if (StringsMatch(S, CSz("VoxelRuleDir_PosZ"))) { return VoxelRuleDir_PosZ; }
   if (StringsMatch(S, CSz("VoxelRuleDir_NegZ"))) { return VoxelRuleDir_NegZ; }
   if (StringsMatch(S, CSz("VoxelRuleDir_Count"))) { return VoxelRuleDir_Count; }
+
 
   return Result;
 }

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:420:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_rect *Ignored)
 {
@@ -43,7 +42,9 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
 
 
 
-    
+            
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -74,7 +75,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *E
 
 
 
-  
+    
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

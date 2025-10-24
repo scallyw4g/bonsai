@@ -1,5 +1,4 @@
-// src/engine/render.cpp:1031:0
-
+// src/engine/render.cpp:933:0
 
 link_internal void
 CopyBufferIntoBuffer( untextured_3d_geometry_buffer *Src, untextured_3d_geometry_buffer *Dest)

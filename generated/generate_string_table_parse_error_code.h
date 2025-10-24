@@ -1,9 +1,52 @@
-// external/bonsai_stdlib/src/c_parser.h:62:0
+// external/bonsai_stdlib/src/poof_functions.h:1741:0
+link_internal b32
+IsValid(parse_error_code Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case ParseErrorCode_None:
+    case ParseErrorCode_ExpectedSemicolonOrEquals:
+    case ParseErrorCode_StreamEndedUnexpectedly:
+    case ParseErrorCode_RequireTokenFailed:
+    case ParseErrorCode_InvalidTokenGenerated:
+    case ParseErrorCode_MalformedType:
+    case ParseErrorCode_PoofUserlandError:
+    case ParseErrorCode_PoofTypeError:
+    case ParseErrorCode_DUnionParse:
+    case ParseErrorCode_UndefinedDatatype:
+    case ParseErrorCode_InvalidKeyword:
+    case ParseErrorCode_InvalidDirective:
+    case ParseErrorCode_InvalidOperator:
+    case ParseErrorCode_InvalidMetaTransformOp:
+    case ParseErrorCode_InvalidArgument:
+    case ParseErrorCode_InvalidArgumentType:
+    case ParseErrorCode_InvalidArgumentCount:
+    case ParseErrorCode_InvalidName:
+    case ParseErrorCode_InvalidTag:
+    case ParseErrorCode_InvalidFunction:
+    case ParseErrorCode_SyntaxError:
+    case ParseErrorCode_NotImplemented:
+    case ParseErrorCode_InputStreamNull:
+    case ParseErrorCode_InternalCompilerError:
+    case ParseErrorCode_StackOverflow:
+    case ParseErrorCode_Unknown:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(parse_error_code Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case ParseErrorCode_None: { Result = CSz("None"); } break;
@@ -33,15 +76,18 @@ ToStringPrefixless(parse_error_code Type)
     case ParseErrorCode_StackOverflow: { Result = CSz("StackOverflow"); } break;
     case ParseErrorCode_Unknown: { Result = CSz("Unknown"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(parse_error_code Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -72,9 +118,10 @@ ToString(parse_error_code Type)
     case ParseErrorCode_StackOverflow: { Result = CSz("ParseErrorCode_StackOverflow"); } break;
     case ParseErrorCode_Unknown: { Result = CSz("ParseErrorCode_Unknown"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 

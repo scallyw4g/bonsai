@@ -1,9 +1,9 @@
-// external/bonsai_stdlib/src/counted_string.cpp:29:0
-
+// external/bonsai_stdlib/src/poof_functions.h:680:0
 struct tuple_cs_cs
 {
     cs E0;
   cs E1;
+
 };
 
 /* poof_bind( TupleType <- { tuple_(Types.map.sep(_) (T) {(T.name)} } )*/
@@ -17,6 +17,7 @@ Tuple(  cs E0, cs E1 )
   {
         .E0 = E0,
     .E1 = E1,
+
   };
   return Result;
 }

@@ -1,5 +1,4 @@
-// src/engine/world_chunk.h:124:0
-
+// external/bonsai_stdlib/src/poof_functions.h:113:0
 link_internal voxel_lighting
 VoxelLighting(  u8   Emission  )
 {
@@ -9,7 +8,8 @@ VoxelLighting(  u8   Emission  )
 
   };
 
-  
+    
+
   return Reuslt;
 }
 

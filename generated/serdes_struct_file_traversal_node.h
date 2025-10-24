@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:302:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(file_traversal_node *Ignored)
 {
@@ -48,7 +47,20 @@ Serialize(u8_cursor_block_array *Bytes, file_traversal_node *BaseElement, umm Co
 
                             Result &= Serialize(Bytes, &Element->Name); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -86,7 +98,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Name, Memory);
 
+
+
+
+
+
+
+    
   
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

@@ -1,5 +1,4 @@
-// src/engine/editor.h:1270:0
-
+// external/bonsai_stdlib/src/poof_functions.h:624:0
 link_internal b32
 AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2)
 {

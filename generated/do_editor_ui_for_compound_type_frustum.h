@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:372:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -233,6 +232,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

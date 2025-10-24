@@ -1,9 +1,32 @@
-// src/engine/editor.h:1070:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(shape_type Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case ShapeType_Rect:
+    case ShapeType_Sphere:
+    case ShapeType_Line:
+    case ShapeType_Cylinder:
+    case ShapeType_Plane:
+    case ShapeType_Torus:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(shape_type Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case ShapeType_Rect: { Result = CSz("Rect"); } break;
@@ -13,15 +36,18 @@ ToStringPrefixless(shape_type Type)
     case ShapeType_Plane: { Result = CSz("Plane"); } break;
     case ShapeType_Torus: { Result = CSz("Torus"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(shape_type Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -32,9 +58,10 @@ ToString(shape_type Type)
     case ShapeType_Plane: { Result = CSz("ShapeType_Plane"); } break;
     case ShapeType_Torus: { Result = CSz("ShapeType_Torus"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -49,6 +76,7 @@ ShapeType(counted_string S)
   if (StringsMatch(S, CSz("ShapeType_Cylinder"))) { return ShapeType_Cylinder; }
   if (StringsMatch(S, CSz("ShapeType_Plane"))) { return ShapeType_Plane; }
   if (StringsMatch(S, CSz("ShapeType_Torus"))) { return ShapeType_Torus; }
+
 
   return Result;
 }

@@ -1,9 +1,35 @@
-// src/engine/entity.h:39:0
+// external/bonsai_stdlib/src/poof_functions.h:1741:0
+link_internal b32
+IsValid(entity_behavior_flags Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case EntityBehaviorFlags_None:
+    case EntityBehaviorFlags_Gravity:
+    case EntityBehaviorFlags_WorldCollision:
+    case EntityBehaviorFlags_EntityCollision:
+    case EntityBehaviorFlags_UnspawnOnParticleSystemTerminate:
+    case EntityBehaviorFlags_FitCollisionVolumeToModel:
+    case EntityBehaviorFlags_DefatulCameraGhostBehavior:
+    case EntityBehaviorFlags_WorldCenter:
+    case EntityBehaviorFlags_Default:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(entity_behavior_flags Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case EntityBehaviorFlags_None: { Result = CSz("None"); } break;
@@ -15,6 +41,7 @@ ToStringPrefixless(entity_behavior_flags Type)
     case EntityBehaviorFlags_DefatulCameraGhostBehavior: { Result = CSz("DefatulCameraGhostBehavior"); } break;
     case EntityBehaviorFlags_WorldCenter: { Result = CSz("WorldCenter"); } break;
     case EntityBehaviorFlags_Default: { Result = CSz("Default"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -47,13 +74,15 @@ ToStringPrefixless(entity_behavior_flags Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(entity_behavior_flags Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -66,6 +95,7 @@ ToString(entity_behavior_flags Type)
     case EntityBehaviorFlags_DefatulCameraGhostBehavior: { Result = CSz("EntityBehaviorFlags_DefatulCameraGhostBehavior"); } break;
     case EntityBehaviorFlags_WorldCenter: { Result = CSz("EntityBehaviorFlags_WorldCenter"); } break;
     case EntityBehaviorFlags_Default: { Result = CSz("EntityBehaviorFlags_Default"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -85,7 +115,7 @@ ToString(entity_behavior_flags Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 

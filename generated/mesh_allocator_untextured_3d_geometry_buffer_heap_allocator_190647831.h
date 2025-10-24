@@ -1,5 +1,4 @@
-// src/engine/mesh.cpp:47:0
-
+// src/engine/mesh.cpp:3:0
 link_internal void
 AllocateMesh( untextured_3d_geometry_buffer *Mesh, data_type Type, u32 NumVerts, heap_allocator *Memory)
 {

@@ -1,5 +1,4 @@
-// src/engine/editor.h:1141:0
-
+// src/engine/editor.h:551:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_layer_type Selection)
 {
@@ -20,6 +19,7 @@ RadioButtonGroup_brush_layer_type( renderer_2d *Ui,
   {
         { CSz("Noise"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Noise")), BrushLayerType_Noise },
     { CSz("Shape"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Shape")), BrushLayerType_Shape },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

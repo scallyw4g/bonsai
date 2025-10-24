@@ -1,5 +1,4 @@
 // external/bonsai_stdlib/src/input.h:162:0
-
 Input->Enter.Clicked = False;
 
 
@@ -187,6 +186,7 @@ Input->LMB.Clicked = False;
 
 
 Input->MMB.Clicked = False;
+
 
 
 

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:457:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_edit *Ignored)
 {
@@ -62,9 +61,24 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Ordinal); // default
 
-                    if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
+
+
+
+
+
+            
+
+                if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
+
+
+
+        
+
+        
+
+        
 
 
 
@@ -120,7 +134,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Ordinal, Memory);
 
-        if (HadBrushPointer)
+
+
+
+
+
+
+    
+      if (HadBrushPointer)
   {
         umm Count = 1;
 
@@ -134,6 +155,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
   }
 
 
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

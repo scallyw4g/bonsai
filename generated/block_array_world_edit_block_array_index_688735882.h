@@ -1,5 +1,4 @@
-// src/engine/editor.h:1306:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -337,23 +336,36 @@ Push( world_edit_block_array_index_block_array *Array )
 }
 
 link_internal void
-Shift( world_edit_block_array_index_block_array *Array, world_edit_block_array_index *Element )
+Insert( world_edit_block_array_index_block_array *Array, world_edit_block_array_index_block_array_index Index, world_edit_block_array_index *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  world_edit_block_array_index *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  world_edit_block_array_index *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( world_edit_block_array_index_block_array *Array, u32 Index, world_edit_block_array_index *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( world_edit_block_array_index_block_array *Array, world_edit_block_array_index *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

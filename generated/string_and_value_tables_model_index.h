@@ -1,9 +1,65 @@
-// src/engine/model.h:55:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(model_index Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case ModelIndex_None:
+    case ModelIndex_Enemy_Skeleton_Axe:
+    case ModelIndex_Enemy_Skeleton_Sword:
+    case ModelIndex_Enemy_Skeleton_Lasher:
+    case ModelIndex_Enemy_Skeleton_Archer:
+    case ModelIndex_Enemy_Skeleton_Spear:
+    case ModelIndex_Enemy_Skeleton_AxeArmor:
+    case ModelIndex_Enemy_Skeleton_Hounds:
+    case ModelIndex_Enemy_Skeleton_Horserider:
+    case ModelIndex_Enemy_Skeleton_Horsebanner:
+    case ModelIndex_Enemy_Skeleton_Shaman:
+    case ModelIndex_Enemy_Skeleton_Champion:
+    case ModelIndex_Enemy_Skeleton_ChampionChampion:
+    case ModelIndex_Enemy_Skeleton_Concubiner:
+    case ModelIndex_Enemy_Skeleton_King:
+    case ModelIndex_Player_jp:
+    case ModelIndex_Player_bow:
+    case ModelIndex_Player_cat:
+    case ModelIndex_Player_fox:
+    case ModelIndex_Player_gumi:
+    case ModelIndex_Player_knight:
+    case ModelIndex_Player_man:
+    case ModelIndex_Player_mom:
+    case ModelIndex_Player_old:
+    case ModelIndex_Player_poem:
+    case ModelIndex_Player_rain:
+    case ModelIndex_Player_sasami:
+    case ModelIndex_Player_sol:
+    case ModelIndex_Player_sword:
+    case ModelIndex_Player_tale:
+    case ModelIndex_Player_tama:
+    case ModelIndex_Player_tsurugi:
+    case ModelIndex_Loot:
+    case ModelIndex_Projectile:
+    case ModelIndex_Proton:
+    case ModelIndex_Bitty0:
+    case ModelIndex_Bitty1:
+    case ModelIndex_Level:
+    case ModelIndex_Count:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(model_index Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case ModelIndex_None: { Result = CSz("None"); } break;
@@ -46,15 +102,18 @@ ToStringPrefixless(model_index Type)
     case ModelIndex_Level: { Result = CSz("Level"); } break;
     case ModelIndex_Count: { Result = CSz("Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(model_index Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -98,9 +157,10 @@ ToString(model_index Type)
     case ModelIndex_Level: { Result = CSz("ModelIndex_Level"); } break;
     case ModelIndex_Count: { Result = CSz("ModelIndex_Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -148,6 +208,7 @@ ModelIndex(counted_string S)
   if (StringsMatch(S, CSz("ModelIndex_Bitty1"))) { return ModelIndex_Bitty1; }
   if (StringsMatch(S, CSz("ModelIndex_Level"))) { return ModelIndex_Level; }
   if (StringsMatch(S, CSz("ModelIndex_Count"))) { return ModelIndex_Count; }
+
 
   return Result;
 }

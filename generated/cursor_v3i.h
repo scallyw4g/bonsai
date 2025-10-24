@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/vector.cpp:5:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1538:0
 struct v3i_cursor
 {
   v3i *Start;
@@ -14,11 +13,12 @@ link_internal v3i_cursor
 V3iCursor(umm ElementCount, memory_arena* Memory)
 {
   v3i *Start = (v3i*)PushStruct(Memory, sizeof(v3i)*ElementCount, 1, 0);
-  v3i_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  v3i_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

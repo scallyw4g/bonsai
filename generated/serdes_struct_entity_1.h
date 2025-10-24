@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:355:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(entity_1 *Ignored)
 {
@@ -90,6 +89,8 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
 
 
 
+        
+        
                 if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
@@ -121,9 +122,40 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
 
               if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-                    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+        
+                if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+
+
+
+        
+
+        
+
+        
+
+        
+
+        
 
 
 
@@ -210,6 +242,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
+    
+    
         b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
@@ -243,7 +277,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
       if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
 
-        if (HadEmitterPointer)
+
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      if (HadEmitterPointer)
   {
         umm Count = 1;
 
@@ -257,6 +304,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
   }
 
 
+  
+  
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

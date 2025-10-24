@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:30:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(frustum *Ignored)
 {
@@ -85,7 +84,30 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Right); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -166,7 +188,21 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Right, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

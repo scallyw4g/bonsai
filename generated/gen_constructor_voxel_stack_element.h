@@ -1,5 +1,4 @@
-// src/engine/world_update.h:15:0
-
+// external/bonsai_stdlib/src/poof_functions.h:113:0
 link_internal voxel_stack_element
 VoxelStackElement(  v3i   VoxSimP , voxel_rule_direction   Dir  )
 {
@@ -7,9 +6,13 @@ VoxelStackElement(  v3i   VoxSimP , voxel_rule_direction   Dir  )
             .VoxSimP = VoxSimP
 
 ,        .Dir = Dir
+
+
   };
 
+    
   
+
   return Reuslt;
 }
 

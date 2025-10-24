@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/texture.cpp:5:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2375:0
 
 
 
@@ -141,23 +140,36 @@ Push( texture_block_array *Array )
 }
 
 link_internal void
-Shift( texture_block_array *Array, texture *Element )
+Insert( texture_block_array *Array, texture_block_array_index Index, texture *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  texture *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  texture *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( texture_block_array *Array, u32 Index, texture *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( texture_block_array *Array, texture *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

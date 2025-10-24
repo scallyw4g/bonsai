@@ -1,5 +1,4 @@
-// src/engine/mesh.cpp:239:0
-
+// src/engine/mesh.cpp:121:0
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {

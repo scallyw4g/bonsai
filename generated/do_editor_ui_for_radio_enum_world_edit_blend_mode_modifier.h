@@ -1,5 +1,4 @@
-// src/engine/editor.h:905:0
-
+// src/engine/editor.h:458:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifier *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
@@ -127,6 +126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode_modifie
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {

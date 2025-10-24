@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:296:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(physics *Ignored)
 {
@@ -64,7 +63,24 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Speed); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -121,7 +137,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:290:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
 {
@@ -192,9 +191,55 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 
 
 
+        
 
 
-    
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -412,9 +457,33 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
+    
 
 
+    
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

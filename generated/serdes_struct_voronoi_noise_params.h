@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:408:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(voronoi_noise_params *Ignored)
 {
@@ -50,7 +49,20 @@ Serialize(u8_cursor_block_array *Bytes, voronoi_noise_params *BaseElement, umm C
 
                             Result &= Serialize(Bytes, &Element->MaskChance); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -91,7 +103,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->MaskChance, Memory);
 
+
+
+
+
+
+
+    
   
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

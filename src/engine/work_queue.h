@@ -343,7 +343,7 @@ WorkQueueEntry( particle_system *System, v3 EntityDelta, v3 RenderSpaceP, r32 dt
 
 
 link_internal void
-HandleJob(volatile work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
+HandleJob(work_queue_entry *Entry, thread_local_state *Thread, application_api *GameApi)
 {
   if ( GameApi->WorkerMain &&
        GameApi->WorkerMain(Entry, Thread))

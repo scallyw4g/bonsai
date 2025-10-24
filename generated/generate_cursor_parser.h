@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/c_parser.h:93:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1538:0
 struct parser_cursor
 {
   parser *Start;
@@ -14,11 +13,12 @@ link_internal parser_cursor
 ParserCursor(umm ElementCount, memory_arena* Memory)
 {
   parser *Start = (parser*)PushStruct(Memory, sizeof(parser)*ElementCount, 1, 0);
-  parser_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  parser_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

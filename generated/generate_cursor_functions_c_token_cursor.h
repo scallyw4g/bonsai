@@ -1,15 +1,15 @@
-// external/bonsai_stdlib/src/c_token.h:390:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1560:0
 
 link_internal c_token_cursor
 CTokenCursor(umm ElementCount, memory_arena* Memory)
 {
   c_token *Start = (c_token*)PushStruct(Memory, sizeof(c_token)*ElementCount, 1, 0);
-  c_token_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  c_token_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

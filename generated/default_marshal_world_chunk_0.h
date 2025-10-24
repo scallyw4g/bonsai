@@ -1,4 +1,4 @@
-// src/engine/serdes.cpp:55:0
+// src/engine/serdes.h:15:0
 
 Live->Dim = Stored->Dim;
 
@@ -12,7 +12,18 @@ Live->VoxelLighting = Stored->VoxelLighting;
 
 
 
+
+
 Live->WorldP = Stored->WorldP;
+
+
+
+
+
+
+
+
+
 
 
 

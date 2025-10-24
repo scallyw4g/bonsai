@@ -1,9 +1,32 @@
-// src/engine/world_chunk.h:82:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(chunk_flag Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case Chunk_Uninitialized:
+    case Chunk_Queued:
+    case Chunk_VoxelsInitialized:
+    case Chunk_Garbage:
+    case Chunk_Deallocate:
+    case Chunk_Freelist:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(chunk_flag Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
@@ -12,6 +35,7 @@ ToStringPrefixless(chunk_flag Type)
     case Chunk_Garbage: { Result = CSz("Garbage"); } break;
     case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Freelist"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -44,13 +68,15 @@ ToStringPrefixless(chunk_flag Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(chunk_flag Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -60,6 +86,7 @@ ToString(chunk_flag Type)
     case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
     case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -79,7 +106,7 @@ ToString(chunk_flag Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -94,6 +121,7 @@ ChunkFlag(counted_string S)
   if (StringsMatch(S, CSz("Chunk_Garbage"))) { return Chunk_Garbage; }
   if (StringsMatch(S, CSz("Chunk_Deallocate"))) { return Chunk_Deallocate; }
   if (StringsMatch(S, CSz("Chunk_Freelist"))) { return Chunk_Freelist; }
+
 
   return Result;
 }

@@ -1,5 +1,4 @@
-// src/engine/world_chunk.cpp:4:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2375:0
 
 
 
@@ -141,23 +140,36 @@ Push( world_chunk_ptr_block_array *Array )
 }
 
 link_internal void
-Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+Insert( world_chunk_ptr_block_array *Array, world_chunk_ptr_block_array_index Index, world_chunk_ptr Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  world_chunk_ptr Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  world_chunk_ptr Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( world_chunk_ptr_block_array *Array, u32 Index, world_chunk_ptr Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

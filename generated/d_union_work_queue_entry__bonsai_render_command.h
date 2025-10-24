@@ -1,5 +1,4 @@
 // src/engine/render_command.h:179:0
-
 enum work_queue_entry__bonsai_render_command_type
 {
   type_work_queue_entry__bonsai_render_command_noop,

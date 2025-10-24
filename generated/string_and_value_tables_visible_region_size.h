@@ -1,9 +1,43 @@
-// src/engine/editor.cpp:142:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(visible_region_size Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case VisibleRegionSize_1:
+    case VisibleRegionSize_2:
+    case VisibleRegionSize_4:
+    case VisibleRegionSize_8:
+    case VisibleRegionSize_16:
+    case VisibleRegionSize_32:
+    case VisibleRegionSize_64:
+    case VisibleRegionSize_128:
+    case VisibleRegionSize_256:
+    case VisibleRegionSize_512:
+    case VisibleRegionSize_1024:
+    case VisibleRegionSize_2048:
+    case VisibleRegionSize_4096:
+    case VisibleRegionSize_8192:
+    case VisibleRegionSize_16k:
+    case VisibleRegionSize_32k:
+    case VisibleRegionSize_64k:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(visible_region_size Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case VisibleRegionSize_1: { Result = CSz("1"); } break;
@@ -24,15 +58,18 @@ ToStringPrefixless(visible_region_size Type)
     case VisibleRegionSize_32k: { Result = CSz("32k"); } break;
     case VisibleRegionSize_64k: { Result = CSz("64k"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(visible_region_size Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -54,9 +91,10 @@ ToString(visible_region_size Type)
     case VisibleRegionSize_32k: { Result = CSz("VisibleRegionSize_32k"); } break;
     case VisibleRegionSize_64k: { Result = CSz("VisibleRegionSize_64k"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -82,6 +120,7 @@ VisibleRegionSize(counted_string S)
   if (StringsMatch(S, CSz("VisibleRegionSize_16k"))) { return VisibleRegionSize_16k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_32k"))) { return VisibleRegionSize_32k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_64k"))) { return VisibleRegionSize_64k; }
+
 
   return Result;
 }

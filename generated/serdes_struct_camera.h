@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:130:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(camera *Ignored)
 {
@@ -58,6 +57,10 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
 
 
+        
+        
+        
+        
                             Result &= Serialize(Bytes, &Element->TargetPitch); // default
 
 
@@ -123,7 +126,44 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->GhostId); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+        
+        
+        
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -196,6 +236,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
+    
+    
+    
+    
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
@@ -272,7 +316,30 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->GhostId, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

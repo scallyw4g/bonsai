@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:49:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk_0 *Ignored)
 {
@@ -34,7 +33,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_chunk_0 *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Dim); // default
+            
+                            Result &= Serialize(Bytes, &Element->Dim); // default
 
 
 
@@ -51,6 +51,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 
 
 
+        
+        
                             Result &= Serialize(Bytes, &Element->WorldP); // default
 
 
@@ -58,9 +60,21 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 
 
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 
-                    if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels,  Cast(umm, Volume(Element->Dim)) ); }
+            
+        
+
+                if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels,  Cast(umm, Volume(Element->Dim)) ); }
 
 
 
@@ -68,6 +82,19 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 
 
 
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -89,7 +116,8 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
+      
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -107,6 +135,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
+    
+    
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
@@ -115,9 +145,21 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
-        if (HadVoxelsPointer)
+        
+
+  
+      if (HadVoxelsPointer)
   {
         umm Count =  Cast(umm, Volume(Element->Dim));
 
@@ -145,6 +187,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
   }
 
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

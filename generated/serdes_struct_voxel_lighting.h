@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:44:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(voxel_lighting *Ignored)
 {
@@ -43,7 +42,9 @@ Serialize(u8_cursor_block_array *Bytes, voxel_lighting *BaseElement, umm Count =
 
 
 
-    
+            
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -74,7 +75,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voxel_lighting *Element, memory_aren
 
 
 
-  
+    
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

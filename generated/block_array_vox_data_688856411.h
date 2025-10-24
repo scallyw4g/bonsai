@@ -1,5 +1,4 @@
-// src/engine/model.h:88:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -323,23 +322,36 @@ Push( vox_data_block_array *Array )
 }
 
 link_internal void
-Shift( vox_data_block_array *Array, vox_data *Element )
+Insert( vox_data_block_array *Array, vox_data_block_array_index Index, vox_data *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  vox_data *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  vox_data *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( vox_data_block_array *Array, u32 Index, vox_data *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( vox_data_block_array *Array, vox_data *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

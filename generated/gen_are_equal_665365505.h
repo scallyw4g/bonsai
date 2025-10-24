@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/primitives.h:234:0
-
+// external/bonsai_stdlib/src/primitives.h:213:0
 link_internal b32
 AreEqual( s64 E1, s64 E2 )
 {
@@ -130,4 +129,5 @@ AreEqual( u8 *E1, u8 *E2 )
   b32 Result = *E1 == *E2;
   return Result;
 }
+
 

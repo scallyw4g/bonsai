@@ -1,5 +1,4 @@
-// src/engine/serdes.h:574:0
-
+// src/engine/serdes.h:56:0
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, u8 *Element, umm Count = 1)
 {
@@ -242,4 +241,5 @@ Deserialize(u8_cursor *Bytes, r64 *Element, memory_arena *Ignored = 0, umm Count
 }
 
 /* serdes_array(type) */
+
 

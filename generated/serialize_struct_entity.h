@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:364:0
-
+// src/engine/serdes.h:132:0
 link_internal bonsai_type_info
 TypeInfo(entity *Ignored)
 {
@@ -93,6 +92,8 @@ Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count = 1)
 
 
 
+        
+        
                 if (Element->Emitter) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
@@ -124,9 +125,40 @@ Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count = 1)
 
               if (EntityUserDataSerialize)   {Result &= EntityUserDataSerialize(Bytes, Element->UserType, Element->UserData);}
 
-                    if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
 
 
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+        
+                if (Element->Emitter) { Result &= Serialize(Bytes, Element->Emitter); }
+
+
+
+        
+
+        
+
+        
+
+        
+
+        
 
 
 

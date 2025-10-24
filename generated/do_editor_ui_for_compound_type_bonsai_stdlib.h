@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:279:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -110,6 +109,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
+        cs MemberName = CSz("GL");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(opengl*, &Element->GL),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("ThreadStates");
                                                                 DoEditorUi(Ui,
           Window,
@@ -135,11 +159,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
         
         
         
-        cs MemberName = CSz("GL");
+        cs MemberName = CSz("DefaultThreadState");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(opengl*, &Element->GL),
+          Cast(thread_local_state*, &Element->DefaultThreadState),
           MemberName,
           ThisHash,
           Params
@@ -279,6 +303,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

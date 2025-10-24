@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/file.h:28:0
-
+// external/bonsai_stdlib/src/poof_functions.h:624:0
 link_internal b32
 AreEqual(file_traversal_node *Thing1, file_traversal_node *Thing2)
 {
@@ -11,6 +10,8 @@ AreEqual(file_traversal_node *Thing1, file_traversal_node *Thing2)
         Result &= AreEqual(Thing1->Dir, Thing2->Dir);
 
         Result &= AreEqual(Thing1->Name, Thing2->Name);
+
+
 
     return Result;
   }
@@ -29,6 +30,8 @@ AreEqual(file_traversal_node Thing1, file_traversal_node Thing2)
     Result &= AreEqual(Thing1.Dir, Thing2.Dir);
 
     Result &= AreEqual(Thing1.Name, Thing2.Name);
+
+
 
   return Result;
 }

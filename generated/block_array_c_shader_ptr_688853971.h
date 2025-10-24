@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/shader.cpp:4:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2375:0
 
 
 
@@ -141,23 +140,36 @@ Push( shader_ptr_block_array *Array )
 }
 
 link_internal void
-Shift( shader_ptr_block_array *Array, shader_ptr Element )
+Insert( shader_ptr_block_array *Array, shader_ptr_block_array_index Index, shader_ptr Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  shader_ptr Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  shader_ptr Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( shader_ptr_block_array *Array, u32 Index, shader_ptr Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( shader_ptr_block_array *Array, shader_ptr Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

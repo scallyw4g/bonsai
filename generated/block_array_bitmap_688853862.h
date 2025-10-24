@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/bitmap.cpp:189:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -323,23 +322,36 @@ Push( bitmap_block_array *Array )
 }
 
 link_internal void
-Shift( bitmap_block_array *Array, bitmap *Element )
+Insert( bitmap_block_array *Array, bitmap_block_array_index Index, bitmap *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  bitmap *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  bitmap *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( bitmap_block_array *Array, u32 Index, bitmap *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( bitmap_block_array *Array, bitmap *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

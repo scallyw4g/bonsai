@@ -1,9 +1,31 @@
-// src/engine/editor.h:902:0
+// external/bonsai_stdlib/src/poof_functions.h:2046:0
+link_internal b32
+IsValid(world_edit_blend_mode_modifier Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case WorldEdit_Modifier_None:
+    case WorldEdit_ValueModifier_ClampPos:
+    case WorldEdit_ValueModifier_ClampNeg:
+    case WorldEdit_ValueModifier_Threshold:
+    case WorldEdit_ColorModifier_Discard:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(world_edit_blend_mode_modifier Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case WorldEdit_Modifier_None: { Result = CSz("None"); } break;
@@ -11,6 +33,7 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
     case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
     case WorldEdit_ColorModifier_Discard: { Result = CSz("Discard"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -43,13 +66,15 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(world_edit_blend_mode_modifier Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -58,6 +83,7 @@ ToString(world_edit_blend_mode_modifier Type)
     case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
     case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
     case WorldEdit_ColorModifier_Discard: { Result = CSz("WorldEdit_ColorModifier_Discard"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -77,7 +103,7 @@ ToString(world_edit_blend_mode_modifier Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -91,6 +117,7 @@ WorldEditBlendModeModifier(counted_string S)
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_ClampNeg"))) { return WorldEdit_ValueModifier_ClampNeg; }
   if (StringsMatch(S, CSz("WorldEdit_ValueModifier_Threshold"))) { return WorldEdit_ValueModifier_Threshold; }
   if (StringsMatch(S, CSz("WorldEdit_ColorModifier_Discard"))) { return WorldEdit_ColorModifier_Discard; }
+
 
   return Result;
 }

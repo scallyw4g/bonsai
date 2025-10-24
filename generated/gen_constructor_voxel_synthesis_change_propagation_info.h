@@ -1,5 +1,4 @@
-// src/engine/voxel_synthesis.h:309:0
-
+// external/bonsai_stdlib/src/poof_functions.h:113:0
 link_internal voxel_synthesis_change_propagation_info
 VoxelSynthesisChangePropagationInfo(  tile_rule   PrevTileOptions , v3i   PrevTileP , v3i   DirOfTravel  )
 {
@@ -7,11 +6,16 @@ VoxelSynthesisChangePropagationInfo(  tile_rule   PrevTileOptions , v3i   PrevTi
             .PrevTileOptions = PrevTileOptions
 
 ,        .PrevTileP = PrevTileP
-,
-        .DirOfTravel = DirOfTravel
+
+,        .DirOfTravel = DirOfTravel
+
+
   };
 
+    
   
+  
+
   return Reuslt;
 }
 

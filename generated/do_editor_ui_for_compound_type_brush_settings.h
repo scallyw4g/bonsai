@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:177:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -290,7 +289,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("Iterations");
-        
+                
 
                 PushNewRow(Ui);
 
@@ -302,7 +301,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("Offset");
-        
+                
 
         
       }
@@ -313,7 +312,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         cs MemberName = CSz("NoiseBasisOffset");
-        
+                
 
         
       }
@@ -332,6 +331,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:38:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(voxel *Ignored)
 {
@@ -43,7 +42,18 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Color); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -76,7 +86,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Color, Memory);
 
+
+
+
+
+
+
+    
   
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

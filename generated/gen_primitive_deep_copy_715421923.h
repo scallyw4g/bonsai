@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/primitives.h:251:0
-
+// external/bonsai_stdlib/src/primitives.h:238:0
 link_internal void
 DeepCopy( s64 *Src, s64 *Dest )
 {
@@ -50,4 +49,5 @@ DeepCopy( u8 *Src, u8 *Dest )
 {
   *Dest = *Src;
 }
+
 

@@ -1,5 +1,4 @@
-// src/engine/editor.h:916:0
-
+// src/engine/editor.h:551:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
 {
@@ -20,6 +19,7 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
   {
         { CSz("AssetFiles"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
     { CSz("AssetTable"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

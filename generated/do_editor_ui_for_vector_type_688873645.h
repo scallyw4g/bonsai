@@ -1,5 +1,4 @@
-// src/engine/editor.h:688:0
-
+// src/engine/editor.h:224:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
@@ -16,6 +15,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, u32 Pare
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -40,6 +40,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, u32 Paren
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -63,6 +64,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, u32 Pare
         DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -86,6 +88,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, u32 Paren
         DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -108,6 +111,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, u32 Pare
     PushTableStart(Ui);
         DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -130,6 +134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, u32 Paren
     PushTableStart(Ui);
         DoEditorUi(Ui, Window, &Value->E[0], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -154,6 +159,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -178,6 +184,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, u32 Paren
     DoEditorUi(Ui, Window, &Value->E[1], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[2], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
     DoEditorUi(Ui, Window, &Value->E[3], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+
     PushTableEnd(Ui);
     /* PushNewRow(Ui); */
     EndColumn(Ui, Start);
@@ -186,4 +193,5 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, u32 Paren
 
   PushNewRow(Ui);
 }
+
 

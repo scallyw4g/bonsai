@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:428:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_plane *Ignored)
 {
@@ -41,7 +40,18 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *Base
 
                             Result &= Serialize(Bytes, &Element->Thickness); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -71,7 +81,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Thickness, Memory);
 
+
+
+
+
+
+
+    
   
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

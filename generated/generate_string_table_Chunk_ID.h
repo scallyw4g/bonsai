@@ -1,9 +1,42 @@
-// src/engine/loaders/vox.cpp:27:0
+// external/bonsai_stdlib/src/poof_functions.h:1741:0
+link_internal b32
+IsValid(Chunk_ID Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case ID_NONE:
+    case ID_VOX:
+    case ID_MAIN:
+    case ID_PACK:
+    case ID_SIZE:
+    case ID_XYZI:
+    case ID_RGBA:
+    case ID_nTRN:
+    case ID_nGRP:
+    case ID_nSHP:
+    case ID_MATL:
+    case ID_LAYR:
+    case ID_rOBJ:
+    case ID_rCAM:
+    case ID_NOTE:
+    case ID_IMAP:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(Chunk_ID Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case ID_NONE: { Result = CSz("NONE"); } break;
@@ -23,15 +56,18 @@ ToStringPrefixless(Chunk_ID Type)
     case ID_NOTE: { Result = CSz("NOTE"); } break;
     case ID_IMAP: { Result = CSz("IMAP"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(Chunk_ID Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -52,9 +88,10 @@ ToString(Chunk_ID Type)
     case ID_NOTE: { Result = CSz("ID_NOTE"); } break;
     case ID_IMAP: { Result = CSz("ID_IMAP"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 

@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:361:0
-
+// src/engine/serdes.h:252:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory, umm Count = 1);
 
@@ -105,6 +104,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
+    
+    
         b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
@@ -138,7 +139,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
       if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
 
-        if (HadEmitterPointer)
+
+
+
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      if (HadEmitterPointer)
   {
         umm Count = 1;
 
@@ -152,6 +166,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
   }
 
 
+  
+  
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

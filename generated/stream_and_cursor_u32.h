@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:9:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 struct u32_cursor
 {
   u32 *Start;
@@ -14,11 +13,12 @@ link_internal u32_cursor
 U32Cursor(umm ElementCount, memory_arena* Memory)
 {
   u32 *Start = (u32*)PushStruct(Memory, sizeof(u32)*ElementCount, 1, 0);
-  u32_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  u32_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

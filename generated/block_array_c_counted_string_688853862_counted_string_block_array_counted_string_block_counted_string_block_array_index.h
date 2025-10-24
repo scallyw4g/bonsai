@@ -4,30 +4,30 @@
 
 
 link_internal cs
-CS( u32_block_array_index Index )
+CS( counted_string_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
 }
 
-link_internal u32 *
-Set( u32_block_array *Arr,
-  u32 *Element,
-  u32_block_array_index Index )
+link_internal counted_string *
+Set( counted_string_block_array *Arr,
+  counted_string *Element,
+  counted_string_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
-  u32_block *Block = GetBlock(Arr, Index);
-  umm ElementIndex = Index.Index % 8;
+  counted_string_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 32;
   auto Slot = Block->Elements+ElementIndex;
   *Slot = *Element;
   return Slot;
 }
 
 link_internal void
-NewBlock( u32_block_array *Arr )
+NewBlock( counted_string_block_array *Arr )
 {
-  u32_block  *NewBlock     = Allocate( u32_block , Arr->Memory,                 1);
-  u32_block **NewBlockPtrs = Allocate( u32_block*, Arr->Memory, Arr->BlockCount+1);
+  counted_string_block  *NewBlock     = Allocate( counted_string_block , Arr->Memory,                 1);
+  counted_string_block **NewBlockPtrs = Allocate( counted_string_block*, Arr->Memory, Arr->BlockCount+1);
 
   RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
@@ -43,7 +43,7 @@ NewBlock( u32_block_array *Arr )
 }
 
 link_internal void
-RemoveUnordered( u32_block_array *Array, u32_block_array_index Index)
+RemoveUnordered( counted_string_block_array *Array, counted_string_block_array_index Index)
 {
   auto LastI = LastIndex(Array);
   Assert(Index.Index <= LastI.Index);
@@ -54,16 +54,16 @@ RemoveUnordered( u32_block_array *Array, u32_block_array_index Index)
 }
 
 link_internal void
-RemoveOrdered( u32_block_array *Array, u32_block_array_index IndexToRemove)
+RemoveOrdered( counted_string_block_array *Array, counted_string_block_array_index IndexToRemove)
 {
   Assert(IndexToRemove.Index < Array->ElementCount);
 
-  u32 *Prev = {};
+  counted_string *Prev = {};
 
-  u32_block_array_index Max = AtElements(Array);
+  counted_string_block_array_index Max = AtElements(Array);
   RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    u32 *E = GetPtr(Array, Index);
+    counted_string *E = GetPtr(Array, Index);
 
     if (Prev)
     {
@@ -77,7 +77,7 @@ RemoveOrdered( u32_block_array *Array, u32_block_array_index IndexToRemove)
 }
 
 link_internal void
-RemoveOrdered( u32_block_array *Array, u32 *Element )
+RemoveOrdered( counted_string_block_array *Array, counted_string *Element )
 {
   IterateOver(Array, E, I)
   {
@@ -89,10 +89,10 @@ RemoveOrdered( u32_block_array *Array, u32 *Element )
   }
 }
 
-link_internal u32_block_array_index
-Find( u32_block_array *Array, u32 *Query)
+link_internal counted_string_block_array_index
+Find( counted_string_block_array *Array, counted_string *Query)
 {
-  u32_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  counted_string_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query )
@@ -107,15 +107,15 @@ Find( u32_block_array *Array, u32 *Query)
 
 
 link_internal b32
-IsValid(u32_block_array_index *Index)
+IsValid(counted_string_block_array_index *Index)
 {
-  u32_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  counted_string_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal u32 *
-Push( u32_block_array *Array, u32 *Element)
+link_internal counted_string *
+Push( counted_string_block_array *Array, counted_string *Element)
 {
   Assert(Array->Memory);
 
@@ -124,29 +124,29 @@ Push( u32_block_array *Array, u32 *Element)
     NewBlock(Array);
   }
 
-  u32 *Result = Set(Array, Element, AtElements(Array));
+  counted_string *Result = Set(Array, Element, AtElements(Array));
 
   Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal u32 *
-Push( u32_block_array *Array )
+link_internal counted_string *
+Push( counted_string_block_array *Array )
 {
-  u32 Element = {};
+  counted_string Element = {};
   auto Result = Push(Array, &Element);
   return Result;
 }
 
 link_internal void
-Insert( u32_block_array *Array, u32_block_array_index Index, u32 *Element )
+Insert( counted_string_block_array *Array, counted_string_block_array_index Index, counted_string *Element )
 {
   Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
 
   // Alocate a new thingy
-  u32 *Prev = Push(Array);
+  counted_string *Prev = Push(Array);
 
   auto Last = LastIndex(Array);
 
@@ -161,13 +161,13 @@ Insert( u32_block_array *Array, u32_block_array_index Index, u32 *Element )
 }
 
 link_internal void
-Insert( u32_block_array *Array, u32 Index, u32 *Element )
+Insert( counted_string_block_array *Array, u32 Index, counted_string *Element )
 {
   Insert(Array, { .Index = Index }, Element);
 }
 
 link_internal void
-Shift( u32_block_array *Array, u32 *Element )
+Shift( counted_string_block_array *Array, counted_string *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }

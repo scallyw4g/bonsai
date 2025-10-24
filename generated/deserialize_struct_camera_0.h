@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:74:0
-
+// src/engine/serdes.h:252:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, camera_0 *Element, memory_arena *Memory, umm Count = 1);
 
@@ -97,7 +96,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_0 *Element, memory_arena *Mem
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->GhostId, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

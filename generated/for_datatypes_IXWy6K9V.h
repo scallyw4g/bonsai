@@ -5,13 +5,15 @@
 
 
 
-
 link_internal b32
 poof()
 InitializeLightingRenderGroup
 (
   lighting_render_group *Element
-    , texture *gColor
+    
+  
+  
+  , texture *gColor
   , texture *gNormal
   , texture *gDepth
   , texture *shadowMap
@@ -37,6 +39,8 @@ InitializeLightingRenderGroup
   , b32 *UseLightingBloom
   , v2 *ApplicationResolution
   , v2 *ShadowMapResolution
+  
+  
 
 )
 {
@@ -48,7 +52,10 @@ InitializeLightingRenderGroup
 
     u32 UniformIndex = 0;
 
-            Element->gColor = gColor;
+        
+    
+    
+        Element->gColor = gColor;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -256,6 +263,8 @@ InitializeLightingRenderGroup
       "ShadowMapResolution"
       );
 
+    
+    
 
 
     u32 Expected =  26 ;
@@ -281,13 +290,9 @@ UseRenderPass_lighting_render_group
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -463,6 +468,15 @@ UseRenderPass_lighting_render_group
       AssertNoGlErrors;
     }
 
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+    
+    
 
 
     if (UniformIndex !=  26  )
@@ -577,10 +591,15 @@ poof()
 InitializeTerrainDecorationRenderContext
 (
   terrain_decoration_render_context *Element
-    , texture *DerivsTex
+    
+  
+  
+  
+  , texture *DerivsTex
   , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/decoration/default.fragmentshader"));
@@ -591,7 +610,11 @@ InitializeTerrainDecorationRenderContext
 
     u32 UniformIndex = 0;
 
-            Element->DerivsTex = DerivsTex;
+        
+    
+    
+    
+        Element->DerivsTex = DerivsTex;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -623,6 +646,8 @@ InitializeTerrainDecorationRenderContext
       "ChunkResolution"
       );
 
+
+
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
     {
@@ -646,13 +671,10 @@ UseRenderPass_terrain_decoration_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
+    
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -673,6 +695,15 @@ UseRenderPass_terrain_decoration_render_context
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+
 
     if (UniformIndex !=  4  )
     {
@@ -725,7 +756,11 @@ poof()
 InitializeTerrainFinalizeRenderContext
 (
   terrain_finalize_render_context *Element
-    , u32 Ignored
+    
+  
+  
+  
+  , u32 Ignored
 
 )
 {
@@ -737,7 +772,11 @@ InitializeTerrainFinalizeRenderContext
 
     u32 UniformIndex = 0;
 
-            Element->Ignored = Ignored;
+        
+    
+    
+    
+        Element->Ignored = Ignored;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -770,7 +809,11 @@ UseRenderPass_terrain_finalize_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
+        
+    
+    
+    
+        {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -868,10 +911,15 @@ poof()
 InitializeWorldEditRenderContext
 (
   world_edit_render_context *Element
-    , v3 *ChunkDim
+    
+  
+  
+  
+  , v3 *ChunkDim
   , v3 *WorldspaceChunkBasis
   , v3 *ChunkResolution
   , s32 Type
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/world_edit.fragmentshader"));
@@ -882,7 +930,11 @@ InitializeWorldEditRenderContext
 
     u32 UniformIndex = 0;
 
-            Element->ChunkDim = ChunkDim;
+        
+    
+    
+    
+        Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -914,6 +966,8 @@ InitializeWorldEditRenderContext
       "Type"
       );
 
+
+
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
     {
@@ -937,13 +991,10 @@ UseRenderPass_world_edit_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
+    
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -964,6 +1015,15 @@ UseRenderPass_world_edit_render_context
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+
 
     if (UniformIndex !=  4  )
     {
@@ -1094,8 +1154,11 @@ poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
 (
   easing_function_visualizer_render_pass *Element
-    , v2 *Points
+    
+  
+  , v2 *Points
   , u32 *Count
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz(STDLIB_SHADER_PATH "FullPassthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "curve_remap_visualizer.fragmentshader"));
@@ -1106,7 +1169,9 @@ InitializeEasingFunctionVisualizerRenderPass
 
     u32 UniformIndex = 0;
 
-            Element->Points = Points;
+        
+    
+        Element->Points = Points;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1121,6 +1186,8 @@ InitializeEasingFunctionVisualizerRenderPass
       Element->Count,
       "Count"
       );
+
+
 
     u32 Expected =  2 ;
     if (UniformIndex != Expected )
@@ -1145,7 +1212,9 @@ UseRenderPass_easing_function_visualizer_render_pass
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
+        
+    
+        {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -1158,6 +1227,8 @@ UseRenderPass_easing_function_visualizer_render_pass
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+
 
     if (UniformIndex !=  2  )
     {
@@ -1236,15 +1307,19 @@ UseShader( easing_function_visualizer_render_pass *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeShadowMapShader
 (
   shadow_map_shader *Element
-    , m4 ModelMatrix
+    
+  
+  , m4 ModelMatrix
   , m4 ViewProjection
   , v3 *MinClipP_worldspace
   , v3 *MaxClipP_worldspace
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz("shaders/DepthRTT.vertexshader"), CSz("shaders/DepthRTT.fragmentshader"));
@@ -1255,7 +1330,9 @@ InitializeShadowMapShader
 
     u32 UniformIndex = 0;
 
-            Element->ModelMatrix = ModelMatrix;
+        
+    
+        Element->ModelMatrix = ModelMatrix;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1287,6 +1364,8 @@ InitializeShadowMapShader
       "MaxClipP_worldspace"
       );
 
+
+
     u32 Expected =  4 ;
     if (UniformIndex != Expected )
     {
@@ -1310,13 +1389,8 @@ UseRenderPass_shadow_map_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -1337,6 +1411,15 @@ UseRenderPass_shadow_map_shader
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+
 
     if (UniformIndex !=  4  )
     {
@@ -1378,7 +1461,9 @@ poof()
 InitializeBloomUpsampleShader
 (
   bloom_upsample_shader *Element
-    , f32 *FilterRadius
+    
+  
+  , f32 *FilterRadius
 
 )
 {
@@ -1390,7 +1475,9 @@ InitializeBloomUpsampleShader
 
     u32 UniformIndex = 0;
 
-            Element->FilterRadius = FilterRadius;
+        
+    
+        Element->FilterRadius = FilterRadius;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1423,7 +1510,9 @@ UseRenderPass_bloom_upsample_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
+        
+    
+        {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -1622,12 +1711,17 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
 (
   terrain_derivs_render_context *Element
-    , v3 Ignored
+    
+  
+  
+  
+  , v3 Ignored
 
 )
 {
@@ -1639,7 +1733,11 @@ InitializeTerrainDerivsRenderContext
 
     u32 UniformIndex = 0;
 
-            Element->Ignored = Ignored;
+        
+    
+    
+    
+        Element->Ignored = Ignored;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1672,7 +1770,11 @@ UseRenderPass_terrain_derivs_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
+        
+    
+    
+    
+        {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -1738,7 +1840,9 @@ poof()
 InitializeBloomDownsampleShader
 (
   bloom_downsample_shader *Element
-    , v2 *SrcResolution
+    
+  
+  , v2 *SrcResolution
 
 )
 {
@@ -1750,7 +1854,9 @@ InitializeBloomDownsampleShader
 
     u32 UniformIndex = 0;
 
-            Element->SrcResolution = SrcResolution;
+        
+    
+        Element->SrcResolution = SrcResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1783,7 +1889,9 @@ UseRenderPass_bloom_downsample_shader
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
+        
+    
+        {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -1895,14 +2003,20 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainShapingRenderContext
 (
   terrain_shaping_render_context *Element
-    , v3 ChunkDim
+    
+  
+  
+  
+  , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
+
 )
 {
       b32 Result = CompileShaderPair(&Element->Program, CSz("external/bonsai_stdlib/shaders/Passthrough.vertexshader"), CSz("shaders/terrain/shaping/default.fragmentshader"));
@@ -1913,7 +2027,11 @@ InitializeTerrainShapingRenderContext
 
     u32 UniformIndex = 0;
 
-            Element->ChunkDim = ChunkDim;
+        
+    
+    
+    
+        Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
@@ -1936,6 +2054,8 @@ InitializeTerrainShapingRenderContext
       &Element->ChunkResolution,
       "ChunkResolution"
       );
+
+
 
     u32 Expected =  3 ;
     if (UniformIndex != Expected )
@@ -1960,13 +2080,10 @@ UseRenderPass_terrain_shaping_render_context
 
     s32 TextureUnit = 0;
     s32 UniformIndex = 0;
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
+        
+    
+    
+    
         {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
@@ -1980,6 +2097,15 @@ UseRenderPass_terrain_shaping_render_context
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+
 
     if (UniformIndex !=  3  )
     {
@@ -2013,6 +2139,7 @@ UseShader( terrain_shaping_render_context *Element )
 {
   UseRenderPass_terrain_shaping_render_context(Element);
 }
+
 
 
 

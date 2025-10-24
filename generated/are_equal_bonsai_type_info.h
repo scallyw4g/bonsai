@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:24:0
-
+// external/bonsai_stdlib/src/poof_functions.h:624:0
 link_internal b32
 AreEqual(bonsai_type_info *Thing1, bonsai_type_info *Thing2)
 {
@@ -11,6 +10,8 @@ AreEqual(bonsai_type_info *Thing1, bonsai_type_info *Thing2)
         Result &= AreEqual(Thing1->Version, Thing2->Version);
 
         Result &= AreEqual(Thing1->SizeOfInBytes, Thing2->SizeOfInBytes);
+
+
 
     return Result;
   }
@@ -29,6 +30,8 @@ AreEqual(bonsai_type_info Thing1, bonsai_type_info Thing2)
     Result &= AreEqual(Thing1.Version, Thing2.Version);
 
     Result &= AreEqual(Thing1.SizeOfInBytes, Thing2.SizeOfInBytes);
+
+
 
   return Result;
 }

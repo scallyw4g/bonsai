@@ -1,5 +1,4 @@
-// src/engine/world_chunk.h:460:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2196:0
 struct maybe_standing_spot
 {
   maybe_tag Tag;

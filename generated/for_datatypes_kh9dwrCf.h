@@ -102,11 +102,33 @@
 
 
 
+link_internal b32
+IsValid(ui_brush_layer_actions Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case UiBrushLayerAction_NoAction:
+    case UiBrushLayerAction_MoveUp:
+    case UiBrushLayerAction_MoveDown:
+    case UiBrushLayerAction_Duplicate:
+    case UiBrushLayerAction_Delete:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(ui_brush_layer_actions Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case UiBrushLayerAction_NoAction: { Result = CSz("NoAction"); } break;
@@ -115,15 +137,18 @@ ToStringPrefixless(ui_brush_layer_actions Type)
     case UiBrushLayerAction_Duplicate: { Result = CSz("Duplicate"); } break;
     case UiBrushLayerAction_Delete: { Result = CSz("Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(ui_brush_layer_actions Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -133,9 +158,10 @@ ToString(ui_brush_layer_actions Type)
     case UiBrushLayerAction_Duplicate: { Result = CSz("UiBrushLayerAction_Duplicate"); } break;
     case UiBrushLayerAction_Delete: { Result = CSz("UiBrushLayerAction_Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -149,6 +175,7 @@ UiBrushLayerActions(counted_string S)
   if (StringsMatch(S, CSz("UiBrushLayerAction_MoveDown"))) { return UiBrushLayerAction_MoveDown; }
   if (StringsMatch(S, CSz("UiBrushLayerAction_Duplicate"))) { return UiBrushLayerAction_Duplicate; }
   if (StringsMatch(S, CSz("UiBrushLayerAction_Delete"))) { return UiBrushLayerAction_Delete; }
+
 
   return Result;
 }
@@ -177,6 +204,7 @@ RadioButtonGroup_ui_brush_layer_actions( renderer_2d *Ui,
     { CSz("MoveDown"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown")), UiBrushLayerAction_MoveDown },
     { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate")), UiBrushLayerAction_Duplicate },
     { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete")), UiBrushLayerAction_Delete },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -204,7 +232,8 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-            {
+        
+        {
       CSz("MoveUp"),
       {},
       UiId(
@@ -251,6 +280,8 @@ PushToolbar(     renderer_2d *Ui,
       ),
       UiBrushLayerAction_Delete,
     },
+
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -282,25 +313,49 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+IsValid(selection_modification_mode Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case SelectionModificationMode_None:
+    case SelectionModificationMode_Initialize:
+    case SelectionModificationMode_Modify:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
 link_internal counted_string
 ToStringPrefixless(selection_modification_mode Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case SelectionModificationMode_None: { Result = CSz("None"); } break;
     case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
     case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(selection_modification_mode Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -308,9 +363,10 @@ ToString(selection_modification_mode Type)
     case SelectionModificationMode_Initialize: { Result = CSz("SelectionModificationMode_Initialize"); } break;
     case SelectionModificationMode_Modify: { Result = CSz("SelectionModificationMode_Modify"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -322,6 +378,7 @@ SelectionModificationMode(counted_string S)
     if (StringsMatch(S, CSz("SelectionModificationMode_None"))) { return SelectionModificationMode_None; }
   if (StringsMatch(S, CSz("SelectionModificationMode_Initialize"))) { return SelectionModificationMode_Initialize; }
   if (StringsMatch(S, CSz("SelectionModificationMode_Modify"))) { return SelectionModificationMode_Modify; }
+
 
   return Result;
 }
@@ -368,6 +425,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {
@@ -408,10 +466,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
 
 
 
+link_internal b32
+IsValid(ui_layer_edit_actions Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case UiLayerEditAction_NoAction:
+    case UiLayerEditAction_SetBrush:
+    case UiLayerEditAction_Duplicate:
+    case UiLayerEditAction_Delete:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_layer_edit_actions Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case UiLayerEditAction_NoAction: { Result = CSz("NoAction"); } break;
@@ -419,15 +499,18 @@ ToStringPrefixless(ui_layer_edit_actions Type)
     case UiLayerEditAction_Duplicate: { Result = CSz("Duplicate"); } break;
     case UiLayerEditAction_Delete: { Result = CSz("Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(ui_layer_edit_actions Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -436,9 +519,10 @@ ToString(ui_layer_edit_actions Type)
     case UiLayerEditAction_Duplicate: { Result = CSz("UiLayerEditAction_Duplicate"); } break;
     case UiLayerEditAction_Delete: { Result = CSz("UiLayerEditAction_Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -451,6 +535,7 @@ UiLayerEditActions(counted_string S)
   if (StringsMatch(S, CSz("UiLayerEditAction_SetBrush"))) { return UiLayerEditAction_SetBrush; }
   if (StringsMatch(S, CSz("UiLayerEditAction_Duplicate"))) { return UiLayerEditAction_Duplicate; }
   if (StringsMatch(S, CSz("UiLayerEditAction_Delete"))) { return UiLayerEditAction_Delete; }
+
 
   return Result;
 }
@@ -478,6 +563,7 @@ RadioButtonGroup_ui_layer_edit_actions( renderer_2d *Ui,
     { CSz("SetBrush"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_SetBrush")), UiLayerEditAction_SetBrush },
     { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Duplicate")), UiLayerEditAction_Duplicate },
     { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete")), UiLayerEditAction_Delete },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -505,7 +591,8 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-            {
+        
+        {
       CSz("S"),
       CSz("SetBrush"),
       UiId(
@@ -540,6 +627,8 @@ PushToolbar(     renderer_2d *Ui,
       ),
       UiLayerEditAction_Delete,
     },
+
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -563,25 +652,49 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+IsValid(ui_reorder_action Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case UiReorderAction_NoAction:
+    case UiReorderAction_ReorderUp:
+    case UiReorderAction_ReorderDown:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_reorder_action Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case UiReorderAction_NoAction: { Result = CSz("NoAction"); } break;
     case UiReorderAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
     case UiReorderAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(ui_reorder_action Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -589,9 +702,10 @@ ToString(ui_reorder_action Type)
     case UiReorderAction_ReorderUp: { Result = CSz("UiReorderAction_ReorderUp"); } break;
     case UiReorderAction_ReorderDown: { Result = CSz("UiReorderAction_ReorderDown"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -603,6 +717,7 @@ UiReorderAction(counted_string S)
     if (StringsMatch(S, CSz("UiReorderAction_NoAction"))) { return UiReorderAction_NoAction; }
   if (StringsMatch(S, CSz("UiReorderAction_ReorderUp"))) { return UiReorderAction_ReorderUp; }
   if (StringsMatch(S, CSz("UiReorderAction_ReorderDown"))) { return UiReorderAction_ReorderDown; }
+
 
   return Result;
 }
@@ -629,6 +744,7 @@ RadioButtonGroup_ui_reorder_action( renderer_2d *Ui,
         { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_NoAction")), UiReorderAction_NoAction },
     { CSz("ReorderUp"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderUp")), UiReorderAction_ReorderUp },
     { CSz("ReorderDown"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderDown")), UiReorderAction_ReorderDown },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -656,7 +772,8 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-            {
+        
+        {
       CSz("^"),
       CSz("ReorderUp"),
       UiId(
@@ -679,6 +796,8 @@ PushToolbar(     renderer_2d *Ui,
       ),
       UiReorderAction_ReorderDown,
     },
+
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -750,10 +869,32 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+IsValid(ui_brush_actions Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case UiBrushAction_NoAction:
+    case UiBrushAction_New:
+    case UiBrushAction_Save:
+    case UiBrushAction_Duplicate:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_brush_actions Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case UiBrushAction_NoAction: { Result = CSz("NoAction"); } break;
@@ -761,15 +902,18 @@ ToStringPrefixless(ui_brush_actions Type)
     case UiBrushAction_Save: { Result = CSz("Save"); } break;
     case UiBrushAction_Duplicate: { Result = CSz("Duplicate"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(ui_brush_actions Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -778,9 +922,10 @@ ToString(ui_brush_actions Type)
     case UiBrushAction_Save: { Result = CSz("UiBrushAction_Save"); } break;
     case UiBrushAction_Duplicate: { Result = CSz("UiBrushAction_Duplicate"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -793,6 +938,7 @@ UiBrushActions(counted_string S)
   if (StringsMatch(S, CSz("UiBrushAction_New"))) { return UiBrushAction_New; }
   if (StringsMatch(S, CSz("UiBrushAction_Save"))) { return UiBrushAction_Save; }
   if (StringsMatch(S, CSz("UiBrushAction_Duplicate"))) { return UiBrushAction_Duplicate; }
+
 
   return Result;
 }
@@ -820,6 +966,7 @@ RadioButtonGroup_ui_brush_actions( renderer_2d *Ui,
     { CSz("New"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New")), UiBrushAction_New },
     { CSz("Save"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save")), UiBrushAction_Save },
     { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate")), UiBrushAction_Duplicate },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -847,7 +994,8 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-            {
+        
+        {
       CSz("New"),
       {},
       UiId(
@@ -882,6 +1030,8 @@ PushToolbar(     renderer_2d *Ui,
       ),
       UiBrushAction_Duplicate,
     },
+
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -971,10 +1121,32 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+IsValid(ui_layer_toolbar_actions Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case LayerToolbarActions_NoAction:
+    case LayerToolbarActions_Rename:
+    case LayerToolbarActions_Duplicate:
+    case LayerToolbarActions_Delete:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
 link_internal counted_string
 ToStringPrefixless(ui_layer_toolbar_actions Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case LayerToolbarActions_NoAction: { Result = CSz("NoAction"); } break;
@@ -982,15 +1154,18 @@ ToStringPrefixless(ui_layer_toolbar_actions Type)
     case LayerToolbarActions_Duplicate: { Result = CSz("Duplicate"); } break;
     case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(ui_layer_toolbar_actions Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -999,9 +1174,10 @@ ToString(ui_layer_toolbar_actions Type)
     case LayerToolbarActions_Duplicate: { Result = CSz("LayerToolbarActions_Duplicate"); } break;
     case LayerToolbarActions_Delete: { Result = CSz("LayerToolbarActions_Delete"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -1014,6 +1190,7 @@ UiLayerToolbarActions(counted_string S)
   if (StringsMatch(S, CSz("LayerToolbarActions_Rename"))) { return LayerToolbarActions_Rename; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Duplicate"))) { return LayerToolbarActions_Duplicate; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Delete"))) { return LayerToolbarActions_Delete; }
+
 
   return Result;
 }
@@ -1041,6 +1218,7 @@ RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
     { CSz("Rename"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
     { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
     { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -1068,7 +1246,8 @@ PushToolbar(     renderer_2d *Ui,
 
   ui_toggle_button_handle ButtonHandles[] =
   {
-            {
+        
+        {
       CSz("R"),
       CSz("Rename"),
       UiId(
@@ -1103,6 +1282,8 @@ PushToolbar(     renderer_2d *Ui,
       ),
       LayerToolbarActions_Delete,
     },
+
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {

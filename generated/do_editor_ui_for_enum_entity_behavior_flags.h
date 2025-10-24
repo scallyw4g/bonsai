@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:307:0
-
+// src/engine/editor.h:458:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
@@ -219,6 +218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {

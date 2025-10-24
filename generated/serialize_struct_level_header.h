@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:386:0
-
+// src/engine/serdes.h:132:0
 link_internal bonsai_type_info
 TypeInfo(level_header *Ignored)
 {
@@ -104,7 +103,33 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
       Result &= Serialize(Bytes, Element->TerrainDecorationShader, ThisCount);
     }
 
-    
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }

@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:441:0
-
+// external/bonsai_stdlib/src/binary_parser.cpp:426:0
 link_internal s8
 Read_s8(native_file *File)
 {
@@ -56,4 +55,5 @@ Read_u64(native_file *File)
   Ensure( ReadBytesIntoBuffer(File, (u8*)&Result, sizeof(u64)) );
   return Result;
 }
+
 

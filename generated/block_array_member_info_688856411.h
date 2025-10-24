@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:11:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -323,23 +322,36 @@ Push( member_info_block_array *Array )
 }
 
 link_internal void
-Shift( member_info_block_array *Array, member_info *Element )
+Insert( member_info_block_array *Array, member_info_block_array_index Index, member_info *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  member_info *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  member_info *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( member_info_block_array *Array, u32 Index, member_info *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( member_info_block_array *Array, member_info *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

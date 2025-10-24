@@ -171,7 +171,6 @@
 
 
 
-
 struct initialize_easing_function_visualizer_render_pass_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_async_params *Params )
@@ -514,6 +513,9 @@ WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_a
 
 
 
+
+
+
 struct compile_shader_pair_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
@@ -524,6 +526,7 @@ WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
+
 
 
 

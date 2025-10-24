@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:406:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(perlin_noise_params *Ignored)
 {
@@ -43,7 +42,9 @@ Serialize(u8_cursor_block_array *Bytes, perlin_noise_params *BaseElement, umm Co
 
 
 
-    
+            
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -74,7 +75,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, perlin_noise_params *Element, memory
 
 
 
-  
+    
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

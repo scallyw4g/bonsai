@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:445:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(brush_layer *Ignored)
 {
@@ -41,9 +40,13 @@ Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count = 1)
 
 
 
+        
 
 
-    
+            
+
+        
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -72,9 +75,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *
 
 
 
+    
 
 
+    
   
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

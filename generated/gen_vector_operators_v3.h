@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/vector.h:229:0
-
+// external/bonsai_stdlib/src/poof_functions.h:268:0
 link_internal void
 DeepCopy(v3 *Src, v3 *Dest)
 {
@@ -48,7 +47,8 @@ MaxChannel( v3 P1 )
   r32 Result = P1.E[0];
     Result = Cast(r32, Max(Result, P1.E[0]));
   Result = Cast(r32, Max(Result, P1.E[1]));
-  Result = Cast(r32, Max(Result, P1.E[2]));;
+  Result = Cast(r32, Max(Result, P1.E[2]));
+;
   return Result;
 }
 
@@ -91,6 +91,7 @@ operator+( v3 P1, v3 P2 )
             Cast(r32, P1.E[0] + P2.E[0]),
       Cast(r32, P1.E[1] + P2.E[1]),
       Cast(r32, P1.E[2] + P2.E[2]),
+
     }};
   return Result;
 }
@@ -102,6 +103,7 @@ operator+( v3 P1, r32 Scalar )
             Cast(r32, P1.E[0] + Scalar),
       Cast(r32, P1.E[1] + Scalar),
       Cast(r32, P1.E[2] + Scalar),
+
     }};
   return Result;
 }
@@ -113,6 +115,7 @@ operator+( r32 Scalar, v3 P1 )
             Cast(r32, Scalar + P1.E[0]),
       Cast(r32, Scalar + P1.E[1]),
       Cast(r32, Scalar + P1.E[2]),
+
     }};
   return Result;
 }
@@ -126,6 +129,7 @@ operator-( v3 P1, v3 P2 )
             Cast(r32, P1.E[0] - P2.E[0]),
       Cast(r32, P1.E[1] - P2.E[1]),
       Cast(r32, P1.E[2] - P2.E[2]),
+
     }};
   return Result;
 }
@@ -137,6 +141,7 @@ operator-( v3 P1, r32 Scalar )
             Cast(r32, P1.E[0] - Scalar),
       Cast(r32, P1.E[1] - Scalar),
       Cast(r32, P1.E[2] - Scalar),
+
     }};
   return Result;
 }
@@ -148,6 +153,7 @@ operator-( r32 Scalar, v3 P1 )
             Cast(r32, Scalar - P1.E[0]),
       Cast(r32, Scalar - P1.E[1]),
       Cast(r32, Scalar - P1.E[2]),
+
     }};
   return Result;
 }
@@ -161,6 +167,7 @@ operator*( v3 P1, v3 P2 )
             Cast(r32, P1.E[0] * P2.E[0]),
       Cast(r32, P1.E[1] * P2.E[1]),
       Cast(r32, P1.E[2] * P2.E[2]),
+
     }};
   return Result;
 }
@@ -172,6 +179,7 @@ operator*( v3 P1, r32 Scalar )
             Cast(r32, P1.E[0] * Scalar),
       Cast(r32, P1.E[1] * Scalar),
       Cast(r32, P1.E[2] * Scalar),
+
     }};
   return Result;
 }
@@ -183,6 +191,7 @@ operator*( r32 Scalar, v3 P1 )
             Cast(r32, Scalar * P1.E[0]),
       Cast(r32, Scalar * P1.E[1]),
       Cast(r32, Scalar * P1.E[2]),
+
     }};
   return Result;
 }
@@ -196,6 +205,7 @@ operator/( v3 P1, v3 P2 )
             Cast(r32, P1.E[0] / P2.E[0]),
       Cast(r32, P1.E[1] / P2.E[1]),
       Cast(r32, P1.E[2] / P2.E[2]),
+
     }};
   return Result;
 }
@@ -207,6 +217,7 @@ operator/( v3 P1, r32 Scalar )
             Cast(r32, P1.E[0] / Scalar),
       Cast(r32, P1.E[1] / Scalar),
       Cast(r32, P1.E[2] / Scalar),
+
     }};
   return Result;
 }
@@ -218,6 +229,7 @@ operator/( r32 Scalar, v3 P1 )
             Cast(r32, Scalar / P1.E[0]),
       Cast(r32, Scalar / P1.E[1]),
       Cast(r32, Scalar / P1.E[2]),
+
     }};
   return Result;
 }
@@ -230,6 +242,7 @@ operator+=( v3 &P1, v3 P2 )
     P1.E[0] += P2.E[0];
   P1.E[1] += P2.E[1];
   P1.E[2] += P2.E[2];
+
   return P1;
 }
 
@@ -239,6 +252,7 @@ operator+=( v3 &P1, r32 Scalar )
     P1.E[0] += Scalar;
   P1.E[1] += Scalar;
   P1.E[2] += Scalar;
+
   return P1;
 }
 
@@ -249,6 +263,7 @@ operator-=( v3 &P1, v3 P2 )
     P1.E[0] -= P2.E[0];
   P1.E[1] -= P2.E[1];
   P1.E[2] -= P2.E[2];
+
   return P1;
 }
 
@@ -258,6 +273,7 @@ operator-=( v3 &P1, r32 Scalar )
     P1.E[0] -= Scalar;
   P1.E[1] -= Scalar;
   P1.E[2] -= Scalar;
+
   return P1;
 }
 
@@ -268,6 +284,7 @@ operator*=( v3 &P1, v3 P2 )
     P1.E[0] *= P2.E[0];
   P1.E[1] *= P2.E[1];
   P1.E[2] *= P2.E[2];
+
   return P1;
 }
 
@@ -277,6 +294,7 @@ operator*=( v3 &P1, r32 Scalar )
     P1.E[0] *= Scalar;
   P1.E[1] *= Scalar;
   P1.E[2] *= Scalar;
+
   return P1;
 }
 
@@ -287,6 +305,7 @@ operator/=( v3 &P1, v3 P2 )
     P1.E[0] /= P2.E[0];
   P1.E[1] /= P2.E[1];
   P1.E[2] /= P2.E[2];
+
   return P1;
 }
 
@@ -296,6 +315,7 @@ operator/=( v3 &P1, r32 Scalar )
     P1.E[0] /= Scalar;
   P1.E[1] /= Scalar;
   P1.E[2] /= Scalar;
+
   return P1;
 }
 

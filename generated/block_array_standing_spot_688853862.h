@@ -1,5 +1,4 @@
-// src/engine/world_chunk.h:463:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -323,23 +322,36 @@ Push( standing_spot_block_array *Array )
 }
 
 link_internal void
-Shift( standing_spot_block_array *Array, standing_spot *Element )
+Insert( standing_spot_block_array *Array, standing_spot_block_array_index Index, standing_spot *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  standing_spot *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  standing_spot *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( standing_spot_block_array *Array, u32 Index, standing_spot *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( standing_spot_block_array *Array, standing_spot *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

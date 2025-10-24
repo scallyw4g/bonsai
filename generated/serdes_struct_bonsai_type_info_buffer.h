@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:380:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)
 {
@@ -44,7 +43,13 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, um
                 if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-                    if (Element->Start) { Result &= Serialize(Bytes, Element->Start, Element->Count ); }
+
+
+
+
+            
+
+                if (Element->Start) { Result &= Serialize(Bytes, Element->Start, Element->Count ); }
 
 
 
@@ -80,7 +85,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, me
         b64 HadStartPointer = Read_u64(Bytes);
   Assert(HadStartPointer < 2); // Should be 0 or 1
 
-        if (HadStartPointer)
+
+
+
+
+    
+      if (HadStartPointer)
   {
         umm Count = Element->Count;
 

@@ -3,7 +3,6 @@
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -84,6 +83,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
@@ -471,6 +471,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
                 PushNewRow(Ui);
 
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
@@ -640,6 +641,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
                 PushNewRow(Ui);
 
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
@@ -657,6 +659,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
   }
 
 }
+
 
 
 
@@ -896,6 +899,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
 
         
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }
@@ -913,6 +917,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
   }
 
 }
+
+
+
 
 
 

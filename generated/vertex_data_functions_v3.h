@@ -1,5 +1,4 @@
-// src/engine/voxel_face.h:213:0
-
+// src/engine/voxel_face.h:72:0
 inline void
 RightFaceVertexData( v3 MinP, v3 Diameter, v3 *Result)
 {

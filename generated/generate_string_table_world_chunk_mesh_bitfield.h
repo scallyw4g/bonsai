@@ -1,9 +1,33 @@
-// src/engine/world_chunk.h:216:0
+// external/bonsai_stdlib/src/poof_functions.h:1741:0
+link_internal b32
+IsValid(world_chunk_mesh_bitfield Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case MeshBit_None:
+    case MeshBit_Lod0:
+    case MeshBit_Lod1:
+    case MeshBit_Lod2:
+    case MeshBit_Lod3:
+    case MeshBit_Lod4:
+    case MeshBit_Count:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(world_chunk_mesh_bitfield Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case MeshBit_None: { Result = CSz("None"); } break;
@@ -14,15 +38,18 @@ ToStringPrefixless(world_chunk_mesh_bitfield Type)
     case MeshBit_Lod4: { Result = CSz("Lod4"); } break;
     case MeshBit_Count: { Result = CSz("Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(world_chunk_mesh_bitfield Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
@@ -34,9 +61,10 @@ ToString(world_chunk_mesh_bitfield Type)
     case MeshBit_Lod4: { Result = CSz("MeshBit_Lod4"); } break;
     case MeshBit_Count: { Result = CSz("MeshBit_Count"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 

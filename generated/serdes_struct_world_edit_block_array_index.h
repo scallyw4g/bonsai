@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:460:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_edit_block_array_index *Ignored)
 {
@@ -43,7 +42,9 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_block_array_index *BaseElemen
 
 
 
-    
+            
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -74,7 +75,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array_index *Elemen
 
 
 
-  
+    
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

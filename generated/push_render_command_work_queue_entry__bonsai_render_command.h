@@ -1,5 +1,4 @@
-// src/engine/render_command.cpp:27:0
-
+// src/engine/render_command.cpp:3:0
 link_internal void
 PushBonsaiRenderCommandInitializeNoiseBuffer(
   work_queue *RenderQueue
@@ -242,6 +241,7 @@ PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
+
 
 
 

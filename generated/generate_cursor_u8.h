@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/ansi_stream.h:3:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1538:0
 struct u8_cursor
 {
   u8 *Start;
@@ -14,11 +13,12 @@ link_internal u8_cursor
 U8Cursor(umm ElementCount, memory_arena* Memory)
 {
   u8 *Start = (u8*)PushStruct(Memory, sizeof(u8)*ElementCount, 1, 0);
-  u8_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-  };
+  u8_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 

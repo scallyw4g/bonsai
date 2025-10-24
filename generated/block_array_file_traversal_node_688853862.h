@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/file.cpp:8:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2596:0
 
 
 
@@ -323,23 +322,36 @@ Push( file_traversal_node_block_array *Array )
 }
 
 link_internal void
-Shift( file_traversal_node_block_array *Array, file_traversal_node *Element )
+Insert( file_traversal_node_block_array *Array, file_traversal_node_block_array_index Index, file_traversal_node *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  file_traversal_node *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  file_traversal_node *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
   *Prev = *Element;
+}
+
+link_internal void
+Insert( file_traversal_node_block_array *Array, u32 Index, file_traversal_node *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( file_traversal_node_block_array *Array, file_traversal_node *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
 }
 
 

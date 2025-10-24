@@ -1,4 +1,22 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:3620:0
+// external/bonsai_stdlib/src/ui/ui.cpp:3622:0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 if (Input->Dot.Clicked)
 {
@@ -532,6 +550,10 @@ if (Input->Z.Clicked)
   }
   Text.Count++;
 }
+
+
+
+
 
 
 

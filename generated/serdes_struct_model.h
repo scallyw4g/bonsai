@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:299:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(model *Ignored)
 {
@@ -41,6 +40,8 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count = 1)
 
 
 
+        
+        
                             Result &= Serialize(Bytes, &Element->TransparentMesh); // default
 
 
@@ -57,7 +58,24 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count = 1)
 
                             Result &= Serialize(Bytes, &Element->Dim); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+        
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -86,6 +104,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
+    
+    
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->TransparentMesh, Memory);
@@ -106,7 +126,19 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

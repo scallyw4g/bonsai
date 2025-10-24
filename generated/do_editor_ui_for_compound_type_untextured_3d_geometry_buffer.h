@@ -1,5 +1,4 @@
-// src/engine/editor.cpp:349:0
-
+// src/engine/editor.h:295:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 {
@@ -61,7 +60,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
         
         
         cs MemberName = CSz("Next");
-        
+                
 
                 PushNewRow(Ui);
 
@@ -272,6 +271,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
                 PushNewRow(Ui);
 
       }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
     }

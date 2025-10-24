@@ -1,5 +1,4 @@
-// src/engine/serdes.cpp:60:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk *Ignored)
 {
@@ -37,7 +36,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_chunk *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Dim); // default
+            
+                            Result &= Serialize(Bytes, &Element->Dim); // default
 
 
 
@@ -76,6 +76,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+        
+        
                             Result &= Serialize(Bytes, &Element->DimInChunks); // default
 
 
@@ -90,9 +92,14 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+        
+        
 
 
-                    if (Element->Occupancy) { Result &= Serialize(Bytes, Element->Occupancy); }
+            
+        
+
+                if (Element->Occupancy) { Result &= Serialize(Bytes, Element->Occupancy); }
 
 
 
@@ -112,6 +119,16 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
+        
+
+        
+        
+        
+
+        
+
+        
+        
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -155,7 +172,8 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
+      
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -196,6 +214,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+    
+    
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->DimInChunks, Memory);
@@ -212,9 +232,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+    
+    
 
 
-        if (HadOccupancyPointer)
+        
+
+  
+      if (HadOccupancyPointer)
   {
         umm Count = 1;
 
@@ -284,6 +309,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
   }
 
 
+  
+  
+  
+  
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();

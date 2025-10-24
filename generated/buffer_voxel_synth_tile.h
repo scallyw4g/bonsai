@@ -1,5 +1,4 @@
-// src/engine/voxel_synthesis.h:85:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1432:0
 struct voxel_synth_tile_buffer
 {
   umm Count;
