@@ -1,4 +1,4 @@
-// src/engine/graphics.h:110:0
+// src/engine/graphics.h:115:0
 
 
 
@@ -2353,6 +2353,7 @@ UseShader( bloom_downsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainShapingRenderContext
@@ -2365,6 +2366,7 @@ InitializeTerrainShapingRenderContext
   , v3 ChunkDim
   , v3 WorldspaceChunkBasis
   , v3 ChunkResolution
+  , easing_function ReshapeFunc
 
 )
 {
@@ -2425,9 +2427,38 @@ InitializeTerrainShapingRenderContext
 
 
 
+            Element->ReshapeFunc = ReshapeFunc;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+             Element->ReshapeFunc.Points.Start,
+      "SampleRemapCurvePoints",
+       &Element->ReshapeFunc.Points.At
+
+    );
 
 
-    u32 Expected =  3 ;
+        Element->ReshapeFunc = ReshapeFunc;
+    InitShaderUniform(
+      &Element->Program,
+      UniformIndex++,
+
+      
+      
+             &Element->ReshapeFunc.Points.At,
+      "SampleRemapCurvePointCount",
+       0
+
+    );
+
+
+
+
+
+    u32 Expected =  5 ;
     if (UniformIndex != Expected )
     {
       Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots! Expected (%d), Got (%d)", Expected, UniformIndex);
@@ -2478,9 +2509,24 @@ UseRenderPass_terrain_shaping_render_context
     }
 
 
+            {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
+
+        {
+      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+      BindUniformById(Uniform, &TextureUnit);
+      ++UniformIndex;
+      AssertNoGlErrors;
+    }
 
 
-    if (UniformIndex !=  3  )
+
+
+    if (UniformIndex !=  5  )
     {
       Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
     }

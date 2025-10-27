@@ -71,7 +71,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, MeshIndex_Count)
+                    s32 End = MeshIndex_Count;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -108,7 +110,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, MeshIndex_Count)
+                    s32 End = MeshIndex_Count;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -145,7 +149,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, 
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, MeshIndex_Count)
+                    s32 End = MeshIndex_Count;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,

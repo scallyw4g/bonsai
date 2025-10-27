@@ -165,23 +165,20 @@ v4 DoCliffs(v3 Basis, v3 Deriv)
   return V4(ColorValue, NoiseValue);
 }
 
-v4 DoCliffs_v2(v3 Basis, v3 Deriv)
+v4 DoCliffs_v2(v3 Basis, v3 Deriv, v3 InputColor)
 {
+  v3 Up = V3(0, 0, 1);
   v3 Down = V3(0, 0, -1);
-
-  v3 ColorValue = V3(0.f);
-  f32 NoiseValue = 0.f;
-
-  /* NoiseValue = 100.f+MapNoiseValueToFinal(NoiseValue); */
 
   /* Deriv = normalize(Deriv); */
   /* Deriv.xy = abs(Deriv.xy); */
-  f32 Cliffness = Clamp01(0.8f+dot(Down, Deriv));
+  f32 Cliffness = Clamp01(-dot(Up, Deriv) + 0.6f);
   f32 Grassness = Clamp01(.15f-Cliffness);
 
-  ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness);
+  /* ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness); */
   /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
   /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
+  /* ColorValue = V3(Cliffness); */
 
   /* f32 rng2d = white_noise(Basis.xy); */
   /* f32 rng3d = white_noise(Basis); */
@@ -190,15 +187,44 @@ v4 DoCliffs_v2(v3 Basis, v3 Deriv)
   v3 CliffColor = BaseCliffColor;
   f32 CliffValue = 0.f;
 
-  /* CliffColor = mix(V3(1,0,0), BaseCliffColor, Cliffness); */
+  {
+    v3 v = voronoi_noise(Basis/v3(800,800,500));
+    CliffValue += (v.x*2500)*Cliffness;
+  }
+  {
+    v3 v = voronoi_noise(Basis/v3(200,200,1800));
+    CliffValue += (v.y*50)*Cliffness;
+    CliffValue += (v.x*100)*Cliffness;
+  }
+  {
+    v3 v = voronoi_noise(Basis/v3(50,50,100));
+    /* CliffValue += (v.y*80)*Cliffness; */
+    CliffValue += (v.x*100)*Cliffness;
+  }
 
-  /* // Main cliffs */
-  /* { */
-  /*   v3 v = voronoi_noise(Basis/v3(200,200,1800)); */
-  /*   CliffValue += (v.x*100)*Cliffness; */
-  /*   CliffValue += (v.y*20)*Cliffness; */
-  /*   CliffColor = mix(CliffColor, BaseCliffColor, clamp(10.f*Cliffness*v.x,0,1)); */
-  /* } */
+
+  CliffColor = V3(abs(Cliffness));
+  CliffColor = Cliffness > 0.15f ? BaseCliffColor : InputColor;
+  f32 FullColorThresh = 0.25f;
+  if (Cliffness > 0.f)
+  {
+    if (Cliffness > FullColorThresh)
+    {
+      CliffColor = BaseCliffColor;
+    }
+    else
+    {
+      f32 white = FullColorThresh*white_noise(Basis);
+      if (white < Cliffness)
+      {
+        CliffColor = BaseCliffColor;
+      }
+      else
+      {
+        CliffColor = InputColor;
+      }
+    }
+  }
 
 
   return V4(CliffColor, CliffValue);
@@ -230,11 +256,17 @@ void main()
     // Put random junk here
     f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
 
-    v4 Cliffs = DoCliffs_v2(Basis, Derivs);
-    /* ColorValue = V3(0.1f, 0.8f, 0.1f); */
-    ColorValue = Cliffs.rgb;
-    NoiseValue += Cliffs.w;
+    v4 Cliffs = DoCliffs_v2(Basis, Derivs, ColorValue);
 
+    f32 CliffContrib = exp((-Basis.z)/1300.f);
+    ColorValue = V3(CliffContrib);
+
+    /* Cliffs.w *= 10.f*CliffContrib; */
+    /* Cliffs.w *= CliffContrib; */
+    /* ColorValue = V3(0.1f, 0.8f, 0.1f); */
+
+    ColorValue = Cliffs.rgb;
+    NoiseValue += Cliffs.w * CliffContrib;
   }
 
   //

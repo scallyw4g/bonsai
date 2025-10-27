@@ -47,10 +47,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
 
-  easing_function *EasingFunction = &GameState->EasingFunction;
+  easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
+  GameState->EasingFunction = EasingFunction;
 
   Push(&EasingFunction->Points, V2(0,0));
-  Push(&EasingFunction->Points, V2(0.5f));
+  Push(&EasingFunction->Points, V2(0.47f, 0.10f));
+  Push(&EasingFunction->Points, V2(0.67f,0.78f));
+  Push(&EasingFunction->Points, V2(0.87f,0.70f));
   Push(&EasingFunction->Points, V2(1,1));
 
   InitializeEasingFunctionVisualizerRenderPass_Async(

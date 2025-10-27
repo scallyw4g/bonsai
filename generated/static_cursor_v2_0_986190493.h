@@ -2,7 +2,7 @@
 
 struct v2_static_cursor_16
 {
-  v2 Start[16];
+  v2 Start[16]; poof(@array_length(Element->At))
   u32 At;
 };
 

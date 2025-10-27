@@ -1,4 +1,9 @@
-
+struct easing_function
+poof(@do_editor_ui)
+{
+  cs Name;
+  v2_static_cursor_16 Points;
+};
 
 struct terrain_shaping_render_context
 poof( @render_pass
@@ -6,13 +11,20 @@ poof( @render_pass
       @frag_source_file("shaders/terrain/shaping/default.fragmentshader") )
 {
           shader  Program;
-  shader_uniform  Uniforms[3];
+  shader_uniform  Uniforms[5];
          texture  DestTex;
      framebuffer  DestFBO;
 
               v3  ChunkDim;             poof(@uniform)
               v3  WorldspaceChunkBasis; poof(@uniform)
               v3  ChunkResolution;      poof(@uniform)
+
+ easing_function ReshapeFunc;
+ poof(
+   @uniform("SampleRemapCurvePoints", Element->ReshapeFunc.Points.Start, &Element->ReshapeFunc.Points.At)
+   @uniform("SampleRemapCurvePointCount", &Element->ReshapeFunc.Points.At, 0)
+ )
+
 };
 
 struct terrain_derivs_render_context
@@ -77,13 +89,6 @@ poof( @render_pass
          /* texture *InputTex; poof(@uniform) */
 };
 
-
-struct easing_function
-poof(@do_editor_ui)
-{
-  cs Name;
-  v2_static_cursor_16 Points;
-};
 
 struct easing_function_visualizer_render_pass
 poof(

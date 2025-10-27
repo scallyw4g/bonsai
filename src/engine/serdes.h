@@ -198,7 +198,7 @@ poof(
                       member.has_tag(array_length)?
                       {
                         // TODO(Jesse): Should this really be a safe cast?
-                        umm ThisCount = umm(Element->member.tag_value(array_length));
+                        umm ThisCount = umm((member.tag_value(array_length)));
                       }
                       {
                         umm ThisCount = member.array;
@@ -318,7 +318,7 @@ poof(
                     member.has_tag(array_length)?
                     {
                       // TODO(Jesse): Should this really be a safe cast?
-                      umm Count = umm(Element->member.tag_value(array_length));
+                      umm Count = umm((member.tag_value(array_length)));
                     }
                     {
                       umm Count = member.array;

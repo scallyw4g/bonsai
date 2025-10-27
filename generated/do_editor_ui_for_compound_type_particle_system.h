@@ -585,7 +585,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 6)
+                    s32 End = 6;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -623,7 +625,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, (4096))
+                    s32 End = (4096);
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,

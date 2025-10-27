@@ -1,3 +1,6 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
 uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
@@ -21,12 +24,12 @@ void main()
   // -- user code -- 
   //
   {
-    v3 Period = V3(1200.f);
-    float Amplitude = 1800.f;
+    v3 Period = V3(800.f);
+    float Amplitude = 800.f;
     /* f32 StartingZDepth = 10000; */
-    f32 StartingZDepth = 2000;
+    f32 StartingZDepth = 1000;
     /* f32 StartingZDepth = 0; */
-    s32 Octaves = 1;
+    s32 Octaves = 2;
     NoiseValue = StartingZDepth;
 
     v3 Deriv = v3(0.f);
@@ -35,12 +38,19 @@ void main()
     /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
     v3 warp = v3(0.f);
 
+    {
+      v3 xyz = Basis / (Period);
+      v4 gn = gradient_noise_derivs(xyz+warp);
+      NoiseValue += RemapSample((gn.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude;
+    }
 
-    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    for (s32 Octave = 2; Octave <= Octaves; ++Octave)
     {
       v3 xyz = Basis / (Period/Octave);
       v4 gn = gradient_noise_derivs(xyz+warp);
-      NoiseValue += RemapSample((gn.x+1.f)/2.f)*(Amplitude/Octave);
+
+      NoiseValue += ((gn.x+1.f)/2.f) * Amplitude/Octave;
+      /* NoiseValue += RemapSample((gn.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); */
     }
 
     v3 Up = V3(0, 0, 1);

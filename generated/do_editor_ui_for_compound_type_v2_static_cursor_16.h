@@ -45,7 +45,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 16)
+                    s32 End = s32(Element->At);
+          Assert( End < 16 );
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,

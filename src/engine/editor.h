@@ -354,7 +354,14 @@ poof(
                       {
                         OPEN_INDENT_FOR_TOGGLEABLE_REGION();
                           PushNewRow(Ui);
-                          RangeIterator(ArrayIndex, member.array)
+                          member.has_tag(array_length)?
+                            {
+                              s32 End = s32((member.tag_value(array_length)));
+                              Assert( End < member.array );
+                            }{
+                              s32 End = member.array;
+                            }
+                          RangeIterator(ArrayIndex, End)
                           {
                             member.has_tag(custom_ui)?
                             {
@@ -1200,7 +1207,7 @@ struct layered_brush
   // because the deserialization code isn't smart enough to not stomp on the
   // texture handles when it marshals old types to the current one.
               s32 LayerCount;
-      brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount))
+      brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
 
   /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
   /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */

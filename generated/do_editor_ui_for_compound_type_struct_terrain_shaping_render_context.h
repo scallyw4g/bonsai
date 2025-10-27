@@ -63,14 +63,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
                                 
 
         if (ToggleButton(Ui,
-            CSz("v Uniforms[3]"),
-            CSz("> Uniforms[3]"),
+            CSz("v Uniforms[5]"),
+            CSz("> Uniforms[5]"),
             UiId(Window, "toggle terrain_shaping_render_context shader_uniform Uniforms", Element->Uniforms, ThisHash),
             Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 3)
+                    s32 End = 5;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -201,6 +203,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(v3*, &Element->ChunkResolution),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ReshapeFunc");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(easing_function*, &Element->ReshapeFunc),
           MemberName,
           ThisHash,
           Params

@@ -570,7 +570,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 2)
+                    s32 End = 2;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -891,6 +893,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
   }
 
 }
+
 
 
 

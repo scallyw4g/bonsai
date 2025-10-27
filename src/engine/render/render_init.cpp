@@ -721,7 +721,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   {
     terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
-    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {});
+    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc);
 
     RC->DestFBO = GenFramebuffer();
     RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);

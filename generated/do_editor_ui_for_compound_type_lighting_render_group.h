@@ -70,7 +70,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 26)
+                    s32 End = 26;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,

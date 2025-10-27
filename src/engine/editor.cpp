@@ -389,8 +389,8 @@ poof(do_editor_ui_for_compound_type(chunk_thumbnail))
 
 poof(
   for_datatypes(enum)
-  func (enum_t) {
-
+  func (enum_t)
+  {
     enum_t.has_tag(gen_ui_toolbar)?
     {
       string_and_value_tables(enum_t)
@@ -525,7 +525,8 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 
 poof(
   for_datatypes(struct)
-  func (struct_t) {
+  func (struct_t)
+  {
     struct_t.has_tag(do_editor_ui)?
     {
       do_editor_ui_for_compound_type(struct_t)

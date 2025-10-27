@@ -193,7 +193,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 8)
+                    s32 End = 8;
+
+          RangeIterator(ArrayIndex, End)
           {
                         if (Element->Children[ArrayIndex]) {DoEditorUi(Ui, Window, Element->Children[ArrayIndex], CSz("Child"), ThisHash, Params);};
 

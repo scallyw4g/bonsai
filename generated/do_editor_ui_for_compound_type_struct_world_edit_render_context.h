@@ -70,7 +70,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 4)
+                    s32 End = 4;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -107,7 +109,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 3)
+                    s32 End = 3;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,
@@ -144,7 +148,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
           PushNewRow(Ui);
-          RangeIterator(ArrayIndex, 3)
+                    s32 End = 3;
+
+          RangeIterator(ArrayIndex, End)
           {
                         DoEditorUi(Ui,
               Window,

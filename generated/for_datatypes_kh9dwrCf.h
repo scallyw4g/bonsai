@@ -84,24 +84,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal b32
 IsValid(ui_brush_layer_actions Value)
 {
@@ -311,8 +293,6 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
-
-
 link_internal b32
 IsValid(selection_modification_mode Value)
 {
@@ -432,12 +412,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     PushNewRow(Ui);
   }
 }
-
-
-
-
-
-
 
 
 
@@ -651,7 +625,6 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
-
 link_internal b32
 IsValid(ui_reorder_action Value)
 {
@@ -814,15 +787,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1109,18 +1073,6 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal b32
 IsValid(ui_layer_toolbar_actions Value)
 {
@@ -1300,46 +1252,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
