@@ -56,7 +56,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   InitializeEasingFunctionVisualizerRenderPass_Async(
        RenderQ,
       &GameState->EasingFunctionVisRP,
-      0,0,
+       EasingFunction,
        0);
 
   /* InitializeEasingFunctionVisualizerRenderPass_Async( */

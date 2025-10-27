@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:450:0
+// external/bonsai_stdlib/src/poof_functions.h:452:0
 inline s32
 LengthSq( v3i Vec )
 {

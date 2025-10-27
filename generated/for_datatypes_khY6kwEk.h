@@ -888,8 +888,7 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 {
    b32* Result; 
     easing_function_visualizer_render_pass *Element;
-  v2 *Points;
-  u32 *Count;
+  easing_function *Func;
 
 };
 

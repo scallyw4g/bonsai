@@ -596,11 +596,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
         
         
         
-        cs MemberName = CSz("Points");
+        cs MemberName = CSz("Func");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(v2*, Element->Points),
+          Cast(easing_function*, Element->Func),
           MemberName,
           ThisHash,
           Params
@@ -614,32 +614,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
 
         
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Count");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, Element->Count),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:372:0
+// external/bonsai_stdlib/src/poof_functions.h:374:0
 inline f32
 Lerp(r32 t, f32 P1, f32 P2)
 {

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:624:0
+// external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(bonsai_type_info *Thing1, bonsai_type_info *Thing2)
 {

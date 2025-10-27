@@ -1,7 +1,7 @@
 // external/bonsai_stdlib/src/poof_functions.h:14:0
 
 b32
-InitShaderUniform(shader *Shader, u32 Index, v2 *Value, const char *Name, u16 Count)
+InitShaderUniform(shader *Shader, u32 Index, v2 *Value, const char *Name, u32 *Count)
 {
   /* Assert(Count); */
   Assert(Index < Shader->Uniforms.Count);
@@ -21,6 +21,8 @@ InitShaderUniform(shader *Shader, u32 Index, v2 *Value, const char *Name, u16 Co
 b32
 InitShaderUniform(shader *Shader, u32 Index, v2 *Value, const char *Name)
 {
-  return InitShaderUniform(Shader, Index, Value, Name, 1);
+  // Setting this to null implies a count of 1
+  u32 *CountPtr = 0;
+  return InitShaderUniform(Shader, Index, Value, Name, CountPtr);
 }
 

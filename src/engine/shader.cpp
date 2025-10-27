@@ -12,21 +12,23 @@ BindEngineUniform(shader_uniform *Uniform)
 {
   TIMED_FUNCTION();
 
+  s32 Count = Uniform->Count ? s32(*Uniform->Count) : 1;
+
   switch(Uniform->Type)
   {
     case ShaderUniform_Light:
     {
       TIMED_BLOCK("ShaderUniform_Light");
-      Assert(Uniform->Count);
-      GetGL()->Uniform3fv(Uniform->ID, Uniform->Count, &Uniform->Light->Position.E[0]);
+      Assert(Count);
+      GetGL()->Uniform3fv(Uniform->ID, Count, &Uniform->Light->Position.E[0]);
       END_BLOCK();
     } break;
 
     case ShaderUniform_Camera:
     {
       TIMED_BLOCK("ShaderUniform_Camera");
-      Assert(Uniform->Count);
-      GetGL()->Uniform3fv(Uniform->ID, Uniform->Count, &Uniform->Camera->RenderSpacePosition.E[0]);
+      Assert(Count);
+      GetGL()->Uniform3fv(Uniform->ID, Count, &Uniform->Camera->RenderSpacePosition.E[0]);
       END_BLOCK();
     } break;
 

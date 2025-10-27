@@ -97,14 +97,11 @@ poof(
   shader Program;
   shader_uniform Uniforms[2];
 
-  /* u32 Foo; poof(@uniform) */
-  /* u32 Bar; poof(@uniform) */
-  /* easing_function *Func; */
-  /* poof(@uniform(v2 *Points, Element->Func->Points.Start)) */
-  /* poof(@uniform(u32 Count,  Element->Func->Points.At)) */
-
-   v2 *Points; poof(@uniform @array_length(*Count))
-  u32 *Count;  poof(@uniform)
+  easing_function *Func;
+  poof(
+    @uniform("Points", Element->Func->Points.Start, &Element->Func->Points.At)
+    @uniform("Count", &Element->Func->Points.At, 0)
+  )
 };
 
 

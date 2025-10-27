@@ -23,37 +23,65 @@ InitializeTexturedQuadRenderPass
 
         
     
-        Element->IsDepthTexture = IsDepthTexture;
+            Element->IsDepthTexture = IsDepthTexture;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->IsDepthTexture,
+
+      
+      
+            &Element->IsDepthTexture,
       "IsDepthTexture"
-      );
+      
 
-        Element->HasAlphaChannel = HasAlphaChannel;
+    );
+
+
+
+            Element->HasAlphaChannel = HasAlphaChannel;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->HasAlphaChannel,
+
+      
+      
+            &Element->HasAlphaChannel,
       "HasAlphaChannel"
-      );
+      
 
-        Element->TextureSlice = TextureSlice;
+    );
+
+
+
+            Element->TextureSlice = TextureSlice;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->TextureSlice,
+
+      
+      
+            &Element->TextureSlice,
       "TextureSlice"
-      );
+      
 
-        Element->Tint = Tint;
+    );
+
+
+
+            Element->Tint = Tint;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Tint,
+
+      
+      
+            &Element->Tint,
       "Tint"
-      );
+      
+
+    );
+
+
 
 
 
@@ -82,33 +110,37 @@ UseRenderPass_textured_quad_render_pass
     s32 UniformIndex = 0;
         
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 

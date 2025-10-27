@@ -1,4 +1,4 @@
-// src/engine/graphics.h:113:0
+// src/engine/graphics.h:110:0
 
 
 
@@ -55,213 +55,395 @@ InitializeLightingRenderGroup
         
     
     
-        Element->gColor = gColor;
+            Element->gColor = gColor;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->gColor,
+
+      
+      
+            Element->gColor,
       "gColor"
-      );
+      
 
-        Element->gNormal = gNormal;
+    );
+
+
+
+            Element->gNormal = gNormal;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->gNormal,
+
+      
+      
+            Element->gNormal,
       "gNormal"
-      );
+      
 
-        Element->gDepth = gDepth;
+    );
+
+
+
+            Element->gDepth = gDepth;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->gDepth,
+
+      
+      
+            Element->gDepth,
       "gDepth"
-      );
+      
 
-        Element->shadowMap = shadowMap;
+    );
+
+
+
+            Element->shadowMap = shadowMap;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->shadowMap,
+
+      
+      
+            Element->shadowMap,
       "shadowMap"
-      );
+      
 
-        Element->Ssao = Ssao;
+    );
+
+
+
+            Element->Ssao = Ssao;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Ssao,
+
+      
+      
+            Element->Ssao,
       "Ssao"
-      );
+      
 
-        Element->TransparencyAccumTex = TransparencyAccumTex;
+    );
+
+
+
+            Element->TransparencyAccumTex = TransparencyAccumTex;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->TransparencyAccumTex,
+
+      
+      
+            Element->TransparencyAccumTex,
       "TransparencyAccumTex"
-      );
+      
 
-        Element->TransparencyCountTex = TransparencyCountTex;
+    );
+
+
+
+            Element->TransparencyCountTex = TransparencyCountTex;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->TransparencyCountTex,
+
+      
+      
+            Element->TransparencyCountTex,
       "TransparencyCountTex"
-      );
+      
 
-        Element->BravoilMyersOIT = BravoilMyersOIT;
+    );
+
+
+
+            Element->BravoilMyersOIT = BravoilMyersOIT;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->BravoilMyersOIT,
+
+      
+      
+            Element->BravoilMyersOIT,
       "BravoilMyersOIT"
-      );
+      
 
-        Element->BravoilMcGuireOIT = BravoilMcGuireOIT;
+    );
+
+
+
+            Element->BravoilMcGuireOIT = BravoilMcGuireOIT;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->BravoilMcGuireOIT,
+
+      
+      
+            Element->BravoilMcGuireOIT,
       "BravoilMcGuireOIT"
-      );
+      
 
-        Element->InverseViewMatrix = InverseViewMatrix;
+    );
+
+
+
+            Element->InverseViewMatrix = InverseViewMatrix;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->InverseViewMatrix,
+
+      
+      
+            Element->InverseViewMatrix,
       "InverseViewMatrix"
-      );
+      
 
-        Element->InverseProjectionMatrix = InverseProjectionMatrix;
+    );
+
+
+
+            Element->InverseProjectionMatrix = InverseProjectionMatrix;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->InverseProjectionMatrix,
+
+      
+      
+            Element->InverseProjectionMatrix,
       "InverseProjectionMatrix"
-      );
+      
 
-        Element->ShadowMVP = ShadowMVP;
+    );
+
+
+
+            Element->ShadowMVP = ShadowMVP;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->ShadowMVP,
+
+      
+      
+            Element->ShadowMVP,
       "ShadowMVP"
-      );
+      
 
-        Element->LightColors = LightColors;
+    );
+
+
+
+            Element->LightColors = LightColors;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->LightColors,
+
+      
+      
+            Element->LightColors,
       "LightColors"
-      );
+      
 
-        Element->LightPositions = LightPositions;
+    );
+
+
+
+            Element->LightPositions = LightPositions;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->LightPositions,
+
+      
+      
+            Element->LightPositions,
       "LightPositions"
-      );
+      
 
-        Element->LightIndexToUV = LightIndexToUV;
+    );
+
+
+
+            Element->LightIndexToUV = LightIndexToUV;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->LightIndexToUV,
+
+      
+      
+            Element->LightIndexToUV,
       "LightIndexToUV"
-      );
+      
 
-        Element->LightCount = LightCount;
+    );
+
+
+
+            Element->LightCount = LightCount;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->LightCount,
+
+      
+      
+            Element->LightCount,
       "LightCount"
-      );
+      
 
-        Element->Camera = Camera;
+    );
+
+
+
+            Element->Camera = Camera;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Camera,
+
+      
+      
+            Element->Camera,
       "Camera"
-      );
+      
 
-        Element->SunPosition = SunPosition;
+    );
+
+
+
+            Element->SunPosition = SunPosition;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->SunPosition,
+
+      
+      
+            Element->SunPosition,
       "SunPosition"
-      );
+      
 
-        Element->SunColor = SunColor;
+    );
+
+
+
+            Element->SunColor = SunColor;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->SunColor,
+
+      
+      
+            Element->SunColor,
       "SunColor"
-      );
+      
 
-        Element->FogColor = FogColor;
+    );
+
+
+
+            Element->FogColor = FogColor;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->FogColor,
+
+      
+      
+            Element->FogColor,
       "FogColor"
-      );
+      
 
-        Element->FogPower = FogPower;
+    );
+
+
+
+            Element->FogPower = FogPower;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->FogPower,
+
+      
+      
+            Element->FogPower,
       "FogPower"
-      );
+      
 
-        Element->UseSsao = UseSsao;
+    );
+
+
+
+            Element->UseSsao = UseSsao;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->UseSsao,
+
+      
+      
+            Element->UseSsao,
       "UseSsao"
-      );
+      
 
-        Element->UseShadowMapping = UseShadowMapping;
+    );
+
+
+
+            Element->UseShadowMapping = UseShadowMapping;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->UseShadowMapping,
+
+      
+      
+            Element->UseShadowMapping,
       "UseShadowMapping"
-      );
+      
 
-        Element->UseLightingBloom = UseLightingBloom;
+    );
+
+
+
+            Element->UseLightingBloom = UseLightingBloom;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->UseLightingBloom,
+
+      
+      
+            Element->UseLightingBloom,
       "UseLightingBloom"
-      );
+      
 
-        Element->ApplicationResolution = ApplicationResolution;
+    );
+
+
+
+            Element->ApplicationResolution = ApplicationResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->ApplicationResolution,
+
+      
+      
+            Element->ApplicationResolution,
       "ApplicationResolution"
-      );
+      
 
-        Element->ShadowMapResolution = ShadowMapResolution;
+    );
+
+
+
+            Element->ShadowMapResolution = ShadowMapResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->ShadowMapResolution,
+
+      
+      
+            Element->ShadowMapResolution,
       "ShadowMapResolution"
-      );
+      
+
+    );
+
+
 
     
     
@@ -293,187 +475,213 @@ UseRenderPass_lighting_render_group
         
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
     
     
@@ -614,37 +822,65 @@ InitializeTerrainDecorationRenderContext
     
     
     
-        Element->DerivsTex = DerivsTex;
+            Element->DerivsTex = DerivsTex;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->DerivsTex,
+
+      
+      
+            Element->DerivsTex,
       "DerivsTex"
-      );
+      
 
-        Element->ChunkDim = ChunkDim;
+    );
+
+
+
+            Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ChunkDim,
+
+      
+      
+            &Element->ChunkDim,
       "ChunkDim"
-      );
+      
 
-        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    );
+
+
+
+            Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->WorldspaceChunkBasis,
+
+      
+      
+            &Element->WorldspaceChunkBasis,
       "WorldspaceChunkBasis"
-      );
+      
 
-        Element->ChunkResolution = ChunkResolution;
+    );
+
+
+
+            Element->ChunkResolution = ChunkResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ChunkResolution,
+
+      
+      
+            &Element->ChunkResolution,
       "ChunkResolution"
-      );
+      
+
+    );
+
+
 
 
 
@@ -675,33 +911,37 @@ UseRenderPass_terrain_decoration_render_context
     
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -776,13 +1016,20 @@ InitializeTerrainFinalizeRenderContext
     
     
     
-        Element->Ignored = Ignored;
+            Element->Ignored = Ignored;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Ignored,
+
+      
+      
+            &Element->Ignored,
       "Ignored"
-      );
+      
+
+    );
+
+
 
 
 
@@ -813,12 +1060,13 @@ UseRenderPass_terrain_finalize_render_context
     
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -934,37 +1182,65 @@ InitializeWorldEditRenderContext
     
     
     
-        Element->ChunkDim = ChunkDim;
+            Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->ChunkDim,
+
+      
+      
+            Element->ChunkDim,
       "ChunkDim"
-      );
+      
 
-        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    );
+
+
+
+            Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->WorldspaceChunkBasis,
+
+      
+      
+            Element->WorldspaceChunkBasis,
       "WorldspaceChunkBasis"
-      );
+      
 
-        Element->ChunkResolution = ChunkResolution;
+    );
+
+
+
+            Element->ChunkResolution = ChunkResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->ChunkResolution,
+
+      
+      
+            Element->ChunkResolution,
       "ChunkResolution"
-      );
+      
 
-        Element->Type = Type;
+    );
+
+
+
+            Element->Type = Type;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Type,
+
+      
+      
+            &Element->Type,
       "Type"
-      );
+      
+
+    );
+
+
 
 
 
@@ -995,33 +1271,37 @@ UseRenderPass_world_edit_render_context
     
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -1156,8 +1436,7 @@ InitializeEasingFunctionVisualizerRenderPass
   easing_function_visualizer_render_pass *Element
     
   
-  , v2 *Points
-  , u32 *Count
+  , easing_function *Func
 
 )
 {
@@ -1171,21 +1450,34 @@ InitializeEasingFunctionVisualizerRenderPass
 
         
     
-        Element->Points = Points;
+            Element->Func = Func;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Points,
-      "Points"
-      , Cast(u16, *Count));
 
-        Element->Count = Count;
+      
+      
+             Element->Func->Points.Start,
+      "Points",
+       &Element->Func->Points.At
+
+    );
+
+
+        Element->Func = Func;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->Count,
-      "Count"
-      );
+
+      
+      
+             &Element->Func->Points.At,
+      "Count",
+       0
+
+    );
+
+
 
 
 
@@ -1214,7 +1506,7 @@ UseRenderPass_easing_function_visualizer_render_pass
     s32 UniformIndex = 0;
         
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
@@ -1227,6 +1519,7 @@ UseRenderPass_easing_function_visualizer_render_pass
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -1332,37 +1625,65 @@ InitializeShadowMapShader
 
         
     
-        Element->ModelMatrix = ModelMatrix;
+            Element->ModelMatrix = ModelMatrix;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ModelMatrix,
+
+      
+      
+            &Element->ModelMatrix,
       "ModelMatrix"
-      );
+      
 
-        Element->ViewProjection = ViewProjection;
+    );
+
+
+
+            Element->ViewProjection = ViewProjection;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ViewProjection,
+
+      
+      
+            &Element->ViewProjection,
       "ViewProjection"
-      );
+      
 
-        Element->MinClipP_worldspace = MinClipP_worldspace;
+    );
+
+
+
+            Element->MinClipP_worldspace = MinClipP_worldspace;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->MinClipP_worldspace,
+
+      
+      
+            Element->MinClipP_worldspace,
       "MinClipP_worldspace"
-      );
+      
 
-        Element->MaxClipP_worldspace = MaxClipP_worldspace;
+    );
+
+
+
+            Element->MaxClipP_worldspace = MaxClipP_worldspace;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->MaxClipP_worldspace,
+
+      
+      
+            Element->MaxClipP_worldspace,
       "MaxClipP_worldspace"
-      );
+      
+
+    );
+
+
 
 
 
@@ -1391,33 +1712,37 @@ UseRenderPass_shadow_map_shader
     s32 UniformIndex = 0;
         
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -1477,13 +1802,20 @@ InitializeBloomUpsampleShader
 
         
     
-        Element->FilterRadius = FilterRadius;
+            Element->FilterRadius = FilterRadius;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->FilterRadius,
+
+      
+      
+            Element->FilterRadius,
       "FilterRadius"
-      );
+      
+
+    );
+
+
 
 
 
@@ -1512,12 +1844,13 @@ UseRenderPass_bloom_upsample_shader
     s32 UniformIndex = 0;
         
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -1737,13 +2070,20 @@ InitializeTerrainDerivsRenderContext
     
     
     
-        Element->Ignored = Ignored;
+            Element->Ignored = Ignored;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->Ignored,
+
+      
+      
+            &Element->Ignored,
       "Ignored"
-      );
+      
+
+    );
+
+
 
 
 
@@ -1774,12 +2114,13 @@ UseRenderPass_terrain_derivs_render_context
     
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -1856,13 +2197,20 @@ InitializeBloomDownsampleShader
 
         
     
-        Element->SrcResolution = SrcResolution;
+            Element->SrcResolution = SrcResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      Element->SrcResolution,
+
+      
+      
+            Element->SrcResolution,
       "SrcResolution"
-      );
+      
+
+    );
+
+
 
 
 
@@ -1891,12 +2239,13 @@ UseRenderPass_bloom_downsample_shader
     s32 UniformIndex = 0;
         
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 
@@ -2031,29 +2380,50 @@ InitializeTerrainShapingRenderContext
     
     
     
-        Element->ChunkDim = ChunkDim;
+            Element->ChunkDim = ChunkDim;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ChunkDim,
+
+      
+      
+            &Element->ChunkDim,
       "ChunkDim"
-      );
+      
 
-        Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
+    );
+
+
+
+            Element->WorldspaceChunkBasis = WorldspaceChunkBasis;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->WorldspaceChunkBasis,
+
+      
+      
+            &Element->WorldspaceChunkBasis,
       "WorldspaceChunkBasis"
-      );
+      
 
-        Element->ChunkResolution = ChunkResolution;
+    );
+
+
+
+            Element->ChunkResolution = ChunkResolution;
     InitShaderUniform(
       &Element->Program,
       UniformIndex++,
-      &Element->ChunkResolution,
+
+      
+      
+            &Element->ChunkResolution,
       "ChunkResolution"
-      );
+      
+
+    );
+
+
 
 
 
@@ -2084,26 +2454,29 @@ UseRenderPass_terrain_shaping_render_context
     
     
     
-        {
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
 
-        {
+
+            {
       shader_uniform *Uniform = Element->Uniforms+UniformIndex;
       BindUniformById(Uniform, &TextureUnit);
       ++UniformIndex;
       AssertNoGlErrors;
     }
+
 
 
 

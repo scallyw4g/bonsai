@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:775:0
+// external/bonsai_stdlib/src/poof_functions.h:777:0
 struct voxel_synth_tile_linked_list_node
 {
   b32 Tombstoned;

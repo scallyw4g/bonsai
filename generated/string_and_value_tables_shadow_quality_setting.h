@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2046:0
+// external/bonsai_stdlib/src/poof_functions.h:2048:0
 link_internal b32
 IsValid(shadow_quality_setting Value)
 {

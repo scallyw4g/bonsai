@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2054:0
+// external/bonsai_stdlib/src/poof_functions.h:2056:0
 struct counted_string_cursor
 {
   counted_string *Start;

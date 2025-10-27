@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:113:0
+// external/bonsai_stdlib/src/poof_functions.h:115:0
 link_internal voxel_lighting
 VoxelLighting(  u8   Emission  )
 {

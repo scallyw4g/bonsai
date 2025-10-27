@@ -896,14 +896,14 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 link_internal void
-InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , v2 *Points , u32 *Count   , b32* Result )
+InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* Result )
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.RenderQ);
 
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {
-      Result,   Element,  Points,  Count, 
+      Result,   Element,  Func, 
   };
 
   work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
@@ -913,7 +913,7 @@ InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_fu
 link_internal void
 DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 {
-   auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Points , Params->Count );
+   auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
 

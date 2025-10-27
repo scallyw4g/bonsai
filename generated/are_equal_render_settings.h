@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:624:0
+// external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(render_settings *Thing1, render_settings *Thing2)
 {

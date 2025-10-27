@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:113:0
+// external/bonsai_stdlib/src/poof_functions.h:115:0
 link_internal voxel_stack_element
 VoxelStackElement(  v3i   VoxSimP , voxel_rule_direction   Dir  )
 {

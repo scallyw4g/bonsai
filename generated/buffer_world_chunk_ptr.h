@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:1432:0
+// external/bonsai_stdlib/src/poof_functions.h:1434:0
 struct world_chunk_ptr_buffer
 {
   umm Count;

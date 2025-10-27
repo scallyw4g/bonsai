@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:1441:0
+// external/bonsai_stdlib/src/poof_functions.h:1443:0
 struct voxel_synthesis_change_propagation_info_stack
 {
   voxel_synthesis_change_propagation_info *Start;

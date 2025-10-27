@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:94:0
+// external/bonsai_stdlib/src/poof_functions.h:96:0
 link_internal b32
 operator==( tile_rule_id E1, tile_rule_id E2 )
 {

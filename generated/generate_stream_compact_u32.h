@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2004:0
+// external/bonsai_stdlib/src/poof_functions.h:2006:0
 link_internal u32_buffer
 Compact(u32_stream *Stream, memory_arena *PermMemory)
 {

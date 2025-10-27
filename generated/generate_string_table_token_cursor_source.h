@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:1741:0
+// external/bonsai_stdlib/src/poof_functions.h:1743:0
 link_internal b32
 IsValid(token_cursor_source Value)
 {

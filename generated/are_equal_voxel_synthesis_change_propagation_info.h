@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:624:0
+// external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(voxel_synthesis_change_propagation_info *Thing1, voxel_synthesis_change_propagation_info *Thing2)
 {

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:797:0
+// external/bonsai_stdlib/src/poof_functions.h:799:0
 link_internal b32 AreEqual(xml_tag_linked_list_node *Node1, xml_tag_linked_list_node *Node2 );
 link_internal b32 AreEqual(xml_tag *Element1, xml_tag *Element2 );
 

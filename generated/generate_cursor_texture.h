@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:1538:0
+// external/bonsai_stdlib/src/poof_functions.h:1540:0
 struct texture_cursor
 {
   texture *Start;
