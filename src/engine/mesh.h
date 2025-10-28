@@ -13,9 +13,9 @@ struct mesh_freelist
 {
 #if BONSAI_INTERNAL
   bonsai_futex DebugFutex;
-  u32 MeshSize;
 #endif
 
+  u32 MeshSize;
   volatile freelist_entry *FirstFreeMesh;
 };
 

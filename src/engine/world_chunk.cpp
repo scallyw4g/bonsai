@@ -1480,7 +1480,6 @@ poof(
       vert_t.name NormalData[VERTS_PER_FACE];
              matl Materials[VERTS_PER_FACE];
 
-      s32 Result = 0;
       for ( s32 zBlock = 1; zBlock < SrcChunkDim.z-1; ++zBlock )
       {
         s32 z = zBlock-1;
@@ -1498,7 +1497,6 @@ poof(
 
           v3 Dim = V3(1.f, 1.f, 1.f);
 
-
           u64 BaseVoxelOffset = u64(GetIndex(0, yBlock, zBlock, SrcChunkDim));
           while (LeftFaces)
           {
@@ -1507,14 +1505,19 @@ poof(
             v3 P = V3(s32(xOffset), y, z);
 
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
-
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_LeftFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            LeftFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            LeftFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
           while (RightFaces)
@@ -1525,12 +1528,18 @@ poof(
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_RightFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            RightFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            RightFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
           while (FrontFaces)
@@ -1541,12 +1550,18 @@ poof(
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_FrontFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            FrontFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            FrontFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
           while (BackFaces)
@@ -1557,12 +1572,18 @@ poof(
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_BackFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            BackFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            BackFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
           while (TopFaces)
@@ -1573,12 +1594,18 @@ poof(
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_TopFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            TopFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            TopFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
           while (BotFaces)
@@ -1589,12 +1616,18 @@ poof(
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = UnpackV3_15b(PNormal);
-            FillArray(Normal, NormalData, VERTS_PER_FACE);
+            v3 Normal    = Normalize(0.25f*v3_BottomFaceNormalData[0] + UnpackV3_15b(PNormal));
 
-            BottomFaceVertexData( VertexOffset+P, Dim, VertexData);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, NormalData, Materials);
+            Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
+
+            vert_t.name *DestVerts          = Cast( vert_t.name*, Dest->Verts)   + Dest->At;
+            vert_t.name *DestNormals        = Cast( vert_t.name*, Dest->Normals) + Dest->At;
+            vertex_material *DestMats       =                     Dest->Mat      + Dest->At;
+
+            BottomFaceVertexData( VertexOffset+P, Dim, DestVerts);
+            FillArray(Normal, DestNormals, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            Dest->At += VERTS_PER_FACE;
           }
 
 
