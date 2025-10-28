@@ -198,7 +198,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
 
   b32 HadPaletteData      = False;
-  v3 TempHSVPalette[256] = {};
+  v3 TempRGBPalette[256] = {};
 
 
 
@@ -248,8 +248,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 B = ReadChar(ModelFile, &bytesRemaining);
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
-            v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f);
-            TempHSVPalette[PaletteIndex] = ThisColor;
+            /* v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f); */
+            TempRGBPalette[PaletteIndex] = V3(R,G,B)/255.f;
             /* v3 ThisColor = V3(R,G,B); */
 #if 1
 #else
@@ -507,11 +507,11 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
         DimIterator(x, y, z, Chunk->Dim)
         {
           s32 Index = GetIndex(x, y, z, Chunk->Dim);
-          u16 PaletteIndex = Chunk->Voxels[Index].Color;
+          u16 PaletteIndex = Chunk->Voxels[Index].RGBColor;
           if   (HadPaletteData)
-            { Chunk->Voxels[Index].Color = PackHSVColor(TempHSVPalette[PaletteIndex]); }
+            { Chunk->Voxels[Index].RGBColor = PackV3_16b(TempRGBPalette[PaletteIndex]); }
           else
-            { Chunk->Voxels[Index].Color = PackHSVColor(MagicaVoxelDefaultPaletteToHSV(PaletteIndex)); }
+            { Chunk->Voxels[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(PaletteIndex)); }
         }
       }
     }

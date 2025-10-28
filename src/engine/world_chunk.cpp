@@ -691,7 +691,7 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
           if (SrcOccupancy) { SetOccupancyBit(Dest, DestIndex, SrcOccupancy); }
           /* DestV->Flags |= (SrcV->Flags & Voxel_Filled); */
 
-          if (SrcV->Color) { DestV->Color = SrcV->Color; }
+          if (SrcV->RGBColor) { DestV->RGBColor = SrcV->RGBColor; }
           /* if (!DestV->Color) { DestV->Color = SrcV->Color; } */
 
           Dest->FilledCount += SrcOccupancy;
@@ -1135,7 +1135,7 @@ DrawDebugVoxels( voxel *Voxels,
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* v3 Color = GetColorData(Voxel->Color); */
-        FillArray(VertexMaterial(Voxel->Color, 0.f, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->RGBColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         NotImplemented;
 
@@ -1224,7 +1224,7 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
         {
           s32 VoxI = GetIndex(Next, SrcDim);
           voxel *V = Voxels + VoxI;
-          if ( (V->Flags&FaceFlag) && V->Color == PackedHSV && TransparencyIsSimilar(V->Transparency, Transparency))
+          if ( (V->Flags&FaceFlag) && V->RGBColor == PackedHSV && TransparencyIsSimilar(V->Transparency, Transparency))
           {
             /* UnSetFlag((voxel_flag*)&V->Flags, FaceFlag); */
           }
@@ -1253,18 +1253,18 @@ Step(voxel *Voxels, v3i SrcDim, v3i StepDir, v3i StepShape, v3i *AtP, voxel_flag
 /* global_variable random_series ColorEntropy = {33453}; */
 
 link_internal v3
-DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
+DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 RGBColor, u8 Transparency)
 {
   v3i AtY = SrcP;
   s32 DidStepY = 0;
-  while (Step(Voxels, SrcChunkDim, {{0, 1, 0}}, {{0, 1, 0}}, &AtY, Face, Color, Transparency ))
+  while (Step(Voxels, SrcChunkDim, {{0, 1, 0}}, {{0, 1, 0}}, &AtY, Face, RGBColor, Transparency ))
   {
     DidStepY++;
   }
 
   s32 DidStepZ = 0;
   v3i AtZ = SrcP;
-  while (Step(Voxels, SrcChunkDim, {{0, 0, 1}}, {{0, DidStepY, 1}}, &AtZ, Face, Color, Transparency ))
+  while (Step(Voxels, SrcChunkDim, {{0, 0, 1}}, {{0, DidStepY, 1}}, &AtZ, Face, RGBColor, Transparency ))
   {
     DidStepZ++;
   }
@@ -1285,18 +1285,18 @@ DoXStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color
 }
 
 link_internal v3
-DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
+DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 RGBColor, u8 Transparency)
 {
   v3i AtX = SrcP;
   s32 DidStepX = 0;
-  while (Step(Voxels, SrcChunkDim, {{1, 0, 0}}, {{1, 0, 0}}, &AtX, Face, Color, Transparency))
+  while (Step(Voxels, SrcChunkDim, {{1, 0, 0}}, {{1, 0, 0}}, &AtX, Face, RGBColor, Transparency))
   {
     DidStepX++;
   }
 
   s32 DidStepZ = 0;
   v3i AtZ = SrcP;
-  while (Step(Voxels, SrcChunkDim, {{0, 0, 1}}, {{DidStepX, 0, 1}}, &AtZ, Face, Color, Transparency ))
+  while (Step(Voxels, SrcChunkDim, {{0, 0, 1}}, {{DidStepX, 0, 1}}, &AtZ, Face, RGBColor, Transparency ))
   {
     DidStepZ++;
   }
@@ -1317,18 +1317,18 @@ DoYStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color
 }
 
 link_internal v3
-DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color, u8 Transparency)
+DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 RGBColor, u8 Transparency)
 {
   v3i AtX = SrcP;
   s32 DidStepX = 0;
-  while (Step(Voxels, SrcChunkDim, {{1, 0, 0}}, {{1, 0, 0}}, &AtX, Face, Color, Transparency ))
+  while (Step(Voxels, SrcChunkDim, {{1, 0, 0}}, {{1, 0, 0}}, &AtX, Face, RGBColor, Transparency ))
   {
     DidStepX++;
   }
 
   s32 DidStepY = 0;
   v3i AtY = SrcP;
-  while (Step(Voxels, SrcChunkDim, {{0, 1, 0}}, {{DidStepX, 1, 0}}, &AtY, Face, Color, Transparency ))
+  while (Step(Voxels, SrcChunkDim, {{0, 1, 0}}, {{DidStepX, 1, 0}}, &AtY, Face, RGBColor, Transparency ))
   {
     DidStepY++;
   }
@@ -1352,7 +1352,7 @@ DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 Color
 link_inline u16
 GetVoxelColor(s32 Index, voxel *Voxels)
 {
-  return Voxels[Index].Color;
+  return Voxels[Index].RGBColor;
 }
 
 #if 0
@@ -1504,7 +1504,7 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
 
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_LeftFaceNormalData[0] + UnpackV3_15b(PNormal));
 
@@ -1516,7 +1516,7 @@ poof(
 
             LeftFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1525,7 +1525,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&RightFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_RightFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -1538,7 +1538,7 @@ poof(
 
             RightFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1547,7 +1547,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_FrontFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -1560,7 +1560,7 @@ poof(
 
             FrontFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1569,7 +1569,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&BackFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_BackFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -1582,7 +1582,7 @@ poof(
 
             BackFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1591,7 +1591,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&TopFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_TopFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -1604,7 +1604,7 @@ poof(
 
             TopFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1613,7 +1613,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&BotFaces);
             u32 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize(0.25f*v3_BottomFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -1626,7 +1626,7 @@ poof(
 
             BottomFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -4811,6 +4811,7 @@ link_internal u32
 FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u32 *NoiseValues, v3i SrcToDest, s64 zMin)
 {
   TIMED_FUNCTION();
+  /* HISTOGRAM_FUNCTION(); */
   u32 ChunkSum = 0;
   TIMED_NAMED_BLOCK(NoiseFinalize);
 
@@ -4823,6 +4824,8 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
         u64 Mask = 0;
         for ( s32 xChunk = 0; xChunk < Chunk->Dim.x; ++ xChunk)
         {
+          Assert(xChunk < 64);
+
           v3i ChunkP = V3i(xChunk, yChunk, zChunk);
           v3i NoiseP = V3i(xChunk+1, yChunk, zChunk);
 
@@ -4830,56 +4833,22 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
 
           u32 ThisNoiseV = NoiseValues[NoiseIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 30);
-          /* if (NoiseChoice == 1) */
+          u64 NoiseChoice = (ThisNoiseV >> 31);
+          Assert(NoiseChoice == 1 || NoiseChoice == 0);
+
+          if (NoiseChoice == 1)
           {
-            Assert(NoiseChoice == 1 || NoiseChoice == 0);
-            ChunkSum += u32(NoiseChoice);
+            ChunkSum++;
+            Mask |= (1 << xChunk);
 
-            u16 FifteenBits = (1<<15)-1;
-            u16 NoiseColor  = u16(ThisNoiseV) & FifteenBits;
-            u16 PackedNormal = u16(ThisNoiseV>>15) & FifteenBits;
+            u32 OccupancyBitMask = ~(1u << 31);
+            Chunk->Voxels[ChunkIndex].Data = ThisNoiseV & OccupancyBitMask;
 
-            /* Info("Color(%3d) Normal(%3d)", s32(NoiseColor), s32(PackedNormal)); */
-
-            /* u32 X = (PackedNormal >> 10) & FiveBits; */
-            /* u32 Y = (PackedNormal >>  5) & FiveBits; */
-            /* u32 Z = (PackedNormal >>  0) & FiveBits; */
-
-            /* PackedNormal = RGBtoPackedHSV(V3( */
-            /*       f32(X)/f32(FiveBits), */
-            /*       f32(Y)/f32(FiveBits), */
-            /*       f32(B)/f32(FiveBits) */
-            /*     )); */
-
-            u32 FiveBits = (1<<5)-1;
-            u32 R = (NoiseColor >> 10) & FiveBits;
-            u32 G = (NoiseColor >>  5) & FiveBits;
-            u32 B = (NoiseColor >>  0) & FiveBits;
-
-            NoiseColor = RGBtoPackedHSV(V3(
-                  f32(R)/f32(FiveBits),
-                  f32(G)/f32(FiveBits),
-                  f32(B)/f32(FiveBits)
-                ));
-
-            Assert(xChunk < 64);
-            Mask |= (NoiseChoice << xChunk);
-
-            /* s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim); */
-            /* if (NormalIndex > -1) */
-            /* { */
-            /*   Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex])); */
-            /* } */
-
-            Chunk->Voxels[ChunkIndex].Color = NoiseColor*u16(NoiseChoice);
-            Chunk->Voxels[ChunkIndex].Normal = PackedNormal*u16(NoiseChoice);
-            /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
             if (GetEngineDebug()->MarkChunkBorderVoxels)
             {
-              if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
-              if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); }
-              if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); }
+              if (xChunk == 0) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_RED)*u16(NoiseChoice); }
+              if (yChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_PINK)*u16(NoiseChoice); }
+              if (zChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_BLUE)*u16(NoiseChoice); }
             }
           }
         }
@@ -4912,7 +4881,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
           u32 ThisNoiseV = NoiseValues[BorderIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 30);
+          u64 NoiseChoice = (ThisNoiseV >> 31);
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           u64 Bit = NoiseChoice << (yNoise-1);
           x0Bits |= Bit;
@@ -4923,7 +4892,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
           u32 ThisNoiseV = NoiseValues[BorderIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 30);
+          u64 NoiseChoice = (ThisNoiseV >> 31);
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           u64 Bit = NoiseChoice << (yNoise-1);
           x1Bits |= Bit;

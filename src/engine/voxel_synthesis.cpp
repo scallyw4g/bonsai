@@ -73,7 +73,7 @@ BakeVoxelSynthesisRules(const char* InputVox)
     s32 VIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
     NotImplemented;
     /* Vox.ChunkData->Voxels[VIndex].Flags = {}; */
-    Vox.ChunkData->Voxels[VIndex].Color = RGBtoPackedHSV(RGB_GRASS_GREEN);
+    Vox.ChunkData->Voxels[VIndex].RGBColor = PackV3_16b(RGB_GRASS_GREEN);
   }
 
   MakeFaceMasks_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->xOccupancyBorder, Vox.ChunkData->FaceMasks, Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);

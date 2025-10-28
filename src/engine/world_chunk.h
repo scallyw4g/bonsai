@@ -112,9 +112,15 @@ CAssert(Voxel_MarkBit < u8_MAX);
 // TODO(Jesse): Surely we can compress this.. but do we care?
 struct voxel
 {
-  u8 Transparency;
-  u16 Color;
-  u16 Normal;
+  union poof(@no_serialize)
+  {
+    u32 Data;
+    struct
+    {
+      u16 RGBColor;
+      u16 Normal;
+    };
+  };
 };
 
 struct voxel_lighting
@@ -128,7 +134,8 @@ poof(gen_constructor(voxel_lighting))
 b32
 operator==(voxel &V1, voxel &V2)
 {
-  b32 Result = V1.Transparency == V2.Transparency && V1.Color == V2.Color;
+  /* b32 Result = V1.Transparency == V2.Transparency && V1.RGBColor == V2.RGBColor; */
+  b32 Result = V1.RGBColor == V2.RGBColor;
   return Result;
 }
 
@@ -150,10 +157,10 @@ struct boundary_voxel
     this->Offset.y = y;
     this->Offset.z = z;
 
-    this->V.Color = w;
+    this->V.RGBColor = w;
 
     /* this->V.Flags = Voxel_Empty; */
-    this->V.Transparency = 0;
+    /* this->V.Transparency = 0; */
   }
 
   boundary_voxel(voxel *V_in, voxel_position Offset_in)
@@ -617,7 +624,7 @@ MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
   RangeIterator(Index, Max)
   {
     Dest[Index] = Src[Index];
-    Dest[Index].Color = PackHSVColor(MagicaVoxelDefaultPaletteToHSV(Src[Index].Color));
+    Dest[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(Src[Index].RGBColor));
   }
 }
 

@@ -50,7 +50,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
 
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_LeftFaceNormalData[0] + UnpackV3_15b(PNormal));
 
@@ -62,7 +62,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         LeftFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 
@@ -71,7 +71,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 This = UnsetLeastSignificantSetBit(&RightFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_RightFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -84,7 +84,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         RightFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 
@@ -93,7 +93,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_FrontFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -106,7 +106,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         FrontFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 
@@ -115,7 +115,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 This = UnsetLeastSignificantSetBit(&BackFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_BackFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -128,7 +128,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         BackFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 
@@ -137,7 +137,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 This = UnsetLeastSignificantSetBit(&TopFaces);
         u64 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_TopFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -150,7 +150,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         TopFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 
@@ -159,7 +159,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
         u64 This = UnsetLeastSignificantSetBit(&BotFaces);
         u32 xOffset = GetIndexOfSingleSetBit(This);
         v3 P = V3(s32(xOffset), y, z);
-        u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+        u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
         u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
         v3 Normal    = Normalize(0.25f*v3_BottomFaceNormalData[0] + UnpackV3_15b(PNormal));
@@ -172,7 +172,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
         BottomFaceVertexData( VertexOffset+P, Dim, DestVerts);
         FillArray(Normal, DestNormals, VERTS_PER_FACE);
-        FillArray(VertexMaterial(HSVColor, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+        FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
         Dest->At += VERTS_PER_FACE;
       }
 

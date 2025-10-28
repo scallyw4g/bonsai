@@ -496,13 +496,14 @@ WorldEdit_shape_sphere_Flood(apply_world_edit_params *Params, thread_local_state
         NotImplemented;
         /* if (V->Flags & Voxel_Filled) */
         {
-          V->Color = MagicaVoxelDefaultPaletteToPackedHSV(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1)));
+          /* V->RGBColor = MagicaVoxelDefaultPaletteToPackedRGB(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1))); */
         }
 
       }
       else if (LengthSq(CenterToVoxP) < RadiusSquared)
       {
-        V->Color = MagicaVoxelDefaultPaletteToPackedHSV(MCV_GREY_8);
+        NotImplemented;
+        /* V->RGBColor = MagicaVoxelDefaultPaletteToPackedRGB(MCV_GREY_8); */
       }
     }
     ))
@@ -828,7 +829,7 @@ ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_re
   world_edit_shape            Shape =     Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
-  u16 NewColor               = PackHSVColor(Job->HSVColor);
+  u16 NewColor               = PackV3_16b(Job->HSVColor);
   u8 NewTransparency         = Job->Transparency;
 
   voxel _NewVoxelValue = {};
@@ -981,7 +982,7 @@ DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_
   world_edit_shape            Shape = Job->Brush.Shape;
   /* v3i                   FloodOrigin = V3i(Job->Brush.SimFloodOrigin); */
 
-  u16 NewColor                  = PackHSVColor(Job->HSVColor);
+  u16 NewColor                  = PackV3_16b(Job->HSVColor);
   u8  NewTransparency           = Job->Transparency;
   cp  MaxP                      = Job->MaxP;
   cp  MinP                      = Job->MinP;

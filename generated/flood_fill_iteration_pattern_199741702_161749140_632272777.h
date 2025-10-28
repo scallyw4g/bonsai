@@ -88,13 +88,14 @@ while (AtElements(&Stack))
         NotImplemented;
         /* if (V->Flags & Voxel_Filled) */
         {
-          V->Color = MagicaVoxelDefaultPaletteToPackedHSV(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1)));
+          /* V->RGBColor = MagicaVoxelDefaultPaletteToPackedRGB(SafeTruncateU8(RandomBetween((u32)MCV_GREY_5, &ColorEntropy, (u32)MCV_GREY_8+1))); */
         }
 
       }
       else if (LengthSq(CenterToVoxP) < RadiusSquared)
       {
-        V->Color = MagicaVoxelDefaultPaletteToPackedHSV(MCV_GREY_8);
+        NotImplemented;
+        /* V->RGBColor = MagicaVoxelDefaultPaletteToPackedRGB(MCV_GREY_8); */
       }
     
 

@@ -3085,7 +3085,7 @@ Terrain_Voronoi3D( world_chunk *Chunk,
 
         /* SetFlag(&Chunk->Voxels[VoxIndex], (voxel_flag)(Voxel_Filled*IsFilled)); */
         SetOccupancyBit(Chunk, VoxIndex, s32(IsFilled));
-        Chunk->Voxels[VoxIndex].Color = PackHSVColor(RGBColor)*u8(IsFilled);
+        Chunk->Voxels[VoxIndex].Color = PackV3_16b(RGBColor)*u8(IsFilled);
         ChunkSum += IsFilled;
       }
     }
