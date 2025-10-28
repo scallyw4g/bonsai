@@ -1477,6 +1477,7 @@ poof(
       Assert(SrcChunkDim == V3i(64, 66, 66));
 
       vert_t.name VertexData[VERTS_PER_FACE];
+      vert_t.name NormalData[VERTS_PER_FACE];
              matl Materials[VERTS_PER_FACE];
 
       s32 Result = 0;
@@ -1504,10 +1505,16 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&LeftFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
+
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             LeftFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_LeftFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
           while (RightFaces)
@@ -1516,9 +1523,14 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             RightFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_RightFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
           while (FrontFaces)
@@ -1527,9 +1539,14 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             FrontFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_FrontFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
           while (BackFaces)
@@ -1538,9 +1555,14 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             BackFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_BackFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
           while (TopFaces)
@@ -1549,9 +1571,14 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             TopFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_TopFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
           while (BotFaces)
@@ -1560,9 +1587,14 @@ poof(
             u32 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
             u16 HSVColor = Voxels[BaseVoxelOffset+xOffset].Color;
+
+            u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
+            v3 Normal    = UnpackV3_15b(PNormal);
+            FillArray(Normal, NormalData, VERTS_PER_FACE);
+
             BottomFaceVertexData( VertexOffset+P, Dim, VertexData);
             FillArray(VertexMaterial(HSVColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
-            BufferFaceData(Dest, VertexData, (vert_t.name)_BottomFaceNormalData, Materials);
+            BufferFaceData(Dest, VertexData, NormalData, Materials);
           }
 
 
@@ -4766,41 +4798,56 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
 
           u32 ThisNoiseV = NoiseValues[NoiseIndex];
           u64 NoiseChoice = (ThisNoiseV >> 30);
-          Assert(NoiseChoice == 1 || NoiseChoice == 0);
-          ChunkSum += u32(NoiseChoice);
-
-          u16 FifteenBits = (1<<5)-1;
-          u16 NoiseColor  = u16(ThisNoiseV) & FifteenBits;
-          u16 PackedNormal = u16(ThisNoiseV>>15) & FifteenBits;
-
-          u32 FiveBits = (1<<5)-1;
-          u32 R = (ThisNoiseV >> 10) & FiveBits;
-          u32 G = (ThisNoiseV >>  5) & FiveBits;
-          u32 B = (ThisNoiseV >>  0) & FiveBits;
-
-          NoiseColor = RGBtoPackedHSV(V3(
-                f32(R)/f32(FiveBits),
-                f32(G)/f32(FiveBits),
-                f32(B)/f32(FiveBits)
-              ));
-
-          Assert(xChunk < 64);
-          Mask |= (NoiseChoice << xChunk);
-
-          /* s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim); */
-          /* if (NormalIndex > -1) */
-          /* { */
-          /*   Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex])); */
-          /* } */
-
-          Chunk->Voxels[ChunkIndex].Color = NoiseColor*u16(NoiseChoice);
-          Chunk->Voxels[ChunkIndex].Normal = PackedNormal*u16(NoiseChoice);
-          /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
-          if (GetEngineDebug()->MarkChunkBorderVoxels)
+          /* if (NoiseChoice == 1) */
           {
-            if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
-            if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); }
-            if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); }
+            Assert(NoiseChoice == 1 || NoiseChoice == 0);
+            ChunkSum += u32(NoiseChoice);
+
+            u16 FifteenBits = (1<<15)-1;
+            u16 NoiseColor  = u16(ThisNoiseV) & FifteenBits;
+            u16 PackedNormal = u16(ThisNoiseV>>15) & FifteenBits;
+
+            /* Info("Color(%3d) Normal(%3d)", s32(NoiseColor), s32(PackedNormal)); */
+
+            /* u32 X = (PackedNormal >> 10) & FiveBits; */
+            /* u32 Y = (PackedNormal >>  5) & FiveBits; */
+            /* u32 Z = (PackedNormal >>  0) & FiveBits; */
+
+            /* PackedNormal = RGBtoPackedHSV(V3( */
+            /*       f32(X)/f32(FiveBits), */
+            /*       f32(Y)/f32(FiveBits), */
+            /*       f32(B)/f32(FiveBits) */
+            /*     )); */
+
+            u32 FiveBits = (1<<5)-1;
+            u32 R = (NoiseColor >> 10) & FiveBits;
+            u32 G = (NoiseColor >>  5) & FiveBits;
+            u32 B = (NoiseColor >>  0) & FiveBits;
+
+            NoiseColor = RGBtoPackedHSV(V3(
+                  f32(R)/f32(FiveBits),
+                  f32(G)/f32(FiveBits),
+                  f32(B)/f32(FiveBits)
+                ));
+
+            Assert(xChunk < 64);
+            Mask |= (NoiseChoice << xChunk);
+
+            /* s32 NormalIndex = TryGetIndex(ChunkP-V3i(0,1,1), NormalsDim); */
+            /* if (NormalIndex > -1) */
+            /* { */
+            /*   Chunk->Voxels[ChunkIndex].Color = RGBtoPackedHSV(Abs(Normals[NormalIndex])); */
+            /* } */
+
+            Chunk->Voxels[ChunkIndex].Color = NoiseColor*u16(NoiseChoice);
+            Chunk->Voxels[ChunkIndex].Normal = PackedNormal*u16(NoiseChoice);
+            /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
+            if (GetEngineDebug()->MarkChunkBorderVoxels)
+            {
+              if (xChunk == 0) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_RED)*u16(NoiseChoice); }
+              if (yChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_PINK)*u16(NoiseChoice); }
+              if (zChunk == 1) { Chunk->Voxels[ChunkIndex].Color = PackHSVColor(HSV_BLUE)*u16(NoiseChoice); }
+            }
           }
         }
 

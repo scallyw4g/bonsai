@@ -20,8 +20,10 @@ void main()
 
   v3 Normal = abs(ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, 1.f));
 
+  /* uint PackedNormal = PackRGB(Normalize(V3(1,1,1))); */
   uint PackedNormal = PackRGB(Normal);
   uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = PackedNormal; */
 
   Output = (SolidBit << 30) | (PackedNormal << 15) | PackedColor;
 }

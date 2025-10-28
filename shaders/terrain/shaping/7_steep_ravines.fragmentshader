@@ -39,18 +39,26 @@ void main()
     v3 warp = v3(0.f);
 
     {
+      v3 xyz = Basis / (15000.f);
+      /* v3 N = voronoi_noise(xyz+warp); */
+      v4 N = gradient_noise_derivs(xyz+warp);
+      NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f;
+      /* NoiseValue += N.x * 20000.f; */
+    }
+
+    {
       v3 xyz = Basis / (Period);
-      v4 gn = gradient_noise_derivs(xyz+warp);
-      NoiseValue += RemapSample((gn.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude;
+      v4 N = gradient_noise_derivs(xyz+warp);
+      NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude;
     }
 
     for (s32 Octave = 2; Octave <= Octaves; ++Octave)
     {
       v3 xyz = Basis / (Period/Octave);
-      v4 gn = gradient_noise_derivs(xyz+warp);
+      v4 N = gradient_noise_derivs(xyz+warp);
 
-      NoiseValue += ((gn.x+1.f)/2.f) * Amplitude/Octave;
-      /* NoiseValue += RemapSample((gn.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); */
+      NoiseValue += ((N.x+1.f)/2.f) * Amplitude/Octave;
+      /* NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); */
     }
 
     v3 Up = V3(0, 0, 1);

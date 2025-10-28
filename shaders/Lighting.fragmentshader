@@ -397,6 +397,9 @@ void main()
   }
 
   out_LightColor = V4(TotalLight + TransparencyContrib, 1.f);
+
+  /* out_LightColor = V4(FragNormal, 1.f); */
+
   /* out_LightColor = V4(Emission, 0.f, 0.f, 1.f); */
   /* return; */
 
