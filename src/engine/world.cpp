@@ -928,8 +928,11 @@ DrawOctreeRecursive( engine_resources *Engine,
 
             if (HasGpuMesh(&Chunk->Mesh))
             {
-              Push(MainDrawList, Chunk);
-              Push(ShadowMapDrawList, Chunk);
+              if (IsInFrustum( World, Camera, Chunk ))
+              {
+                Push(MainDrawList, Chunk);
+                Push(ShadowMapDrawList, Chunk);
+              }
             }
           }
         }
@@ -959,8 +962,11 @@ DrawOctreeRecursive( engine_resources *Engine,
 
           if (HasGpuMesh(&Chunk->Mesh))
           {
-            Push(MainDrawList, Chunk);
-            Push(ShadowMapDrawList, Chunk);
+            if (IsInFrustum( World, Camera, Chunk ))
+            {
+              Push(MainDrawList, Chunk);
+              Push(ShadowMapDrawList, Chunk);
+            }
           }
         }
       }

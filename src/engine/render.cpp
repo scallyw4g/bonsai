@@ -864,6 +864,8 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
 link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
 {
+  TIMED_FUNCTION();
+
   AssertNoGlErrors;
   GetGL()->EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
   GetGL()->EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
@@ -1147,6 +1149,8 @@ DrawLod( engine_resources *Engine,
          Quaternion Rotation,
          v3 Scale )
 {
+  TIMED_FUNCTION();
+
   UNPACK_ENGINE_RESOURCES(Engine);
 
   AssertNoGlErrors;
