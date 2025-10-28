@@ -23,6 +23,5 @@ void main()
   uint PackedNormal = PackRGB(Normal);
   uint PackedColor = PackRGB(ColorValue);
 
-  /* Output = (SolidBit << 15) | PackedNormal; */
-  Output = (SolidBit << 15) | PackedColor;
+  Output = (SolidBit << 30) | (PackedNormal << 15) | PackedColor;
 }

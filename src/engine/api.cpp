@@ -633,7 +633,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       auto Node = Job->DestNode;
       auto Chunk = Node->Chunk;
 
-      u16 *NoiseValues = Job->NoiseData;
+      u32 *NoiseValues = Job->NoiseData;
       v3i  NoiseDim    = Job->NoiseDim;
       Assert(NoiseValues);
       Assert(Chunk);

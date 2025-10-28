@@ -8,6 +8,8 @@ IsValid(texture_storage_format Value)
         case TextureStorageFormat_Undefined:
     case TextureStorageFormat_R16I:
     case TextureStorageFormat_R16F:
+    case TextureStorageFormat_R32I:
+    case TextureStorageFormat_R32UI:
     case TextureStorageFormat_R32F:
     case TextureStorageFormat_RG16F:
     case TextureStorageFormat_RG32F:
@@ -38,6 +40,8 @@ ToStringPrefixless(texture_storage_format Type)
         case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
     case TextureStorageFormat_R16I: { Result = CSz("R16I"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("R16F"); } break;
+    case TextureStorageFormat_R32I: { Result = CSz("R32I"); } break;
+    case TextureStorageFormat_R32UI: { Result = CSz("R32UI"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("R32F"); } break;
     case TextureStorageFormat_RG16F: { Result = CSz("RG16F"); } break;
     case TextureStorageFormat_RG32F: { Result = CSz("RG32F"); } break;
@@ -66,6 +70,8 @@ ToString(texture_storage_format Type)
         case TextureStorageFormat_Undefined: { Result = CSz("TextureStorageFormat_Undefined"); } break;
     case TextureStorageFormat_R16I: { Result = CSz("TextureStorageFormat_R16I"); } break;
     case TextureStorageFormat_R16F: { Result = CSz("TextureStorageFormat_R16F"); } break;
+    case TextureStorageFormat_R32I: { Result = CSz("TextureStorageFormat_R32I"); } break;
+    case TextureStorageFormat_R32UI: { Result = CSz("TextureStorageFormat_R32UI"); } break;
     case TextureStorageFormat_R32F: { Result = CSz("TextureStorageFormat_R32F"); } break;
     case TextureStorageFormat_RG16F: { Result = CSz("TextureStorageFormat_RG16F"); } break;
     case TextureStorageFormat_RG32F: { Result = CSz("TextureStorageFormat_RG32F"); } break;
@@ -91,6 +97,8 @@ TextureStorageFormat(counted_string S)
     if (StringsMatch(S, CSz("TextureStorageFormat_Undefined"))) { return TextureStorageFormat_Undefined; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R16I"))) { return TextureStorageFormat_R16I; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R16F"))) { return TextureStorageFormat_R16F; }
+  if (StringsMatch(S, CSz("TextureStorageFormat_R32I"))) { return TextureStorageFormat_R32I; }
+  if (StringsMatch(S, CSz("TextureStorageFormat_R32UI"))) { return TextureStorageFormat_R32UI; }
   if (StringsMatch(S, CSz("TextureStorageFormat_R32F"))) { return TextureStorageFormat_R32F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_RG16F"))) { return TextureStorageFormat_RG16F; }
   if (StringsMatch(S, CSz("TextureStorageFormat_RG32F"))) { return TextureStorageFormat_RG32F; }

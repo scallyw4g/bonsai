@@ -617,7 +617,7 @@ DrainRenderQueue(engine_resources *Engine)
             v3i NoiseDim = V3i(66);
 
             s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
-            s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u16));
+            s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
@@ -629,7 +629,7 @@ DrainRenderQueue(engine_resources *Engine)
               GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
               GetGL()->BufferData(GL_PIXEL_PACK_BUFFER, NoiseByteCount, 0, GL_STREAM_READ);
               AssertNoGlErrors;
-              GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+              GetGL()->ReadPixels(0, 0, CurrentAccumulationTexture->Dim.x, CurrentAccumulationTexture->Dim.y, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
               AssertNoGlErrors;
               GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
@@ -839,7 +839,7 @@ DrainRenderQueue(engine_resources *Engine)
           /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
           GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
           AssertNoGlErrors;
-          u16 *NoiseValues = Cast(u16*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+          u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
           AssertNoGlErrors;
 
           auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));

@@ -198,7 +198,7 @@ GatherVoxelsOverlappingArea(world *World, rect3i SimSpaceAABB, world_chunk_ptr_b
 
   u32 TotalVoxels = (u32)TotalVoxels_signed;
 
-  voxel UnsetVoxel = { 0xff, 0xffff };
+  voxel UnsetVoxel = { 0xff, 0xffff, 0xffff };
   for (u32 VoxelIndex = 0; VoxelIndex < TotalVoxels; ++VoxelIndex) { Voxels[VoxelIndex] = UnsetVoxel; }
 
   v3i SimSpaceQueryMinP = SimSpaceAABB.Min;

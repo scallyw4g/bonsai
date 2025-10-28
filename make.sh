@@ -328,8 +328,8 @@ function RunPoof
   # [ -d src/generated ] && rm -Rf src/generated
   # [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper -o ./ src/poof_ctags_stub.cpp && echo -e "$Success poofed src/poof_ctags_stub.cpp" &
-  TrackPid "" $!
+  # RunPoofHelper -o ./ src/poof_ctags_stub.cpp && echo -e "$Success poofed src/poof_ctags_stub.cpp" &
+  # TrackPid "" $!
 
   # RunPoofHelper -o generated examples/ui_test/game.cpp && echo -e "$Success poofed examples/ui_test/game.cpp" &
   # TrackPid "" $!

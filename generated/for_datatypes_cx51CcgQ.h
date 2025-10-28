@@ -682,6 +682,7 @@
 
 
 
+
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {

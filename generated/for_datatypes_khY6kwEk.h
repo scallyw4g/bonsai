@@ -682,6 +682,7 @@
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 

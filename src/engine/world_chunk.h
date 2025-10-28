@@ -114,6 +114,7 @@ struct voxel
 {
   u8 Transparency;
   u16 Color;
+  u16 Normal;
 };
 
 struct voxel_lighting

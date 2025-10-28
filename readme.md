@@ -117,6 +117,8 @@ https://discord.gg/kmRpgXBh75
 -------------------------------------------------------------------------------
 ## Renderer
 
+[ ] HRC : https://github.com/entropylost/amitabha
+
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
 [ ] Screen-space lines : https://mattdesl.svbtle.com/drawing-lines-is-hard

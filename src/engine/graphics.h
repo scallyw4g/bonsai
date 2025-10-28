@@ -235,7 +235,7 @@ struct graphics
   terrain_derivs_render_context      TerrainDerivsRC;
   terrain_finalize_render_context    TerrainFinalizeRC;
 
-  world_edit_render_context       WorldEditRC;
+  world_edit_render_context          WorldEditRC;
 
   // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3
   // step process going on.  First, the job is dispatched (copy values into PBO)

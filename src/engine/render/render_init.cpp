@@ -787,8 +787,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
       u32 Channels = 1;
       u32 Slices = 1;
       // @shared_terrain_texture
-      TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R16I, Channels, Slices, False);
-      GetGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+      TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R32UI, Channels, Slices, False);
+      GetGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
       AssertNoGlErrors;
       GetGL()->BindTexture(GL_TEXTURE_2D, 0);
     }

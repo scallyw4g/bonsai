@@ -152,5 +152,6 @@ void main()
   /* FinalColor.xyz = vec3(abs(CorrectedPos.w)); */
 #endif
 
+  /* gColor = v4(abs(vertexN_worldspace),1.f); */
   gColor = FinalColor;
 }

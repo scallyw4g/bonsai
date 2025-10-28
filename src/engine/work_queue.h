@@ -64,7 +64,7 @@ struct work_queue_entry_finalize_noise_values
 {
   gpu_readback_buffer PBOBuf;
 
-  u16 *NoiseData;
+  u32 *NoiseData;
   v3i  NoiseDim;
 
   octree_node *DestNode;

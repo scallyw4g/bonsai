@@ -47,9 +47,18 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
 
 
 
+                            Result &= Serialize(Bytes, &Element->Normal); // default
+
+
+
+
+
+
 
 
             
+
+        
 
         
 
@@ -90,9 +99,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory
 
 
 
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->Normal, Memory);
+
+
+
+
+
 
 
     
+  
   
 
 

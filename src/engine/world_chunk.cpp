@@ -3732,7 +3732,7 @@ WorkQueueEntryBuildWorldChunkMesh(world_chunk *SynChunk, octree_node *DestNode)
 }
 
 link_internal work_queue_entry_finalize_noise_values
-WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u16 *NoiseData, v3i NoiseDim, octree_node *Chunk)
+WorkQueueEntryFinalizeNoiseValues(gpu_readback_buffer PBOBuf, u32 *NoiseData, v3i NoiseDim, octree_node *Chunk)
 {
   work_queue_entry_finalize_noise_values Result = { PBOBuf, NoiseData, NoiseDim, Chunk };
   return Result;
@@ -4743,7 +4743,7 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
 #endif // BONSAI_DEBUG_SYSTEM_API
 
 link_internal u32
-FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin)
+FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u32 *NoiseValues, v3i SrcToDest, s64 zMin)
 {
   TIMED_FUNCTION();
   u32 ChunkSum = 0;
@@ -4764,12 +4764,14 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
           s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
 
-          u16 ThisNoiseV = NoiseValues[NoiseIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 15);
+          u32 ThisNoiseV = NoiseValues[NoiseIndex];
+          u64 NoiseChoice = (ThisNoiseV >> 30);
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           ChunkSum += u32(NoiseChoice);
 
-          u16 NoiseColor  = ThisNoiseV & ((1 << 15) -1);
+          u16 FifteenBits = (1<<5)-1;
+          u16 NoiseColor  = u16(ThisNoiseV) & FifteenBits;
+          u16 PackedNormal = u16(ThisNoiseV>>15) & FifteenBits;
 
           u32 FiveBits = (1<<5)-1;
           u32 R = (ThisNoiseV >> 10) & FiveBits;
@@ -4792,6 +4794,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           /* } */
 
           Chunk->Voxels[ChunkIndex].Color = NoiseColor*u16(NoiseChoice);
+          Chunk->Voxels[ChunkIndex].Normal = PackedNormal*u16(NoiseChoice);
           /* Chunk->Voxels[ChunkIndex].Color = u16(RandomU32(&DEBUG_ENTROPY)); */
           if (GetEngineDebug()->MarkChunkBorderVoxels)
           {
@@ -4828,8 +4831,8 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           v3i BorderP = V3i(0, yNoise, zNoise);
           s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
-          u16 ThisNoiseV = NoiseValues[BorderIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 15);
+          u32 ThisNoiseV = NoiseValues[BorderIndex];
+          u64 NoiseChoice = (ThisNoiseV >> 30);
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           u64 Bit = NoiseChoice << (yNoise-1);
           x0Bits |= Bit;
@@ -4839,8 +4842,8 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
           v3i BorderP = V3i(65, yNoise, zNoise);
           s32 BorderIndex = GetIndex(BorderP, NoiseDim);
 
-          u16 ThisNoiseV = NoiseValues[BorderIndex];
-          u64 NoiseChoice = (ThisNoiseV >> 15);
+          u32 ThisNoiseV = NoiseValues[BorderIndex];
+          u64 NoiseChoice = (ThisNoiseV >> 30);
           Assert(NoiseChoice == 1 || NoiseChoice == 0);
           u64 Bit = NoiseChoice << (yNoise-1);
           x1Bits |= Bit;

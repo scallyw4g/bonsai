@@ -779,9 +779,10 @@ WorldEdit_shape_chunk_data_Default(apply_world_edit_params *Params, v3 SimOrigin
 {
   UNPACK_APPLY_WORLD_EDIT_PARAMS(Params);
 
-  voxel InvertV = { Params->Transparency, Params->Color };
+  NotImplemented;
 
 #if 0
+  voxel InvertV = { Params->Transparency, Params->Color, 0xffff };
   switch (Mode)
   {
     case WorldEdit_Mode_Disabled: {} break;

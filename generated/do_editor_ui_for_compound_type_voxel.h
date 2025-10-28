@@ -80,6 +80,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, u32 
                 PushNewRow(Ui);
 
       }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Normal");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u16*, &Element->Normal),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
