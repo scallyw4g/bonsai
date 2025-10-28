@@ -1,4 +1,5 @@
 uniform sampler2D InputTex;
+uniform v3 ChunkResolution;
 
 in vec2 UV;
 out uint Output;
@@ -12,7 +13,16 @@ void main()
   v3  ColorValue = TexLookup.rgb;
 
   uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+
+
+  ivec2 InputTexDim = ivec2(66);
+  ivec2 OutputTexDim = ivec2(66);
+
+  v3 Normal = abs(ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, 1.f));
+
+  uint PackedNormal = PackRGB(Normal);
   uint PackedColor = PackRGB(ColorValue);
 
+  /* Output = (SolidBit << 15) | PackedNormal; */
   Output = (SolidBit << 15) | PackedColor;
 }

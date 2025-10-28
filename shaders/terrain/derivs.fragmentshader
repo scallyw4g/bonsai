@@ -1,4 +1,3 @@
-uniform v3 WorldspaceChunkBasis;
 uniform v3 ChunkResolution;
 
 uniform sampler2D InputTex;
@@ -9,43 +8,8 @@ out vec3 Output;
 
 void main()
 {
-  s32 x = s32(floor(gl_FragCoord.x));
-  s32 z = s32(floor(gl_FragCoord.y / 66));
-  s32 y = s32(floor(gl_FragCoord.y - (z*66)));
+  ivec2 InputTexDim = ivec2(68);
+  ivec2 OutputTexDim = ivec2(66);
 
-  ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
-  f32 CurrentNoiseValue = texelFetch(InputTex, InputTexCoord, 0).a;
-
-  v3 Normal = v3(0.f);
-
-  /* if (x == 0 || x == 65) { Output = V3(1,0,0); return; } */
-  /* if (y == 0 || y == 65) { Output = V3(1,1,0); return; } */
-  /* if (z == 0 || z == 65) { Output = V3(1,0,1); return; } */
-
-  /* if (x == 60 || y == 60 || z == 60) { Output = Normalize(V3(1,0,0)); return; } */
-
-  for ( s32 dz = -1; dz < 2; ++ dz)
-  for ( s32 dy = -1; dy < 2; ++ dy)
-  for ( s32 dx = -1; dx < 2; ++ dx)
-  {
-    if (dz == 0 && dy == 0 && dx == 0) continue; // Skip the middle-most voxel
-
-      s32 xCoord = InputTexCoord.x + dx;
-      s32 yCoord = InputTexCoord.y + dy;
-      s32 zCoord =                       dz * 68;
-
-      f32 Next = texelFetch(InputTex, ivec2(xCoord, yCoord+zCoord), 0).a;
-      f32 Diff = Next-(dz*ChunkResolution.z) - Truncate(CurrentNoiseValue);
-      // NOTE(Jesse): Can't do this because we end up with complete nonsense on
-      // the edges for some unknown reason
-      /* if (Diff > 0) */
-
-      // TODO(Jesse): Recompute with a small random variance to the weight if this is 0?
-      // EDIT(Jesse): Why exactly would we do this?? Sounds like a bad idea.. ?
-      Normal += V3(dx,dy,dz)*Diff;
-  }
-
-  // Invert because we accumulate the value by pointing 'at' the cell we're checking
-  //
-  Output = -1.f * Normalize(Normal);
+  Output = ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, ChunkResolution.z);
 }

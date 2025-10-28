@@ -1461,13 +1461,13 @@ poof(
                                                                 v3i  SrcChunkMin,
                                                                 v3i  SrcChunkMax,
 
-                                                    // TODO(Jesse)(immediate, poof): @poof_parens_bug
-                                                    (buffer_t.name) *Dest,
-                                                    (buffer_t.name) *Unused,
+                                                                // TODO(Jesse)(immediate, poof): @poof_parens_bug
+                                                                (buffer_t.name) *Dest,
+                                                                (buffer_t.name) *Unused,
 
-                                                        // NOTE(Jesse): This is so we can offset vertices such that we center
-                                                        // entity models about 0 and rotation works properly.
-                                                        vert_t.name  VertexOffset = {})
+                                                                // NOTE(Jesse): This is so we can offset vertices such that we center
+                                                                // entity models about 0 and rotation works properly.
+                                                                vert_t.name  VertexOffset = {})
     {
       /* HISTOGRAM_FUNCTION(); */
       TIMED_FUNCTION();
@@ -3606,7 +3606,15 @@ BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_ch
 
 #if 1
 link_internal void
-RebuildWorldChunkMesh(thread_local_state *Thread, world_chunk *Chunk, v3i MinOffset, v3i MaxOffset, world_chunk_mesh_bitfield MeshBit, geo_u3d *Dest, memory_arena *TempMem, v3 VertexOffset = {})
+RebuildWorldChunkMesh(
+    thread_local_state *Thread,
+    world_chunk *Chunk,
+    v3i MinOffset,
+    v3i MaxOffset,
+    world_chunk_mesh_bitfield MeshBit,
+    geo_u3d *Dest,
+    memory_arena *TempMem,
+    v3 VertexOffset = {})
 {
   /* HISTOGRAM_FUNCTION(); */
   TIMED_FUNCTION();

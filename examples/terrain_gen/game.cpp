@@ -62,13 +62,6 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
        EasingFunction,
        0);
 
-  /* InitializeEasingFunctionVisualizerRenderPass_Async( */
-  /*      RenderQ, */
-  /*     &GameState->EasingFunctionVisRP, */
-  /*      /1* EasingFunction->Points.Start, *1/ */
-  /*     /1* &EasingFunction->Points.At, *1/ */
-  /*      0); */
-
   SpawnEntity(CameraGhost);
   return GameState;
 }
@@ -138,7 +131,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       {
         if (FileNode->Type == FileTraversalType_File)
         {
-          b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
+          b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename, FileNode->Name);
           if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
           {
             // Force engine to reload new shader

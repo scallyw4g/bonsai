@@ -233,8 +233,8 @@ struct graphics
   terrain_shaping_render_context     TerrainShapingRC;
   terrain_decoration_render_context  TerrainDecorationRC;
   terrain_derivs_render_context      TerrainDerivsRC;
+  terrain_finalize_render_context    TerrainFinalizeRC;
 
-  terrain_finalize_render_context TerrainFinalizeRC;
   world_edit_render_context       WorldEditRC;
 
   // NOTE(Jesse): The array NoiseReadbackJobs stores the PBOs, but there's a 3

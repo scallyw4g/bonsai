@@ -91,11 +91,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
   });
 
 
-  if ( VRChanged                                                  ||
-       Resources->Graphics.WorldEditRC.Program.HotReloaded        ||
-       Resources->Graphics.TerrainShapingRC.Program.HotReloaded   ||
-       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded    ||
-       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded )
+  if ( VRChanged                                                   ||
+       Resources->Graphics.WorldEditRC.Program.HotReloaded         ||
+       Resources->Graphics.TerrainShapingRC.Program.HotReloaded    ||
+       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded ||
+       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded     ||
+       Resources->Graphics.TerrainFinalizeRC.Program.HotReloaded    )
   {
     auto Plat = &Resources->Stdlib.Plat;
 
@@ -633,7 +634,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       auto Chunk = Node->Chunk;
 
       u16 *NoiseValues = Job->NoiseData;
-      v3i NoiseDim = Job->NoiseDim;
+      v3i  NoiseDim    = Job->NoiseDim;
       Assert(NoiseValues);
       Assert(Chunk);
 
@@ -652,7 +653,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
-        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy, SynChunk->xOccupancyBorder, SynChunk->FaceMasks, SynChunk->Voxels, SynChunk->Dim, {}, SynChunk->Dim);
+        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
+                                      SynChunk->xOccupancyBorder,
+                                      SynChunk->FaceMasks,
+                                      SynChunk->Voxels,
+                                      SynChunk->Dim,
+                                      {},
+                                      SynChunk->Dim);
 
         Assert(SynChunk->Dim.x == 64);
         Assert(SynChunk->Dim.y == 66);
