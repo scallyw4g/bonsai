@@ -1,7 +1,7 @@
 struct world_chunk;
 
 
-#define GLOBAL_RENDER_SCALE_FACTOR (1.00f)
+#define GLOBAL_RENDER_SCALE_FACTOR (0.001f)
 
 
 #define DEFAULT_LINE_THICKNESS (0.3f)

@@ -212,13 +212,12 @@ UpdateGameCamera( world *World,
 link_internal void
 StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
 {
-  Clear(Camera);
   *Camera = {};
 
   Camera->Blend = Blend;
 
   Camera->Frust.farClip = FarClip;
-  Camera->Frust.nearClip = 0.5f;
+  Camera->Frust.nearClip = 0.05f;
 
   // Someone already set FOV .. probably when deserializing stored runtime settings.
   if (Camera->Frust.FOV == 0.f)
@@ -313,12 +312,12 @@ ComputeCameraSpaceRayFromCursor(engine_resources *Engine, camera *Camera, v3i Wo
   if (Inverse(&Camera->ViewProjection.E[0][0], &InverseViewProjection.E[0][0]))
   {
     v3 MouseMinWorldP = Unproject( Plat->MouseP,
-                                   0.0f,
+                                   0.1f,
                                    Plat->ScreenDim,
                                   &InverseViewProjection);
 
     v3 MouseMaxWorldP = Unproject( Plat->MouseP,
-                                   1.0f,
+                                   0.5f,
                                    Plat->ScreenDim,
                                   &InverseViewProjection);
 

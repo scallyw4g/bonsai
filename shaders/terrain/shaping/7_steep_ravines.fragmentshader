@@ -27,9 +27,8 @@ void main()
     v3 Period = V3(800.f);
     float Amplitude = 800.f;
     /* f32 StartingZDepth = 10000; */
-    f32 StartingZDepth = 1000;
+    f32 StartingZDepth = 15000;
     /* f32 StartingZDepth = 0; */
-    s32 Octaves = 2;
     NoiseValue = StartingZDepth;
 
     v3 Deriv = v3(0.f);
@@ -39,27 +38,39 @@ void main()
     v3 warp = v3(0.f);
 
     {
-      v3 xyz = Basis / (15000.f);
+      v3 xyz = Basis / (12000.f);
       /* v3 N = voronoi_noise(xyz+warp); */
-      v4 N = gradient_noise_derivs(xyz+warp);
-      NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f;
-      /* NoiseValue += N.x * 20000.f; */
+      f32 Mask = (gradient_noise_derivs(Basis/20000.f).x+1.f)/2.f;
+          /* Mask = RemapSample(Mask, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
+      f32 N = ridge_noise(xyz+warp)*Mask;
+      /* NoiseValue += RemapSample((N+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f; */
+      NoiseValue += N * 20000.f;
     }
 
-    {
-      v3 xyz = Basis / (Period);
-      v4 N = gradient_noise_derivs(xyz+warp);
-      NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude;
-    }
+    /* { */
+    /*   v3 xyz = Basis / (15000.f); */
+    /*   /1* v3 N = voronoi_noise(xyz+warp); *1/ */
+    /*   v4 N = gradient_noise_derivs(xyz+warp); */
+    /*   NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f; */
+    /*   /1* NoiseValue += N.x * 20000.f; *1/ */
+    /* } */
 
-    for (s32 Octave = 2; Octave <= Octaves; ++Octave)
-    {
-      v3 xyz = Basis / (Period/Octave);
-      v4 N = gradient_noise_derivs(xyz+warp);
+    /* { */
+    /*   v3 xyz = Basis / (Period); */
+    /*   v4 N = gradient_noise_derivs(xyz+warp); */
+    /*   NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude; */
+    /* } */
 
-      NoiseValue += ((N.x+1.f)/2.f) * Amplitude/Octave;
-      /* NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); */
-    }
+    /* s32 Octaves = 4; */
+    /* f32 B = 0.f; */
+    /* for (s32 Octave = 1; Octave <= Octaves; ++Octave) */
+    /* { */
+    /*   v3 xyz = Basis / (Period/Octave); */
+    /*   f32 N = billow_noise(xyz+warp); */
+    /*   B = max(N, B); */
+    /*   /1* NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); *1/ */
+    /* } */
+    /* NoiseValue += B * Amplitude; */
 
     v3 Up = V3(0, 0, 1);
 

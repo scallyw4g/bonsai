@@ -1505,8 +1505,10 @@ poof(
             v3 P = V3(s32(xOffset), y, z);
 
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_LeftFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 
@@ -1528,7 +1530,8 @@ poof(
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_RightFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 
@@ -1550,7 +1553,8 @@ poof(
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_FrontFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 
@@ -1572,7 +1576,8 @@ poof(
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_BackFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 
@@ -1594,7 +1599,8 @@ poof(
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_TopFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 
@@ -1616,7 +1622,8 @@ poof(
             u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
-            v3 Normal    = Normalize(0.25f*v3_BottomFaceNormalData[0] + UnpackV3_15b(PNormal));
+            v3 Normal    = (UnpackV3_15b(PNormal));
+            /* Assert(Length(Normal) > 0.f); */
 
             Assert(BufferHasRoomFor(Dest, VERTS_PER_FACE));
 

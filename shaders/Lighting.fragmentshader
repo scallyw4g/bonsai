@@ -149,8 +149,8 @@ void main()
 
   /* Diffuse *= Emission; */
 
+  /* vec3 FragNormal = gColorTexel.rgb; */
   vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
-  /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
 
   vec3 ShadowVisibility = vec3(1.0f);
 

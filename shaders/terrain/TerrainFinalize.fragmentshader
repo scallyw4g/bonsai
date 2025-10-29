@@ -14,11 +14,11 @@ void main()
 
   uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
 
-
   ivec2 InputTexDim = ivec2(66);
   ivec2 OutputTexDim = ivec2(66);
 
-  v3 Normal = abs(ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, 1.f));
+  v3 Normal = ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, 1.f);
+  /* v3 Normal = Normalize(V3(1,1,0)); */
 
   /* uint PackedNormal = PackRGB(Normalize(V3(1,1,1))); */
   uint PackedNormal = PackRGB(Normal);
