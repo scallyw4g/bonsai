@@ -4813,7 +4813,6 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
   TIMED_FUNCTION();
   /* HISTOGRAM_FUNCTION(); */
   u32 ChunkSum = 0;
-  TIMED_NAMED_BLOCK(NoiseFinalize);
 
   {
     TIMED_NAMED_BLOCK(NoiseFinalize0);
@@ -4822,34 +4821,35 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
       for ( s32 yChunk = 0; yChunk < Chunk->Dim.y; ++ yChunk)
       {
         u64 Mask = 0;
+
+#pragma unroll(2)
         for ( s32 xChunk = 0; xChunk < Chunk->Dim.x; ++ xChunk)
         {
-          Assert(xChunk < 64);
+          /* Assert(xChunk < 64); */
 
-          v3i ChunkP = V3i(xChunk, yChunk, zChunk);
           v3i NoiseP = V3i(xChunk+1, yChunk, zChunk);
-
-          s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
           s32 NoiseIndex = GetIndex(NoiseP, NoiseDim);
 
           u32 ThisNoiseV = NoiseValues[NoiseIndex];
           u64 NoiseChoice = (ThisNoiseV >> 31);
-          Assert(NoiseChoice == 1 || NoiseChoice == 0);
+          /* Assert(NoiseChoice == 1 || NoiseChoice == 0); */
 
           if (NoiseChoice == 1)
           {
-            ChunkSum++;
-            Mask |= (1 << xChunk);
+            ChunkSum += NoiseChoice;
+            Mask |= (NoiseChoice << xChunk);
 
+            v3i ChunkP = V3i(xChunk, yChunk, zChunk);
+            s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
             u32 OccupancyBitMask = ~(1u << 31);
             Chunk->Voxels[ChunkIndex].Data = ThisNoiseV & OccupancyBitMask;
 
-            if (GetEngineDebug()->MarkChunkBorderVoxels)
-            {
-              if (xChunk == 0) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_RED)*u16(NoiseChoice); }
-              if (yChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_PINK)*u16(NoiseChoice); }
-              if (zChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_BLUE)*u16(NoiseChoice); }
-            }
+            /* if (GetEngineDebug()->MarkChunkBorderVoxels) */
+            /* { */
+            /*   if (xChunk == 0) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_RED)*u16(NoiseChoice); } */
+            /*   if (yChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_PINK)*u16(NoiseChoice); } */
+            /*   if (zChunk == 1) { Chunk->Voxels[ChunkIndex].RGBColor = PackV3_16b(RGB_BLUE)*u16(NoiseChoice); } */
+            /* } */
           }
         }
 
