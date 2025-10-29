@@ -159,32 +159,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
         
         
         
-        cs MemberName = CSz("InteractionStackTop");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u64*, &Element->InteractionStackTop),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("MouseP");
                                                                 DoEditorUi(Ui,
           Window,

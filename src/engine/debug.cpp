@@ -662,7 +662,7 @@ DoEngineDebug(engine_resources *Engine)
   if (ViewMode & EngineDebugViewMode_RenderSettings)
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    window_layout *RenderSettingsWindow = GetOrCreateWindow(Ui, "Graphics Settings", WindowLayoutFlag_Align_Right);
+    window_layout *RenderSettingsWindow = GetOrCreateWindow(Ui, "Graphics Settings", window_layout_flags(WindowLayoutFlag_Default | WindowLayoutFlag_Align_Right));
 
     render_settings *Settings = &Graphics->Settings;
     PushWindowStart(Ui, RenderSettingsWindow);
