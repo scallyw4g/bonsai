@@ -182,57 +182,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         
         
-        cs MemberName = CSz("FogPower");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->FogPower),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("FogColor");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->FogColor),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("SkyColor");
                                                                 DoEditorUi(Ui,
           Window,

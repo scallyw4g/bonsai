@@ -61,6 +61,20 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
 
 
+                            Result &= Serialize(Bytes, &Element->FogPower); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->FogColor); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->DawnIntensity); // default
 
 
@@ -161,6 +175,10 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
 
         
 
+        
+
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -209,6 +227,22 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SunP, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->FogPower, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->FogColor, Memory);
 
 
 
@@ -297,6 +331,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
     
+  
+  
   
   
   

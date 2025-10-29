@@ -7,181 +7,13 @@ uniform sampler2D InputTex;
 in vec2 UV;
 out v4 Output;
 
-v4 DoCliffs(v3 Basis, v3 Deriv)
-{
-  v3 Down = V3(0, 0, -1);
-
-  v3 ColorValue = V3(0.f);
-  f32 NoiseValue = 0.f;
-
-  /* NoiseValue = 100.f+MapNoiseValueToFinal(NoiseValue); */
-
-  /* Deriv = normalize(Deriv); */
-  /* Deriv.xy = abs(Deriv.xy); */
-  f32 Cliffness = Clamp01(0.8f+dot(Down, Deriv));
-  f32 Grassness = Clamp01(.15f-Cliffness);
-
-  ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness);
-  /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
-  /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
-
-  // Grassy ripples
-#if 0
-  {
-    v4 gWobble = gradient_noise_derivs(Basis/v3(30, 30, 80));
-    NoiseValue += gWobble.x*Grassness*50;
-    ColorValue += V3(0.f, 1.f, 0.f)*gWobble.x*Grassness*1.5f;
-  }
-#endif
-
-
-  f32 rng2d = white_noise(Basis.xy);
-  f32 rng3d = white_noise(Basis);
-
-  v3 BaseCliffColor = V3(0.08f);
-  v3 CliffColor = BaseCliffColor;
-  f32 CliffValue = 0.f;
-
-  // Main cliffs
-  {
-    v3 v = voronoi_noise(Basis/v3(200,200,1800));
-    CliffValue += (v.x*100)*Cliffness;
-    CliffValue += (v.y*20)*Cliffness;
-    CliffColor = mix(CliffColor, BaseCliffColor, clamp(10.f*Cliffness*v.x,0,1));
-  }
-
-#if 0
-  {
-    v3 v = voronoi_noise(Basis/v3(100,100,600));
-    v.x += 0.5f;
-    v.x = v.x*v.x;
-
-    if (v.x > 0.28f)
-    {
-      CliffValue += (v.x*25)*Cliffness;
-      /* CliffValue += (v.y*10)*Cliffness; */
-      CliffColor = mix(CliffColor, v3(.7), Cliffness*v.x);
-    }
-  }
-  {
-    v3 v = voronoi_noise(Basis/v3(50,50,200));
-    v.x += 0.50f;
-    v.x = v.x * v.x;
-
-    if (v.x > 0.30)
-    {
-      /* CliffValue += (v.x)*Cliffness; */
-      CliffValue += (v.x*10)*pow(Cliffness,3);
-      CliffColor = mix(CliffColor, v3(.9), Cliffness*v.x*v.x);
-    }
-  }
-  {
-    CliffValue += rng3d * 0.1f;
-    CliffColor = mix(CliffColor, v3(1.f), rng3d*Cliffness*.2);
-  }
-#endif
-
-  /* if (CliffValue > 12.f) */
-  {
-    NoiseValue += CliffValue;
-    ColorValue = CliffColor;
-  }
-
-#if 0
-
-  f32 gravel_patch_stregth  = value_noise_derivs(150+(Basis/300)).x;
-      gravel_patch_stregth += value_noise_derivs(150+(Basis/160)).x;
-      gravel_patch_stregth += value_noise_derivs(150+(Basis/80)).x;
-      gravel_patch_stregth += value_noise_derivs(150+(Basis/40)).x;
-      gravel_patch_stregth += value_noise_derivs(150+(Basis/20)).x;
-      gravel_patch_stregth += value_noise_derivs(150+(Basis/8)).x;
-      gravel_patch_stregth = max(gravel_patch_stregth, 0.f);
-
-
-  // Grass & Flowers
-#if 0
-  {
-    f32 n = clamp(rng2d-0.7f, 0.f, 1.f);
-
-    f32 GrassValue = 90*n*Grassness;
-
-    f32 tFlower = Basis.z - (GrassValue + NoiseValue);
-        tFlower = max(tFlower, 0);
-
-
-  f32 grass_patch_stregth  = value_noise_derivs(Basis/80).x;
-      grass_patch_stregth += value_noise_derivs(Basis/40).x;
-      grass_patch_stregth += value_noise_derivs(Basis/20).x;
-      grass_patch_stregth += value_noise_derivs(Basis/8).x;
-      grass_patch_stregth = max(grass_patch_stregth-gravel_patch_stregth, 0.f);
-
-    NoiseValue += GrassValue*grass_patch_stregth;
-
-    f32 tColor = (grass_patch_stregth / 2.f)*Grassness;
-    ColorValue = mix(ColorValue, V3(.6f, .8f, .1f), tColor);
-
-    /* if (rng2d > 0.99f) */
-    /* { */
-    /*   ColorValue = mix(ColorValue, V3(.5f, .5f, .5f), tFlower); */
-    /* } */
-    /* if (rng2d > 0.995f) */
-    /* { */
-    /*   ColorValue = mix(ColorValue, V3(.5f, .2f, .5f), tFlower); */
-    /* } */
-
-
-    /* ColorValue *= tFlower; */
-
-    /* ColorValue = V3(tFlower); */
-    /* ColorValue = V3(GrassValue/1.f); */
-  }
-#endif
-
-  // Rocky edges
-  /* { */
-  /*   f32 MinDotValue = 0.6f; */
-  /*   v3 v = voronoi_noise(Basis/v3(20,20,20)); */
-  /*   f32 Power = 100*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0)); */
-  /*   if (v.x*Power > 3.f) */
-  /*   { */
-  /*     NoiseValue += v.x*Power; */
-  /*     ColorValue = v3(1.0); */
-  /*   } */
-  /* } */
-  /* { */
-  /*   f32 MinDotValue = 0.4f; */
-  /*   v3 v = voronoi_noise(Basis/v3(10,10,10)); */
-  /*   f32 Power = 400*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0)); */
-  /*   NoiseValue += v.x*Power; */
-  /*   /1* NoiseValue -= ((1.f/v.x)*2)*Power; *1/ */
-  /*   ColorValue = mix(ColorValue, v3(1.0), Power/3*v.x); */
-  /* } */
-
-#endif
-
-  /* ColorValue = V3(Grassness, Cliffness, 0.f); */
-  /* ColorValue = V3(Cliffness); */
-
-  return V4(ColorValue, NoiseValue);
-}
-
-v4 DoCliffs_v2(v3 Basis, v3 Deriv, v3 InputColor)
+v4 DoCliffs(v3 Basis, v3 Deriv, v3 InputColor)
 {
   v3 Up = V3(0, 0, 1);
   v3 Down = V3(0, 0, -1);
 
-  /* Deriv = normalize(Deriv); */
-  /* Deriv.xy = abs(Deriv.xy); */
   f32 Cliffness = Clamp01(-dot(Up, Deriv) + 0.6f);
   f32 Grassness = Clamp01(.15f-Cliffness);
-
-  /* ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness); */
-  /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
-  /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
-  /* ColorValue = V3(Cliffness); */
-
-  /* f32 rng2d = white_noise(Basis.xy); */
-  /* f32 rng3d = white_noise(Basis); */
 
   v3 BaseCliffColor = V3(0.08f);
   v3 CliffColor = BaseCliffColor;
@@ -198,7 +30,6 @@ v4 DoCliffs_v2(v3 Basis, v3 Deriv, v3 InputColor)
   }
   {
     v3 v = voronoi_noise(Basis/v3(50,50,100));
-    /* CliffValue += (v.y*80)*Cliffness; */
     CliffValue += (v.x*100)*Cliffness;
   }
 
@@ -256,16 +87,10 @@ void main()
     // Put random junk here
     f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
 
-    v4 Cliffs = DoCliffs_v2(Basis, Derivs, ColorValue);
+    v4 Cliffs = DoCliffs(Basis, Derivs, ColorValue);
+    ColorValue = Cliffs.rgb;
 
     f32 CliffContrib = exp((-Basis.z)/1300.f);
-    ColorValue = V3(CliffContrib);
-
-    /* Cliffs.w *= 10.f*CliffContrib; */
-    /* Cliffs.w *= CliffContrib; */
-    /* ColorValue = V3(0.1f, 0.8f, 0.1f); */
-
-    ColorValue = Cliffs.rgb;
     NoiseValue += Cliffs.w * CliffContrib;
   }
 

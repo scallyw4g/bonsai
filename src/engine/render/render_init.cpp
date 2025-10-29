@@ -543,9 +543,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   Result->PrevSettings = Result->Settings;
 
   Result->Exposure = 1.5f;
-  Result->FogPower = 2.f;
 
-  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
+
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
   AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
@@ -609,8 +608,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
                         &Result->Settings.Lighting.SunP,
                         &Result->Settings.Lighting.CurrentSunColor,
 
-                        &Result->FogColor,
-                        &Result->FogPower,
+                        &Result->Settings.Lighting.FogColor,
+                        &Result->Settings.Lighting.FogPower,
 
                         &Result->Settings.UseSsao,
                         &Result->Settings.UseShadowMapping,

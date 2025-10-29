@@ -1,0 +1,80 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.1f, 0.7f, 0.1f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(800.f);
+    float Amplitude = 800.f;
+    /* f32 StartingZDepth = 10000; */
+    f32 StartingZDepth = 50000;
+    /* f32 StartingZDepth = 0; */
+    NoiseValue = StartingZDepth;
+
+    v3 Deriv = v3(0.f);
+    /* f32 warp = 0.f; */
+
+    /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
+    v3 warp = v3(0.f);
+
+    f32 Mask;
+    {
+      v3 xyz = Basis / V3(100000.f, 100000.f, 1000000.f);
+      Mask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+    }
+
+    Mask = Mask*Mask*Mask * 3.f;
+#if 0
+    NoiseValue += Mask;
+#else
+    s32 Octaves = 9;
+    while (Octaves > 0)
+    {
+      v3 xyz = Basis / V3(18000.f, 18000.f, 50000.f) / Octaves;
+      /* v3 N = voronoi_noise(xyz+warp); */
+      /* f32 Mask = (gradient_noise_derivs(Basis/20000.f).x+1.f)/2.f; */
+          /* Mask = RemapSample(Mask, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
+      f32 N = Mask * (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+      /* f32 Remapped = RemapSample(N, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
+      /* NoiseValue += RemapSample(N, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f; */
+      /* NoiseValue += Remapped*Remapped * 20000.f; */
+      NoiseValue += N*N*N*N * (25000.f*Octaves);
+
+      --Octaves;
+    }
+#endif
+
+    NoiseValue -= Basis.z;
+    /* NoiseValue = StartingZDepth; */
+
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+
+  /* Output = (SolidBit << 15) | PackedColor; */
+}

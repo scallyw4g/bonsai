@@ -185,8 +185,6 @@ struct graphics
 
   v3 SunBasis;
 
-  r32 FogPower;
-  v3  FogColor;
   v3  SkyColor;
 
   // Default cameras, game code can do it's own thing if it wants to.

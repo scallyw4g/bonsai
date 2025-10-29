@@ -123,6 +123,47 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
         
         
         
+        cs MemberName = CSz("FogPower");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->FogPower),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FogColor");
+                                        PushColumn(Ui, CSz("FogColor")); DoColorPickerToggle(Ui, Window, &Element->FogColor, False, ThisHash);
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("DawnIntensity");
                                                                 DoEditorUi(Ui,
           Window,

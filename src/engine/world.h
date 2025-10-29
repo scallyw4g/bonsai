@@ -20,6 +20,10 @@ enum visible_region_size
   VisibleRegionSize_16k  = (1 << 14), // 104.8 km
   VisibleRegionSize_32k  = (1 << 15), // 209.6 km
   VisibleRegionSize_64k  = (1 << 16), // 419.2 km
+  VisibleRegionSize_128k  = (1 << 17), // 838.4 km
+  VisibleRegionSize_256k  = (1 << 18), // big
+  VisibleRegionSize_512k  = (1 << 19), // big
+  VisibleRegionSize_1024k  = (1 << 20), // big
 };
 
 enum octree_node_type

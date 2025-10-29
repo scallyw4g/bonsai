@@ -17,6 +17,9 @@ struct lighting_settings
 
   v3 SunP;       poof(@ui_skip)
 
+  r32 FogPower;
+  v3  FogColor; poof(@custom_ui(PushColumn(Ui, CSz("FogColor")); DoColorPickerToggle(Ui, Window, &Element->FogColor, False, ThisHash)))
+
   f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
   v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False, ThisHash)))
 
