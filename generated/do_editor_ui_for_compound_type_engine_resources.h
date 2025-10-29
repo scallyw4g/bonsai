@@ -34,6 +34,31 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
         
         
         
+        cs MemberName = CSz("ReadyToStartMainLoop");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->ReadyToStartMainLoop),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("Stdlib");
                                                                 DoEditorUi(Ui,
           Window,

@@ -201,6 +201,9 @@ struct work_queue_entry_async_function_call
   };
 };
 
+poof(string_and_value_tables(async_function_call_type))
+#include <generated/string_and_value_tables_lJfyCh3Y.h>
+
 
 
 poof(
@@ -230,6 +233,9 @@ poof(
   }
 )
 #include <generated/d_union_work_queue_entry.h>
+
+poof(string_and_value_tables(work_queue_entry_type))
+#include <generated/string_and_value_tables_ZQctkgyx.h>
 
 // nocheckin
 // TODO(Jesse): Turn this on

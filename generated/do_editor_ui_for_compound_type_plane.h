@@ -34,31 +34,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
         
         
         
-        cs MemberName = CSz("P");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->P),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("Normal");
                                                                 DoEditorUi(Ui,
           Window,
@@ -84,11 +59,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
         
         
         
-        cs MemberName = CSz("d");
+        cs MemberName = CSz("DistanceToOrigin");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(r32*, &Element->d),
+          Cast(f32*, &Element->DistanceToOrigin),
           MemberName,
           ThisHash,
           Params

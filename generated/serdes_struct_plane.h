@@ -33,21 +33,14 @@ Serialize(u8_cursor_block_array *Bytes, plane *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     plane *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->P); // default
+                                Result &= Serialize(Bytes, &Element->Normal); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Normal); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->d); // default
+                            Result &= Serialize(Bytes, &Element->DistanceToOrigin); // default
 
 
 
@@ -57,8 +50,6 @@ Serialize(u8_cursor_block_array *Bytes, plane *BaseElement, umm Count = 1)
 
 
             
-
-        
 
         
 
@@ -85,14 +76,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
   b32 Result = True;
               // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->P, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Normal, Memory);
 
 
@@ -101,7 +84,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->d, Memory);
+  Result &= Deserialize(Bytes, &Element->DistanceToOrigin, Memory);
 
 
 
@@ -110,7 +93,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
 
 
     
-  
   
 
 

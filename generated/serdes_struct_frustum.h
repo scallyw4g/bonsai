@@ -47,13 +47,6 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 
 
 
-                            Result &= Serialize(Bytes, &Element->width); // default
-
-
-
-
-
-
                             Result &= Serialize(Bytes, &Element->FOV); // default
 
 
@@ -68,7 +61,7 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 
 
 
-                            Result &= Serialize(Bytes, &Element->Bot); // default
+                            Result &= Serialize(Bytes, &Element->Bottom); // default
 
 
 
@@ -92,8 +85,6 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 
 
             
-
-        
 
         
 
@@ -146,14 +137,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->width, Memory);
-
-
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->FOV, Memory);
 
 
@@ -170,7 +153,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Bot, Memory);
+  Result &= Deserialize(Bytes, &Element->Bottom, Memory);
 
 
 
@@ -195,7 +178,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
     
-  
   
   
   

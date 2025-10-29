@@ -217,6 +217,9 @@ poof(
 )
 #include <generated/d_union_work_queue_entry__bonsai_render_command.h>
 
+poof(string_and_value_tables(work_queue_entry__bonsai_render_command_type))
+#include <generated/string_and_value_tables_oeasGVdN.h>
+
 poof(d_union_all_constructors(work_queue_entry__bonsai_render_command))
 #include <generated/d_union_all_constructors_work_queue_entry__bonsai_render_command.h>
 

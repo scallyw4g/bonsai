@@ -24,6 +24,9 @@ poof(serdes_cursor(v3))
 poof(serdes_struct(canonical_position))
 #include <generated/serdes_struct_canonical_position.h>
 
+poof(serdes_struct(m4))
+#include <generated/serdes_struct_v1bB0O62.h>
+
 poof(serdes_struct(plane))
 #include <generated/serdes_struct_plane.h>
 

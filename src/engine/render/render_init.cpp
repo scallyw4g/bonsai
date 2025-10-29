@@ -293,15 +293,14 @@ CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMe
 }
 
 link_internal b32
-MakeSsaoShader( 
-    shader *Shader,
-    memory_arena *GraphicsMemory,
-                g_buffer_textures *gTextures,
-                          texture *SsaoNoiseTexture,
-                               v3 *SsaoNoiseTile,
-                               m4 *InverseViewMatrix,
-                               m4 *InverseProjectionMatrix,
-                               m4 *ViewProjection )
+MakeSsaoShader( shader *Shader,
+          memory_arena *GraphicsMemory,
+     g_buffer_textures *gTextures,
+               texture *SsaoNoiseTexture,
+                    v3 *SsaoNoiseTile,
+                    m4 *InverseViewMatrix,
+                    m4 *InverseProjectionMatrix,
+                    m4 *ViewProjection )
 {
   b32 Result = CompileShaderPair(Shader, CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
@@ -504,7 +503,7 @@ DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
-  Assert(Result->Initialized == False);
+  Assert(FutexIsSignaled(&Result->Initialized) == False);
 
 
   shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
@@ -651,7 +650,15 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   }
 
 
-  Ensure(CreateGbufferShader(&gBuffer->gBufferShader, Result, GraphicsMemory, &Result->MinClipP_worldspace, &Result->MaxClipP_worldspace, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture));
+  Ensure(
+      CreateGbufferShader(&gBuffer->gBufferShader,
+                           Result,
+                           GraphicsMemory,
+                          &Result->MinClipP_worldspace,
+                          &Result->MaxClipP_worldspace,
+                          &gBuffer->ViewProjection,
+                           Result->Camera,
+                          &Result->ColorPaletteTexture));
 
   MakeSsaoShader(&AoGroup->Shader,
                   GraphicsMemory,

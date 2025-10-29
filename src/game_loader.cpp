@@ -166,9 +166,7 @@ main( s32 ArgCount, const char ** Args )
                                    EngineResources,
                                   &CustomWorkerProcs ));
 
-  while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
-
-  /* EngineResources->DebugState = Global_DebugStatePointer; */
+  while (FutexIsSignaled(&EngineResources->Graphics.Initialized) == False) { SleepMs(1); }
 
   Assert(EngineResources->Stdlib.ThreadStates);
 
@@ -194,15 +192,12 @@ main( s32 ArgCount, const char ** Args )
 
   if (GameApi->GameInit)
   {
-#if PLATFORM_WINDOW_IMPLEMENTATIONS
-    // Block till RenderMain is initialized in case game wants to do rendering things in init..?
-    // TODO(Jesse): Is there any reason to actually do this?
-    while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
-#endif
     EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
+
+  SignalFutex(&EngineResources->ReadyToStartMainLoop);
 
   /*
    *  Main Game loop

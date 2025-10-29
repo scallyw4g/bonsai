@@ -1,4 +1,6 @@
-// src/engine/work_queue.h:267:0
+// src/engine/work_queue.h:273:0
+
+
 
 
 
@@ -704,6 +706,8 @@ DoJob(compile_shader_pair_async_params *Params)
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
+
 
 
 

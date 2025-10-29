@@ -86,32 +86,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         
         
         
-        cs MemberName = CSz("width");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->width),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("FOV");
                                                                 DoEditorUi(Ui,
           Window,
@@ -163,11 +137,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
         
         
         
-        cs MemberName = CSz("Bot");
+        cs MemberName = CSz("Bottom");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(plane*, &Element->Bot),
+          Cast(plane*, &Element->Bottom),
           MemberName,
           ThisHash,
           Params

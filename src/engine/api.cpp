@@ -7,6 +7,7 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
+  Global_Stdlib = &Resources->Stdlib;
   Assert(Resources->Stdlib.ThreadStates);
   return True;
 }
@@ -21,8 +22,6 @@ Bonsai_Init(engine_resources *Resources)
   Result &= InitEngineDebug(&Resources->EngineDebug);
   Result &= InitEditor(&Resources->Editor);
   Result &= InitEngineResources(Resources);
-
-  /* Initialize_Global_UpdateWorldCallbackTable(); */
 
   return Result;
 }
@@ -242,7 +241,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   {
     if (Camera == &Graphics->GameCamera)
     {
-      Resources->MaybeMouseRay = ComputeCameraSpaceRayFromCursor(Resources, &gBuffer->ViewProjection, &Resources->Graphics.GameCamera, World->ChunkDim);
+      Resources->MaybeMouseRay = ComputeCameraSpaceRayFromCursor(Resources, Camera, World->ChunkDim);
 
       ray *Ray = &Resources->MaybeMouseRay.Ray;
       v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
@@ -459,14 +458,12 @@ Bonsai_Simulate(engine_resources *Resources)
     Camera = Graphics->Camera;
   }
 
-  m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
+  /* m4 *ViewMat = ViewMatrix(World->ChunkDim, Camera); */
+  /* m4 *ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim); */
 
-  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
-  m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
-
-  Resources->Graphics.gBuffer->InverseViewMatrix = Inverse(ViewMat);
-  Resources->Graphics.gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
-  Resources->Graphics.gBuffer->ViewProjection = ProjMat * ViewMat;
+  Resources->Graphics.gBuffer->ViewProjection          = Camera->ViewProjection;
+  Resources->Graphics.gBuffer->InverseViewMatrix       = Camera->InverseViewMatrix;
+  Resources->Graphics.gBuffer->InverseProjectionMatrix = Camera->InverseProjectionMatrix;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);

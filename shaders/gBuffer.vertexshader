@@ -35,7 +35,7 @@ void main()
   int Emission = in_TransEmiss.y;
 
   /* MaterialColor = texelFetch(ColorPalette, ivec2(ColorIndex, 0), 0).rgb; */
-  MaterialColor = UnpackHSVColorToRGB(s32(ColorIndex));
+  MaterialColor = UnpackHSVColor(int(ColorIndex));
   /* MaterialColor = texelFetch(ColorPalette, ivec2(5, 0), 0).rgb; */
   /* MaterialColor = V3(1,0,1); */
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));

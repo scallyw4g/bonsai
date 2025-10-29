@@ -736,10 +736,10 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
   auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
 
   v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP);
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f), RGB_RED, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), RGB_BLUE, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), RGB_GREEN, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), RGB_YELLOW, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f),    RGB_RED, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bottom.Normal*5.f), RGB_BLUE, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f),   RGB_GREEN, 0.2f );
+  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f),  RGB_YELLOW, 0.2f );
 }
 
 link_internal void

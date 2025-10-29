@@ -2,11 +2,15 @@ link_export void
 DrainRenderQueue(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(EntityTable);
 
   AssertNoGlErrors;
 
+  /* RenderInfo("DrainRenderQueue"); */
+
   while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
   {
+    /* RenderInfo("%S", ToString(Job->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
     tswitch(Job)
     {
@@ -26,11 +30,13 @@ DrainRenderQueue(engine_resources *Engine)
       } break;
 
       { tmatch(work_queue_entry_async_function_call, Job, RPC)
+        /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
       } break;
 
       { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+        /* RenderInfo("%S", ToString(RenderCommand->Type)); */
         tswitch(RenderCommand)
         {
           InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
@@ -910,10 +916,13 @@ RenderThread_Main(void *ThreadStartupParams)
   MapGpuBuffer(&Ui->TextGroup->Buf);
 
   FullBarrier;
-  Engine->Graphics.Initialized = True;
+  SignalFutex(&Engine->Graphics.Initialized);
 
   if (InitResult)
   {
+    // Wait for main thread to complete initialization
+    while (FutexIsSignaled(&Engine->ReadyToStartMainLoop) == False) { SleepMs(1); };
+
     bonsai_futex *WorkerThreadsExitFutex = &Plat->WorkerThreadsExitFutex;
     while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {

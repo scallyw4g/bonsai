@@ -871,7 +871,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
     if (Ui->Input->LMB.Pressed) { MouseDP = MouseDelta*2.f; }
     if (Ui->Input->RMB.Pressed) { CameraZDelta += MouseDelta.y*2.f; }
   }
-  UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
+  UpdateGameCamera(GetWorld(), Engine->Stdlib.Plat.ScreenDim, MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
 
   /* if (Ui->Input->LMB.Pressed == False && Hover(Ui, &B)) { PushTooltip(Ui, ToString(Texture)); } */
 

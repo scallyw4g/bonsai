@@ -35,6 +35,8 @@ struct asset_system
 
 struct engine_resources
 {
+  bonsai_futex ReadyToStartMainLoop;
+
   bonsai_stdlib Stdlib;
      engine_api EngineApi;
 

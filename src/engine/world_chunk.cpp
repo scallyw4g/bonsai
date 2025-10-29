@@ -2829,7 +2829,7 @@ BigBits2015_BestFittingPlaneFor(boundary_voxels* BoundingPoints)
         InvalidCodePath();
       }
 
-      Result.Plane = plane(Centroid, Normal);
+      Result.Plane = Plane(Centroid, Normal);
       Result.Complete = True;
     }
   }

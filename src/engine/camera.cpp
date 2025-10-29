@@ -2,94 +2,6 @@
 link_internal void
 UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 {
-  TIMED_FUNCTION();
-  if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
-  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
-
-  r32 Px = Sin(Camera->Yaw);
-  r32 Py = Cos(Camera->Yaw);
-  r32 Pz = Cos(Camera->Pitch);
-
-  Camera->Front = Normalize(V3(Px, Py, Pz));
-
-  Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
-  Camera->Up    = Normalize(Cross(Camera->Front, Camera->Right));
-
-  auto NewCameraP = Canonicalize(World->ChunkDim, TargetViewP - (Camera->Front*Camera->DistanceFromTarget));
-  Camera->CurrentP = NewCameraP;
-  Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP);
-
-  Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
-
-#if 1
-
-  //
-  // Frustum computation
-  //
-  v3 FrustLength = V3(0.0f, 0.0f, Camera->Frust.farClip);
-  v3 FarHeight = ( V3( 0.0f, ((Camera->Frust.farClip - Camera->Frust.nearClip)/Cos(Camera->Frust.FOV/2.0f)) * Sin(Camera->Frust.FOV/2.0f), 0.0f));
-  v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f);
-
-  v3 MaxMax = Normalize(FrustLength + FarHeight + FarWidth);
-  v3 MaxMin = Normalize(FrustLength + FarHeight - FarWidth);
-  v3 MinMax = Normalize(FrustLength - FarHeight + FarWidth);
-  v3 MinMin = Normalize(FrustLength - FarHeight - FarWidth);
-
-  v3 Front = V3(0,0,1);
-  v3 Target = Camera->Front;
-
-  Quaternion GrossRotation = RotatePoint(Front, Target);
-
-  // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
-  v3 UpVec = V3(0, 1, 0);
-  /* v3 UpVec = Camera->Up; */
-  v3 RotatedUp = Rotate(UpVec, GrossRotation);
-  Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
-
-  Quaternion FinalRotation = DesiredUp * GrossRotation;
-
-  /* MaxMin = Normalize(Rotate(MaxMin, GrossRotation)); */
-  /* MaxMax = Normalize(Rotate(MaxMax, GrossRotation)); */
-  /* MinMin = Normalize(Rotate(MinMin, GrossRotation)); */
-  /* MinMax = Normalize(Rotate(MinMax, GrossRotation)); */
-
-  MaxMin = Normalize(Rotate(MaxMin, FinalRotation));
-  MaxMax = Normalize(Rotate(MaxMax, FinalRotation));
-  MinMin = Normalize(Rotate(MinMin, FinalRotation));
-  MinMax = Normalize(Rotate(MinMax, FinalRotation));
-
-#if DEBUG_DRAW_FRUSTUM_AT_ORIGIN
-  {
-    auto Resources = GetEngineResources();
-    auto *GpuBuffer = &GetCurrentGpuMap(Resources->Graphics)->Buffer;
-    auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
-    DEBUG_DrawLine(&Dest, line(V3(0), MaxMax*40), RED, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MaxMin*40), BLUE, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MinMax*40), GREEN, 0.2f );
-    DEBUG_DrawLine(&Dest, line(V3(0), MinMin*40), YELLOW, 0.2f );
-  }
-#endif
-
-  v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
-
-  plane Top(CameraSimP,   Normalize(Cross(MaxMax, MaxMin)));
-  plane Bot(CameraSimP,   Normalize(Cross(MinMin, MinMax)));
-  plane Left(CameraSimP,  Normalize(Cross(MinMax, MaxMax)));
-  plane Right(CameraSimP, Normalize(Cross(MaxMin, MinMin)));
-
-  Camera->Frust.Top = Top;
-  Camera->Frust.Bot = Bot;
-  Camera->Frust.Left = Left;
-  Camera->Frust.Right = Right;
-
-#endif
-
-  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
-  /* plane Near; */
-  /* plane Far; */
-
-
-  return;
 }
 
 link_inline v2
@@ -102,6 +14,7 @@ GetMouseDelta(platform *Plat)
 
 link_internal void
 UpdateGameCamera( world *World,
+                     v2  ScreenDim,
                      v2  MouseDelta,
                     r32  CameraZoomDelta,
                      cp  TargetViewP,
@@ -126,18 +39,142 @@ UpdateGameCamera( world *World,
   Camera->TargetDistanceFromTarget += CameraZoomDelta * Camera->DistanceFromTarget;
 
   Camera->DistanceFromTarget = Lerp(t, Camera->DistanceFromTarget, Camera->TargetDistanceFromTarget);
+
   Camera->DistanceFromTarget = ClampMin(Camera->DistanceFromTarget, Camera->Frust.nearClip);
   Camera->DistanceFromTarget = ClampMax(Camera->DistanceFromTarget, Camera->Frust.farClip);
 
-  UpdateCameraP(World, TargetViewP, Camera);
+  Camera->TargetDistanceFromTarget = ClampMin(Camera->TargetDistanceFromTarget, Camera->Frust.nearClip);
+  Camera->TargetDistanceFromTarget = ClampMax(Camera->TargetDistanceFromTarget, Camera->Frust.farClip);
+
+  // TODO(Jesse): Remove?
+  if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
+  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
+
+  r32 Px = Sin(Camera->Yaw);
+  r32 Py = Cos(Camera->Yaw);
+  r32 Pz = Cos(Camera->Pitch);
+
+  Camera->Front = Normalize(V3(Px, Py, Pz));
+
+  Camera->Right = Normalize(Cross(V3(0,0,1), Camera->Front));
+  Camera->Up    = Normalize(Cross(Camera->Front, Camera->Right));
+
+  auto NewCameraP = Canonicalize(World->ChunkDim, TargetViewP - (Camera->Front*Camera->DistanceFromTarget));
+  Camera->CurrentP = NewCameraP;
+  Camera->CurrentP = Canonicalize(World->ChunkDim, Camera->CurrentP);
+
+  Camera->RenderSpacePosition = GetRenderP(World->ChunkDim, Camera->CurrentP, Camera);
+
+  m4 View = ViewMatrix(World->ChunkDim, Camera);
+  m4 Proj = ProjectionMatrix(Camera, ScreenDim);
+
+  Camera->ViewProjection = Proj * View;
+  Camera->InverseViewMatrix = Inverse(View);
+  Camera->InverseProjectionMatrix = Inverse(Proj);
+
+
+
+
+#if 1
+
+  //
+  // Frustum computation
+  //
+  /* v3 FrustLength = V3(0.0f, 0.0f, Camera->Frust.farClip); */
+  /* v3 FarHeight = ( V3( 0.0f, */
+  /*                     ((Camera->Frust.farClip - Camera->Frust.nearClip)/Cos(Camera->Frust.FOV/2.0f)) * Sin(Camera->Frust.FOV/2.0f), */
+  /*                     0.0f)); */
+  /* v3 FarWidth = V3( FarHeight.y, 0.0f, 0.0f); */
+
+  /* v3 MaxMax = Normalize(FrustLength + FarHeight + FarWidth); */
+  /* v3 MaxMin = Normalize(FrustLength + FarHeight - FarWidth); */
+  /* v3 MinMax = Normalize(FrustLength - FarHeight + FarWidth); */
+  /* v3 MinMin = Normalize(FrustLength - FarHeight - FarWidth); */
+
+  v3 Front = V3(0,0,1);
+  v3 Target = Camera->Front;
+
+  Quaternion GrossRotation = RotatePoint(Front, Target);
+
+  // We've got to correct the rotation so it ends pointing the frustum in the cameras 'up' direction
+  v3 UpVec = V3(0, 1, 0);
+  /* v3 UpVec = Camera->Up; */
+  v3 RotatedUp = Rotate(UpVec, GrossRotation);
+  Quaternion DesiredUp = RotatePoint(RotatedUp, Camera->Up);
+
+  Quaternion FinalRotation = DesiredUp * GrossRotation;
+
+  /* MaxMin = Normalize(Rotate(MaxMin, GrossRotation)); */
+  /* MaxMax = Normalize(Rotate(MaxMax, GrossRotation)); */
+  /* MinMin = Normalize(Rotate(MinMin, GrossRotation)); */
+  /* MinMax = Normalize(Rotate(MinMax, GrossRotation)); */
+
+  /* MaxMin = Normalize(Rotate(MaxMin, FinalRotation)); */
+  /* MaxMax = Normalize(Rotate(MaxMax, FinalRotation)); */
+  /* MinMin = Normalize(Rotate(MinMin, FinalRotation)); */
+  /* MinMax = Normalize(Rotate(MinMax, FinalRotation)); */
+
+#if DEBUG_DRAW_FRUSTUM_AT_ORIGIN
+  {
+    auto Resources = GetEngineResources();
+    auto *GpuBuffer = &GetCurrentGpuMap(Resources->Graphics)->Buffer;
+    auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMax*40), RED, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MaxMin*40), BLUE, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMax*40), GREEN, 0.2f );
+    DEBUG_DrawLine(&Dest, line(V3(0), MinMin*40), YELLOW, 0.2f );
+  }
+#endif
+
+  v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
+
+#if 0
+  plane Top   = Plane(CameraSimP, Normalize(Cross(MaxMax, MaxMin)));
+  plane Bot   = Plane(CameraSimP, Normalize(Cross(MinMin, MinMax)));
+  plane Left  = Plane(CameraSimP, Normalize(Cross(MinMax, MaxMax)));
+  plane Right = Plane(CameraSimP, Normalize(Cross(MaxMin, MinMin)));
+
+  Camera->Frust.Top = Top;
+  Camera->Frust.Bot = Bot;
+  Camera->Frust.Left = Left;
+  Camera->Frust.Right = Right;
+#else
+  auto zNear = Camera->Frust.nearClip;
+  auto zFar = Camera->Frust.farClip;
+  auto fovY = Camera->Frust.FOV;
+  auto aspect = ScreenDim.x/ScreenDim.y;
+
+  f32 halfVSide = zFar * Tan(Rads(fovY*0.5f));
+  f32 halfHSide = halfVSide * aspect;
+  v3 frontMultFar = zFar * Camera->Front;
+
+  auto SimP = GetSimSpaceP(World, Camera->CurrentP);
+
+  /* Camera->Frust.Near   = Plane( Camera->RenderSpacePosition + zNear * Camera->Front, Camera->Front ); */
+  /* Camera->Frust.Far    = Plane( Camera->RenderSpacePosition + frontMultFar, -1.f*Camera->Front ); */
+  Camera->Frust.Right  = Plane( SimP, Normalize(Cross(frontMultFar - Camera->Right * halfHSide, Camera->Up)) );
+  Camera->Frust.Left   = Plane( SimP, Normalize(Cross(Camera->Up,frontMultFar + Camera->Right * halfHSide)) );
+  Camera->Frust.Top    = Plane( SimP, Normalize(Cross(Camera->Right, frontMultFar - Camera->Up * halfVSide)) );
+  Camera->Frust.Bottom = Plane( SimP, Normalize(Cross(frontMultFar + Camera->Up * halfVSide, Camera->Right)) );
+#endif
+
+#endif
+
+  // TODO(Jesse, id: 128, tags: correctness, robustness, speed): Do culling on these as well?
+  /* plane Near; */
+  /* plane Far; */
+
+
+  return;
 }
 
 
 link_internal void
 SetCameraTarget(v3 Target, camera *Camera)
 {
-  world *World = GetWorld();
-  UpdateGameCamera(World, {}, {}, Canonical_Position(World->ChunkDim, Target, {}), Camera, 0.33f);
+  engine_resources *Engine = GetEngineResources();
+  world *World = Engine->World;
+  UpdateGameCamera(World, Engine->Stdlib.Plat.ScreenDim, {}, {}, Canonical_Position(World->ChunkDim, Target, {}), Camera, 0.33f);
 }
 
 link_internal void
@@ -150,6 +187,8 @@ UpdateGameCamera( world *World,
                   b32 DoPositionDelta,
                   b32 DoZoomDelta )
 {
+  engine_resources *Engine = GetEngineResources();
+
   v2 UpdateMouseDelta = {};
   f32 CameraZoomDelta = {};
   if (Input) // TODO(Jesse): Assert here ..?
@@ -167,7 +206,7 @@ UpdateGameCamera( world *World,
 
   }
 
-  UpdateGameCamera(World, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera, Dt);
+  UpdateGameCamera(World, Engine->Stdlib.Plat.ScreenDim, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera, Dt);
 }
 
 link_internal void
@@ -180,7 +219,6 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
 
   Camera->Frust.farClip = FarClip;
   Camera->Frust.nearClip = 0.5f;
-  Camera->Frust.width = 30.0f;
 
   // Someone already set FOV .. probably when deserializing stored runtime settings.
   if (Camera->Frust.FOV == 0.f)
@@ -208,17 +246,10 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
 
   v3 TestP = GetSimSpaceP(World, P);
 
-  // This says if we're on the back-side of the plane by more than the dim of a
-  // world chunk, we're outside the frustum
-  /* Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   < -1*World->ChunkDim.y); */
-  /* Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   < -1*World->ChunkDim.y); */
-  /* Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  < -1*World->ChunkDim.x); */
-  /* Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) < -1*World->ChunkDim.x); */
-
-  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)   > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Bot, TestP)   > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)  > 0);
-  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP) > 0);
+  Result &= (DistanceToPlane(&Camera->Frust.Top, TestP)    > 0.f);
+  Result &= (DistanceToPlane(&Camera->Frust.Bottom, TestP) > 0.f);
+  Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)   > 0.f);
+  Result &= (DistanceToPlane(&Camera->Frust.Right, TestP)  > 0.f);
 
   return Result;
 }
@@ -236,8 +267,17 @@ link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
   v3 ChunkMid = (Chunk->DimInChunks*World->ChunkDim)/2.f;
-  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
-  bool Result = IsInFrustum(World, Camera, P1);
+
+  Assert(Chunk->Dim == V3i(64));
+  r32 ChunkRadius = Length(Chunk->Dim*Chunk->DimInChunks)/2.f;
+
+  v3 TestP = GetSimSpaceP(World, Chunk);
+
+  b32 Result  = (DistanceToPlane(&Camera->Frust.Top, TestP)    < ChunkRadius);
+      Result &= (DistanceToPlane(&Camera->Frust.Bottom, TestP) < ChunkRadius);
+      Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)   < ChunkRadius);
+      Result &= (DistanceToPlane(&Camera->Frust.Right, TestP)  < ChunkRadius);
+
   return Result;
 }
 
@@ -262,7 +302,7 @@ Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)
 //
 // NOTE(Jesse): Returns a sim-space ray
 link_internal maybe_ray
-ComputeCameraSpaceRayFromCursor(engine_resources *Engine, m4* ViewProjection, camera *Camera, v3i WorldChunkDim)
+ComputeCameraSpaceRayFromCursor(engine_resources *Engine, camera *Camera, v3i WorldChunkDim)
 {
   platform *Plat = &Engine->Stdlib.Plat;
   world *World = Engine->World;
@@ -270,17 +310,17 @@ ComputeCameraSpaceRayFromCursor(engine_resources *Engine, m4* ViewProjection, ca
   maybe_ray Result = {};
 
   m4 InverseViewProjection;
-  if (Inverse(Cast(r32*, ViewProjection), Cast(r32*, &InverseViewProjection)))
+  if (Inverse(&Camera->ViewProjection.E[0][0], &InverseViewProjection.E[0][0]))
   {
     v3 MouseMinWorldP = Unproject( Plat->MouseP,
                                    0.0f,
                                    Plat->ScreenDim,
-                                   &InverseViewProjection);
+                                  &InverseViewProjection);
 
     v3 MouseMaxWorldP = Unproject( Plat->MouseP,
                                    1.0f,
                                    Plat->ScreenDim,
-                                   &InverseViewProjection);
+                                  &InverseViewProjection);
 
     v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
 

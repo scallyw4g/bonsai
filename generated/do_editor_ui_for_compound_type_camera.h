@@ -463,6 +463,81 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
         
       }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ViewProjection");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->ViewProjection),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InverseViewMatrix");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->InverseViewMatrix),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("InverseProjectionMatrix");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(m4*, &Element->InverseProjectionMatrix),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+        
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

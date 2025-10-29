@@ -1,31 +1,24 @@
 struct plane
 {
-  v3 P;
   v3 Normal;
-  r32 d;
-
-  plane( v3 P_in, v3 Normal_in )
-  {
-    this->P = P_in;
-    this->Normal = Normal_in;
-
-    this->d = -1.0f * (Normal.x*P.x + Normal.y*P.y + Normal.z*P.z);
-
-    Assert(Normal.x*P.x + Normal.y*P.y + Normal.z*P.z + this->d == 0);
-  }
-
-  plane() { Clear(this); }
+  f32 DistanceToOrigin;
 };
+
+link_internal plane
+Plane( v3 Point, v3 Normal )
+{
+  plane Reuslt = { Normal, Dot(Normal, Point) };
+  return Reuslt;
+}
 
 struct frustum
 {
   f32 farClip;
   f32 nearClip;
-  f32 width;
   f32 FOV;
 
   plane Top;
-  plane Bot;
+  plane Bottom;
   plane Left;
   plane Right;
 };
@@ -58,6 +51,10 @@ struct camera poof(@version(2))
   v3 Up;
 
   entity_id GhostId;
+
+  m4 ViewProjection;
+  m4 InverseViewMatrix;
+  m4 InverseProjectionMatrix;
 };
 
 struct camera_1
@@ -137,6 +134,9 @@ GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
 inline r32
 DistanceToPlane(plane *Plane, v3 P)
 {
+  // https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+  r32 Result = Dot(Plane->Normal, P) - Plane->DistanceToOrigin;
+#if 0
   r32 x = Plane->P.x;
   r32 y = Plane->P.y;
   r32 z = Plane->P.z;
@@ -148,8 +148,9 @@ DistanceToPlane(plane *Plane, v3 P)
   r32 d = Plane->d;
   Assert(a*x + b*y + c*z + d == 0);
 
-  r32 Distance = a*P.x + b*P.y + c*P.z + d;
-  return Distance;
+  r32 Result = a*P.x + b*P.y + c*P.z + d;
+#endif
+  return Result;
 }
 
 link_internal v3

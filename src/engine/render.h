@@ -41,7 +41,6 @@ struct g_buffer_render_group
 
   m4 InverseViewMatrix;
   m4 InverseProjectionMatrix;
-
   m4 ViewProjection;
 
   u32 GlTimerObject;
@@ -198,6 +197,7 @@ ProjectionMatrix(camera *Camera, v2 ScreenDim)
                                         ScreenDim,
                                         Camera->Frust.nearClip,
                                         Camera->Frust.farClip);
+
   return Result;
 }
 
