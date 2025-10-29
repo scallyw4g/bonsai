@@ -1522,6 +1522,35 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 }
 
 link_internal void
+RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
+{
+  world *World = Engine->World;;
+
+  IterateOver(DrawList, Node, NodeIndex)
+  {
+    auto Chunk = Node->Chunk;
+    Assert(Chunk);
+
+    // In case gpu meshes got deallocated after the chunk was added to the draw list
+    if (HasGpuMesh(&Chunk->Mesh))
+    {
+      v3 Offset = -1.f*V3(Node->Resolution*0.25f);
+      v3 Basis = Offset;
+      if (Camera)
+      {
+        Basis += GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
+      }
+      else
+      {
+        Basis += GetSimSpaceP(World, Chunk->WorldP);
+      }
+      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+      AssertNoGlErrors;
+    }
+  }
+}
+
+link_internal void
 RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
   world *World = Engine->World;;

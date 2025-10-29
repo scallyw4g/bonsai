@@ -210,6 +210,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         
         
         
+        cs MemberName = CSz("ChunksPerResolutionStep");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->ChunksPerResolutionStep),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("ChunkFreelistFutex");
                 
 

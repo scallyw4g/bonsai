@@ -198,8 +198,8 @@ struct graphics
 
   r32 Exposure;
 
-  world_chunk_ptr_paged_list MainDrawList;
-  world_chunk_ptr_paged_list ShadowMapDrawList;
+  octree_node_ptr_paged_list MainDrawList;
+  octree_node_ptr_paged_list ShadowMapDrawList;
 
   // NOTE(Jesse): This is a stencil region for cutting out the selection region
   // such that we can reneder an appropriate temporary mesh in the case that

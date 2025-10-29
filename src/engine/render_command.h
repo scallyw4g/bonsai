@@ -98,9 +98,10 @@ struct bonsai_render_command_draw_all_entities
   shader *Shader;
 };
 
+struct octree_node_ptr_block_array;
 struct bonsai_render_command_draw_world_chunk_draw_list
 {
-  world_chunk_ptr_paged_list *DrawList;
+  octree_node_ptr_block_array *DrawList;
   shader *Shader;
   camera *Camera;
 };

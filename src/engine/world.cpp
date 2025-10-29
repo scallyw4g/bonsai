@@ -543,8 +543,6 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
   }
 }
 
-#define OCTREE_CHUNKS_PER_RESOLUTION_STEP (4)
-
 link_internal v3i
 ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
 {
@@ -555,7 +553,7 @@ ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
   r32 Distance = DistanceToBox(CameraP, NodeRect);
   s32 DistanceInChunks = s32(Distance) / s32(World->ChunkDim.x);
 
-  v3i Result = Max(V3i(1), V3i(DistanceInChunks / OCTREE_CHUNKS_PER_RESOLUTION_STEP));
+  v3i Result = Max(V3i(1), V3i(DistanceInChunks / Engine->World->ChunksPerResolutionStep));
   return Result;
 }
 link_internal b32
@@ -611,7 +609,7 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 link_internal s32
 ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camera *GameCamera)
 {
-  s32 IdealListIndex = RatioToListIndex(2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
+  s32 IdealListIndex = RatioToListIndex(2*Node->Resolution.x/World->ChunksPerResolutionStep);
 
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
@@ -866,8 +864,8 @@ DrawOctreeRecursive( engine_resources *Engine,
                           octree_node *Node,
                           octree_node *Parent,
            octree_node_priority_queue *Queue,
-           world_chunk_ptr_paged_list *MainDrawList,
-           world_chunk_ptr_paged_list *ShadowMapDrawList,
+           octree_node_ptr_paged_list *MainDrawList,
+           octree_node_ptr_paged_list *ShadowMapDrawList,
                          octree_stats *Stats,
                                   u32  Depth = 0 )
 {
@@ -926,8 +924,8 @@ DrawOctreeRecursive( engine_resources *Engine,
             {
               if (IsInFrustum( World, Camera, Chunk ))
               {
-                Push(MainDrawList, Chunk);
-                Push(ShadowMapDrawList, Chunk);
+                Push(MainDrawList, Node);
+                Push(ShadowMapDrawList, Node);
               }
             }
           }
@@ -962,8 +960,8 @@ DrawOctreeRecursive( engine_resources *Engine,
           {
             if (IsInFrustum( World, Camera, Chunk ))
             {
-              Push(MainDrawList, Chunk);
-              Push(ShadowMapDrawList, Chunk);
+              Push(MainDrawList, Node);
+              Push(ShadowMapDrawList, Node);
             }
           }
         }
@@ -1019,8 +1017,8 @@ MaintainWorldOctree(engine_resources *Engine)
 #endif
 
 
-  world_chunk_ptr_paged_list *MainDrawList = &Graphics->MainDrawList;
-  world_chunk_ptr_paged_list *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
+  auto *MainDrawList = &Graphics->MainDrawList;
+  auto *ShadowMapDrawList = &Graphics->ShadowMapDrawList;
 
   // Reset world_chunk draw lists
   {

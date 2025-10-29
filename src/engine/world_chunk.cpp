@@ -4910,6 +4910,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
       Chunk->xOccupancyBorder[((zNoise-1)*2)+1] = x1Bits;
     }
   }
+
   return ChunkSum;
 }
 

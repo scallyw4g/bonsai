@@ -349,7 +349,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_chunk_ptr_paged_list*, &Element->MainDrawList),
+          Cast(octree_node_ptr_paged_list*, &Element->MainDrawList),
           MemberName,
           ThisHash,
           Params
@@ -374,7 +374,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_chunk_ptr_paged_list*, &Element->ShadowMapDrawList),
+          Cast(octree_node_ptr_paged_list*, &Element->ShadowMapDrawList),
           MemberName,
           ThisHash,
           Params

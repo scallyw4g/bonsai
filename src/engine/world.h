@@ -107,6 +107,8 @@ struct world
   s32 MaxOctreeNodesToQueuePerFrame = MAX_OCTREE_NODES_QUEUED_PER_FRAME;
 #undef MAX_OCTREE_NODES_QUEUED_PER_FRAME
 
+  s32 ChunksPerResolutionStep = 4;
+
   bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
   world_chunk ChunkFreelistSentinal; poof(@ui_skip)
   s32 FreeChunkCount;
