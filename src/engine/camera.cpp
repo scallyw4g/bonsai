@@ -253,32 +253,38 @@ IsInFrustum(world *World, camera *Camera, canonical_position P)
   return Result;
 }
 
-link_internal bool
-IsInFrustum( world *World, camera *Camera, octree_node *Chunk )
+link_internal f32
+SignedDistanceToFrustum( camera *Camera, v3 P)
 {
-  v3 ChunkMid = (Chunk->Resolution*World->ChunkDim)/2.f;
-  cp P1 = Canonical_Position(ChunkMid, Chunk->WorldP );
-  bool Result = IsInFrustum(World, Camera, P1);
+  f32 Result =            (DistanceToPlane(&Camera->Frust.Top,    P));
+      Result = Max(Result, DistanceToPlane(&Camera->Frust.Bottom, P));
+      Result = Max(Result, DistanceToPlane(&Camera->Frust.Left,   P));
+      Result = Max(Result, DistanceToPlane(&Camera->Frust.Right,  P));
   return Result;
 }
 
 link_internal bool
 IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
 {
-  v3 ChunkMid = (Chunk->DimInChunks*World->ChunkDim)/2.f;
-
   Assert(Chunk->Dim == V3i(64));
-  r32 ChunkRadius = Length(Chunk->Dim*Chunk->DimInChunks)/2.f;
-
-  v3 TestP = GetSimSpaceP(World, Chunk);
-
-  b32 Result  = (DistanceToPlane(&Camera->Frust.Top, TestP)    < ChunkRadius);
-      Result &= (DistanceToPlane(&Camera->Frust.Bottom, TestP) < ChunkRadius);
-      Result &= (DistanceToPlane(&Camera->Frust.Left, TestP)   < ChunkRadius);
-      Result &= (DistanceToPlane(&Camera->Frust.Right, TestP)  < ChunkRadius);
-
+  v3  Dim    = V3(Chunk->Dim)*V3(Chunk->DimInChunks);
+  r32 Radius = Length(Dim)/2.f;
+   v3 Center = GetSimSpaceP(World, Chunk) + Radius;
+  b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius;
+  /* b32 Result = True; */
   return Result;
 }
+
+link_internal bool
+IsInFrustum( world *World, camera *Camera, octree_node *Node )
+{
+  r32 Radius = Length(V3(64)*V3(Node->Resolution))/2.f;
+   v3 Center = GetSimSpaceP(World, Node->WorldP) + Radius;
+  /* b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius; */
+  b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius;
+  return Result;
+}
+
 
 link_internal v3
 Unproject(v2 ScreenP, r32 ClipZDepth, v2 ScreenDim, m4 *InvViewProj)

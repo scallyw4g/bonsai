@@ -623,7 +623,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   // Penalize nodes not in the frustum
   if (IsInFrustum(World, GameCamera, Node) == False)
   {
-    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+15);
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+150);
   }
 
   // Prefer chunks closer to the camera
@@ -941,6 +941,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 
     case OctreeNodeType_Leaf:
     {
+
+
       if (Node->Dirty && NotSet(Node->Flags, Chunk_Queued))
       {
         PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, Node, Parent);
