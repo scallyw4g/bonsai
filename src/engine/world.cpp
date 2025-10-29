@@ -620,19 +620,22 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
 {
   s32 IdealListIndex = RatioToListIndex(2*Node->Resolution.x/OCTREE_CHUNKS_PER_RESOLUTION_STEP);
 
-  // Penalize nodes not in the frustum
-  if (IsInFrustum(World, GameCamera, Node) == False)
+  // Penalize nodes who's parent is not in the frustum
+  if (Parent)
   {
-    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+150);
+    if (IsInFrustum(World, GameCamera, Parent) == False)
+    {
+      /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
+    }
   }
 
   // Prefer chunks closer to the camera
 
-  v3 SimP = GetSimSpaceP(World, Node->WorldP);
-  v3 CameraSimP = GetSimSpaceP(World, GameCamera->CurrentP);
-  s32 DistanceFactor = RatioToListIndex(Abs(Distance(SimP, CameraSimP)) / 500.f);
-
-  IdealListIndex = Max(0, IdealListIndex-DistanceFactor);
+  /* v3 SimP = GetSimSpaceP(World, Node->WorldP); */
+  /* v3 CameraSimP = GetSimSpaceP(World, GameCamera->CurrentP); */
+  /* s32 DistanceFactor = RatioToListIndex(Abs(Distance(SimP, CameraSimP)) / 500.f); */
+  /* IdealListIndex = Max(0, IdealListIndex-DistanceFactor); */
 
   // Prefer chunks who have a higher chance of having geometry
   if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
