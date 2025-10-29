@@ -550,19 +550,12 @@ ComputeNodeDesiredResolution(engine_resources *Engine, octree_node *Node)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3i Result = {};
+  rect3 NodeRect = GetSimSpaceAABB(World, Node);
+  v3 CameraP = GetSimSpaceP(World, GameCamera->CurrentP);
+  r32 Distance = DistanceToBox(CameraP, NodeRect);
+  s32 DistanceInChunks = s32(Distance) / s32(World->ChunkDim.x);
 
-  if (entity *Ghost = GetEntity(EntityTable, GameCamera->GhostId))
-  {
-    rect3 NodeRect = GetSimSpaceAABB(World, Node);
-    v3 GhostP = GetSimSpaceP(World, Ghost);
-    r32 Distance = DistanceToBox(GhostP, NodeRect);
-    s32 DistanceInChunks = s32(Distance) / s32(World->ChunkDim.x);
-
-    Result = Max(V3i(1), V3i(DistanceInChunks / OCTREE_CHUNKS_PER_RESOLUTION_STEP));
-    /* Result = V3i(DistanceInChunks); */
-  }
-
+  v3i Result = Max(V3i(1), V3i(DistanceInChunks / OCTREE_CHUNKS_PER_RESOLUTION_STEP));
   return Result;
 }
 link_internal b32

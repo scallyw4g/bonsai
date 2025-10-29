@@ -20,8 +20,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   canonical_position CameraTargetP = {};
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
-  auto VisibleRegionSize = VisibleRegionSize_1024;
+  /* auto VisibleRegionSize = VisibleRegionSize_1024; */
   /* auto VisibleRegionSize = VisibleRegionSize_8192; */
+  auto VisibleRegionSize = VisibleRegionSize_64k;
   v3i VisibleRegion = V3i(VisibleRegionSize);
   f32 DistanceFromTarget = 5000.f;
   f32 FarClip = 1000000.f;
@@ -45,6 +46,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* CameraGhost->P.WorldP = WorldCenter; */
   /* CameraGhost->P.WorldP = WorldCenter + VisibleRegion/2; */
   CameraGhost->P.WorldP = VisibleRegion/2;
+  CameraGhost->P.WorldP.z = 1000;
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
 
