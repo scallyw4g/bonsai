@@ -5,36 +5,52 @@
 
 # Welcome to Bonsai!
 
-Bonsai is a small voxel engine, in a pot.  It's been tended to with love and
-care over the years, and has been built with the intention of writing both
-fast-paced arcade games and tile/turn-based RPGs
+Bonsai is a voxel engine in a pot.  It's been tended to with love and
+care over the years.  It started out as a learning excercise, and has taught me
+the value of simplicity.
+
+Bonsai supports massive worlds.  The current version supports a maximum world
+size of ~1 billion blocks, cubed.  At one block per meter, that's the distance
+from earth to the moon, 2600 times, in every direction.  The view distance is
+the entire world, all the time.  Yes, you read that right.  In Bonsai, you can
+see in a straight line from Jupiter to the sun.
+
+Bonsai terrain generation is fully procedural, and user configurable.  Terrain
+is generated on the GPU using regular glsl shaders.  Anything you can do in a
+shader, you can do in a Bonsai terrain generator.
+
+### 2.0.0-alpha Note
+
+The current version is 2.0.0-alpha.  This version is a large rewrite of several
+core systems, including the world generation, editor and parts of the renderer.
+
+In its current state, the engine is effectively a terrain generator and editor.
+For details on remaing work, see [Roadmap to v2.0.0](issues/82).
+
+![banner](screenshots/two_doors.png)
+
+# Getting Started
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
 One external dependency is the C runtime library for program startup. There is
 a back-burner task to remove the CRT entirely, athough it's unclear when/if
 anyone will ever get around to it.
 
-The only external requirements to build Bonsai are clang++ (>= version 16) and
-a few appropriate system headers.
-
-![banner](screenshots/two_doors.png)
-
-# Getting Started
+The only external requirements to build Bonsai are clang++ (>= version 18.1)
+and a few appropriate system headers.
 
 ## Quickstart
 
 Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
 for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
 
-## Links
+### [Getting Started](docs/00_getting_started.md)
 
 ### [Build From Source](docs/01_build_process.md)
 
 ### [Controls](docs/controls.md)
 
-### Discord Server
-
-https://discord.gg/kmRpgXBh75
+### [Discord Server](https://discord.gg/kmRpgXBh75)
 
 
 ![banner](screenshots/orks.png)

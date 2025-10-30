@@ -26,6 +26,10 @@ IsValid(visible_region_size Value)
     case VisibleRegionSize_256k:
     case VisibleRegionSize_512k:
     case VisibleRegionSize_1024k:
+    case VisibleRegionSize_2048k:
+    case VisibleRegionSize_4096k:
+    case VisibleRegionSize_8192k:
+    case VisibleRegionSize_16kk:
 
     {
       Result = True;
@@ -65,6 +69,10 @@ ToStringPrefixless(visible_region_size Type)
     case VisibleRegionSize_256k: { Result = CSz("256k"); } break;
     case VisibleRegionSize_512k: { Result = CSz("512k"); } break;
     case VisibleRegionSize_1024k: { Result = CSz("1024k"); } break;
+    case VisibleRegionSize_2048k: { Result = CSz("2048k"); } break;
+    case VisibleRegionSize_4096k: { Result = CSz("4096k"); } break;
+    case VisibleRegionSize_8192k: { Result = CSz("8192k"); } break;
+    case VisibleRegionSize_16kk: { Result = CSz("16kk"); } break;
 
 
     
@@ -102,6 +110,10 @@ ToString(visible_region_size Type)
     case VisibleRegionSize_256k: { Result = CSz("VisibleRegionSize_256k"); } break;
     case VisibleRegionSize_512k: { Result = CSz("VisibleRegionSize_512k"); } break;
     case VisibleRegionSize_1024k: { Result = CSz("VisibleRegionSize_1024k"); } break;
+    case VisibleRegionSize_2048k: { Result = CSz("VisibleRegionSize_2048k"); } break;
+    case VisibleRegionSize_4096k: { Result = CSz("VisibleRegionSize_4096k"); } break;
+    case VisibleRegionSize_8192k: { Result = CSz("VisibleRegionSize_8192k"); } break;
+    case VisibleRegionSize_16kk: { Result = CSz("VisibleRegionSize_16kk"); } break;
 
 
     
@@ -136,6 +148,10 @@ VisibleRegionSize(counted_string S)
   if (StringsMatch(S, CSz("VisibleRegionSize_256k"))) { return VisibleRegionSize_256k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_512k"))) { return VisibleRegionSize_512k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_1024k"))) { return VisibleRegionSize_1024k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_2048k"))) { return VisibleRegionSize_2048k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_4096k"))) { return VisibleRegionSize_4096k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_8192k"))) { return VisibleRegionSize_8192k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_16kk"))) { return VisibleRegionSize_16kk; }
 
 
   return Result;

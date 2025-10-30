@@ -25,11 +25,14 @@ void main()
   //
   // -- user code -- 
   //
+
+  f32 White = white_noise(v3(x,y,z));
+  ColorValue -= 0.05f*White;
+
   {
-    f32 StartingZDepth = 800.f;
+    f32 StartingZDepth = 10000.f;
     NoiseValue += StartingZDepth - Basis.z;
 
-    f32 CliffMask = 1.f;
     {
       v3 Period = V3(1800.f);
       float Amplitude = 200.f;

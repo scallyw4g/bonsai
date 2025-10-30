@@ -3,27 +3,31 @@ WORLD_CHUNK_DIM = Chunk_Dimension(64, 64, 64);
 
 enum visible_region_size
 {
-  VisibleRegionSize_1    = (1 << 0),
-  VisibleRegionSize_2    = (1 << 1),
-  VisibleRegionSize_4    = (1 << 2),
-  VisibleRegionSize_8    = (1 << 3),
-  VisibleRegionSize_16   = (1 << 4),
-  VisibleRegionSize_32   = (1 << 5),
-  VisibleRegionSize_64   = (1 << 6),
-  VisibleRegionSize_128  = (1 << 7),
-  VisibleRegionSize_256  = (1 << 8),
-  VisibleRegionSize_512  = (1 << 9),  //   3.3 km
-  VisibleRegionSize_1024 = (1 << 10), //   6.6 km
-  VisibleRegionSize_2048 = (1 << 11), //  13.1 km
-  VisibleRegionSize_4096 = (1 << 12), //  26.2 km
-  VisibleRegionSize_8192 = (1 << 13), //  52.4 km
-  VisibleRegionSize_16k  = (1 << 14), // 104.8 km
-  VisibleRegionSize_32k  = (1 << 15), // 209.6 km
-  VisibleRegionSize_64k  = (1 << 16), // 419.2 km
+  VisibleRegionSize_1     = (1 << 0),
+  VisibleRegionSize_2     = (1 << 1),
+  VisibleRegionSize_4     = (1 << 2),
+  VisibleRegionSize_8     = (1 << 3),
+  VisibleRegionSize_16    = (1 << 4),
+  VisibleRegionSize_32    = (1 << 5),
+  VisibleRegionSize_64    = (1 << 6),
+  VisibleRegionSize_128   = (1 << 7),
+  VisibleRegionSize_256   = (1 << 8),
+  VisibleRegionSize_512   = (1 << 9),  //   3.3 km
+  VisibleRegionSize_1024  = (1 << 10), //   6.6 km
+  VisibleRegionSize_2048  = (1 << 11), //  13.1 km
+  VisibleRegionSize_4096  = (1 << 12), //  26.2 km
+  VisibleRegionSize_8192  = (1 << 13), //  52.4 km
+  VisibleRegionSize_16k   = (1 << 14), // 104.8 km
+  VisibleRegionSize_32k   = (1 << 15), // 209.6 km
+  VisibleRegionSize_64k   = (1 << 16), // 419.2 km
   VisibleRegionSize_128k  = (1 << 17), // 838.4 km
   VisibleRegionSize_256k  = (1 << 18), // big
   VisibleRegionSize_512k  = (1 << 19), // big
-  VisibleRegionSize_1024k  = (1 << 20), // big
+  VisibleRegionSize_1024k = (1 << 20), // big
+  VisibleRegionSize_2048k = (1 << 21), // really big
+  VisibleRegionSize_4096k = (1 << 22), // really big
+  VisibleRegionSize_8192k = (1 << 23), // really big
+  VisibleRegionSize_16kk  = (1 << 24), // dumb
 };
 
 enum octree_node_type
