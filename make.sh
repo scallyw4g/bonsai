@@ -376,7 +376,7 @@ TESTS_TO_BUILD="
   $TESTS/containers/block_array.cpp
 "
 
-BuildAll() {
+SetBuildAllFlags() {
 
   BuildExamples=1
   BuildExecutables=1
@@ -395,7 +395,7 @@ BuildAll() {
 
 if [ $# -eq 0 ]; then
   OPTIMIZATION_LEVEL="-O2"
-  BuildAll
+  SetBuildAllFlags
 fi
 
 BundleRelease=0
@@ -406,7 +406,7 @@ while (( "$#" )); do
   case $CliArg in
 
     "BuildAll")
-      BuildAll
+      SetBuildAllFlags
     ;;
 
     "BuildExecutables")
@@ -454,7 +454,6 @@ while (( "$#" )); do
       BundleRelease=1
       OPTIMIZATION_LEVEL="-O2"
       BONSAI_INTERNAL="-D BONSAI_INTERNAL=0"
-      # BuildAll
     ;;
 
     "-Od")
@@ -489,28 +488,35 @@ done
 time RunEntireBuild
 
 if [ $BundleRelease -eq 1 ]; then
+
   echo -e ""
   echo -e "$Delimeter"
   echo -e ""
 
   ColorizeTitle "Bundling"
 
+    # bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
+    # bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
+    # bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
+
   tar -cz                                                                  \
     bin/game_loader$PLATFORM_EXE_EXTENSION                                 \
     bin/game_libs/blank_project_loadable$PLATFORM_LIB_EXTENSION            \
-    bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
-    bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
-    bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
-    \
+                                                                           \
     shaders/*                                                              \
     external/bonsai_stdlib/shaders/*                                       \
     assets/*                                                               \
     models/*                                                               \
     brushes/*                                                              \
-    \
+                                                                           \
     .root_marker                                                           \
     settings.init                                                          \
+    white.bmp                                                              \
     texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
+
+ [ $? -ne 0 ] && echo "$Failed $Platform""_x86_64_release.tar.gz" && exit 1
+
+  echo "$Success $Platform""_x86_64_release.tar.gz"
 fi
