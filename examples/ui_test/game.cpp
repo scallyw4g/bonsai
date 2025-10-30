@@ -3,7 +3,6 @@
 
 #include <bonsai_types.h>
 
-#include <game_constants.h>
 #include <game_types.h>
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
@@ -100,16 +99,16 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   debug_global test_type Test = {};
   debug_global nested_type Nested = {};
 
-  window_layout *Window = GetOrCreateWindow(Ui, UiId(Cast(window_layout*, 0), "Test Window", 0u));
+  window_layout *Window = GetOrCreateWindow(Ui, "Test Window");
 
   PushWindowStart(Ui, Window);
-    DoEditorUi(Ui, Window, &Test, CSz("Test Thing"));
+    DoEditorUi(Ui, Window, &Test, CSz("Test Thing"), 0);
 
     PushNewRow(Ui);
     PushNewRow(Ui);
     PushNewRow(Ui);
 
-    DoEditorUi(Ui, Window, &Nested, CSz("Test Nested"));
+    DoEditorUi(Ui, Window, &Nested, CSz("Test Nested"), 0);
   PushWindowEnd(Ui, Window);
 
 

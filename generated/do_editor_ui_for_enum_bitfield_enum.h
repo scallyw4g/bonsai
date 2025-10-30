@@ -1,17 +1,18 @@
-// examples/ui_test/game.cpp:61:0
-
+// src/engine/editor.h:465:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x23F6F95E);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle bitfield_enum", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Foo"), UiId(Window, "enum BitfieldEnum_Foo", Element), Params))
+    if (Button(Ui, CSz("Foo"), UiId(Window, "enum BitfieldEnum_Foo", Element, ThisHash), Params))
     {
             if (BitfieldEnum_Foo == bitfield_enum(0))
       {
@@ -34,7 +35,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Bar"), UiId(Window, "enum BitfieldEnum_Bar", Element), Params))
+    if (Button(Ui, CSz("Bar"), UiId(Window, "enum BitfieldEnum_Bar", Element, ThisHash), Params))
     {
             if (BitfieldEnum_Bar == bitfield_enum(0))
       {
@@ -57,7 +58,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Baz"), UiId(Window, "enum BitfieldEnum_Baz", Element), Params))
+    if (Button(Ui, CSz("Baz"), UiId(Window, "enum BitfieldEnum_Baz", Element, ThisHash), Params))
     {
             if (BitfieldEnum_Baz == bitfield_enum(0))
       {
@@ -79,6 +80,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {

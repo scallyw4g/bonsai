@@ -1,14 +1,35 @@
-// examples/ui_test/game.cpp:59:0
+// external/bonsai_stdlib/src/poof_functions.h:2048:0
+link_internal b32
+IsValid(bitfield_enum Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case BitfieldEnum_Foo:
+    case BitfieldEnum_Bar:
+    case BitfieldEnum_Baz:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(bitfield_enum Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
         case BitfieldEnum_Foo: { Result = CSz("Foo"); } break;
     case BitfieldEnum_Bar: { Result = CSz("Bar"); } break;
     case BitfieldEnum_Baz: { Result = CSz("Baz"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -41,19 +62,22 @@ ToStringPrefixless(bitfield_enum Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(bitfield_enum Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
         case BitfieldEnum_Foo: { Result = CSz("BitfieldEnum_Foo"); } break;
     case BitfieldEnum_Bar: { Result = CSz("BitfieldEnum_Bar"); } break;
     case BitfieldEnum_Baz: { Result = CSz("BitfieldEnum_Baz"); } break;
+
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
     // but the metaprogram might have to be a bit fancier..
@@ -73,7 +97,7 @@ ToString(bitfield_enum Type)
     } break;
 
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
@@ -85,6 +109,7 @@ BitfieldEnum(counted_string S)
     if (StringsMatch(S, CSz("BitfieldEnum_Foo"))) { return BitfieldEnum_Foo; }
   if (StringsMatch(S, CSz("BitfieldEnum_Bar"))) { return BitfieldEnum_Bar; }
   if (StringsMatch(S, CSz("BitfieldEnum_Baz"))) { return BitfieldEnum_Baz; }
+
 
   return Result;
 }

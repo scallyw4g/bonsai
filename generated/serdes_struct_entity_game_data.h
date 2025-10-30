@@ -1,5 +1,4 @@
-// examples/turn_based/game.cpp:1086:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(entity_game_data *Ignored)
 {
@@ -57,7 +56,22 @@ Serialize(u8_cursor_block_array *Bytes, entity_game_data *BaseElement, umm Count
 
                             Result &= Serialize(Bytes, &Element->HoldingItem); // default
 
-    
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -106,7 +120,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_game_data *Element, memory_ar
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->HoldingItem, Memory);
 
+
+
+
+
+
+
+    
   
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;

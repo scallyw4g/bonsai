@@ -1,17 +1,18 @@
-// examples/turn_based/game_types.h:78:0
-
+// src/engine/editor.h:465:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xAB28A13);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle entity_type", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityType_Default", Element), Params))
+    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityType_Default", Element, ThisHash), Params))
     {
             *Element = EntityType_Default;
 
@@ -20,7 +21,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Enemy"), UiId(Window, "enum EntityType_Enemy", Element), Params))
+    if (Button(Ui, CSz("Enemy"), UiId(Window, "enum EntityType_Enemy", Element, ThisHash), Params))
     {
             *Element = EntityType_Enemy;
 
@@ -29,7 +30,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Player"), UiId(Window, "enum EntityType_Player", Element), Params))
+    if (Button(Ui, CSz("Player"), UiId(Window, "enum EntityType_Player", Element, ThisHash), Params))
     {
             *Element = EntityType_Player;
 
@@ -38,7 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Fireball"), UiId(Window, "enum EntityType_Fireball", Element), Params))
+    if (Button(Ui, CSz("Fireball"), UiId(Window, "enum EntityType_Fireball", Element, ThisHash), Params))
     {
             *Element = EntityType_Fireball;
 
@@ -47,7 +48,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Loot"), UiId(Window, "enum EntityType_Loot", Element), Params))
+    if (Button(Ui, CSz("Loot"), UiId(Window, "enum EntityType_Loot", Element, ThisHash), Params))
     {
             *Element = EntityType_Loot;
 
@@ -56,7 +57,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("ItemSpawn"), UiId(Window, "enum EntityType_ItemSpawn", Element), Params))
+    if (Button(Ui, CSz("ItemSpawn"), UiId(Window, "enum EntityType_ItemSpawn", Element, ThisHash), Params))
     {
             *Element = EntityType_ItemSpawn;
 
@@ -64,6 +65,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_type *Element, cs Name
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {

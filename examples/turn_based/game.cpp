@@ -34,13 +34,13 @@ EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u6
     case EntityType_Player:
     {
       entity_game_data *State = Cast(entity_game_data*, *UserData);
-      DoEditorUi(Ui, Window, State, CSz("entity_game_data UserData"));
+      DoEditorUi(Ui, Window, State, CSz("entity_game_data UserData"), 0);
     } break;
 
     case EntityType_Fireball:
     {
       fireball_state *State = Cast(fireball_state*, *UserData);
-      DoEditorUi(Ui, Window, State, CSz("fireball_state UserData"));
+      DoEditorUi(Ui, Window, State, CSz("fireball_state UserData"), 0);
     } break;
 
     case EntityType_Default:

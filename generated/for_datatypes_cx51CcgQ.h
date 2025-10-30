@@ -686,6 +686,10 @@
 
 
 
+
+
+
+
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
@@ -903,6 +907,8 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 
+
+
 link_internal void
 InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* Result )
 {
@@ -924,6 +930,20 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

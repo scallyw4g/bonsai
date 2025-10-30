@@ -84,6 +84,11 @@
 
 
 
+
+
+
+
+
 link_internal b32
 IsValid(ui_brush_layer_actions Value)
 {
@@ -280,6 +285,11 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
 
 
 
@@ -1252,6 +1262,16 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

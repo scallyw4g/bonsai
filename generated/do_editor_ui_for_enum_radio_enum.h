@@ -1,5 +1,4 @@
-// examples/ui_test/game.cpp:45:0
-
+// src/engine/editor.h:465:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, radio_enum Selection)
 {
@@ -21,6 +20,7 @@ RadioButtonGroup_radio_enum( renderer_2d *Ui,
         { CSz("Foo"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Foo")), RadioEnum_Foo },
     { CSz("Bar"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Bar")), RadioEnum_Bar },
     { CSz("Baz"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Baz")), RadioEnum_Baz },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -40,6 +40,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   radio_enum *Element,
   cs GroupName,
+  u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {
