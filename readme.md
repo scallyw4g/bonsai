@@ -25,7 +25,7 @@ The current version is 2.0.0-alpha.  This version is a large rewrite of several
 core systems, including the world generation, editor and parts of the renderer.
 
 In its current state, the engine is effectively a terrain generator and editor.
-For details on remaing work, see [Roadmap to v2.0.0](issues/82).
+For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
 
 ![banner](screenshots/two_doors.png)
 
