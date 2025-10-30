@@ -40,12 +40,12 @@ void main()
     f32 Mask;
     {
       f32 XOff = 700000.f;
-      v3 xyz = Basis / V3(XOff, XOff, 1700000.f);
+      v3 xyz = Basis / V3(XOff, XOff, 2000000.f);
       Mask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
       /* Mask = ridge_noise(xyz); */
       Mask = Smoothstep(Mask);
       /* Mask = RemapSample(Mask, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
-      Mask = Mask*Mask * 2.35;
+      Mask = Mask*1.6;
     }
 
     s32 Octaves = s32(Mask*10);
@@ -96,6 +96,9 @@ void main()
         ColorValue = V3(1.f);
       }
     }
+
+    r32 white = white_noise(Basis);
+    ColorValue *= Clamp01(1.6f+white);
 
 
     NoiseValue -= Basis.z;

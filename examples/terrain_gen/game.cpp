@@ -50,6 +50,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
 
+  GameState->VisibleRegionSize = &World->VisibleRegionSize;
+
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
 
@@ -86,7 +88,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   {
     window_layout *Window = GetOrCreateWindow(Ui, "GameState");
     PushWindowStart(Ui, Window);
-      DoEditorUi(Ui, Window, GameState, CSz("Game State"), u32(Hash(Window)));
+      DoEditorUi(Ui, Window, GameState, {}, u32(Hash(Window)));
     PushWindowEnd(Ui, Window);
   }
 

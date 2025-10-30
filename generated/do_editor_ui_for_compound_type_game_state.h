@@ -59,11 +59,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name,
         
         
         
-        cs MemberName = CSz("EasingFunctionVisRP");
+        cs MemberName = CSz("VisibleRegionSize");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(easing_function_visualizer_render_pass*, &Element->EasingFunctionVisRP),
+          Cast(visible_region_size*, Element->VisibleRegionSize),
           MemberName,
           ThisHash,
           Params
@@ -75,6 +75,17 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_state *Element, cs Name,
 
 
 
+
+        
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EasingFunctionVisRP");
+                
 
         
       }
