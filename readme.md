@@ -73,7 +73,7 @@ https://discord.gg/kmRpgXBh75
 * 1D, 2D and 3D noise library
 * Terrain derivitives available in second-stage terrain "decoration"
 
-![banner](screenshots/pillar.png)
+![banner](screenshots/ridgeline.png)
 
 ## Editing
 
@@ -107,10 +107,6 @@ https://discord.gg/kmRpgXBh75
 ![banner](screenshots/grass.png)
 
 ![banner](screenshots/8_skele.png)
-
-![banner](screenshots/dusk_defence.png)
-
-![banner](screenshots/5_skele.png)
 
 # Wishlist
 
@@ -159,6 +155,8 @@ https://discord.gg/kmRpgXBh75
 * https://graphics.stanford.edu/courses/cs164-10-spring/Handouts/isotropic.pdf
 * https://inria.hal.science/inria-00071612/document
 
+![banner](screenshots/pillar.png)
+
 -------------------------------------------------------------------------------
 ## Assets
 
@@ -166,6 +164,9 @@ https://discord.gg/kmRpgXBh75
 * https://github.com/GabeRundlett/gvox/blob/old/src/formats/minecraft.cpp
 
 [ ] Sound : mp3, ogg, ..? decompresser
+
+
+![banner](screenshots/5_skele.png)
 
 -------------------------------------------------------------------------------
 ## Datastructures
@@ -188,6 +189,8 @@ https://discord.gg/kmRpgXBh75
 
 [ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
 
+
+![banner](screenshots/dusk_defence.png)
 
 ## Goodies
 
