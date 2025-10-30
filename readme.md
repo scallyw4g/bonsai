@@ -64,7 +64,7 @@ https://discord.gg/kmRpgXBh75
 * Primitive Physics
 
 
-![banner]( screenshots/platapus.png)
+![banner]( screenshots/mountain.png)
 
 ## Terrain Generation
 
@@ -140,6 +140,8 @@ https://discord.gg/kmRpgXBh75
 [ ] Remove meshing entirely? https://www.youtube.com/watch?v=4xs66m1Of4A
 
 [ ] Lumen-style GI screen-space radiance caching : https://www.youtube.com/watch?v=2GYXuM10riw
+
+![banner]( screenshots/platapus.png)
 
 -------------------------------------------------------------------------------
 ## Terrain
