@@ -896,9 +896,9 @@ RenderThread_Main(void *ThreadStartupParams)
 
   b32 InitResult = GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena());
 
+  memory_arena *UiMemory = AllocateArena();
   if (InitResult)
   {
-    memory_arena *UiMemory = AllocateArena();
     InitRenderer2D(&Engine->Ui, &Engine->Heap, UiMemory, &Plat->MouseP, &Plat->MouseDP, &Plat->ScreenDim, &Plat->Input);
 
     bitmap_block_array Bitmaps = BitmapBlockArray(GetTranArena());
