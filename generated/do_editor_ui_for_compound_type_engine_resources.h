@@ -689,7 +689,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_chunk_freelist*, &Element->SynChunkFreelist),
+          Cast(gen_chunk_freelist*, &Element->SynChunkFreelist),
           MemberName,
           ThisHash,
           Params

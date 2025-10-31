@@ -573,9 +573,15 @@ Bonsai_Render(engine_resources *Engine)
 struct bonsai_thread_user_data
 {
   u64 Magic0 = 0x69;
-  world_chunk_freelist SynChunkFreelist;
+  gen_chunk_freelist SynChunkFreelist;
   u64 Magic1 = 0x420;
 };
+
+link_internal void
+FreeWorldChunk(gen_chunk_freelist *Freelist, gen_chunk *Chunk)
+{
+  Free(Freelist, Chunk);
+}
 
 link_internal void
 FreeWorldChunk(world_chunk_freelist *Freelist, world_chunk *Chunk)
@@ -589,9 +595,24 @@ GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChun
   Freelist->Memory = Memory;
   world_chunk *Result = GetOrAllocate(Freelist);
 
-  if (Result->Voxels == 0)
+  if (Result->Occupancy == 0)
   {
     AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
+  }
+
+  return Result;
+}
+
+link_internal gen_chunk *
+GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory)
+{
+  Freelist->Memory = Memory;
+  gen_chunk *Result = GetOrAllocate(Freelist);
+
+  if (Result->Chunk.Occupancy == 0)
+  {
+    AllocateWorldChunk(&Result->Chunk, WorldP, Dim, DimInChunks, Memory);
+    Result->Voxels = AllocateAlignedProtection( voxel, Memory , Volume(Dim), CACHE_LINE_SIZE, false);
   }
 
   return Result;
@@ -636,8 +657,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(Chunk);
 
       world_chunk *DestChunk = Node->Chunk;
-      world_chunk *SynChunk = GetOrAllocate(&EngineResources->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
-      /* SynChunk->Flags = Chunk_Queued; */
+
+      gen_chunk *GenChunk = GetOrAllocate(&EngineResources->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+      world_chunk *SynChunk = &GenChunk->Chunk;
+
+      voxel *Voxels = GenChunk->Voxels;
 
       Assert(NoiseDim == V3i(66, 66, 66));
       Assert(SynChunk->Dim == V3i(64, 66, 66));
@@ -646,14 +670,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       v3i SrcToDest = {};
       s64 zMin = 0;
 
-      u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
+      u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
 
       if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
         MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
                                       SynChunk->xOccupancyBorder,
                                       SynChunk->FaceMasks,
-                                      SynChunk->Voxels,
+                                      Voxels,
                                       SynChunk->Dim,
                                       {},
                                       SynChunk->Dim);
@@ -683,7 +707,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         {
           /* Info("Chunk faces (%d)", FacesRequired); */
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, SynChunk, Node);
+              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, GenChunk, Node);
         }
         else
         {
@@ -692,7 +716,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
             PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
           }
           FinalizeNodeInitializaion(Node);
-          FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
+          FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
         }
       }
       else
@@ -703,7 +727,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
           PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
         }
         FinalizeNodeInitializaion(Node);
-        FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
+        FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
       }
 
       auto Graphics = &EngineResources->Graphics;
@@ -722,7 +746,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 #if 0
       NotImplemented;
 #else
-      world_chunk               *SynChunk     = Job->SynChunk;
+      gen_chunk               *GenChunk     = Job->GenChunk;
+      world_chunk             *SynChunk     = &GenChunk->Chunk;
 
       octree_node               *DestNode     = Job->DestNode;
       world_chunk               *DestChunk    = DestNode->Chunk;
@@ -731,12 +756,12 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
       Assert(HasGpuMesh(&GpuMappedBuf) == True);
 
-      RebuildWorldChunkMesh(Thread, SynChunk, {}, {}, MeshBit_Lod0, &GpuMappedBuf.Buffer, Thread->TempMemory);
+      RebuildWorldChunkMesh(Thread, SynChunk, GenChunk->Voxels, {}, {}, MeshBit_Lod0, &GpuMappedBuf.Buffer, Thread->TempMemory);
 
       SynChunk->Mesh = {};
 
       Assert(GpuMappedBuf.Buffer.At == GpuMappedBuf.Buffer.End);
-      FreeWorldChunk(&EngineResources->SynChunkFreelist, SynChunk);
+      FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
 
       PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, GpuMappedBuf, DestNode);
 #endif

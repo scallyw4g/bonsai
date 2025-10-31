@@ -98,6 +98,7 @@ poof(maybe(model_buffer))
 #include <generated/maybe_model_buffer.h>
 
 
+#if 0
 link_internal voxel *
 TryGetVoxel(chunk_data *ChunkData, v3i P)
 {
@@ -106,6 +107,7 @@ TryGetVoxel(chunk_data *ChunkData, v3i P)
   if (Index > -1) { Result = ChunkData->Voxels + Index; }
   return Result;
 }
+#endif
 
 struct maybe_model
 {

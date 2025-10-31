@@ -87,6 +87,9 @@ poof(freelist_allocator(octree_node))
 poof(freelist_allocator(world_chunk))
 #include <generated/freelist_allocator_world_chunk.h>
 
+poof(freelist_allocator(gen_chunk))
+#include <generated/freelist_allocator_lEJhaKNS.h>
+
 poof(generate_cursor(octree_node_ptr))
 #include <generated/generate_cursor_octree_node.h>
 
@@ -247,6 +250,7 @@ IsInsideVisibleRegion(world *World, v3i P)
   return Result;
 }
 
+#if 0
 inline voxel*
 TryGetVoxel(world *World, cp P)
 {
@@ -258,6 +262,7 @@ TryGetVoxel(world *World, cp P)
   }
   return Result;
 }
+#endif
 
 
 #define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)

@@ -438,7 +438,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
 
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
-            Current.ChunkData->Voxels[Index] = Voxel->V;
+            NotImplemented;
+            /* Current.ChunkData->Voxels[Index] = Voxel->V; */
             /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
           }
 
@@ -446,8 +447,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
           /* Current.ChunkData->Flags = Chunk_VoxelsInitialized; */
 
-          /* MarkBoundaryVoxels_NoExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
-          MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);
+            NotImplemented;
+          /* MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
 
           Push(&Result, &Current);
         } break;
@@ -507,11 +508,12 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
         DimIterator(x, y, z, Chunk->Dim)
         {
           s32 Index = GetIndex(x, y, z, Chunk->Dim);
-          u16 PaletteIndex = Chunk->Voxels[Index].RGBColor;
-          if   (HadPaletteData)
-            { Chunk->Voxels[Index].RGBColor = PackV3_16b(TempRGBPalette[PaletteIndex]); }
-          else
-            { Chunk->Voxels[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(PaletteIndex)); }
+          NotImplemented;
+          /* u16 PaletteIndex = Chunk->Voxels[Index].RGBColor; */
+          /* if   (HadPaletteData) */
+          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(TempRGBPalette[PaletteIndex]); } */
+          /* else */
+          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(PaletteIndex)); } */
         }
       }
     }

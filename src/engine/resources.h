@@ -84,7 +84,7 @@ struct engine_resources
 
   render_entity_to_texture_group RTTGroup;
 
-  world_chunk_freelist SynChunkFreelist;
+  gen_chunk_freelist SynChunkFreelist;
 };
 
 

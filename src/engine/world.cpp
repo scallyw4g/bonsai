@@ -258,8 +258,12 @@ GatherVoxelsOverlappingArea(engine_resources *Engine, rect3cp Rect, memory_arena
   GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Rect), &Chunks, V, VoxelCount);
 
   world_chunk Result = {};
+  NotImplemented;
+#if 0
   Result.Voxels = V;
   Result.Dim = V3i(CopyDim);
+#endif
+
   return Result;
 }
 

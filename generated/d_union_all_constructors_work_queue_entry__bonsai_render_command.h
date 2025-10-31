@@ -439,7 +439,7 @@ BonsaiRenderCommandDoStuff(  u32   Ignored  )
 }
 
 link_internal bonsai_render_command_allocate_and_map_gpu_element_buffer
-BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   ElementCount , gpu_mapped_element_buffer *  Dest , world_chunk *  SynChunk , octree_node *  DestNode  )
+BonsaiRenderCommandAllocateAndMapGpuElementBuffer(  data_type   Type , u32   ElementCount , gpu_mapped_element_buffer *  Dest , gen_chunk *  SynChunk , octree_node *  DestNode  )
 {
   bonsai_render_command_allocate_and_map_gpu_element_buffer Reuslt = {
             .Type = Type

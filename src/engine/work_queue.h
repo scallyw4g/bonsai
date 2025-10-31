@@ -72,14 +72,14 @@ struct work_queue_entry_finalize_noise_values
 
 struct work_queue_entry_build_chunk_mesh
 {
-  world_chunk *SynChunk;
+  gen_chunk   *GenChunk;
   octree_node *DestNode;
 };
 
 struct work_queue_entry_rebuild_mesh
 {
-  world_chunk *Chunk;
-  chunk_init_flags Flags;
+  world_chunk      *Chunk;
+  chunk_init_flags  Flags;
 };
 
 

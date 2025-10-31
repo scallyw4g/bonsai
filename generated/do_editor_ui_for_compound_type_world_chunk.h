@@ -162,56 +162,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
         
         
         
-        cs MemberName = CSz("Voxels");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(voxel*, Element->Voxels),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("VoxelLighting");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(voxel_lighting*, Element->VoxelLighting),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
         cs MemberName = CSz("IsOnFreelist");
                                                 DoEditorUi(Ui,
           Window,

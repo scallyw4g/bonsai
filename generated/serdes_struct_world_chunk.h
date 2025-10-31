@@ -59,16 +59,6 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
 
-                if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
-
-
-
-                if (Element->VoxelLighting) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
-
-
-
                             Result &= Serialize(Bytes, &Element->IsOnFreelist); // default
 
 
@@ -108,14 +98,6 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
                 if (Element->FaceMasks) { Result &= Serialize(Bytes, Element->FaceMasks); }
-
-
-
-                if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels,  Cast(umm, Volume(Element->Dim)) ); }
-
-
-
-                if (Element->VoxelLighting) { Result &= Serialize(Bytes, Element->VoxelLighting,  Cast(umm, Volume(Element->Dim)) ); }
 
 
 
@@ -196,16 +178,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
-        b64 HadVoxelsPointer = Read_u64(Bytes);
-  Assert(HadVoxelsPointer < 2); // Should be 0 or 1
-
-
-
-        b64 HadVoxelLightingPointer = Read_u64(Bytes);
-  Assert(HadVoxelLightingPointer < 2); // Should be 0 or 1
-
-
-
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->IsOnFreelist, Memory);
@@ -278,34 +250,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
     }
 
     Result &= Deserialize(Bytes, Element->FaceMasks, Memory, Count);
-  }
-
-
-      if (HadVoxelsPointer)
-  {
-        umm Count =  Cast(umm, Volume(Element->Dim));
-
-
-    if (Element->Voxels == 0)
-    {
-      Element->Voxels = Allocate(voxel, Memory, Count);
-    }
-
-    Result &= Deserialize(Bytes, Element->Voxels, Memory, Count);
-  }
-
-
-      if (HadVoxelLightingPointer)
-  {
-        umm Count =  Cast(umm, Volume(Element->Dim));
-
-
-    if (Element->VoxelLighting == 0)
-    {
-      Element->VoxelLighting = Allocate(voxel_lighting, Memory, Count);
-    }
-
-    Result &= Deserialize(Bytes, Element->VoxelLighting, Memory, Count);
   }
 
 

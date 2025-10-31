@@ -101,7 +101,7 @@ PushBonsaiRenderCommandDoStuff(
 link_internal void
 PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
   work_queue *RenderQueue
-   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , world_chunk* SynChunk   , octree_node* DestNode  
+   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , gen_chunk* SynChunk   , octree_node* DestNode  
 )
 {
   work_queue_entry Work = WorkQueueEntry(

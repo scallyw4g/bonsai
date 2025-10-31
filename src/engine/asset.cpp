@@ -327,10 +327,10 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, memory_arena *PermMe
 
   Assert(Header.VoxelElementCount == Volume(Result));
 
-  u32 Tag = Read_u32(FileBytes);
-  Assert( Tag ==  WorldChunkFileTag_VOXD );
-  umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize;
-  ReadBytesIntoBuffer(FileBytes, (u8*)Result->Voxels,  VoxByteCount);
+  /* u32 Tag = Read_u32(FileBytes); */
+  /* Assert( Tag ==  WorldChunkFileTag_VOXD ); */
+  /* umm VoxByteCount = Header.VoxelElementCount * Header.VoxelElementSize; */
+  /* ReadBytesIntoBuffer(FileBytes, (u8*)Result->Voxels,  VoxByteCount); */
 
   Result->FilledCount = s32(Header.VoxelElementCount);
 
@@ -347,7 +347,7 @@ DeserializeChunk(u8_stream *FileBytes, world_chunk *Result, memory_arena *PermMe
     //
     // SPOT data
     //
-    Tag = Read_u32(FileBytes);
+    u32 Tag = Read_u32(FileBytes);
     Assert(Tag ==  WorldChunkFileTag_SPOT);
 
     umm ByteCount = SpotElementSize*TotalElements;
@@ -373,11 +373,10 @@ SerializeChunk(world_chunk *Chunk, u8_cursor_block_array *Bytes)
   Result &= Write(Bytes, (u8*)&FileHeader, sizeof(FileHeader));
 
   {
-    u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize;
-
-    u32 Tag = WorldChunkFileTag_VOXD;
-    Result &= Write(Bytes, Tag);
-    Result &= Write(Bytes, (u8*)Chunk->Voxels, VoxByteCount);
+    /* u64 VoxByteCount = FileHeader.VoxelElementCount * FileHeader.VoxelElementSize; */
+    /* u32 Tag = WorldChunkFileTag_VOXD; */
+    /* Result &= Write(Bytes, Tag); */
+    /* Result &= Write(Bytes, (u8*)Chunk->Voxels, VoxByteCount); */
   }
 
 #if 0
@@ -607,7 +606,9 @@ InitAsset(asset *Asset, thread_local_state *Thread)
     // chunk is a weird one as the buffers can be of arbitrary size.
     Deserialize(&Bytes, Chunk, Thread->PermMemory, 1);
 
-    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Occupancy, Chunk->Voxels, Chunk->Dim, V3i(0), Chunk->Dim);
+    NotImplemented;
+    voxel *VoxelBuffer = 0;
+    MarkBoundaryVoxels_MakeExteriorFaces(Chunk->Occupancy, VoxelBuffer, Chunk->Dim, V3i(0), Chunk->Dim);
 
     /* FinalizeChunkInitialization(Chunk); */
 

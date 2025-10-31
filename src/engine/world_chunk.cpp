@@ -157,7 +157,7 @@ AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, me
     Result->Occupancy        = AllocateAlignedProtection(u64,   Storage,   OccupancyCount,               CACHE_LINE_SIZE, false);
     Result->xOccupancyBorder = AllocateAlignedProtection(u64,   Storage,  xOccupancyBorder_ElementCount, CACHE_LINE_SIZE, false);
     Result->FaceMasks        = AllocateAlignedProtection(u64,   Storage, 6*OccupancyCount,               CACHE_LINE_SIZE, false);
-    Result->Voxels           = AllocateAlignedProtection(voxel, Storage,   VoxCount,                     CACHE_LINE_SIZE, false);
+    /* Result->Voxels           = AllocateAlignedProtection(voxel, Storage,   VoxCount,                     CACHE_LINE_SIZE, false); */
   }
 
   WorldChunk(Result, WorldP, Dim, DimInChunks);
@@ -370,7 +370,7 @@ GetAndInsertFreeWorldChunk(world *World, world_position P)
     if (Result)
     {
       Assert(Result->WorldP == P);
-      Assert(Result->Voxels);
+      /* Assert(Result->Voxels); */
       Assert(Result->Dim == World->ChunkDim);
     }
 
@@ -669,6 +669,9 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
   TIMED_FUNCTION();
   /* Assert(Dest->FilledCount == 0); */
 
+  NotImplemented;
+
+#if 0
   auto SrcChunkDim = Src->Dim;
   auto DestChunkDim = Dest->Dim;
 
@@ -709,12 +712,17 @@ MergeChunksOffset(world_chunk *Src, world_chunk *Dest, voxel_position Offset)
       }
     }
   }
+#endif
 }
 
 link_internal void
 CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestChunkDim, v3i SrcOffset)
 {
   TIMED_FUNCTION();
+
+  NotImplemented;
+
+#if 0
 
   Assert(Src->Dim == SrcChunkDim);
   Assert(Dest->Dim == DestChunkDim);
@@ -748,6 +756,7 @@ CopyChunkOffset(world_chunk *Src, v3i SrcChunkDim, world_chunk *Dest, v3i DestCh
     }
   }
 
+#endif
 }
 
 typedef u32 (*chunk_init_callback)( world_chunk *Chunk,
@@ -1780,7 +1789,8 @@ poof(
                                                             memory_arena *TempMemory,
                                                              vert_t.name  VertexOffset = {})
     {
-      BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
+      NotImplemented;
+      /* BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset); */
     }
 
     link_internal void
@@ -3244,7 +3254,8 @@ ComputeStandingSpots( v3i SrcChunkDim,
                       /* memory_arena *PermMemory, */
                       memory_arena *TempMemory )
 {
-  ComputeStandingSpots( SrcChunkDim, SrcChunk->Occupancy, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /* PermMemory, */ TempMemory );
+  NotImplemented;
+  /* ComputeStandingSpots( SrcChunkDim, SrcChunk->Occupancy, SrcChunk->Voxels, SrcChunkOffset, SrcChunkToDestChunk, TileDim, DestChunkDim, DebugMesh, DestStandingSpots, /1* PermMemory, *1/ TempMemory ); */
 }
 
 #if 0
@@ -3681,6 +3692,7 @@ link_internal void
 RebuildWorldChunkMesh(
     thread_local_state *Thread,
     world_chunk *Chunk,
+    voxel       *Voxels,
     v3i MinOffset,
     v3i MaxOffset,
     world_chunk_mesh_bitfield MeshBit,
@@ -3695,7 +3707,7 @@ RebuildWorldChunkMesh(
   /* Assert( IsSet(Chunk->Flags, Chunk_VoxelsInitialized) ); */
   Assert( MeshBit == MeshBit_Lod0 );
 
-  BuildWorldChunkMeshFromMarkedVoxels_Naieve( Chunk->Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
+  BuildWorldChunkMeshFromMarkedVoxels_Naieve( Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
 
   if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, &Chunk->Mesh.Handles); }
 }
@@ -3797,7 +3809,7 @@ WorkQueueEntryRebuildMesh(world_chunk *Chunk, chunk_init_flags Flags)
 }
 
 link_internal work_queue_entry_build_chunk_mesh
-WorkQueueEntryBuildWorldChunkMesh(world_chunk *SynChunk, octree_node *DestNode)
+WorkQueueEntryBuildWorldChunkMesh(gen_chunk *SynChunk, octree_node *DestNode)
 {
   work_queue_entry_build_chunk_mesh Result = {SynChunk, DestNode};
   return Result;
@@ -4498,6 +4510,7 @@ MousePickVoxel(engine_resources *Resources, ray *Ray)
   return Result;
 }
 
+#if 0
 link_internal voxel *
 TryGetVoxelPointer(world *World, cp Pos)
 {
@@ -4532,6 +4545,7 @@ GetVoxelPointer(picked_voxel *Pick, picked_voxel_position Pos)
 
   return Result;
 }
+#endif
 
 link_internal v3
 GetAbsoluteP(picked_voxel *Pick)
@@ -4815,7 +4829,7 @@ DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunk
 #endif // BONSAI_DEBUG_SYSTEM_API
 
 link_internal u32
-FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u32 *NoiseValues, v3i SrcToDest, s64 zMin)
+FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, voxel *Voxels, v3i WorldBasis, v3i NoiseDim, u32 *NoiseValues, v3i SrcToDest, s64 zMin)
 {
   TIMED_FUNCTION();
   /* HISTOGRAM_FUNCTION(); */
@@ -4849,7 +4863,7 @@ FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i No
             v3i ChunkP = V3i(xChunk, yChunk, zChunk);
             s32 ChunkIndex = GetIndex(ChunkP, Chunk->Dim);
             u32 OccupancyBitMask = ~(1u << 31);
-            Chunk->Voxels[ChunkIndex].Data = ThisNoiseV & OccupancyBitMask;
+            Voxels[ChunkIndex].Data = ThisNoiseV & OccupancyBitMask;
 
             /* if (GetEngineDebug()->MarkChunkBorderVoxels) */
             /* { */

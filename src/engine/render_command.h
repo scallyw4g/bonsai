@@ -149,7 +149,7 @@ struct bonsai_render_command_allocate_and_map_gpu_element_buffer
   // remove.
   //
   // nopush
-  world_chunk *SynChunk;
+  gen_chunk   *SynChunk;
   octree_node *DestNode;
 };
 

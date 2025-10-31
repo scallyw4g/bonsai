@@ -1,4 +1,4 @@
-// src/engine/world_chunk.cpp:1454:0
+// src/engine/world_chunk.cpp:1463:0
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
   u64 *FaceMasks,
@@ -326,7 +326,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3_u8( vox_data *Vox,
   memory_arena *TempMemory,
   v3_u8  VertexOffset = {})
 {
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy_v3_u8(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset);
+  NotImplemented;
+  /* BuildWorldChunkMeshFromMarkedVoxels_Greedy_(vert_t.name)(Vox->ChunkData->Voxels, Vox->ChunkData->Dim, {}, Vox->ChunkData->Dim, DestGeometry, DestTransparentGeometry, TempMemory, VertexOffset); */
 }
 
 link_internal void

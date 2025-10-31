@@ -55,8 +55,8 @@ poof(serdes_struct(world_chunk_0))
 link_internal void
 Marshal(world_chunk_0 *Stored, world_chunk *Live)
 {
-poof(default_marshal(world_chunk_0))
-#include <generated/default_marshal_world_chunk_0.h>
+/* poof(default_marshal(world_chunk_0)) */
+/* #include <generated/default_marshal_world_chunk_0.h> */
 }
 
 
@@ -155,8 +155,9 @@ Serialize(u8_cursor_block_array *Bytes, chunk_data *Data, umm Count = 1)
 
   if (ElementCount)
   {
-    Serialize(Bytes, Data->Voxels, ElementCount);
-    Serialize(Bytes, Data->VoxelLighting, ElementCount);
+    NotImplemented;
+    /* Serialize(Bytes, Data->Voxels, ElementCount); */
+    /* Serialize(Bytes, Data->VoxelLighting, ElementCount); */
   }
 #endif
 
@@ -173,13 +174,14 @@ Deserialize(u8_stream *Bytes, chunk_data *Data, memory_arena *Memory, umm Count 
   Result &= ReadBytesIntoBuffer(Bytes, Cast(u8*, Data), sizeof(chunk_data));
 
   umm ElementCount = umm(Volume(Data->Dim));
-  Data->Voxels = 0;
-  Data->VoxelLighting = 0;
+  /* Data->Voxels = 0; */
+  /* Data->VoxelLighting = 0; */
 
   if (ElementCount)
   {
-    Result &= Deserialize(Bytes, Data->Voxels, Memory, ElementCount);
-    Result &= Deserialize(Bytes, Data->VoxelLighting, Memory, ElementCount);
+    NotImplemented;
+    /* Result &= Deserialize(Bytes, Data->Voxels, Memory, ElementCount); */
+    /* Result &= Deserialize(Bytes, Data->VoxelLighting, Memory, ElementCount); */
   }
 #endif
 

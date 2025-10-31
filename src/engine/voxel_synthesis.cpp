@@ -73,10 +73,11 @@ BakeVoxelSynthesisRules(const char* InputVox)
     s32 VIndex = GetIndex(xIndex, yIndex, zIndex, ModelDim);
     NotImplemented;
     /* Vox.ChunkData->Voxels[VIndex].Flags = {}; */
-    Vox.ChunkData->Voxels[VIndex].RGBColor = PackV3_16b(RGB_GRASS_GREEN);
+    /* Vox.ChunkData->Voxels[VIndex].RGBColor = PackV3_16b(RGB_GRASS_GREEN); */
   }
 
-  MakeFaceMasks_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->xOccupancyBorder, Vox.ChunkData->FaceMasks, Vox.ChunkData->Voxels, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
+  NotImplemented;
+  MakeFaceMasks_NoExteriorFaces( Vox.ChunkData->Occupancy, Vox.ChunkData->xOccupancyBorder, Vox.ChunkData->FaceMasks, 0, Vox.ChunkData->Dim, {}, Vox.ChunkData->Dim);
 
   Assert(Vox.ChunkData->Dim.x % Global_TileDim.x == 0);
   Assert(Vox.ChunkData->Dim.y % Global_TileDim.y == 0);
@@ -117,7 +118,9 @@ BakeVoxelSynthesisRules(const char* InputVox)
       s32 ChunkVoxIndex = TryGetIndex( ChunkVoxP, Vox.ChunkData->Dim);
       if (ChunkVoxIndex > -1)
       {
-        voxel *V = Vox.ChunkData->Voxels + ChunkVoxIndex;
+        NotImplemented;
+        voxel *V = 0;
+        /* voxel *V = Vox.ChunkData->Voxels + ChunkVoxIndex; */
         TileHash += Hash(V, TileVoxP);
         TempVoxels[TmpVoxelsIndex] = *V;
       }

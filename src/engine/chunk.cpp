@@ -12,8 +12,8 @@ AllocateChunkData(memory_arena *Storage, chunk_dimension Dim)
     s32 OccupancyCount    = (VoxCount+63) / 64; // Add seven so we round up when we divide if there's an extra one (or several)
     Result->Occupancy     = AllocateAlignedProtection(           u64, Storage ,   OccupancyCount, CACHE_LINE_SIZE, false);
     Result->FaceMasks     = AllocateAlignedProtection(           u64, Storage , 6*OccupancyCount, CACHE_LINE_SIZE, false);
-    Result->Voxels        = AllocateAlignedProtection(         voxel, Storage , VoxCount,       CACHE_LINE_SIZE, false);
-    Result->VoxelLighting = AllocateAlignedProtection(voxel_lighting, Storage , VoxCount,       CACHE_LINE_SIZE, false);
+    /* Result->Voxels        = AllocateAlignedProtection(         voxel, Storage , VoxCount,       CACHE_LINE_SIZE, false); */
+    /* Result->VoxelLighting = AllocateAlignedProtection(voxel_lighting, Storage , VoxCount,       CACHE_LINE_SIZE, false); */
   }
 
   return Result;

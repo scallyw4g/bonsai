@@ -594,12 +594,13 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 inline b32
 IsBoundaryVoxel(world_chunk *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
+  b32 Result = False;
+
+  NotImplemented;
+#if 0
   s32 VoxelIndex = GetIndex(Offset, Dim);
   voxel *V = &Chunk->Voxels[VoxelIndex];
 
-  b32 Result = False;
-  NotImplemented;
-#if 0
   Result |= IsSet( V, Voxel_BackFace);
   Result |= IsSet( V, Voxel_FrontFace);
   Result |= IsSet( V, Voxel_TopFace);

@@ -181,8 +181,8 @@ struct chunk_data
   u64            *Occupancy;
   u64            *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
   u64            *FaceMasks;
-  voxel          *Voxels;
-  voxel_lighting *VoxelLighting;
+  /* voxel          *Voxels; */
+  /* voxel_lighting *VoxelLighting; */
 };
 
 poof(maybe(chunk_data))
@@ -316,7 +316,6 @@ poof( block_array_h(entity_ptr, {8}, {}) )
 #include <generated/block_array_entity_ptr_688856411_h.h>
 
 
-
 struct world_chunk poof(@version(1))
 {
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
@@ -329,8 +328,8 @@ struct world_chunk poof(@version(1))
                  u64 *Occupancy;
                  u64 *xOccupancyBorder; // [xOccupancyBorder_ElementCount];
                  u64 *FaceMasks;
-               voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim))))
-      voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim))))
+               /* voxel *Voxels;         poof(@array_length( Cast(umm, Volume(Element->Dim)))) */
+      /* voxel_lighting *VoxelLighting;  poof(@array_length( Cast(umm, Volume(Element->Dim)))) */
   // }
 
   b32 IsOnFreelist;
@@ -351,6 +350,16 @@ struct world_chunk poof(@version(1))
   // considered for collision detection.
   entity_ptr_block_array Entities; poof(@no_serialize)
 };
+
+struct gen_chunk
+{
+  // TODO(Jesse): Remove somehow
+  gen_chunk *Next;
+
+  world_chunk  Chunk;
+  voxel       *Voxels;
+};
+
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
 //
@@ -600,6 +609,7 @@ GetStandingSpotsWithinRadius_FilteredByStandable(world *World, canonical_positio
 /* link_internal untextured_3d_geometry_buffer * */
 /* SetMesh(world_chunk *Chunk, world_chunk_mesh_bitfield MeshBit, mesh_freelist *MeshFreelist, memory_arena *PermMemory); */
 
+#if 0
 inline voxel*
 TryGetVoxel(world_chunk* Chunk, voxel_position VoxelP)
 {
@@ -616,6 +626,7 @@ GetVoxel(world_chunk* Chunk, voxel_position VoxelP)
   voxel *Result = Chunk->Voxels + VoxelIndex;
   return Result;
 }
+#endif
 
 link_internal void
 MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
