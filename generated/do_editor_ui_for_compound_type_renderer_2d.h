@@ -63,7 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer),
+          Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer),
           MemberName,
           ThisHash,
           Params
@@ -113,7 +113,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer),
+          Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer),
           MemberName,
           ThisHash,
           Params

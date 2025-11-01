@@ -19,9 +19,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = V3i(100, 100, 0);
   canonical_position CameraTargetP = {};
 
-  auto VisibleRegionSize = VisibleRegionSize_128;
+  /* auto VisibleRegionSize = VisibleRegionSize_128; */
   /* auto VisibleRegionSize = VisibleRegionSize_1024; */
-  /* auto VisibleRegionSize = VisibleRegionSize_8192; */
+  auto VisibleRegionSize = VisibleRegionSize_8192;
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   v3i VisibleRegion = V3i(VisibleRegionSize);
@@ -93,12 +93,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushWindowEnd(Ui, Window);
   }
 
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");
-    PushWindowStart(Ui, Window);
-    PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP);
-    PushWindowEnd(Ui, Window);
-  }
+  /* { */
+  /*   window_layout *Window = GetOrCreateWindow(Ui, "Easing Window"); */
+  /*   PushWindowStart(Ui, Window); */
+  /*   PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP); */
+  /*   PushWindowEnd(Ui, Window); */
+  /* } */
 
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);

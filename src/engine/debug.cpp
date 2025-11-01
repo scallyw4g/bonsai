@@ -408,7 +408,7 @@ DoAssetWindow(engine_resources *Engine)
 
                 case AssetType_WorldChunk:
                 {
-                  render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
+                  render_to_texture_group *RTTGroup = &Engine->RTTGroup;
 
                   world_chunk *Chunk = &Asset->Chunk;
 

@@ -1,8 +1,12 @@
 link_export void
 DrainRenderQueue(engine_resources *Engine)
 {
+  TIMED_FUNCTION();
+
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
+
+  RenderInfo("DrainRenderQueue");
 
   AssertNoGlErrors;
 
@@ -29,6 +33,7 @@ DrainRenderQueue(engine_resources *Engine)
         InvalidCodePath();
       } break;
 
+
       { tmatch(work_queue_entry_async_function_call, Job, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
@@ -52,6 +57,7 @@ DrainRenderQueue(engine_resources *Engine)
                 u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
                 switch(SyncStatus)
                 {
+
                   case GL_ALREADY_SIGNALED:
                   case GL_CONDITION_SATISFIED:
                   {
@@ -750,6 +756,7 @@ DrainRenderQueue(engine_resources *Engine)
             MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
 
             MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+
             MapGpuBuffer(&Ui->TextGroup->Buf);
 
             Assert(GpuMap->Buffer.At == 0);

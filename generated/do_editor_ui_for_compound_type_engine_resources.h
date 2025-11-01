@@ -664,7 +664,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(render_entity_to_texture_group*, &Element->RTTGroup),
+          Cast(render_to_texture_group*, &Element->RTTGroup),
           MemberName,
           ThisHash,
           Params

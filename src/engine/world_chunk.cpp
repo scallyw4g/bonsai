@@ -4629,7 +4629,7 @@ struct renderer_2d;
 
 #if 0
 link_internal void
-PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window, render_entity_to_texture_group *PickedChunksRenderGroup)
+PushChunkView(renderer_2d* Group, world_chunk* Chunk, window_layout* Window, render_to_texture_group *PickedChunksRenderGroup)
 {
   debug_state* DebugState = GetDebugState();
   PushWindowStart(Group, Window);
@@ -4723,7 +4723,7 @@ PushChunkDetails(renderer_2d* Group, world_chunk* Chunk, window_layout* Window)
 }
 
 link_internal picked_world_chunk*
-DrawPickedChunks(renderer_2d* Group, render_entity_to_texture_group *PickedChunksRenderGroup, picked_world_chunk_static_buffer *PickedChunks, picked_world_chunk *HotChunk)
+DrawPickedChunks(renderer_2d* Group, render_to_texture_group *PickedChunksRenderGroup, picked_world_chunk_static_buffer *PickedChunks, picked_world_chunk *HotChunk)
 {
   TIMED_FUNCTION();
 

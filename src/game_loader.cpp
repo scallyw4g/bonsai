@@ -208,6 +208,8 @@ main( s32 ArgCount, const char ** Args )
   r32 LastMs = 0;
   while (Os->ContinueRunning)
   {
+    /* Info("Frame (%d)", EngineResources->FrameIndex); */
+
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
     /* CSwitchEventsPerFrame = 0; */
     /* DebugLine("%u", CSwitchEventsThisFrame); */

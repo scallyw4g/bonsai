@@ -379,7 +379,7 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
 }
 
 link_internal void
-InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
+InitRenderToTextureGroup(render_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
 {
   // TODO(Jesse): Can this not re-use the immediate mode GpuMap from the 3D renderer?
   AllocateGpuElementBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));

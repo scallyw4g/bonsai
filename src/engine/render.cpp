@@ -325,7 +325,7 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 #endif
 
 inline void
-ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
+ClearFramebuffers(graphics *Graphics, render_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 

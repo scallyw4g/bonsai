@@ -114,7 +114,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(gpu_mapped_ui_buffer*, &Element->Buf),
+          Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->Buf),
           MemberName,
           ThisHash,
           Params

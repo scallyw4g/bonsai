@@ -82,7 +82,7 @@ struct engine_resources
 
   maybe_entity_ptr HoverEntity;
 
-  render_entity_to_texture_group RTTGroup;
+  render_to_texture_group RTTGroup;
 
   gen_chunk_freelist SynChunkFreelist;
 };
