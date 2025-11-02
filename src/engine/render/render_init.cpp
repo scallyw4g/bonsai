@@ -382,7 +382,7 @@ link_internal void
 InitRenderToTextureGroup(render_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
 {
   // TODO(Jesse): Can this not re-use the immediate mode GpuMap from the 3D renderer?
-  AllocateGpuElementBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
@@ -418,7 +418,7 @@ MakeTransparencyShader(shader *Shader, v2 *ApplicationResolution, b32 *BravoilMy
 link_internal void
 InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
-  AllocateGpuElementBuffer(&Group->GpuBuffer, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Group->GpuBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
@@ -547,8 +547,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
-  AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
-  AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Result->ImmediateGeometry, DataType_v3, (u32)Megabytes(1));
+  /* AllocateGpuBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1)); */
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))

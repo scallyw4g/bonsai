@@ -73,7 +73,7 @@ SyncGpuBuffersImmediate(engine_resources *Engine, lod_element_buffer *Meshes)
         }
         else
         {
-          DeallocateGpuElementBuffer(Handles);
+          DeallocateGpuBuffer(Handles);
           AssertNoGlErrors;
         }
 

@@ -145,6 +145,7 @@ struct gaussian_render_group
 struct transparency_render_group
 {
   gpu_mapped_element_buffer  GpuBuffer;
+
   framebuffer                FBO;
   shader                     Shader;
   texture                    AccumTex;
@@ -244,8 +245,9 @@ struct graphics
   volatile u32 NoiseFinalizeJobsPending;
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 
-  gpu_mapped_element_buffer GpuBuffers[2];
-  u32 GpuBufferWriteIndex;
+  triple_buffered_gpu_mapped_element_buffer ImmediateGeometry;
+  /* gpu_mapped_element_buffer GpuBuffers[2]; */
+  /* u32 GpuBufferWriteIndex; */
 
   gpu_timer_block_array GpuTimers = GpuTimerBlockArray(&Global_PermMemory);
 

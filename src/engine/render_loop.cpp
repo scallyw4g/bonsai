@@ -115,7 +115,7 @@ DrainRenderQueue(engine_resources *Engine)
             octree_node *Node = Command->DestNode;
             gpu_mapped_element_buffer *Buf = &Command->Buf;
 
-            FlushBuffersToCard(Buf);
+            FlushBuffersToCard_gpu_mapped_element_buffer(&Buf->Handles);
 
             if (HasGpuMesh(&Node->Chunk->Mesh))
             {
@@ -715,13 +715,16 @@ DrainRenderQueue(engine_resources *Engine)
               DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
             }
 
-            Ensure( FlushBuffersToCard(GpuMap) ); // Unmaps buffer
-            if (GpuMap->Buffer.At)
+            /* Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer */
+
+            /* if (GpuMap->Buffer.At) */
             {
-              RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
-              RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap);
+              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
+              /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
             }
-            Clear(&GpuMap->Buffer);
+            /* Clear(&GpuMap->Buffer); */
+
+            /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
 
 
             // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
@@ -729,9 +732,10 @@ DrainRenderQueue(engine_resources *Engine)
             // why that would be, but here we are.
             if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
 
+
             {
-              RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency);
-              RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), GpuMap, Lighting, Graphics);
+              /* RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency); */
+              RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), Lighting, Graphics);
             }
 
             if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
@@ -742,6 +746,8 @@ DrainRenderQueue(engine_resources *Engine)
 
             UiFrameEnd(&Engine->Ui);
 
+            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+            MapGpuBuffer(&Ui->TextGroup->Buf);
 
             BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
@@ -752,14 +758,10 @@ DrainRenderQueue(engine_resources *Engine)
             /* GpuMap = GetNextGpuMap(Graphics); */
 
             // Map GPU buffers for next frame
-            MapGpuBuffer(GpuMap);
-            MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
-
-            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-
-            MapGpuBuffer(&Ui->TextGroup->Buf);
-
+            /* MapGpuBuffer(GpuMap); */
+            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
             Assert(GpuMap->Buffer.At == 0);
+
 
             Graphics->RenderGate = False;
 
@@ -833,6 +835,7 @@ DrainRenderQueue(engine_resources *Engine)
     TIMED_NAMED_BLOCK(CheckReadbackJobs);
     IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
     {
+      TIMED_NAMED_BLOCK(CheckJob);
       Assert(PBOJob);
 
       /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
@@ -915,7 +918,7 @@ RenderThread_Main(void *ThreadStartupParams)
   }
 
   // Map immediate GPU buffers for first frame
-  MapGpuBuffer(&Engine->Graphics.GpuBuffers[0]);
+  MapGpuBuffer(&Engine->Graphics.ImmediateGeometry);
   MapGpuBuffer(&Engine->Graphics.Transparency.GpuBuffer);
 
   auto Ui = &Engine->Ui;

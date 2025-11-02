@@ -118,7 +118,9 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 
   // TODO(Jesse): Hoist this check out of here
   GetGL()->Disable(GL_CULL_FACE);
+
   Draw(GpuMap->Buffer.At);
+
   /* DrawGpuBufferImmediate(GpuMap->Handles); */
   GetGL()->Enable(GL_CULL_FACE);
 
@@ -149,7 +151,7 @@ CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 
 // Does lighting on gBuffer textures.  Also composites transparent surfaces
 link_internal void
-RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
+RenderLuminanceTexture(v2i ApplicationResolution, lighting_render_group *Lighting, graphics *Graphics)
 {
   SetViewport(ApplicationResolution);
 
@@ -231,19 +233,19 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-link_internal gpu_mapped_element_buffer *
-GetNextGpuMap(graphics *Graphics)
-{
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + ((Graphics->GpuBufferWriteIndex+1)%2);
-  return GpuMap;
-}
+/* link_internal gpu_mapped_element_buffer * */
+/* GetNextGpuMap(graphics *Graphics) */
+/* { */
+/*   gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + ((Graphics->GpuBufferWriteIndex+1)%2); */
+/*   return GpuMap; */
+/* } */
 
-link_internal gpu_mapped_element_buffer *
-GetCurrentGpuMap(graphics *Graphics)
-{
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
-  return GpuMap;
-}
+/* link_internal gpu_mapped_element_buffer * */
+/* GetCurrentGpuMap(graphics *Graphics) */
+/* { */
+/*   gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex; */
+/*   return GpuMap; */
+/* } */
 
 #if 0
 void
@@ -733,20 +735,21 @@ HighlightEntity(engine_resources *Engine, entity *Entity)
 link_internal void
 DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 {
-  auto *GpuBuffer = &GetCurrentGpuMap(Graphics)->Buffer;
-  auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
+  NotImplemented;
+  /* auto *GpuBuffer = &Graphics->ImmediateGeometry; */
+  /* auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4); */
 
-  v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP);
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f),    RGB_RED, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bottom.Normal*5.f), RGB_BLUE, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f),   RGB_GREEN, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f),  RGB_YELLOW, 0.2f );
+  /* v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f),    RGB_RED, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bottom.Normal*5.f), RGB_BLUE, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f),   RGB_GREEN, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f),  RGB_YELLOW, 0.2f ); */
 }
 
 link_internal void
 RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
-  FlushBuffersToCard(&Group->GpuBuffer);
+  FlushBuffersToCard_gpu_mapped_element_buffer(&Group->GpuBuffer.Handles);
 
   if (Group->GpuBuffer.Buffer.At)
   {
@@ -921,15 +924,14 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
   AssertNoGlErrors;
   Assert(Handles->Mapped == False);
   Assert(Handles->ElementCount);
+  Assert(Handles->VAO);
 
+  auto GL = GetGL();
+
+  GL->BindVertexArray(Handles->VAO);
+  /* SetupVertexAttribsFor_u3d_geo_element_buffer(Handles); */
   Draw(Handles->ElementCount);
-
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, 0);
-
-  GetGL()->DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GetGL()->DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GetGL()->DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GetGL()->DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GL->BindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 poof(
@@ -945,7 +947,7 @@ poof(
     link_internal void
     CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_mapped_(buffer_t.name) *GpuBuffer)
     {
-      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(&GpuBuffer->Handles);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(container_t.name)(&GpuBuffer->Handles);
       CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
       FlushBuffersToCard(&Dest);
     }
@@ -953,7 +955,7 @@ poof(
     link_internal void
     CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_element_buffer_handles *Handles)
     {
-      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(Handles);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(container_t.name)(Handles);
       CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
       FlushBuffersToCard(&Dest);
     }
@@ -1009,7 +1011,7 @@ poof(
             }
             else
             {
-              DeallocateGpuElementBuffer(Handles);
+              DeallocateGpuBuffer(Handles);
               AssertNoGlErrors;
             }
 
@@ -1031,8 +1033,8 @@ poof(
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh);
 
-poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
-#include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
+/* poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer)) */
+/* #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h> */
 
 link_internal void
 ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
@@ -1043,21 +1045,22 @@ ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 El
   }
   Clear(Handles);
 
-  AllocateGpuElementBuffer(Handles, Type, ElementCount);
+  AllocateGpuBuffer_gpu_mapped_element_buffer(Handles, Type, ElementCount);
 }
 
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
   ReallocateGpuBuffers(Handles, Mesh->Type, Mesh->At);
-  CopyToGpuBuffer(Mesh, Handles);
+  /* CopyToGpuBuffer(Mesh, Handles); */
+  NotImplemented;
 }
 
 link_internal gpu_mapped_element_buffer
 AllocateAndMapGpuBuffer(data_type Type, u32 ElementCount)
 {
   gpu_mapped_element_buffer Buf = {};
-  AllocateGpuElementBuffer(&Buf, Type, ElementCount);
+  AllocateGpuBuffer(&Buf, Type, ElementCount);
   MapGpuBuffer(&Buf);
   return Buf;
 }
@@ -1165,7 +1168,6 @@ DrawLod( engine_resources *Engine,
 
     auto Handles = &Mesh->Handles;
 
-    SetupVertexAttribsFor_u3d_geo_element_buffer(Handles);
     DrawGpuBufferImmediate(Handles);
     AssertNoGlErrors;
   }
@@ -1257,7 +1259,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
       untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
       BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
-      FlushBuffersToCard(&RTTGroup->GeoBuffer);
+      FlushBuffersToCard_gpu_mapped_element_buffer(&RTTGroup->GeoBuffer.Handles);
     }
 
     GetGL()->Enable(GL_DEPTH_TEST);

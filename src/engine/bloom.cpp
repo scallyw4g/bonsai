@@ -42,12 +42,12 @@ RunBloomRenderPass(graphics *Graphics)
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->BlurFBO.ID);
 
-  // Setup VBO for fullscreen quad
-  Assert(Global_QuadVertexBuffer);
-  GetGL()->EnableVertexAttribArray(0);
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer);
-  GetGL()->VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-  AssertNoGlErrors;
+  /* // Setup VBO for fullscreen quad */
+  /* Assert(Global_QuadVertexBuffer); */
+  /* GetGL()->EnableVertexAttribArray(0); */
+  /* GetGL()->BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer); */
+  /* GetGL()->VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); */
+  /* AssertNoGlErrors; */
 
   //
   // Downsample
@@ -70,7 +70,7 @@ RunBloomRenderPass(graphics *Graphics)
     BindUniformByName(&Group->DownsampleShader.Program, "SrcDim", &SrcDim);
 
     GetGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, MipTex->ID, 0);
-    Draw(6);
+    RenderQuad();
 
     GetGL()->BindTexture(GL_TEXTURE_2D, MipTex->ID); // Make current mip the source for next iteration
     SrcDim = V2(MipTex->Dim);
@@ -90,7 +90,7 @@ RunBloomRenderPass(graphics *Graphics)
     SetViewport(MipTex->Dim);
 
     GetGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, MipTex->ID, 0);
-    Draw(6);
+    RenderQuad();
 
     GetGL()->BindTexture(GL_TEXTURE_2D, MipTex->ID); // Make current mip the source for next iteration
     SrcDim = V2(MipTex->Dim);
@@ -100,7 +100,7 @@ RunBloomRenderPass(graphics *Graphics)
 
   SetViewport(Group->Tex.Dim);
   GetGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, Group->Tex.ID, 0);
-  Draw(6);
+  RenderQuad();
 
 
   // Teardown VBO

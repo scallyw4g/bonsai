@@ -212,8 +212,8 @@ ProjectionMatrix(camera *Camera, v2 ScreenDim)
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
-link_internal gpu_mapped_element_buffer *
-GetCurrentGpuMap(graphics *Graphics);
+/* link_internal gpu_mapped_element_buffer * */
+/* GetCurrentGpuMap(graphics *Graphics); */
 
 link_internal void
 DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, world_chunk *Chunk);
@@ -229,3 +229,6 @@ SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);
 
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
+
+link_internal void
+SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles);

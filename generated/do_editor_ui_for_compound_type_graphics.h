@@ -806,50 +806,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         
         
-        cs MemberName = CSz("GpuBuffers");
-                                
-
-        if (ToggleButton(Ui,
-            CSz("v GpuBuffers[2]"),
-            CSz("> GpuBuffers[2]"),
-            UiId(Window, "toggle graphics gpu_mapped_element_buffer GpuBuffers", Element->GpuBuffers, ThisHash),
-            Params ))
-        {
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-          PushNewRow(Ui);
-                    s32 End = 2;
-
-          RangeIterator(ArrayIndex, End)
-          {
-                        DoEditorUi(Ui,
-              Window,
-              Element->GpuBuffers+ArrayIndex,
-              FSz("GpuBuffers[%d]", ArrayIndex),
-              ThisHash,
-              Params);
-
-            
-          }
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-        }
-        PushNewRow(Ui);
-
-
-
-
-        
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("GpuBufferWriteIndex");
+        cs MemberName = CSz("ImmediateGeometry");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->GpuBufferWriteIndex),
+          Cast(triple_buffered_gpu_mapped_element_buffer*, &Element->ImmediateGeometry),
           MemberName,
           ThisHash,
           Params
@@ -862,8 +823,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-                PushNewRow(Ui);
-
+        
       }
       
 

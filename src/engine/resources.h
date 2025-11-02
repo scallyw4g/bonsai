@@ -161,13 +161,13 @@ GetCameraGhost(engine_resources *Engine)
   level_editor              *Editor        = &Res->Editor;               \
   work_queue                *WorldUpdateQ  = &Plat->WorldUpdateQ;        \
 
-#define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
-  graphics                  *Graphics      = &Res->Graphics;              \
-  lighting_render_group     *Lighting      = &Graphics->Lighting;         \
-  renderer_2d               *Ui            = &Res->Ui;                    \
-  gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
-  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
-  camera                    *Camera        =  Graphics->Camera;           \
-  camera                    *GameCamera    = &Graphics->GameCamera;       \
-  work_queue                *RenderQ       = &Plat->RenderQ
+#define UNPACK_GRAPHICS_RESOURCES(Res)                              \
+  graphics                  *Graphics      = &Res->Graphics;        \
+  lighting_render_group     *Lighting      = &Graphics->Lighting;   \
+  renderer_2d               *Ui            = &Res->Ui;              \
+  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;    \
+  camera                    *Camera        =  Graphics->Camera;     \
+  camera                    *GameCamera    = &Graphics->GameCamera; \
+  work_queue                *RenderQ       = &Plat->RenderQ;        \
+  triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry
 
