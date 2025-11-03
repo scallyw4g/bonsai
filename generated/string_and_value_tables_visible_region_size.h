@@ -15,10 +15,10 @@ IsValid(visible_region_size Value)
     case VisibleRegionSize_128:
     case VisibleRegionSize_256:
     case VisibleRegionSize_512:
-    case VisibleRegionSize_1024:
-    case VisibleRegionSize_2048:
-    case VisibleRegionSize_4096:
-    case VisibleRegionSize_8192:
+    case VisibleRegionSize_1k:
+    case VisibleRegionSize_2k:
+    case VisibleRegionSize_4k:
+    case VisibleRegionSize_8k:
     case VisibleRegionSize_16k:
     case VisibleRegionSize_32k:
     case VisibleRegionSize_64k:
@@ -58,10 +58,10 @@ ToStringPrefixless(visible_region_size Type)
     case VisibleRegionSize_128: { Result = CSz("128"); } break;
     case VisibleRegionSize_256: { Result = CSz("256"); } break;
     case VisibleRegionSize_512: { Result = CSz("512"); } break;
-    case VisibleRegionSize_1024: { Result = CSz("1024"); } break;
-    case VisibleRegionSize_2048: { Result = CSz("2048"); } break;
-    case VisibleRegionSize_4096: { Result = CSz("4096"); } break;
-    case VisibleRegionSize_8192: { Result = CSz("8192"); } break;
+    case VisibleRegionSize_1k: { Result = CSz("1k"); } break;
+    case VisibleRegionSize_2k: { Result = CSz("2k"); } break;
+    case VisibleRegionSize_4k: { Result = CSz("4k"); } break;
+    case VisibleRegionSize_8k: { Result = CSz("8k"); } break;
     case VisibleRegionSize_16k: { Result = CSz("16k"); } break;
     case VisibleRegionSize_32k: { Result = CSz("32k"); } break;
     case VisibleRegionSize_64k: { Result = CSz("64k"); } break;
@@ -99,10 +99,10 @@ ToString(visible_region_size Type)
     case VisibleRegionSize_128: { Result = CSz("VisibleRegionSize_128"); } break;
     case VisibleRegionSize_256: { Result = CSz("VisibleRegionSize_256"); } break;
     case VisibleRegionSize_512: { Result = CSz("VisibleRegionSize_512"); } break;
-    case VisibleRegionSize_1024: { Result = CSz("VisibleRegionSize_1024"); } break;
-    case VisibleRegionSize_2048: { Result = CSz("VisibleRegionSize_2048"); } break;
-    case VisibleRegionSize_4096: { Result = CSz("VisibleRegionSize_4096"); } break;
-    case VisibleRegionSize_8192: { Result = CSz("VisibleRegionSize_8192"); } break;
+    case VisibleRegionSize_1k: { Result = CSz("VisibleRegionSize_1k"); } break;
+    case VisibleRegionSize_2k: { Result = CSz("VisibleRegionSize_2k"); } break;
+    case VisibleRegionSize_4k: { Result = CSz("VisibleRegionSize_4k"); } break;
+    case VisibleRegionSize_8k: { Result = CSz("VisibleRegionSize_8k"); } break;
     case VisibleRegionSize_16k: { Result = CSz("VisibleRegionSize_16k"); } break;
     case VisibleRegionSize_32k: { Result = CSz("VisibleRegionSize_32k"); } break;
     case VisibleRegionSize_64k: { Result = CSz("VisibleRegionSize_64k"); } break;
@@ -137,10 +137,10 @@ VisibleRegionSize(counted_string S)
   if (StringsMatch(S, CSz("VisibleRegionSize_128"))) { return VisibleRegionSize_128; }
   if (StringsMatch(S, CSz("VisibleRegionSize_256"))) { return VisibleRegionSize_256; }
   if (StringsMatch(S, CSz("VisibleRegionSize_512"))) { return VisibleRegionSize_512; }
-  if (StringsMatch(S, CSz("VisibleRegionSize_1024"))) { return VisibleRegionSize_1024; }
-  if (StringsMatch(S, CSz("VisibleRegionSize_2048"))) { return VisibleRegionSize_2048; }
-  if (StringsMatch(S, CSz("VisibleRegionSize_4096"))) { return VisibleRegionSize_4096; }
-  if (StringsMatch(S, CSz("VisibleRegionSize_8192"))) { return VisibleRegionSize_8192; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_1k"))) { return VisibleRegionSize_1k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_2k"))) { return VisibleRegionSize_2k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_4k"))) { return VisibleRegionSize_4k; }
+  if (StringsMatch(S, CSz("VisibleRegionSize_8k"))) { return VisibleRegionSize_8k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_16k"))) { return VisibleRegionSize_16k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_32k"))) { return VisibleRegionSize_32k; }
   if (StringsMatch(S, CSz("VisibleRegionSize_64k"))) { return VisibleRegionSize_64k; }

@@ -981,6 +981,8 @@ DrawOctreeRecursive( engine_resources *Engine,
 link_internal void
 MaintainWorldOctree(engine_resources *Engine)
 {
+  TIMED_FUNCTION();
+
   UNPACK_ENGINE_RESOURCES(Engine);
 
 
@@ -1039,7 +1041,10 @@ MaintainWorldOctree(engine_resources *Engine)
     Queue.Lists[ListIndex] = OctreeNodePtrCursor(OCTREE_PRIORITY_QUEUE_LIST_LENGTH, GetTranArena());
   }
 
-  SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0, World->OctreeMemory);
+  {
+    TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
+    SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0, World->OctreeMemory);
+  }
 
   octree_stats Stats = {};
 
@@ -1072,59 +1077,68 @@ MaintainWorldOctree(engine_resources *Engine)
 
 
 
-  DrawOctreeRecursive(Engine, &World->Root, 0, &Queue, MainDrawList, ShadowMapDrawList, &Stats);
+  {
+    TIMED_NAMED_BLOCK(DrawOctreeRecursive);
+    DrawOctreeRecursive(Engine, &World->Root, 0, &Queue, MainDrawList, ShadowMapDrawList, &Stats);
+  }
 
   {
     octree_node_ptr_cursor List = Queue.Lists[498];
     /* Info("(%p) (%p) (%p)", List.Start, List.At, List.End); */
   }
 
-  s32 NumQueuedThisFrame = 0;
-  if (MaxToQueueThisFrame)
   {
-    RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
-    /* IterateOver(Queue.Lists, List, ListIndex) */
+    TIMED_NAMED_BLOCK(QueueChunks);
+    s32 NumQueuedThisFrame = 0;
+    if (MaxToQueueThisFrame)
     {
-      octree_node_ptr_cursor List = Queue.Lists[ListIndex];
-      IterateOver(&List, NodeP, NPIndex)
+      RangeIterator(ListIndex, OCTREE_PRIORITY_QUEUE_LIST_COUNT)
+      /* IterateOver(Queue.Lists, List, ListIndex) */
       {
-        if (NodeP)
+        octree_node_ptr_cursor List = Queue.Lists[ListIndex];
+        IterateOver(&List, NodeP, NPIndex)
         {
-          octree_node *Node = *NodeP;
-
-          // Even though we should check this before pushing nodes onto the
-          // priority queue, we could have pushed the node multiple times if we
-          // did an edit and it overlapped with an uninitialized part of the world.
-          if (NotSet(Node->Flags, Chunk_Queued))
+          if (NodeP)
           {
-            if (Node->Chunk)
-            {
-              Assert(IsAllocated(Node->Chunk));
-            }
-            else
-            {
-              Node->Chunk = GetFreeWorldChunk(World);
-              WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
-            }
+            octree_node *Node = *NodeP;
 
-            Node->Dirty = False;
-            Node->Chunk->FilledCount = 0;
-            QueueChunkForInit(&Plat->LoRenderQ, Node, MeshBit_Lod0);
-            ++Stats.NewQueues;
-            if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+            // Even though we should check this before pushing nodes onto the
+            // priority queue, we could have pushed the node multiple times if we
+            // did an edit and it overlapped with an uninitialized part of the world.
+            if (NotSet(Node->Flags, Chunk_Queued))
+            {
+              if (Node->Chunk)
+              {
+                Assert(IsAllocated(Node->Chunk));
+              }
+              else
+              {
+                Node->Chunk = GetFreeWorldChunk(World);
+                WorldChunk(Node->Chunk, Node->WorldP, GetWorldChunkDim(), Node->Resolution);
+              }
+
+              Node->Dirty = False;
+              Node->Chunk->FilledCount = 0;
+              QueueChunkForInit(&Plat->LoRenderQ, Node, MeshBit_Lod0);
+              ++Stats.NewQueues;
+              if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
+            }
           }
-        }
-        else
-        {
-          break;
+          else
+          {
+            break;
+          }
         }
       }
     }
   }
 done_queueing_nodes:
 
-  DEBUG_OctreeTraversal(Engine, &World->Root, &Stats);
 #if 0
+  {
+    TIMED_NAMED_BLOCK(DEBUG_OctreeTraversal);
+    DEBUG_OctreeTraversal(Engine, &World->Root, &Stats);
+  }
   if (Stats.TotalQueued || Stats.NewQueues)
   {
     Info("TotalLeaves(%d) TotalBranches(%d) TotalQueued(%d) NewQueues(%d)",
@@ -1134,6 +1148,8 @@ done_queueing_nodes:
       Stats.NewQueues);
   }
 #endif
+
+  return;
 }
 
 

@@ -21,6 +21,8 @@ UpdateGameCamera( world *World,
                  camera *Camera,
                     r32  Dt )
 {
+  TIMED_FUNCTION();
+
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
   Camera->TargetYaw += MouseDelta.x;
   Camera->TargetPitch += MouseDelta.y;

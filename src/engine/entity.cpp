@@ -293,6 +293,8 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 link_internal entity *
 GetEntity(entity **EntityTable, entity_id Id)
 {
+  TIMED_FUNCTION();
+
   entity *Result = {};
 
   // NOTE(Jesse): A Generation of 0 means the entity has never been allocated

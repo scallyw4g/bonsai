@@ -21,7 +21,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
   /* auto VisibleRegionSize = VisibleRegionSize_1024; */
-  auto VisibleRegionSize = VisibleRegionSize_8192;
+  /* auto VisibleRegionSize = VisibleRegionSize_8192; */
+  auto VisibleRegionSize = VisibleRegionSize_16k;
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   v3i VisibleRegion = V3i(VisibleRegionSize);

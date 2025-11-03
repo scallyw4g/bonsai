@@ -494,6 +494,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
 link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
+  TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
 

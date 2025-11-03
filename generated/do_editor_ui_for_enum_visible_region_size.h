@@ -102,36 +102,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, visible_region_size *Element,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("1024"), UiId(Window, "enum VisibleRegionSize_1024", Element, ThisHash), Params))
+    if (Button(Ui, CSz("1k"), UiId(Window, "enum VisibleRegionSize_1k", Element, ThisHash), Params))
     {
-            *Element = VisibleRegionSize_1024;
+            *Element = VisibleRegionSize_1k;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("2048"), UiId(Window, "enum VisibleRegionSize_2048", Element, ThisHash), Params))
+    if (Button(Ui, CSz("2k"), UiId(Window, "enum VisibleRegionSize_2k", Element, ThisHash), Params))
     {
-            *Element = VisibleRegionSize_2048;
+            *Element = VisibleRegionSize_2k;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("4096"), UiId(Window, "enum VisibleRegionSize_4096", Element, ThisHash), Params))
+    if (Button(Ui, CSz("4k"), UiId(Window, "enum VisibleRegionSize_4k", Element, ThisHash), Params))
     {
-            *Element = VisibleRegionSize_4096;
+            *Element = VisibleRegionSize_4k;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("8192"), UiId(Window, "enum VisibleRegionSize_8192", Element, ThisHash), Params))
+    if (Button(Ui, CSz("8k"), UiId(Window, "enum VisibleRegionSize_8k", Element, ThisHash), Params))
     {
-            *Element = VisibleRegionSize_8192;
+            *Element = VisibleRegionSize_8k;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

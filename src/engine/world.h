@@ -13,10 +13,10 @@ enum visible_region_size
   VisibleRegionSize_128   = (1 << 7),
   VisibleRegionSize_256   = (1 << 8),
   VisibleRegionSize_512   = (1 << 9),  //   3.3 km
-  VisibleRegionSize_1024  = (1 << 10), //   6.6 km
-  VisibleRegionSize_2048  = (1 << 11), //  13.1 km
-  VisibleRegionSize_4096  = (1 << 12), //  26.2 km
-  VisibleRegionSize_8192  = (1 << 13), //  52.4 km
+  VisibleRegionSize_1k    = (1 << 10), //   6.6 km
+  VisibleRegionSize_2k    = (1 << 11), //  13.1 km
+  VisibleRegionSize_4k    = (1 << 12), //  26.2 km
+  VisibleRegionSize_8k    = (1 << 13), //  52.4 km
   VisibleRegionSize_16k   = (1 << 14), // 104.8 km
   VisibleRegionSize_32k   = (1 << 15), // 209.6 km
   VisibleRegionSize_64k   = (1 << 16), // 419.2 km
