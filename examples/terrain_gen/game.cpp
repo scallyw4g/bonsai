@@ -20,9 +20,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   canonical_position CameraTargetP = {};
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
-  /* auto VisibleRegionSize = VisibleRegionSize_1024; */
+  auto VisibleRegionSize = VisibleRegionSize_1k;
   /* auto VisibleRegionSize = VisibleRegionSize_8192; */
-  auto VisibleRegionSize = VisibleRegionSize_16k;
+  /* auto VisibleRegionSize = VisibleRegionSize_16k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   v3i VisibleRegion = V3i(VisibleRegionSize);
@@ -39,7 +39,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
 
   CameraGhost->P.WorldP = VisibleRegion/2;
-  CameraGhost->P.WorldP.z = (10000/64) + 10;
+  CameraGhost->P.WorldP.z = (10000/64) + 3;
   /* CameraGhost->P.WorldP.z = 0; */
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 

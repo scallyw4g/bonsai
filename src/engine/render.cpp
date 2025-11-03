@@ -1537,7 +1537,10 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
     // In case gpu meshes got deallocated after the chunk was added to the draw list
     if (HasGpuMesh(&Chunk->Mesh))
     {
-      v3 Offset = -1.f*V3(Node->Resolution*0.25f);
+      v3 Offset = V3(Node->Resolution);
+      /* v3 Offset = V3(Node->Resolution*0.5f); */
+      /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
+      /* v3 Offset = {}; */
       v3 Basis = Offset;
       if (Camera)
       {

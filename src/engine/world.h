@@ -114,7 +114,7 @@ struct world
   octree_node_freelist OctreeNodeFreelist;
   octree_node_freelist OctreeNodeDeferFreelist; // Chunks that were queued, to be freed later.
 
-#define MAX_OCTREE_NODES_QUEUED_TOTAL (128)
+#define MAX_OCTREE_NODES_QUEUED_TOTAL (64)
 #define MAX_OCTREE_NODES_QUEUED_PER_FRAME (32)
   s32 MaxOctreeNodesToQueuePerFrame = MAX_OCTREE_NODES_QUEUED_PER_FRAME;
 #undef MAX_OCTREE_NODES_QUEUED_PER_FRAME
@@ -267,7 +267,7 @@ TryGetVoxel(world *World, cp P)
 
 
 #define OCTREE_PRIORITY_QUEUE_LIST_COUNT (512)
-#define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (128)
+#define OCTREE_PRIORITY_QUEUE_LIST_LENGTH (512)
 struct octree_node_priority_queue
 {
   octree_node_ptr_cursor Lists[OCTREE_PRIORITY_QUEUE_LIST_COUNT];
@@ -312,3 +312,8 @@ PushOctreeNodeToPriorityQueue(world *World, camera *GameCamera, octree_node_prio
 link_internal void
 ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats);
 
+link_internal b32
+AllChildrenAreInitialized(octree_node *Node);
+
+link_internal b32
+IsInitialized(octree_node *Node);

@@ -208,6 +208,7 @@ main( s32 ArgCount, const char ** Args )
   r32 LastMs = 0;
   while (Os->ContinueRunning)
   {
+
     /* Info("Frame (%d)", EngineResources->FrameIndex); */
 
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
@@ -335,17 +336,32 @@ main( s32 ArgCount, const char ** Args )
       EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
     }
 
-    r32 CurrentMS = (r32)GetHighPrecisionClock();
-    r32 RealDt = (CurrentMS - LastMs)/1000.0f;
-    LastMs = CurrentMS;
-    Plat->dt = RealDt;
-    Plat->GameTime += RealDt;
+    {
+      r32 CurrentMS = (r32)GetHighPrecisionClock();
+      r32 ThisMs = (CurrentMS - LastMs);
+      r32 TargetMs = 32.f;
 
-    Assert(ThreadLocal_ThreadIndex == 0);
-    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
-    Ensure( RewindArena(TLS->TempMemory) );
+      s32 Sleep = Max(0, s32(TargetMs - ThisMs));
+      /* Info("ThisMs(%.2f) Sleep(%d) Total(%.2f)", ThisMs, Sleep, double(ThisMs+Sleep)); */
 
-    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+      SleepMs(u32(Sleep));
+    }
+
+    {
+      r32 CurrentMS = (r32)GetHighPrecisionClock();
+      r32 ThisMs = (CurrentMS - LastMs);
+      r32 RealDt = ThisMs/1000.0f;
+
+      LastMs = CurrentMS;
+      Plat->dt = RealDt;
+      Plat->GameTime += RealDt;
+
+      Assert(ThreadLocal_ThreadIndex == 0);
+      thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
+      Ensure( RewindArena(TLS->TempMemory) );
+
+      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+    }
   }
 
 #if 0

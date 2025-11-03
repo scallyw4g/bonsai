@@ -354,6 +354,8 @@ ContainsCameraGhost(world *World, entity **EntityTable, octree_node *Node, camer
 link_internal void
 InitOctreeNode(world *World, octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_block_array *PotentialEdits)
 {
+  TIMED_FUNCTION();
+
   // TODO(Jesse): Should there be a pointer to the editor on the World?
   // Or should this just take the editor too..?
   level_editor *Editor = &GetEngineResources()->Editor;
@@ -610,12 +612,32 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 
 #define RatioToListIndex(i) (OCTREE_PRIORITY_QUEUE_LIST_COUNT-1) - Min(s32(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1), s32(i));
 
+
+// 0 is highest priority, OCTREE_PRIORITY_QUEUE_LIST_COUNT is lowest
+//
 link_internal s32
 ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camera *GameCamera)
 {
-  s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep);
+  /* s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep); */
+  /* s32 IdealListIndex = Min(Node->Resolution.x*32, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
+  /* s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
+  s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1);
+
+
+  // Prefer large nodes close to the camera
+  {
+    v3 CamSimP = GetSimSpaceP(World, GameCamera->CurrentP);
+    aabb Box = GetSimSpaceAABB(World, Node);
+
+    r32 D = DistanceToBox(CamSimP, Box);
+    // DRatio is small when a large box is close to the camera
+    r32 DRatio = D / Node->Resolution.x;
+    s32 Offset = s32((1.f/DRatio) * 32.f);
+    IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-Offset);
+  }
 
   // Prefer nodes who intersect the camera ray
+#if 0
   auto Engine = GetEngineResources();
   /* if (Engine->MaybeMouseRay.Tag) */
   {
@@ -628,7 +650,18 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
       IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-100);
     }
   }
+#endif
 
+#if 1
+  // Penalize nodes who are not in the frustum
+  if (IsInFrustum(World, GameCamera, Node) == False)
+  {
+    /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
+    IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
+  }
+#endif
+
+#if 0
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
   {
@@ -638,6 +671,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
     IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
     }
   }
+#endif
 
   // Prefer chunks who have a higher chance of having geometry
   if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
@@ -768,7 +802,11 @@ FreeOctreeChildren(engine_resources *Engine, octree_node *Node)
 
 
 link_internal void
-SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue *Queue, octree_node *NodeToSplit, octree_node *Parent, memory_arena *Memory)
+SplitOctreeNode_Recursive( engine_resources *Engine,
+                 octree_node_priority_queue *Queue,
+                                octree_node *NodeToSplit,
+                                octree_node *Parent,
+                               memory_arena *Memory )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -805,45 +843,53 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
         }
         else
         {
-          local_persist random_series TraversalRng = {43125437654765};
-          u32 Mask = 7u;
-          u32 StartingIndex = RandomU32(&TraversalRng) & Mask;
-          Assert(StartingIndex < 8);
+          /* if (IsInitialized(NodeToSplit)) */
+          /* if (AllChildrenAreInitialized(NodeToSplit)) */
+          {
+            local_persist random_series TraversalRng = {43125437654765};
+            u32 Mask = 7u;
+            u32 StartingIndex = RandomU32(&TraversalRng) & Mask;
+            Assert(StartingIndex < 8);
 
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+0)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+1)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+2)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+3)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+4)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+5)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+6)&Mask], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+7)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+0)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+1)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+2)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+3)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+4)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+5)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+6)&Mask], NodeToSplit, Memory);
+            SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+7)&Mask], NodeToSplit, Memory);
+          }
         }
       } break;
 
       case OctreeNodeType_Leaf:
       {
-        if (OctreeLeafShouldSplit(Engine, NodeToSplit))
+        if (IsInitialized(NodeToSplit))
         {
-          NodeToSplit->Type = OctreeNodeType_Branch;
-
-          v3i ChildDimInChunks = NodeToSplit->Resolution / 2;
-          Assert(ChildDimInChunks >= V3i(1));
-
-          RangeIterator(Index, s32(ArrayCount(NodeToSplit->Children)))
+          b32 DoSplit = Parent == 0 || AllChildrenAreInitialized(Parent);
+          if (OctreeLeafShouldSplit(Engine, NodeToSplit))
           {
-            Assert(NodeToSplit->Children[Index] == 0);
+            NodeToSplit->Type = OctreeNodeType_Branch;
 
-            // NOTE(Jesse): This is used as a mask so we can drop out
-            // dimensions that are on the min edge when computing RelWorldP
-            v3i P = PositionFromIndex(Index, V3i(2));
-            Assert(P < V3i(2));
-            v3i RelWorldP = P * ChildDimInChunks;
+            v3i ChildDimInChunks = NodeToSplit->Resolution / 2;
+            Assert(ChildDimInChunks >= V3i(1));
 
-            octree_node *Child = GetOrAllocate(&World->OctreeNodeFreelist);
-            NodeToSplit->Children[Index] = Child;
+            RangeIterator(Index, s32(ArrayCount(NodeToSplit->Children)))
+            {
+              Assert(NodeToSplit->Children[Index] == 0);
 
-            InitOctreeNode(World, Child, NodeToSplit->WorldP + RelWorldP, ChildDimInChunks, &NodeToSplit->Edits);
+              // NOTE(Jesse): This is used as a mask so we can drop out
+              // dimensions that are on the min edge when computing RelWorldP
+              v3i P = PositionFromIndex(Index, V3i(2));
+              Assert(P < V3i(2));
+              v3i RelWorldP = P * ChildDimInChunks;
+
+              octree_node *Child = GetOrAllocate(&World->OctreeNodeFreelist);
+              NodeToSplit->Children[Index] = Child;
+
+              InitOctreeNode(World, Child, NodeToSplit->WorldP + RelWorldP, ChildDimInChunks, &NodeToSplit->Edits);
+            }
           }
         }
 
@@ -1091,11 +1137,6 @@ MaintainWorldOctree(engine_resources *Engine)
   {
     TIMED_NAMED_BLOCK(DrawOctreeRecursive);
     DrawOctreeRecursive(Engine, &World->Root, 0, &Queue, MainDrawList, ShadowMapDrawList, &Stats);
-  }
-
-  {
-    octree_node_ptr_cursor List = Queue.Lists[498];
-    /* Info("(%p) (%p) (%p)", List.Start, List.At, List.End); */
   }
 
   {
