@@ -1,7 +1,7 @@
 link_export void
 DrainHiRenderQueue(engine_resources *Engine)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
@@ -360,7 +360,7 @@ DrainHiRenderQueue(engine_resources *Engine)
 link_export void
 DrainLoRenderQueue(engine_resources *Engine)
 {
-  TIMED_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
@@ -1080,6 +1080,28 @@ DrainLoRenderQueue(engine_resources *Engine)
   }
 }
 
+#define MillisecondsToNanoseconds(ms) (ms*1000.0)
+
+link_internal void
+SpinlockNs(s32 Nanoseconds)
+{
+  TIMED_FUNCTION();
+
+  r64 StartMs = GetHighPrecisionClock();
+
+  for (;;)
+  {
+    r64 CurrentMs = GetHighPrecisionClock();
+    r64 Elapsed = CurrentMs - StartMs;
+
+    s32 ElapsedNs = s32(MillisecondsToNanoseconds(Elapsed));
+    if (ElapsedNs > Nanoseconds)
+    {
+      break;
+    }
+  }
+}
+
 link_export THREAD_MAIN_RETURN
 RenderThread_Main(void *ThreadStartupParams)
 {
@@ -1132,15 +1154,18 @@ RenderThread_Main(void *ThreadStartupParams)
     while ( FutexNotSignaled(WorkerThreadsExitFutex) )
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
+
       AppApi->WorkerBeforeJob(Thread);
 
       EngineApi->DrainHiRenderQueue(Engine);
 
       EngineApi->DrainLoRenderQueue(Engine);
 
+      SpinlockNs(100);
+
       if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex)) { WaitOnFutex(&Plat->WorkerThreadsSuspendFutex); }
 
-      SleepMs(1);
+      /* SleepMs(1); */
     }
 
     Info("Exiting Render Thread (%d)", Thread->ThreadIndex);
