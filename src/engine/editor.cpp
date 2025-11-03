@@ -851,7 +851,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
     Assert(Texture->Dim > V2i(0));
     Texture->Queued = True;
     /* PushBonsaiRenderCommandAllocateTexture(&Engine->Plat->RenderQ, Texture); */
-    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, Texture->Dim, 0, CSz("NoisePreviewTexture"));
+    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.LoRenderQ, Texture, Texture->Dim, 0, CSz("NoisePreviewTexture"));
     /* *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture")); */
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }

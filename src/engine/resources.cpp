@@ -10,7 +10,7 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   if (HasGpuMesh(&Chunk->Mesh))
   {
-    PushDeallocateBuffersCommand(RenderQ, &Chunk->Mesh.Handles);
+    PushDeallocateBuffersCommand(LoRenderQ, &Chunk->Mesh.Handles);
   }
 
   ClearWorldChunk(Chunk);
@@ -124,25 +124,27 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
 
   CancelAllWorkQueueJobs(Plat, &Plat->HighPriority);
   CancelAllWorkQueueJobs(Plat, &Plat->LowPriority);
-  CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ);
+  /* CancelAllWorkQueueJobs(Plat, &Plat->WorldUpdateQ); */
 
   // NOTE(Jesse): The RendeQ flushes before it suspends, and at the time of
   // this writing the application depends on this behavior.  Some render queue
   // jobs have knowledge of who to call next (because we don't have a way of
   // specifying the next next job when we submit one).  This makes it difficult
   // to free resources that are only known to the jobs..
-  CancelAllWorkQueueJobs(Plat, &Plat->RenderQ);
+  CancelAllWorkQueueJobs(Plat, &Plat->HiRenderQ);
+  CancelAllWorkQueueJobs(Plat, &Plat->LoRenderQ);
 
   Assert(QueueIsEmpty(&Plat->HighPriority));
   Assert(QueueIsEmpty(&Plat->LowPriority));
-  Assert(QueueIsEmpty(&Plat->WorldUpdateQ));
-  Assert(QueueIsEmpty(&Plat->RenderQ));
+  Assert(QueueIsEmpty(&Plat->HiRenderQ));
+  Assert(QueueIsEmpty(&Plat->LoRenderQ));
 
-  PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->RenderQ);
+  PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ);
 
   UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
 
-  while (!QueueIsEmpty(&Plat->RenderQ)) { SleepMs(1); }
+  while (!QueueIsEmpty(&Plat->HiRenderQ)) { SleepMs(1); }
+  while (!QueueIsEmpty(&Plat->LoRenderQ)) { SleepMs(1); }
 
   SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 }

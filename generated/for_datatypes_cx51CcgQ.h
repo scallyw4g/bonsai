@@ -693,7 +693,7 @@ link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
   // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.RenderQ);
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
   compile_shader_pair_async_params Params =
   {
@@ -909,11 +909,12 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 
+
 link_internal void
 InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* Result )
 {
   // Make sure we don't accidentally pass something that's not the render queue
-  Assert(Queue == &GetStdlib()->Plat.RenderQ);
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
   initialize_easing_function_visualizer_render_pass_async_params Params =
   {

@@ -12,7 +12,9 @@ struct engine_api
   // globals as the game lib.
   thread_main_callback_type RenderThread_Main;
 
-  bonsai_engine_callback DrainRenderQueue;
+  bonsai_engine_callback DrainHiRenderQueue;
+  bonsai_engine_callback DrainLoRenderQueue;
+
   bonsai_engine_callback Render;
 };
 
@@ -28,9 +30,19 @@ InitializeEngineApi(engine_api *EngineApi, shared_lib GameLib)
 
   EngineApi->Render            = (bonsai_engine_callback)   GetProcFromLib(GameLib, STRINGIZE(Bonsai_Render) );
   EngineApi->RenderThread_Main = (thread_main_callback_type)GetProcFromLib(GameLib, STRINGIZE(RenderThread_Main) );
-  EngineApi->DrainRenderQueue  = (bonsai_engine_callback)   GetProcFromLib(GameLib, STRINGIZE(DrainRenderQueue) );
+  EngineApi->DrainLoRenderQueue  = (bonsai_engine_callback)   GetProcFromLib(GameLib, STRINGIZE(DrainLoRenderQueue) );
+  EngineApi->DrainHiRenderQueue  = (bonsai_engine_callback)   GetProcFromLib(GameLib, STRINGIZE(DrainHiRenderQueue) );
 
-  b32 Result = EngineApi->Simulate && EngineApi->OnLibraryLoad && EngineApi->Init && EngineApi->FrameBegin && EngineApi->FrameEnd && EngineApi->Render && EngineApi->RenderThread_Main && EngineApi->DrainRenderQueue;
+  b32 Result = EngineApi->Simulate           &&
+               EngineApi->OnLibraryLoad      &&
+               EngineApi->Init               &&
+               EngineApi->FrameBegin         &&
+               EngineApi->FrameEnd           &&
+               EngineApi->Render             &&
+               EngineApi->RenderThread_Main  &&
+               EngineApi->DrainHiRenderQueue &&
+               EngineApi->DrainLoRenderQueue;
+
   return Result;
 }
 

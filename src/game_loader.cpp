@@ -182,8 +182,8 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
   InitQueue(&Plat->LowPriority,  WorkQueueMemory);
-  InitQueue(&Plat->RenderQ,      WorkQueueMemory);
-  InitQueue(&Plat->WorldUpdateQ, WorkQueueMemory);
+  InitQueue(&Plat->HiRenderQ,      WorkQueueMemory);
+  InitQueue(&Plat->LoRenderQ,      WorkQueueMemory);
 
   DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
@@ -314,6 +314,7 @@ main( s32 ArgCount, const char ** Args )
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
       EngineApi->Render(EngineResources);
+
       Assert(EngineResources->Graphics.RenderGate == False);
 
       DEBUG_FRAME_END(Plat->dt);
@@ -339,7 +340,6 @@ main( s32 ArgCount, const char ** Args )
     LastMs = CurrentMS;
     Plat->dt = RealDt;
     Plat->GameTime += RealDt;
-
 
     Assert(ThreadLocal_ThreadIndex == 0);
     thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);

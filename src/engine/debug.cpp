@@ -156,7 +156,7 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
   asset_thumbnail BlankThumb = {};
   asset_thumbnail *Thumb = Push(AssetThumbnails, &BlankThumb);
 
-  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+  MakeTexture_RGBA_Async(&Plat->LoRenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
   StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
 
   return Thumb;
@@ -238,14 +238,14 @@ RenderMeshPreviewIntoWorld(engine_resources *Engine, gpu_mapped_element_buffer *
         //
         /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
 
-        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        PushBonsaiRenderCommandSetupShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
         v3 AssetHalfDim = Dim/2.f;
         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
         NotImplemented;
-        /* DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, Basis, Quaternion(), V3(1)); */
+        /* DrawLod_Async(HiRenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, Basis, Quaternion(), V3(1)); */
 
-        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        PushBonsaiRenderCommandTeardownShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
       }
 
     }

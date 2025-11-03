@@ -3709,7 +3709,7 @@ RebuildWorldChunkMesh(
 
   BuildWorldChunkMeshFromMarkedVoxels_Naieve( Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
 
-  if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.RenderQ, &Chunk->Mesh.Handles); }
+  if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.LoRenderQ, &Chunk->Mesh.Handles); }
 }
 #endif
 

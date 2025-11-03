@@ -63,7 +63,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Push(&EasingFunction->Points, V2(1,1));
 
   InitializeEasingFunctionVisualizerRenderPass_Async(
-       RenderQ,
+       LoRenderQ,
       &GameState->EasingFunctionVisRP,
        EasingFunction,
        0);

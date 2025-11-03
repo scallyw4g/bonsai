@@ -158,8 +158,7 @@ GetCameraGhost(engine_resources *Engine)
   engine_debug              *EngineDebug   = &Res->EngineDebug;          \
   tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist; \
   input                     *Input         = &Res->Stdlib.Plat.Input;    \
-  level_editor              *Editor        = &Res->Editor;               \
-  work_queue                *WorldUpdateQ  = &Plat->WorldUpdateQ;        \
+  level_editor              *Editor        = &Res->Editor;
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                              \
   graphics                  *Graphics      = &Res->Graphics;        \
@@ -168,6 +167,7 @@ GetCameraGhost(engine_resources *Engine)
   g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;    \
   camera                    *Camera        =  Graphics->Camera;     \
   camera                    *GameCamera    = &Graphics->GameCamera; \
-  work_queue                *RenderQ       = &Plat->RenderQ;        \
+  work_queue                *HiRenderQ     = &Plat->HiRenderQ;        \
+  work_queue                *LoRenderQ     = &Plat->LoRenderQ;        \
   triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry
 

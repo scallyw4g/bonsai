@@ -1109,7 +1109,7 @@ MaintainWorldOctree(engine_resources *Engine)
 
             Node->Dirty = False;
             Node->Chunk->FilledCount = 0;
-            QueueChunkForInit(&Plat->RenderQ, Node, MeshBit_Lod0);
+            QueueChunkForInit(&Plat->LoRenderQ, Node, MeshBit_Lod0);
             ++Stats.NewQueues;
             if (++NumQueuedThisFrame == MaxToQueueThisFrame) goto done_queueing_nodes;
           }

@@ -61,7 +61,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.RenderQ);
+  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.HiRenderQ);
 
   // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
   // the thing that is populating the next hashtable
@@ -483,17 +483,17 @@ Bonsai_Simulate(engine_resources *Resources)
 
 
   // Draw terrain
-  PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerStart(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
-  PushBonsaiRenderCommandGlTimerEnd(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerEnd(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
 
   b32 Result = True;
@@ -536,16 +536,16 @@ Bonsai_Render(engine_resources *Engine)
   /* } */
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->HiRenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->HiRenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->gBuffer->gBufferShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->SG->Shader.Program);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
 
   /* DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim)); */
@@ -561,9 +561,9 @@ Bonsai_Render(engine_resources *Engine)
   }
 
 
-  PushBonsaiRenderCommandDoStuff(&Plat->RenderQ);
+  PushBonsaiRenderCommandDoStuff(&Plat->HiRenderQ);
 
-  PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
   while (Engine->Graphics.RenderGate == True) { SleepMs(1); }
 
@@ -625,7 +625,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   engine_resources *EngineResources = GetEngineResources();
              world *World           = EngineResources->World;
 
-  auto RenderQ = &EngineResources->Stdlib.Plat.RenderQ;
+  auto LoRenderQ = &EngineResources->Stdlib.Plat.LoRenderQ;
+  auto HiRenderQ = &EngineResources->Stdlib.Plat.HiRenderQ;
 
   tswitch (Entry)
   {
@@ -708,13 +709,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         {
           /* Info("Chunk faces (%d)", FacesRequired); */
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-              RenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, GenChunk, Node);
+              LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, GenChunk, Node);
         }
         else
         {
           if (HasGpuMesh(&DestChunk->Mesh))
           {
-            PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
+            PushDeallocateBuffersCommand(LoRenderQ, &DestChunk->Mesh.Handles);
           }
           FinalizeNodeInitializaion(Node);
           FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
@@ -725,7 +726,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         /* Info("Chunk had no mesh : ChunkSum(%d)", ChunkSum); */
         if (HasGpuMesh(&DestChunk->Mesh))
         {
-          PushDeallocateBuffersCommand(RenderQ, &DestChunk->Mesh.Handles);
+          PushDeallocateBuffersCommand(LoRenderQ, &DestChunk->Mesh.Handles);
         }
         FinalizeNodeInitializaion(Node);
         FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
@@ -736,7 +737,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
       // a PBO, so it sets the PBO handle to -1
       Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
-      PushBonsaiRenderCommandUnmapAndDeallocateBuffer(RenderQ, Job->PBOBuf);
+      PushBonsaiRenderCommandUnmapAndDeallocateBuffer(LoRenderQ, Job->PBOBuf);
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
 
@@ -764,7 +765,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(GpuMappedBuf.Buffer.At == GpuMappedBuf.Buffer.End);
       FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
 
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(RenderQ, GpuMappedBuf, DestNode);
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, GpuMappedBuf, DestNode);
 #endif
     } break;
 

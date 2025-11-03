@@ -84,11 +84,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         
         
         
-        cs MemberName = CSz("RenderQ");
+        cs MemberName = CSz("LoRenderQ");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(work_queue*, &Element->RenderQ),
+          Cast(work_queue*, &Element->LoRenderQ),
           MemberName,
           ThisHash,
           Params
@@ -109,11 +109,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
         
         
         
-        cs MemberName = CSz("WorldUpdateQ");
+        cs MemberName = CSz("HiRenderQ");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(work_queue*, &Element->WorldUpdateQ),
+          Cast(work_queue*, &Element->HiRenderQ),
           MemberName,
           ThisHash,
           Params

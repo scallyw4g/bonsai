@@ -1,18 +1,376 @@
 link_export void
-DrainRenderQueue(engine_resources *Engine)
+DrainHiRenderQueue(engine_resources *Engine)
 {
   TIMED_FUNCTION();
 
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
 
-  RenderInfo("DrainRenderQueue");
+  /* RenderInfo("DrainRenderQueue"); */
 
   AssertNoGlErrors;
+  while (work_queue_entry *Job = PopWorkQueueEntry(HiRenderQ))
+  {
+    /* RenderInfo("%S", ToString(Job->Type)); */
+    /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
+    tswitch(Job)
+    {
+      case type_work_queue_entry_noop:
+      case type_work_queue_entry_init_world_chunk:
+      case type_work_queue_entry_copy_buffer_set:
+      case type_work_queue_entry_copy_buffer_ref:
+      case type_work_queue_entry_init_asset:
+      /* case type_work_queue_entry_update_world_region: */
+      case type_work_queue_entry_rebuild_mesh:
+      case type_work_queue_entry_finalize_noise_values:
+      case type_work_queue_entry_build_chunk_mesh:
+      case type_work_queue_entry_sim_particle_system:
+      case type_work_queue_entry__align_to_cache_line_helper:
+      {
+        InvalidCodePath();
+      } break;
+
+
+      { tmatch(work_queue_entry_async_function_call, Job, RPC)
+        /* RenderInfo("%S", ToString(RPC->Type)); */
+        TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
+        DispatchAsyncFunctionCall(RPC);
+      } break;
+
+      { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
+        /* RenderInfo("%S", ToString(RenderCommand->Type)); */
+        tswitch(RenderCommand)
+        {
+          InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
+
+          { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
+            TIMED_NAMED_BLOCK(CancelReadbackJobs);
+            IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+            {
+              b32 Done = False;
+              while (!Done)
+              {
+                u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+                switch(SyncStatus)
+                {
+
+                  case GL_ALREADY_SIGNALED:
+                  case GL_CONDITION_SATISFIED:
+                  {
+                    AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+                    TIMED_NAMED_BLOCK(MapBuffer);
+                    AssertNoGlErrors;
+                    GetGL()->DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
+                    GetGL()->DeleteSync(PBOJob->PBOBuf.Fence);
+                    AssertNoGlErrors;
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    Done = True;
+                  } break;
+
+                  case GL_WAIT_FAILED:
+                  {
+                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
+                    SoftError("Error waiting on gl sync object");
+                  } break;
+
+                  case GL_TIMEOUT_EXPIRED:
+                  {
+                    SleepMs(1);
+                  } break;
+                }
+              }
+              AssertNoGlErrors;
+            }
+
+            // Clear the jobs
+            umm C = Count(&Graphics->NoiseReadbackJobs);
+            auto Z = ZerothIndex(&Graphics->NoiseReadbackJobs);
+            RangeIterator_t(umm, Index, C) { RemoveUnordered(&Graphics->NoiseReadbackJobs, Z); }
+            Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
+
+            /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
+          } break;
+
+          { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_allocate_texture, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_deallocate_texture, RenderCommand, Command)
+            NotImplemented;
+          } break;
+
+
+          { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
+            NotImplemented;
+          } break;
+
+          { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+
+          { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+
+          { tmatch(bonsai_render_command_deallocate_world_chunk, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+
+          { tmatch(bonsai_render_command_clear_all_framebuffers, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
+            ClearFramebuffers(Graphics, &Engine->RTTGroup);
+          } break;
+
+
+          { tmatch(bonsai_render_command_setup_shader, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
+
+            switch (Command->ShaderId)
+            {
+              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+              case BonsaiRenderCommand_ShaderId_gBuffer:
+              {
+                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+              } break;
+
+              case BonsaiRenderCommand_ShaderId_ShadowMap:
+              {
+                SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
+              } break;
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_teardown_shader, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
+            switch (Command->ShaderId)
+            {
+              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
+
+              case BonsaiRenderCommand_ShaderId_gBuffer:
+              {
+                TeardownGBufferShader(Graphics);
+              } break;
+
+              case BonsaiRenderCommand_ShaderId_ShadowMap:
+              {
+                TeardownShadowMapShader(Graphics);
+              } break;
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_set_shader_uniform, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
+            shader *Shader = Command->Shader;
+            shader_uniform *Uniform = &Command->Uniform;
+            if (Uniform->ID >= 0)
+            {
+              BindUniformById(Uniform, &Command->TextureUnit);
+            }
+            else
+            {
+              BindUniformByName(Shader, Uniform, &Command->TextureUnit);
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
+            Assert(Graphics->RenderGate == True);;
+            RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
+          } break;
+
+          { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
+            DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
+          } break;
+
+
+          { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
+            InvalidCodePath();
+          } break;
+
+
+          { tmatch(bonsai_render_command_do_stuff, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
+
+            //
+            // Render begin
+            //
+
+            ao_render_group     *AoGroup = Graphics->AoGroup;
+
+#if 0
+            EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
+            EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
+
+            // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
+            //
+            // Update color texture, if necessary
+            //
+            s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
+            if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
+            {
+              if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
+              Graphics->ColorPaletteTexture =
+                MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
+            }
+#endif
+
+#if 0
+            //
+            // Editor preview
+            /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
+            {
+              shadow_render_group *SG      = Graphics->SG;
+              v3i Radius = World->VisibleRegion/2;
+              v3i Min = World->Center - Radius;
+              v3i Max = World->Center + Radius;
+
+              SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
+              shader *Shader = &Graphics->gBuffer->gBufferShader;
+              DrawEditorPreview(Engine, Shader);
+              TeardownGBufferShader(Graphics);
+
+              SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
+              Shader = &Graphics->SG->Shader.Program;
+              DrawEditorPreview(Engine, Shader);
+              TeardownShadowMapShader(Graphics);
+            }
+#endif
+
+            /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
+
+            // TODO(Jesse): Move into engine debug
+            world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
+            DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
+
+            AssertNoGlErrors;
+
+            if (Graphics->Settings.DrawCameraGhost)
+            {
+              untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+              DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
+            }
+
+            /* Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer */
+
+            /* if (GpuMap->Buffer.At) */
+            {
+              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
+              /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
+            }
+            /* Clear(&GpuMap->Buffer); */
+
+            /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
+
+
+            // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
+            // after the transparency/luminance textures.  I have literally 0 ideas as to
+            // why that would be, but here we are.
+            if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
+
+
+            {
+              /* RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency); */
+              RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), Lighting, Graphics);
+            }
+
+            if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
+            /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
+
+            CompositeGameTexturesAndDisplay(Plat, Graphics);
+
+
+            UiFrameEnd(&Engine->Ui);
+
+            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+            MapGpuBuffer(&Ui->TextGroup->Buf);
+
+            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+
+            HotReloadShaders(GetStdlib());
+
+
+            /* GpuMap = GetNextGpuMap(Graphics); */
+
+            // Map GPU buffers for next frame
+            /* MapGpuBuffer(GpuMap); */
+            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
+            Assert(GpuMap->Buffer.At == 0);
+
+            Graphics->RenderGate = False;
+
+            IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
+            {
+              if (Timer->Ns == 0)
+              {
+                if (QueryGpuTimer(Timer))
+                {
+#if BONSAI_DEBUG_SYSTEM_API
+                  GetDebugState()->PushHistogramDataPoint(Timer->Ns);
+                  // NOTE(Jesse): This skips the next timer, but it'll get
+                  // hit on the next frame, so no worries ..
+                  RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
+#endif
+                }
+              }
+            }
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+          { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RenderCommand, Command)
+            InvalidCodePath();
+          } break;
+
+        }
+      } break;
+    }
+
+    RewindArena(GetTranArena());
+  }
+}
+
+link_export void
+DrainLoRenderQueue(engine_resources *Engine)
+{
+  TIMED_FUNCTION();
+
+  UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(EntityTable);
 
   /* RenderInfo("DrainRenderQueue"); */
 
-  while (work_queue_entry *Job = PopWorkQueueEntry(RenderQ))
+  if (Engine->Graphics.RenderGate) return;
+
+  AssertNoGlErrors;
+  while (work_queue_entry *Job = PopWorkQueueEntry(LoRenderQ))
   {
     /* RenderInfo("%S", ToString(Job->Type)); */
     /* TIMED_NAMED_BLOCK(RENDER_LOOP); */
@@ -119,7 +477,7 @@ DrainRenderQueue(engine_resources *Engine)
 
             if (HasGpuMesh(&Node->Chunk->Mesh))
             {
-              PushDeallocateBuffersCommand(RenderQ, &Node->Chunk->Mesh.Handles);
+              PushDeallocateBuffersCommand(LoRenderQ, &Node->Chunk->Mesh.Handles);
             }
 
             Node->Chunk->Mesh = *Buf;
@@ -201,84 +559,36 @@ DrainRenderQueue(engine_resources *Engine)
 
 
           { tmatch(bonsai_render_command_clear_all_framebuffers, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_clear_all_framebuffers);
-            ClearFramebuffers(Graphics, &Engine->RTTGroup);
+            InvalidCodePath();
           } break;
 
 
 
 
           { tmatch(bonsai_render_command_setup_shader, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_setup_shader);
-            switch (Command->ShaderId)
-            {
-              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
-
-              case BonsaiRenderCommand_ShaderId_gBuffer:
-              {
-                SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
-              } break;
-
-              case BonsaiRenderCommand_ShaderId_ShadowMap:
-              {
-                SetupShadowMapShader(World, Graphics, GetShadowMapResolution(&Engine->Settings), False);
-              } break;
-            }
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_teardown_shader, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_teardown_shader);
-            switch (Command->ShaderId)
-            {
-              InvalidCase(BonsaiRenderCommand_ShaderId_noop);
-
-              case BonsaiRenderCommand_ShaderId_gBuffer:
-              {
-                TeardownGBufferShader(Graphics);
-              } break;
-
-              case BonsaiRenderCommand_ShaderId_ShadowMap:
-              {
-                TeardownShadowMapShader(Graphics);
-              } break;
-            }
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_set_shader_uniform, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_set_shader_uniform);
-            shader *Shader = Command->Shader;
-            shader_uniform *Uniform = &Command->Uniform;
-            if (Uniform->ID >= 0)
-            {
-              BindUniformById(Uniform, &Command->TextureUnit);
-            }
-            else
-            {
-              BindUniformByName(Shader, Uniform, &Command->TextureUnit);
-            }
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
-            Assert(Graphics->RenderGate == True);;
-            RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
-            DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
+            InvalidCodePath();
           } break;
 
 
           { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
             /* Command = 0; */
-
-            if (Graphics->RenderGate)
-            {
-              PushWorkQueueEntry(RenderQ, Job);
-              break;
-            }
 
             AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
@@ -660,132 +970,7 @@ DrainRenderQueue(engine_resources *Engine)
 
 
           { tmatch(bonsai_render_command_do_stuff, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_do_stuff);
-
-            //
-            // Render begin
-            //
-
-            ao_render_group     *AoGroup = Graphics->AoGroup;
-
-#if 0
-            EngineDebug->Render.BytesSolidGeoLastFrame = GpuMap->Buffer.At;
-            EngineDebug->Render.BytesTransGeoLastFrame = Graphics->Transparency.GpuBuffer.Buffer.At;
-
-            // TODO(Jesse):  Make a render frame begin event to stuff this kinda thing onto?
-            //
-            // Update color texture, if necessary
-            //
-            s32 ColorCount = s32(AtElements(&Graphics->ColorPalette));
-            if (ColorCount != Graphics->ColorPaletteTexture.Dim.x)
-            {
-              if (Graphics->ColorPaletteTexture.ID) { DeleteTexture(&Graphics->ColorPaletteTexture); }
-              Graphics->ColorPaletteTexture =
-                MakeTexture_RGB( V2i(ColorCount, 1), Graphics->ColorPalette.Start, CSz("ColorPalette"));
-            }
-#endif
-
-#if 0
-            //
-            // Editor preview
-            /* DrawStuffToGBufferTextures(Engine, GetApplicationResolution(&Engine->Settings)); */
-            {
-              shadow_render_group *SG      = Graphics->SG;
-              v3i Radius = World->VisibleRegion/2;
-              v3i Min = World->Center - Radius;
-              v3i Max = World->Center + Radius;
-
-              SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings), False);
-              shader *Shader = &Graphics->gBuffer->gBufferShader;
-              DrawEditorPreview(Engine, Shader);
-              TeardownGBufferShader(Graphics);
-
-              SetupShadowMapShader(Graphics, GetShadowMapResolution(&Engine->Settings), False);
-              Shader = &Graphics->SG->Shader.Program;
-              DrawEditorPreview(Engine, Shader);
-              TeardownShadowMapShader(Graphics);
-            }
-#endif
-
-            /* DrawWorldAndEntitiesToShadowMap(GetShadowMapResolution(&Engine->Settings), Engine); */
-
-            // TODO(Jesse): Move into engine debug
-            world_chunk *C = EngineDebug->PickedNode ? EngineDebug->PickedNode->Chunk : 0;
-            DebugHighlightWorldChunkBasedOnState(Graphics, C, &GpuMap->Buffer);
-
-            AssertNoGlErrors;
-
-            if (Graphics->Settings.DrawCameraGhost)
-            {
-              untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
-              DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
-            }
-
-            /* Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer */
-
-            /* if (GpuMap->Buffer.At) */
-            {
-              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
-              /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
-            }
-            /* Clear(&GpuMap->Buffer); */
-
-            /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
-
-
-            // NOTE(Jesse): I observed the AO lagging a frame behind if this is re-ordered
-            // after the transparency/luminance textures.  I have literally 0 ideas as to
-            // why that would be, but here we are.
-            if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
-
-
-            {
-              /* RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency); */
-              RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), Lighting, Graphics);
-            }
-
-            if (Graphics->Settings.UseLightingBloom) { RunBloomRenderPass(Graphics); }
-            /* if (Graphics->Settings.UseLightingBloom) { GaussianBlurTexture(&Graphics->Gaussian, &Graphics->Lighting.BloomTex, &Graphics->Lighting.BloomFBO); } */
-
-            CompositeGameTexturesAndDisplay(Plat, Graphics);
-
-
-            UiFrameEnd(&Engine->Ui);
-
-            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-            MapGpuBuffer(&Ui->TextGroup->Buf);
-
-            BonsaiSwapBuffers(&Engine->Stdlib.Os);
-
-
-            HotReloadShaders(GetStdlib());
-
-
-            /* GpuMap = GetNextGpuMap(Graphics); */
-
-            // Map GPU buffers for next frame
-            /* MapGpuBuffer(GpuMap); */
-            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-            Assert(GpuMap->Buffer.At == 0);
-
-
-            Graphics->RenderGate = False;
-
-            IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
-            {
-              if (Timer->Ns == 0)
-              {
-                if (QueryGpuTimer(Timer))
-                {
-#if BONSAI_DEBUG_SYSTEM_API
-                  GetDebugState()->PushHistogramDataPoint(Timer->Ns);
-                  // NOTE(Jesse): This skips the next timer, but it'll get
-                  // hit on the next frame, so no worries ..
-                  RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
-#endif
-                }
-              }
-            }
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
@@ -835,6 +1020,8 @@ DrainRenderQueue(engine_resources *Engine)
     }
 
     RewindArena(GetTranArena());
+
+    if (Engine->Graphics.RenderGate) return;
   }
 
   {
@@ -887,6 +1074,8 @@ DrainRenderQueue(engine_resources *Engine)
           SoftError("Error waiting on gl sync object");
         } break;
       }
+
+      if (Engine->Graphics.RenderGate) return;
     }
   }
 }
@@ -944,8 +1133,13 @@ RenderThread_Main(void *ThreadStartupParams)
     {
       WORKER_THREAD_ADVANCE_DEBUG_SYSTEM();
       AppApi->WorkerBeforeJob(Thread);
-      EngineApi->DrainRenderQueue(Engine);
+
+      EngineApi->DrainHiRenderQueue(Engine);
+
+      EngineApi->DrainLoRenderQueue(Engine);
+
       if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex)) { WaitOnFutex(&Plat->WorkerThreadsSuspendFutex); }
+
       SleepMs(1);
     }
 

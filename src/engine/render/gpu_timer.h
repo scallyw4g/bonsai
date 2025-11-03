@@ -37,6 +37,8 @@ EndGpuTimer(gpu_timer *Timer)
 link_internal s32
 QueryGpuTimer(gpu_timer *Timer)
 {
+  TIMED_FUNCTION();
+
   Assert(Timer->Handle != INVALID_GPU_TIMER_HANDLE);
   s32 Available = False;
   GetGL()->GetQueryObjectiv(Timer->Handle, GL_QUERY_RESULT_AVAILABLE, &Available);
