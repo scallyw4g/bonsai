@@ -102,51 +102,58 @@ link_internal void
 UseRenderPass_textured_quad_render_pass
 ( textured_quad_render_pass *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  4  )
     {
-      Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  4  )
+      {
+        Error("Shader (textured_quad_render_pass) had an incorrect number of uniform slots!");
+      }
     }
   }
   else

@@ -506,6 +506,8 @@ Bonsai_Render(engine_resources *Engine)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  Engine->Graphics.RenderGate = True;
+
   /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
   shader_uniform MinorGridUniform =
   {
@@ -563,7 +565,6 @@ Bonsai_Render(engine_resources *Engine)
 
   PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
 
-  Engine->Graphics.RenderGate = True;
   while (Engine->Graphics.RenderGate == True) { SleepMs(1); }
 
   b32 Result = True;

@@ -314,6 +314,7 @@ main( s32 ArgCount, const char ** Args )
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
       EngineApi->Render(EngineResources);
+      Assert(EngineResources->Graphics.RenderGate == False);
 
       DEBUG_FRAME_END(Plat->dt);
 
@@ -333,16 +334,16 @@ main( s32 ArgCount, const char ** Args )
       EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
     }
 
-
-    Assert(ThreadLocal_ThreadIndex == 0);
-    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
-    Ensure( RewindArena(TLS->TempMemory) );
-
     r32 CurrentMS = (r32)GetHighPrecisionClock();
     r32 RealDt = (CurrentMS - LastMs)/1000.0f;
     LastMs = CurrentMS;
     Plat->dt = RealDt;
     Plat->GameTime += RealDt;
+
+
+    Assert(ThreadLocal_ThreadIndex == 0);
+    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    Ensure( RewindArena(TLS->TempMemory) );
 
     MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
   }

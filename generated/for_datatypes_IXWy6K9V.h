@@ -466,230 +466,237 @@ link_internal void
 UseRenderPass_lighting_render_group
 ( lighting_render_group *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-    
-    
-
-
-    if (UniformIndex !=  26  )
     {
-      Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+      
+      
+
+
+      if (UniformIndex !=  26  )
+      {
+        Error("Shader (lighting_render_group) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -901,53 +908,60 @@ link_internal void
 UseRenderPass_terrain_decoration_render_context
 ( terrain_decoration_render_context *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  4  )
     {
-      Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  4  )
+      {
+        Error("Shader (terrain_decoration_render_context) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -1050,29 +1064,36 @@ link_internal void
 UseRenderPass_terrain_finalize_render_context
 ( terrain_finalize_render_context *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
+    {
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
     }
 
-
-
-
-    if (UniformIndex !=  1  )
     {
-      Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  1  )
+      {
+        Error("Shader (terrain_finalize_render_context) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -1262,53 +1283,60 @@ link_internal void
 UseRenderPass_world_edit_render_context
 ( world_edit_render_context *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  4  )
     {
-      Error("Shader (world_edit_render_context) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  4  )
+      {
+        Error("Shader (world_edit_render_context) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -1502,34 +1530,41 @@ link_internal void
 UseRenderPass_easing_function_visualizer_render_pass
 ( easing_function_visualizer_render_pass *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-        {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  2  )
     {
-      Error("Shader (easing_function_visualizer_render_pass) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+            {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  2  )
+      {
+        Error("Shader (easing_function_visualizer_render_pass) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -1708,51 +1743,58 @@ link_internal void
 UseRenderPass_shadow_map_shader
 ( shadow_map_shader *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  4  )
     {
-      Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  4  )
+      {
+        Error("Shader (shadow_map_shader) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -1840,27 +1882,34 @@ link_internal void
 UseRenderPass_bloom_upsample_shader
 ( bloom_upsample_shader *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
+    {
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
     }
 
-
-
-
-    if (UniformIndex !=  1  )
     {
-      Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  1  )
+      {
+        Error("Shader (bloom_upsample_shader) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -2112,29 +2161,36 @@ link_internal void
 UseRenderPass_terrain_derivs_render_context
 ( terrain_derivs_render_context *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
+    {
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
     }
 
-
-
-
-    if (UniformIndex !=  1  )
     {
-      Error("Shader (terrain_derivs_render_context) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  1  )
+      {
+        Error("Shader (terrain_derivs_render_context) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -2239,27 +2295,34 @@ link_internal void
 UseRenderPass_bloom_downsample_shader
 ( bloom_downsample_shader *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
+    {
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
     }
 
-
-
-
-    if (UniformIndex !=  1  )
     {
-      Error("Shader (bloom_downsample_shader) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  1  )
+      {
+        Error("Shader (bloom_downsample_shader) had an incorrect number of uniform slots!");
+      }
     }
   }
   else
@@ -2482,60 +2545,67 @@ link_internal void
 UseRenderPass_terrain_shaping_render_context
 ( terrain_shaping_render_context *Element )
 {
+  TIMED_FUNCTION();
   if (Element->Program.ID != INVALID_SHADER)
   {
-    GetGL()->UseProgram(Element->Program.ID);
-
-    s32 TextureUnit = 0;
-    s32 UniformIndex = 0;
-        
-    
-    
-    
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-            {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-        {
-      shader_uniform *Uniform = Element->Uniforms+UniformIndex;
-      BindUniformById(Uniform, &TextureUnit);
-      ++UniformIndex;
-      AssertNoGlErrors;
-    }
-
-
-
-
-    if (UniformIndex !=  5  )
     {
-      Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
+      TIMED_NAMED_BLOCK(UseProgram);
+      GetGL()->UseProgram(Element->Program.ID);
+    }
+
+    {
+      TIMED_NAMED_BLOCK(BindUniforms);
+      s32 TextureUnit = 0;
+      s32 UniformIndex = 0;
+            
+      
+      
+      
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+                  {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+            {
+        shader_uniform *Uniform = Element->Uniforms+UniformIndex;
+        BindUniformById(Uniform, &TextureUnit);
+        ++UniformIndex;
+        AssertNoGlErrors;
+      }
+
+
+
+
+      if (UniformIndex !=  5  )
+      {
+        Error("Shader (terrain_shaping_render_context) had an incorrect number of uniform slots!");
+      }
     }
   }
   else

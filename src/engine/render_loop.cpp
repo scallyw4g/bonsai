@@ -260,6 +260,7 @@ DrainRenderQueue(engine_resources *Engine)
 
           { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
+            Assert(Graphics->RenderGate == True);;
             RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
           } break;
 
@@ -273,6 +274,11 @@ DrainRenderQueue(engine_resources *Engine)
             TIMED_NAMED_BLOCK(bonsai_render_command_initialize_noise_buffer);
             /* Command = 0; */
 
+            if (Graphics->RenderGate)
+            {
+              PushWorkQueueEntry(RenderQ, Job);
+              break;
+            }
 
             AtomicIncrement(&Graphics->NoiseFinalizeJobsPending);
 
