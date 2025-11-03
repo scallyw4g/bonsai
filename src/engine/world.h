@@ -114,6 +114,7 @@ struct world
   octree_node_freelist OctreeNodeFreelist;
   octree_node_freelist OctreeNodeDeferFreelist; // Chunks that were queued, to be freed later.
 
+#define MAX_OCTREE_NODES_QUEUED_TOTAL (128)
 #define MAX_OCTREE_NODES_QUEUED_PER_FRAME (32)
   s32 MaxOctreeNodesToQueuePerFrame = MAX_OCTREE_NODES_QUEUED_PER_FRAME;
 #undef MAX_OCTREE_NODES_QUEUED_PER_FRAME

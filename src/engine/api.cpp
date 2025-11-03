@@ -740,6 +740,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       PushBonsaiRenderCommandUnmapAndDeallocateBuffer(LoRenderQ, Job->PBOBuf);
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+      AtomicDecrement(&Graphics->TotalChunkJobsActive);
 
     } break;
 

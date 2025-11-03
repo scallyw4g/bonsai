@@ -212,6 +212,7 @@ HardResetWorld(engine_resources *Engine)
   world *World = Engine->World;
 
   Engine->Graphics.NoiseFinalizeJobsPending = 0;
+  Engine->Graphics.TotalChunkJobsActive = 0;
 
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);

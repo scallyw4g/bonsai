@@ -781,6 +781,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         
         
+        cs MemberName = CSz("TotalChunkJobsActive");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->TotalChunkJobsActive),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("NoiseReadbackJobs");
                                                                 DoEditorUi(Ui,
           Window,

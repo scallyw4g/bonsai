@@ -805,14 +805,19 @@ SplitOctreeNode_Recursive( engine_resources *Engine, octree_node_priority_queue 
         }
         else
         {
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[0], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[1], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[2], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[3], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[4], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[5], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[6], NodeToSplit, Memory);
-          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[7], NodeToSplit, Memory);
+          local_persist random_series TraversalRng = {43125437654765};
+          u32 Mask = 7u;
+          u32 StartingIndex = RandomU32(&TraversalRng) & Mask;
+          Assert(StartingIndex < 8);
+
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+0)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+1)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+2)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+3)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+4)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+5)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+6)&Mask], NodeToSplit, Memory);
+          SplitOctreeNode_Recursive(Engine, Queue, NodeToSplit->Children[(StartingIndex+7)&Mask], NodeToSplit, Memory);
         }
       } break;
 
@@ -1055,22 +1060,19 @@ MaintainWorldOctree(engine_resources *Engine)
 
   octree_stats Stats = {};
 
-  /* u32 ChunksCurrentlyQueued = u32(Count(&Graphics->NoiseReadbackJobs)); */
-  s32 ChunksCurrentlyQueued = s32(Graphics->NoiseFinalizeJobsPending);
+  s32 ChunksCurrentlyQueued = s32(Graphics->TotalChunkJobsActive);
 
-  // NOTE(Jesse): Must be signed because we can force queue chunks in different
-  // ways (editing), which can cause (MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued) to be negative
-  s32 MaxToQueueThisFrame = Max(0, World->MaxOctreeNodesToQueuePerFrame - ChunksCurrentlyQueued);
 
+  s32 Headroom = MAX_OCTREE_NODES_QUEUED_TOTAL - ChunksCurrentlyQueued;
+  s32 MaxToQueueThisFrame = Max(0, Headroom);
+
+  /* Info("ChunksCurrentlyQueued(%d) MaxToQueueThisFrame(%d)", ChunksCurrentlyQueued, MaxToQueueThisFrame); */
   Info("ChunksCurrentlyQueued(%d) MaxToQueueThisFrame(%d)", ChunksCurrentlyQueued, MaxToQueueThisFrame);
 
-  /* if (MaxToQueueThisFrame != MAX_OCTREE_NODES_QUEUED_PER_FRAME) */
-  /* { */
-  /*   Info("MaxToQueueThisFrame(%d)", MaxToQueueThisFrame); */
-  /* } */
+  /* Assert(MaxToQueueThisFrame <= World->MaxOctreeNodesToQueuePerFrame); */
 
-  Assert(MaxToQueueThisFrame <= World->MaxOctreeNodesToQueuePerFrame);
-  /* DEBUG_VALUE_u32(MaxToQueueThisFrame); */
+  /* DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
+  /* DEBUG_VALUE_u32(u32(MaxToQueueThisFrame)); */
 
 /*   DEBUG_VALUE_u32(u32(ChunksCurrentlyQueued)); */
 /*   DEBUG_VALUE_u32(u32(MaxToQueueThisFrame)); */

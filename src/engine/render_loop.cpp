@@ -44,51 +44,7 @@ DrainHiRenderQueue(engine_resources *Engine)
           InvalidCase(type_work_queue_entry__bonsai_render_command_noop);
 
           { case type_bonsai_render_command_cancel_all_noise_readback_jobs:
-            TIMED_NAMED_BLOCK(CancelReadbackJobs);
-            IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
-            {
-              b32 Done = False;
-              while (!Done)
-              {
-                u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-                switch(SyncStatus)
-                {
-
-                  case GL_ALREADY_SIGNALED:
-                  case GL_CONDITION_SATISFIED:
-                  {
-                    AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
-                    TIMED_NAMED_BLOCK(MapBuffer);
-                    AssertNoGlErrors;
-                    GetGL()->DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
-                    GetGL()->DeleteSync(PBOJob->PBOBuf.Fence);
-                    AssertNoGlErrors;
-                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
-                    Done = True;
-                  } break;
-
-                  case GL_WAIT_FAILED:
-                  {
-                    /* RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex); */
-                    SoftError("Error waiting on gl sync object");
-                  } break;
-
-                  case GL_TIMEOUT_EXPIRED:
-                  {
-                    SleepMs(1);
-                  } break;
-                }
-              }
-              AssertNoGlErrors;
-            }
-
-            // Clear the jobs
-            umm C = Count(&Graphics->NoiseReadbackJobs);
-            auto Z = ZerothIndex(&Graphics->NoiseReadbackJobs);
-            RangeIterator_t(umm, Index, C) { RemoveUnordered(&Graphics->NoiseReadbackJobs, Z); }
-            Assert(Count(&Graphics->NoiseReadbackJobs) == 0);
-
-            /* Assert(Graphics->NoiseFinalizeJobsPending == 0); */
+            InvalidCodePath();
           } break;
 
           { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)

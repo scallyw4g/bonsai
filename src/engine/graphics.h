@@ -243,6 +243,7 @@ struct graphics
   // tracks this third stage.
   //
   volatile u32 NoiseFinalizeJobsPending;
+  volatile u32 TotalChunkJobsActive;
   dummy_work_queue_entry_build_chunk_mesh_block_array NoiseReadbackJobs = DummyWorkQueueEntryBuildChunkMeshBlockArray(&Global_PermMemory);
 
   triple_buffered_gpu_mapped_element_buffer ImmediateGeometry;

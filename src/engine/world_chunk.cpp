@@ -3577,6 +3577,8 @@ QueueChunkForInit(work_queue *Queue, octree_node *Node, world_chunk_mesh_bitfiel
 
   ++TotalChunksQueued;
 
+  AtomicIncrement(&GetEngineResources()->Graphics.TotalChunkJobsActive);
+
 #if 0
   {
     Assert(Node->Chunk->Dim.x == 64);
