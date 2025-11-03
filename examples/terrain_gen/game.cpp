@@ -26,7 +26,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   v3i VisibleRegion = V3i(VisibleRegionSize);
-  f32 DistanceFromTarget = 5000.f;
+  f32 DistanceFromTarget = 50000.f;
   f32 FarClip = 5000000.f;
   StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
 
@@ -37,18 +37,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   Camera->GhostId = GetFreeEntity(EntityTable);
   entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  /* CameraGhost->P.WorldP = V3i(-53, -93, 2); */ 
-  /* CameraGhost->P.WorldP = V3i(-25, -75, 2); */ 
-  /* CameraGhost->P.WorldP = V3i(-5, -121, 2); */ 
 
-  /* CameraGhost->P.WorldP = V3i(330, -87, 2); */ 
-  /* CameraGhost->P.WorldP = V3i(33, -87, 2); */ 
-  /* CameraGhost->P.WorldP = V3i(5, -73, 2); */ 
-  /* CameraGhost->P.WorldP = V3i(1000, 1000, 100); */ 
-  /* CameraGhost->P.WorldP = WorldCenter; */
-  /* CameraGhost->P.WorldP = WorldCenter + VisibleRegion/2; */
-  /* CameraGhost->P.WorldP = VisibleRegion/2; */
-  CameraGhost->P.WorldP.z = 1000;
+  CameraGhost->P.WorldP = VisibleRegion/2;
+  CameraGhost->P.WorldP.z = (10000/64) + 10;
+  /* CameraGhost->P.WorldP.z = 0; */
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
 
 

@@ -613,7 +613,21 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 link_internal s32
 ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camera *GameCamera)
 {
-  s32 IdealListIndex = RatioToListIndex(2*Node->Resolution.x/World->ChunksPerResolutionStep);
+  s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep);
+
+  // Prefer nodes who intersect the camera ray
+  auto Engine = GetEngineResources();
+  /* if (Engine->MaybeMouseRay.Tag) */
+  {
+    v3 CamSimP = GetSimSpaceP(World, GameCamera->CurrentP);
+    ray Ray = {CamSimP, GameCamera->Front};
+    aabb Box = GetSimSpaceAABB(World, Node);
+    r32 t;
+    if (Intersect(&Box, &Ray, &t))
+    {
+      IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-100);
+    }
+  }
 
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
@@ -624,13 +638,6 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
     IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
     }
   }
-
-  // Prefer chunks closer to the camera
-
-  /* v3 SimP = GetSimSpaceP(World, Node->WorldP); */
-  /* v3 CameraSimP = GetSimSpaceP(World, GameCamera->CurrentP); */
-  /* s32 DistanceFactor = RatioToListIndex(Abs(Distance(SimP, CameraSimP)) / 500.f); */
-  /* IdealListIndex = Max(0, IdealListIndex-DistanceFactor); */
 
   // Prefer chunks who have a higher chance of having geometry
   if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Mesh))
@@ -1054,6 +1061,8 @@ MaintainWorldOctree(engine_resources *Engine)
   // NOTE(Jesse): Must be signed because we can force queue chunks in different
   // ways (editing), which can cause (MAX_OCTREE_NODES_QUEUED_PER_FRAME - ChunksCurrentlyQueued) to be negative
   s32 MaxToQueueThisFrame = Max(0, World->MaxOctreeNodesToQueuePerFrame - ChunksCurrentlyQueued);
+
+  Info("ChunksCurrentlyQueued(%d) MaxToQueueThisFrame(%d)", ChunksCurrentlyQueued, MaxToQueueThisFrame);
 
   /* if (MaxToQueueThisFrame != MAX_OCTREE_NODES_QUEUED_PER_FRAME) */
   /* { */

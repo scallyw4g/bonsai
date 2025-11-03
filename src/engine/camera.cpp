@@ -224,7 +224,7 @@ StandardCamera(camera* Camera, f32 FarClip, f32 DistanceFromTarget, f32 Blend)
   // Someone already set FOV .. probably when deserializing stored runtime settings.
   if (Camera->Frust.FOV == 0.f)
   {
-    Camera->Frust.FOV = 75.0f;
+    Camera->Frust.FOV = 150.0f;
   }
 
   Camera->Up = WORLD_Z;
@@ -272,7 +272,7 @@ IsInFrustum( world *World, camera *Camera, world_chunk *Chunk )
   v3  Dim    = V3(Chunk->Dim)*V3(Chunk->DimInChunks);
   r32 Radius = Length(Dim)/2.f;
    v3 Center = GetSimSpaceP(World, Chunk) + Radius;
-  b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius;
+  b32 Result = SignedDistanceToFrustum(Camera, Center) < (1.2f*Radius);
   /* b32 Result = True; */
   return Result;
 }
@@ -283,7 +283,7 @@ IsInFrustum( world *World, camera *Camera, octree_node *Node )
   r32 Radius = Length(V3(64)*V3(Node->Resolution))/2.f;
    v3 Center = GetSimSpaceP(World, Node->WorldP) + Radius;
   /* b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius; */
-  b32 Result = SignedDistanceToFrustum(Camera, Center) < Radius;
+  b32 Result = SignedDistanceToFrustum(Camera, Center) < (1.2f*Radius);
   return Result;
 }
 
