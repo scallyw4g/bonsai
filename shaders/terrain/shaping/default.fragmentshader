@@ -30,8 +30,7 @@ void main()
   ColorValue -= 0.05f*White;
 
   {
-    f32 StartingZDepth = 10000.f;
-    NoiseValue += StartingZDepth - Basis.z;
+    NoiseValue += DEFAULT_FLOOR_HEIGHT - Basis.z;
 
     {
       v3 Period = V3(1800.f);

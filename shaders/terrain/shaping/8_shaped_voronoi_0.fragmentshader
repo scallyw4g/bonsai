@@ -160,7 +160,7 @@ void main()
   // -- user code --
   //
   {
-    f32 StartingZDepth = 800.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
     NoiseValue += StartingZDepth - Basis.z;
 
     f32 CliffMask = 1.f;

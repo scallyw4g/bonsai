@@ -7,7 +7,7 @@ enum visible_region_size
   VisibleRegionSize_2     = (1 << 1),
   VisibleRegionSize_4     = (1 << 2),
   VisibleRegionSize_8     = (1 << 3),
-  VisibleRegionSize_16    = (1 << 4),
+  VisibleRegionSize_16    = (1 << 4),  //             (1k^3)
   VisibleRegionSize_32    = (1 << 5),
   VisibleRegionSize_64    = (1 << 6),
   VisibleRegionSize_128   = (1 << 7),
@@ -17,7 +17,7 @@ enum visible_region_size
   VisibleRegionSize_2k    = (1 << 11), //  13.1 km
   VisibleRegionSize_4k    = (1 << 12), //  26.2 km
   VisibleRegionSize_8k    = (1 << 13), //  52.4 km
-  VisibleRegionSize_16k   = (1 << 14), // 104.8 km
+  VisibleRegionSize_16k   = (1 << 14), // 104.8 km    (1m^3)
   VisibleRegionSize_32k   = (1 << 15), // 209.6 km
   VisibleRegionSize_64k   = (1 << 16), // 419.2 km
   VisibleRegionSize_128k  = (1 << 17), // 838.4 km
@@ -27,7 +27,7 @@ enum visible_region_size
   VisibleRegionSize_2048k = (1 << 21), // really big
   VisibleRegionSize_4096k = (1 << 22), // really big
   VisibleRegionSize_8192k = (1 << 23), // really big
-  VisibleRegionSize_16kk  = (1 << 24), // dumb
+  VisibleRegionSize_16kk  = (1 << 24), // dumb        (1b^3)
 };
 
 enum octree_node_type
@@ -114,7 +114,7 @@ struct world
   octree_node_freelist OctreeNodeFreelist;
   octree_node_freelist OctreeNodeDeferFreelist; // Chunks that were queued, to be freed later.
 
-#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (64)
+#define MAX_OCTREE_NODES_QUEUED_PER_FRAME (32)
   s32 MaxOctreeNodesToQueuePerFrame = MAX_OCTREE_NODES_QUEUED_PER_FRAME;
 #undef MAX_OCTREE_NODES_QUEUED_PER_FRAME
 

@@ -55,8 +55,7 @@ void main()
   {
     v3 Period = V3(1500.f);
     float Amplitude = 100.f;
-    /* f32 StartingZDepth = 10000; */
-    f32 StartingZDepth = 5000;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
     /* f32 StartingZDepth = 0; */
     s32 Octaves = 6;
     NoiseValue = StartingZDepth;

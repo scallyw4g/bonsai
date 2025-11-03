@@ -57,7 +57,8 @@ void main()
 
   // NOTE(Jesse): Set these in the -- user code -- section
   v3 ColorValue = V3(0.f);
-  f32 NoiseValue = 1000.f;
+  f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+  f32 NoiseValue = StartingZDepth;
 
   //
   // -- user code -- 
