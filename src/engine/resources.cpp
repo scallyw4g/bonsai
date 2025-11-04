@@ -184,7 +184,20 @@ HardResetWorld(engine_resources *Engine)
   world *World = Engine->World;
 
   // NOTE(Jesse): We have to walk the octree to free all the GPU buffers :/
-  FreeOctreeChildren(Engine, &World->Root);
+  // We also can't do it from in here because the render thread is stopped and
+  // we run the risk of filling the render queue before we've freed the entire
+  // world.  Instead, we're going to assert here and put the onus on the caller
+  // to free the octree before the render thread has stopped.
+  /* FreeOctreeChildren(Engine, &World->Root); */
+  Assert(World->Root.Type == OctreeNodeType_Leaf);
+  Assert(World->Root.Children[0] == 0);
+  Assert(World->Root.Children[1] == 0);
+  Assert(World->Root.Children[2] == 0);
+  Assert(World->Root.Children[3] == 0);
+  Assert(World->Root.Children[4] == 0);
+  Assert(World->Root.Children[5] == 0);
+  Assert(World->Root.Children[6] == 0);
+  Assert(World->Root.Children[7] == 0);
 
   Engine->Graphics.NoiseFinalizeJobsPending = 0;
   Engine->Graphics.TotalChunkJobsActive = 0;
