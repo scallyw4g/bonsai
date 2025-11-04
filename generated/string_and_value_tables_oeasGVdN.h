@@ -10,9 +10,8 @@ IsValid(work_queue_entry__bonsai_render_command_type Value)
     case type_bonsai_render_command_clear_all_framebuffers:
     case type_bonsai_render_command_allocate_texture:
     case type_bonsai_render_command_deallocate_texture:
-    case type_bonsai_render_command_allocate_buffers:
-    case type_bonsai_render_command_reallocate_buffers:
-    case type_bonsai_render_command_deallocate_buffers:
+    case type_bonsai_render_command_allocate_handles:
+    case type_bonsai_render_command_deallocate_handles:
     case type_bonsai_render_command_deallocate_world_chunk:
     case type_bonsai_render_command_do_stuff:
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer:
@@ -51,9 +50,8 @@ ToStringPrefixless(work_queue_entry__bonsai_render_command_type Type)
     case type_bonsai_render_command_clear_all_framebuffers: { Result = CSz("framebuffers"); } break;
     case type_bonsai_render_command_allocate_texture: { Result = CSz("texture"); } break;
     case type_bonsai_render_command_deallocate_texture: { Result = CSz("texture"); } break;
-    case type_bonsai_render_command_allocate_buffers: { Result = CSz("buffers"); } break;
-    case type_bonsai_render_command_reallocate_buffers: { Result = CSz("buffers"); } break;
-    case type_bonsai_render_command_deallocate_buffers: { Result = CSz("buffers"); } break;
+    case type_bonsai_render_command_allocate_handles: { Result = CSz("handles"); } break;
+    case type_bonsai_render_command_deallocate_handles: { Result = CSz("handles"); } break;
     case type_bonsai_render_command_deallocate_world_chunk: { Result = CSz("chunk"); } break;
     case type_bonsai_render_command_do_stuff: { Result = CSz("stuff"); } break;
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer: { Result = CSz("buffer"); } break;
@@ -90,9 +88,8 @@ ToString(work_queue_entry__bonsai_render_command_type Type)
     case type_bonsai_render_command_clear_all_framebuffers: { Result = CSz("type_bonsai_render_command_clear_all_framebuffers"); } break;
     case type_bonsai_render_command_allocate_texture: { Result = CSz("type_bonsai_render_command_allocate_texture"); } break;
     case type_bonsai_render_command_deallocate_texture: { Result = CSz("type_bonsai_render_command_deallocate_texture"); } break;
-    case type_bonsai_render_command_allocate_buffers: { Result = CSz("type_bonsai_render_command_allocate_buffers"); } break;
-    case type_bonsai_render_command_reallocate_buffers: { Result = CSz("type_bonsai_render_command_reallocate_buffers"); } break;
-    case type_bonsai_render_command_deallocate_buffers: { Result = CSz("type_bonsai_render_command_deallocate_buffers"); } break;
+    case type_bonsai_render_command_allocate_handles: { Result = CSz("type_bonsai_render_command_allocate_handles"); } break;
+    case type_bonsai_render_command_deallocate_handles: { Result = CSz("type_bonsai_render_command_deallocate_handles"); } break;
     case type_bonsai_render_command_deallocate_world_chunk: { Result = CSz("type_bonsai_render_command_deallocate_world_chunk"); } break;
     case type_bonsai_render_command_do_stuff: { Result = CSz("type_bonsai_render_command_do_stuff"); } break;
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer: { Result = CSz("type_bonsai_render_command_allocate_and_map_gpu_element_buffer"); } break;
@@ -126,9 +123,8 @@ WorkQueueEntryBonsaiRenderCommandType(counted_string S)
   if (StringsMatch(S, CSz("type_bonsai_render_command_clear_all_framebuffers"))) { return type_bonsai_render_command_clear_all_framebuffers; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_allocate_texture"))) { return type_bonsai_render_command_allocate_texture; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_deallocate_texture"))) { return type_bonsai_render_command_deallocate_texture; }
-  if (StringsMatch(S, CSz("type_bonsai_render_command_allocate_buffers"))) { return type_bonsai_render_command_allocate_buffers; }
-  if (StringsMatch(S, CSz("type_bonsai_render_command_reallocate_buffers"))) { return type_bonsai_render_command_reallocate_buffers; }
-  if (StringsMatch(S, CSz("type_bonsai_render_command_deallocate_buffers"))) { return type_bonsai_render_command_deallocate_buffers; }
+  if (StringsMatch(S, CSz("type_bonsai_render_command_allocate_handles"))) { return type_bonsai_render_command_allocate_handles; }
+  if (StringsMatch(S, CSz("type_bonsai_render_command_deallocate_handles"))) { return type_bonsai_render_command_deallocate_handles; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_deallocate_world_chunk"))) { return type_bonsai_render_command_deallocate_world_chunk; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_do_stuff"))) { return type_bonsai_render_command_do_stuff; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_allocate_and_map_gpu_element_buffer"))) { return type_bonsai_render_command_allocate_and_map_gpu_element_buffer; }

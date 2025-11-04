@@ -36,7 +36,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_set
 
 
 
-
 struct texture;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -96,6 +95,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_s
 struct voronoi_noise_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
@@ -285,7 +285,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 
 
 
-
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -368,7 +367,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsa
 struct render_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 
@@ -615,6 +613,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, random_ser
 struct engine_resources;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

@@ -262,6 +262,8 @@ main( s32 ArgCount, const char ** Args )
     {
       Info("Reloading Game Lib");
 
+      FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
+
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
       DuplicateMetaTableNameStrings(EngineResources);

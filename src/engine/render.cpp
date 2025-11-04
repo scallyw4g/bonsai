@@ -1041,12 +1041,23 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
 /* #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h> */
 
 link_internal void
+DeleteGpuBuffer(gpu_element_buffer_handles *Handles)
+{
+  Assert(Handles->VAO);
+  Assert(Handles->Handles[0]);
+  Assert(Handles->Handles[1]);
+  Assert(Handles->Handles[2]);
+  GetGL()->DeleteVertexArrays(1, &Handles->VAO);
+  GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
+}
+
+link_internal void
 ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
 {
   Assert(Handles->Mapped == False);
-  if (Handles->Handles[mesh_VertexHandle])
+  if (Handles->VAO)
   {
-    GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
+    DeleteGpuBuffer(Handles);
   }
   Clear(Handles);
 

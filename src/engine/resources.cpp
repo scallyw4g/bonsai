@@ -10,7 +10,7 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   if (HasGpuMesh(Chunk))
   {
-    PushDeallocateBuffersCommand(LoRenderQ, &Chunk->Handles);
+    DeallocateHandles(LoRenderQ, &Chunk->Handles);
   }
 
   ClearWorldChunk(Chunk);
@@ -100,13 +100,16 @@ CancelAllWorkQueueJobs(engine_resources *Engine)
   // jobs have knowledge of who to call next (because we don't have a way of
   // specifying the next next job when we submit one).  This makes it difficult
   // to free resources that are only known to the jobs..
+  //
+  // We just call CancelAllWorkQueueJobs to reset the queues.
+  //
+  Assert(QueueIsEmpty(&Plat->HiRenderQ));
+  Assert(QueueIsEmpty(&Plat->LoRenderQ));
   CancelAllWorkQueueJobs(Plat, &Plat->HiRenderQ);
   CancelAllWorkQueueJobs(Plat, &Plat->LoRenderQ);
 
   Assert(QueueIsEmpty(&Plat->HighPriority));
   Assert(QueueIsEmpty(&Plat->LowPriority));
-  Assert(QueueIsEmpty(&Plat->HiRenderQ));
-  Assert(QueueIsEmpty(&Plat->LoRenderQ));
 
   PushBonsaiRenderCommandCancelAllNoiseReadbackJobs(&Plat->LoRenderQ);
 
@@ -179,6 +182,9 @@ link_internal void
 HardResetWorld(engine_resources *Engine)
 {
   world *World = Engine->World;
+
+  // NOTE(Jesse): We have to walk the octree to free all the GPU buffers :/
+  FreeOctreeChildren(Engine, &World->Root);
 
   Engine->Graphics.NoiseFinalizeJobsPending = 0;
   Engine->Graphics.TotalChunkJobsActive = 0;

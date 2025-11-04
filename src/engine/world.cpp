@@ -776,19 +776,32 @@ link_internal u32
 FreeOctreeChildren(engine_resources *Engine, octree_node *Node)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-
   if (Node->Chunk) { Assert(Node->Chunk->Dim % World->ChunkDim == V3i(0)); }
-  Assert(Node->Type == OctreeNodeType_Branch);
-  Node->Type = OctreeNodeType_Leaf;
 
-  FreeOctreeNode(Engine, Node->Children+0);
-  FreeOctreeNode(Engine, Node->Children+1);
-  FreeOctreeNode(Engine, Node->Children+2);
-  FreeOctreeNode(Engine, Node->Children+3);
-  FreeOctreeNode(Engine, Node->Children+4);
-  FreeOctreeNode(Engine, Node->Children+5);
-  FreeOctreeNode(Engine, Node->Children+6);
-  FreeOctreeNode(Engine, Node->Children+7);
+  if (Node->Type == OctreeNodeType_Branch)
+  {
+    Node->Type = OctreeNodeType_Leaf;
+    FreeOctreeNode(Engine, Node->Children+0);
+    FreeOctreeNode(Engine, Node->Children+1);
+    FreeOctreeNode(Engine, Node->Children+2);
+    FreeOctreeNode(Engine, Node->Children+3);
+    FreeOctreeNode(Engine, Node->Children+4);
+    FreeOctreeNode(Engine, Node->Children+5);
+    FreeOctreeNode(Engine, Node->Children+6);
+    FreeOctreeNode(Engine, Node->Children+7);
+  }
+  else
+  {
+    Assert(Node->Type == OctreeNodeType_Leaf);
+    Assert(Node->Children[0] == 0);
+    Assert(Node->Children[1] == 0);
+    Assert(Node->Children[2] == 0);
+    Assert(Node->Children[3] == 0);
+    Assert(Node->Children[4] == 0);
+    Assert(Node->Children[5] == 0);
+    Assert(Node->Children[6] == 0);
+    Assert(Node->Children[7] == 0);
+  }
 
   u32 Result = 1;
   return Result;

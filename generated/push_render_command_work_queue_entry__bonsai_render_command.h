@@ -44,35 +44,24 @@ PushBonsaiRenderCommandDeallocateTexture(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
-PushBonsaiRenderCommandAllocateBuffers(
-  work_queue *RenderQueue
-   , u32* Buffers   , s32 Count  = 3  
-)
-{
-  work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateBuffers(  Buffers , Count  )));
-
-  PushWorkQueueEntry(RenderQueue, &Work);
-}
-link_internal void
-PushBonsaiRenderCommandReallocateBuffers(
+PushBonsaiRenderCommandAllocateHandles(
   work_queue *RenderQueue
    , gpu_element_buffer_handles* Handles   , untextured_3d_geometry_buffer* Mesh  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandReallocateBuffers(  Handles , Mesh  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandAllocateHandles(  Handles , Mesh  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
-PushBonsaiRenderCommandDeallocateBuffers(
+PushBonsaiRenderCommandDeallocateHandles(
   work_queue *RenderQueue
-   , u32* Buffers   , s32 Count  
+   , gpu_element_buffer_handles Handles  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateBuffers(  Buffers , Count  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandDeallocateHandles(  Handles  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

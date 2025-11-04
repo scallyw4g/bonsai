@@ -1436,7 +1436,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -3865,6 +3864,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 }
 ;
+
 
 
 
@@ -8224,7 +8224,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -10143,7 +10142,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
 
 }
 ;
-
 
 
 
@@ -17636,6 +17634,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
 
 }
 ;
+
 
 
 

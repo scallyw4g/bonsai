@@ -250,6 +250,7 @@ Unspawned(entity *Entity)
 link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
+  Assert(HasGpuMesh(Chunk) == False);
 #if 0
   *Chunk = {};
 #else

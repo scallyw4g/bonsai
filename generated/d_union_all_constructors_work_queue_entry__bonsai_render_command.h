@@ -54,11 +54,11 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_texture A   
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_buffers A          )
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_handles A          )
 {
   work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_allocate_buffers,
-    .bonsai_render_command_allocate_buffers = A,
+    .Type = type_bonsai_render_command_allocate_handles,
+    .bonsai_render_command_allocate_handles = A,
 
             
 
@@ -67,24 +67,11 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_allocate_buffers A     
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_reallocate_buffers A          )
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_handles A          )
 {
   work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_reallocate_buffers,
-    .bonsai_render_command_reallocate_buffers = A,
-
-            
-
-  };
-  return Result;
-}
-
-link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_deallocate_buffers A          )
-{
-  work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_deallocate_buffers,
-    .bonsai_render_command_deallocate_buffers = A,
+    .Type = type_bonsai_render_command_deallocate_handles,
+    .bonsai_render_command_deallocate_handles = A,
 
             
 
@@ -355,27 +342,10 @@ BonsaiRenderCommandDeallocateTexture(  u32 *  Buffers , s32   Count  )
   return Reuslt;
 }
 
-link_internal bonsai_render_command_allocate_buffers
-BonsaiRenderCommandAllocateBuffers(  u32 *  Buffers , s32   Count  )
+link_internal bonsai_render_command_allocate_handles
+BonsaiRenderCommandAllocateHandles(  gpu_element_buffer_handles *  Handles , untextured_3d_geometry_buffer *  Mesh  )
 {
-  bonsai_render_command_allocate_buffers Reuslt = {
-            .Buffers = Buffers
-
-,        .Count = Count
-
-
-  };
-
-    
-  
-
-  return Reuslt;
-}
-
-link_internal bonsai_render_command_reallocate_buffers
-BonsaiRenderCommandReallocateBuffers(  gpu_element_buffer_handles *  Handles , untextured_3d_geometry_buffer *  Mesh  )
-{
-  bonsai_render_command_reallocate_buffers Reuslt = {
+  bonsai_render_command_allocate_handles Reuslt = {
             .Handles = Handles
 
 ,        .Mesh = Mesh
@@ -389,23 +359,16 @@ BonsaiRenderCommandReallocateBuffers(  gpu_element_buffer_handles *  Handles , u
   return Reuslt;
 }
 
-link_internal bonsai_render_command_deallocate_buffers
-BonsaiRenderCommandDeallocateBuffers(  u32 *  Buffers , s32   Count  )
+link_internal bonsai_render_command_deallocate_handles
+BonsaiRenderCommandDeallocateHandles(  gpu_element_buffer_handles   Handles  )
 {
-  bonsai_render_command_deallocate_buffers Reuslt = {
-            .Buffers = {}
-
-,        .Count = Count
+  bonsai_render_command_deallocate_handles Reuslt = {
+            .Handles = Handles
 
 
   };
 
-      RangeIterator(Index, s32(Count))
-  {
-    Reuslt.Buffers[Index] = Buffers[Index];
-  }
-
-  
+    
 
   return Reuslt;
 }

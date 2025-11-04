@@ -22,16 +22,9 @@ struct bonsai_render_command_deallocate_texture
   s32  Count = 3;
 };
 
-struct bonsai_render_command_allocate_buffers
+struct bonsai_render_command_deallocate_handles
 {
-  u32 *Buffers;
-  s32  Count = 3;
-};
-
-struct bonsai_render_command_deallocate_buffers
-{
-  u32 Buffers[16]; poof(@array_length(Count))
-  s32 Count;
+  gpu_element_buffer_handles Handles;
 };
 
 // NOTE(Jesse): This is kind of a fucky workaround for the following situation:
@@ -49,18 +42,11 @@ struct bonsai_render_command_deallocate_world_chunk
   world_chunk *Chunk;
 };
 
-struct bonsai_render_command_reallocate_buffers
+struct bonsai_render_command_allocate_handles
 {
      gpu_element_buffer_handles *Handles;
   untextured_3d_geometry_buffer *Mesh;
 };
-
-/* struct bonsai_render_command_reallocate_world_chunk_buffers */
-/* { */
-/*    gpu_element_buffer_handles *Handles; */
-/*   world_chunk_geometry_buffer *Mesh; */
-/* }; */
-
 
 struct bonsai_render_command_clear_all_framebuffers
 {
@@ -187,9 +173,8 @@ poof(
     bonsai_render_command_allocate_texture
     bonsai_render_command_deallocate_texture
 
-    bonsai_render_command_allocate_buffers
-    bonsai_render_command_reallocate_buffers
-    bonsai_render_command_deallocate_buffers
+    bonsai_render_command_allocate_handles
+    bonsai_render_command_deallocate_handles
 
     bonsai_render_command_deallocate_world_chunk
 

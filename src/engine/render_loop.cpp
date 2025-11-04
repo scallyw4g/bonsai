@@ -70,19 +70,13 @@ DrainHiRenderQueue(engine_resources *Engine)
           } break;
 
 
-          { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
+          { tmatch(bonsai_render_command_allocate_handles, RenderCommand, Command)
             NotImplemented;
           } break;
 
-          { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
-            InvalidCodePath();
+          { tmatch(bonsai_render_command_deallocate_handles, RenderCommand, Command)
+            NotImplemented;
           } break;
-
-
-          { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
-            InvalidCodePath();
-          } break;
-
 
           { tmatch(bonsai_render_command_deallocate_world_chunk, RenderCommand, Command)
             InvalidCodePath();
@@ -488,24 +482,20 @@ DrainLoRenderQueue(engine_resources *Engine)
           } break;
 
 
-          { tmatch(bonsai_render_command_allocate_buffers, RenderCommand, Command)
+          { tmatch(bonsai_render_command_allocate_handles, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_allocate_handles);
             NotImplemented;
-          } break;
+            /* auto *Handles = Command->Handles; */
+            /* auto *Mesh    = Command->Mesh; */
 
-          { tmatch(bonsai_render_command_reallocate_buffers, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_reallocate_buffers);
-            auto *Handles = Command->Handles;
-            auto *Mesh    = Command->Mesh;
-
-            ReallocateAndSyncGpuBuffers(Handles, Mesh);
-            DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist);
+            /* ReallocateAndSyncGpuBuffers(Handles, Mesh); */
+            /* DeallocateMesh(Mesh, &Engine->geo_u3d_MeshFreelist); */
           } break;
 
 
-          { tmatch(bonsai_render_command_deallocate_buffers, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_buffers);
-            if (*Command->Buffers) { GetGL()->DeleteBuffers(Command->Count, Command->Buffers); }
-            RangeIterator(Index, Command->Count) { Command->Buffers[Index] = 0; }
+          { tmatch(bonsai_render_command_deallocate_handles, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_deallocate_handles);
+            DeleteGpuBuffer(&Command->Handles);
           } break;
 
 
@@ -1116,12 +1106,35 @@ RenderThread_Main(void *ThreadStartupParams)
       AppApi->WorkerBeforeJob(Thread);
 
       EngineApi->DrainHiRenderQueue(Engine);
-
       EngineApi->DrainLoRenderQueue(Engine);
 
-      SpinlockNs(100);
+      if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex))
+      {
+        // Have to wait for all the worker threads to suspend cause they push
+        // entries onto the render queues
+        while (Plat->WorkerThreadsSuspendFutex.ThreadsWaiting != GetWorkerThreadCount()-1)
+        {
+          SleepMs(1);
+        }
 
-      if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex)) { WaitOnFutex(&Plat->WorkerThreadsSuspendFutex); }
+        // Even though we just called these we have to make sure they're actually
+        // flushed; the main thread could have pushed stuff onto the Hi
+        // queue while we were draining the Lo queue, for example.  Once we're
+        // in this if we know the main thread is waiting for us
+        EngineApi->DrainHiRenderQueue(Engine);
+        EngineApi->DrainLoRenderQueue(Engine);
+        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.HiRenderQ));
+        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.LoRenderQ));
+
+        SleepMs(3);
+
+        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.HiRenderQ));
+        Assert(QueueIsEmpty(&Engine->Stdlib.Plat.LoRenderQ));
+
+        WaitOnFutex(&Plat->WorkerThreadsSuspendFutex);
+      }
+
+      SpinlockNs(100);
 
       /* SleepMs(1); */
     }
