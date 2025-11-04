@@ -103,12 +103,12 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 }
 
 link_internal void
-DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
-
-link_internal void
-RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_element_buffer_handles *Handles, graphics *Graphics)
+RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, triple_buffered_gpu_mapped_element_buffer *ImmediateGeometry, graphics *Graphics)
 {
   TIMED_FUNCTION();
+
+
+  auto Handles = CurrentHandles(ImmediateGeometry);
   Assert(Handles->Mapped == False);
 
   auto GBufferRenderGroup = Graphics->gBuffer;
@@ -125,7 +125,7 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_element_buffer_h
 
   /* Draw(GpuMap->Buffer.At); */
 
-  DrawGpuBufferImmediate(Handles);
+  DrawGpuBufferImmediate(Handles, ImmediateGeometry->Buffer.At);
   GetGL()->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
@@ -871,7 +871,7 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
 
 
 link_internal void
-DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count)
 {
   AssertNoGlErrors;
   Assert(Handles->Mapped == False);
@@ -882,8 +882,14 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 
   GL->BindVertexArray(Handles->VAO);
   /* SetupVertexAttribsFor_u3d_geo_element_buffer(Handles); */
-  Draw(Handles->ElementCount);
+  Draw(Count);
   GL->BindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+link_internal void
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
+{
+  DrawGpuBufferImmediate(Handles, Handles->ElementCount);
 }
 
 poof(
