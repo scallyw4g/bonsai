@@ -412,6 +412,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             MapGpuBuffer(Command->Dest);
             Assert(HasGpuMesh(Command->Dest));
 
+            Assert(Command->DestNode->Flags & Chunk_Queued);
+
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
             PushWorkQueueEntry(LowPriorityQ, &Next);

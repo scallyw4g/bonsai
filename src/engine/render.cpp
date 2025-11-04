@@ -1710,7 +1710,6 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
   }
 
   GenChunk->Mesh = {};
-
   Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
 
   FinalizeNodeInitializaion(DestNode);

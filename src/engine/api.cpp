@@ -662,7 +662,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     } break;
 
     { tmatch(work_queue_entry_finalize_noise_values, Entry, Job)
-      auto Node = Job->DestNode;
+      octree_node *Node = Job->DestNode;
       auto Chunk = Node->Chunk;
 
       u32 *NoiseValues = Job->NoiseData;
@@ -731,22 +731,32 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         {
           Continued = True;
           Info("Chunk had faces (%d)", FacesRequired);
+          Assert(Node->Flags & Chunk_Queued);
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
               LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
               GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here..
         }
       }
 
-      // Deallocate the stale mesh if the new chunk didn't have a mesh
-      if (Continued == False &&
-          Node->Chunk        &&
-          HasGpuMesh(Node->Chunk) )
+      Assert(Node->Flags & Chunk_Queued);
+
+      // If we didn't continue, we're done, free the resources
+      //
+      if (Continued == False)
       {
-        DeallocateHandles(LoRenderQ, &Node->Chunk->Handles);
+        Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+        /* DeallocateHandles(LoRenderQ, &GenChunk->Mesh.Handles); */
+
+        Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+        FinalizeNodeInitializaion(Node);
+
+        // Deallocate the stale mesh if the new chunk didn't have a mesh
+        if (Node->Chunk && HasGpuMesh(Node->Chunk) )
+        {
+          DeallocateHandles(LoRenderQ, &Node->Chunk->Handles);
+        }
       }
 
-      FinalizeNodeInitializaion(Node);
-      FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
 
       auto Graphics = &EngineResources->Graphics;
 
@@ -754,6 +764,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // a PBO, so it sets the PBO handle to -1
       Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
       PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, Job->PBOBuf);
+
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->TotalChunkJobsActive);
@@ -767,8 +778,11 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(HasGpuMesh(&GenChunk->Mesh) == True);
       Assert(HasGpuMesh( SynChunk) == False);
 
+
       octree_node               *DestNode     = Job->DestNode;
       world_chunk               *DestChunk    = DestNode->Chunk;
+
+      Assert(DestNode->Flags & Chunk_Queued);
 
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk) == False); */
