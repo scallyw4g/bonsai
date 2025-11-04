@@ -3,6 +3,7 @@
 
 
 
+
 struct easing_function;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -443,6 +444,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_
 
 
 
+
 struct memory_arena;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -610,7 +612,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, random_ser
 struct engine_resources;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 

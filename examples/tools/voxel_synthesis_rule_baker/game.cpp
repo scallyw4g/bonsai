@@ -731,7 +731,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy.Seed = DEBUG_NOISE_SEED;
 
-  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
+  AllocateWorld(Resources->World, WorldCenter, VisibleRegionSize_128);
 
   random_series WorldEntropy = {54930695483};
   WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);

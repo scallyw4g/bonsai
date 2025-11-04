@@ -108,7 +108,7 @@ main(s32 ArgCount, const char** Args)
   memory_arena *Memory = AllocateArena(Megabytes(32));
 
   Engine.World = Allocate(world, &BootstrapArena, 1);
-  AllocateWorld(Engine.World, {}, V3i(8), V3i(8));
+  AllocateWorld(Engine.World, {}, V3i(8));
 
   TestChunkCopy(Memory);
 

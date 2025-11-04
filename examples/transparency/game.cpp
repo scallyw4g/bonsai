@@ -69,7 +69,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   StandardCamera(Graphics->Camera, 10000.0f, 1000.0f);
 
-  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
+  AllocateWorld(World, WorldCenter, VisibleRegionSize_128);
 
   /* World->Flags = WorldFlag_WorldCenterFollowsCameraTarget; */
 

@@ -1147,7 +1147,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState->Entropy = {DEBUG_NOISE_SEED};
 
-  AllocateWorld(Resources->World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize_128);
+  AllocateWorld(Resources->World, WorldCenter, VisibleRegionSize_128);
 
   u32 PlayerModelIndex = ModelIndex_Player_old;
   GameState->PlayerId = GetFreeEntity(EntityTable);

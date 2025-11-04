@@ -5,6 +5,7 @@
 
 
 
+
 link_internal b32
 poof()
 InitializeLightingRenderGroup
@@ -2097,6 +2098,7 @@ UseShader( bloom_upsample_shader *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainDerivsRenderContext
@@ -2347,7 +2349,6 @@ UseShader( bloom_downsample_shader *Element )
 {
   UseRenderPass_bloom_downsample_shader(Element);
 }
-
 
 
 

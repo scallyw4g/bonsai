@@ -869,58 +869,6 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   AssertNoGlErrors;
 }
 
-link_internal void
-SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
-{
-  TIMED_FUNCTION();
-
-  AssertNoGlErrors;
-  GetGL()->EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GetGL()->EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GetGL()->EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GetGL()->EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
-  AssertNoGlErrors;
-
-
-  switch(Handles->ElementType)
-  {
-    InvalidCase(DataType_Undefinded);
-    case DataType_v3:
-    {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
-      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
-      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-    } break;
-
-    case DataType_v3_u8:
-    {
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
-      GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-
-      GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
-      GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
-      AssertNoGlErrors;
-    } break;
-  }
-
-
-  // NOTE(Jesse): This is just here to break when the size of these changes,
-  // serving as a reminder to update this code.
-  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
-  CAssert(MtlFloatElements == 4);
-
-  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
-  /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
-  AssertNoGlErrors;
-}
-
 
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
