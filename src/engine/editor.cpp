@@ -2484,6 +2484,7 @@ DoLevelWindow(engine_resources *Engine)
           LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
         }
 
+        FreeOctreeChildren(Engine, &World->Root);
         SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
 
