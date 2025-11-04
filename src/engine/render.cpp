@@ -103,9 +103,13 @@ RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_
 }
 
 link_internal void
-RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
+
+link_internal void
+RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_element_buffer_handles *Handles, graphics *Graphics)
 {
   TIMED_FUNCTION();
+  Assert(Handles->Mapped == False);
 
   auto GBufferRenderGroup = Graphics->gBuffer;
 
@@ -119,9 +123,9 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
   // TODO(Jesse): Hoist this check out of here
   GetGL()->Disable(GL_CULL_FACE);
 
-  Draw(GpuMap->Buffer.At);
+  /* Draw(GpuMap->Buffer.At); */
 
-  /* DrawGpuBufferImmediate(GpuMap->Handles); */
+  DrawGpuBufferImmediate(Handles);
   GetGL()->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);

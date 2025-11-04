@@ -60,12 +60,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
         
         
         cs MemberName = CSz("RenderGate");
-                                                DoEditorUi(Ui,
+                                                                DoEditorUi(Ui,
           Window,
-          Cast(b8*, &Element->RenderGate),
+          // Cast to remove const/volatile keywords if they're there
+          Cast(bonsai_futex*, &Element->RenderGate),
           MemberName,
           ThisHash,
-          &DefaultUiRenderParams_Checkbox
+          Params
           );
 
 
@@ -73,8 +74,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
 
 
 
-                PushNewRow(Ui);
 
+
+        
       }
       
 

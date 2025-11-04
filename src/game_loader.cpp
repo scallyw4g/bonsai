@@ -316,7 +316,7 @@ main( s32 ArgCount, const char ** Args )
 
       EngineApi->Render(EngineResources);
 
-      Assert(EngineResources->Graphics.RenderGate == False);
+      Assert(FutexIsSignaled(&EngineResources->Graphics.RenderGate) == False);
 
       DEBUG_FRAME_END(Plat->dt);
 

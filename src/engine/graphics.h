@@ -176,8 +176,7 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 struct graphics
 {
   bonsai_futex Initialized;
-
-  volatile b32 RenderGate;
+  bonsai_futex RenderGate;
 
   render_settings Settings;
   render_settings PrevSettings;

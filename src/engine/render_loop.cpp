@@ -3,6 +3,8 @@ DrainHiRenderQueue(engine_resources *Engine)
 {
   /* TIMED_FUNCTION(); */
 
+  Assert(RENDER_THREAD_ThreadLocal_ThreadIndex == ThreadLocal_ThreadIndex);
+
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
 
@@ -146,7 +148,7 @@ DrainHiRenderQueue(engine_resources *Engine)
 
           { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
-            Assert(Graphics->RenderGate == True);;
+            Assert(FutexIsSignaled(&Graphics->RenderGate));
             RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
           } break;
 
@@ -223,14 +225,14 @@ DrainHiRenderQueue(engine_resources *Engine)
               DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
             }
 
-            /* Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer */
+            Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer
 
-            /* if (GpuMap->Buffer.At) */
+            if (GpuMap->Buffer.At)
             {
-              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
+              RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), CurrentHandles(GpuMap), Graphics);
               /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
             }
-            /* Clear(&GpuMap->Buffer); */
+            Clear(&GpuMap->Buffer);
 
             /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
 
@@ -266,11 +268,11 @@ DrainHiRenderQueue(engine_resources *Engine)
             /* GpuMap = GetNextGpuMap(Graphics); */
 
             // Map GPU buffers for next frame
-            /* MapGpuBuffer(GpuMap); */
+            MapGpuBuffer(GpuMap);
             /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
             Assert(GpuMap->Buffer.At == 0);
 
-            Graphics->RenderGate = False;
+            UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
 
             IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
             {
@@ -323,7 +325,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
   /* RenderInfo("DrainRenderQueue"); */
 
-  if (Engine->Graphics.RenderGate) return;
+  if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
 
   AssertNoGlErrors;
   while (work_queue_entry *Job = PopWorkQueueEntry(LoRenderQ))
@@ -977,7 +979,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
     RewindArena(GetTranArena());
 
-    if (Engine->Graphics.RenderGate) return;
+    if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
   }
 
   {
@@ -1031,7 +1033,7 @@ DrainLoRenderQueue(engine_resources *Engine)
         } break;
       }
 
-      if (Engine->Graphics.RenderGate) return;
+      if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
     }
   }
 }
