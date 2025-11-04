@@ -167,7 +167,7 @@ void main()
     {
       vec3 Period = vec3(250.f);
       /* vec3 Period = vec3(10.f); */
-      float Amplitude = 200.f;
+      float Amplitude = 500.f;
 
       vec3 xyz = Basis / Period;
       v4 N = noise(xyz.xy);
@@ -177,7 +177,7 @@ void main()
 
       N.w = (N.w/2.f)+0.5f;
 
-      N.w = RemapSample(N.w, SampleRemapCurvePoints, SampleRemapCurvePointCount );
+      N.w = RemapSample(N.w, SampleRemapCurvePoints, SampleRemapCurvePointCount);
 
       NoiseValue += ClampPositive(N.w * Amplitude);
       ColorValue = N.rgb;

@@ -42,10 +42,12 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   CameraGhost->P.WorldP.z = (10000/64) + 3;
   /* CameraGhost->P.WorldP.z = 0; */
   CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
+  SpawnEntity(CameraGhost);
 
 
   GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
+#if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
 
@@ -56,12 +58,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Push(&EasingFunction->Points, V2(1,1));
 
   InitializeEasingFunctionVisualizerRenderPass_Async(
-       LoRenderQ,
-      &GameState->EasingFunctionVisRP,
-       EasingFunction,
-       0);
+     LoRenderQ,
+    &GameState->EasingFunctionVisRP,
+     EasingFunction,
+     0 );
 
-  SpawnEntity(CameraGhost);
+#endif
+
   return GameState;
 }
 

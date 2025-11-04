@@ -43,7 +43,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
 
       v3 Dim = V3(1.f, 1.f, 1.f);
 
-      f32 BendStrength = 4.f;
+      f32 BendStrength = 8.f;
       f32 NormalFactor = 1.f/BendStrength;
 
       u64 BaseVoxelOffset = u64(GetIndex(0, yBlock, zBlock, SrcChunkDim));

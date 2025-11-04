@@ -194,7 +194,7 @@ void main()
     {
       vec3 Period = vec3(250.f);
       /* vec3 Period = vec3(10.f); */
-      float Amplitude = 80.f;
+      float Amplitude = 800.f;
 
       vec3 xyz = Basis / Period;
       v4 N = noise(xyz.xy);

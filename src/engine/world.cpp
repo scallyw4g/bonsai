@@ -1113,7 +1113,6 @@ MaintainWorldOctree(engine_resources *Engine)
   s32 MaxToQueueThisFrame = Max(0, Headroom);
 
   /* Info("ChunksCurrentlyQueued(%d) MaxToQueueThisFrame(%d)", ChunksCurrentlyQueued, MaxToQueueThisFrame); */
-  Info("ChunksCurrentlyQueued(%d) MaxToQueueThisFrame(%d)", ChunksCurrentlyQueued, MaxToQueueThisFrame);
 
   /* Assert(MaxToQueueThisFrame <= World->MaxOctreeNodesToQueuePerFrame); */
 

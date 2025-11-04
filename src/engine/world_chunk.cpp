@@ -1506,7 +1506,7 @@ poof(
 
           v3 Dim = V3(1.f, 1.f, 1.f);
 
-          f32 BendStrength = 6.f;
+          f32 BendStrength = 8.f;
           f32 NormalFactor = 1.f/BendStrength;
 
           u64 BaseVoxelOffset = u64(GetIndex(0, yBlock, zBlock, SrcChunkDim));

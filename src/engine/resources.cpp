@@ -221,9 +221,11 @@ HardResetWorld(engine_resources *Engine)
   v3i ChunkDim           = World->ChunkDim;
   auto VisibleRegionSize = World->VisibleRegionSize;
 
-  Clear(World);
+  *World = {};
 
-  AllocateWorld(World, Center, ChunkDim, VisibleRegionSize);
+  // The game init function is responsible for allocating the world .. we just
+  // clear it here.
+  /* AllocateWorld(World, Center, ChunkDim, VisibleRegionSize); */
 }
 
 link_internal void
@@ -231,6 +233,8 @@ SoftResetGraphics(graphics *Graphics)
 {
   Graphics->MainDrawList.ElementCount = 0;;
   Graphics->ShadowMapDrawList.ElementCount = 0;
+
+  Graphics->TerrainShapingRC.ReshapeFunc = {};
 }
 
 link_internal void
@@ -264,6 +268,14 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   Engine->EngineDebug.Memory = AllocateArena();
 
   HardResetAssets(Engine);
+
+  Assert(ThreadLocal_ThreadIndex == 0);
+  thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+  auto GameApi = &Engine->Stdlib.AppApi;
+  if (GameApi->GameInit)
+  {
+    Engine->GameState = GameApi->GameInit(Engine, MainThread);
+  }
 
   Info("Hard Reset End");
 }
