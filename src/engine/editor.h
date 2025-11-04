@@ -1352,6 +1352,7 @@ poof(block_array(world_edit_ptr, {128}))
 #include <generated/block_array_world_edit_ptr_688735882.h>
 
 /* poof(add_tag(world_edit_block_array_index, block_array_IndexOfValue)) */
+
 poof(block_array(world_edit_block_array_index, {128}))
 #include <generated/block_array_world_edit_block_array_index_688735882.h>
 
