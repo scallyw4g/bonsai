@@ -1,5 +1,6 @@
 // TODO(Jesse): rename this to just thumbnail and move to renderer.. ?
 struct asset_thumbnail
+poof(@do_editor_ui)
 {
   texture Texture;
   camera  Camera;
@@ -7,6 +8,7 @@ struct asset_thumbnail
 
 // TODO(Jesse): Move to renderer?
 struct chunk_thumbnail
+poof(@do_editor_ui)
 {
       world_chunk Chunk;
   asset_thumbnail Thumbnail;
@@ -14,6 +16,7 @@ struct chunk_thumbnail
 
 
 struct render_debug
+poof(@do_editor_ui)
 {
   u32 BytesSolidGeoLastFrame;
   u32 BytesTransGeoLastFrame;
@@ -43,6 +46,7 @@ enum engine_debug_view_mode poof(@bitfield)
 struct octree_node;
 
 struct engine_debug
+poof(@do_editor_ui)
 {
   memory_arena *Memory;
 

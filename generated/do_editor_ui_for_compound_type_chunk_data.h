@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct chunk_data;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x27DCE418);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
-
         
+
+
       }
       
 
@@ -75,8 +78,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -101,8 +105,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -127,8 +132,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name,
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
 

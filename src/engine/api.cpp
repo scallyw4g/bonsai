@@ -581,7 +581,7 @@ Bonsai_Render(engine_resources *Engine)
 struct bonsai_thread_user_data
 {
   u64 Magic0 = 0x69;
-  gen_chunk_freelist SynChunkFreelist;
+  /* gen_chunk_freelist GenChunkFreelist; */
   u64 Magic1 = 0x420;
 };
 
@@ -622,6 +622,9 @@ GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks
     AllocateWorldChunk(&Result->Chunk, WorldP, Dim, DimInChunks, Memory);
     Result->Voxels = AllocateAlignedProtection( voxel, Memory , Volume(Dim), CACHE_LINE_SIZE, false);
   }
+
+  Assert(HasGpuMesh(&Result->Mesh) == False);
+  Assert(HasGpuMesh(&Result->Chunk) == False);
 
   return Result;
 }
@@ -666,9 +669,13 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(Chunk);
 
       world_chunk *DestChunk = Node->Chunk;
+      Assert(HasGpuMesh(&DestChunk->Handles) == False);
 
-      gen_chunk *GenChunk = GetOrAllocate(&EngineResources->SynChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+      gen_chunk *GenChunk = GetOrAllocate(&EngineResources->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
       world_chunk *SynChunk = &GenChunk->Chunk;
+
+      Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+      Assert(HasGpuMesh(SynChunk) == False);
 
       voxel *Voxels = GenChunk->Voxels;
 
@@ -714,29 +721,21 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
         if (FacesRequired)
         {
-          /* Info("Chunk faces (%d)", FacesRequired); */
+          Info("Chunk had faces (%d)", FacesRequired);
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-              LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &SynChunk->Mesh, GenChunk, Node);
+              LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
+              GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here..
         }
         else
         {
-          if (HasGpuMesh(&DestChunk->Mesh))
-          {
-            PushDeallocateBuffersCommand(LoRenderQ, &DestChunk->Mesh.Handles);
-          }
           FinalizeNodeInitializaion(Node);
-          FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
+          FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
         }
       }
       else
       {
-        /* Info("Chunk had no mesh : ChunkSum(%d)", ChunkSum); */
-        if (HasGpuMesh(&DestChunk->Mesh))
-        {
-          PushDeallocateBuffersCommand(LoRenderQ, &DestChunk->Mesh.Handles);
-        }
         FinalizeNodeInitializaion(Node);
-        FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
+        FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
       }
 
       auto Graphics = &EngineResources->Graphics;
@@ -756,24 +755,38 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 #if 0
       NotImplemented;
 #else
-      gen_chunk               *GenChunk     = Job->GenChunk;
-      world_chunk             *SynChunk     = &GenChunk->Chunk;
+      gen_chunk                 *GenChunk      =  Job->GenChunk;
+      world_chunk               *SynChunk      = &GenChunk->Chunk;
+
+      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert(HasGpuMesh( SynChunk) == False);
 
       octree_node               *DestNode     = Job->DestNode;
       world_chunk               *DestChunk    = DestNode->Chunk;
-      gpu_mapped_element_buffer GpuMappedBuf  = SynChunk->Mesh;
+      Assert(HasGpuMesh(DestChunk) == False);
+
+      Info("Buidling Chunk Mesh");
 
       /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
-      Assert(HasGpuMesh(&GpuMappedBuf) == True);
 
-      RebuildWorldChunkMesh(Thread, SynChunk, GenChunk->Voxels, {}, {}, MeshBit_Lod0, &GpuMappedBuf.Buffer, Thread->TempMemory);
+      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
 
-      SynChunk->Mesh = {};
+      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
 
-      Assert(GpuMappedBuf.Buffer.At == GpuMappedBuf.Buffer.End);
-      FreeWorldChunk(&EngineResources->SynChunkFreelist, GenChunk);
 
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, GpuMappedBuf, DestNode);
+      DestChunk->Handles = GenChunk->Mesh.Handles;
+      Assert(HasGpuMesh(DestChunk) == True);
+      Assert(DestChunk->Handles.ElementCount);
+
+      SynChunk->Handles = {};
+      GenChunk->Mesh = {};
+
+      Assert(HasGpuMesh(SynChunk) == False);
+      Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+
+      FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
+
+      PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, &DestChunk->Handles, DestNode);
 #endif
     } break;
 

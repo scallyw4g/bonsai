@@ -416,9 +416,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
             MapGpuBuffer(Command->Dest);
-
-            Assert(HasGpuMesh(Command->Dest) == 1);
-
+            Assert(HasGpuMesh(Command->Dest));
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
@@ -428,20 +426,22 @@ DrainLoRenderQueue(engine_resources *Engine)
           { tmatch(bonsai_render_command_unmap_gpu_element_buffer, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_unmap_gpu_element_buffer);
 
+            gpu_element_buffer_handles *Handles = Command->Handles;
+            FlushBuffersToCard_gpu_mapped_element_buffer(Handles);
+            Assert(Handles->Mapped == False);
+
+
+            Info("FlushBuffersToCard_gpu_mapped_element_buffer(%d)", Handles->ElementCount);
+
             octree_node *Node = Command->DestNode;
-            gpu_mapped_element_buffer *Buf = &Command->Buf;
-
-            FlushBuffersToCard_gpu_mapped_element_buffer(&Buf->Handles);
-
-            if (HasGpuMesh(&Node->Chunk->Mesh))
-            {
-              PushDeallocateBuffersCommand(LoRenderQ, &Node->Chunk->Mesh.Handles);
-            }
-
-            Node->Chunk->Mesh = *Buf;
+            Assert(&Node->Chunk->Handles == Handles);
+            Assert(HasGpuMesh(Node->Chunk));
+            Assert(Node->Chunk->Handles.VAO == Handles->VAO);
+            Assert(Node->Chunk->Handles.Handles[0] == Handles->Handles[0]);
+            Assert(Node->Chunk->Handles.Handles[1] == Handles->Handles[1]);
+            Assert(Node->Chunk->Handles.Handles[2] == Handles->Handles[2]);
 
             FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
-
           } break;
 
           { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)

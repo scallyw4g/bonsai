@@ -148,6 +148,8 @@ HeapFreeWorldChunk( world_chunk *Chunk )
 link_internal void
 AllocateWorldChunk(world_chunk *Result, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Storage)
 {
+  GetWorld()->TotalChunksAllocated++;
+
   u32 MaxLodMeshVerts = POINT_BUFFER_SIZE*3;
 
   s32 VoxCount = Volume(Dim);
@@ -306,7 +308,28 @@ AllocateAndInsertChunk(world *World, world_position P)
   return Result;
 }
 
-debug_global u32 TotalWorldChunksAllocated;
+
+
+link_internal b32
+HasGpuMesh(gpu_element_buffer_handles *Handles)
+{
+  b32 Result = (Handles->VAO != 0);
+  if (Result)
+  {
+    Assert(Handles->Handles[0]);
+    Assert(Handles->Handles[1]);
+    Assert(Handles->Handles[2]);
+    Assert(Handles->ElementCount);
+  }
+  return Result;
+}
+
+link_internal b32
+HasGpuMesh(world_chunk *Chunk)
+{
+  return HasGpuMesh(&Chunk->Handles);
+}
+
 link_internal world_chunk *
 GetFreeWorldChunk(world *World)
 {
@@ -327,13 +350,11 @@ GetFreeWorldChunk(world *World)
   else
   {
     /* Info("Allocated World Chunk"); */
-    Result = AllocateWorldChunk({}, World->ChunkDim, {}, World->ChunkMemory);
-    ++TotalWorldChunksAllocated;
+    Result = AllocateWorldChunk(INVALID_WORLD_CHUNK_POSITION, World->ChunkDim, {}, World->ChunkMemory);
   }
 
-  Result->WorldP = INVALID_WORLD_CHUNK_POSITION;
-
-  Assert(HasGpuMesh(&Result->Mesh) == False);
+  Assert(Result->WorldP == INVALID_WORLD_CHUNK_POSITION);
+  Assert(HasGpuMesh(Result) == False);
   return Result;
 }
 
@@ -432,6 +453,7 @@ FreeWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   /* PushBonsaiRenderCommandDeallocateWorldChunk(RenderQueue, Chunk); */
   DeallocateAndClearWorldChunk(Engine, Chunk);
+  Assert(Chunk->WorldP == INVALID_WORLD_CHUNK_POSITION);
 
   AcquireFutex(&World->ChunkFreelistFutex);
   world_chunk *Next = World->ChunkFreelistSentinal.Next;
@@ -3692,7 +3714,7 @@ BuildMipMesh( voxel *Voxels, v3i  VoxDim, v3i  InnerMin, v3i  InnerMax, world_ch
   }
 }
 
-#if 1
+#if 0
 link_internal void
 RebuildWorldChunkMesh(
     thread_local_state *Thread,
@@ -3713,8 +3735,7 @@ RebuildWorldChunkMesh(
   Assert( MeshBit == MeshBit_Lod0 );
 
   BuildWorldChunkMeshFromMarkedVoxels_Naieve( Voxels, Chunk->FaceMasks, Chunk->Dim, MinOffset, MaxOffset, Dest, 0);
-
-  if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.LoRenderQ, &Chunk->Mesh.Handles); }
+  /* if (Dest->At == 0) { PushDeallocateBuffersCommand(&Engine->Stdlib.Plat.LoRenderQ, &Chunk->Handles); } */
 }
 #endif
 

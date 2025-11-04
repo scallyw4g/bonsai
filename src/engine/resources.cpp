@@ -8,9 +8,9 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   /* Assert( (Chunk->Flags & Chunk_Queued) == 0); */
   /* Assert( Chunk->Flags & (Chunk_Deallocate|Chunk_VoxelsInitialized)); */
 
-  if (HasGpuMesh(&Chunk->Mesh))
+  if (HasGpuMesh(Chunk))
   {
-    PushDeallocateBuffersCommand(LoRenderQ, &Chunk->Mesh.Handles);
+    PushDeallocateBuffersCommand(LoRenderQ, &Chunk->Handles);
   }
 
   ClearWorldChunk(Chunk);
@@ -19,37 +19,6 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
   Assert(Chunk->Next == 0);
 
   FullBarrier;
-}
-
-link_internal void
-RenderOctree(engine_resources *Engine, shader *Shader)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  b32     Continue = True;
-
-  octree_node_ptr_stack Stack = OctreeNodePtrStack(1024, World->OctreeMemory);
-  Push(&Stack, &World->Root);
-
-  /* RuntimeBreak(); */
-  while (CurrentCount(&Stack))
-  {
-    octree_node *Node = Pop(&Stack);
-
-    if (Node->Type == OctreeNodeType_Leaf)
-    {
-      DrawLod(Engine, Shader, &Node->Chunk->Mesh, {}, Quaternion(), V3(1));
-    }
-
-    if (Node->Children[0]) { Push(&Stack, Node->Children[0]); }
-    if (Node->Children[1]) { Push(&Stack, Node->Children[1]); }
-    if (Node->Children[2]) { Push(&Stack, Node->Children[2]); }
-    if (Node->Children[3]) { Push(&Stack, Node->Children[3]); }
-    if (Node->Children[4]) { Push(&Stack, Node->Children[4]); }
-    if (Node->Children[5]) { Push(&Stack, Node->Children[5]); }
-    if (Node->Children[6]) { Push(&Stack, Node->Children[6]); }
-    if (Node->Children[7]) { Push(&Stack, Node->Children[7]); }
-  }
 }
 
 link_internal b32

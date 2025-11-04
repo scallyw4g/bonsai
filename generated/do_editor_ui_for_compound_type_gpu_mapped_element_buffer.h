@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct gpu_mapped_element_buffer;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1EA242B7);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *El
 
 
 
-
         
+
+
       }
       
 
@@ -75,8 +78,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *El
 
 
 
-
         
+
+
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

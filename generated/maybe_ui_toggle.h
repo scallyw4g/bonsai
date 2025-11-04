@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2198:0
+// external/bonsai_stdlib/src/poof_functions.h:2199:0
 struct maybe_ui_toggle
 {
   maybe_tag Tag;

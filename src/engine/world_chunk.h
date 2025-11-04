@@ -334,7 +334,8 @@ struct world_chunk poof(@version(1))
 
   b32 IsOnFreelist;
 
-  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
+  gpu_element_buffer_handles Handles; poof(@no_serialize)
+  /* gpu_mapped_element_buffer Mesh; poof(@no_serialize) */
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
 
@@ -342,7 +343,7 @@ struct world_chunk poof(@version(1))
   v3i DimInChunks;
   /* v3i Resolution; */
 
-  v3i WorldP;
+  v3i WorldP = INVALID_WORLD_CHUNK_POSITION;
 
   s32 FilledCount;            poof(@no_serialize)
 
@@ -353,11 +354,12 @@ struct world_chunk poof(@version(1))
 
 struct gen_chunk
 {
-  // TODO(Jesse): Remove somehow
+  // TODO(Jesse): Remove somehow ..?
   gen_chunk *Next;
 
   world_chunk  Chunk;
   voxel       *Voxels;
+  gpu_mapped_element_buffer Mesh;
 };
 
 
@@ -409,7 +411,7 @@ struct world_chunk_0
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
 
-  v3i WorldP;
+  v3i WorldP = INVALID_WORLD_CHUNK_POSITION;
 
   s32 FilledCount;            poof(@no_serialize)
   b32 DrawBoundingVoxels;     poof(@no_serialize)

@@ -1,4 +1,5 @@
 struct plane
+poof(@do_editor_ui)
 {
   v3 Normal;
   f32 DistanceToOrigin;
@@ -12,6 +13,7 @@ Plane( v3 Point, v3 Normal )
 }
 
 struct frustum
+poof(@do_editor_ui)
 {
   f32 farClip;
   f32 nearClip;
@@ -25,7 +27,11 @@ struct frustum
 
 struct entity;
 
-struct camera poof(@version(2))
+struct camera
+poof(
+    @version(2)
+    @do_editor_ui
+  )
 {
   frustum Frust;
 

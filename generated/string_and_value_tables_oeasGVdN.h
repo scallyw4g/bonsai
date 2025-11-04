@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2048:0
+// external/bonsai_stdlib/src/poof_functions.h:2049:0
 link_internal b32
 IsValid(work_queue_entry__bonsai_render_command_type Value)
 {

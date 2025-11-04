@@ -7,6 +7,7 @@ poof(@do_editor_ui)
 
 struct terrain_shaping_render_context
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/shaping/default.fragmentshader") )
 {
@@ -29,6 +30,7 @@ poof( @render_pass
 
 struct terrain_derivs_render_context
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/derivs.fragmentshader") )
 {
@@ -42,6 +44,7 @@ poof( @render_pass
 
 struct terrain_decoration_render_context
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/decoration/default.fragmentshader") )
 {
@@ -60,6 +63,7 @@ poof( @render_pass
 
 struct world_edit_render_context
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/world_edit.fragmentshader") )
 {
@@ -77,6 +81,7 @@ poof( @render_pass
 
 struct terrain_finalize_render_context
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/terrain/TerrainFinalize.fragmentshader") )
 {
@@ -174,6 +179,7 @@ poof(block_array(dummy_work_queue_entry_build_chunk_mesh, {32}))
 #include <generated/block_array_dummy_work_queue_entry_build_chunk_mesh_688853862.h>
 
 struct graphics
+poof(@do_editor_ui)
 {
   bonsai_futex Initialized;
   bonsai_futex RenderGate;

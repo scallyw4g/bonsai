@@ -1,6 +1,7 @@
 // TODO(Jesse): Remove this?
 #define PARTICLE_SYSTEM_EMIT_FOREVER (f32_MAX)
 struct particle
+poof(@do_editor_ui)
 {
   // TODO(Jesse, id: 85, tags: robustness, memory_consumption): Compress to 16 bit float?
   v3 Velocity;
@@ -22,7 +23,11 @@ enum particle_spawn_type
 
 #define PARTICLE_SYSTEM_COLOR_COUNT 6
 #define PARTICLES_PER_SYSTEM   (4096)
-struct particle_system poof(@version(1))
+struct particle_system
+poof(
+    @version(1)
+    @do_editor_ui
+  )
 {
   random_series Entropy;
 

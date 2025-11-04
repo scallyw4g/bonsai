@@ -1,5 +1,6 @@
 struct shadow_map_shader
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("shaders/DepthRTT.vertexshader")
       @frag_source_file("shaders/DepthRTT.fragmentshader") )
 {
@@ -19,6 +20,7 @@ poof( @render_pass
 };
 
 struct shadow_render_group
+poof(@do_editor_ui)
 {
   u32 FramebufferName;
 

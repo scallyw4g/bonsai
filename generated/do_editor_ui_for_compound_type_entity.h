@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct entity;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2D655F50);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -65,8 +68,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -90,8 +94,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -115,8 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -141,8 +147,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -166,8 +173,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -191,8 +199,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -216,8 +225,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -242,8 +252,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -267,8 +278,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -292,8 +304,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -317,8 +330,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -342,8 +356,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -367,8 +382,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
         
+
+
       }
       
 
@@ -384,8 +400,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -402,8 +419,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
 

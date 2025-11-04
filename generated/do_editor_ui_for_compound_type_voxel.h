@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct voxel;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4BBC2BC);
 
@@ -42,8 +44,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

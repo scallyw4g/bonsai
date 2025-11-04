@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2598:0
+// external/bonsai_stdlib/src/poof_functions.h:2600:0
 
 
 
@@ -368,6 +368,10 @@ Shift( world_edit_block_array_index_block_array *Array, world_edit_block_array_i
   Insert(Array, { .Index = 0 }, Element);
 }
 
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
 
 
 

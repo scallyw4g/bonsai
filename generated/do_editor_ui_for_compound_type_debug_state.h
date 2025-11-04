@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct debug_state;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2186A9AB);
 
@@ -47,8 +49,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -73,8 +76,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -99,8 +103,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -122,8 +127,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -148,8 +154,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -174,8 +181,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -200,8 +208,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -218,8 +227,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -235,8 +245,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -252,8 +263,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -269,8 +281,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -286,8 +299,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -303,8 +317,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -320,8 +335,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -337,8 +353,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -354,8 +371,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -371,8 +389,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -388,8 +407,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -405,8 +425,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -422,8 +443,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -439,8 +461,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -456,8 +479,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -473,8 +497,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -490,8 +515,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -507,8 +533,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -524,8 +551,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -541,8 +569,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -558,8 +587,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -575,8 +605,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -592,8 +623,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -609,8 +641,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -626,8 +659,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -643,8 +677,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -660,8 +695,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -685,8 +721,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -710,8 +747,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -735,8 +773,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -760,8 +799,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -785,8 +825,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -810,8 +851,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -835,8 +877,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -857,8 +900,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -883,8 +927,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -908,8 +953,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -933,8 +979,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -958,8 +1005,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -983,8 +1031,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -1009,8 +1058,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -1049,8 +1099,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -1074,8 +1125,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -1100,8 +1152,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -1140,8 +1193,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
       
 
@@ -1179,8 +1233,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name
 
 
 
-
         
+
+
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

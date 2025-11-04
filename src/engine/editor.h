@@ -292,10 +292,26 @@ poof(
 )
 
 poof(
+  func do_editor_ui_for_compound_type_decl(type) @code_fragment
+  {
+    struct type;
+    link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+  }
+)
+
+poof(
   func do_editor_ui_for_compound_type(type)
   {
-    link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+    type.has_tag(do_editor_ui)?
+    {
+      /// NOTE(Jesse): I would really like to call do_editor_ui_for_compound_type_decl
+      /// here, but C++ is a fucking garbage fire and doesn't let you redeclare default parameters.
+      link_internal void
+      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+    }
+    {
+      do_editor_ui_for_compound_type_decl(type)
+    }
     {
       u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
@@ -433,12 +449,13 @@ poof(
                       }
                     }
                   }
+
+                  member.is_primitive?
+                  {
+                    PushNewRow(Ui);
+                  }
                 }
 
-                member.is_primitive?
-                {
-                  PushNewRow(Ui);
-                }
               }
             }
           if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
@@ -577,6 +594,17 @@ poof(
 
 poof(do_editor_ui_for_primitive_type({s64 u64 s32 u32 s16 u16 s8 u8}));
 #include <generated/do_editor_ui_for_scalar_type_688724926.h>
+
+
+poof(
+  for_datatypes(struct)
+  func (struct_t)
+  {
+    struct_t.has_tag(do_editor_ui)?  { do_editor_ui_for_compound_type_decl(struct_t); }
+  }
+)
+#include <generated/(builtin.for_datatypes)_RIx8WIj8.h>
+
 
 link_internal void
 DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -886,11 +914,13 @@ struct generic_noise_params
 
 
 struct white_noise_params
+poof(@do_editor_ui)
 {
 };
 
 
 struct perlin_noise_params
+poof(@do_editor_ui)
 {
   v3 Period = {{8.f, 8.f, 8.f}}; poof(@ui_value_range(0.1f, 20.f))
 };
@@ -899,6 +929,7 @@ poof(are_equal(perlin_noise_params))
 #include <generated/are_equal_perlin_noise_params.h>
 
 struct voronoi_noise_params
+poof(@do_editor_ui)
 {
   v3  Period    = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
   r32 Squareness;
@@ -980,11 +1011,13 @@ struct world_update_op_shape_params_chunk_data
 };
 
 struct world_update_op_shape_params_rect
+poof(@do_editor_ui)
 {
   v3 Dim;
 };
 
 struct world_update_op_shape_params_sphere
+poof(@do_editor_ui)
 {
    cp Location;      poof(@ui_skip)
   f32 Radius = 10.f;
@@ -999,18 +1032,21 @@ struct world_update_op_shape_params_line
 };
 
 struct world_update_op_shape_params_cylinder
+poof(@do_editor_ui)
 {
   r32 Radius = 4.f;
   r32 Height = 25.f;
 };
 
 struct world_update_op_shape_params_plane
+poof(@do_editor_ui)
 {
   shape_axis Orientation;
   f32 Thickness = 2.f;
 };
 
 struct world_update_op_shape_params_torus
+poof(@do_editor_ui)
 {
   f32 MajorRadius = 20.f;
   f32 MinorRadius = 3.f;
@@ -1078,7 +1114,7 @@ poof(string_and_value_tables(shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
 
 struct shape_layer_advanced_params
-/* poof(@do_editor_ui) */
+poof(@do_editor_ui)
 {
   r32 Rounding;
    v3 Stretch;
@@ -1087,6 +1123,7 @@ struct shape_layer_advanced_params
 };
 
 struct shape_layer
+poof(@do_editor_ui)
 {
   shape_type Type; poof(@ui_display_name(CSz("Shape Type")))
 
@@ -1108,7 +1145,11 @@ struct shape_layer
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
-struct noise_layer poof(@version(1))
+struct noise_layer
+poof(
+    @do_editor_ui
+    @version(1)
+  )
 {
   ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
 
@@ -1149,6 +1190,7 @@ poof(do_editor_ui_for_radio_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
 
 struct brush_settings
+poof(@do_editor_ui)
 {
   brush_layer_type Type; poof(@ui_display_name(CSz("BrushType")))
 
@@ -1350,6 +1392,7 @@ struct selection_region poof(@do_editor_ui)
 };
 
 struct level_editor
+poof(@do_editor_ui)
 {
   memory_arena *Memory;
 

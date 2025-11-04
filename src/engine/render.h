@@ -31,6 +31,7 @@ struct g_buffer_textures
 };
 
 struct g_buffer_render_group
+poof(@do_editor_ui)
 {
   framebuffer FBO;
   g_buffer_textures Textures;
@@ -228,7 +229,7 @@ link_internal b32
 SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);
 
 link_internal void
-DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Meshes, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
+DrawLod(engine_resources *Engine, shader *Shader, gpu_element_buffer_handles *Handles, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
 
 link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles);

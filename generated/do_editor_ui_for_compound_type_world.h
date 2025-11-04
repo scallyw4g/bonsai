@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct world;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x108363A);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -75,8 +78,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -125,8 +130,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -150,8 +156,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -175,8 +182,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -200,8 +208,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -226,8 +235,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -239,7 +249,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         cs MemberName = CSz("ChunkFreelistFutex");
                 
 
-        
       }
       
 
@@ -250,7 +259,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         cs MemberName = CSz("ChunkFreelistSentinal");
                 
 
-        
       }
       
 
@@ -274,8 +282,63 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
 
 
 
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TotalChunksAllocated");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->TotalChunksAllocated),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
 
                 PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TotalGenChunksAllocated");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->TotalGenChunksAllocated),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
 
       }
       
@@ -287,7 +350,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         cs MemberName = CSz("ChunkDim");
                 
 
-        
       }
       
 
@@ -298,7 +360,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 
         cs MemberName = CSz("ChunkMemory");
                 
 
-        
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

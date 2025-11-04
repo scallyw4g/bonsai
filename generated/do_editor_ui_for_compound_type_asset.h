@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct asset;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x318DDBAB);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -75,8 +78,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -100,8 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -126,8 +131,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
       
 
@@ -143,8 +149,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 
 
 
 
-
         
+
+
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

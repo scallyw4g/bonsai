@@ -34,6 +34,7 @@ struct asset_system
 };
 
 struct engine_resources
+poof(@do_editor_ui)
 {
   bonsai_futex ReadyToStartMainLoop;
 
@@ -84,7 +85,7 @@ struct engine_resources
 
   render_to_texture_group RTTGroup;
 
-  gen_chunk_freelist SynChunkFreelist;
+  gen_chunk_freelist GenChunkFreelist;
 };
 
 

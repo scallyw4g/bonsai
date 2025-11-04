@@ -9,6 +9,7 @@ enum tone_mapping_type
 };
 
 struct lighting_settings
+poof(@do_editor_ui)
 {
   b8 AutoDayNightCycle;
   r32 tDaySpeed = 10.f; poof(@ui_value_range(1.f, 30.f))
@@ -38,6 +39,7 @@ struct lighting_settings
 };
 
 struct render_settings
+poof(@do_editor_ui)
 {
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values

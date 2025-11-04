@@ -1,9 +1,11 @@
-// external/bonsai_stdlib/src/poof_functions.h:2649:0
+// external/bonsai_stdlib/src/poof_functions.h:2651:0
 struct octree_node_freelist
+poof(@do_editor_ui)
 {
   octree_node *First;
   memory_arena *Memory;
   bonsai_futex  Lock;
+  u32 ElementsAllocated;
 };
 
 link_internal octree_node *
@@ -21,6 +23,7 @@ GetOrAllocate(octree_node_freelist *Freelist)
   else
   {
     Result = Allocate( octree_node, Freelist->Memory, 1 );
+    Freelist->ElementsAllocated++;
   }
   ReleaseFutex(&Freelist->Lock);
 

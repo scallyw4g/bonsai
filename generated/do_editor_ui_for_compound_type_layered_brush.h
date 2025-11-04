@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct layered_brush;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1F7B17CD);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -91,8 +94,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-
         
+
+
       }
       
 
@@ -116,8 +120,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Na
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
 

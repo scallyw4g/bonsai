@@ -1,6 +1,8 @@
-// src/engine/editor.h:295:0
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+// src/engine/editor.h:303:0
+struct fireball_state;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
+
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11326A7F);
 
@@ -50,8 +52,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs N
 
 
 
-
                 PushNewRow(Ui);
+
+
 
       }
       
@@ -76,8 +79,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, fireball_state *Element, cs N
 
 
 
-
         
+
+
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

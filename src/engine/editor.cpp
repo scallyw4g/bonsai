@@ -136,55 +136,16 @@ GetUiDebug()
   return &GetEngineResources()->EngineDebug.UiDebug;
 }
 
-poof(do_editor_ui_for_compound_type(v2_static_cursor_16))
-#include <generated/do_editor_ui_for_compound_type_v2_static_cursor_16.h>
-
 poof(string_and_value_tables(visible_region_size))
 #include <generated/string_and_value_tables_visible_region_size.h>
 poof(do_editor_ui_for_enum(visible_region_size))
 #include <generated/do_editor_ui_for_enum_visible_region_size.h>
 
-
-poof(do_editor_ui_for_compound_type(white_noise_params))
-#include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
-poof(do_editor_ui_for_compound_type(perlin_noise_params))
-#include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
-poof(do_editor_ui_for_compound_type(voronoi_noise_params))
-#include <generated/do_editor_ui_for_compound_type_voronoi_noise_params.h>
-poof(do_editor_ui_for_compound_type(noise_layer))
-#include <generated/do_editor_ui_for_compound_type_noise_layer.h>
-
-
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_rect))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_rect.h>
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_cylinder))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_cylinder.h>
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_plane))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_plane.h>
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_torus))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_torus.h>
-
-// @sdf_shape_step(4): Add the editor shit here ..
-
 poof(do_editor_ui_for_enum(shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
-poof(do_editor_ui_for_compound_type(shape_layer_advanced_params))
-#include <generated/do_editor_ui_for_compound_type_shape_layer_advanced_params.h>
-poof(do_editor_ui_for_compound_type(shape_layer))
-#include <generated/do_editor_ui_for_compound_type_shape_layer.h>
-poof(do_editor_ui_for_compound_type(brush_settings))
-#include <generated/do_editor_ui_for_compound_type_brush_settings.h>
 
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
-
-poof(do_editor_ui_for_compound_type(ui_id))
-#include <generated/do_editor_ui_for_compound_type_ui_id.h>
-
-poof(do_editor_ui_for_compound_type(ui_toggle))
-#include <generated/do_editor_ui_for_compound_type_ui_toggle.h>
 
 link_internal cs
 CS(ui_toggle_hashtable_iterator &Iter)
@@ -248,8 +209,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs N
 poof(do_editor_ui_for_container(shader_uniform_buffer))
 #include <generated/do_editor_ui_for_container_struct.h>
 
-poof(do_editor_ui_for_compound_type(shader))
-#include <generated/do_editor_ui_for_compound_type_shader.h>
+/* poof(do_editor_ui_for_compound_type(shader)) */
+/* #include <generated/do_editor_ui_for_compound_type_shader.h> */
 
 poof(do_editor_ui_for_container(shader_ptr_block_array))
 #include <generated/do_editor_ui_for_container_shader_ptr_block_array.h>
@@ -259,25 +220,25 @@ poof(do_editor_ui_for_container(shader_ptr_block_array))
 poof(do_editor_ui_for_compound_type(work_queue_entry))
 #include <generated/do_editor_ui_for_compound_type_work_queue_entry.h>
 
-poof(do_editor_ui_for_compound_type(work_queue))
-#include <generated/do_editor_ui_for_compound_type_work_queue.h>
+/* poof(do_editor_ui_for_compound_type(work_queue)) */
+/* #include <generated/do_editor_ui_for_compound_type_work_queue.h> */
 
-poof(do_editor_ui_for_compound_type(input_event))
-#include <generated/do_editor_ui_for_compound_type_input_event.h>
+/* poof(do_editor_ui_for_compound_type(input_event)) */
+/* #include <generated/do_editor_ui_for_compound_type_input_event.h> */
 
-poof(do_editor_ui_for_compound_type(input))
-#include <generated/do_editor_ui_for_compound_type_input.h>
+/* poof(do_editor_ui_for_compound_type(input)) */
+/* #include <generated/do_editor_ui_for_compound_type_input.h> */
 
-poof(do_editor_ui_for_compound_type(platform))
-#include <generated/do_editor_ui_for_compound_type_platform.h>
+/* poof(do_editor_ui_for_compound_type(platform)) */
+/* #include <generated/do_editor_ui_for_compound_type_platform.h> */
 
 #if BONSAI_DEBUG_SYSTEM_API
 poof(do_editor_ui_for_compound_type(debug_state))
 #include <generated/do_editor_ui_for_compound_type_debug_state.h>
 #endif
 
-poof(do_editor_ui_for_compound_type(bonsai_stdlib))
-#include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h>
+/* poof(do_editor_ui_for_compound_type(bonsai_stdlib)) */
+/* #include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h> */
 
 
 
@@ -313,41 +274,41 @@ poof(do_editor_ui_for_enum(tone_mapping_type))
 
 
 
-poof(do_editor_ui_for_compound_type(lighting_settings))
-#include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
+/* poof(do_editor_ui_for_compound_type(lighting_settings)) */
+/* #include <generated/do_editor_ui_for_compound_type_lighting_settings.h> */
 
-poof(do_editor_ui_for_compound_type(render_settings))
-#include <generated/do_editor_ui_for_compound_type_render_settings.h>
+/* poof(do_editor_ui_for_compound_type(render_settings)) */
+/* #include <generated/do_editor_ui_for_compound_type_render_settings.h> */
 
-poof(do_editor_ui_for_compound_type(physics))
-#include <generated/do_editor_ui_for_compound_type_physics.h>
+/* poof(do_editor_ui_for_compound_type(physics)) */
+/* #include <generated/do_editor_ui_for_compound_type_physics.h> */
 
-poof(do_editor_ui_for_compound_type(random_series))
-#include <generated/do_editor_ui_for_compound_type_random_series.h>
+/* poof(do_editor_ui_for_compound_type(random_series)) */
+/* #include <generated/do_editor_ui_for_compound_type_random_series.h> */
 
 poof(do_editor_ui_for_enum(particle_spawn_type))
 #include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
 
-poof(do_editor_ui_for_compound_type(particle))
-#include <generated/do_editor_ui_for_compound_type_particle.h>
+/* poof(do_editor_ui_for_compound_type(particle)) */
+/* #include <generated/do_editor_ui_for_compound_type_particle.h> */
 
-poof(do_editor_ui_for_compound_type(particle_system))
-#include <generated/do_editor_ui_for_compound_type_particle_system.h>
+/* poof(do_editor_ui_for_compound_type(particle_system)) */
+/* #include <generated/do_editor_ui_for_compound_type_particle_system.h> */
 
-poof(do_editor_ui_for_compound_type(keyframe))
-#include <generated/do_editor_ui_for_compound_type_keyframe.h>
+/* poof(do_editor_ui_for_compound_type(keyframe)) */
+/* #include <generated/do_editor_ui_for_compound_type_keyframe.h> */
 
-poof(do_editor_ui_for_compound_type(animation))
-#include <generated/do_editor_ui_for_compound_type_animation.h>
+/* poof(do_editor_ui_for_compound_type(animation)) */
+/* #include <generated/do_editor_ui_for_compound_type_animation.h> */
 
-poof(do_editor_ui_for_compound_type(vertex_material))
-#include <generated/do_editor_ui_for_compound_type_vertex_material.h>
+/* poof(do_editor_ui_for_compound_type(vertex_material)) */
+/* #include <generated/do_editor_ui_for_compound_type_vertex_material.h> */
 
-poof(do_editor_ui_for_compound_type(bonsai_futex))
-#include <generated/do_editor_ui_for_compound_type_bonsai_futex.h>
+/* poof(do_editor_ui_for_compound_type(bonsai_futex)) */
+/* #include <generated/do_editor_ui_for_compound_type_bonsai_futex.h> */
 
-poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
-#include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
+/* poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer)) */
+/* #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h> */
 
 #if 0
 link_internal void
@@ -366,23 +327,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, 
 }
 #endif
 
-poof(do_editor_ui_for_compound_type(plane))
-#include <generated/do_editor_ui_for_compound_type_plane.h>
+/* poof(do_editor_ui_for_compound_type(plane)) */
+/* #include <generated/do_editor_ui_for_compound_type_plane.h> */
 
-poof(do_editor_ui_for_compound_type(frustum))
-#include <generated/do_editor_ui_for_compound_type_frustum.h>
+/* poof(do_editor_ui_for_compound_type(frustum)) */
+/* #include <generated/do_editor_ui_for_compound_type_frustum.h> */
 
-poof(do_editor_ui_for_compound_type(camera))
-#include <generated/do_editor_ui_for_compound_type_camera.h>
+/* poof(do_editor_ui_for_compound_type(camera)) */
+/* #include <generated/do_editor_ui_for_compound_type_camera.h> */
 
-poof(do_editor_ui_for_compound_type(texture))
-#include <generated/do_editor_ui_for_compound_type_texture.h>
+/* poof(do_editor_ui_for_compound_type(texture)) */
+/* #include <generated/do_editor_ui_for_compound_type_texture.h> */
 
-poof(do_editor_ui_for_compound_type(asset_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h>
+/* poof(do_editor_ui_for_compound_type(asset_thumbnail)) */
+/* #include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h> */
 
-poof(do_editor_ui_for_compound_type(chunk_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h>
+/* poof(do_editor_ui_for_compound_type(chunk_thumbnail)) */
+/* #include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h> */
 
 
 
@@ -529,7 +490,7 @@ poof(
   {
     struct_t.has_tag(do_editor_ui)?
     {
-      do_editor_ui_for_compound_type(struct_t)
+      do_editor_ui_for_compound_type(struct_t);
     }
   }
 )
@@ -537,66 +498,14 @@ poof(
 
 
 
-
-poof(do_editor_ui_for_compound_type(render_buffers_2d))
-#include <generated/do_editor_ui_for_compound_type_render_buffers_2d.h>
-
-poof(do_editor_ui_for_compound_type(renderer_2d))
-#include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
-
-poof(do_editor_ui_for_compound_type(game_lights))
-#include <generated/do_editor_ui_for_compound_type_game_lights.h>
-
-poof(do_editor_ui_for_compound_type(lighting_render_group))
-#include <generated/do_editor_ui_for_compound_type_lighting_render_group.h>
-
-poof(do_editor_ui_for_compound_type(g_buffer_render_group))
-#include <generated/do_editor_ui_for_compound_type_g_buffer_render_group.h>
-
-poof(do_editor_ui_for_compound_type(terrain_shaping_render_context))
-#include <generated/do_editor_ui_for_compound_type_struct_terrain_shaping_render_context.h>
-
-poof(do_editor_ui_for_compound_type(terrain_decoration_render_context))
-#include <generated/do_editor_ui_for_compound_type_struct_terrain_decoration_render_context.h>
-
-poof(do_editor_ui_for_compound_type(terrain_finalize_render_context))
-#include <generated/do_editor_ui_for_compound_type_struct_terrain_finalize_render_context.h>
-  
-poof(do_editor_ui_for_compound_type(world_edit_render_context))
-#include <generated/do_editor_ui_for_compound_type_struct_world_edit_render_context.h>
-
-poof(do_editor_ui_for_compound_type(graphics))
-#include <generated/do_editor_ui_for_compound_type_graphics.h>
-
-poof(do_editor_ui_for_compound_type(render_debug))
-#include <generated/do_editor_ui_for_compound_type_render_debug.h>
-
-poof(do_editor_ui_for_compound_type(ui_debug))
-#include <generated/do_editor_ui_for_compound_type_ui_debug.h>
-
-poof(do_editor_ui_for_compound_type(engine_debug))
-#include <generated/do_editor_ui_for_compound_type_engine_debug.h>
-
 poof(do_editor_ui_for_enum(engine_debug_view_mode))
 #include <generated/do_editor_ui_for_enum_engine_debug_view_mode.h>
-
-poof(do_editor_ui_for_compound_type(level_editor))
-#include <generated/do_editor_ui_for_compound_type_level_editor.h>
 
 poof(do_editor_ui_for_enum(resolution_setting))
 #include <generated/do_editor_ui_for_enum_resolution_setting.h>
 
 poof(do_editor_ui_for_enum(shader_language_setting))
 #include <generated/do_editor_ui_for_enum_shader_language_setting.h>
-
-poof(do_editor_ui_for_compound_type(graphics_settings))
-#include <generated/do_editor_ui_for_compound_type_graphics_settings.h>
-
-poof(do_editor_ui_for_compound_type(engine_settings))
-#include <generated/do_editor_ui_for_compound_type_engine_settings.h>
-
-poof(do_editor_ui_for_compound_type(engine_resources))
-#include <generated/do_editor_ui_for_compound_type_engine_resources.h>
 
 
 link_internal rect3i

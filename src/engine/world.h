@@ -39,7 +39,6 @@ enum octree_node_type
   OctreeNodeType_Leaf,   // .. leaf
 };
 
-struct world_edit_ptr_block_array;
 struct octree_node
 {
   chunk_flag Flags;
@@ -104,11 +103,6 @@ struct world
   v3i Center;                            // the world chunk position of the center of the visible region
   visible_region_size VisibleRegionSize; // The number of chunks in xyz we're going to update and render
 
-  /* u32 HashSlotsUsed; */
-  /* u32 HashSize; */
-  /* world_chunk **ChunkHashMemory[2];  poof(@ui_skip) */
-  /* world_chunk **ChunkHash;           poof(@array_length(Element->HashSize)) */
-
   octree_node Root;
   memory_arena *OctreeMemory;
   octree_node_freelist OctreeNodeFreelist;
@@ -124,6 +118,8 @@ struct world
   bonsai_futex ChunkFreelistFutex;   poof(@ui_skip)
   world_chunk ChunkFreelistSentinal; poof(@ui_skip)
   s32 FreeChunkCount;
+  s32 TotalChunksAllocated;
+  s32 TotalGenChunksAllocated;
 
   v3i ChunkDim = V3i(64);            poof(@ui_skip)
   memory_arena *ChunkMemory;         poof(@ui_skip)

@@ -1,6 +1,7 @@
 
 struct bloom_downsample_shader
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/bloom_downsample.fragmentshader") )
 {
@@ -12,6 +13,7 @@ poof( @render_pass
 
 struct bloom_upsample_shader
 poof( @render_pass
+      @do_editor_ui
       @vert_source_file("external/bonsai_stdlib/shaders/Passthrough.vertexshader")
       @frag_source_file("shaders/bloom_upsample.fragmentshader") )
 {
@@ -26,6 +28,7 @@ poof( @render_pass
 
 #define BLOOM_MIP_CHAIN_COUNT (3)
 struct bloom_render_group
+poof(@do_editor_ui)
 {
   framebuffer BlurFBO; // For doing the blur
 

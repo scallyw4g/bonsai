@@ -5,6 +5,7 @@ struct light
 };
 
 struct game_lights
+poof(@do_editor_ui)
 {
   texture ColorTex;
   texture PositionTex;
@@ -19,7 +20,9 @@ struct game_lights
 
 
 struct lighting_render_group
-poof( @render_pass
+poof(
+      @do_editor_ui
+      @render_pass
       @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
       @frag_source_file(BONSAI_SHADER_PATH "Lighting.fragmentshader")
     )

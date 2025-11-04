@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2036:0
+// external/bonsai_stdlib/src/poof_functions.h:2037:0
 struct standing_spot_stream_chunk
 {
   standing_spot Element;

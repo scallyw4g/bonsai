@@ -250,6 +250,9 @@ Unspawned(entity *Entity)
 link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
+#if 0
+  *Chunk = {};
+#else
   Chunk->WorldP = INVALID_WORLD_CHUNK_POSITION;
   Chunk->FilledCount = {};
   /* Chunk->DrawBoundingVoxels = {}; */
@@ -260,9 +263,10 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->Entities = {};
   Chunk->Next = {};
 
-  Clear(&Chunk->Mesh);
+  Chunk->Handles = {};
 
   Chunk->DimInChunks = {};
+#endif
 }
 
 inline world_position

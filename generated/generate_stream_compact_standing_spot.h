@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2006:0
+// external/bonsai_stdlib/src/poof_functions.h:2007:0
 link_internal standing_spot_buffer
 Compact(standing_spot_stream *Stream, memory_arena *PermMemory)
 {

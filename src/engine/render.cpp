@@ -1043,6 +1043,7 @@ ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_g
 link_internal void
 ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
 {
+  Assert(Handles->Mapped == False);
   if (Handles->Handles[mesh_VertexHandle])
   {
     GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
@@ -1152,7 +1153,7 @@ link_internal void
 poof(@async @render)
 DrawLod( engine_resources *Engine,
          shader *Shader,
-         gpu_mapped_element_buffer *Mesh,
+         gpu_element_buffer_handles *Handles,
          v3 Basis,
          Quaternion Rotation,
          v3 Scale )
@@ -1162,15 +1163,14 @@ DrawLod( engine_resources *Engine,
   UNPACK_ENGINE_RESOURCES(Engine);
 
   AssertNoGlErrors;
-  if (HasGpuMesh(Mesh) && Mesh->Handles.Mapped == False)
+  Assert(Handles->Mapped == False);
+  if (HasGpuMesh(Handles))
   {
     m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
     m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
-
-    auto Handles = &Mesh->Handles;
 
     DrawGpuBufferImmediate(Handles);
     AssertNoGlErrors;
@@ -1235,7 +1235,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_ele
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
-    DrawLod(Engine, &Engine->RTTGroup.Shader, Mesh, Offset);
+    DrawLod(Engine, &Engine->RTTGroup.Shader, &Mesh->Handles, Offset);
   }
   else
   {
@@ -1335,7 +1335,7 @@ DrawEntity(              shader *Shader,
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
-        DrawLod(GetEngineResources(), Shader, &Model->Mesh, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), Shader, &Model->Mesh.Handles, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }
@@ -1539,7 +1539,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
     Assert(Chunk);
 
     // In case gpu meshes got deallocated after the chunk was added to the draw list
-    if (HasGpuMesh(&Chunk->Mesh))
+    if (HasGpuMesh(Chunk))
     {
       v3 Offset = V3(Node->Resolution);
       /* v3 Offset = V3(Node->Resolution*0.5f); */
@@ -1554,7 +1554,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
       {
         Basis += GetSimSpaceP(World, Chunk->WorldP);
       }
-      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
   }
@@ -1568,7 +1568,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
   IterateOver(DrawList, Chunk, ChunkIndex)
   {
     // In case gpu meshes got deallocated after the chunk was added to the draw list
-    if (HasGpuMesh(&Chunk->Mesh))
+    if (HasGpuMesh(Chunk))
     {
       v3 Basis;
       if (Camera)
@@ -1579,7 +1579,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
       {
         Basis = GetSimSpaceP(World, Chunk->WorldP);
       }
-      DrawLod(Engine, Shader, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
   }

@@ -1,4 +1,4 @@
-// src/engine/editor.h:526:0
+// src/engine/editor.h:543:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, model_buffer *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {

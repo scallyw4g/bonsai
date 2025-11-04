@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2598:0
+// external/bonsai_stdlib/src/poof_functions.h:2600:0
 
 
 
@@ -354,6 +354,10 @@ Shift( octree_node_ptr_block_array *Array, octree_node_ptr Element )
   Insert(Array, { .Index = 0 }, Element);
 }
 
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
 
 
 
