@@ -17,6 +17,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
   world_position WorldCenter = V3i(100, 100, 0);
+
   canonical_position CameraTargetP = {};
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
@@ -25,12 +26,13 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
+  AllocateWorld(World, WorldCenter, VisibleRegionSize);
+
+
   v3i VisibleRegion = V3i(VisibleRegionSize);
   f32 DistanceFromTarget = 50000.f;
   f32 FarClip = 5000000.f;
   StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
-
-  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   *GameState = {};
@@ -118,7 +120,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           }
           PushNewRow(Ui);
         }
-
       }
     PushWindowEnd(Ui, &Window);
   }

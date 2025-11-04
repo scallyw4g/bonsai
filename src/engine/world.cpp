@@ -3,9 +3,10 @@ debug_global u32 DeferrFreedNodes;
 debug_global u32 FreedNodes;
 
 link_internal world *
-AllocateWorld(world *World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegionSize)
+AllocateWorld(world *World, v3i Center, visible_region_size VisibleRegionSize)
 {
   *World = {};
+  Assert(World->ChunkDim == V3i(64));
 
   memory_arena *WorldChunkMemory = AllocateArena(Gigabytes(2));
   World->ChunkMemory = WorldChunkMemory;
@@ -24,20 +25,15 @@ AllocateWorld(world *World, v3i Center, v3i WorldChunkDim, visible_region_size V
   /* World->FreeChunks = Allocate(world_chunk*, WorldChunkMemory, FREELIST_SIZE ); */
 
 
-  Assert(WorldChunkDim.x == WorldChunkDim.y);
-  Assert(WorldChunkDim.y == WorldChunkDim.z);
-
-
   World->OctreeNodeFreelist.Memory = World->OctreeMemory;
 
-  World->ChunkDim = WorldChunkDim;
   World->VisibleRegionSize = VisibleRegionSize;
   World->Center = Center;
 
   // NOTE(Jesse): Has to come after World->ChunkDim is set
   v3i VisibleRegion = V3i(VisibleRegionSize);
   InitOctreeNode(World, &World->Root, {}, VisibleRegion, {});
-  World->Root.Chunk = AllocateWorldChunk( {}, WorldChunkDim, VisibleRegion, World->ChunkMemory);
+  World->Root.Chunk = AllocateWorldChunk( {}, World->ChunkDim, VisibleRegion, World->ChunkMemory);
 
   // NOTE(Jesse): We can use an unallocated queue here because we're not actually
   // gonna do anything with the results.. we just want to initialize the tree

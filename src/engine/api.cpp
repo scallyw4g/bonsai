@@ -103,9 +103,16 @@ Bonsai_FrameBegin(engine_resources *Resources)
     CancelAllWorkQueueJobs(Resources);
     Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
 
+    world *World = Resources->World;
+    v3i Center             = World->Center;
+    auto VisibleRegionSize = World->VisibleRegionSize;
+
     HardResetWorld(Resources);
+    AllocateWorld(World, Center, VisibleRegionSize);
+
     ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits);
     /* HardResetEditor(&Resources->Editor); */
+
 
     UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
   }

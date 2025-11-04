@@ -217,14 +217,12 @@ HardResetWorld(engine_resources *Engine)
   VaporizeArena(World->ChunkMemory);
   VaporizeArena(World->OctreeMemory);
 
-  v3i Center             = World->Center;
-  v3i ChunkDim           = World->ChunkDim;
-  auto VisibleRegionSize = World->VisibleRegionSize;
-
   *World = {};
 
   // The game init function is responsible for allocating the world .. we just
   // clear it here.
+  /* v3i Center             = World->Center; */
+  /* auto VisibleRegionSize = World->VisibleRegionSize; */
   /* AllocateWorld(World, Center, ChunkDim, VisibleRegionSize); */
 }
 

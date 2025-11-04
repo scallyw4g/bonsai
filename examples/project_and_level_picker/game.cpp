@@ -33,9 +33,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  AllocateWorld(World, {}, WORLD_CHUNK_DIM, VisibleRegionSize_128);
-
+  AllocateWorld(World, {}, VisibleRegionSize_128);
   GameState = Allocate(game_state, Resources->GameMemory, 1);
+
   return GameState;
 }
 

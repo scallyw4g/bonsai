@@ -125,7 +125,7 @@ struct world
   world_chunk ChunkFreelistSentinal; poof(@ui_skip)
   s32 FreeChunkCount;
 
-  v3i ChunkDim;                      poof(@ui_skip)
+  v3i ChunkDim = V3i(64);            poof(@ui_skip)
   memory_arena *ChunkMemory;         poof(@ui_skip)
 };
 
@@ -295,7 +295,7 @@ link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_paged_list *PotentialEdits);
 
 link_internal world *
-AllocateWorld(world* World, v3i Center, v3i WorldChunkDim, visible_region_size VisibleRegion);
+AllocateWorld(world* World, v3i Center, visible_region_size VisibleRegion);
 
 link_internal rect3cp
 GetBoundingBox(world *World, octree_node *Node);

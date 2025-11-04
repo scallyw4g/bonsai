@@ -282,8 +282,8 @@ main( s32 ArgCount, const char ** Args )
         HardResetEngine(EngineResources);
         /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
 
-        EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
-        if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
+        /* EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread); */
+        /* if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; } */
       }
 
       // Do game-specific reload code
@@ -328,6 +328,7 @@ main( s32 ArgCount, const char ** Args )
     // has to happen before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name.Count )
     {
+      Info("Requestin hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
       LastGameLibTime = 0;
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..
       GameLibName = ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena );
