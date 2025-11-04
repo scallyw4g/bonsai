@@ -695,6 +695,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
 
+      b32 Continued = False;
       if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
         MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
@@ -728,24 +729,24 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
         if (FacesRequired)
         {
+          Continued = True;
           Info("Chunk had faces (%d)", FacesRequired);
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
               LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
               GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here..
         }
-        else
-        {
-          // TODO(Jesse): Check if Node has a chunk mesh and free it?
-          FinalizeNodeInitializaion(Node);
-          FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
-        }
       }
-      else
+
+      // Deallocate the stale mesh if the new chunk didn't have a mesh
+      if (Continued == False &&
+          Node->Chunk        &&
+          HasGpuMesh(Node->Chunk) )
       {
-        // TODO(Jesse): Check if Node has a chunk mesh and free it?
-        FinalizeNodeInitializaion(Node);
-        FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
+        DeallocateHandles(LoRenderQ, &Node->Chunk->Handles);
       }
+
+      FinalizeNodeInitializaion(Node);
+      FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
 
       auto Graphics = &EngineResources->Graphics;
 
@@ -760,10 +761,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     } break;
 
     { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)
-
-#if 0
-      NotImplemented;
-#else
       gen_chunk                 *GenChunk      =  Job->GenChunk;
       world_chunk               *SynChunk      = &GenChunk->Chunk;
 
@@ -778,8 +775,6 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       Info("Buidling Chunk Mesh");
 
-      /* Assert(HasGpuMesh(&DestChunk->Mesh) == True); */
-
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
 
       Assert(HasGpuMesh(&GenChunk->Mesh) == True);
@@ -788,11 +783,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk)       == False); */
 
-      /* FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk); */
-      /* PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, GenChunk, DestNode); */
-
       FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, DestNode);
-#endif
     } break;
 
     { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)
