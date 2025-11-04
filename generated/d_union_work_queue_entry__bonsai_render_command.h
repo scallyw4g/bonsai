@@ -12,7 +12,7 @@ enum work_queue_entry__bonsai_render_command_type
   type_bonsai_render_command_do_stuff,
   type_bonsai_render_command_allocate_and_map_gpu_element_buffer,
   type_bonsai_render_command_unmap_gpu_element_buffer,
-  type_bonsai_render_command_unmap_and_deallocate_buffer,
+  type_bonsai_render_command_unmap_and_deallocate_pbo,
   type_bonsai_render_command_setup_shader,
   type_bonsai_render_command_teardown_shader,
   type_bonsai_render_command_set_shader_uniform,
@@ -41,7 +41,7 @@ struct work_queue_entry__bonsai_render_command
     struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
     struct bonsai_render_command_allocate_and_map_gpu_element_buffer bonsai_render_command_allocate_and_map_gpu_element_buffer;
     struct bonsai_render_command_unmap_gpu_element_buffer bonsai_render_command_unmap_gpu_element_buffer;
-    struct bonsai_render_command_unmap_and_deallocate_buffer bonsai_render_command_unmap_and_deallocate_buffer;
+    struct bonsai_render_command_unmap_and_deallocate_pbo bonsai_render_command_unmap_and_deallocate_pbo;
     struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;
     struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;
     struct bonsai_render_command_set_shader_uniform bonsai_render_command_set_shader_uniform;

@@ -57,7 +57,7 @@ DrainHiRenderQueue(engine_resources *Engine)
             InvalidCodePath();
           } break;
 
-          { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
+          { tmatch(bonsai_render_command_unmap_and_deallocate_pbo, RenderCommand, Command)
             InvalidCodePath();
           } break;
 
@@ -408,7 +408,7 @@ DrainLoRenderQueue(engine_resources *Engine)
           { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
-            ReallocateGpuBuffers(&Command->Dest->Handles, Command->Type, Command->ElementCount);
+            AllocateGpuBuffer_gpu_mapped_element_buffer(&Command->Dest->Handles, Command->Type, Command->ElementCount);
             MapGpuBuffer(Command->Dest);
             Assert(HasGpuMesh(Command->Dest));
 
@@ -438,8 +438,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             FinalizeNodeInitializaion(Cast(octree_node*, Cast(void*, Command->DestNode)));
           } break;
 
-          { tmatch(bonsai_render_command_unmap_and_deallocate_buffer, RenderCommand, Command)
-            TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_buffer);
+          { tmatch(bonsai_render_command_unmap_and_deallocate_pbo, RenderCommand, Command)
+            TIMED_NAMED_BLOCK(bonsai_render_command_unmap_and_deallocate_pbo);
 
             gpu_readback_buffer PBOBuf = Command->PBOBuf;
 

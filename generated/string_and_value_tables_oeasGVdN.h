@@ -16,7 +16,7 @@ IsValid(work_queue_entry__bonsai_render_command_type Value)
     case type_bonsai_render_command_do_stuff:
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer:
     case type_bonsai_render_command_unmap_gpu_element_buffer:
-    case type_bonsai_render_command_unmap_and_deallocate_buffer:
+    case type_bonsai_render_command_unmap_and_deallocate_pbo:
     case type_bonsai_render_command_setup_shader:
     case type_bonsai_render_command_teardown_shader:
     case type_bonsai_render_command_set_shader_uniform:
@@ -56,7 +56,7 @@ ToStringPrefixless(work_queue_entry__bonsai_render_command_type Type)
     case type_bonsai_render_command_do_stuff: { Result = CSz("stuff"); } break;
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer: { Result = CSz("buffer"); } break;
     case type_bonsai_render_command_unmap_gpu_element_buffer: { Result = CSz("buffer"); } break;
-    case type_bonsai_render_command_unmap_and_deallocate_buffer: { Result = CSz("buffer"); } break;
+    case type_bonsai_render_command_unmap_and_deallocate_pbo: { Result = CSz("pbo"); } break;
     case type_bonsai_render_command_setup_shader: { Result = CSz("shader"); } break;
     case type_bonsai_render_command_teardown_shader: { Result = CSz("shader"); } break;
     case type_bonsai_render_command_set_shader_uniform: { Result = CSz("uniform"); } break;
@@ -94,7 +94,7 @@ ToString(work_queue_entry__bonsai_render_command_type Type)
     case type_bonsai_render_command_do_stuff: { Result = CSz("type_bonsai_render_command_do_stuff"); } break;
     case type_bonsai_render_command_allocate_and_map_gpu_element_buffer: { Result = CSz("type_bonsai_render_command_allocate_and_map_gpu_element_buffer"); } break;
     case type_bonsai_render_command_unmap_gpu_element_buffer: { Result = CSz("type_bonsai_render_command_unmap_gpu_element_buffer"); } break;
-    case type_bonsai_render_command_unmap_and_deallocate_buffer: { Result = CSz("type_bonsai_render_command_unmap_and_deallocate_buffer"); } break;
+    case type_bonsai_render_command_unmap_and_deallocate_pbo: { Result = CSz("type_bonsai_render_command_unmap_and_deallocate_pbo"); } break;
     case type_bonsai_render_command_setup_shader: { Result = CSz("type_bonsai_render_command_setup_shader"); } break;
     case type_bonsai_render_command_teardown_shader: { Result = CSz("type_bonsai_render_command_teardown_shader"); } break;
     case type_bonsai_render_command_set_shader_uniform: { Result = CSz("type_bonsai_render_command_set_shader_uniform"); } break;
@@ -129,7 +129,7 @@ WorkQueueEntryBonsaiRenderCommandType(counted_string S)
   if (StringsMatch(S, CSz("type_bonsai_render_command_do_stuff"))) { return type_bonsai_render_command_do_stuff; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_allocate_and_map_gpu_element_buffer"))) { return type_bonsai_render_command_allocate_and_map_gpu_element_buffer; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_unmap_gpu_element_buffer"))) { return type_bonsai_render_command_unmap_gpu_element_buffer; }
-  if (StringsMatch(S, CSz("type_bonsai_render_command_unmap_and_deallocate_buffer"))) { return type_bonsai_render_command_unmap_and_deallocate_buffer; }
+  if (StringsMatch(S, CSz("type_bonsai_render_command_unmap_and_deallocate_pbo"))) { return type_bonsai_render_command_unmap_and_deallocate_pbo; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_setup_shader"))) { return type_bonsai_render_command_setup_shader; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_teardown_shader"))) { return type_bonsai_render_command_teardown_shader; }
   if (StringsMatch(S, CSz("type_bonsai_render_command_set_shader_uniform"))) { return type_bonsai_render_command_set_shader_uniform; }

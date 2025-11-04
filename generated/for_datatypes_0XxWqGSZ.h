@@ -146,6 +146,17 @@
 
 
 
+struct finalize_shit_and_fuckin_do_stuff_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( finalize_shit_and_fuckin_do_stuff_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_finalize_shit_and_fuckin_do_stuff_async_params;
+  Result.work_queue_entry_async_function_call.finalize_shit_and_fuckin_do_stuff_async_params = *Params;
+  return Result;
+}
+
 
 
 

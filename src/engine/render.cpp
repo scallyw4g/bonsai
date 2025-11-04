@@ -1002,6 +1002,7 @@ DeleteGpuBuffer(gpu_element_buffer_handles *Handles)
 link_internal void
 ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
 {
+  Assert(False);
   Assert(Handles->Mapped == False);
   if (Handles->VAO)
   {
@@ -1123,6 +1124,7 @@ DrawLod( engine_resources *Engine,
 
   AssertNoGlErrors;
   Assert(Handles->Mapped == False);
+
   if (HasGpuMesh(Handles))
   {
     m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
@@ -1681,5 +1683,36 @@ UpdateKeyLight(graphics *Graphics, r32 tDay)
       }
     } break;
   }
+}
+
+
+link_internal void
+poof(@async @render)
+FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
+{
+  world_chunk *DestChunk = DestNode->Chunk;
+  world_chunk *SynChunk = &GenChunk->Chunk;
+  Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+  Assert(HasGpuMesh( SynChunk)       == False);
+
+  // @dest_chunk_can_have_mesh
+  /* Assert(HasGpuMesh(DestChunk)       == False); */
+
+  FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
+
+  auto DestHandles = DestChunk->Handles;
+
+  DestChunk->Handles = GenChunk->Mesh.Handles;
+
+  if (HasGpuMesh(&DestHandles))
+  {
+    DeleteGpuBuffer(&DestHandles);
+  }
+
+  GenChunk->Mesh = {};
+
+  Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+
+  FinalizeNodeInitializaion(DestNode);
 }
 

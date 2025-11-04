@@ -150,7 +150,7 @@ struct bonsai_render_command_unmap_gpu_element_buffer
   octree_node *DestNode;
 };
 
-struct bonsai_render_command_unmap_and_deallocate_buffer
+struct bonsai_render_command_unmap_and_deallocate_pbo
 {
   gpu_readback_buffer PBOBuf;
 };
@@ -184,7 +184,7 @@ poof(
 
     bonsai_render_command_allocate_and_map_gpu_element_buffer
     bonsai_render_command_unmap_gpu_element_buffer
-    bonsai_render_command_unmap_and_deallocate_buffer
+    bonsai_render_command_unmap_and_deallocate_pbo
 
     bonsai_render_command_setup_shader
     bonsai_render_command_teardown_shader

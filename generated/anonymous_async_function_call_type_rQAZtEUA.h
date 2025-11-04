@@ -1,5 +1,9 @@
 // src/engine/work_queue.h:293:0
 {
+  tmatch( finalize_shit_and_fuckin_do_stuff_async_params, Task, Job );
+  DoJob(Job);
+} break;
+{
   tmatch( initialize_easing_function_visualizer_render_pass_async_params, Task, Job );
   DoJob(Job);
 } break;

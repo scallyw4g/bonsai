@@ -132,11 +132,11 @@ WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_gpu_element_buffe
 }
 
 link_internal work_queue_entry__bonsai_render_command
-WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_buffer A          )
+WorkQueueEntryBonsaiRenderCommand( bonsai_render_command_unmap_and_deallocate_pbo A          )
 {
   work_queue_entry__bonsai_render_command Result = {
-    .Type = type_bonsai_render_command_unmap_and_deallocate_buffer,
-    .bonsai_render_command_unmap_and_deallocate_buffer = A,
+    .Type = type_bonsai_render_command_unmap_and_deallocate_pbo,
+    .bonsai_render_command_unmap_and_deallocate_pbo = A,
 
             
 
@@ -444,10 +444,10 @@ BonsaiRenderCommandUnmapGpuElementBuffer(  gpu_element_buffer_handles *  Handles
   return Reuslt;
 }
 
-link_internal bonsai_render_command_unmap_and_deallocate_buffer
-BonsaiRenderCommandUnmapAndDeallocateBuffer(  gpu_readback_buffer   PBOBuf  )
+link_internal bonsai_render_command_unmap_and_deallocate_pbo
+BonsaiRenderCommandUnmapAndDeallocatePbo(  gpu_readback_buffer   PBOBuf  )
 {
-  bonsai_render_command_unmap_and_deallocate_buffer Reuslt = {
+  bonsai_render_command_unmap_and_deallocate_pbo Reuslt = {
             .PBOBuf = PBOBuf
 
 

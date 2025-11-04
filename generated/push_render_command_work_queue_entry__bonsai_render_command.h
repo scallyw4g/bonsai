@@ -110,13 +110,13 @@ PushBonsaiRenderCommandUnmapGpuElementBuffer(
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 link_internal void
-PushBonsaiRenderCommandUnmapAndDeallocateBuffer(
+PushBonsaiRenderCommandUnmapAndDeallocatePbo(
   work_queue *RenderQueue
    , gpu_readback_buffer PBOBuf  
 )
 {
   work_queue_entry Work = WorkQueueEntry(
-    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocateBuffer(  PBOBuf  )));
+    WorkQueueEntryBonsaiRenderCommand( BonsaiRenderCommandUnmapAndDeallocatePbo(  PBOBuf  )));
 
   PushWorkQueueEntry(RenderQueue, &Work);
 }

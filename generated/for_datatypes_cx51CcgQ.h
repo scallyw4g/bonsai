@@ -237,6 +237,28 @@
 
 
 
+link_internal void
+FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+
+  finalize_shit_and_fuckin_do_stuff_async_params Params =
+  {
+      GenChunk,  DestNode, 
+  };
+
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  PushWorkQueueEntry(Queue, &Entry);
+}
+
+link_internal void
+DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
+{
+   FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
+  
+}
+
 
 
 
@@ -931,6 +953,9 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
+
+
 
 
 

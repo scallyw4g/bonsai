@@ -1,4 +1,3 @@
-
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
@@ -672,7 +671,12 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(Chunk);
 
       world_chunk *DestChunk = Node->Chunk;
-      Assert(HasGpuMesh(&DestChunk->Handles) == False);
+
+      // NOTE(Jesse): This is valid when we resubmit a chunk because we change the edits
+      // We need to keep these intact so that we don't flicker and hence have to wait
+      // till the very end to reallocate
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(&DestChunk->Handles) == False); */
 
       gen_chunk *GenChunk = GetOrAllocate(&EngineResources->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
       world_chunk *SynChunk = &GenChunk->Chunk;
@@ -731,12 +735,14 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         }
         else
         {
+          // TODO(Jesse): Check if Node has a chunk mesh and free it?
           FinalizeNodeInitializaion(Node);
           FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
         }
       }
       else
       {
+        // TODO(Jesse): Check if Node has a chunk mesh and free it?
         FinalizeNodeInitializaion(Node);
         FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
       }
@@ -746,7 +752,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
       // a PBO, so it sets the PBO handle to -1
       Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
-      PushBonsaiRenderCommandUnmapAndDeallocateBuffer(LoRenderQ, Job->PBOBuf);
+      PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, Job->PBOBuf);
       Assert(Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
       AtomicDecrement(&Graphics->TotalChunkJobsActive);
@@ -766,7 +772,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       octree_node               *DestNode     = Job->DestNode;
       world_chunk               *DestChunk    = DestNode->Chunk;
-      Assert(HasGpuMesh(DestChunk) == False);
+
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk) == False); */
 
       Info("Buidling Chunk Mesh");
 
@@ -775,21 +783,15 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
 
       Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert(HasGpuMesh( SynChunk)       == False);
 
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk)       == False); */
 
-      DestChunk->Handles = GenChunk->Mesh.Handles;
-      Assert(HasGpuMesh(DestChunk) == True);
-      Assert(DestChunk->Handles.ElementCount);
+      /* FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk); */
+      /* PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, GenChunk, DestNode); */
 
-      SynChunk->Handles = {};
-      GenChunk->Mesh = {};
-
-      Assert(HasGpuMesh(SynChunk) == False);
-      Assert(HasGpuMesh(&GenChunk->Mesh) == False);
-
-      FreeWorldChunk(&EngineResources->GenChunkFreelist, GenChunk);
-
-      PushBonsaiRenderCommandUnmapGpuElementBuffer(LoRenderQ, &DestChunk->Handles, DestNode);
+      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, DestNode);
 #endif
     } break;
 

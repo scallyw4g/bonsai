@@ -233,3 +233,7 @@ DrawLod(engine_resources *Engine, shader *Shader, gpu_element_buffer_handles *Ha
 
 link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles);
+
+
+link_internal void
+FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode);
