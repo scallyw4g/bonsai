@@ -728,7 +728,8 @@ DrainLoRenderQueue(engine_resources *Engine)
                           {
                             case ShapeType_Rect:
                             {
-                              auto Sphere = &Shape->Rect;
+                              auto Rect = &Shape->Rect;
+                              BindUniformByName(&WorldEditRC->Program, "RectDim", &Rect->Dim);
                             } break;
 
                             case ShapeType_Sphere:

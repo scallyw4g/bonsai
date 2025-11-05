@@ -33,7 +33,7 @@ uniform  v3  Repeat;
 // Rect Params
 //
 
-v3 RectDim;
+uniform v3 RectDim;
 
 //
 // Sphere Params
@@ -102,9 +102,12 @@ r32 DistanceToPlane(v3 PlaneNormal, f32 Planed, v3 P)
 
 f32 iq_sdSphere(v3 p, f32 r)
 {
-  return length(p) - Radius;
+  return length(p) - r;
 }
 
+// p == sample point
+// b == box dimension
+//
 f32 iq_sdBox(vec3 p, vec3 b)
 {
   vec3 q = abs(p) - b;
@@ -182,12 +185,12 @@ v4 DoInputTransforms(v3 p, mat3 Transform, v3 Stretch, v3 Repeat)
 }
 
 #if 1
-f32 IQSampleToBonsaiSample(f32 IQSample, f32 Radius)
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
 {
-  return (1.f-IQSample)/Radius;
+  return (1.f-IQSample)/Rad;
 }
 #else
-f32 IQSampleToBonsaiSample(f32 IQSample, f32 Radius)
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
 {
   return (1.f-IQSample);
 }
@@ -269,17 +272,30 @@ void main()
             // ShapeType_Rect
             case 0:
             {
-              v3 BoxR = (EditDim/4.f);
-              v3 p    = (BoxR - (EditRelxyz-BoxR)) / BoxR;
+              /* v3 BoxR = EditDim/4.f; */
+              /* v3 BoxR = v3(20.f); */
+              /* v3 BoxR = v3(200.f); */
+              v3 BoxR = RectDim/2.f;
+              if (length(BoxR) > 0.f)
+              {
+              }
+              else
+              {
+                BoxR = EditDim;
+              }
+
+              v3 Center = EditDim/2.f;
+              v3 p    = (EditRelxyz - Center);
               v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample = w.w+iq_sdBox(w.xyz, V3(1.f));
+              f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
               InitialSample = -IQSample;
+
             } break;
 
             // ShapeType_Sphere
             case 1:
             {
-              v3 p  = (EditRelxyz - EditRelativeSphereCenter)/Radius;
+              v3 p  = (EditRelxyz - EditRelativeSphereCenter);
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
               f32 IQSample  = w.w+iq_sdSphere(w.xyz, Radius);
               InitialSample = -IQSample;
