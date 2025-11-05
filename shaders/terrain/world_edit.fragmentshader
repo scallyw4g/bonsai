@@ -348,59 +348,8 @@ void main()
           InitialSample += Rounding;
         } break;
 
-        default: {ColorValue = V3(1.f, 0.f, 0.f);  Accumulator = 1.f;} break;
+        default: {ColorValue = V3(1.f, 0.f, 1.f);  Accumulator = 1.f;} break;
       }
-
-
-#if 0
-      // TODO(Jesse): This is buggy; it generates extra geometry on the edges
-      // of chunks for some reason.  At the moment it's a non-issue because the
-      // additional geometry is always below the ground, and doesn't cause
-      // visible artifacts.  At the moment I just want anything 'working', but
-      // this should definitely be improved in the future.
-      //
-      if ( (ValueModifiers & (1<<0)) > 0) // WorldEdit_ValueModifier_Surface
-      {
-        if (x > 0 && x <= 64 &&
-            y > 0 && y <= 64 &&
-            z > 0 && z <= 64)
-        {
-          f32 ThisCell = sign(TexLookup.a);
-          if (ThisCell <= 0.f) // Current value is Air
-          {
-            s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) > 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) > 0.f);
-
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a ) > 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a ) > 0.f);
-
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) > 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) > 0.f);
-
-            if (IsSurface == 0) { InitialSample = 0.f; ColorSample = V3(0,0,0); }
-          }
-          else // Current Accumulator is Solid
-          {
-            s32 IsSurface  = s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(1, 0), 0).a ) <= 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(1, 0), 0).a ) <= 0.f);
-
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 1), 0).a ) <= 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 1), 0).a ) <= 0.f);
-
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) + ivec2(0, 66), 0).a) <= 0.f);
-                IsSurface |= s32(sign(texelFetch(InputTex, ivec2(gl_FragCoord.xy) - ivec2(0, 66), 0).a) <= 0.f);
-
-            if (IsSurface == 0) { InitialSample = 0.f; ColorSample = V3(0,0,0); }
-          }
-        }
-        else
-        {
-          /* InitialSample = 0.f; ColorSample = V3(0,0,0); */
-        }
-      }
-#endif
-
-
 
       /* InitialSample = Clamp01(InitialSample); */
 
@@ -432,6 +381,12 @@ void main()
       {
         if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
       }
+
+      if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
+      {
+        ThisSample = 0.f;
+      }
+
 
 
 
@@ -473,30 +428,17 @@ void main()
         case 3: // WorldEdit_Mode_Threshold
         {
           f32 AbsSampleValue = abs(ThisSample);
-
-          /* if (ThisSample >= Threshold) */
-          /* if (AbsSampleValue >= Threshold) */
-          /* if (Accumulator < 0.f && AbsSampleValue >= Threshold) */
-          if (Accumulator < 0.f)
           {
             if(ThisSample >= Threshold)
             {
-              Accumulator = ThisSample;
+              Accumulator = Threshold;
             }
-            else
-            {
-              Accumulator = max(Accumulator, ThisSample);
-            }
-          }
-          else
-          {
-            /* Accumulator += ThisSample; */
           }
 
         } break;
 
         case 4: // WorldEdit_Mode_Disabled
-        { Accumulator = Accumulator; ThisSample = 0.f; } break;
+        { ThisSample = 0.f; } break;
       }
 
 
@@ -534,7 +476,7 @@ void main()
         { ColorValue = SafeDivide0(ColorValue, ColorSample); } break;
 
         case 6: // Average
-        { f32 StartingIntensity = length(ColorValue);
+        { f32 StartingIntensity = length(ColorValue);Threshold : Set sample to 0 if it does not pass threshold, before Power and ValueBias
           ColorValue = (ColorValue + ColorSample)/StartingIntensity; } break;
 #endif
       }

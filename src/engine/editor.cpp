@@ -1058,7 +1058,11 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
 
           {
-            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("AffectExisting"), ThisHash, &DefaultUiRenderParams_Checkbox);
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox);
+            PushNewRow(Ui);
+            PushNewRow(Ui);
+
+            PushColumn(Ui, CSz(" ----- LAYERS -----"));
             PushNewRow(Ui);
             PushNewRow(Ui);
 
