@@ -204,7 +204,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
-  MaintainWorldOctree(Resources);
+  /* SplitAndQueueOctreeNodesForInit(Resources); */
+  DispatchOctreeDrawJobs(Resources);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -730,7 +731,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         if (FacesRequired)
         {
           Continued = True;
-          Info("Chunk had faces (%d)", FacesRequired);
+          /* Info("Chunk had faces (%d)", FacesRequired); */
           Assert(Node->Flags & Chunk_Queued);
           PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
               LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
@@ -787,7 +788,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk) == False); */
 
-      Info("Buidling Chunk Mesh");
+      /* Info("Buidling Chunk Mesh"); */
 
       BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
 

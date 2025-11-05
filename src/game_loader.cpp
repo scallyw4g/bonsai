@@ -340,14 +340,27 @@ main( s32 ArgCount, const char ** Args )
     }
 
     {
-      r32 CurrentMS = (r32)GetHighPrecisionClock();
-      r32 ThisMs = (CurrentMS - LastMs);
-      r32 TargetMs = 32.f;
+      // Have to call this at least once
+      SplitAndQueueOctreeNodesForInit(EngineResources);
 
-      s32 Sleep = Max(0, s32(TargetMs - ThisMs));
-      /* Info("ThisMs(%.2f) Sleep(%d) Total(%.2f)", ThisMs, Sleep, double(ThisMs+Sleep)); */
+      for (;;)
+      {
+        r32 CurrentMS = (r32)GetHighPrecisionClock();
+        r32 ThisMs = (CurrentMS - LastMs);
+        r32 TargetMs = 32.f;
+        s32 MSUntilFrameTime = Max(0, s32(TargetMs - ThisMs));
 
-      SleepMs(u32(Sleep));
+        if (MSUntilFrameTime > 10)
+        {
+          SplitAndQueueOctreeNodesForInit(EngineResources);
+          SleepMs(10);
+        }
+        else
+        {
+          SleepMs(MSUntilFrameTime);
+          break;
+        }
+      }
     }
 
     {
