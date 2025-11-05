@@ -1145,7 +1145,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   StandardCamera(&Graphics->GameCamera, 10000.0f, 500.0f);
 
-  GameState->Entropy = {DEBUG_NOISE_SEED};
+  GameState->Entropy = {53654734657};
 
   AllocateWorld(Resources->World, WorldCenter, VisibleRegionSize_128);
 

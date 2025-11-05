@@ -97,7 +97,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
 
-  GameState->Entropy.Seed = DEBUG_NOISE_SEED;
+  GameState->Entropy.Seed = 525634563;
 
   world_position WorldCenter = World_Position(0, 0, 0);
   AllocateWorld(Resources->World, {}, VisibleRegionSize_128);

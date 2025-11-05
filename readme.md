@@ -19,10 +19,12 @@ Bonsai terrain generation is fully procedural, and user configurable.  Terrain
 is generated on the GPU using regular glsl shaders.  Anything you can do in a
 shader, you can do in a Bonsai terrain generator.
 
-### 2.0.0-alpha Note
+### 2.0.0-prealpha Note
 
-The current version is 2.0.0-alpha.  This version is a large rewrite of several
-core systems, including the world generation, editor and parts of the renderer.
+The current version is 2.0.0-prealpha-rc0, which can be found by joining the
+Server](https://discord.gg/kmRpgXBh75).  This version is a large rewrite of
+several core systems, including the world generation, editor and parts of the
+renderer.
 
 In its current state, the engine is effectively a terrain generator and editor.
 For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
