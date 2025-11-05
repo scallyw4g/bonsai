@@ -22,7 +22,7 @@ shader, you can do in a Bonsai terrain generator.
 ### 2.0.0-prealpha Note
 
 The current version is 2.0.0-prealpha-rc0, which can be found by joining the
-Server](https://discord.gg/kmRpgXBh75).  This version is a large rewrite of
+[Discord](https://discord.gg/kmRpgXBh75).  This version is a large rewrite of
 several core systems, including the world generation, editor and parts of the
 renderer.
 
