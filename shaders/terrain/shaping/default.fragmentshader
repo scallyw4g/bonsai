@@ -23,14 +23,13 @@ void main()
   f32 NoiseValue = 0.f;
 
   //
-  // -- user code -- 
+  // -- user code --
   //
-
-  f32 White = white_noise(v3(x,y,z));
-  ColorValue -= 0.05f*White;
-
   {
-    NoiseValue += DEFAULT_FLOOR_HEIGHT - Basis.z;
+    f32 White = white_noise(v3(x,y,z));
+    ColorValue -= 0.05f*White;
+
+    NoiseValue += DEFAULT_FLOOR_HEIGHT;
 
     {
       v3 Period = V3(1800.f);
@@ -42,6 +41,9 @@ void main()
       NoiseValue += gn.x * Amplitude;
     }
 
+    // NOTE(Jesse): We subtract the Z value of the current voxel so we get
+    // lower values as we go higher in Z.  This produces a flat-ish plane.
+    NoiseValue = NoiseValue - Basis.z;
   }
 
   //

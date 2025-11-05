@@ -73,7 +73,7 @@ void main()
 
   ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
   v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);
-  v3 Derivs    = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
+  v3 NormalValue    = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
 
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
@@ -85,9 +85,9 @@ void main()
   {
 
     // Put random junk here
-    f32 CosTheta = Dot(Derivs, Normalize(V3(0,0,1)));
+    f32 CosTheta = Dot(NormalValue, Normalize(V3(0,0,1)));
 
-    v4 Cliffs = DoCliffs(Basis, Derivs, ColorValue);
+    v4 Cliffs = DoCliffs(Basis, NormalValue, ColorValue);
     ColorValue = Cliffs.rgb;
 
     f32 CliffContrib = exp((-Basis.z)/1300.f);

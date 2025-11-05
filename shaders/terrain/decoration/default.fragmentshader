@@ -19,7 +19,7 @@ void main()
 
   ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
   v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);
-  v3 Derivs    = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
+  v3 NormalValue = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
 
   // NOTE(Jesse): Set these in the -- user code -- section
   vec3 ColorValue = TexLookup.rgb;
