@@ -2,8 +2,6 @@
 #define BONSAI_DEBUG_SYSTEM_API 1
 
 #include <bonsai_types.h>
-
-#include <game_constants.h>
 #include <game_types.h>
 
 // NOTE(Jesse): This is an optional function that gets called for each worker
@@ -32,8 +30,10 @@ BONSAI_API_WORKER_THREAD_CALLBACK()
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
 
+    case type_work_queue_entry_build_chunk_mesh:
+    case type_work_queue_entry_finalize_noise_values:
     case type_work_queue_entry_async_function_call:
-    case type_work_queue_entry_update_world_region:
+    /* case type_work_queue_entry_update_world_region: */
     case type_work_queue_entry_rebuild_mesh:
     case type_work_queue_entry_init_asset:
     case type_work_queue_entry_init_world_chunk:
@@ -68,9 +68,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   world_position WorldCenter = {};
   canonical_position CameraTargetP = {};
 
-  StandardCamera(Graphics->Camera, 10000.0f, 1000.0f);
+  StandardCamera(Graphics->Camera, 30000.0f, 1000.0f);
 
-  AllocateWorld(World, WorldCenter, WORLD_CHUNK_DIM, g_VisibleRegion);
+  AllocateWorld(World, WorldCenter, VisibleRegionSize_128);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   return GameState;

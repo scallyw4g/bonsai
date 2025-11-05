@@ -1,246 +1,25 @@
 
 link_internal void
-DoLevelWindow(engine_resources *Engine)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  local_persist window_layout Window = WindowLayout("Level");
-
-  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-
-  PushWindowStart(Ui, &Window);
-  PushTableStart(Ui);
-    if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
-    {
-      u8_cursor_block_array OutputStream = BeginSerialization();
-
-      u32 ChunkCount = 0;
-      RangeIterator(HashIndex, s32(World->HashSize))
-      {
-        if (World->ChunkHash[HashIndex])
-        {
-          ++ChunkCount;
-        }
-      }
-
-      level_header Header = {};
-      Header.ChunkCount = ChunkCount;
-
-      Header.WorldFlags    = Cast(u32, World->Flags);
-      Header.WorldCenter   = World->Center;
-      Header.VisibleRegion = World->VisibleRegion;
-      Header.Camera = *Camera;
-
-      Header.RenderSettings = Graphics->Settings;
-
-      u32 EntityCount = 0;
-      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
-      {
-        entity *E = EntityTable[EntityIndex];
-        if (Spawned(E)) { ++EntityCount; }
-      }
-      Header.EntityCount = EntityCount;
-
-
-      Serialize(&OutputStream, &Header);
-
-      u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
-      RangeIterator(HashIndex, s32(World->HashSize))
-      {
-        if (world_chunk *Chunk = World->ChunkHash[HashIndex])
-        {
-          SerializeChunk(Chunk, &OutputStream);
-        }
-      }
-
-      Ensure(Serialize(&OutputStream, &Delimeter));
-
-      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
-      {
-        entity *E = EntityTable[EntityIndex];
-        if (Spawned(E))
-        {
-          Serialize(&OutputStream, E);
-        }
-      }
-
-      v3_cursor *Palette = GetColorPalette();
-      Serialize(&OutputStream, Palette);
-
-      const char *Filename = "../bonsai_levels/test.level";
-      if (FinalizeSerialization(&OutputStream, Filename) == False)
-      {
-        SoftError("Could not serialize (%s).", Filename);
-      }
-    }
-  PushTableEnd(Ui);
-  PushNewRow(Ui);
-
-  PushTableStart(Ui);
-    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTreeUnordered(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
-  PushTableEnd(Ui);
-  PushNewRow(Ui);
-
-  // Import
-  if (ClickedNode.Tag)
-  {
-    cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
-
-    u8_cursor LevelBytes = BeginDeserialization(Filename, GetTranArena());
-    if (LevelBytes.Start)
-    {
-      level_header LevelHeader = {};
-
-
-      if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
-      {
-        {
-          engine_settings *EngineSettings = &GetEngineResources()->Settings;
-          LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-          LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-          LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
-
-          LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-          LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-          LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-        }
-
-        SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
-
-        SoftResetEngine(Engine);
-
-        /* World->Flags  = Cast(world_flag, LevelHeader.WorldFlags); */
-        World->Center = LevelHeader.WorldCenter;
-
-        maybe_bonsai_type_info MaybeLevelHeaderTypeInfo = GetByName(&Global_SerializeTypeTable, CSz("level_header"));
-        if (MaybeLevelHeaderTypeInfo.Tag)
-        {
-          if (MaybeLevelHeaderTypeInfo.Value.Version > 2)
-          {
-            Graphics->Settings = LevelHeader.RenderSettings;
-          }
-        }
-
-        *Graphics->Camera = LevelHeader.Camera;
-        /* World->VisibleRegion = LevelHeader.VisibleRegion; */
-
-        s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount);
-        /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
-
-        RangeIterator(ChunkIndex, ChunkCount)
-        {
-          world_chunk *Chunk = GetFreeWorldChunk(World);
-          DeserializeChunk(&LevelBytes, Chunk, World->ChunkMemory);
-
-          if (IsInsideVisibleRegion(World, Chunk->WorldP))
-          {
-#if 0
-            if (Editor->Flags & LevelEditorFlags_RecomputeStandingSpotsOnLevelLoad)
-            {
-              Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
-              Flags = ChunkInitFlag_ComputeStandingSpots;
-            }
-#endif
-
-            InsertChunkIntoWorld(World, Chunk);
-          }
-        }
-
-        u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
-        Ensure(Read_u64(&LevelBytes) == Delimeter);
-
-#if 1
-
-        b32 Error = False;
-        u32 EntityCount = LevelHeader.EntityCount;
-        RangeIterator_t(u32, EntityIndex, EntityCount)
-        {
-          entity *E = EntityTable[EntityIndex];
-          if (Deserialize(&LevelBytes, E, Thread->PermMemory) == False)
-          {
-            SoftError("Could not deserialize entity (%d), bailing.", EntityIndex);
-            Error = True;
-            break;
-          }
-          E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
-        }
-
-        if (Error == False)
-        {
-          v3_cursor *Palette = GetColorPalette();
-          Palette->At = Palette->Start;
-          Deserialize(&LevelBytes, Palette, Thread->PermMemory);
-          Assert(LevelBytes.At == LevelBytes.End);
-
-          b32 NormalizePalette = False;
-          RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
-          {
-            v3 *C = Palette->Start+ColorIndex;
-
-            // If any components are > 1.f we must have loaded a palette with values in the 0-255 range
-            if (C->E[0] > 1.f || C->E[1] > 1.f || C->E[2] > 1.f) { NormalizePalette = True; break; }
-          }
-
-          if (NormalizePalette)
-          {
-            RangeIterator_t(umm, ColorIndex, (umm)(Palette->At-Palette->Start))
-            {
-              v3 *C = Palette->Start+ColorIndex;
-              *C /= 255.f;
-              Assert (C->E[0] <= 1.f && C->E[1] <= 1.f && C->E[2] <= 1.f);
-            }
-          }
-        }
-
-
-        RangeIterator_t(u32, ChunkIndex, World->HashSize)
-        {
-          if (world_chunk *Chunk = World->ChunkHash[ChunkIndex])
-          {
-            if (MaybeLevelHeaderTypeInfo.Value.Version < 4)
-            {
-              MarshalMagicaVoxelEncodedColors(Chunk->Voxels, Chunk->Voxels, Chunk->Dim);
-            }
-
-            chunk_init_flags Flags = ChunkInitFlag_Noop;
-            QueueChunkForMeshRebuild(&GetEngineResources()->Stdlib.Plat.LowPriority, Chunk, Flags);
-          }
-        }
-
-#endif
-
-        Assert(ThreadLocal_ThreadIndex == 0);
-        if (Engine->GameApi.OnLibraryLoad) { Engine->GameApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
-
-        UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
-      }
-    }
-    FinalizeDeserialization(&LevelBytes);
-
-  }
-  PushWindowEnd(Ui, &Window);
-}
-
-link_internal void
 DoEntityWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
 #if 1
   {
-    local_persist window_layout EntityWindow = WindowLayout("All Entities");
+    window_layout *EntityWindow = GetOrCreateWindow(Ui, "All Entities");
 
-    PushWindowStart(Ui, &EntityWindow);
+    PushWindowStart(Ui, EntityWindow);
       PushTableStart(Ui);
 
         RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
         {
           entity *Entity = EntityTable[EntityIndex];
-          DoEditorUi(Ui, &EntityWindow, Entity, FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name) );
+          cs Label = FSz("(%d) (%S) (%S)", EntityIndex, ToString(Entity->State), Entity->AssetId.FileNode.Name);
+          DoEditorUi(Ui, EntityWindow, Entity, Label, u32(Hash(EntityWindow)) );
         }
       PushTableEnd(Ui);
 
-    PushWindowEnd(Ui, &EntityWindow);
+    PushWindowEnd(Ui, EntityWindow);
   }
 #endif
 
@@ -268,16 +47,17 @@ DoEntityWindow(engine_resources *Engine)
   {
     DrawEntityCollisionVolume(SelectedEntity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_WHITE);
 
-    local_persist window_layout EntityWindow = WindowLayout("Entity", WindowLayoutFlag_Align_Right);
+    window_layout *EntityWindow = GetOrCreateWindow(Ui, "Entity Details", WindowLayoutFlag_Align_Right);
 
-    PushWindowStart(Ui, &EntityWindow);
+    PushWindowStart(Ui, EntityWindow);
       PushTableStart(Ui);
-        DoEditorUi(Ui, &EntityWindow, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index));
+        DoEditorUi(Ui, EntityWindow, SelectedEntity, FSz("SelectedEntity (%d)", SelectedEntity->Id.Index), u32(Hash(EntityWindow)) );
         PushNewRow(Ui);
       PushTableEnd(Ui);
-    PushWindowEnd(Ui, &EntityWindow);
+    PushWindowEnd(Ui, EntityWindow);
 
 
+#if 0
     aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
 
     if (Engine->MaybeMouseRay.Tag)
@@ -326,6 +106,7 @@ DoEntityWindow(engine_resources *Engine)
 
       }
     }
+#endif
   }
 
   if (Input->Delete.Clicked && Engine->HoverEntity.Tag) { Unspawn(Engine->HoverEntity.Value); }
@@ -375,18 +156,24 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
   asset_thumbnail BlankThumb = {};
   asset_thumbnail *Thumb = Push(AssetThumbnails, &BlankThumb);
 
-  MakeTexture_RGBA_Async(&Plat->RenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+  MakeTexture_RGBA_Async(&Plat->LoRenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
   StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
 
   return Thumb;
 }
 
 link_internal interactable_handle
-RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  SyncGpuBuffersAsync(Engine, Meshes);
+#if 1
+  NotImplemented;
+  return {};
+#else
+  // TODO(Jesse): Do we still do this here?
+  NotImplemented;
+  /* SyncGpuBuffersAsync(Engine, Mesh); */
 
   texture *Texture      = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
@@ -407,7 +194,7 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 
   if (Pressed(Ui, &B))
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
   }
 
   if (EngineDebug->ResetAssetNodeView)
@@ -419,14 +206,16 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
     f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
     Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
     UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Meshes, {}, 0);
+    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
   }
 
   return B;
+
+#endif
 }
 
 link_internal void
-RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes, v3 Dim, b32 Selected)
+RenderMeshPreviewIntoWorld(engine_resources *Engine, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -449,13 +238,14 @@ RenderMeshPreviewIntoWorld(engine_resources *Engine, lod_element_buffer *Meshes,
         //
         /* SetupGBufferShader(Graphics, GetApplicationResolution(&Engine->Settings)); */
 
-        PushBonsaiRenderCommandSetupShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        PushBonsaiRenderCommandSetupShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
         v3 AssetHalfDim = Dim/2.f;
         v3 Basis = GetRenderP(Engine, EntityOrigin) + V3(0.f, 0.f, AssetHalfDim.z);
-        DrawLod_Async(RenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Meshes, 0.f, Basis, Quaternion(), V3(1));
+        NotImplemented;
+        /* DrawLod_Async(HiRenderQ, GetEngineResources(), &Graphics->gBuffer->gBufferShader, Mesh, Basis, Quaternion(), V3(1)); */
 
-        PushBonsaiRenderCommandTeardownShader(RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+        PushBonsaiRenderCommandTeardownShader(HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
       }
 
     }
@@ -466,7 +256,9 @@ link_internal void
 DoAssetWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  NotImplemented;
 
+#if 0
   {
     local_persist window_layout Window = WindowLayout("Assets");
 
@@ -487,6 +279,8 @@ DoAssetWindow(engine_resources *Engine)
       PushNewRow(Ui);
     }
 #endif
+
+#if 0
     if (Button(Ui, CSz("New Asset From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
     {
       Engine->Editor.NewAssetFromSelection = True;
@@ -504,7 +298,7 @@ DoAssetWindow(engine_resources *Engine)
         cs NewAssetFromSelectionFilename = CS(Engine->Editor.NewAssetFromSelectionFilename);
         Engine->Editor.NewAssetFromSelection = False;
 
-        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->SelectionRegion, GetTranArena());
+        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->Selection.Region, GetTranArena());
 
         cs SaveName = {};
         if (EndsWith(NewAssetFromSelectionFilename, CSz(".chunk")))
@@ -523,6 +317,7 @@ DoAssetWindow(engine_resources *Engine)
         /* SerializeChunk(&SaveChunk, Concat(CSz("models/"), SaveName, GetTranArena())); */
       }
     }
+#endif
     PushNewRow(Ui);
 
     DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
@@ -613,7 +408,7 @@ DoAssetWindow(engine_resources *Engine)
 
                 case AssetType_WorldChunk:
                 {
-                  render_entity_to_texture_group *RTTGroup = &Engine->RTTGroup;
+                  render_to_texture_group *RTTGroup = &Engine->RTTGroup;
 
                   world_chunk *Chunk = &Asset->Chunk;
 
@@ -621,8 +416,8 @@ DoAssetWindow(engine_resources *Engine)
                   if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                   b32 Selected = True;
-                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Meshes, V3(Chunk->Dim), Selected);
-                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Meshes, V3(Chunk->Dim), Selected);
+                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Mesh, V3(Chunk->Dim), Selected);
+                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Mesh, V3(Chunk->Dim), Selected);
 
 
                 } break;
@@ -631,20 +426,22 @@ DoAssetWindow(engine_resources *Engine)
                 {
                   IterateOver(&Asset->Models, Model, ModelIndex)
                   {
-                    SyncGpuBuffersAsync(Engine, &Model->Meshes);
+                    // TODO(Jesse): Do we still do this here?
+                    NotImplemented;
+                    /* SyncGpuBuffersAsync(Engine, &Model->Mesh); */
 
                     asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
                     if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
 
-                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Meshes, V3(Model->Dim), Selected);
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Mesh, V3(Model->Dim), Selected);
                     if (Pressed(Ui, &B))
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }
 
-                    RenderMeshPreviewIntoWorld(Engine, &Model->Meshes, V3(Model->Dim), Selected);
+                    RenderMeshPreviewIntoWorld(Engine, &Model->Mesh, V3(Model->Dim), Selected);
 
                     if ( (ModelIndex+1) % 4 == 0)
                     {
@@ -667,6 +464,7 @@ DoAssetWindow(engine_resources *Engine)
 
     PushWindowEnd(Ui, &AssetViewWindow);
   }
+#endif
 }
 
 #if 0
@@ -696,6 +494,7 @@ DoWorldEditDebugWindow(engine_resources *Engine)
 link_internal void
 DoEngineDebug(engine_resources *Engine)
 {
+  TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
 
@@ -703,15 +502,30 @@ DoEngineDebug(engine_resources *Engine)
   ui_toggle_button_group EditorButtonGroup =
     ToggleButtonGroup_engine_debug_view_mode(Ui, 0, CS(""), &Engine->EngineDebug.ViewMode, &DefaultUiRenderParams_Column);
 
+  u64 CellsGenerated = EngineDebug->CellsGenerated;
+
+  if (CellsGenerated)
+  {
+    r64 CyclesPerCell = EngineDebug->ChunkGenCyclesElapsed / CellsGenerated;
+    Text(Ui, CSz("CyclesPerCell : "));
+    Text(Ui, CS(CyclesPerCell));
+    PushNewRow(Ui);
+  }
+
+  r64 ChunkGenSeconds = EngineDebug->ChunkGenTimeElapsedMS / 1000.0;
+  if (ChunkGenSeconds != 0.0)
+  {
+    r64 CellsPerSecond = (CellsGenerated/ChunkGenSeconds);
+
+    Text(Ui, CSz("CellsPerSecond : "));
+    Text(Ui, CS(CellsPerSecond));
+    PushNewRow(Ui);
+  }
+
   engine_debug_view_mode ViewMode = Engine->EngineDebug.ViewMode;
 
   /* Editor->EngineDebugViewModeToggleBits = EditorButtonGroup.ToggleBits; */
 
-  // NOTE(Jesse): Do the world editor first so the SelectionChanged flag gets
-  // set before the rest of the UI code runs.  This is not strictly necessary
-  // for correctness, but  avoids a frame of lag.
-  // @selection_changed_flag
-  //
   if (ViewMode & EngineDebugViewMode_WorldEdit)
   {
     DoWorldEditor(Engine);
@@ -729,43 +543,44 @@ DoEngineDebug(engine_resources *Engine)
 
   if (ViewMode & EngineDebugViewMode_WorldChunks)
   {
-    local_persist window_layout WorldChunkWindow = WindowLayout("World Chunks");
-    WorldChunkWindow.Title = EngineDebug->PickedChunk ?
-      FSz("World Chunk : (%p)", EngineDebug->PickedChunk) :
+    window_layout *WorldChunkWindow = GetOrCreateWindow(Ui, "World Chunks");
+    auto *PickedNode = EngineDebug->PickedNode;
+    auto *PickedChunk = PickedNode ? PickedNode->Chunk : 0;
+
+    WorldChunkWindow->Title = PickedChunk ?
+      FSz("World Chunk : (%p)", PickedChunk) :
       CSz("World Chunk");
 
-    PushWindowStart(Ui, &WorldChunkWindow);
+    PushWindowStart(Ui, WorldChunkWindow);
 
       if ( Clicked(&EditorButtonGroup, CSz("WorldChunks")) ||
-           Button(Ui, CSz("PickNewChunk"), UiId(&WorldChunkWindow, "PickWorldChunkButton", 0ull) ) )
+           Button(Ui, CSz("PickNewChunk"), UiId(WorldChunkWindow, "PickWorldChunkButton", 0ull) ) )
       {
         EngineDebug->PickedChunkState = PickedChunkState_Hover;
       }
 
-      if (Button(Ui, CSz("RebuildMesh"), UiId(&WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) )
-      {
-        world_chunk *PickedChunk = EngineDebug->PickedChunk;
-        /* MarkBoundaryVoxels_Debug(PickedChunk->Voxels, PickedChunk->Dim); */
-        MarkBoundaryVoxels_NoExteriorFaces(PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim);
-        QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk);
-      }
-      PushNewRow(Ui);
+      /* if (Button(Ui, CSz("RebuildMesh"), UiId(WorldChunkWindow, "RebuildMesh WorldChunkWindow", 0ull)) ) */
+      /* { */
+      /*   MakeFaceMasks_NoExteriorFaces(PickedChunk->Occupancy, PickedChunk->xOccupancyBorder, PickedChunk->FaceMasks, PickedChunk->Voxels, PickedChunk->Dim, {}, PickedChunk->Dim); */
+      /*   QueueChunkForMeshRebuild(&Plat->LowPriority, PickedChunk); */
+      /* } */
+      /* PushNewRow(Ui); */
 
       if (EngineDebug->PickedChunkState == PickedChunkState_Hover)
       {
         if (Engine->MousedOverVoxel.Tag)
         {
-          EngineDebug->PickedChunk = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk;
+          EngineDebug->PickedNode = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Node;
           if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
         }
       }
 
-      if (EngineDebug->PickedChunk)
+      if (EngineDebug->PickedNode)
       {
-        DoEditorUi(Ui, &WorldChunkWindow, EngineDebug->PickedChunk, CSz("PickedChunk"));
+        DoEditorUi(Ui, WorldChunkWindow, EngineDebug->PickedNode, {}, u32(Hash(WorldChunkWindow)));
       }
 
-    PushWindowEnd(Ui, &WorldChunkWindow);
+    PushWindowEnd(Ui, WorldChunkWindow);
   }
 
 #if 1
@@ -785,7 +600,11 @@ DoEngineDebug(engine_resources *Engine)
 
       PushTableStart(Ui);
 
+      auto Button = ToggleButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(0)));
         PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
+      ToggleButtonEnd(Ui);
+
+      if (ToggledOn(Ui, &Button)) { Dim = V2(Texture->Dim) * 8.f; }
 
         u32 StartOuter = StartColumn(Ui);
           PushTableStart(Ui);
@@ -793,12 +612,10 @@ DoEngineDebug(engine_resources *Engine)
               {
                 RangeIterator_t(u32, SliceIndex, Texture->Slices)
                 {
-                  interactable_handle Button = PushButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(SliceIndex)));
                     u32 Start = StartColumn(Ui);
                       PushTexturedQuad(Ui, Texture, s32(SliceIndex), Dim, zDepth_Text);
                       PushForceAdvance(Ui, V2(xAdvance, 0));
                     EndColumn(Ui, Start);
-                  PushButtonEnd(Ui);
 
                   if ( (SliceIndex+1) % 8 == 0)
                   {
@@ -846,12 +663,12 @@ DoEngineDebug(engine_resources *Engine)
   if (ViewMode & EngineDebugViewMode_RenderSettings)
   {
     v2 WindowDim = {{1200.f, 250.f}};
-    local_persist window_layout RenderSettingsWindow = WindowLayout("Graphics Settings", WindowLayoutFlag_Align_Right);
+    window_layout *RenderSettingsWindow = GetOrCreateWindow(Ui, "Graphics Settings", window_layout_flags(WindowLayoutFlag_Default | WindowLayoutFlag_Align_Right));
 
     render_settings *Settings = &Graphics->Settings;
-    PushWindowStart(Ui, &RenderSettingsWindow);
-      DoEditorUi(Ui, &RenderSettingsWindow, Settings, {});
-    PushWindowEnd(Ui, &RenderSettingsWindow);
+    PushWindowStart(Ui, RenderSettingsWindow);
+      DoEditorUi(Ui, RenderSettingsWindow, Settings, {}, u32(Hash(RenderSettingsWindow)));
+    PushWindowEnd(Ui, RenderSettingsWindow);
   }
 
   if (ViewMode & EngineDebugViewMode_EngineDebug)
@@ -859,16 +676,16 @@ DoEngineDebug(engine_resources *Engine)
     v2 WindowDim = {{1200.f, 250.f}};
 
     {
-      local_persist window_layout Window = WindowLayout("Engine Debug", WindowLayoutFlag_Align_Right);
-      PushWindowStart(Ui, &Window);
-        DoEditorUi(Ui, &Window, EngineDebug, {});
-      PushWindowEnd(Ui, &Window);
+      window_layout *Window = GetOrCreateWindow(Ui, "Engine Debug", WindowLayoutFlag_Align_Right);
+      PushWindowStart(Ui, Window);
+        DoEditorUi(Ui, Window, EngineDebug, {}, u32(Hash(Window)) );
+      PushWindowEnd(Ui, Window);
     }
     {
-      local_persist window_layout Window = WindowLayout("Engine");
-      PushWindowStart(Ui, &Window);
-        DoEditorUi(Ui, &Window, Engine, {});
-      PushWindowEnd(Ui, &Window);
+      window_layout *Window = GetOrCreateWindow(Ui, "Engine");
+      PushWindowStart(Ui, Window);
+        DoEditorUi(Ui, Window, Engine, {}, u32(Hash(Window)));
+      PushWindowEnd(Ui, Window);
     }
 
     DoGraphicsDebugWindow(Engine);

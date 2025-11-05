@@ -1,31 +1,65 @@
 
-![hero_banner](screenshots/two_doors.png)
+<p align='right' style='margin-bottom:-80px;'>
+  <img style='width=180px; height=180px;' src='screenshots/logo_256.png' />
+</p>
 
 # Welcome to Bonsai!
 
-Bonsai is a 3D voxel-based engine built with the intention of writing both
-fast-paced arcade games and tile/turn-based RPGs
+Bonsai is a voxel engine in a pot.  It's been tended to with love and
+care over the years.  It started out as a learning excercise, and has taught me
+the value of simplicity.
+
+Bonsai supports massive worlds.  The current version supports a maximum world
+size of ~1 billion blocks, cubed.  At one block per meter, that's the distance
+from earth to the moon, 2600 times, in every direction.  The view distance is
+the entire world, all the time.  Yes, you read that right.  In Bonsai, you can
+see in a straight line from Jupiter to the sun.
+
+Bonsai terrain generation is fully procedural, and user configurable.  Terrain
+is generated on the GPU using regular glsl shaders.  Anything you can do in a
+shader, you can do in a Bonsai terrain generator.
+
+### 2.0.0-prealpha Note
+
+The current version is 2.0.0-prealpha-rc0, which can be found by joining the
+Server](https://discord.gg/kmRpgXBh75).  This version is a large rewrite of
+several core systems, including the world generation, editor and parts of the
+renderer.
+
+In its current state, the engine is effectively a terrain generator and editor.
+For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
+
+![banner](screenshots/two_doors.png)
+
+# Getting Started
 
 Bonsai, and nearly all it's dependencies, are written completely from scratch.
-One external dependency is the C runtime library for startup, and a small
-handful of trig functions (sin, cos, atan2).  I have a back-burner task to
-remove the CRT entirely, though it's unclear when/if I'll get around to it.
+One external dependency is the C runtime library for program startup. There is
+a back-burner task to remove the CRT entirely, athough it's unclear when/if
+anyone will ever get around to it.
 
-The only requirements to build and run Bonsai are an OpenGL 3.3+ driver, C++
-compiler, and a few appropriate system headers.
+The only external requirements to build Bonsai are clang++ (>= version 18.1)
+and a few appropriate system headers.
+
+## Quickstart
+
+Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
+for your platform of your choice (as long as your platform of choice is Windows or Linux) ;)
+
+### [Getting Started](docs/00_getting_started.md)
+
+### [Build From Source](docs/01_build_process.md)
+
+### [Controls](docs/controls.md)
+
+### [Discord Server](https://discord.gg/kmRpgXBh75)
+
 
 ![banner](screenshots/orks.png)
 
-# Quickstart
+# Feature Sets
 
-Grab pre-built binaries & assets from the [Latest Releases](../../releases/latest)
-for your platform of choice (as long as it's Windows or Linux ;)
-
-## Build from Source
-
-See the docs on the [build process](docs/01_build_process.md).
-
-## Renderer Features
+## Renderer
 
 * Deferred Shading
 * HDR Lighting
@@ -36,28 +70,53 @@ See the docs on the [build process](docs/01_build_process.md).
 
 ![banner](screenshots/abandoned_workshop.png)
 
-## Engine Features
+## Engine
 
-* Hot Code Reloading
-* MT Job System
+* Hot Shader & Game-code Reloading
+* Async Job System
 * Entities
 * Collision
 * Transparent & Emissive Particles
 * UI Framework
 * Asset Loaders
-* Terrain Generators
 * Primitive Physics
 
-![banner](screenshots/profiler.png)
 
-## Performance Profiler Features
+![banner]( screenshots/mountain.png)
+
+## Terrain Generation
+
+* Fully programmable GPU-based terrain generation
+* Batteries-included library of pre-built terrain shaders
+* 1D, 2D and 3D noise library
+* Terrain derivitives available in second-stage terrain "decoration"
+
+![banner](screenshots/ridgeline.png)
+
+## Editing
+
+* CSG-like SDF world editing
+* Library of primitive shapes (rect, sphere, line, cylinder .. etc)
+* SDF brush-based texturing of primitives
+
+![banner](screenshots/ork_aerial.png)
+
+## SDF Brushes
+
+* Layer-based brush GUI
+* (coming soon) glsl brush shaders
+
+![banner](screenshots/brush.png)
+
+## Performance Profiler
 
 * Manual Instrumentation
-* Memory allocation tracing
-* Per frame call-graph tracing
+* Memory allocation tracking
+* Multithreaded callgraph tracing
 * Context Switches (windows only)
 * Physical Core  (windows only)
 
+![banner](screenshots/profiler.png)
 
 # Gallery
 
@@ -67,14 +126,12 @@ See the docs on the [build process](docs/01_build_process.md).
 
 ![banner](screenshots/8_skele.png)
 
-![banner](screenshots/dusk_defence.png)
-
-![banner](screenshots/5_skele.png)
-
 # Wishlist
 
 -------------------------------------------------------------------------------
 ## Renderer
+
+[ ] HRC : https://github.com/entropylost/amitabha
 
 [ ] SSR : https://lettier.github.io/3d-game-shaders-for-beginners/screen-space-reflection.html
 
@@ -98,6 +155,8 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] Lumen-style GI screen-space radiance caching : https://www.youtube.com/watch?v=2GYXuM10riw
 
+![banner]( screenshots/platapus.png)
+
 -------------------------------------------------------------------------------
 ## Terrain
 
@@ -114,6 +173,8 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://graphics.stanford.edu/courses/cs164-10-spring/Handouts/isotropic.pdf
 * https://inria.hal.science/inria-00071612/document
 
+![banner](screenshots/pillar.png)
+
 -------------------------------------------------------------------------------
 ## Assets
 
@@ -121,6 +182,9 @@ See the docs on the [build process](docs/01_build_process.md).
 * https://github.com/GabeRundlett/gvox/blob/old/src/formats/minecraft.cpp
 
 [ ] Sound : mp3, ogg, ..? decompresser
+
+
+![banner](screenshots/5_skele.png)
 
 -------------------------------------------------------------------------------
 ## Datastructures
@@ -143,9 +207,21 @@ See the docs on the [build process](docs/01_build_process.md).
 
 [ ] More interpolation goodies : https://paulbourke.net/miscellaneous/interpolation/
 
+
+![banner](screenshots/dusk_defence.png)
+
+## Goodies
+
+[ ] Better (faster) Sin/Cos ? https://www.shadertoy.com/view/432yWW
+
+[ ] Look into using this Intel tooling for dual CPU/GPU world-gen?
+    https://www.intel.com/content/dam/develop/external/us/en/documents/spir-vtointe-ispcgpu-compute-on-the-cpu.pdf
+    https://ispc.github.io/
+
 -------------------------------------------------------------------------------
 ## Profiler
 
 [ ] Improve the ETW layer : https://github.com/bombomby/optick/blob/master/src/optick_core.win.h
 
 [ ] GPU Profiling : https://www.khronos.org/opengl/wiki/Query_Object
+

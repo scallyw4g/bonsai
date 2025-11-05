@@ -1,12 +1,10 @@
-// external/bonsai_debug/src/api.h:118:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct debug_profile_scope_cursor
 {
   debug_profile_scope *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   debug_profile_scope *At;
   debug_profile_scope *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal debug_profile_scope_cursor
 DebugProfileScopeCursor(umm ElementCount, memory_arena* Memory)
 {
   debug_profile_scope *Start = (debug_profile_scope*)PushStruct(Memory, sizeof(debug_profile_scope)*ElementCount, 1, 0);
-  debug_profile_scope_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  debug_profile_scope_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
   debug_profile_scope *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal debug_profile_scope*
+TryGetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal debug_profile_scope*

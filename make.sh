@@ -6,6 +6,7 @@
 
 # SANITIZER="-fsanitize=undefined"
 # SANITIZER="-fsanitize=address"
+# SANITIZER="-fsanitize=thread"
 
 BUILD_EVERYTHING=0
 
@@ -40,6 +41,7 @@ BIN_TEST="$BIN/tests"
 BIN_GAME_LIBS="$BIN/game_libs"
 
 BONSAI_INTERNAL='-D BONSAI_INTERNAL=1'
+# BONSAI_INTERNAL=''
 
 # $EXAMPLES/tile_gen
 
@@ -51,9 +53,9 @@ BUNDLED_EXAMPLES="
   $EXAMPLES/the_wanderer
   $EXAMPLES/terrain_gen
   $EXAMPLES/transparency
-  $EXAMPLES/tools/voxel_synthesis_rule_baker
   $EXAMPLES/project_and_level_picker
 "
+  # $EXAMPLES/tools/voxel_synthesis_rule_baker
 
 EXECUTABLES_TO_BUILD="
   $SRC/game_loader.cpp
@@ -69,6 +71,9 @@ DEBUG_TESTS_TO_BUILD="
   $TESTS/allocation.cpp
 "
 
+# COMPILER="clang++-19"
+COMPILER="clang++"
+
 function BuildExecutables
 {
   echo ""
@@ -76,7 +81,7 @@ function BuildExecutables
   for executable in $EXECUTABLES_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                       \
       $SANITIZER                                     \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
@@ -103,7 +108,7 @@ function BuildDebugOnlyTests
   for executable in $DEBUG_TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                          \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
       $PLATFORM_CXX_OPTIONS                          \
@@ -128,7 +133,7 @@ function BuildTests
   for executable in $TESTS_TO_BUILD; do
     SetOutputBinaryPathBasename "$executable" "$BIN_TEST"
     echo -e "$Building $executable"
-    clang++                                          \
+    $COMPILER                                          \
       $OPTIMIZATION_LEVEL                            \
       $CXX_OPTIONS                                   \
       $BONSAI_INTERNAL                               \
@@ -152,7 +157,7 @@ function BuildExamples
   for executable in $EXAMPLES_TO_BUILD; do
     echo -e "$Building $executable"
     SetOutputBinaryPathBasename "$executable" "$BIN_GAME_LIBS"
-    clang++                     \
+    $COMPILER                                          \
       $SANITIZER                \
       -D BONSAI_DEBUG_SYSTEM_API=1 \
       $OPTIMIZATION_LEVEL       \
@@ -176,8 +181,8 @@ function BuildExamples
 
 function BuildWithClang
 {
-  which clang++ > /dev/null
-  [ $? -ne 0 ] && echo -e "Please install clang++" && exit 1
+  which $COMPILER > /dev/null
+  [ $? -ne 0 ] && echo -e "Please install $COMPILER" && exit 1
 
   echo -e ""
   echo -e "$Delimeter"
@@ -297,20 +302,18 @@ function RunPoofHelper {
    # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/um"                                         \
    # -I "C:/Program Files (x86)/Windows Kits/10/include/10.0.18362.0/winrt"                                      \
 
+   which poof > /dev/null 2>&1
+   if [ $? -eq 0 ]; then
 
+   cmd="poof $COLOR_FLAG -D POOF_PREPROCESSOR -D BONSAI_PREPROCESSOR -I src/ -I external/ $PLATFORM_DEFINES $BONSAI_INTERNAL $@"
 
+   echo "$cmd"
+   $cmd
 
-   # --log-level LogLevel_Debug                                                                                  \
-  poof                    \
-   $COLOR_FLAG \
-   -D POOF_PREPROCESSOR   \
-   -D BONSAI_PREPROCESSOR \
-   -I src/                \
-   -I external/           \
-   $PLATFORM_DEFINES      \
-   $BONSAI_INTERNAL       \
-   -o generated           \
-   $1
+   else
+     echo "poof not found, skipping."
+   fi
+
 
 }
 
@@ -325,22 +328,28 @@ function RunPoof
   # [ -d src/generated ] && rm -Rf src/generated
   # [ -d generated ] && rm -Rf generated
 
-  RunPoofHelper src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
+  # RunPoofHelper -o ./ src/poof_ctags_stub.cpp && echo -e "$Success poofed src/poof_ctags_stub.cpp" &
+  # TrackPid "" $!
+
+  RunPoofHelper -o generated examples/ui_test/game.cpp && echo -e "$Success poofed examples/ui_test/game.cpp" &
   TrackPid "" $!
 
-  # RunPoofHelper examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
+  # RunPoofHelper -o generated src/game_loader.cpp && echo -e "$Success poofed src/game_loader.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
+  # RunPoofHelper -o generated examples/turn_based/game.cpp && echo -e "$Success poofed examples/turn_based/game.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
+  # RunPoofHelper -o generated examples/terrain_gen/game.cpp && echo -e "$Success poofed examples/terrain_gen/game.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
+  # RunPoofHelper -o generated examples/the_wanderer/game.cpp && echo -e "$Success poofed examples/the_wanderer/game.cpp" &
   # TrackPid "" $!
 
-  # RunPoofHelper src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
+  # RunPoofHelper -o generated examples/tools/voxel_synthesis_rule_baker/game.cpp && echo -e "$Success poofed examples/tools/voxel_synthesis_rule_baker/game.cpp" &
+  # TrackPid "" $!
+
+  # RunPoofHelper -o generated src/tools/asset_packer.cpp && echo -e "$Success poofed src/tools/asset_packer.cpp" &
   # TrackPid "" $!
 
   WaitForTrackedPids
@@ -350,23 +359,24 @@ function RunPoof
 }
 
 
+  # $TESTS/chunk.cpp
+  # $TESTS/ui_command_buffer.cpp
+  # $TESTS/m4.cpp
+  # $TESTS/colladaloader.cpp
+  # $TESTS/test_bitmap.cpp
+  # $TESTS/bonsai_string.cpp
+  # $TESTS/objloader.cpp
+  # $TESTS/callgraph.cpp
+  # $TESTS/heap_allocation.cpp
+  # $TESTS/rng.cpp
+  # $TESTS/file.cpp
+  # $TESTS/sort.cpp
+  # $TESTS/perlin_perf.cpp
 TESTS_TO_BUILD="
-  $TESTS/chunk.cpp
-  $TESTS/ui_command_buffer.cpp
-  $TESTS/m4.cpp
-  $TESTS/colladaloader.cpp
-  $TESTS/test_bitmap.cpp
-  $TESTS/bonsai_string.cpp
-  $TESTS/objloader.cpp
-  $TESTS/callgraph.cpp
-  $TESTS/heap_allocation.cpp
-  $TESTS/rng.cpp
-  $TESTS/file.cpp
-  $TESTS/sort.cpp
   $TESTS/containers/block_array.cpp
 "
 
-BuildAll() {
+SetBuildAllFlags() {
 
   BuildExamples=1
   BuildExecutables=1
@@ -385,7 +395,7 @@ BuildAll() {
 
 if [ $# -eq 0 ]; then
   OPTIMIZATION_LEVEL="-O2"
-  BuildAll
+  SetBuildAllFlags
 fi
 
 BundleRelease=0
@@ -396,7 +406,7 @@ while (( "$#" )); do
   case $CliArg in
 
     "BuildAll")
-      BuildAll
+      SetBuildAllFlags
     ;;
 
     "BuildExecutables")
@@ -444,7 +454,6 @@ while (( "$#" )); do
       BundleRelease=1
       OPTIMIZATION_LEVEL="-O2"
       BONSAI_INTERNAL="-D BONSAI_INTERNAL=0"
-      # BuildAll
     ;;
 
     "-Od")
@@ -479,28 +488,35 @@ done
 time RunEntireBuild
 
 if [ $BundleRelease -eq 1 ]; then
+
   echo -e ""
   echo -e "$Delimeter"
   echo -e ""
 
   ColorizeTitle "Bundling"
 
+    # bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
+    # bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
+    # bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
+
   tar -cz                                                                  \
     bin/game_loader$PLATFORM_EXE_EXTENSION                                 \
     bin/game_libs/blank_project_loadable$PLATFORM_LIB_EXTENSION            \
-    bin/game_libs/turn_based_loadable$PLATFORM_LIB_EXTENSION               \
-    bin/game_libs/the_wanderer_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/terrain_gen_loadable$PLATFORM_LIB_EXTENSION              \
-    bin/game_libs/transparency_loadable$PLATFORM_LIB_EXTENSION             \
     bin/game_libs/project_and_level_picker_loadable$PLATFORM_LIB_EXTENSION \
-    \
+                                                                           \
     shaders/*                                                              \
     external/bonsai_stdlib/shaders/*                                       \
     assets/*                                                               \
     models/*                                                               \
     brushes/*                                                              \
-    \
+                                                                           \
     .root_marker                                                           \
     settings.init                                                          \
+    white.bmp                                                              \
     texture_atlas_0.bmp > "$Platform""_x86_64_release.tar.gz"
+
+ [ $? -ne 0 ] && echo "$Failed $Platform""_x86_64_release.tar.gz" && exit 1
+
+  echo "$Success $Platform""_x86_64_release.tar.gz"
 fi

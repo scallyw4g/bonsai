@@ -1,240 +1,363 @@
-// src/engine/world_chunk.h:523:0
+// external/bonsai_stdlib/src/poof_functions.h:2600:0
+
+
+
 
 struct standing_spot_block
 {
-  u32 Index;
-  u32 At;
-  standing_spot *Elements;
-  standing_spot_block *Next;
+  /* u32 Index; */
+  umm At;
+  standing_spot Elements[8];
 };
 
 struct standing_spot_block_array_index
 {
-  standing_spot_block *Block;
-  u32 BlockIndex;
-  u32 ElementIndex;
+  umm Index; 
 };
 
 struct standing_spot_block_array
 {
-  standing_spot_block *First;
-  standing_spot_block *Current;
+  standing_spot_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-typedef standing_spot_block_array standing_spot_paged_list;
-
-link_internal standing_spot_block_array_index
-operator++(standing_spot_block_array_index &I0)
+link_internal standing_spot_block_array
+StandingSpotBlockArray(memory_arena *Memory)
 {
-  if (I0.Block)
+  standing_spot_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(standing_spot_block_array_index *Thing1, standing_spot_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
   {
-    if (I0.ElementIndex == 8-1)
-    {
-      I0.ElementIndex = 0;
-      I0.BlockIndex++;
-      I0.Block = I0.Block->Next;
-    }
-    else
-    {
-      I0.ElementIndex++;
-    }
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( standing_spot_block_array_index ) );
+
+    return Result;
   }
   else
   {
-    I0.ElementIndex++;
+    return (Thing1 == Thing2);
   }
+}
+
+link_internal b32
+AreEqual(standing_spot_block_array_index Thing1, standing_spot_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( standing_spot_block_array_index ) );
+
+  return Result;
+}
+
+
+typedef standing_spot_block_array standing_spot_paged_list;
+
+link_internal standing_spot_block_array_index
+operator++( standing_spot_block_array_index &I0 )
+{
+  I0.Index++;
   return I0;
 }
 
 link_internal b32
-operator<(standing_spot_block_array_index I0, standing_spot_block_array_index I1)
+operator<( standing_spot_block_array_index I0, standing_spot_block_array_index I1 )
 {
-  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( standing_spot_block_array_index I0, standing_spot_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
-GetIndex(standing_spot_block_array_index *Index)
+GetIndex( standing_spot_block_array_index *Index)
 {
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal standing_spot_block_array_index
+ZerothIndex( standing_spot_block_array *Arr )
+{
+  return {};
+}
+
+link_internal standing_spot_block_array_index
+Capacity( standing_spot_block_array *Arr )
+{
+  standing_spot_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
 link_internal standing_spot_block_array_index
-ZerothIndex(standing_spot_block_array *Arr)
+AtElements( standing_spot_block_array *Arr )
+{
+  standing_spot_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( standing_spot_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal standing_spot_block_array_index
+LastIndex( standing_spot_block_array *Arr )
 {
   standing_spot_block_array_index Result = {};
-  Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-TotalElements(standing_spot_block_array *Arr)
+Count( standing_spot_block_array *Arr )
 {
-  umm Result = 0;
-  if (Arr->Current)
-  {
-    Result = (Arr->Current->Index * 8) + Arr->Current->At;
-  }
+  auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal standing_spot_block_array_index
-LastIndex(standing_spot_block_array *Arr)
+link_internal standing_spot_block *
+GetBlock( standing_spot_block_array *Arr, standing_spot_block_array_index Index )
 {
-  standing_spot_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-    Assert(Result.ElementIndex);
-    Result.ElementIndex--;
-  }
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  standing_spot_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
+}
+
+link_internal standing_spot *
+GetPtr( standing_spot_block_array *Arr, standing_spot_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+
+  standing_spot_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  standing_spot *Result = (Block->Elements + ElementIndex);
   return Result;
 }
 
-link_internal standing_spot_block_array_index
-AtElements(standing_spot_block_array *Arr)
+
+link_internal standing_spot *
+GetPtr( standing_spot_block_array *Arr, umm Index )
 {
-  standing_spot_block_array_index Result = {};
-  if (Arr->Current)
+  standing_spot_block_array_index I = {Index};
+  return GetPtr(Arr, I);
+}
+
+
+link_internal standing_spot *
+TryGetPtr( standing_spot_block_array *Arr, standing_spot_block_array_index Index)
+{
+  standing_spot * Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
+    Result = GetPtr(Arr, Index);
   }
   return Result;
 }
 
 link_internal standing_spot *
-GetPtr(standing_spot_block_array *Arr, standing_spot_block_array_index Index)
+TryGetPtr( standing_spot_block_array *Arr, umm Index)
 {
-  standing_spot *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  auto Result = TryGetPtr(Arr, standing_spot_block_array_index{Index});
   return Result;
 }
 
-link_internal standing_spot *
-GetPtr(standing_spot_block *Block, umm Index)
-{
-  standing_spot *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
-  return Result;
-}
-
-link_internal standing_spot *
-GetPtr(standing_spot_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  umm AtBlock = 0;
-  standing_spot_block *Block = Arr->First;
-  while (AtBlock++ < BlockIndex)
-  {
-    Block = Block->Next;
-  }
-
-  standing_spot *Result = Block->Elements+ElementIndex;
-  return Result;
-}
-
-link_internal standing_spot *
-TryGetPtr(standing_spot_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  auto AtE = AtElements(Arr);
-  umm Total = GetIndex(&AtE);
-  standing_spot *Result = {};
-  if (Index < Total) { Result = GetPtr(Arr, Index); }
-  return Result;
-}
-
-link_internal u32
-AtElements(standing_spot_block *Block)
-{
-  return Block->At;
-}
 
 
-link_internal standing_spot_block*
-Allocate_standing_spot_block(memory_arena *Memory)
-{
-  standing_spot_block *Result = Allocate(standing_spot_block, Memory, 1);
-  Result->Elements = Allocate(standing_spot, Memory, 8);
-  return Result;
-}
+
 
 link_internal cs
-CS(standing_spot_block_array_index Index)
+CS( standing_spot_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
+}
+
+link_internal standing_spot *
+Set( standing_spot_block_array *Arr,
+  standing_spot *Element,
+  standing_spot_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  standing_spot_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = *Element;
+  return Slot;
 }
 
 link_internal void
-RemoveUnordered(standing_spot_block_array *Array, standing_spot_block_array_index Index)
+NewBlock( standing_spot_block_array *Arr )
 {
-  standing_spot_block_array_index LastI = LastIndex(Array);
+  standing_spot_block  *NewBlock     = Allocate( standing_spot_block , Arr->Memory,                 1);
+  standing_spot_block **NewBlockPtrs = Allocate( standing_spot_block*, Arr->Memory, Arr->BlockCount+1);
 
-  standing_spot *Element = GetPtr(Array, Index);
-  standing_spot *LastElement = GetPtr(Array, LastI);
-
-  *Element = *LastElement;
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
-    // Walk the chain till we get to the second-last one
-    standing_spot_block *Current = Array->First;
-    standing_spot_block *LastB = LastI.Block;
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
+  }
 
-    while (Current->Next && Current->Next != LastB)
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
+}
+
+link_internal void
+RemoveUnordered( standing_spot_block_array *Array, standing_spot_block_array_index Index)
+{
+  auto LastI = LastIndex(Array);
+  Assert(Index.Index <= LastI.Index);
+
+  auto LastElement = GetPtr(Array, LastI);
+  Set(Array, LastElement, Index);
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( standing_spot_block_array *Array, standing_spot_block_array_index IndexToRemove)
+{
+  Assert(IndexToRemove.Index < Array->ElementCount);
+
+  standing_spot *Prev = {};
+
+  standing_spot_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
+  {
+    standing_spot *E = GetPtr(Array, Index);
+
+    if (Prev)
     {
-      Current = Current->Next;
+      *Prev = *E;
     }
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+    Prev = E;
   }
+
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( standing_spot_block_array *Array, standing_spot *Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
+    }
+  }
+}
+
+link_internal standing_spot_block_array_index
+Find( standing_spot_block_array *Array, standing_spot *Query)
+{
+  standing_spot_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  IterateOver(Array, E, Index)
+  {
+    if ( E == Query )
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+
+
+link_internal b32
+IsValid(standing_spot_block_array_index *Index)
+{
+  standing_spot_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  b32 Result = (AreEqual(Index, &Test) == False);
+  return Result;
 }
 
 link_internal standing_spot *
-Push(standing_spot_block_array *Array, standing_spot *Element)
+Push( standing_spot_block_array *Array, standing_spot *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_standing_spot_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 8)
+  if (AtElements(Array) == Capacity(Array))
   {
-    if (Array->Current->Next)
-    {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      standing_spot_block *Next = Allocate_standing_spot_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
-    }
+    NewBlock(Array);
   }
 
-  standing_spot *Result = Array->Current->Elements + Array->Current->At;
+  standing_spot *Result = Set(Array, Element, AtElements(Array));
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+  Array->ElementCount += 1;
 
   return Result;
 }
+
+link_internal standing_spot *
+Push( standing_spot_block_array *Array )
+{
+  standing_spot Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
+link_internal void
+Insert( standing_spot_block_array *Array, standing_spot_block_array_index Index, standing_spot *Element )
+{
+  Assert(Index.Index <= LastIndex(Array).Index);
+  Assert(Array->Memory);
+
+  // Alocate a new thingy
+  standing_spot *Prev = Push(Array);
+
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
+  {
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
+    Prev = E;
+  }
+
+  *Prev = *Element;
+}
+
+link_internal void
+Insert( standing_spot_block_array *Array, u32 Index, standing_spot *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( standing_spot_block_array *Array, standing_spot *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
+}
+
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
+
 
 

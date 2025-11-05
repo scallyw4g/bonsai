@@ -1,5 +1,4 @@
-// src/engine/editor.h:856:0
-
+// src/engine/editor.h:577:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_layer_type Selection)
 {
@@ -18,8 +17,9 @@ RadioButtonGroup_brush_layer_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Noise"), UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Noise")), BrushLayerType_Noise },
-    { CSz("Shape"), UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Shape")), BrushLayerType_Shape },
+        { CSz("Noise"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Noise")), BrushLayerType_Noise },
+    { CSz("Shape"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_layer_type BrushLayerType_Shape")), BrushLayerType_Shape },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -27,7 +27,7 @@ RadioButtonGroup_brush_layer_type( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -39,6 +39,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   brush_layer_type *Element,
   cs GroupName,
+  u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {

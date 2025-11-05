@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:290:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(vox_data *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("vox_data");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,10 +33,18 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vox_data *Element = BaseElement + ElementIndex;
-    if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                    if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
-    if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
+
+
+
+
+                    if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
+
+
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -58,12 +65,16 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  b64 HadChunkDataPointer = Read_u64(Bytes);
+          b64 HadChunkDataPointer = Read_u64(Bytes);
   Assert(HadChunkDataPointer < 2); // Should be 0 or 1
 
-  if (HadChunkDataPointer)
+
+
+
+
+        if (HadChunkDataPointer)
   {
-    umm Count = 1;
+        umm Count = 1;
 
 
     if (Element->ChunkData == 0)
@@ -73,6 +84,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Mem
 
     Result &= Deserialize(Bytes, Element->ChunkData, Memory, Count);
   }
+
+
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -86,7 +100,7 @@ Deserialize(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory, umm Count
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

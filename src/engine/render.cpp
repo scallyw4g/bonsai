@@ -2,12 +2,12 @@
 void
 RenderAoTexture(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
   SetViewport(ApplicationResolution/2);
 
-  GL.UseProgram(AoGroup->Shader.ID);
+  GetGL()->UseProgram(AoGroup->Shader.ID);
 
-  GL.Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
+  GetGL()->Uniform3fv(AoGroup->SsaoKernelUniform, SSAO_KERNEL_SIZE, (r32*)AoGroup->SsaoKernel);
 
   BindShaderUniforms(&AoGroup->Shader);
 
@@ -35,14 +35,14 @@ UpdateLightingTextures(game_lights *Lights)
 
   u32 Type = GL_TEXTURE_2D;
 
-  GL.BindTexture(Type, Lights->PositionTex.ID);
-  GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetGL()->BindTexture(Type, Lights->PositionTex.ID);
+  GetGL()->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->PositionTex.Dim.x, Lights->PositionTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, PosData);
   AssertNoGlErrors;
 
-  GL.BindTexture(Type, Lights->ColorTex.ID);
-  GL.TexImage2D( Type, 0, GL_RGB32F,
+  GetGL()->BindTexture(Type, Lights->ColorTex.ID);
+  GetGL()->TexImage2D( Type, 0, GL_RGB32F,
                 Lights->ColorTex.Dim.x, Lights->ColorTex.Dim.y,
                 0,  GL_RGB, GL_FLOAT, ColorData);
   AssertNoGlErrors;
@@ -54,10 +54,10 @@ UpdateLightingTextures(game_lights *Lights)
 link_internal void
 Debug_DrawTextureToDebugQuad( shader *DebugShader )
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(V2(256));
 
-  GL.UseProgram(DebugShader->ID);
+  GetGL()->UseProgram(DebugShader->ID);
   BindShaderUniforms(DebugShader);
 
   RenderQuad();
@@ -69,72 +69,64 @@ Debug_DrawTextureToDebugQuad( shader *DebugShader )
 #endif
 
 inline m4
-GetShadowMapMVP(v3 SunP, v3 FrustumCenter)
+GetShadowMapMVP(world *World, camera *Camera, v3 SunP)
 {
-  // Compute the MVP matrix from the light's point of view
-  /* v3 Translate = GetRenderP(Camera->Target, Camera); */
   m4 depthProjectionMatrix = Orthographic(SHADOW_MAP_X,
                                           SHADOW_MAP_Y,
                                           SHADOW_MAP_Z_MIN,
                                           SHADOW_MAP_Z_MAX);
 
-  v3 Front = Normalize(SunP);
-  v3 Right = Cross(Front, V3(0,1,0));
-  v3 Up = Cross(Right, Front);
-
-  v3 Target = FrustumCenter;
+  v3 Target = {};
+  v3 Up = V3(0.f, 1.f, 0.f);
   m4 depthViewMatrix =  LookAt(SunP, Target, Up);
 
   return depthProjectionMatrix * depthViewMatrix;
 }
 
 link_internal void
-RenderImmediateGeometryToShadowMap(gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToShadowMap(world *World, graphics *Graphics, gpu_mapped_element_buffer *GpuMap)
 {
   TIMED_FUNCTION();
 
   shadow_render_group *SG = Graphics->SG;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
   SetViewport(GetShadowMapResolution(&GetEngineResources()->Settings));
-
-
-  // @duplicate_shadow_map_MVP_calculation
-  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
-
-  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
 
   UseShader(&SG->Shader);
 
-  /* BindUniformByName(&SG->DepthShader, "ModelMatrix", &IdentityMatrix); */
-
   Draw(GpuMap->Buffer.At);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
   return;
 }
 
 link_internal void
-RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, graphics *Graphics)
+RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, triple_buffered_gpu_mapped_element_buffer *ImmediateGeometry, graphics *Graphics)
 {
   TIMED_FUNCTION();
 
+
+  auto Handles = CurrentHandles(ImmediateGeometry);
+  Assert(Handles->Mapped == False);
+
   auto GBufferRenderGroup = Graphics->gBuffer;
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
   // TODO(Jesse): Hoist this check out of here
-  GL.Disable(GL_CULL_FACE);
-  Draw(GpuMap->Buffer.At);
-  /* DrawGpuBufferImmediate(GpuMap->Handles); */
-  GL.Enable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
+
+  /* Draw(GpuMap->Buffer.At); */
+
+  DrawGpuBufferImmediate(Handles, ImmediateGeometry->Buffer.At);
+  GetGL()->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
 
@@ -144,15 +136,15 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, gpu_mapped_element_b
 link_internal void
 CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
   SetViewport(Plat->ScreenDim);
 
-  GL.Enable(GL_BLEND);
-  GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+  GetGL()->Enable(GL_BLEND);
+  GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
 
   UseShader(&Graphics->CompositeGroup.Shader);
 
-  GL.Disable(GL_BLEND);
+  GetGL()->Disable(GL_BLEND);
 
   RenderQuad();
 
@@ -163,24 +155,24 @@ CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
 
 // Does lighting on gBuffer textures.  Also composites transparent surfaces
 link_internal void
-RenderLuminanceTexture(v2i ApplicationResolution, gpu_mapped_element_buffer *GpuMap, lighting_render_group *Lighting, graphics *Graphics)
+RenderLuminanceTexture(v2i ApplicationResolution, lighting_render_group *Lighting, graphics *Graphics)
 {
   SetViewport(ApplicationResolution);
 
   UpdateLightingTextures(&Graphics->Lighting.Lights);
 
   // TODO(Jesse): Explain this.
-  Graphics->SG->Shader.MVP = NdcToScreenSpace * Graphics->SG->Shader.MVP;
+  Graphics->SG->Shader.ViewProjection = NdcToScreenSpace * Graphics->SG->Shader.ViewProjection;
 
-  /* GL.Enable(GL_BLEND); */
-  /* GL.BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
+  /* GetGL()->Enable(GL_BLEND); */
+  /* GetGL()->BlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA); */
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
 
-/*   GL.Disable(GL_BLEND); */
+/*   GetGL()->Disable(GL_BLEND); */
 
   {
-    UseShader(&Lighting->Shader);
+    UseShader(&Lighting->Program);
     RenderQuad();
   }
 
@@ -212,11 +204,11 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
 
     if (last_iteration)
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, DestFBO->ID);
     }
     else
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBOs[horizontal].ID);
     }
 
     AssertNoGlErrors;
@@ -232,7 +224,7 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
       Tex = &Group->Textures[!horizontal];
     }
 
-    /* GL.BindTexture( GL_TEXTURE_2D, Tex->ID ); */
+    /* GetGL()->BindTexture( GL_TEXTURE_2D, Tex->ID ); */
     BindUniformByName(&Group->Shader, "SrcImage", Tex, 0);
 
     AssertNoGlErrors;
@@ -242,22 +234,22 @@ GaussianBlurTexture(gaussian_render_group *Group, texture *TexIn, framebuffer *D
     if (first_iteration) first_iteration = false;
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-link_internal gpu_mapped_element_buffer *
-GetNextGpuMap(graphics *Graphics)
-{
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + ((Graphics->GpuBufferWriteIndex+1)%2);
-  return GpuMap;
-}
+/* link_internal gpu_mapped_element_buffer * */
+/* GetNextGpuMap(graphics *Graphics) */
+/* { */
+/*   gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + ((Graphics->GpuBufferWriteIndex+1)%2); */
+/*   return GpuMap; */
+/* } */
 
-link_internal gpu_mapped_element_buffer *
-GetCurrentGpuMap(graphics *Graphics)
-{
-  gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex;
-  return GpuMap;
-}
+/* link_internal gpu_mapped_element_buffer * */
+/* GetCurrentGpuMap(graphics *Graphics) */
+/* { */
+/*   gpu_mapped_element_buffer* GpuMap = Graphics->GpuBuffers + Graphics->GpuBufferWriteIndex; */
+/*   return GpuMap; */
+/* } */
 
 #if 0
 void
@@ -339,24 +331,24 @@ BuildExteriorBoundaryVoxels( world_chunk *chunk, chunk_dimension Dim, world_chun
 #endif
 
 inline void
-ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
+ClearFramebuffers(graphics *Graphics, render_to_texture_group *RTTGroup)
 {
   TIMED_FUNCTION();
 
-  GL.ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->ClearColor(Graphics->SkyColor.r, Graphics->SkyColor.g, Graphics->SkyColor.b, 1.f);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->gBuffer->FBO.ID);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   SetDefaultFramebufferClearColors();
 
-  /* GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
-  /* GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
+  /* GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID); */
+  /* GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); */
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Lighting.FBO.ID);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // TODO(Jesse): Why exactly would this not be necessary?
   /* glBindFramebuffer(GL_FRAMEBUFFER, Graphics->SG->FramebufferName); */
@@ -364,32 +356,32 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
 
   for (s32 Index = 0; Index < 2; ++Index)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Gaussian.FBOs[Index].ID);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, 0);
-  GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
   if (Graphics->Settings.BravoilMcGuireOIT)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
 
 #if 1
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #else
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0;
-      GL.DrawBuffers(1, &Attachments);
-      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetGL()->DrawBuffers(1, &Attachments);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     {
       u32 Attachments = GL_COLOR_ATTACHMENT0 + 1;
-      GL.DrawBuffers(1, &Attachments);
-      GL.ClearColor(1.f, 1.f, 1.f, 1.f);
-      GL.Clear(GL_COLOR_BUFFER_BIT);
+      GetGL()->DrawBuffers(1, &Attachments);
+      GetGL()->ClearColor(1.f, 1.f, 1.f, 1.f);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT);
     }
 
     {
@@ -400,8 +392,8 @@ ClearFramebuffers(graphics *Graphics, render_entity_to_texture_group *RTTGroup)
   }
   else
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
-    GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Graphics->Transparency.FBO.ID);
+    GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
 
@@ -608,16 +600,20 @@ Triangulate(untextured_3d_geometry_buffer* Dest, world_chunk* Chunk, chunk_dimen
 inline b32
 IsBoundaryVoxel(world_chunk *Chunk, voxel_position Offset, chunk_dimension Dim)
 {
+  b32 Result = False;
+
+  NotImplemented;
+#if 0
   s32 VoxelIndex = GetIndex(Offset, Dim);
   voxel *V = &Chunk->Voxels[VoxelIndex];
 
-  b32 Result = False;
   Result |= IsSet( V, Voxel_BackFace);
   Result |= IsSet( V, Voxel_FrontFace);
   Result |= IsSet( V, Voxel_TopFace);
   Result |= IsSet( V, Voxel_BottomFace);
   Result |= IsSet( V, Voxel_LeftFace);
   Result |= IsSet( V, Voxel_RightFace);
+#endif
 
   return Result;
 }
@@ -743,64 +739,65 @@ HighlightEntity(engine_resources *Engine, entity *Entity)
 link_internal void
 DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 {
-  auto *GpuBuffer = &GetCurrentGpuMap(Graphics)->Buffer;
-  auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4);
+  NotImplemented;
+  /* auto *GpuBuffer = &Graphics->ImmediateGeometry; */
+  /* auto Dest = ReserveBufferSpace(GpuBuffer, VERTS_PER_LINE*4); */
 
-  v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP);
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f), RGB_RED, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bot.Normal*5.f), RGB_BLUE, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f), RGB_GREEN, 0.2f );
-  DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f), RGB_YELLOW, 0.2f );
+  /* v3 SimSpaceP = GetSimSpaceP(World, Camera->CurrentP); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Top.Normal*5.f),    RGB_RED, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Bottom.Normal*5.f), RGB_BLUE, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Left.Normal*5.f),   RGB_GREEN, 0.2f ); */
+  /* DEBUG_DrawLine(&Dest, line(SimSpaceP+Camera->Front*200.f, Camera->Frust.Right.Normal*5.f),  RGB_YELLOW, 0.2f ); */
 }
 
 link_internal void
 RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
-  FlushBuffersToCard(&Group->GpuBuffer);
+  FlushBuffersToCard_gpu_mapped_element_buffer(&Group->GpuBuffer.Handles);
 
   if (Group->GpuBuffer.Buffer.At)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
     UseShader(&Group->Shader);
 
     if (Settings->BravoilMcGuireOIT)
     {
       SetViewport(ApplicationResolution);
-      GL.Disable(GL_CULL_FACE);
+      GetGL()->Disable(GL_CULL_FACE);
 
-      GL.Enable(GL_BLEND);
-      /* GL.BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetGL()->Enable(GL_BLEND);
+      /* GetGL()->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       // TODO(Jesse): The portable version requires changing the shader a bit
-      /* GL.BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetGL()->BlendFuncSeparate(GL_ONE, GL_ONE, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
 
-      GL.BlendFunci(0, GL_ONE, GL_ONE);
-      GL.BlendFunci(1, GL_ONE, GL_ONE);
-      /* GL.BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
-      /* GL.BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
+      GetGL()->BlendFunci(0, GL_ONE, GL_ONE);
+      GetGL()->BlendFunci(1, GL_ONE, GL_ONE);
+      /* GetGL()->BlendFunci(1, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA); */
+      /* GetGL()->BlendFunci(1, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); */
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GL.Disable(GL_BLEND);
+      GetGL()->Disable(GL_BLEND);
 
-      GL.Enable(GL_CULL_FACE);
+      GetGL()->Enable(GL_CULL_FACE);
     }
     else
     {
-      GL.Enable(GL_BLEND);
-      GL.BlendFunc(GL_ONE, GL_ONE);
-      GL.Disable(GL_CULL_FACE);
-      /* GL.DepthFunc(GL_LEQUAL); */
-      /* GL.DepthFunc(GL_ALWAYS); */
+      GetGL()->Enable(GL_BLEND);
+      GetGL()->BlendFunc(GL_ONE, GL_ONE);
+      GetGL()->Disable(GL_CULL_FACE);
+      /* GetGL()->DepthFunc(GL_LEQUAL); */
+      /* GetGL()->DepthFunc(GL_ALWAYS); */
 
       SetViewport(ApplicationResolution);
 
       Draw(Group->GpuBuffer.Buffer.At);
 
-      GL.Disable(GL_BLEND);
-      GL.Enable(GL_CULL_FACE);
-      /* GL.DepthFunc(GL_LEQUAL); */
+      GetGL()->Disable(GL_BLEND);
+      GetGL()->Enable(GL_CULL_FACE);
+      /* GetGL()->DepthFunc(GL_LEQUAL); */
     }
 
     Group->GpuBuffer.Buffer.At = 0;
@@ -817,8 +814,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
     // GL stuff
     {
-      GL.BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
-      GL.BindTexture(GL_TEXTURE_2D, Texture->ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RTTGroup->FBO.ID);
+      GetGL()->BindTexture(GL_TEXTURE_2D, Texture->ID);
 
       RTTGroup->FBO.Attachments = 0;
       FramebufferTexture(&RTTGroup->FBO, Texture);
@@ -833,8 +830,8 @@ SetupRenderToTextureShader(engine_resources *Engine, texture *Texture, camera *C
 
       SetViewport(V2(Texture->Dim));
 
-      GL.Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      GL.Enable(GL_DEPTH_TEST);
+      GetGL()->Clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      GetGL()->Enable(GL_DEPTH_TEST);
     }
   }
   return Result;
@@ -845,18 +842,18 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
 {
   AssertNoGlErrors;
 
-  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
+  GetGL()->EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-  GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_VertexHandle]);
+  GetGL()->VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
   AssertNoGlErrors;
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-  GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_NormalHandle]);
+  GetGL()->VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
   AssertNoGlErrors;
 
 
@@ -865,77 +862,34 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
   CAssert(MtlFloatElements == 4);
 
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
+  GetGL()->BindBuffer(GL_ARRAY_BUFFER, Handles->Handles[mesh_MatHandle]);
+  /* GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
+  GetGL()->VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
+  GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
   AssertNoGlErrors;
 }
+
 
 link_internal void
-SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles)
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count)
 {
   AssertNoGlErrors;
-  GL.EnableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.EnableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
-  AssertNoGlErrors;
+  Assert(Handles->Mapped == False);
+  Assert(Handles->ElementCount);
+  Assert(Handles->VAO);
 
+  auto GL = GetGL();
 
-  switch(Handles->ElementType)
-  {
-    InvalidCase(DataType_Undefinded);
-    case DataType_v3:
-    {
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-    } break;
-
-    case DataType_v3_u8:
-    {
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->VertexHandle);
-      GL.VertexAttribPointer(VERTEX_POSITION_LAYOUT_LOCATION, 3, GL_BYTE, GL_FALSE, 0, (void*)0);
-      AssertNoGlErrors;
-
-      GL.BindBuffer(GL_ARRAY_BUFFER, Handles->NormalHandle);
-      GL.VertexAttribPointer(VERTEX_NORMAL_LAYOUT_LOCATION, 3, GL_BYTE, GL_TRUE, 0, (void*)0);
-      AssertNoGlErrors;
-    } break;
-  }
-
-
-  // NOTE(Jesse): This is just here to break when the size of these changes,
-  // serving as a reminder to update this code.
-  const u32 MtlFloatElements = sizeof(matl)/sizeof(u8);
-  CAssert(MtlFloatElements == 4);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, Handles->MatHandle);
-  /* GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_UNSIGNED_INT, 0, 0); */
-  GL.VertexAttribIPointer(VERTEX_COLOR_LAYOUT_LOCATION, 1, GL_SHORT, sizeof(matl), Cast(void*, OffsetOf(ColorIndex, matl)));
-  GL.VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE, sizeof(matl), Cast(void*, OffsetOf(Transparency, matl)) ); // @vertex_attrib_I_pointer_transparency_offsetof
-  AssertNoGlErrors;
+  GL->BindVertexArray(Handles->VAO);
+  /* SetupVertexAttribsFor_u3d_geo_element_buffer(Handles); */
+  Draw(Count);
+  GL->BindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
 
 link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles)
 {
-  AssertNoGlErrors;
-
-  Draw(Handles->ElementCount);
-
-  GL.BindBuffer(GL_ARRAY_BUFFER, 0);
-
-  GL.DisableVertexAttribArray(VERTEX_POSITION_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_NORMAL_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_COLOR_LAYOUT_LOCATION);
-  GL.DisableVertexAttribArray(VERTEX_TRANS_EMISS_LAYOUT_LOCATION);
+  DrawGpuBufferImmediate(Handles, Handles->ElementCount);
 }
 
 poof(
@@ -951,7 +905,7 @@ poof(
     link_internal void
     CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_mapped_(buffer_t.name) *GpuBuffer)
     {
-      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(&GpuBuffer->Handles);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(container_t.name)(&GpuBuffer->Handles);
       CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
       FlushBuffersToCard(&Dest);
     }
@@ -959,7 +913,7 @@ poof(
     link_internal void
     CopyToGpuBuffer( (buffer_t.name) *Mesh, gpu_element_buffer_handles *Handles)
     {
-      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(buffer_t.name)(Handles);
+      gpu_mapped_(buffer_t.name) Dest = MapGpuBuffer_(container_t.name)(Handles);
       CopyBufferIntoBuffer(Mesh, &Dest.Buffer);
       FlushBuffersToCard(&Dest);
     }
@@ -1015,7 +969,7 @@ poof(
             }
             else
             {
-              DeallocateGpuElementBuffer(Handles);
+              DeallocateGpuBuffer(Handles);
               AssertNoGlErrors;
             }
 
@@ -1037,20 +991,49 @@ poof(
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh);
 
-poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer))
-#include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h>
+/* poof(gpu_buffer(lod_element_buffer, untextured_3d_geometry_buffer)) */
+/* #include <generated/gpu_buffer_lod_element_buffer_untextured_3d_geometry_buffer.h> */
+
+link_internal void
+DeleteGpuBuffer(gpu_element_buffer_handles *Handles)
+{
+  Assert(Handles->VAO);
+  Assert(Handles->Handles[0]);
+  Assert(Handles->Handles[1]);
+  Assert(Handles->Handles[2]);
+  GetGL()->DeleteVertexArrays(1, &Handles->VAO);
+  GetGL()->DeleteBuffers(3, &Handles->Handles[mesh_VertexHandle]);
+}
+
+link_internal void
+ReallocateGpuBuffers(gpu_element_buffer_handles *Handles, data_type Type, u32 ElementCount)
+{
+  Assert(False);
+  Assert(Handles->Mapped == False);
+  if (Handles->VAO)
+  {
+    DeleteGpuBuffer(Handles);
+  }
+  Clear(Handles);
+
+  AllocateGpuBuffer_gpu_mapped_element_buffer(Handles, Type, ElementCount);
+}
 
 link_internal void
 ReallocateAndSyncGpuBuffers(gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
 {
-  if (Handles->VertexHandle)
-  {
-    GL.DeleteBuffers(3, &Handles->VertexHandle);
-  }
-  Clear(Handles);
+  ReallocateGpuBuffers(Handles, Mesh->Type, Mesh->At);
+  /* CopyToGpuBuffer(Mesh, Handles); */
+  NotImplemented;
+}
 
-  AllocateGpuElementBuffer(Handles, Mesh->Type, Mesh->At);
-  CopyToGpuBuffer(Mesh, Handles);
+link_internal gpu_mapped_element_buffer
+AllocateAndMapGpuBuffer(data_type Type, u32 ElementCount)
+{
+  gpu_mapped_element_buffer Buf = {};
+  AllocateGpuBuffer(&Buf, Type, ElementCount);
+  MapGpuBuffer(&Buf);
+  return Buf;
 }
 
 /* poof(gpu_buffer(world_chunk_lod_element_buffer, world_chunk_geometry_buffer)) */
@@ -1131,7 +1114,38 @@ DrawLod_world_chunk(engine_resources *Engine, shader *Shader, world_chunk_lod_el
 }
 #endif
 
+#if 1
+link_internal void
+poof(@async @render)
+DrawLod( engine_resources *Engine,
+         shader *Shader,
+         gpu_element_buffer_handles *Handles,
+         v3 Basis,
+         Quaternion Rotation,
+         v3 Scale )
+{
+  TIMED_FUNCTION();
 
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  AssertNoGlErrors;
+  Assert(Handles->Mapped == False);
+
+  if (HasGpuMesh(Handles))
+  {
+    m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
+    TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
+
+    m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
+    TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
+
+    DrawGpuBufferImmediate(Handles);
+    AssertNoGlErrors;
+  }
+}
+#endif
+
+#if 0
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale )
 {
@@ -1140,34 +1154,10 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
   AssertNoGlErrors;
   auto MeshBit = MeshBit_None;
 
-  if (DistanceSquared > Square(400*32))
+  if (HasGpuMesh(Meshes, MeshBit_Lod0))
   {
-    if (HasGpuMesh(Meshes, MeshBit_Lod4)) { MeshBit = MeshBit_Lod4; }
-  }
-  else if (DistanceSquared > Square(250*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod3)) { MeshBit = MeshBit_Lod3; }
-  }
-  else if (DistanceSquared > Square(150*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod2)) { MeshBit = MeshBit_Lod2; }
-  }
-  else if (DistanceSquared > Square(70*32))
-  {
-    if (HasGpuMesh(Meshes, MeshBit_Lod1)) { MeshBit = MeshBit_Lod1; }
-  }
-  else
-  {
-   if (HasGpuMesh(Meshes, MeshBit_Lod0)) { MeshBit = MeshBit_Lod0; }
-  }
-
-  if (MeshBit != MeshBit_None)
-  {
-    m4 LocalTransform = GetTransformMatrix(Basis, Scale, Rotation);
-    AssertNoGlErrors;
-
+    m4 LocalTransform = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     m4 NormalMatrix = Transpose(Inverse(LocalTransform));
-    AssertNoGlErrors;
 
     // @janky_model_matrix_bs
     Ensure(TryBindUniform(Shader, "ModelMatrix", &LocalTransform));
@@ -1175,13 +1165,14 @@ DrawLod(engine_resources *Engine, shader *Shader, lod_element_buffer *Meshes, r3
     TryBindUniform(Shader, "NormalMatrix", &NormalMatrix); // NOTE(Jesse): Not all shaders that use this path draw normals (namely, DepthRTT)
     AssertNoGlErrors;
 
-    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit)];
+    auto Handles = &Meshes->GpuBufferHandles[ToIndex(MeshBit_Lod0)];
 
     SetupVertexAttribsFor_u3d_geo_element_buffer(Handles);
     DrawGpuBufferImmediate(Handles);
     AssertNoGlErrors;
   }
 }
+#endif
 
 #if 0
 link_internal void
@@ -1206,12 +1197,12 @@ RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, wo
 /* } */
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_buffer *Meshes, v3 Offset, camera *Camera = 0)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Offset, camera *Camera = 0)
 {
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
-    DrawLod(Engine, &Engine->RTTGroup.Shader, Meshes, 0.f, Offset);
+    DrawLod(Engine, &Engine->RTTGroup.Shader, &Mesh->Handles, Offset);
   }
   else
   {
@@ -1222,7 +1213,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, lod_element_bu
 link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, v3 Offset, camera *Camera = 0)
 {
-  RenderToTexture(Engine, Thumb, &Model->Meshes, Offset, Camera);
+  RenderToTexture(Engine, Thumb, &Model->Mesh, Offset, Camera);
 }
 
 link_internal void
@@ -1235,14 +1226,14 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
 
     // Geometry stuff
     {
-      MapGpuBuffer_untextured_3d_geometry_buffer(&RTTGroup->GeoBuffer);
+      MapGpuBuffer(&RTTGroup->GeoBuffer);
       untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
       BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
-      FlushBuffersToCard(&RTTGroup->GeoBuffer);
+      FlushBuffersToCard_gpu_mapped_element_buffer(&RTTGroup->GeoBuffer.Handles);
     }
 
-    GL.Enable(GL_DEPTH_TEST);
+    GetGL()->Enable(GL_DEPTH_TEST);
     Draw(RTTGroup->GeoBuffer.Buffer.At);
     RTTGroup->GeoBuffer.Buffer.At = 0;
   }
@@ -1302,14 +1293,16 @@ DrawEntity(              shader *Shader,
           Entity->_CollisionVolumeRadius = Model->Dim/2.f;
         }
 
-        SyncGpuBuffersImmediate(GetEngineResources(), &Model->Meshes);
+        // TODO(Jesse): Do we still do this here?
+        NotImplemented;
+        /* SyncGpuBuffersImmediate(GetEngineResources(), &Model->Mesh); */
         AssertNoGlErrors;
 
         v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
-        DrawLod(GetEngineResources(), Shader, &Model->Meshes, 0.f, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), Shader, &Model->Mesh.Handles, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }
@@ -1322,7 +1315,7 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
 
   if (DoSelectionMasking)
   {
-    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    auto SelectionRegion = GetLevelEditor()->Selection.Region;
     SelectionRegion.Min.Offset += V3(0.0001f);
     SelectionRegion.Max.Offset -= V3(0.0001f);
     Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
@@ -1334,14 +1327,14 @@ SetupGBufferShader(graphics *Graphics, v2i ApplicationResolution, b32 DoSelectio
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GL.UseProgram(GBufferRenderGroup->gBufferShader.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
+  GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID);
 
   SetViewport(ApplicationResolution);
 
   BindShaderUniforms(&GBufferRenderGroup->gBufferShader);
 
-  GL.Disable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1351,20 +1344,20 @@ TeardownGBufferShader(graphics *Graphics)
 {
   auto GBufferRenderGroup = Graphics->gBuffer;
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
-  GL.Enable(GL_CULL_FACE);
+  GetGL()->Enable(GL_CULL_FACE);
 }
 
 
 
 
 link_internal void
-SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
+SetupShadowMapShader(world *World, graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectionMasking)
 {
   shadow_render_group *SG = Graphics->SG;
 
   if (DoSelectionMasking)
   {
-    auto SelectionRegion = GetLevelEditor()->SelectionRegion;
+    auto SelectionRegion = GetLevelEditor()->Selection.Region;
     SelectionRegion.Min.Offset += V3(0.0001f);
     SelectionRegion.Max.Offset -= V3(0.0001f);
     Graphics->MinClipP_worldspace = GetRenderP(GetEngineResources(), SelectionRegion.Min);
@@ -1376,20 +1369,13 @@ SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectio
     Graphics->MaxClipP_worldspace = {};
   }
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, SG->FramebufferName);
 
   SetViewport(ShadowMapResolution);
 
-  // TODO(Jesse): Duplicate MVP calculation
-  // @duplicate_shadow_map_MVP_calculation
-  v3 FrustCenter = GetFrustumCenter(Graphics->Camera);
-  SG->Shader.MVP = GetShadowMapMVP(Graphics->Settings.Lighting.SunP, FrustCenter);
-
   UseShader(&SG->Shader);
 
-  /* GL.UniformMatrix4fv(SG->MVP_ID, 1, GL_FALSE, &SG->MVP.E[0].E[0]); */
-
-  GL.Disable(GL_CULL_FACE);
+  GetGL()->Disable(GL_CULL_FACE);
 
   AssertNoGlErrors;
 }
@@ -1397,7 +1383,7 @@ SetupShadowMapShader(graphics *Graphics, v2i ShadowMapResolution, b32 DoSelectio
 link_internal void
 TeardownShadowMapShader(graphics *Graphics)
 {
-  GL.Enable(GL_CULL_FACE);
+  GetGL()->Enable(GL_CULL_FACE);
   AssertNoGlErrors;
 }
 
@@ -1450,6 +1436,8 @@ DrawEntitiesToGBuffer( v2i ApplicationResolution,
 link_internal void
 ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 {
+  NotImplemented;
+#if 0
   TIMED_FUNCTION();
 
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1504,27 +1492,61 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
       { InvalidCodePath(); }
     }
   }
+#endif
 }
 
 link_internal void
-RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader)
+RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-  IterateOver(DrawList, ChunkPtrPtr, ChunkIndex)
+  world *World = Engine->World;;
+
+  IterateOver(DrawList, Node, NodeIndex)
   {
-    world_chunk *Chunk = *ChunkPtrPtr;
+    auto Chunk = Node->Chunk;
+    Assert(Chunk);
 
     // In case gpu meshes got deallocated after the chunk was added to the draw list
-    if (HasGpuMesh(&Chunk->Meshes))
+    if (HasGpuMesh(Chunk))
     {
-      v3 CameraP = GetSimSpaceP(World, Camera->CurrentP);
-      v3 ChunkP  = GetSimSpaceP(World, Chunk->WorldP);
-
-      /* SyncGpuBuffersImmediate(Engine, &Chunk->Meshes); */
+      v3 Offset = V3(Node->Resolution);
+      /* v3 Offset = V3(Node->Resolution*0.5f); */
+      /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
+      /* v3 Offset = {}; */
+      v3 Basis = Offset;
+      if (Camera)
+      {
+        Basis += GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
+      }
+      else
+      {
+        Basis += GetSimSpaceP(World, Chunk->WorldP);
+      }
+      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
+    }
+  }
+}
 
-      v3 Basis = GetRenderP(Engine, Chunk->WorldP);
-      DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+link_internal void
+RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
+{
+  world *World = Engine->World;;
+
+  IterateOver(DrawList, Chunk, ChunkIndex)
+  {
+    // In case gpu meshes got deallocated after the chunk was added to the draw list
+    if (HasGpuMesh(Chunk))
+    {
+      v3 Basis;
+      if (Camera)
+      {
+        Basis = GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
+      }
+      else
+      {
+        Basis = GetSimSpaceP(World, Chunk->WorldP);
+      }
+      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
       AssertNoGlErrors;
     }
   }
@@ -1588,13 +1610,14 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  v3i Radius = World->VisibleRegion/2;
+  v3i Radius = V3i(World->VisibleRegionSize/2);
   v3i Min = World->Center - Radius;
   v3i Max = World->Center + Radius;
 
   shadow_render_group *SG = Graphics->SG;
 
-  SetupShadowMapShader(Graphics, ShadowMapResolution, Editor->LayeredBrushEditor.SeedBrushWithSelection);
+  b32 MaskSelection = False;
+  SetupShadowMapShader(World, Graphics, ShadowMapResolution, MaskSelection);
 
   // NOTE(Jesse): So there's a visual distinction between preview and instantiated
   /* DrawEditorPreview(Engine, &SG->DepthShader); */
@@ -1607,3 +1630,94 @@ DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engin
 
   TeardownShadowMapShader(Graphics);
 }
+
+link_internal void
+UpdateKeyLight(graphics *Graphics, r32 tDay)
+{
+  auto SG = Graphics->SG;
+  r32 tDaytime = Cos(tDay);
+  r32 tPostApex = Sin(tDay);
+
+  lighting_settings *Lighting = &Graphics->Settings.Lighting;
+
+  v3 DawnColor = HSVtoRGB(Lighting->DawnHSV) * Lighting->DawnIntensity;
+  v3 SunColor  = HSVtoRGB(Lighting->SunHSV ) * Lighting->SunIntensity;
+  v3 DuskColor = HSVtoRGB(Lighting->DuskHSV) * Lighting->DuskIntensity;
+  v3 MoonColor = HSVtoRGB(Lighting->MoonHSV) * Lighting->MoonIntensity;
+
+  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
+  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
+  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
+
+  if (tDaytime > 0.f)
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
+    }
+  }
+  else
+  {
+    if (tPostApex > 0.f)
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
+    }
+    else
+    {
+      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
+    }
+  }
+
+  switch (Graphics->Settings.ToneMappingType)
+  {
+    case ToneMappingType_None:
+    case ToneMappingType_Reinhard:
+    case ToneMappingType_Exposure:
+      { } break;
+
+    case ToneMappingType_AGX:
+    case ToneMappingType_AGX_Sepia:
+    case ToneMappingType_AGX_Punchy:
+    {
+      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
+      {
+        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
+      }
+    } break;
+  }
+}
+
+
+link_internal void
+poof(@async @render)
+FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
+{
+  world_chunk *DestChunk = DestNode->Chunk;
+  world_chunk *SynChunk = &GenChunk->Chunk;
+  Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+  Assert(HasGpuMesh( SynChunk)       == False);
+
+  // @dest_chunk_can_have_mesh
+  /* Assert(HasGpuMesh(DestChunk)       == False); */
+
+  FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
+
+  auto DestHandles = DestChunk->Handles;
+
+  DestChunk->Handles = GenChunk->Mesh.Handles;
+
+  if (HasGpuMesh(&DestHandles))
+  {
+    DeleteGpuBuffer(&DestHandles);
+  }
+
+  GenChunk->Mesh = {};
+  Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+
+  FinalizeNodeInitializaion(DestNode);
+}
+

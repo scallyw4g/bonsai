@@ -1,11 +1,13 @@
 
 struct keyframe
+poof(@do_editor_ui)
 {
   r32 tEnd;
   r32 Value;
 };
 
 struct animation
+poof(@do_editor_ui)
 {
   r32 t;
   r32 tEnd;

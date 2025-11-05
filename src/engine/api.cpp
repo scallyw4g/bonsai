@@ -1,4 +1,3 @@
-
 link_export b32
 Bonsai_OnLibraryLoad(engine_resources *Resources)
 {
@@ -7,12 +6,8 @@ Bonsai_OnLibraryLoad(engine_resources *Resources)
   if (ThreadLocal_ThreadIndex == -1) { SetThreadLocal_ThreadIndex(0); }
   else { Assert(ThreadLocal_ThreadIndex == 0); }
 
-  Global_ThreadStates = Resources->Stdlib.ThreadStates;
-  Global_EngineResources = Resources;
-
-  /* Initialize_Global_UpdateWorldCallbackTable(); */
-
-  /* b32 Result = InitializeOpenglFunctions(); */
+  Global_Stdlib = &Resources->Stdlib;
+  Assert(Resources->Stdlib.ThreadStates);
   return True;
 }
 
@@ -27,8 +22,6 @@ Bonsai_Init(engine_resources *Resources)
   Result &= InitEditor(&Resources->Editor);
   Result &= InitEngineResources(Resources);
 
-  /* Initialize_Global_UpdateWorldCallbackTable(); */
-
   return Result;
 }
 
@@ -39,10 +32,10 @@ SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(engine_resources *Engine)
 
   if (entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId))
   {
-    SimulateEntity(Engine, CameraGhost, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+    SimulateEntity(Engine, CameraGhost, Plat->dt, V3i(World->VisibleRegionSize), &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
 
     v3 CameraTargetSimP = GetSimSpaceP(World, CameraGhost);
-    Graphics->Settings.OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
+    Graphics->OffsetOfWorldCenterToGrid = (CameraTargetSimP % V3(Graphics->Settings.MajorGridDim));
   }
 }
 
@@ -67,18 +60,18 @@ Bonsai_FrameBegin(engine_resources *Resources)
 {
   TIMED_FUNCTION();
 
-  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.RenderQ);
+  PushBonsaiRenderCommandClearAllFramebuffers(&Resources->Stdlib.Plat.HiRenderQ);
 
   // NOTE(Jesse): This gets cleared before CollectUnusedChunks because that's
   // the thing that is populating the next hashtable
-  Resources->World->HashSlotsUsed = 0;
+  /* Resources->World->HashSlotsUsed = 0; */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
   // NOTE(Jesse): Must come before we update the frame index becaues
   // CollectUnusedChunks picks the hashtable based on the frame index.
   //
-  CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion);
+  /* CollectUnusedChunksAndClearCurrentTable(Resources, Resources->World->VisibleRegion); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, CurrentWorldHashtable(Resources)); */
 
@@ -86,11 +79,119 @@ Bonsai_FrameBegin(engine_resources *Resources)
   // sim pulls chunks out of the hashtable.
   //
   Resources->FrameIndex += 1;
-  Resources->World->ChunkHash = CurrentWorldHashtable(Resources);
+
+
+  b32 VRChanged = False;
+  DETECT_CHANGES_ON(Resources->World->VisibleRegionSize, PrevValue,
+  {
+    Info("Changed From (%S) to (%S)", ToString(PrevValue), ToString(Resources->World->VisibleRegionSize));
+    VRChanged = True;
+  });
+
+
+  if ( VRChanged                                                   ||
+       Resources->Graphics.WorldEditRC.Program.HotReloaded         ||
+       Resources->Graphics.TerrainShapingRC.Program.HotReloaded    ||
+       Resources->Graphics.TerrainDecorationRC.Program.HotReloaded ||
+       Resources->Graphics.TerrainDerivsRC.Program.HotReloaded     ||
+       Resources->Graphics.TerrainFinalizeRC.Program.HotReloaded    )
+  {
+    auto Plat = &Resources->Stdlib.Plat;
+
+    // Must free before the render thread flushes
+    FreeOctreeChildren(Resources, &Resources->World->Root);
+
+    SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+    CancelAllWorkQueueJobs(Resources);
+    Assert(Count(&Resources->Graphics.NoiseReadbackJobs) == 0);
+
+    world *World = Resources->World;
+    v3i Center             = World->Center;
+    auto VisibleRegionSize = World->VisibleRegionSize;
+
+    HardResetWorld(Resources);
+    AllocateWorld(World, Center, VisibleRegionSize);
+
+    ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits);
+    /* HardResetEditor(&Resources->Editor); */
+
+
+    UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+  }
+
+
+  // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
+  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
+  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
+
+
+  UNPACK_ENGINE_RESOURCES(Resources);
+
+
+  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
+  // frame of camera-jank if the UI captures mouse input
+  //
+  // The specific case here is that if the camera updates, then the UI draws,
+  // and we're in paint-single mode (which captures the input) there's a frame
+  // where the camera updates, then freezes, which feels ultra-janky.  Updating
+  // the UI, then the camera, avoids this order-of-operations issue.
+  //
+  // @camera-update-ui-update-frame-jank
+  //
+  // Unfortunately, this actually re-introduces another order-of-operations issue
+  // which I've fixed in the past, which is that the immediate geometry is a
+  // frame late. 
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // NOTE(Jesse): This has to come before we draw any of the game geometry.
+  // Specifically, if it comes after we draw bounding boxes for anything
+  // the bounding box lines shift when we move the camera because they're
+  // then a frame late.
+  //
+  // @immediate-geometry-is-a-frame-late
+  //
+  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
+  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
+  //
+  // UPDATE(Jesse): I fixed this again because the @camera-update-ui-update-frame-jank bug is
+  // gone.  Got rid of paint-single mode in the way it was being done, and the new way shouldn't
+  // have that problem, when I get around to implementing it.
+  //
+  // {
+
+  cp CameraTargetP = {};
+
+  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+  if (CameraGhost == 0)
+  {
+    // Allocate default camera ghost
+    Camera->GhostId = GetFreeEntity(EntityTable);
+    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
+    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
+    SpawnEntity(CameraGhost);
+  }
+
+  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
+
+  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
+
+  // NOTE(Jesse): Don't remember what bug I fixed by changing this to DoPositionDelta,
+  // but it broke scrolling on laptop trackpads (where nothing is clicked).  Going to
+  // remove it until I remember what the bug was ..
+  /* b32 DoZoomDelta = DoPositionDelta; */
+  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
+
+  v2 MouseDelta = GetMouseDelta(Plat);
+  UpdateGameCamera(World, MouseDelta, &Plat->Input, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
+  // }
+
+
+  /* Resources->World->ChunkHash = CurrentWorldHashtable(Resources); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
-  ComputeDrawListsAndQueueUnallocatedChunks(Resources);
+  /* ComputeDrawListsAndQueueUnallocatedChunks(Resources); */
 
   /* DEBUG_AssertWorldChunkHashtableIsEmpty(Resources, NextWorldHashtable(Resources)); */
 
@@ -103,13 +204,8 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   SimulateCameraGhost_AndSet_OffsetWorldCenterToGrid(Resources);
 
-  // Must come before UNPACK_ENGINE_RESOURCES such that we unpack the correct GpuMap
-  /* Resources->Graphics.GpuBufferWriteIndex = 0; */
-  /* Resources->Graphics.GpuBufferWriteIndex = (Resources->FrameIndex) % 2; */
-
-
-  UNPACK_ENGINE_RESOURCES(Resources);
-
+  /* SplitAndQueueOctreeNodesForInit(Resources); */
+  DispatchOctreeDrawJobs(Resources);
 
   if (GetEngineDebug()->DrawWorldAxies)
   {
@@ -117,6 +213,15 @@ Bonsai_FrameBegin(engine_resources *Resources)
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(10000, 0, 0), RGB_RED,   0.35f );
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 10000, 0), RGB_GREEN, 0.35f );
     DEBUG_DrawLine_Aligned(&CopyDest, V3(0,0,0), V3(0, 0, 10000), RGB_BLUE,  0.35f );
+  }
+
+  /* if (GetEngineDebug()->DrawGameCameraLocation) */
+  {
+    if (Resources->Graphics.Camera == &Resources->Graphics.DebugCamera)
+    {
+      /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
+      DEBUG_HighlightVoxel(Resources, Graphics->GameCamera.CurrentP, RGB_PINK, 10.f);
+    }
   }
 
 
@@ -128,19 +233,68 @@ Bonsai_FrameBegin(engine_resources *Resources)
   //
   // @camera-update-ui-update-frame-jank
   //
+  //
 
+  f32 LineWidth = 3.f;
+  LineWidth = .1f;
   if (UiHoveredMouseInput(Ui))
   {
-    Resources->MaybeMouseRay   = {};
-    Resources->MousedOverVoxel = {};
-    Resources->HoverEntity     = {};
+    // We want to preserve these when we swap to the debug camera
+    if (Camera == &Graphics->GameCamera)
+    {
+      Resources->MaybeMouseRay   = {};
+      Resources->MousedOverVoxel = {};
+      Resources->HoverEntity     = {};
+    }
   }
   else
   {
-    Resources->MaybeMouseRay   = ComputeRayFromCursor(Resources, &gBuffer->ViewProjection, Camera, World->ChunkDim);
-    Resources->MousedOverVoxel = MousePickVoxel(Resources);
+    if (Camera == &Graphics->GameCamera)
+    {
+      Resources->MaybeMouseRay = ComputeCameraSpaceRayFromCursor(Resources, Camera, World->ChunkDim);
+
+      ray *Ray = &Resources->MaybeMouseRay.Ray;
+      v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
+      Ray->Origin = GameCameraSimSpaceP;
+    }
+
+    ray *Ray = &Resources->MaybeMouseRay.Ray;
+
+    /* DEBUG_VALUE_r32(Ray->Origin.x); */
+    /* DEBUG_VALUE_r32(Ray->Origin.y); */
+    /* DEBUG_VALUE_r32(Ray->Origin.z); */
+
+    /* DEBUG_VALUE_r32(Ray->Dir.x); */
+    /* DEBUG_VALUE_r32(Ray->Dir.y); */
+    /* DEBUG_VALUE_r32(Ray->Dir.z); */
+
+    Resources->MousedOverVoxel = MousePickVoxel(Resources, Ray);
     Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
   }
+
+#if 0
+  {
+    ray *Ray = &Resources->MaybeMouseRay.Ray;
+
+    {
+      untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
+      DEBUG_DrawLine(&Mesh, V3(0.,0.,LineWidth) + Ray->Origin, Ray->Origin + Ray->Dir*50000.f, RGB_PINK, LineWidth );
+    }
+
+    picked_octree_node_block_array NodeList = GetOctreeLeafNodesIntersectingRay(World, Ray, GetTranArena());
+    IterateOver(&NodeList, PickedNode, NodeIndex)
+    {
+      random_series Entropy = {Cast(u64, PickedNode->Node)};
+      v3 Color = RandomV3Unilateral(&Entropy);
+      aabb AABB = GetSimSpaceAABB(World, PickedNode->Node);
+      DEBUG_DrawSimSpaceAABB(Resources, &AABB, Color, 3.f);
+
+      v3 IntersectionPoint = Ray->Origin + Ray->Dir*PickedNode->t;
+      DEBUG_HighlightVoxel(Resources, IntersectionPoint, Color, 3);
+
+    }
+  }
+#endif
 
   // Find closest standing spot to cursor
   {
@@ -263,9 +417,23 @@ Bonsai_FrameBegin(engine_resources *Resources)
 }
 
 link_export b32
-Bonsai_FrameEnd(engine_resources *Resources)
+Bonsai_FrameEnd(engine_resources *Engine)
 {
+  UNPACK_ENGINE_RESOURCES(Engine);
+
   b32 Result = True;
+
+  if (!AreEqual(&Graphics->Settings, &Graphics->PrevSettings))
+  {
+    u8_cursor_block_array Bytes = BeginSerialization();
+    Serialize(&Bytes, &Graphics->Settings);
+    FinalizeSerialization(&Bytes, RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH);
+  }
+
+  Graphics->GameCamera.Frust.FOV = Graphics->Settings.GameCameraFOV;
+
+  Graphics->PrevSettings = Graphics->Settings;
+
   return Result;
 }
 
@@ -278,7 +446,7 @@ Bonsai_Simulate(engine_resources *Resources)
 
   UNPACK_ENGINE_RESOURCES(Resources);
 
-  SimulateEntities(Resources, Plat->dt, World->VisibleRegion, &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
+  SimulateEntities(Resources, Plat->dt, V3i(World->VisibleRegionSize), &GpuMap->Buffer, &Graphics->Transparency.GpuBuffer.Buffer, &Plat->HighPriority);
   /* DispatchSimulateParticleSystemJobs(&Plat->HighPriority, EntityTable, World->ChunkDim, &GpuMap->Buffer, Graphics, Plat->dt); */
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
@@ -287,6 +455,10 @@ Bonsai_Simulate(engine_resources *Resources)
   {
     if (Graphics->Camera == &Graphics->GameCamera)
     {
+      /* entity_id Prev = Graphics->DebugCamera.GhostId; */
+      /* Graphics->DebugCamera = Graphics->GameCamera; */
+      /* Graphics->DebugCamera.GhostId = Prev; */
+
       Graphics->Camera = &Graphics->DebugCamera;
     }
     else
@@ -296,151 +468,46 @@ Bonsai_Simulate(engine_resources *Resources)
     Camera = Graphics->Camera;
   }
 
-  // NOTE(Jesse): Has to come after the UI happens such that we don't get a
-  // frame of camera-jank if the UI captures mouse input
-  //
-  // The specific case here is that if the camera updates, then the UI draws,
-  // and we're in paint-single mode (which captures the input) there's a frame
-  // where the camera updates, then freezes, which feels ultra-janky.  Updating
-  // the UI, then the camera, avoids this order-of-operations issue.
-  //
-  // @camera-update-ui-update-frame-jank
-  //
-  // Unfortunately, this actually re-introduces another order-of-operations issue
-  // which I've fixed in the past, which is that the immediate geometry is a
-  // frame late. 
-  //
-  // @immediate-geometry-is-a-frame-late
-  //
-  // NOTE(Jesse): This has to come before we draw any of the game geometry.
-  // Specifically, if it comes after we draw bounding boxes for anything
-  // the bounding box lines shift when we move the camera because they're
-  // then a frame late.
-  //
-  // @immediate-geometry-is-a-frame-late
-  //
-  // UPDATE(Jesse): This bug has been reintroduced because of @camera-update-ui-update-frame-jank
-  // More info and a solution documented at : https://github.com/scallyw4g/bonsai/issues/30
-  //
+  /* m4 *ViewMat = ViewMatrix(World->ChunkDim, Camera); */
+  /* m4 *ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim); */
 
-  cp CameraTargetP = {};
-  input *InputForCamera = &Plat->Input;
-
-  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-  if (CameraGhost == 0)
-  {
-    // Allocate default camera ghost
-    Camera->GhostId = GetFreeEntity(EntityTable);
-    CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-    CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior | EntityBehaviorFlags_DefatulCameraGhostBehavior);
-    SpawnEntity(CameraGhost);
-  }
-
-  if (CameraGhost) { CameraTargetP = CameraGhost->P; }
-
-  b32 DoPositionDelta = (!UiCapturedMouseInput(Ui) && UiInteractionWasViewport(Ui));
-
-  // NOTE(Jesse): Don't remember what bug I fixed by changing this to DoPositionDelta,
-  // but it broke scrolling on laptop trackpads (where nothing is clicked).  Going to
-  // remove it until I remember what the bug was ..
-  /* b32 DoZoomDelta = DoPositionDelta; */
-  b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
-
-  v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, InputForCamera, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
-
-  // TODO(Jesse)(correctness, nopush): This should actually be passing the back-buffer resolution??
-
-
-  m4 ViewMat = ViewMatrix(World->ChunkDim, Camera);
-  m4 ProjMat = ProjectionMatrix(Camera, Plat->ScreenDim);
-
-  Resources->Graphics.gBuffer->InverseViewMatrix = Inverse(ViewMat);
-  Resources->Graphics.gBuffer->InverseProjectionMatrix = Inverse(ProjMat);
-  Resources->Graphics.gBuffer->ViewProjection = ProjMat * ViewMat;
+  Resources->Graphics.gBuffer->ViewProjection          = Camera->ViewProjection;
+  Resources->Graphics.gBuffer->InverseViewMatrix       = Camera->InverseViewMatrix;
+  Resources->Graphics.gBuffer->InverseProjectionMatrix = Camera->InverseProjectionMatrix;
 
 #if BONSAI_DEBUG_SYSTEM_API
   Debug_DoWorldChunkPicking(Resources);
 #endif
 
 
+  { // Update tDay and key-light such that we can start drawing
+    if (Graphics->Settings.Lighting.AutoDayNightCycle)
+    {
+      Graphics->Settings.Lighting.tDay += SafeDivide0(Plat->dt, Graphics->Settings.Lighting.tDaySpeed);
+    }
+
+    UpdateKeyLight(Graphics, Graphics->Settings.Lighting.tDay);
+    Graphics->SG->Shader.ViewProjection = GetShadowMapMVP(World, &Graphics->GameCamera, Graphics->Settings.Lighting.SunP);
+  }
+
+
 
   // Draw terrain
-  PushBonsaiRenderCommandGlTimerStart(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerStart(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->MainDrawList, &Graphics->gBuffer->gBufferShader, &Graphics->GameCamera);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->RenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawWorldChunkDrawList(&Plat->HiRenderQ, &Graphics->ShadowMapDrawList, &Graphics->SG->Shader.Program, 0);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
-  PushBonsaiRenderCommandGlTimerEnd(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerEnd(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
 
   b32 Result = True;
   return Result;
-}
-
-link_internal void
-UpdateKeyLightColor(graphics *Graphics, r32 tDay)
-{
-  auto SG = Graphics->SG;
-  r32 tDaytime = Cos(tDay);
-  r32 tPostApex = Sin(tDay);
-
-  lighting_settings *Lighting = &Graphics->Settings.Lighting;
-
-  v3 DawnColor = Normalize(Lighting->DawnColor) * Lighting->DawnIntensity;
-  v3 SunColor  = Normalize(Lighting->SunColor ) * Lighting->SunIntensity;
-  v3 DuskColor = Normalize(Lighting->DuskColor) * Lighting->DuskIntensity;
-  v3 MoonColor = Normalize(Lighting->MoonColor) * Lighting->MoonIntensity;
-
-  Lighting->SunP.x = Sin(((Graphics->SunBasis.x*PI32)) + tDay);
-  Lighting->SunP.y = Cos(((Graphics->SunBasis.y*PI32))+ tDay);
-  Lighting->SunP.z = (1.3f+Cos(((Graphics->SunBasis.z*PI32)) + tDay))/2.f;
-
-  if (tDaytime > 0.f)
-  {
-    if (tPostApex > 0.f)
-    {
-      Lighting->CurrentSunColor = Lerp(tDaytime, DuskColor, SunColor);
-    }
-    else
-    {
-      Lighting->CurrentSunColor = Lerp(tDaytime, DawnColor, SunColor);
-    }
-  }
-  else
-  {
-    if (tPostApex > 0.f)
-    {
-      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DuskColor, MoonColor);
-    }
-    else
-    {
-      Lighting->CurrentSunColor = Lerp(Abs(tDaytime), DawnColor, MoonColor);
-    }
-  }
-
-  switch (Graphics->Settings.ToneMappingType)
-  {
-    case ToneMappingType_None:
-    case ToneMappingType_Reinhard:
-    case ToneMappingType_Exposure:
-      { } break;
-
-    case ToneMappingType_AGX:
-    case ToneMappingType_AGX_Sepia:
-    case ToneMappingType_AGX_Punchy:
-    {
-      if (LengthSq(Lighting->CurrentSunColor) > 1.f)
-      {
-        Lighting->CurrentSunColor = Normalize(Lighting->CurrentSunColor);
-      }
-    } break;
-  }
 }
 
 link_export b32
@@ -449,12 +516,7 @@ Bonsai_Render(engine_resources *Engine)
   TIMED_FUNCTION();
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  if (Graphics->Settings.Lighting.AutoDayNightCycle)
-  {
-    Graphics->Settings.Lighting.tDay += Plat->dt/18.0f;
-  }
-  UpdateKeyLightColor(Graphics, Graphics->Settings.Lighting.tDay);
-
+  SignalFutex(&Engine->Graphics.RenderGate);
 
   /*     BindUniformByName(Shader, "DrawMinorGrid", False); */
   shader_uniform MinorGridUniform =
@@ -462,7 +524,8 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMinorGrid"
+    .Name = "DrawMinorGrid",
+    .Count = 0,
   };
 
   shader_uniform MajorGridUniform =
@@ -470,20 +533,29 @@ Bonsai_Render(engine_resources *Engine)
     .Type = ShaderUniform_U32,
     .U32 = &Global_False,
     .ID = INVALID_SHADER_UNIFORM,
-    .Name = "DrawMajorGrid"
+    .Name = "DrawMajorGrid",
+    .Count = 0,
   };
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandSetShaderUniform(&Plat->RenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->gBuffer->gBufferShader);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  /* { */
+    /* auto SunP = Graphics->Settings.Lighting.SunP; */
+    /* auto Target = GetRenderP(World->ChunkDim, ComputeTarget(&Graphics->GameCamera), &Graphics->GameCamera); */
+    /* DEBUG_VALUE(&SunP); */
+    /* DEBUG_VALUE(&Target); */
+  /* } */
 
 
-  PushBonsaiRenderCommandSetupShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
-  PushBonsaiRenderCommandDrawAllEntities(&Plat->RenderQ, &Graphics->SG->Shader.Program);
-  PushBonsaiRenderCommandTeardownShader(&Plat->RenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->HiRenderQ, MinorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
+  PushBonsaiRenderCommandSetShaderUniform(&Plat->HiRenderQ, MajorGridUniform, &Graphics->gBuffer->gBufferShader, -1);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->gBuffer->gBufferShader);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_gBuffer);
+
+
+  PushBonsaiRenderCommandSetupShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
+  PushBonsaiRenderCommandDrawAllEntities(&Plat->HiRenderQ, &Graphics->SG->Shader.Program);
+  PushBonsaiRenderCommandTeardownShader(&Plat->HiRenderQ, BonsaiRenderCommand_ShaderId_ShadowMap);
 
 
   /* DoModalInteraction(Ui, RectMinDim(V2(0), *Ui->ScreenDim)); */
@@ -491,21 +563,72 @@ Bonsai_Render(engine_resources *Engine)
 
   {
     layout DefaultLayout = {};
-    DefaultLayout.DrawBounds = InvertedInfinityRectangle();
-    render_state RenderState = { .Layout = &DefaultLayout, .ClipRect = DISABLE_CLIPPING };
+    render_state RenderState = {};
+    RenderState.Layout = &DefaultLayout;
+
     SetWindowZDepths(Ui->CommandBuffer);
     FlushCommandBuffer(Ui, &RenderState, Ui->CommandBuffer, &DefaultLayout);
   }
 
 
-  PushBonsaiRenderCommandDoStuff(&Plat->RenderQ);
+  PushBonsaiRenderCommandDoStuff(&Plat->HiRenderQ);
 
-  PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->RenderQ, Graphics->gBuffer->GlTimerObject);
+  /* PushBonsaiRenderCommandGlTimerReadValueAndHistogram(&Plat->HiRenderQ, Graphics->gBuffer->GlTimerObject); */
 
-  Engine->Graphics.RenderGate = True;
-  while (Engine->Graphics.RenderGate == True) { SleepMs(1); }
+  while (FutexIsSignaled(&Engine->Graphics.RenderGate)) { SleepMs(1); }
 
   b32 Result = True;
+  return Result;
+}
+
+struct bonsai_thread_user_data
+{
+  u64 Magic0 = 0x69;
+  /* gen_chunk_freelist GenChunkFreelist; */
+  u64 Magic1 = 0x420;
+};
+
+link_internal void
+FreeWorldChunk(gen_chunk_freelist *Freelist, gen_chunk *Chunk)
+{
+  Free(Freelist, Chunk);
+}
+
+link_internal void
+FreeWorldChunk(world_chunk_freelist *Freelist, world_chunk *Chunk)
+{
+  Free(Freelist, Chunk);
+}
+
+link_internal world_chunk *
+GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory)
+{
+  Freelist->Memory = Memory;
+  world_chunk *Result = GetOrAllocate(Freelist);
+
+  if (Result->Occupancy == 0)
+  {
+    AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
+  }
+
+  return Result;
+}
+
+link_internal gen_chunk *
+GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory)
+{
+  Freelist->Memory = Memory;
+  gen_chunk *Result = GetOrAllocate(Freelist);
+
+  if (Result->Chunk.Occupancy == 0)
+  {
+    AllocateWorldChunk(&Result->Chunk, WorldP, Dim, DimInChunks, Memory);
+    Result->Voxels = AllocateAlignedProtection( voxel, Memory , Volume(Dim), CACHE_LINE_SIZE, false);
+  }
+
+  Assert(HasGpuMesh(&Result->Mesh) == False);
+  Assert(HasGpuMesh(&Result->Chunk) == False);
+
   return Result;
 }
 
@@ -513,14 +636,16 @@ link_weak void
 WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_PARAMS)
 {
   engine_resources *EngineResources = GetEngineResources();
-  world *World = EngineResources->World;
+             world *World           = EngineResources->World;
 
-  work_queue_entry_type WorkType = Entry->Type;
-  switch (WorkType)
+  auto LoRenderQ = &EngineResources->Stdlib.Plat.LoRenderQ;
+  auto HiRenderQ = &EngineResources->Stdlib.Plat.HiRenderQ;
+
+  tswitch (Entry)
   {
     InvalidCase(type_work_queue_entry_noop);
     InvalidCase(type_work_queue_entry__align_to_cache_line_helper);
-    InvalidCase(type_work_queue_entry_update_world_region);
+    /* InvalidCase(type_work_queue_entry_update_world_region); */
 
     // NOTE(Jesse): Render commands should never end up on a general purpose work queue
     InvalidCase(type_work_queue_entry__bonsai_render_command);
@@ -529,61 +654,162 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       DispatchAsyncFunctionCall(Job);
     } break;
 
-    case type_work_queue_entry_init_asset:
-    {
-      work_queue_entry_init_asset *Job = SafeAccess(work_queue_entry_init_asset, Entry);
+    { tmatch(work_queue_entry_init_asset, Entry, Job)
       InitAsset(Job->Asset, Thread);
     } break;
 
-    case type_work_queue_entry_sim_particle_system:
-    {
-      work_queue_entry_sim_particle_system *Job = SafeAccess(work_queue_entry_sim_particle_system, Entry);
+    { tmatch(work_queue_entry_sim_particle_system, Entry, Job)
       SimulateParticleSystem(Job);
     } break;
 
-    case type_work_queue_entry_rebuild_mesh:
-    {
-      work_queue_entry_rebuild_mesh *Job = SafeAccess(work_queue_entry_rebuild_mesh, Entry);
-      world_chunk *Chunk = Job->Chunk;
+    { tmatch(work_queue_entry_finalize_noise_values, Entry, Job)
+      octree_node *Node = Job->DestNode;
+      auto Chunk = Node->Chunk;
 
-      data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
-      auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
+      u32 *NoiseValues = Job->NoiseData;
+      v3i  NoiseDim    = Job->NoiseDim;
+      Assert(NoiseValues);
+      Assert(Chunk);
 
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod1, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod2, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod3, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
-      RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod4, TempMesh, Thread->TempMemory);
-      TempMesh->At = 0;
+      world_chunk *DestChunk = Node->Chunk;
 
-      if (Job->Flags & ChunkInitFlag_ComputeStandingSpots)
+      // NOTE(Jesse): This is valid when we resubmit a chunk because we change the edits
+      // We need to keep these intact so that we don't flicker and hence have to wait
+      // till the very end to reallocate
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(&DestChunk->Handles) == False); */
+
+      gen_chunk *GenChunk = GetOrAllocate(&EngineResources->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
+      world_chunk *SynChunk = &GenChunk->Chunk;
+
+      Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+      Assert(HasGpuMesh(SynChunk) == False);
+
+      voxel *Voxels = GenChunk->Voxels;
+
+      Assert(NoiseDim == V3i(66, 66, 66));
+      Assert(SynChunk->Dim == V3i(64, 66, 66));
+
+      v3i WorldBasis = {};
+      v3i SrcToDest = {};
+      s64 zMin = 0;
+
+      u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
+
+      b32 Continued = False;
+      if (ChunkSum && ChunkSum < u32(Volume(SynChunk->Dim)))
       {
-        ComputeStandingSpots( Chunk->Dim,
-                              Chunk->Voxels,
-                              {},
+        MakeFaceMasks_NoExteriorFaces(SynChunk->Occupancy,
+                                      SynChunk->xOccupancyBorder,
+                                      SynChunk->FaceMasks,
+                                      Voxels,
+                                      SynChunk->Dim,
+                                      {},
+                                      SynChunk->Dim);
 
-                              {},
-                              Global_TileDim,
+        Assert(SynChunk->Dim.x == 64);
+        Assert(SynChunk->Dim.y == 66);
+        Assert(SynChunk->Dim.z == 66);
 
-                              Chunk->Dim,
-                              0,
-                              &Chunk->StandingSpots,
-                              /* memory_arena *PermMemory, */
-                              Thread->TempMemory );
+        Assert(DestChunk->FilledCount == 0);
+        Assert(DestChunk->Dim.x == 64);
+        Assert(DestChunk->Dim.y == 64);
+        Assert(DestChunk->Dim.z == 64);
+        RangeIterator(z, 64)
+        RangeIterator(y, 64)
+        {
+          u64 Occ = SynChunk->Occupancy[(y+1) + ((z+1)*66)];
+          DestChunk->Occupancy[y + (z*64)] = Occ;
+          DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+        }
+
+        Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
+
+        /* FinalizeChunkInitialization(SynChunk); */
+
+        s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
+        if (FacesRequired)
+        {
+          Continued = True;
+          /* Info("Chunk had faces (%d)", FacesRequired); */
+          Assert(Node->Flags & Chunk_Queued);
+          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+              LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
+              GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here..
+        }
       }
 
-      /* UnsetBitfield(chunk_flag, Chunk->Flags, Chunk_Queued); */
-      Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_Queued);
-      /* Chunk->Flags = chunk_flag(Chunk->Flags & ~Chunk_MeshUploadedToGpu); */
+      Assert(Node->Flags & Chunk_Queued);
+
+      // If we didn't continue, we're done, free the resources
+      //
+      if (Continued == False)
+      {
+        Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+        /* DeallocateHandles(LoRenderQ, &GenChunk->Mesh.Handles); */
+
+        Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
+        FinalizeNodeInitializaion(Node);
+
+        // Deallocate the stale mesh if the new chunk didn't have a mesh
+        if (Node->Chunk && HasGpuMesh(Node->Chunk) )
+        {
+          DeallocateHandles(LoRenderQ, &Node->Chunk->Handles);
+        }
+      }
+
+
+      auto Graphics = &EngineResources->Graphics;
+
+      // NOTE(Jesse): The CPU initializer obviously doesn't need to deallocate
+      // a PBO, so it sets the PBO handle to -1
+      Assert(Job->PBOBuf.PBO != INVALID_PBO_HANDLE);
+      PushBonsaiRenderCommandUnmapAndDeallocatePbo(LoRenderQ, Job->PBOBuf);
+
+      Assert(Graphics->NoiseFinalizeJobsPending);
+      AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
+      AtomicDecrement(&Graphics->TotalChunkJobsActive);
+
     } break;
 
-    case type_work_queue_entry_init_world_chunk:
-    {
-      work_queue_entry_init_world_chunk *Job = SafeAccess(work_queue_entry_init_world_chunk, Entry);
+    { tmatch(work_queue_entry_build_chunk_mesh, Entry, Job)
+      gen_chunk                 *GenChunk      =  Job->GenChunk;
+      world_chunk               *SynChunk      = &GenChunk->Chunk;
+
+      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert(HasGpuMesh( SynChunk) == False);
+
+
+      octree_node               *DestNode     = Job->DestNode;
+      world_chunk               *DestChunk    = DestNode->Chunk;
+
+      Assert(DestNode->Flags & Chunk_Queued);
+
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk) == False); */
+
+      /* Info("Buidling Chunk Mesh"); */
+
+      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
+
+      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert(HasGpuMesh( SynChunk)       == False);
+
+      // @dest_chunk_can_have_mesh
+      /* Assert(HasGpuMesh(DestChunk)       == False); */
+
+      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, DestNode);
+    } break;
+
+    { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)
+      NotImplemented;
+    } break;
+
+    { tmatch(work_queue_entry_init_world_chunk, Entry, Job)
+
+#if 1
+      NotImplemented;
+#else
       world_chunk *Chunk = Job->Chunk;
 
       counted_string AssetFilename = GetAssetFilenameFor(Global_AssetPrefixPath, Chunk->WorldP, Thread->TempMemory);
@@ -591,31 +817,30 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       if (ChunkIsGarbage(Chunk))
       {
-        // NOTE(Jesse): This is an optimization; the engine marks chunks that // have moved outside of the visible region as garbage.
+        // NOTE(Jesse): This is an optimization; the engine marks chunks that
+        // have moved outside of the visible region as garbage.
         Chunk->Flags = Chunk_Uninitialized;
       }
       else
       {
         s32 Period = 150;
         s32 Amplititude = 10;
-        s32 StartingZDepth = 0;
-        v3 Color = HSV_GRASS_GREEN;
+        s32 StartingZDepth = 120;
+        v3 Color = RGB_GRASS_GREEN;
 
         Assert(Chunk->Dim == World->ChunkDim);
         u32 Octaves = 1;
-        InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves);
+        /* InitializeChunkWithNoise( Terrain_Perlin2D, Thread, Chunk, Chunk->Dim, &AssetFile, V3(Period), Amplititude, StartingZDepth, Color, MeshBit_Lod0, ChunkInitFlag_ComputeStandingSpots, &Octaves); */
       }
+#endif
 
     } break;
 
-    case type_work_queue_entry_copy_buffer_ref:
-    {
-      work_queue_entry_copy_buffer_ref *CopyJob = SafeAccess(work_queue_entry_copy_buffer_ref, Entry);
-      DoCopyJob(CopyJob, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
+    { tmatch(work_queue_entry_copy_buffer_ref, Entry, Job)
+      DoCopyJob(Job, &EngineResources->geo_u3d_MeshFreelist, Thread->PermMemory);
     } break;
 
-    case type_work_queue_entry_copy_buffer_set:
-    {
+    { tmatch(work_queue_entry_copy_buffer_set, Entry, Job)
       TIMED_BLOCK("Copy Set");
       volatile work_queue_entry_copy_buffer_set *CopySet = SafeAccess(work_queue_entry_copy_buffer_set, Entry);
       for (u32 CopyIndex = 0; CopyIndex < CopySet->Count; ++CopyIndex)

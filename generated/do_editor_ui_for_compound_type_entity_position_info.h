@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:319:0
+// src/engine/editor.h:305:0
+struct entity_position_info;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x35BC40CA);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_position_info", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle entity_position_info", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cp*,&Element->P),
-        CSz("P"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("P");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cp*, &Element->P),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,14 +52,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->_CollisionVolumeRadius),
-        CSz("_CollisionVolumeRadius"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("_CollisionVolumeRadius");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->_CollisionVolumeRadius),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -55,14 +78,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(r32*,&Element->Scale),
-        CSz("Scale"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Scale");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(r32*, &Element->Scale),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -70,17 +104,40 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element
 
 
 
-      PushNewRow(Ui);
+                PushNewRow(Ui);
 
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3*,&Element->EulerAngles),
-        CSz("EulerAngles"),
-        Params
-        );
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("EulerAngles");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3*, &Element->EulerAngles),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

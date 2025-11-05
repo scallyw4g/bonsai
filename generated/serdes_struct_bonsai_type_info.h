@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:434:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("bonsai_type_info");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,21 +33,36 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     bonsai_type_info *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Name);
+                                Result &= Serialize(Bytes, &Element->Name); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Version);
+
+                            Result &= Serialize(Bytes, &Element->Version); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SizeOfInBytes);
 
-    
+                            Result &= Serialize(Bytes, &Element->SizeOfInBytes); // default
+
+
+
+
+
+
+
+
+            
+
+        
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -69,7 +83,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Name, Memory);
 
@@ -77,7 +91,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Version, Memory);
 
@@ -85,11 +99,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SizeOfInBytes, Memory);
 
+
+
+
+
+
+
+    
   
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -103,7 +126,7 @@ Deserialize(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory, u
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

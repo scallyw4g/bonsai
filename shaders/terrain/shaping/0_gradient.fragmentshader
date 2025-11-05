@@ -1,0 +1,58 @@
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(-1, -1, -1);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(100.f);
+    float Amplitude = 200.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    s32 Octaves = 1;
+
+    NoiseValue = StartingZDepth;
+
+    v3 deriv = v3(0.f);
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      v4 gn = gradient_noise_derivs(xyz+warp);
+      deriv += gn.yzw;
+
+      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+    }
+
+    deriv = normalize(deriv);
+    ColorValue = abs(deriv);
+
+    // Bias noise value to lower values as we get higher in z.
+    // This creates a "plane" of terrain
+    NoiseValue = NoiseValue - Basis.z;
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

@@ -1,46 +1,49 @@
-// src/engine/editor.h:506:0
-
+// src/engine/editor.h:484:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, data_type *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, data_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3B8062A8);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle data_type", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Undefinded"), UiId(Window, "enum DataType_Undefinded", Element), Params))
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Undefinded"), UiId(Window, "enum DataType_Undefinded", Element, ThisHash), Params))
     {
-      *Element = DataType_Undefinded;
+            *Element = DataType_Undefinded;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("v3"), UiId(Window, "enum DataType_v3", Element), Params))
+    if (Button(Ui, CSz("v3"), UiId(Window, "enum DataType_v3", Element, ThisHash), Params))
     {
-      *Element = DataType_v3;
+            *Element = DataType_v3;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("u8"), UiId(Window, "enum DataType_v3_u8", Element), Params))
+    if (Button(Ui, CSz("u8"), UiId(Window, "enum DataType_v3_u8", Element, ThisHash), Params))
     {
-      *Element = DataType_v3_u8;
+            *Element = DataType_v3_u8;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {
     PushNewRow(Ui);
   }
 }
+
 

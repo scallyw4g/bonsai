@@ -7,7 +7,21 @@ Deactivate(particle_system *System)
 link_internal void
 Destroy(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Assert( Spawned(Entity) );
   Entity->State = EntityState_Destroyed;
@@ -18,7 +32,21 @@ Destroy(entity *Entity)
 link_internal void
 Unspawn(entity *Entity)
 {
-  DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(GetEngineResources()->World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Free;
   Assert(Entity->Emitter);
@@ -67,9 +95,9 @@ GetCollision_Entities( world *World, entity *ThisEntity, cp TestP, v3 CollisionD
   {
     IterateOver(&(*Chunk)->Entities, Entity, EntityIndex)
     {
-      if (*Entity == ThisEntity) continue;
+      if (Entity == ThisEntity) continue;
 
-      Hit = GetCollision(World, *Entity, AABBMinDim(SimP, CollisionDim));
+      Hit = GetCollision(World, Entity, AABBMinDim(SimP, CollisionDim));
       if (Hit) break;
     }
     if (Hit) break;
@@ -185,7 +213,9 @@ GetCollision( world *World, aabb SimSpaceCollisionDim )
           {
             v3i Offset = V3i(x,y,z);
             s32 Index = GetIndex(Offset, Chunk->Dim);
-            if (Chunk->Voxels[Index].Flags & Voxel_Filled)
+            s32 vOccupancy = GetOccupancyBit(Chunk->Occupancy, Index);
+
+            if (vOccupancy)
             {
               cp Hit = {V3(Offset), Chunk->WorldP};
               /* Assert(Hit > Result.MaxP); */
@@ -263,6 +293,8 @@ GetCollision(world *World, entity *Entity, v3 Offset = V3(0,0,0) )
 link_internal entity *
 GetEntity(entity **EntityTable, entity_id Id)
 {
+  TIMED_FUNCTION();
+
   entity *Result = {};
 
   // NOTE(Jesse): A Generation of 0 means the entity has never been allocated
@@ -415,21 +447,44 @@ SpawnEntity(entity *Entity)
         {
           /* canonical_position CP = Canonicalize(World->ChunkDim, V3(x, y, z), InitialP->WorldP); */
           cp CP = Canonical_Position(V3(0), V3i(x,y,z));
-          world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP );
-          if (Chunk == 0)
+          /* world_chunk *Chunk = GetWorldChunkFromHashtable( World, CP.WorldP ); */
+          /* octree_node *Node = GetWorldChunkFromOctree( World, CP.WorldP ); */
+          /* if (Node == 0) */
           {
-            Chunk = AllocateAndInsertChunk(World, CP.WorldP);
-            if (Chunk)
-            {
-              QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0);
-            }
+            //nopush 
+            //do we care?
+            /* NotImplemented; */
+            /* Chunk = AllocateAndInsertChunk(World, CP.WorldP); */
+            /* if (Chunk) */
+            /* { */
+            /*   QueueChunkForInit(&GetEngineResources()->Stdlib.Plat.HighPriority, Chunk, MeshBit_Lod0); */
+            /* } */
           }
         }
       }
     }
   }
 
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 
   Entity->State = EntityState_Spawned;
 }
@@ -1314,6 +1369,16 @@ Intersect(world *World, entity *First, aabb *Second)
   return Result;
 }
 
+// TODO(Jesse): There's probably a better way to do this ..
+inline b32
+Intersect(world *World, rect3cp *First, rect3cp *Second)
+{
+  rect3 R0  = GetSimSpaceAABB(World, First);
+  rect3 R1  = GetSimSpaceAABB(World, Second);
+  b32 Result = Intersect(&R0, &R1);
+  return Result;
+}
+
 inline b32
 Intersect(world *World, aabb *First, entity *Second)
 {
@@ -1448,7 +1513,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
       {
         if (UiCapturedMouseInput(Ui) == False)
         {
-          f32 CameraSpeed = Camera->DistanceFromTarget * Camera->Blend/100.f;
+          f32 CameraSpeed = Camera->Speed * (Camera->DistanceFromTarget * Camera->Blend/100.f);
           v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
           Offset.z = 0; // Constrain to XY plane
 
@@ -1456,7 +1521,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
           if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
           Offset = Normalize(Offset);
-          Entity->P.Offset += Offset * Plat->dt * CameraSpeed;
+          Entity->P.Offset += Offset * Plat->dt * (CameraSpeed);
         }
 
       }
@@ -1503,9 +1568,43 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
   }
 
 
-  DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena());
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* DropEntityFromPreviouslyOccupiedChunks(World, Entity, GetTranArena()); */
   FinalizeEntityUpdate(Entity);
-  InsertEntityIntoChunks(World, Entity, GetTranArena());
+  //
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  // nopush
+  /* InsertEntityIntoChunks(World, Entity, GetTranArena()); */
 }
 
 link_internal void
@@ -1560,4 +1659,72 @@ AStarPathfind(world *World, standing_spot_buffer *Spots, cp CurrentP, cp TargetP
   return Result;
 }
 
+
+link_internal void
+DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
+{
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
+
+  Assert(ThreadLocal_ThreadIndex == 0);
+
+  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+
+  if (Chunks.Count)
+  {
+    /* Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count); */
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+    {
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      /* Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk); */
+
+      b32 Got = False;
+      IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
+      {
+        if (TestEntity == Entity)
+        {
+          RemoveUnordered(&Chunk->Entities, TestEntityIndex);
+          Got = True;
+          break;
+        }
+      }
+      // NOTE(Jesse): This is a bit sketch.  For it to work 100% correctly we
+      // cannot ever have entities that overlap uninitialized bits of the world.
+      //
+      // Currently it cannot be in, because an entity can be spawned outside
+      // the world just fine, then when the visible region moves to enclose the
+      // entity chunks will get initialized, but the entity will never have
+      // been added to the freshly minted chunks.
+      //
+      // We'd have to do some nonsense like check every entity for every chunk
+      // if it overlaps when we insert, which is not a thing.
+      /* Assert(Got); */
+    }
+  }
+}
+
+link_internal void
+InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
+{
+  // nocheckin
+  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
+
+  auto MinP = Entity->LastResolvedPosInfo.P;
+  auto MaxP = Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f);
+
+  rect3cp EntityArea = RectMinMax(MinP, MaxP);
+  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
+  if (Chunks.Count)
+  {
+    /* Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count); */
+    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
+    {
+      world_chunk *Chunk = Chunks.Start[ChunkIndex];
+      /* Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk); */
+
+      Push(&Chunk->Entities, Entity);
+    }
+  }
+}
 

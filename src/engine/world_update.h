@@ -1,20 +1,3 @@
-// NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
-// @duplicate_face_index_enum
-enum voxel_rule_direction
-{
-  VoxelRuleDir_PosX,
-  VoxelRuleDir_NegX,
-
-  VoxelRuleDir_PosY,
-  VoxelRuleDir_NegY,
-
-  VoxelRuleDir_PosZ,
-  VoxelRuleDir_NegZ,
-
-  VoxelRuleDir_Count,
-};
-CAssert(VoxelRuleDir_Count == 6);
-
 
 struct voxel_stack_element
 {
@@ -41,7 +24,7 @@ poof(generate_cursor(voxel_stack_element))
 
 struct apply_world_edit_params
 {
-  world_edit_mode Mode;
+  world_edit_blend_mode Mode;
   rect3i SSRect;
   rect3i SimSpaceUpdateBounds;
   world_chunk *CopiedChunk;
@@ -53,7 +36,7 @@ struct apply_world_edit_params
 
 
 #define UNPACK_APPLY_WORLD_EDIT_PARAMS(P)                \
-  world_edit_mode Mode = P->Mode;                        \
+  world_edit_blend_mode Mode = P->Mode;                        \
   rect3i SSRect = P->SSRect;                             \
   rect3i SimSpaceUpdateBounds = P->SimSpaceUpdateBounds; \
   world_chunk *CopiedChunk = P->CopiedChunk;             \
@@ -75,13 +58,13 @@ ChunkCountForDim(v3i Dim, v3i ChunkDim)
 
 
 
-struct work_queue_entry_update_world_region;
+/* struct work_queue_entry_update_world_region; */
 
-link_internal void
-QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_mode  Mode, world_edit_mode_modifier  Modifier, world_edit_shape *Shape, v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory );
+/* link_internal void */
+/* QueueWorldUpdateForRegion( engine_resources *Engine, world_edit_blend_mode  Mode, world_edit_blend_mode_modifier  Modifier, /1* world_edit_shape *Shape, *1/ v3 HSVColor, b32 PersistWhitespace, memory_arena *Memory ); */
 
-link_internal void
-ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False);
+/* link_internal void */
+/* ApplyUpdateToRegion(thread_local_state *Thread, work_queue_entry_update_world_region *Job, rect3i SimSpaceUpdateBounds, world_chunk *CopiedChunk, b32 Invert = False, b32 PersistWhitespace = False); */
 
-link_internal void
-DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job);
+/* link_internal void */
+/* DoWorldUpdate(work_queue *Queue, world *World, thread_local_state *Thread, work_queue_entry_update_world_region *Job); */

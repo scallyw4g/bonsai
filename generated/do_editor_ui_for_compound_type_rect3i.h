@@ -1,8 +1,11 @@
-// src/engine/editor.h:512:0
+// src/engine/editor.h:305:0
+struct rect3i;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xEC90500);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3i", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle rect3i", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Min),
-        CSz("Min"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Min");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Min),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,16 +52,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, ui_
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Max),
-        CSz("Max"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Max");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Max),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

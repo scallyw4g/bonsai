@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/vector.cpp:5:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct v3i_cursor
 {
   v3i *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   v3i *At;
   v3i *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal v3i_cursor
 V3iCursor(umm ElementCount, memory_arena* Memory)
 {
   v3i *Start = (v3i*)PushStruct(Memory, sizeof(v3i)*ElementCount, 1, 0);
-  v3i_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  v3i_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(v3i_cursor *Cursor, umm ElementIndex)
   v3i *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal v3i*
+TryGetPtr(v3i_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal v3i*

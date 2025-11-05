@@ -106,6 +106,7 @@ vec3 agxLook(vec3 val) {
   vec3 power = vec3(1.0);
   float sat = 1.0;
 
+#if 1
   switch (ToneMappingType)
   {
     case 3: {} break;
@@ -121,11 +122,14 @@ vec3 agxLook(vec3 val) {
     case 5:
     {
       // Punchy
-      slope = vec3(1.0);
-      power = vec3(1.15, 1.15, 1.15);
-      sat = 1.4;
+      f32 p = 1.25;
+      slope = vec3(1.f);
+      power = vec3(p);
+      /* power = vec3(1.15, 1.15, 1.15); */
+      sat = 1.25;
     } break;
   }
+#endif
 
   // ASC CDL
   val = pow(val * slope + offset, power);
@@ -202,7 +206,7 @@ void main()
 
   vec3 TotalLight = Lighting + TransparencyContrib.rgb;
 
-  if (UseLightingBloom) { TotalLight += 0.25f*Bloom; }
+  if (UseLightingBloom) { TotalLight += 0.05f*Bloom; }
 
   /* vec3 TotalLight = Lighting + 0.15f*Bloom + (TransparencyContrib.rgb * TransparencyContrib.a); */
   /* vec3 TotalLight = (Diffuse * Lighting) * 2.f; */
@@ -233,7 +237,7 @@ void main()
     // AGX tone mapping
     //
     // This supposedly closely emulates the actual color that gets recorded by
-    // .. some .. film on ahlhlhl
+    // .. some .. film on
     // https://github.com/EaryChow/AgX
     // https://www.shadertoy.com/view/cd3XWr
     //

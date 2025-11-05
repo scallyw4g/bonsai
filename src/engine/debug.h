@@ -1,5 +1,6 @@
 // TODO(Jesse): rename this to just thumbnail and move to renderer.. ?
 struct asset_thumbnail
+poof(@do_editor_ui)
 {
   texture Texture;
   camera  Camera;
@@ -7,6 +8,7 @@ struct asset_thumbnail
 
 // TODO(Jesse): Move to renderer?
 struct chunk_thumbnail
+poof(@do_editor_ui)
 {
       world_chunk Chunk;
   asset_thumbnail Thumbnail;
@@ -14,6 +16,7 @@ struct chunk_thumbnail
 
 
 struct render_debug
+poof(@do_editor_ui)
 {
   u32 BytesSolidGeoLastFrame;
   u32 BytesTransGeoLastFrame;
@@ -40,7 +43,10 @@ enum engine_debug_view_mode poof(@bitfield)
   EngineDebugViewMode_EngineDebug    = (1 << 7),
 };
 
+struct octree_node;
+
 struct engine_debug
+poof(@do_editor_ui)
 {
   memory_arena *Memory;
 
@@ -58,8 +64,22 @@ struct engine_debug
   b8 TriggerRuntimeBreak;
   b8 ResetAssetNodeView;
 
+  b8 DrawBranchNodesWithMeshes;
+  b8 DrawBranchNodes;
+  b8 DrawLeafNodes;
+  b8 DrawNodesWithChunks;
+  b8 DrawQueuedNodes;
+
+  b8 MarkChunkBorderVoxels;
+
+  b8 DrawGameCameraLocation;
+
+  r64 ChunkGenTimeElapsedMS;
+  u64 CellsGenerated;
+  r64 ChunkGenCyclesElapsed;
+
   u8 PickedChunkState;
-  world_chunk *PickedChunk;
+  octree_node *PickedNode;
 
   asset_window_view_mode AssetWindowViewMode;
 
@@ -67,6 +87,10 @@ struct engine_debug
   u64 ModelIndex;
 
   entity_id SelectedEntity;
+
+  u32 OctreeDrawDepth = 0xFFFFFFFF;
+
+  octree_node *SelectedNode;
 
   // World Edit debug
   //

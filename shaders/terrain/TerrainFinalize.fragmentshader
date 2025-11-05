@@ -1,0 +1,29 @@
+uniform sampler2D InputTex;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out uint Output;
+
+
+void main()
+{
+  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+
+  f32 NoiseValue = TexLookup.a;
+  v3  ColorValue = TexLookup.rgb;
+
+  uint SolidBit = NoiseValue > 0.f ? 1u : 0u;
+
+  ivec2 InputTexDim = ivec2(66);
+  ivec2 OutputTexDim = ivec2(66);
+
+  v3 Normal = ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, 1.f);
+  /* v3 Normal = Normalize(V3(1,1,0)); */
+
+  /* uint PackedNormal = PackRGB(Normalize(V3(1,1,1))); */
+  uint PackedNormal = PackRGB(Normal);
+  uint PackedColor = PackRGB(ColorValue);
+  /* uint PackedColor = PackedNormal; */
+
+  Output = (SolidBit << 31) | (PackedNormal << 16) | PackedColor;
+}

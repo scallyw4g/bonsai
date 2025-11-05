@@ -59,7 +59,7 @@ struct entity_position_info
 link_weak b32 EntityUserDataSerialize(u8_cursor_block_array *, u64 UserType, u64 UserData);
 link_weak b32 EntityUserDataDeserialize(u8_cursor *, u64 *UserType, u64 *UserData, memory_arena*);
 
-link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
+link_weak void EntityUserDataEditorUi(renderer_2d *Ui, window_layout *Window, u64 *UserType, u64 *UserData, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS);
 
 struct entity poof(@version(2))
 {
@@ -74,7 +74,7 @@ struct entity poof(@version(2))
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-PI32, PI32))
   r32 Scale;
@@ -103,8 +103,8 @@ struct entity poof(@version(2))
 
   u64 UserType;
   poof(
-    @custom_ui(  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
-                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+    @custom_ui(  if (EntityUserDataEditorUi) {EntityUserDataEditorUi(Ui, Window, &Element->UserType, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);}
+                 else                        {DoEditorUi(Ui, Window, &Element->UserType, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     )
   )
 
@@ -114,7 +114,7 @@ struct entity poof(@version(2))
     @custom_deserialize(if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);})
 
     @custom_ui(  if (EntityUserDataEditorUi) { /* User took control, skip this because it's intended */ }
-                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
+                 else                        {DoEditorUi(Ui, Window, &Element->UserData, Name, ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES); }
     )
   )
 };
@@ -132,7 +132,7 @@ struct entity_1
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;
@@ -179,7 +179,7 @@ struct entity_0
   //
   // @dirty_entity_P_format_hack
   //
-  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
+  cp P;           poof(@custom_ui(DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES)))
 
   v3 EulerAngles; poof(@ui_value_range(-180.f, 180.f))
   r32 Scale;
@@ -214,7 +214,7 @@ link_internal void
 FinalizeEntityUpdate(entity *Entity)
 {
   Assert(IsCanonical(GetWorld(), Entity->P));
-  poof( func (entity_position_info Info)
+  poof( func (entity_position_info Info) @code_fragment
   {
     Info.map(member)
     {
@@ -224,73 +224,6 @@ FinalizeEntityUpdate(entity *Entity)
 #include <generated/anonymous_entity_position_info_ynGg9Dhj.h>
 }
 
-link_internal void
-DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory)
-{
-  // nocheckin
-  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
-
-  Assert(ThreadLocal_ThreadIndex == 0);
-
-  rect3cp EntityArea = RectMinMax(Entity->LastResolvedPosInfo.P, Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f));
-  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
-
-  if (Chunks.Count)
-  {
-    /* Info("Attempting to drop Entity(%p) from (%d) Chunks", Entity, Chunks.Count); */
-    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
-    {
-      world_chunk *Chunk = Chunks.Start[ChunkIndex];
-      /* Info("Attempting to drop Entity(%p) from Chunk(%p)", Entity, Chunk); */
-
-      b32 Got = False;
-      IterateOver(&Chunk->Entities, TestEntity, TestEntityIndex)
-      {
-        if (*TestEntity == Entity)
-        {
-          RemoveUnordered(&Chunk->Entities, TestEntityIndex);
-          Got = True;
-          break;
-        }
-      }
-      // NOTE(Jesse): This is a bit sketch.  For it to work 100% correctly we
-      // cannot ever have entities that overlap uninitialized bits of the world.
-      //
-      // Currently it cannot be in, because an entity can be spawned outside
-      // the world just fine, then when the visible region moves to enclose the
-      // entity chunks will get initialized, but the entity will never have
-      // been added to the freshly minted chunks.
-      //
-      // We'd have to do some nonsense like check every entity for every chunk
-      // if it overlaps when we insert, which is not a thing.
-      /* Assert(Got); */
-    }
-  }
-}
-
-link_internal void
-InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory)
-{
-  // nocheckin
-  /* Assert(Entity->Behavior & EntityBehaviorFlags_EntityCollision); */
-
-  auto MinP = Entity->LastResolvedPosInfo.P;
-  auto MaxP = Canonicalize(World->ChunkDim, Entity->LastResolvedPosInfo.P + Entity->LastResolvedPosInfo._CollisionVolumeRadius*2.f);
-
-  rect3cp EntityArea = RectMinMax(MinP, MaxP);
-  world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, EntityArea, TempMemory);
-  if (Chunks.Count)
-  {
-    /* Info("Attempting to insert Entity(%p) into (%d) Chunks", Entity, Chunks.Count); */
-    RangeIterator_t(umm, ChunkIndex, Chunks.Count)
-    {
-      world_chunk *Chunk = Chunks.Start[ChunkIndex];
-      /* Info("Attempting to insert Entity(%p) into Chunk(%p)", Entity, Chunk); */
-
-      Push(&Chunk->Entities, &Entity);
-    }
-  }
-}
 
 link_internal void
 UpdateCollisionVolumeRadius(world *World, entity *Entity, v3 NewRadius, memory_arena *TempMemory)
@@ -326,3 +259,9 @@ GetEntityCenterP(world *World, entity *Entity)
 
 link_internal entity *
 GetEntity(entity **EntityTable, entity_id Id);
+
+link_internal void
+DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_arena *TempMemory);
+
+link_internal void
+InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory);

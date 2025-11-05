@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:3:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct u32_buffer
 {
   umm Count;
@@ -7,20 +6,12 @@ struct u32_buffer
 };
 
 link_internal u32_buffer
-U32Buffer( umm ElementCount, memory_arena* Memory)
+U32Buffer( umm ElementCount, memory_arena* Memory);
+
+link_internal u32_buffer
+U32Buffer( u32 *Start, umm ElementCount)
 {
-  u32_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( u32, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate u32_buffer of 0 length.");
-  }
-
+  u32_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -68,9 +59,33 @@ GetPtr(u32_buffer *Buf, umm Index)
 }
 
 link_inline u32 *
+TryGetPtr(u32_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline u32 *
 Get(u32_buffer *Buf, umm Index)
 {
   u32 *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal u32_buffer
+U32Buffer( umm ElementCount, memory_arena* Memory)
+{
+  u32_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( u32, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate u32_buffer of 0 length.");
+  }
+
   return Result;
 }
 

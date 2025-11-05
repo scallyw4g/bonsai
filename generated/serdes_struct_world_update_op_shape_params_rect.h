@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:532:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_rect *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("world_update_op_shape_params_rect");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,9 +33,18 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_rect *BaseE
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_rect *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Region);
+                                Result &= Serialize(Bytes, &Element->Dim); // default
 
-    
+
+
+
+
+
+
+
+            
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -57,11 +65,18 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Region, Memory);
+  Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
-  
+
+
+
+
+
+
+    
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -75,7 +90,7 @@ Deserialize(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

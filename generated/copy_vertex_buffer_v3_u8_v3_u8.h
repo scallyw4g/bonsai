@@ -1,5 +1,4 @@
-// src/engine/mesh.h:315:0
-
+// src/engine/mesh.h:148:0
 //
 // Offset, Scale, Rotate
 //
@@ -20,9 +19,9 @@ CopyVertexBuffer( v3_u8 *Dest, v3_u8 *Src, u32 NumVerts, v3 Offset, v3 Scale, Qu
     auto Src1 = Rotate(Src[VertIndex + 1], Rot);
     auto Src2 = Rotate(Src[VertIndex + 2], Rot);
 
-    f32_reg Vert0;
-    f32_reg Vert1;
-    f32_reg Vert2;
+    f32_4x Vert0;
+    f32_4x Vert1;
+    f32_4x Vert2;
 
     Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
     Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -32,9 +31,9 @@ CopyVertexBuffer( v3_u8 *Dest, v3_u8 *Src, u32 NumVerts, v3 Offset, v3 Scale, Qu
     Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
     Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-    v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2]) }};
-    v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2]) }};
-    v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2]) }};
+    v3_u8 Result0 = {{ u8(Vert0.E[0]), u8(Vert0.E[1]), u8(Vert0.E[2]) }};
+    v3_u8 Result1 = {{ u8(Vert1.E[0]), u8(Vert1.E[1]), u8(Vert1.E[2]) }};
+    v3_u8 Result2 = {{ u8(Vert2.E[0]), u8(Vert2.E[1]), u8(Vert2.E[2]) }};
 
     Dest[0] = Result0;
     Dest[1] = Result1;
@@ -63,9 +62,9 @@ CopyVertexBuffer( v3_u8 *Dest, v3_u8 *Src, u32 NumVerts, v3 Offset, v3 Scale )
     auto Src1 = Src[VertIndex + 1];
     auto Src2 = Src[VertIndex + 2];
 
-    f32_reg Vert0;
-    f32_reg Vert1;
-    f32_reg Vert2;
+    f32_4x Vert0;
+    f32_4x Vert1;
+    f32_4x Vert2;
 
     Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
     Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -75,9 +74,9 @@ CopyVertexBuffer( v3_u8 *Dest, v3_u8 *Src, u32 NumVerts, v3 Offset, v3 Scale )
     Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
     Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-    v3_u8 Result0 = {{ u8(Vert0.F[0]), u8(Vert0.F[1]), u8(Vert0.F[2]) }};
-    v3_u8 Result1 = {{ u8(Vert1.F[0]), u8(Vert1.F[1]), u8(Vert1.F[2]) }};
-    v3_u8 Result2 = {{ u8(Vert2.F[0]), u8(Vert2.F[1]), u8(Vert2.F[2]) }};
+    v3_u8 Result0 = {{ u8(Vert0.E[0]), u8(Vert0.E[1]), u8(Vert0.E[2]) }};
+    v3_u8 Result1 = {{ u8(Vert1.E[0]), u8(Vert1.E[1]), u8(Vert1.E[2]) }};
+    v3_u8 Result2 = {{ u8(Vert2.E[0]), u8(Vert2.E[1]), u8(Vert2.E[2]) }};
 
     Dest[0] = Result0;
     Dest[1] = Result1;

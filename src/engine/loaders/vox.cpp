@@ -192,13 +192,13 @@ global_variable random_series TMP = {54235432543};
 link_internal vox_data_block_array
 LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
-  vox_data_block_array Result = { {}, {}, TempMemory };
+  vox_data_block_array Result = VoxDataBlockArray(TempMemory);
 
   v3i ReportedDim = {};
 
 
   b32 HadPaletteData      = False;
-  v3 TempHSVPalette[256] = {};
+  v3 TempRGBPalette[256] = {};
 
 
 
@@ -248,8 +248,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 B = ReadChar(ModelFile, &bytesRemaining);
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
-            v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f);
-            TempHSVPalette[PaletteIndex] = ThisColor;
+            /* v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f); */
+            TempRGBPalette[PaletteIndex] = V3(R,G,B)/255.f;
             /* v3 ThisColor = V3(R,G,B); */
 #if 1
 #else
@@ -387,7 +387,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
               minZ = Min(TestP.z, minZ);
 
               LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, Color);
-              SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled);
+              /* SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled); */
             }
             else
             {
@@ -436,34 +436,19 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
           {
             boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
+
             s32 Index = GetIndex(Voxel->Offset, ModelDim);
-
-            if (Voxel->V.Flags & Voxel_Filled)
-            /* if (Voxel->V.Flags & Voxel_Filled && VoxelCacheIndex == 16) */
-            {
-              /* if (RandomUnilateral(&TMP) > 0.25f) { Voxel->V.Transparency = 255; } */
-              /* Current.ChunkData->Voxels[Index].Transparency = 128; */
-              /* Voxel->V.Transparency = 255; */
-            }
-            else
-            {
-              /* Voxel->V.Transparency = 0; */
-              Assert(Voxel->V.Transparency == 0);
-              Voxel->V.Transparency = 128;
-              /* Voxel->V.Emission = 128; */
-            }
-            /* Voxel->V.Transparency = 0; */
-
-            Current.ChunkData->Voxels[Index] = Voxel->V;
+            NotImplemented;
+            /* Current.ChunkData->Voxels[Index] = Voxel->V; */
             /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
           }
 
           FullBarrier;
 
-          Current.ChunkData->Flags = Chunk_VoxelsInitialized;
+          /* Current.ChunkData->Flags = Chunk_VoxelsInitialized; */
 
-          /* MarkBoundaryVoxels_NoExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
-          MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim);
+            NotImplemented;
+          /* MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
 
           Push(&Result, &Current);
         } break;
@@ -523,11 +508,12 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
         DimIterator(x, y, z, Chunk->Dim)
         {
           s32 Index = GetIndex(x, y, z, Chunk->Dim);
-          u16 PaletteIndex = Chunk->Voxels[Index].Color;
-          if   (HadPaletteData)
-            { Chunk->Voxels[Index].Color = PackHSVColor(TempHSVPalette[PaletteIndex]); }
-          else
-            { Chunk->Voxels[Index].Color = PackHSVColor(MagicaVoxelDefaultPaletteToHSV(PaletteIndex)); }
+          NotImplemented;
+          /* u16 PaletteIndex = Chunk->Voxels[Index].RGBColor; */
+          /* if   (HadPaletteData) */
+          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(TempRGBPalette[PaletteIndex]); } */
+          /* else */
+          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(PaletteIndex)); } */
         }
       }
     }

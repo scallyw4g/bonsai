@@ -1,18 +1,18 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:20:0
-
+// external/bonsai_stdlib/src/poof_functions.h:978:0
 window_layout_linked_list_node*
-GetBucketByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
+GetBucketByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   window_layout_linked_list_node* Result = {};
 
-  auto *Bucket = GetHashBucket(umm(Hash(&HashtableKey)), Table);
+  auto *Bucket = GetHashBucket(umm(Hash(&Query)), Table);
   while (Bucket)
   {
     auto E = &Bucket->Element;
 
-    if (Bucket->Tombstoned == False && AreEqual(E->HashtableKey, HashtableKey))
+        if (Bucket->Tombstoned == False && AreEqual(E->HashtableKey, Query))
+
     {
       Result = Bucket;
       break;
@@ -27,13 +27,13 @@ GetBucketByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
 }
 
 maybe_window_layout
-GetByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
+GetByHashtableKey( window_layout_hashtable *Table, ui_id Query )
 {
   /* ENSURE_OWNED_BY_THREAD(Table); */
 
   maybe_window_layout Result = {};
 
-  window_layout_linked_list_node *Bucket = GetBucketByHashtableKey(Table, HashtableKey);
+  window_layout_linked_list_node *Bucket = GetBucketByHashtableKey(Table, Query);
   if (Bucket)
   {
     Result.Tag = Maybe_Yes;
@@ -42,6 +42,7 @@ GetByHashtableKey( window_layout_hashtable *Table, ui_id HashtableKey )
 
   return Result;
 }
+
 
 link_internal b32
 Tombstone(ui_id Key, window_layout_hashtable *Table, memory_arena *Memory)
@@ -55,5 +56,11 @@ Tombstone(ui_id Key, window_layout_hashtable *Table, memory_arena *Memory)
     Result = True;
   }
   return Result;
+}
+
+link_internal b32
+Drop( window_layout_hashtable *Table, ui_id Key )
+{
+  return Tombstone(Key, Table, 0);
 }
 

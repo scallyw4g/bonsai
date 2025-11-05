@@ -1,4 +1,11 @@
-// src/engine/editor.h:545:0
+// src/engine/editor.h:150:0
+link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
+{
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+}
 
 link_internal ui_toggle_button_group
 RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
@@ -10,9 +17,10 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("Perlin"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
-    { CSz("Voronoi"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
-    { CSz("White"), UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
+        { CSz("Perlin"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
+    { CSz("Voronoi"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
+    { CSz("White"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -20,8 +28,9 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
+
 
 

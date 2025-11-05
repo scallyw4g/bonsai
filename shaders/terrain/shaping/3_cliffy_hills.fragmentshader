@@ -1,0 +1,280 @@
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+
+
+
+f32
+RoundToNearestMultiple(f32 NumToRound, f32 Multiple)
+{
+  f32 Remainder = mod(NumToRound, Multiple);
+  if (Remainder == 0)
+    return NumToRound;
+
+  return NumToRound + Multiple - Remainder;
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  /* v3 Offset = V3(-1, -1, -1); */
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+#if 0
+  {
+    v3 TileCoord = trunc(Basis/16.f);
+    TileCoord.z = 0.f;
+    f32 TileNoise = white_noise(TileCoord);
+
+    f32 zMod = mod(Basis.z, 16.f)/16.f;
+
+    f32 Soften = clamp(zMod-0.4f, 0.f, 1.f)*16.f;
+
+    Basis.z = Basis.z - zMod + Soften; //+ TileNoise;
+  }
+#endif
+
+#if 0
+  Basis.z = RoundToNearestMultiple(Basis.z, 16.f);
+#endif
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(1500.f);
+    float Amplitude = 100.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    /* f32 StartingZDepth = 0; */
+    s32 Octaves = 6;
+    NoiseValue = StartingZDepth;
+
+#if 1
+    {
+      f32 Start = 8000;
+      f32 End = 10000;
+      f32 Width = End-Start;
+      f32 Rad = Width/2.f;
+      /* f32 Power = 2000.f; */
+      /* f32 Power = 0.001f; */
+      f32 Power = 1000.f;
+
+      f32 CircleOrigin = Start + Rad;
+
+      /* if (Basis.x > Start && Basis.y > Start && */
+      /*     Basis.x < End && Basis.y < End) */
+      {
+        v2 OriginRelativeBasis = 0.30f*((Basis.xy-CircleOrigin)/Rad);
+        /* v2 t = sin(PI32*(0.5f+(OriginRelativeBasis/Width))); */
+        /* f32 t = sin(PI32*max(0.f, Rad - length(OriginRelativeBasis))); */
+        f32 t = sin( Rad - length(OriginRelativeBasis));
+        /* NoiseValue += min(t.x*Power, t.y*Power); */
+        NoiseValue += t*Power;
+      }
+    }
+#endif
+
+    v3 Deriv = v3(0.f);
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      v4 gn = gradient_noise_derivs(xyz+warp);
+      NoiseValue += gn.x*(Amplitude/Octave);
+      Deriv += gn.yzw;
+    }
+
+    v3 Up = V3(0, 0, 1);
+
+    /* NoiseValue = 100.f+RempaSample(NoiseValue); */
+
+    Deriv = normalize(Deriv);
+    /* Deriv.xy = abs(Deriv.xy); */
+    f32 Cliffness = clamp(dot(Deriv, Up), 0.f, 1.f);
+    f32 Grassness = clamp(.15f-Cliffness, 0.f, 1.f);
+
+    ColorValue = mix(v3(.1,.8,.2), v3(.3), Cliffness);
+    /* ColorValue = mix(v3(.1,.8,.2), v3(.3), pow(Cliffness, .2)); */
+    /* ColorValue = Cliffness > 0.15f ? V3(0.3f) : v3(.1,.8,.2); */
+
+    // Grassy ripples
+    {
+      v4 gWobble = gradient_noise_derivs(Basis/v3(30, 30, 80));
+      NoiseValue += gWobble.x*Grassness*50;
+      ColorValue += V3(0.f, 1.f, 0.f)*gWobble.x*Grassness*1.5f;
+    }
+
+
+#if 1
+    f32 rng2d = white_noise(Basis.xy);
+    f32 rng3d = white_noise(Basis);
+
+    v3 BaseCliffColor = V3(0.08f);
+    v3 CliffColor = BaseCliffColor;
+    f32 CliffValue = 0.f;
+    // Main cliffs
+    {
+      v3 v = voronoi_noise(Basis/v3(200,200,1800));
+      CliffValue += (v.x*200)*Cliffness;
+      CliffValue += (v.y*25)*Cliffness;
+      CliffColor = mix(CliffColor, BaseCliffColor, clamp(10*Cliffness*v.x,0,1));
+    }
+    {
+      v3 v = voronoi_noise(Basis/v3(100,100,600));
+      v.x += 0.5f;
+      v.x = v.x*v.x;
+
+      if (v.x > 0.28f)
+      {
+        CliffValue += (v.x*25)*Cliffness;
+        /* CliffValue += (v.y*10)*Cliffness; */
+        CliffColor = mix(CliffColor, v3(.7), Cliffness*v.x);
+      }
+    }
+    {
+      v3 v = voronoi_noise(Basis/v3(50,50,200));
+      v.x += 0.50f;
+      v.x = v.x * v.x;
+
+      if (v.x > 0.30)
+      {
+        /* CliffValue += (v.x)*Cliffness; */
+        CliffValue += (v.x*10)*pow(Cliffness,3);
+        CliffColor = mix(CliffColor, v3(.9), Cliffness*v.x*v.x);
+      }
+    }
+    {
+      CliffValue += rng3d * 0.1f;
+      CliffColor = mix(CliffColor, v3(1.f), rng3d*Cliffness*.2);
+    }
+
+    if (CliffValue > 12.f)
+    {
+      NoiseValue += CliffValue;
+      ColorValue = CliffColor;
+    }
+
+
+    f32 gravel_patch_stregth  = value_noise_derivs(150+(Basis/300)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/160)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/80)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/40)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/20)).x;
+        gravel_patch_stregth += value_noise_derivs(150+(Basis/8)).x;
+        gravel_patch_stregth = max(gravel_patch_stregth, 0.f);
+
+
+    // Grass & Flowers
+    {
+      f32 n = clamp(rng2d-0.7f, 0.f, 1.f);
+
+      f32 GrassValue = 90*n*Grassness;
+
+      f32 tFlower = Basis.z - (GrassValue + NoiseValue);
+          tFlower = max(tFlower, 0);
+
+
+    f32 grass_patch_stregth  = value_noise_derivs(Basis/80).x;
+        grass_patch_stregth += value_noise_derivs(Basis/40).x;
+        grass_patch_stregth += value_noise_derivs(Basis/20).x;
+        grass_patch_stregth += value_noise_derivs(Basis/8).x;
+        grass_patch_stregth = max(grass_patch_stregth-gravel_patch_stregth, 0.f);
+
+      NoiseValue += GrassValue*grass_patch_stregth;
+
+      f32 tColor = (grass_patch_stregth / 2.f)*Grassness;
+      ColorValue = mix(ColorValue, V3(.6f, .8f, .1f), tColor);
+
+      if (rng2d > 0.99f)
+      {
+        ColorValue = mix(ColorValue, V3(.5f, .5f, .5f), tFlower);
+      }
+      if (rng2d > 0.995f)
+      {
+        ColorValue = mix(ColorValue, V3(.5f, .2f, .5f), tFlower);
+      }
+
+
+      /* ColorValue *= tFlower; */
+
+      /* ColorValue = V3(tFlower); */
+      /* ColorValue = V3(GrassValue/1.f); */
+    }
+
+    // Rocky edges
+    {
+      f32 MinDotValue = 0.6f;
+      v3 v = voronoi_noise(Basis/v3(20,20,20));
+      f32 Power = 100*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0));
+      if (v.x*Power > 3.f)
+      {
+        NoiseValue += v.x*Power;
+        ColorValue = v3(1.0);
+      }
+    }
+    /* { */
+    /*   f32 MinDotValue = 0.4f; */
+    /*   v3 v = voronoi_noise(Basis/v3(10,10,10)); */
+    /*   f32 Power = 400*gravel_patch_stregth*Cliffness*abs(clamp(Cliffness-MinDotValue, -MinDotValue, 0)); */
+    /*   NoiseValue += v.x*Power; */
+    /*   /1* NoiseValue -= ((1.f/v.x)*2)*Power; *1/ */
+    /*   ColorValue = mix(ColorValue, v3(1.0), Power/3*v.x); */
+    /* } */
+
+
+    /* ColorValue = V3(Grassness, Cliffness, 0.f); */
+    /* ColorValue = V3(Cliffness); */
+
+    // Bias noise value to lower values as we get higher in z.
+    // This creates a "plane" of terrain
+    /* NoiseValue = NoiseValue - Basis.z + sin(Basis.x/500.f)*1000.f; */
+    /* NoiseValue = NoiseValue - Basis.z + sin(Basis.x/500.f)*300.f - cos(Basis.y/800.f)*200.f;; */
+    NoiseValue -= Basis.z;
+
+#if 0
+    if (NoiseValue <= 0)
+    {
+      v3 TileCoord = trunc(Basis/16.f);
+      TileCoord.z = 0.f;
+
+      f32 TileNoise = white_noise(TileCoord)*14.f;
+
+      f32 NoiseToTile = TileNoise - NoiseValue;
+          NoiseToTile = clamp(NoiseToTile, -1, 1);
+
+      NoiseValue += NoiseToTile;
+    }
+#endif
+#endif
+
+    /* NoiseValue = StartingZDepth; */
+
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+
+  /* uint SolidBit = NoiseValue > 0.f ? 1u : 0u; */
+  /* ColorValue = min(ColorValue, v3(1.f)); */
+  /* uint PackedColor = PackRGB(ColorValue); */
+  /* /1* uint PackedColor = 3543u; *1/ */
+
+  /* Output = (SolidBit << 15) | PackedColor; */
+}

@@ -22,14 +22,14 @@
 /* global_variable f32 ShimmerStrength = 0.f; */
 /* global_variable v3 ShimmerFix = {{ShimmerStrength, ShimmerStrength, ShimmerStrength}}; */
 
-global_variable v3 TopPlane  = {{ 1.f, 1.f, 0.f }};
-global_variable v3 BotPlane  = {{ 1.f, 1.f, 0.f }};
+/* global_variable v3 TopPlane  = {{ 1.f, 1.f, 0.f }}; */
+/* global_variable v3 BotPlane  = {{ 1.f, 1.f, 0.f }}; */
 
-global_variable v3 LeftPlane  = {{ 0.f, 1.f, 1.f }};
-global_variable v3 RightPlane = {{ 0.f, 1.f, 1.f }};
+/* global_variable v3 LeftPlane  = {{ 0.f, 1.f, 1.f }}; */
+/* global_variable v3 RightPlane = {{ 0.f, 1.f, 1.f }}; */
 
-global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }};
-global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }};
+/* global_variable v3 FrontPlane = {{ 1.f, 0.f, 1.f }}; */
+/* global_variable v3 BackPlane  = {{ 1.f, 0.f, 1.f }}; */
 
 
 global_variable v3 v3_RightFaceNormalData[]  = { {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}}, {{  1,  0,  0}} };
@@ -90,8 +90,6 @@ poof(
 
       vector_t.name Temp[] = { P2, P1, P0, P2, P3, P1 };
       MemCopy((u8*)Temp, (u8*)Result, sizeof(Temp));
-
-      return;
     }
 
     inline void

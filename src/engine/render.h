@@ -1,14 +1,10 @@
 struct world_chunk;
 
 
-// NOTE(Jesse): Must match defines in header.glsl
-#define VERTEX_POSITION_LAYOUT_LOCATION 0
-#define VERTEX_NORMAL_LAYOUT_LOCATION 1
-#define VERTEX_COLOR_LAYOUT_LOCATION 2
-#define VERTEX_TRANS_EMISS_LAYOUT_LOCATION 3
+#define GLOBAL_RENDER_SCALE_FACTOR (0.001f)
 
 
-#define DEFAULT_LINE_THICKNESS (0.1f)
+#define DEFAULT_LINE_THICKNESS (0.3f)
 
 #define SSAO_KERNEL_SIZE 32
 struct ao_render_group
@@ -35,6 +31,7 @@ struct g_buffer_textures
 };
 
 struct g_buffer_render_group
+poof(@do_editor_ui)
 {
   framebuffer FBO;
   g_buffer_textures Textures;
@@ -45,7 +42,6 @@ struct g_buffer_render_group
 
   m4 InverseViewMatrix;
   m4 InverseProjectionMatrix;
-
   m4 ViewProjection;
 
   u32 GlTimerObject;
@@ -75,18 +71,61 @@ Orthographic( r32 X, r32 Y, r32 Zmin, r32 Zmax)
   r32 f = Zmax;
   r32 n = Zmin;
 
+#if 1
+  // TODO(Jesse): Pretty sure this should use floats ..
   m4 Result = {
     V4(2/(r-l), 0      , 0       , -1*((r+l)/(r-l)) ),
     V4(0      , 2/(t-b), 0       , -1*((t+b)/(t-b)) ),
     V4(0      , 0      , -2/(f-n), -1*((f+n)/(f-n)) ),
     V4(0      , 0      , 0       ,                  1)
   };
+#else
+  m4 Result = {
+    V4(2.f/(r-l), 0.f      ,  0.f      , -1.f*((r+l)/(r-l)) ),
+    V4(0.f      , 2.f/(t-b),  0.f      , -1.f*((t+b)/(t-b)) ),
+    V4(0.f      , 0.f      , -2.f/(f-n), -1.f*((f+n)/(f-n)) ),
+    V4(0.f      , 0.f      ,  0.f      ,                 1.f)
+  };
+#endif
 
   return Result;
 }
 
 inline m4
-Perspective(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
+Perspective_infinite(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
+{
+
+#if 0
+//  https://chaosinmotion.com/2010/09/06/goodbye-far-clipping-plane/
+//
+// Projection
+//
+//   a 0 0 0
+//   0 b 0 0
+//   0 0 0 d
+//   0 0 e 0
+//
+#endif
+
+  r32 FocalLength = Tan(FOV/2.f);
+  r32 Aspect = WindowDim.x/WindowDim.y;
+
+  r32 a = FOV/Aspect;
+  r32 b = FOV;
+  r32 d = -NearClip;
+  r32 e = -1.f;
+
+  m4 Result = {
+    V4(a, 0, 0, 0),
+    V4(0, b, 0, 0),
+    V4(0, 0, 0, d),
+    V4(0, 0, e, 0),
+  };
+
+  return Result;
+}
+inline m4
+Perspective_clipped(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
 {
 
 #if 0
@@ -145,10 +184,20 @@ Rads(degrees Degrees)
 inline m4
 ProjectionMatrix(camera *Camera, v2 ScreenDim)
 {
-  m4 Result = Perspective( Rads(Camera->Frust.FOV),
-                                ScreenDim,
-                                Camera->Frust.nearClip,
-                                Camera->Frust.farClip);
+  /* m4 Result = Perspective_infinite( Camera->Frust.FOV, */
+  /*                                   ScreenDim, */
+  /*                                   Camera->Frust.nearClip, */
+  /*                                   Camera->Frust.farClip); */
+
+  /* m4 Result = Perspective_infinite( Rads(Camera->Frust.FOV), */
+  /*                                        ScreenDim, */
+  /*                                        Camera->Frust.nearClip, */
+  /*                                        Camera->Frust.farClip); */
+
+  m4 Result = Perspective_clipped( Rads(Camera->Frust.FOV),
+                                        ScreenDim,
+                                        Camera->Frust.nearClip,
+                                        Camera->Frust.farClip);
 
   return Result;
 }
@@ -164,8 +213,8 @@ ProjectionMatrix(camera *Camera, v2 ScreenDim)
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
 
-link_internal gpu_mapped_element_buffer *
-GetCurrentGpuMap(graphics *Graphics);
+/* link_internal gpu_mapped_element_buffer * */
+/* GetCurrentGpuMap(graphics *Graphics); */
 
 link_internal void
 DrawTerrainImmediate(graphics *Graphics, gpu_mapped_element_buffer *GpuBuffer, world_chunk *Chunk);
@@ -176,3 +225,20 @@ CopyToGpuBuffer(untextured_3d_geometry_buffer *Mesh, gpu_mapped_element_buffer *
 link_internal void 
 DeallocateGpuElementBuffer(gpu_mapped_element_buffer *Buf);
 
+link_internal b32
+SyncGpuBuffersAsync(engine_resources *Engine, lod_element_buffer *Meshes);
+
+link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, gpu_element_buffer_handles *Handles, v3 Basis, Quaternion Rotation = Quaternion(), v3 Scale = V3(1.f));
+
+link_internal void
+SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles);
+
+link_internal void
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
+
+link_internal void
+DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count);
+
+link_internal void
+FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode);

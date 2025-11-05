@@ -34,15 +34,17 @@ struct asset_system
 };
 
 struct engine_resources
+poof(@do_editor_ui)
 {
-  engine_settings Settings;
+  bonsai_futex ReadyToStartMainLoop;
 
   bonsai_stdlib Stdlib;
+     engine_api EngineApi;
+
+  engine_settings Settings;
 
   // TODO(Jesse): Should this go in stdlib?
   renderer_2d Ui;
-
-  application_api GameApi;
 
   // Engine
   hotkeys     Hotkeys;
@@ -62,6 +64,8 @@ struct engine_resources
 
   asset_system AssetSystem;
 
+  // TODO(Jesse): Rename this to FrameNumber because it's incremented at the
+  // beginning of the frame, meaning we never see (FrameIndex == 0)
   u32 FrameIndex; // At 120fps we get 9k hours (385 days) of frames in 32bits
 
   tiered_mesh_freelist geo_u3d_MeshFreelist;
@@ -71,8 +75,6 @@ struct engine_resources
   // NOTE(Jesse): This is kinda-sorta all debug stuff
   //
 
-  debug_state *DebugState;
-
   engine_debug EngineDebug;
   level_editor Editor;
 
@@ -81,32 +83,43 @@ struct engine_resources
 
   maybe_entity_ptr HoverEntity;
 
-  render_entity_to_texture_group RTTGroup;
+  render_to_texture_group RTTGroup;
+
+  gen_chunk_freelist GenChunkFreelist;
 };
 
-// TODO(Jesse): Should this actually be a thing?
-global_variable engine_resources *Global_EngineResources;
 
+link_internal engine_resources *
+TryGetEngineResources()
+{
+  engine_resources *Result = 0;
+  if (ThreadLocal_ThreadIndex != INVALID_THREAD_LOCAL_THREAD_INDEX)
+  {
+    thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+    Result = Cast(engine_resources*, Thread->UserData);
+  }
+  return Result;
+}
 
 link_internal engine_resources *
 GetEngineResources()
 {
-  Assert(Global_EngineResources);
-  return Global_EngineResources;
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+  return Cast(engine_resources*, Thread->UserData);
 }
 
 link_internal engine_debug *
 GetEngineDebug()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->EngineDebug;
+  auto Result = &GetEngineResources()->EngineDebug;
+  return Result;
 }
 
 link_internal world *
 GetWorld()
 {
-  Assert(Global_EngineResources);
-  return Global_EngineResources->World;
+  auto Result = GetEngineResources()->World;
+  return Result;
 }
 
 link_internal v3i
@@ -115,26 +128,12 @@ GetWorldChunkDim()
   return GetWorld()->ChunkDim;
 }
 
-link_weak bonsai_stdlib *
-GetStdlib()
-{
-  /* Assert(Global_EngineResources); */
-  if (Global_EngineResources)
-  {
-    return &Global_EngineResources->Stdlib;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
 
 link_internal level_editor *
 GetLevelEditor()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->Editor;
+  auto Result = &GetEngineResources()->Editor;
+  return Result;
 }
 
 link_internal entity *
@@ -160,15 +159,16 @@ GetCameraGhost(engine_resources *Engine)
   engine_debug              *EngineDebug   = &Res->EngineDebug;          \
   tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist; \
   input                     *Input         = &Res->Stdlib.Plat.Input;    \
-  level_editor              *Editor        = &Res->Editor;               \
-  work_queue                *WorldUpdateQ  = &Plat->WorldUpdateQ;        \
+  level_editor              *Editor        = &Res->Editor;
 
-#define UNPACK_GRAPHICS_RESOURCES(Res)                                    \
-  graphics                  *Graphics      = &Res->Graphics;              \
-  lighting_render_group     *Lighting      = &Graphics->Lighting;         \
-  renderer_2d               *Ui            = &Res->Ui;                    \
-  gpu_mapped_element_buffer *GpuMap        =  GetCurrentGpuMap(Graphics); \
-  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;          \
-  camera                    *Camera        =  Graphics->Camera;           \
-  work_queue                *RenderQ       = &Plat->RenderQ
+#define UNPACK_GRAPHICS_RESOURCES(Res)                              \
+  graphics                  *Graphics      = &Res->Graphics;        \
+  lighting_render_group     *Lighting      = &Graphics->Lighting;   \
+  renderer_2d               *Ui            = &Res->Ui;              \
+  g_buffer_render_group     *gBuffer       =  Graphics->gBuffer;    \
+  camera                    *Camera        =  Graphics->Camera;     \
+  camera                    *GameCamera    = &Graphics->GameCamera; \
+  work_queue                *HiRenderQ     = &Plat->HiRenderQ;        \
+  work_queue                *LoRenderQ     = &Plat->LoRenderQ;        \
+  triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry
 

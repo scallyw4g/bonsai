@@ -1,0 +1,51 @@
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Basis = WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+
+    v3 Period = V3(1800.f);
+    float Amplitude = 1000.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    s32 Octaves = 3;
+    NoiseValue = StartingZDepth;
+
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+
+      f32 gn = gradient_noise_derivs(xyz+warp).x;
+      NoiseValue += gn*(Amplitude/Octave);
+    }
+
+    NoiseValue -= Basis.z;
+    ColorValue = V3(0.2f, 0.8f, 0.15f);
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

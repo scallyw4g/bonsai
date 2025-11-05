@@ -1,5 +1,4 @@
-// src/engine/voxel_synthesis.h:42:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1185:0
 struct entropy_lists
 {
   u32_cursor Start[TILE_RULESETS_COUNT];
@@ -14,6 +13,12 @@ GetPtr( entropy_lists *Buf, umm Index)
     Result = Buf->Start+Index;
   }
   return Result;
+}
+
+link_inline u32_cursor*
+TryGetPtr( entropy_lists *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
 }
 
 link_inline u32_cursor

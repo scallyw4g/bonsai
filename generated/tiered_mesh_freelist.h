@@ -1,5 +1,4 @@
-// src/engine/mesh.h:26:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1185:0
 struct tiered_mesh_freelist
 {
   mesh_freelist Start[TIERED_MESH_FREELIST_MAX_ELEMENTS];
@@ -14,6 +13,12 @@ GetPtr( tiered_mesh_freelist *Buf, umm Index)
     Result = Buf->Start+Index;
   }
   return Result;
+}
+
+link_inline mesh_freelist*
+TryGetPtr( tiered_mesh_freelist *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
 }
 
 link_inline mesh_freelist

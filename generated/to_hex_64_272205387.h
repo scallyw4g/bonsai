@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:822:0
-
+// external/bonsai_stdlib/src/counted_string.cpp:823:0
 link_internal cs
 ToHex( s64 Value )
 {
@@ -18,4 +17,5 @@ ToHex( r64 Value )
   cs Result = FSz("%lx", Value);
   return Result;
 }
+
 

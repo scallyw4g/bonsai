@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:49:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk_0 *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("world_chunk_0");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,38 +33,68 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count = 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_chunk_0 *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Dim);
+            
+                            Result &= Serialize(Bytes, &Element->Dim); // default
 
 
 
 
 
-    if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-    if (Element->VoxelLighting) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                if (Element->VoxelLighting) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-    Result &= Serialize(Bytes, &Element->WorldP);
+        
+        
+                            Result &= Serialize(Bytes, &Element->WorldP); // default
 
 
 
 
 
 
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
-    if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels, Cast(umm, Volume(Element->Dim)) ); }
+
+            
+        
+
+                if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels,  Cast(umm, Volume(Element->Dim)) ); }
 
 
 
-    if (Element->VoxelLighting) { Result &= Serialize(Bytes, Element->VoxelLighting, Cast(umm, Volume(Element->Dim)) ); }
+                if (Element->VoxelLighting) { Result &= Serialize(Bytes, Element->VoxelLighting,  Cast(umm, Volume(Element->Dim)) ); }
 
 
 
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -87,7 +116,8 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+      
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -95,17 +125,19 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
-  b64 HadVoxelsPointer = Read_u64(Bytes);
+        b64 HadVoxelsPointer = Read_u64(Bytes);
   Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
 
 
-  b64 HadVoxelLightingPointer = Read_u64(Bytes);
+        b64 HadVoxelLightingPointer = Read_u64(Bytes);
   Assert(HadVoxelLightingPointer < 2); // Should be 0 or 1
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+    
+    
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
 
@@ -113,11 +145,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 
-  if (HadVoxelsPointer)
+        
+
+  
+      if (HadVoxelsPointer)
   {
-    umm Count = Cast(umm, Volume(Element->Dim));
+        umm Count =  Cast(umm, Volume(Element->Dim));
 
 
     if (Element->Voxels == 0)
@@ -129,9 +173,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
   }
 
 
-  if (HadVoxelLightingPointer)
+      if (HadVoxelLightingPointer)
   {
-    umm Count = Cast(umm, Volume(Element->Dim));
+        umm Count =  Cast(umm, Volume(Element->Dim));
 
 
     if (Element->VoxelLighting == 0)
@@ -143,6 +187,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
   }
 
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
@@ -157,7 +213,7 @@ Deserialize(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory, umm 
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

@@ -1,38 +1,37 @@
 struct plane
+poof(@do_editor_ui)
 {
-  v3 P;
   v3 Normal;
-  r32 d;
-
-  plane( v3 P_in, v3 Normal_in )
-  {
-    this->P = P_in;
-    this->Normal = Normal_in;
-
-    this->d = -1.0f * (Normal.x*P.x + Normal.y*P.y + Normal.z*P.z);
-
-    Assert(Normal.x*P.x + Normal.y*P.y + Normal.z*P.z + this->d == 0);
-  }
-
-  plane() {}
+  f32 DistanceToOrigin;
 };
 
+link_internal plane
+Plane( v3 Point, v3 Normal )
+{
+  plane Reuslt = { Normal, Dot(Normal, Point) };
+  return Reuslt;
+}
+
 struct frustum
+poof(@do_editor_ui)
 {
   f32 farClip;
   f32 nearClip;
-  f32 width;
   f32 FOV;
 
   plane Top;
-  plane Bot;
+  plane Bottom;
   plane Left;
   plane Right;
 };
 
 struct entity;
 
-struct camera poof(@version(2))
+struct camera
+poof(
+    @version(2)
+    @do_editor_ui
+  )
 {
   frustum Frust;
 
@@ -51,12 +50,17 @@ struct camera poof(@version(2))
   r32 TargetDistanceFromTarget;
 
   r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
+  r32 Speed = 8.0f; // How fast the camera ghost moves
 
   v3 Front;
   v3 Right;
   v3 Up;
 
   entity_id GhostId;
+
+  m4 ViewProjection;
+  m4 InverseViewMatrix;
+  m4 InverseProjectionMatrix;
 };
 
 struct camera_1
@@ -136,6 +140,9 @@ GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
 inline r32
 DistanceToPlane(plane *Plane, v3 P)
 {
+  // https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+  r32 Result = Dot(Plane->Normal, P) - Plane->DistanceToOrigin;
+#if 0
   r32 x = Plane->P.x;
   r32 y = Plane->P.y;
   r32 z = Plane->P.z;
@@ -147,8 +154,9 @@ DistanceToPlane(plane *Plane, v3 P)
   r32 d = Plane->d;
   Assert(a*x + b*y + c*z + d == 0);
 
-  r32 Distance = a*P.x + b*P.y + c*P.z + d;
-  return Distance;
+  r32 Result = a*P.x + b*P.y + c*P.z + d;
+#endif
+  return Result;
 }
 
 link_internal v3

@@ -33,6 +33,7 @@ poof(string_and_value_tables(shader_language_setting));
 #include <generated/string_and_value_tables_shader_language_setting.h>
 
 struct graphics_settings
+poof(@do_editor_ui)
 {
         resolution_setting Resolution;
     shadow_quality_setting ShadowQuality;
@@ -42,6 +43,7 @@ struct graphics_settings
 };
 
 struct engine_settings
+poof(@do_editor_ui)
 {
   graphics_settings Graphics;
 };

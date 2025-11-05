@@ -22,8 +22,19 @@ DEBUG_DrawLine( untextured_3d_geometry_buffer *Mesh, v3 P1, v3 P2, v3 RGBColor, 
   /* v3 Color = GetColorData(Color); */
 
   vertex_material Materials[VERTS_PER_FACE];
+#if 1
   FillArray(VertexMaterial(RGBtoPackedHSV(RGBColor), 0.f, 0.f), Materials, VERTS_PER_FACE);
-  /* FillColorArray(Color, Materials, Global_ColorPalette, VERTS_PER_FACE); */
+#else
+
+  Materials[0] = VertexMaterial(RGBtoPackedHSV(RGBColor), 0.f, 0.f);
+  Materials[1] = {};
+  Materials[2] = VertexMaterial(RGBtoPackedHSV(RGBColor), 0.f, 0.f);
+
+  Materials[3] = VertexMaterial(RGBtoPackedHSV(RGBColor), 0.f, 0.f);
+  Materials[5] = {};
+  Materials[4] = {};
+
+#endif
 
   v2 TransEmiss[VERTS_PER_FACE] = {};
 
@@ -141,14 +152,14 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, v3 RGBColo
   /* v3 MaxP = HalfDim; */
 
   // Compute verticies
-  v3 TopRL = V3(MinP.x, MaxP.y, MinP.z);
-  v3 TopRR = V3(MaxP.x, MaxP.y, MinP.z);
-  v3 TopFL = V3(MinP.x, MaxP.y, MaxP.z);
-  v3 TopFR = V3(MaxP.x, MaxP.y, MaxP.z);
-  v3 BotRL = V3(MinP.x, MinP.y, MinP.z);
-  v3 BotRR = V3(MaxP.x, MinP.y, MinP.z);
-  v3 BotFL = V3(MinP.x, MinP.y, MaxP.z);
-  v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z);
+  v3 TopRL = V3(MinP.x, MaxP.y, MinP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 TopRR = V3(MaxP.x, MaxP.y, MinP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 TopFL = V3(MinP.x, MaxP.y, MaxP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 TopFR = V3(MaxP.x, MaxP.y, MaxP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 BotRL = V3(MinP.x, MinP.y, MinP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 BotRR = V3(MaxP.x, MinP.y, MinP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 BotFL = V3(MinP.x, MinP.y, MaxP.z) * GLOBAL_RENDER_SCALE_FACTOR;
+  v3 BotFR = V3(MaxP.x, MinP.y, MaxP.z) * GLOBAL_RENDER_SCALE_FACTOR;
 
   /* // Apply rotation to verts */
   /* TopRL = ((Rotation * Quaternion(TopRL, 1)) * Conjugate(Rotation)).xyz; */
@@ -185,24 +196,45 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, v3 RGBColo
   // Top
 #define LINES_PER_AABB (12)
 #define VERTS_PER_AABB (VERTS_PER_VOXEL*LINES_PER_AABB)
-  DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopFR, TopRR, RGBColor, Thickness);
+#if 1
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, TopRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, TopRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, TopRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
 
   // Right
-  DEBUG_DrawLine_Aligned(Mesh, TopFR, BotFR, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopRR, BotRR, RGBColor, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFR, BotFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, TopRR, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
 
   // Left
-  DEBUG_DrawLine_Aligned(Mesh, TopFL, BotFL, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, TopRL, BotRL, RGBColor, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, TopFL, BotFL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, TopRL, BotRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
 
   // Bottom
-  DEBUG_DrawLine_Aligned(Mesh, BotRL, BotRR, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, RGBColor, Thickness);
-  DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, RGBColor, Thickness);
+  DEBUG_DrawLine_Aligned(Mesh, BotRL, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, BotFL, BotRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine_Aligned(Mesh, BotFR, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+#else
+  DEBUG_DrawLine(Mesh, TopRL, TopRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, TopFL, TopFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, TopFL, TopRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, TopFR, TopRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+
+  // Right
+  DEBUG_DrawLine(Mesh, TopFR, BotFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, TopRR, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+
+  // Left
+  DEBUG_DrawLine(Mesh, TopFL, BotFL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, TopRL, BotRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+
+  // Bottom
+  DEBUG_DrawLine(Mesh, BotRL, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, BotFL, BotFR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, BotFL, BotRL, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+  DEBUG_DrawLine(Mesh, BotFR, BotRR, RGBColor, Thickness * GLOBAL_RENDER_SCALE_FACTOR);
+#endif
 }
 
 link_internal void
@@ -294,7 +326,18 @@ DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, wo
                      chunk_dimension WorldChunkDim, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS)
 {
   v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Chunk->WorldP), Graphics->Camera);
-  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim, Chunk->WorldP), Graphics->Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim*Chunk->DimInChunks, Chunk->WorldP), Graphics->Camera);
+
+
+  DEBUG_DrawAABB(Mesh, MinP, MaxP, RGBColor, Thickness);
+}
+
+link_internal void
+DEBUG_DrawChunkAABB( untextured_3d_geometry_buffer *Mesh, graphics *Graphics, octree_node *Node,
+                     chunk_dimension WorldChunkDim, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS)
+{
+  v3 MinP = GetRenderP(WorldChunkDim, Canonical_Position(V3(0,0,0), Node->WorldP), Graphics->Camera);
+  v3 MaxP = GetRenderP(WorldChunkDim, Canonical_Position(WorldChunkDim*Node->Resolution, Node->WorldP), Graphics->Camera);
 
 
   DEBUG_DrawAABB(Mesh, MinP, MaxP, RGBColor, Thickness);

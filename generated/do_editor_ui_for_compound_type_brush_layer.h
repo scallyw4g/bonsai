@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:344:0
+// src/engine/editor.h:303:0
+struct brush_layer;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x133E0EA1);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle brush_layer", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle brush_layer", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(brush_settings*,&Element->Settings),
-        CSz("Settings"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(brush_settings*, &Element->Settings),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,10 +52,23 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 
+        
+
+
+      }
       
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("PrevSettings");
+                
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

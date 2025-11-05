@@ -1,4 +1,5 @@
 struct physics
+poof(@do_editor_ui)
 {
   v3 Velocity;
   v3 Force;

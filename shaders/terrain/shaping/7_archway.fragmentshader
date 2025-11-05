@@ -1,0 +1,117 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.2f, 0.8f, 0.2f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(800.f);
+    float Amplitude = 800.f;
+    /* f32 StartingZDepth = 10000; */
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    /* f32 StartingZDepth = 0; */
+    NoiseValue = StartingZDepth;
+
+    v3 Deriv = v3(0.f);
+    /* f32 warp = 0.f; */
+
+    /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
+    v3 warp = v3(0.f);
+
+    f32 Mask;
+    {
+      f32 XOff = 700000.f;
+      v3 xyz = Basis / V3(XOff, XOff, 2000000.f);
+      Mask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+      /* Mask = ridge_noise(xyz); */
+      Mask = Smoothstep(Mask);
+      /* Mask = RemapSample(Mask, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
+      Mask = Mask*1.6;
+    }
+
+    s32 Octaves = s32(Mask*10);
+    while (Octaves > 0)
+    {
+      v3 xyz = Basis / V3(18000.f, 18000.f, 50000.f) / Octaves;
+      f32 N = Mask * (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+      NoiseValue += N*N*N*N * (20000.f*Octaves);
+
+      --Octaves;
+    }
+
+
+    // Scrub
+    {
+      v3 xyz = Basis / V3(50000.f, 50000.f, 10000.f);
+      f32 Perturb = 30000.f*(1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+
+      if ( (NoiseValue+Perturb) > 1030000.f)
+      {
+        ColorValue = V3(0.3f, 0.7f, 0.2f);
+      }
+
+    }
+
+    // Scrub
+    {
+      v3 xyz = Basis / V3(50000.f, 50000.f, 10000.f);
+      f32 Perturb = 30000.f*(1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+
+      if ( (NoiseValue+Perturb) > 1140000.f)
+      {
+        ColorValue = V3(0.4f, 0.6f, 0.3f);
+      }
+
+    }
+
+
+    // Snow
+    {
+      /* v3 xyz = Basis / V3(7000.f, 7000.f, 170000.f); */
+      /* f32 Perturb = 10000.f*(1.f+gradient_noise_derivs(xyz+warp).x)/2.f; */
+      v3 xyz = Basis / V3(50000.f, 50000.f, 100000.f);
+      f32 Perturb = 30000.f*(1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+
+      if ( (NoiseValue+Perturb) > 1150000.f)
+      {
+        ColorValue = V3(1.f);
+      }
+    }
+
+    r32 white = white_noise(Basis);
+    ColorValue *= Clamp01(1.6f+white);
+
+
+    NoiseValue -= Basis.z;
+    /* NoiseValue = StartingZDepth; */
+
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+
+  /* Output = (SolidBit << 15) | PackedColor; */
+}

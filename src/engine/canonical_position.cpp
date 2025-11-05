@@ -33,10 +33,46 @@ Canonicalize( world *World, canonical_position *P)
   *P = Canonicalize(World->ChunkDim, P->Offset, P->WorldP);
 }
 
+// Canonical add
+link_internal cp
+CAdd(world *World, cp P1, cp P2)
+{
+  cp Result = {
+    P1.Offset + P2.Offset,
+    P1.WorldP + P2.WorldP
+  };
+
+  Canonicalize(World, &Result);
+  return Result;
+}
+
+// Canonical add
+link_internal cp
+CSub(world *World, cp P1, cp P2)
+{
+  cp Result = {
+    P1.Offset - P2.Offset,
+    P1.WorldP - P2.WorldP
+  };
+
+  Canonicalize(World, &Result);
+  return Result;
+}
+
+
 link_internal cp
 SimSpaceToCanonical(world *World, v3 P)
 {
   cp Result = Canonical_Position(World->ChunkDim, P, World->Center);
+  return Result;
+}
+
+link_internal rect3cp
+SimSpaceToCanonical(world *World, rect3 *Rect)
+{
+  rect3cp Result = {};
+  Result.Min = SimSpaceToCanonical(World, Rect->Min);
+  Result.Max = SimSpaceToCanonical(World, Rect->Max);
   return Result;
 }
 
@@ -49,3 +85,10 @@ SimSpaceToCanonical(world *World, rect3i *Rect)
   return Result;
 }
 
+link_internal cp
+GetCenter(world *World, rect3cp *Rect)
+{
+  cp Rad = GetRadius(Rect);
+  cp Result = CAdd(World, Rect->Min, Rad);
+  return Result;
+}

@@ -1,77 +1,180 @@
-// external/bonsai_stdlib/src/texture.cpp:8:0
+// external/bonsai_stdlib/src/poof_functions.h:2378:0
 
 
-link_internal texture_ptr_block*
-Allocate_texture_ptr_block(memory_arena *Memory)
-{
-  texture_ptr_block *Result = Allocate(texture_ptr_block, Memory, 1);
-  Result->Elements = Allocate(texture_ptr, Memory, 8);
-  return Result;
-}
+
 
 link_internal cs
-CS(texture_ptr_block_array_index Index)
+CS( texture_ptr_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
+}
+
+link_internal texture_ptr 
+Set( texture_ptr_block_array *Arr,
+  texture_ptr Element,
+  texture_ptr_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  texture_ptr_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = Element;
+  return *Slot;
 }
 
 link_internal void
-RemoveUnordered(texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
+NewBlock( texture_ptr_block_array *Arr )
 {
-  texture_ptr_block_array_index LastI = LastIndex(Array);
+  texture_ptr_block  *NewBlock     = Allocate( texture_ptr_block , Arr->Memory,                 1);
+  texture_ptr_block **NewBlockPtrs = Allocate( texture_ptr_block*, Arr->Memory, Arr->BlockCount+1);
 
-  texture_ptr *Element = GetPtr(Array, Index);
-  texture_ptr *LastElement = GetPtr(Array, LastI);
-
-  *Element = *LastElement;
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
-    // Walk the chain till we get to the second-last one
-    texture_ptr_block *Current = Array->First;
-    texture_ptr_block *LastB = LastI.Block;
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
+  }
 
-    while (Current->Next && Current->Next != LastB)
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
+}
+
+link_internal void
+RemoveUnordered( texture_ptr_block_array *Array, texture_ptr_block_array_index Index)
+{
+  auto LastI = LastIndex(Array);
+  Assert(Index.Index <= LastI.Index);
+
+  auto LastElement = GetPtr(Array, LastI);
+  Set(Array, LastElement, Index);
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( texture_ptr_block_array *Array, texture_ptr_block_array_index IndexToRemove)
+{
+  Assert(IndexToRemove.Index < Array->ElementCount);
+
+  texture_ptr Prev = {};
+
+  texture_ptr_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
+  {
+    texture_ptr E = GetPtr(Array, Index);
+
+    if (Prev)
     {
-      Current = Current->Next;
+      *Prev = *E;
     }
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+    Prev = E;
+  }
+
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( texture_ptr_block_array *Array, texture_ptr Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
+    }
   }
 }
 
-link_internal texture_ptr *
-Push(texture_ptr_block_array *Array, texture_ptr *Element)
+link_internal texture_ptr_block_array_index
+Find( texture_ptr_block_array *Array, texture_ptr Query)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
-
-  if (Array->First == 0) { Array->First = Allocate_texture_ptr_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 8)
+  texture_ptr_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  IterateOver(Array, E, Index)
   {
-    if (Array->Current->Next)
+    if ( E == Query )
     {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      texture_ptr_block *Next = Allocate_texture_ptr_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
+      Result = Index;
+      break;
     }
   }
+  return Result;
+}
 
-  texture_ptr *Result = Array->Current->Elements + Array->Current->At;
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+
+link_internal b32
+IsValid(texture_ptr_block_array_index *Index)
+{
+  texture_ptr_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  b32 Result = (AreEqual(Index, &Test) == False);
+  return Result;
+}
+
+link_internal texture_ptr 
+Push( texture_ptr_block_array *Array, texture_ptr Element)
+{
+  Assert(Array->Memory);
+
+  if (AtElements(Array) == Capacity(Array))
+  {
+    NewBlock(Array);
+  }
+
+  texture_ptr Result = Set(Array, Element, AtElements(Array));
+
+  Array->ElementCount += 1;
 
   return Result;
 }
+
+link_internal texture_ptr 
+Push( texture_ptr_block_array *Array )
+{
+  texture_ptr Element = {};
+  auto Result = Push(Array, Element);
+  return Result;
+}
+
+link_internal void
+Insert( texture_ptr_block_array *Array, texture_ptr_block_array_index Index, texture_ptr Element )
+{
+  Assert(Index.Index <= LastIndex(Array).Index);
+  Assert(Array->Memory);
+
+  // Alocate a new thingy
+  texture_ptr Prev = Push(Array);
+
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
+  {
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
+    Prev = E;
+  }
+
+  *Prev = *Element;
+}
+
+link_internal void
+Insert( texture_ptr_block_array *Array, u32 Index, texture_ptr Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( texture_ptr_block_array *Array, texture_ptr Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
+}
+
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
+
 

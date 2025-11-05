@@ -1,5 +1,4 @@
-// src/engine/voxel_synthesis.h:158:0
-
+// external/bonsai_stdlib/src/poof_functions.h:777:0
 struct voxel_synth_tile_linked_list_node
 {
   b32 Tombstoned;
@@ -14,6 +13,7 @@ struct voxel_synth_tile_hashtable
   /* OWNED_BY_THREAD_MEMBER() */
 };
 link_internal b32 AreEqual(voxel_synth_tile_linked_list_node *Node1, voxel_synth_tile_linked_list_node *Node2 );
+link_internal b32 AreEqual(voxel_synth_tile *Element1, voxel_synth_tile *Element2 );
 
 link_internal voxel_synth_tile_linked_list_node *
 Allocate_voxel_synth_tile_linked_list_node(memory_arena *Memory)
@@ -76,7 +76,7 @@ Insert(voxel_synth_tile_linked_list_node *Node, voxel_synth_tile_hashtable *Tabl
   voxel_synth_tile_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
@@ -178,4 +178,11 @@ GetPtr(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile_hashtable_iterato
   }
   return Result;
 }
+
+link_inline voxel_synth_tile *
+TryGetPtr(voxel_synth_tile_hashtable *Hashtable, voxel_synth_tile_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
  

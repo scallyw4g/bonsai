@@ -1,164 +1,183 @@
-// external/bonsai_stdlib/src/texture.h:42:0
+// external/bonsai_stdlib/src/poof_functions.h:2211:0
+
+
+
 
 struct texture_block
 {
-  u32 Index;
-  u32 At;
-  texture *Elements;
-  texture_block *Next;
+  /* u32 Index; */
+  umm At;
+  texture Elements[8];
 };
 
 struct texture_block_array_index
 {
-  texture_block *Block;
-  u32 BlockIndex;
-  u32 ElementIndex;
+  umm Index; 
 };
 
 struct texture_block_array
 {
-  texture_block *First;
-  texture_block *Current;
+  texture_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-typedef texture_block_array texture_paged_list;
-
-link_internal texture_block_array_index
-operator++(texture_block_array_index &I0)
+link_internal texture_block_array
+TextureBlockArray(memory_arena *Memory)
 {
-  if (I0.Block)
+  texture_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(texture_block_array_index *Thing1, texture_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
   {
-    if (I0.ElementIndex == 8-1)
-    {
-      I0.ElementIndex = 0;
-      I0.BlockIndex++;
-      I0.Block = I0.Block->Next;
-    }
-    else
-    {
-      I0.ElementIndex++;
-    }
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( texture_block_array_index ) );
+
+    return Result;
   }
   else
   {
-    I0.ElementIndex++;
+    return (Thing1 == Thing2);
   }
+}
+
+link_internal b32
+AreEqual(texture_block_array_index Thing1, texture_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( texture_block_array_index ) );
+
+  return Result;
+}
+
+
+typedef texture_block_array texture_paged_list;
+
+link_internal texture_block_array_index
+operator++( texture_block_array_index &I0 )
+{
+  I0.Index++;
   return I0;
 }
 
 link_internal b32
-operator<(texture_block_array_index I0, texture_block_array_index I1)
+operator<( texture_block_array_index I0, texture_block_array_index I1 )
 {
-  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( texture_block_array_index I0, texture_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
-GetIndex(texture_block_array_index *Index)
+GetIndex( texture_block_array_index *Index)
 {
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal texture_block_array_index
+ZerothIndex( texture_block_array *Arr )
+{
+  return {};
+}
+
+link_internal texture_block_array_index
+Capacity( texture_block_array *Arr )
+{
+  texture_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
 link_internal texture_block_array_index
-ZerothIndex(texture_block_array *Arr)
+AtElements( texture_block_array *Arr )
+{
+  texture_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( texture_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal texture_block_array_index
+LastIndex( texture_block_array *Arr )
 {
   texture_block_array_index Result = {};
-  Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-TotalElements(texture_block_array *Arr)
+Count( texture_block_array *Arr )
 {
-  umm Result = 0;
-  if (Arr->Current)
-  {
-    Result = (Arr->Current->Index * 8) + Arr->Current->At;
-  }
+  auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal texture_block_array_index
-LastIndex(texture_block_array *Arr)
+link_internal texture_block *
+GetBlock( texture_block_array *Arr, texture_block_array_index Index )
 {
-  texture_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-    Assert(Result.ElementIndex);
-    Result.ElementIndex--;
-  }
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  texture_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
+}
+
+link_internal texture *
+GetPtr( texture_block_array *Arr, texture_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+
+  texture_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  texture *Result = (Block->Elements + ElementIndex);
   return Result;
 }
 
-link_internal texture_block_array_index
-AtElements(texture_block_array *Arr)
+
+link_internal texture *
+GetPtr( texture_block_array *Arr, umm Index )
 {
-  texture_block_array_index Result = {};
-  if (Arr->Current)
+  texture_block_array_index I = {Index};
+  return GetPtr(Arr, I);
+}
+
+
+link_internal texture *
+TryGetPtr( texture_block_array *Arr, texture_block_array_index Index)
+{
+  texture * Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
+    Result = GetPtr(Arr, Index);
   }
   return Result;
 }
 
 link_internal texture *
-GetPtr(texture_block_array *Arr, texture_block_array_index Index)
+TryGetPtr( texture_block_array *Arr, umm Index)
 {
-  texture *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  auto Result = TryGetPtr(Arr, texture_block_array_index{Index});
   return Result;
-}
-
-link_internal texture *
-GetPtr(texture_block *Block, umm Index)
-{
-  texture *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
-  return Result;
-}
-
-link_internal texture *
-GetPtr(texture_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  umm AtBlock = 0;
-  texture_block *Block = Arr->First;
-  while (AtBlock++ < BlockIndex)
-  {
-    Block = Block->Next;
-  }
-
-  texture *Result = Block->Elements+ElementIndex;
-  return Result;
-}
-
-link_internal texture *
-TryGetPtr(texture_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  auto AtE = AtElements(Arr);
-  umm Total = GetIndex(&AtE);
-  texture *Result = {};
-  if (Index < Total) { Result = GetPtr(Arr, Index); }
-  return Result;
-}
-
-link_internal u32
-AtElements(texture_block *Block)
-{
-  return Block->At;
 }
 

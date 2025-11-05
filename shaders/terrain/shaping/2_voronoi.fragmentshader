@@ -1,0 +1,111 @@
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out vec4 Output;
+
+vec3 vhash(vec3 UV, vec3 offset)
+{
+	mat3 m = mat3(127.1,311.7, 74.7,269.5,183.3,246.1,113.5,271.9,124.6);
+	UV = fract(sin(UV* m) * 46839.32);
+	return vec3(sin(UV.z * +offset.x) * 0.5 + 0.5, cos(UV.x* offset.y) * 0.5 + 0.5,tan(UV.y * offset.z) * 0.5 + 0.5);
+}
+
+#if 1
+vec4 voronoi_noise(vec3 p, vec3 AngleOffset, vec3 CellDensity)
+{
+  vec3 g = floor(p * CellDensity);
+  vec3 f = fract(p * CellDensity);	
+  float res = 8.0;
+  float md=8.0;
+  vec3 mr;
+  vec4 Out;
+  for( int z=-1; z<=1; z++ )
+  for( int y=-1; y<=1; y++ )
+  for( int x=-1; x<=1; x++ )
+  {
+    vec3 lattice = vec3(x,y,z);
+    vec3 offset=vhash(lattice + g ,AngleOffset);
+    vec3 r = lattice +offset -f;
+    float d = dot( r, r );
+    if (d < res)
+    {
+      res=d;
+      mr=r;
+    }
+  }
+
+  res = 8.0;
+  for( int z=-1; z<=1; z++ )
+  for( int y=-1; y<=1; y++ )
+  for( int x=-1; x<=1; x++ )
+  {
+    vec3 lattice = vec3(x,y,z);
+    vec3 offset=vhash(lattice + g ,AngleOffset);
+    vec3 r = lattice +offset -f;
+    float d = dot( r, r );
+    if( d < res )
+    {
+      res = d;
+      Out.x= offset.x;
+      Out.y =  d;
+    }
+    if( dot(mr-r,mr-r)>0.00001)
+    {
+      md = min( md, dot( 0.5*(mr+r), normalize(r-mr) ) );
+    }
+  }
+  Out.z = mix(1.0, 0.0, smoothstep( 0.0, 0.1, md ));
+  Out.w = 1.0-smoothstep( 0.0, 0.1, res);
+  return Out;
+}
+#endif
+
+void main()
+{
+
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(-2);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(100.f);
+    float Amplitude = 200.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    s32 Octaves = 1;
+
+    NoiseValue = StartingZDepth;
+
+    f32 warp = 0.f;
+
+    for (s32 Octave = 1; Octave <= Octaves; ++Octave)
+    {
+      v3 xyz = Basis / (Period/Octave);
+      v4 gn = voronoi_noise(xyz+warp, V3(1.f), V3(1.f));
+      ColorValue += gn.yzw;
+      NoiseValue = NoiseValue + (gn.x * (Amplitude/Octave));
+    }
+
+    ColorValue = abs(normalize(ColorValue));
+
+    NoiseValue = NoiseValue - Basis.z;
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

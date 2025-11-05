@@ -13,29 +13,7 @@
 global_variable s64 LastGameLibTime;
 global_variable s64 LastDebugLibTime;
 
-#include <sys/stat.h>
-
 /* #include <bonsai_debug/headers/win32_pmc.cpp> */
-
-typedef struct stat bonsai_stat;
-
-link_internal b32
-LibIsNew(const char *LibPath, s64 *LastLibTime)
-{
-  b32 Result = False;
-  bonsai_stat StatStruct;
-
-  if (stat(LibPath, &StatStruct) == 0)
-  {
-    if (StatStruct.st_mtime > *LastLibTime)
-    {
-      *LastLibTime = StatStruct.st_mtime;
-      Result = True;
-    }
-  }
-
-  return Result;
-}
 
 
 #if 0
@@ -105,7 +83,6 @@ PrintFiles(file_traversal_node *Node)
 global_variable const char *
 Global_ProjectSwitcherGameLibName = "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
 
-
 s32
 main( s32 ArgCount, const char ** Args )
 {
@@ -136,7 +113,6 @@ main( s32 ArgCount, const char ** Args )
 
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
-  Global_EngineResources = EngineResources;
 
   const char* GameLibName = Global_ProjectSwitcherGameLibName;
   switch (ArgCount)
@@ -152,24 +128,21 @@ main( s32 ArgCount, const char ** Args )
   // kick off the worker threads.
   //
   shared_lib       GameLib   = {};
-  application_api *GameApi   = &EngineResources->GameApi;
-  engine_api       EngineApi = {};
+  application_api *GameApi   = &EngineResources->Stdlib.AppApi;
+  engine_api      *EngineApi = &EngineResources->EngineApi;
   {
-    LibIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
-    LibIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
+    FileIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
+    FileIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
     GameLib = OpenLibrary(GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
     if (!InitializeGameApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
 
-    if (!InitializeEngineApi(&EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
+    if (!InitializeEngineApi(EngineApi, GameLib)) { Error("Initializing EngineApi :( "); return 1; }
   }
 
-
   memory_arena BootstrapArena = {};
-  memory_arena *GameMemory = AllocateArena();
-
 
   {
     temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
@@ -178,25 +151,26 @@ main( s32 ArgCount, const char ** Args )
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
 
-  thread_main_callback_type Procs[2] = { RenderThread_Main, WorldUpdateThread_Main };
-  thread_main_callback_type_buffer CustomWorkerProcs = {};
-  CustomWorkerProcs.Start = Procs;
-  CustomWorkerProcs.Count = 2;
+  thread_main_callback_type Procs[1] = { RenderThread_Main };
+  thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
-  Ensure( InitializeBonsaiStdlib( bonsai_init_flags(BonsaiInit_OpenWindow|BonsaiInit_LaunchThreadPool|BonsaiInit_InitDebugSystem),
+  auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
+                                  BonsaiInit_LaunchThreadPool      |
+                                  BonsaiInit_InitDebugSystem       |
+                                  BonsaiInit_ProfileContextSwitches );
+
+  Ensure( InitializeBonsaiStdlib( Flags,
                                   GameApi,
                                   &EngineResources->Stdlib,
                                   &BootstrapArena,
+                                   EngineResources,
                                   &CustomWorkerProcs ));
 
-  while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
-
-  /* EngineResources->DebugState = Global_DebugStatePointer; */
+  while (FutexIsSignaled(&EngineResources->Graphics.Initialized) == False) { SleepMs(1); }
 
   Assert(EngineResources->Stdlib.ThreadStates);
-  Assert(Global_ThreadStates);
 
-  Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+  Ensure( EngineApi->OnLibraryLoad(EngineResources) );
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
 
 #if BONSAI_DEBUG_SYSTEM_API
@@ -208,36 +182,35 @@ main( s32 ArgCount, const char ** Args )
   memory_arena *WorkQueueMemory = AllocateArena();
   InitQueue(&Plat->HighPriority, WorkQueueMemory);
   InitQueue(&Plat->LowPriority,  WorkQueueMemory);
-  InitQueue(&Plat->RenderQ,      WorkQueueMemory);
-  InitQueue(&Plat->WorldUpdateQ, WorkQueueMemory);
+  InitQueue(&Plat->HiRenderQ,      WorkQueueMemory);
+  InitQueue(&Plat->LoRenderQ,      WorkQueueMemory);
 
-
-  DEBUG_REGISTER_ARENA(GameMemory, 0);
   DEBUG_REGISTER_ARENA(WorkQueueMemory, 0);
   DEBUG_REGISTER_ARENA(&BootstrapArena, 0);
-
 
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
 
   if (GameApi->GameInit)
   {
-#if PLATFORM_WINDOW_IMPLEMENTATIONS
-    // Block till RenderMain is initialized in case game wants to do rendering things in init..?
-    // TODO(Jesse): Is there any reason to actually do this?
-    while (EngineResources->Graphics.Initialized == False) { SleepMs(1); }
-#endif
     EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
     if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
   }
 
 
+  SignalFutex(&EngineResources->ReadyToStartMainLoop);
+
   /*
    *  Main Game loop
    */
 
+  /* SleepMs(2000); */
+
   r32 LastMs = 0;
   while (Os->ContinueRunning)
   {
+
+    /* Info("Frame (%d)", EngineResources->FrameIndex); */
+
     /* u32 CSwitchEventsThisFrame = CSwitchEventsPerFrame; */
     /* CSwitchEventsPerFrame = 0; */
     /* DebugLine("%u", CSwitchEventsThisFrame); */
@@ -253,8 +226,8 @@ main( s32 ArgCount, const char ** Args )
       v2 LastMouseP = Plat->MouseP;
       while ( ProcessOsMessages(Os, Plat) );
       Plat->MouseDP = LastMouseP - Plat->MouseP;
-      Assert(Plat->ScreenDim.x > 0);
-      Assert(Plat->ScreenDim.y > 0);
+      /* Assert(Plat->ScreenDim.x > 0); */
+      /* Assert(Plat->ScreenDim.y > 0); */
 
       BindHotkeysToInput(&EngineResources->Hotkeys, &Plat->Input);
 
@@ -285,9 +258,11 @@ main( s32 ArgCount, const char ** Args )
     DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
-    if ( LibIsNew(GameLibName, &LastGameLibTime) )
+    if ( FileIsNew(GameLibName, &LastGameLibTime) )
     {
       Info("Reloading Game Lib");
+
+      FreeOctreeChildren(EngineResources, &EngineResources->World->Root);
 
       SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
 
@@ -296,20 +271,21 @@ main( s32 ArgCount, const char ** Args )
       CloseLibrary(GameLib);
       GameLib = OpenLibrary(GameLibName);
 
-      Ensure(InitializeEngineApi(&EngineApi, GameLib));
+      Ensure(InitializeEngineApi(EngineApi, GameLib));
       Ensure(InitializeGameApi(GameApi, GameLib));
 
       // Hook up global pointers
-      Ensure( EngineApi.OnLibraryLoad(EngineResources) );
+      Ensure( EngineApi->OnLibraryLoad(EngineResources) );
 
       if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
       {
         EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
 
         HardResetEngine(EngineResources);
+        /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
 
-        EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread);
-        if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; }
+        /* EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread); */
+        /* if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; } */
       }
 
       // Do game-specific reload code
@@ -329,22 +305,24 @@ main( s32 ArgCount, const char ** Args )
     /*   if (IsDisconnected(&Plat->Network)) { ConnectToServer(&Plat->Network); } */
     /* END_BLOCK("Network Ops"); */
 
-    EngineApi.FrameBegin(EngineResources);
+    EngineApi->FrameBegin(EngineResources);
 
       TIMED_BLOCK("GameMain");
         GameApi->GameMain(EngineResources, MainThread);
       END_BLOCK("GameMain");
 
-      EngineApi.Simulate(EngineResources);
+      EngineApi->Simulate(EngineResources);
 
       DrainQueue(&Plat->HighPriority, MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-      EngineApi.Render(EngineResources);
+      EngineApi->Render(EngineResources);
+
+      Assert(FutexIsSignaled(&EngineResources->Graphics.RenderGate) == False);
 
       DEBUG_FRAME_END(Plat->dt);
 
-    EngineApi.FrameEnd(EngineResources);
+    EngineApi->FrameEnd(EngineResources);
 
 
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered
@@ -352,6 +330,7 @@ main( s32 ArgCount, const char ** Args )
     // has to happen before the end of the frame.
     if ( EngineResources->RequestedGameLibReloadNode.Name.Count )
     {
+      Info("Requestin hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
       LastGameLibTime = 0;
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..
       GameLibName = ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena );
@@ -360,18 +339,45 @@ main( s32 ArgCount, const char ** Args )
       EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
     }
 
+    {
+      // Have to call this at least once
+      SplitAndQueueOctreeNodesForInit(EngineResources);
 
-    Assert(ThreadLocal_ThreadIndex == 0);
-    thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
-    Ensure( RewindArena(TLS->TempMemory) );
+      for (;;)
+      {
+        r32 CurrentMS = (r32)GetHighPrecisionClock();
+        r32 ThisMs = (CurrentMS - LastMs);
+        r32 TargetMs = 32.f;
+        s32 MSUntilFrameTime = Max(0, s32(TargetMs - ThisMs));
 
-    r32 CurrentMS = (r32)GetHighPrecisionClock();
-    r32 RealDt = (CurrentMS - LastMs)/1000.0f;
-    LastMs = CurrentMS;
-    Plat->dt = RealDt;
-    Plat->GameTime += RealDt;
+        if (MSUntilFrameTime > 10)
+        {
+          SplitAndQueueOctreeNodesForInit(EngineResources);
+          SleepMs(10);
+        }
+        else
+        {
+          SleepMs(MSUntilFrameTime);
+          break;
+        }
+      }
+    }
 
-    MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+    {
+      r32 CurrentMS = (r32)GetHighPrecisionClock();
+      r32 ThisMs = (CurrentMS - LastMs);
+      r32 RealDt = ThisMs/1000.0f;
+
+      LastMs = CurrentMS;
+      Plat->dt = RealDt;
+      Plat->GameTime += RealDt;
+
+      Assert(ThreadLocal_ThreadIndex == 0);
+      thread_local_state *TLS = GetThreadLocalState(ThreadLocal_ThreadIndex);
+      Ensure( RewindArena(TLS->TempMemory) );
+
+      MAIN_THREAD_ADVANCE_DEBUG_SYSTEM(RealDt);
+    }
   }
 
 #if 0

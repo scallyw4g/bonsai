@@ -155,7 +155,7 @@ poof(
     {
       Assert(Count > 0);
 
-      u64 PointerTrue = True;
+      u64 PointerTrue  = True;
       u64 PointerFalse = False;
 
       b32 Result = True;
@@ -189,7 +189,7 @@ poof(
               {
                 member.is_enum?
                 {
-                  Result &= Serialize(Bytes, (u32*)&Element->(member.name));
+                  Result &= Serialize(Bytes, (u32*)&Element->(member.name)); // enum
                 }
                 {
                   member.is_array?
@@ -198,7 +198,7 @@ poof(
                       member.has_tag(array_length)?
                       {
                         // TODO(Jesse): Should this really be a safe cast?
-                        umm ThisCount = umm(Element->member.tag_value(array_length));
+                        umm ThisCount = umm((member.tag_value(array_length)));
                       }
                       {
                         umm ThisCount = member.array;
@@ -207,7 +207,13 @@ poof(
                     }
                   }
                   {
-                    Result &= Serialize(Bytes, &Element->(member.name));
+                    member.name?
+                    {
+                      Result &= Serialize(Bytes, &Element->(member.name)); // default
+                    }
+                    {
+                      /// NOTE(Jesse): This path is here because of a bug in poof, issue #19
+                    }
                   }
                 }
               }
@@ -312,7 +318,7 @@ poof(
                     member.has_tag(array_length)?
                     {
                       // TODO(Jesse): Should this really be a safe cast?
-                      umm Count = umm(Element->member.tag_value(array_length));
+                      umm Count = umm((member.tag_value(array_length)));
                     }
                     {
                       umm Count = member.array;
@@ -445,6 +451,47 @@ poof(
 )
 
 poof(
+  func serdes_collection(element_type, type_poof_symbol collection_name )
+  {
+    @var collection_type (element_type.name)_(collection_name)
+
+    link_internal b32
+    Serialize( u8_cursor_block_array *Bytes, collection_type *Collection)
+    {
+      auto i = AtElements(Collection);
+      u64 ElementCount = u64(GetIndex(&i));
+      b32 Result = Write(Bytes, ElementCount);
+
+      IterateOver(Collection, Element, EIndex)
+      {
+        Result &= Serialize(Bytes, Element);
+      }
+
+      MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+      return Result;
+    }
+
+    link_internal b32
+    Deserialize( u8_cursor *Bytes, collection_type *Collection, memory_arena *Memory)
+    {
+      u64 ElementCount = Read_u64(Bytes);
+      Collection->Memory = Memory;
+
+      b32 Result = True;
+      RangeIterator_t(u64, EIndex, ElementCount)
+      {
+        element_type.name Element = {};
+        Result &= Deserialize(Bytes, &Element, Memory);
+        Push(Collection, &Element);
+      }
+
+      MAYBE_READ_DEBUG_OBJECT_DELIM();
+      return Result;
+    }
+  }
+)
+
+poof(
   func serdes_struct(type)
   {
     serialize_struct(type)
@@ -457,6 +504,43 @@ poof(
   {
     serialize_vector(type)
     deserialize_vector(type)
+  }
+)
+
+poof(
+  func serdes_dunion(type)
+  {
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count = 1)
+    {
+      switch (BaseElement->Type)
+      {
+        type.map_members(union_member)
+        {
+          union_member.has_tag(d_union_type_target)?
+          {
+            union_member.map(variant)
+            {
+              case type_(variant.name):
+              {
+                Serialize(Bytes, &BaseElement->(variant.name));
+              } break;
+            }
+          }
+        }
+
+        InvalidDefaultCase;
+      }
+
+      return False;
+    }
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count = 1)
+    {
+      NotImplemented;
+      return False;
+    }
   }
 )
 

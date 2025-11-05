@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:37:0
-
+// external/bonsai_stdlib/src/poof_functions.h:777:0
 struct bonsai_type_info_linked_list_node
 {
   b32 Tombstoned;
@@ -14,6 +13,7 @@ struct bonsai_type_info_hashtable
   /* OWNED_BY_THREAD_MEMBER() */
 };
 link_internal b32 AreEqual(bonsai_type_info_linked_list_node *Node1, bonsai_type_info_linked_list_node *Node2 );
+link_internal b32 AreEqual(bonsai_type_info *Element1, bonsai_type_info *Element2 );
 
 link_internal bonsai_type_info_linked_list_node *
 Allocate_bonsai_type_info_linked_list_node(memory_arena *Memory)
@@ -76,7 +76,7 @@ Insert(bonsai_type_info_linked_list_node *Node, bonsai_type_info_hashtable *Tabl
   bonsai_type_info_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
@@ -178,4 +178,11 @@ GetPtr(bonsai_type_info_hashtable *Hashtable, bonsai_type_info_hashtable_iterato
   }
   return Result;
 }
+
+link_inline bonsai_type_info *
+TryGetPtr(bonsai_type_info_hashtable *Hashtable, bonsai_type_info_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
  

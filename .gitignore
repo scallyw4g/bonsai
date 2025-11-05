@@ -3,6 +3,8 @@ levels/
 
 brushes/_untitled.brush
 
+runtime_settings/*
+
 bin/
 tmp/
 

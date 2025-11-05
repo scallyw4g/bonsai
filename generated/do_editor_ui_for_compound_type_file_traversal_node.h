@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:276:0
+// src/engine/editor.h:305:0
+struct file_traversal_node;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x26008A1B);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle file_traversal_node", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle file_traversal_node", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(file_traversal_type*,&Element->Type),
-        CSz("Type"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Type");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(file_traversal_type*, &Element->Type),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,14 +52,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->Dir),
-        CSz("Dir"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dir");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->Dir),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -55,25 +78,41 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element,
 
 
 
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(cs*,&Element->Name),
-        CSz("Name"),
-        Params
-        );
+                PushNewRow(Ui);
 
 
 
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Name");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(cs*, &Element->Name),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
 
-      PushNewRow(Ui);
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

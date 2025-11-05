@@ -1,0 +1,58 @@
+// src/engine/render_command.h:166:0
+enum work_queue_entry__bonsai_render_command_type
+{
+  type_work_queue_entry__bonsai_render_command_noop,
+  type_bonsai_render_command_initialize_noise_buffer,
+  type_bonsai_render_command_clear_all_framebuffers,
+  type_bonsai_render_command_allocate_texture,
+  type_bonsai_render_command_deallocate_texture,
+  type_bonsai_render_command_allocate_handles,
+  type_bonsai_render_command_deallocate_handles,
+  type_bonsai_render_command_deallocate_world_chunk,
+  type_bonsai_render_command_do_stuff,
+  type_bonsai_render_command_allocate_and_map_gpu_element_buffer,
+  type_bonsai_render_command_unmap_gpu_element_buffer,
+  type_bonsai_render_command_unmap_and_deallocate_pbo,
+  type_bonsai_render_command_setup_shader,
+  type_bonsai_render_command_teardown_shader,
+  type_bonsai_render_command_set_shader_uniform,
+  type_bonsai_render_command_draw_world_chunk_draw_list,
+  type_bonsai_render_command_draw_all_entities,
+  type_bonsai_render_command_gl_timer_init,
+  type_bonsai_render_command_gl_timer_start,
+  type_bonsai_render_command_gl_timer_end,
+  type_bonsai_render_command_gl_timer_read_value_and_histogram,
+  type_bonsai_render_command_cancel_all_noise_readback_jobs,
+};
+
+struct work_queue_entry__bonsai_render_command
+{
+  enum work_queue_entry__bonsai_render_command_type Type;
+
+  union
+  {
+    struct bonsai_render_command_initialize_noise_buffer bonsai_render_command_initialize_noise_buffer;
+    struct bonsai_render_command_clear_all_framebuffers bonsai_render_command_clear_all_framebuffers;
+    struct bonsai_render_command_allocate_texture bonsai_render_command_allocate_texture;
+    struct bonsai_render_command_deallocate_texture bonsai_render_command_deallocate_texture;
+    struct bonsai_render_command_allocate_handles bonsai_render_command_allocate_handles;
+    struct bonsai_render_command_deallocate_handles bonsai_render_command_deallocate_handles;
+    struct bonsai_render_command_deallocate_world_chunk bonsai_render_command_deallocate_world_chunk;
+    struct bonsai_render_command_do_stuff bonsai_render_command_do_stuff;
+    struct bonsai_render_command_allocate_and_map_gpu_element_buffer bonsai_render_command_allocate_and_map_gpu_element_buffer;
+    struct bonsai_render_command_unmap_gpu_element_buffer bonsai_render_command_unmap_gpu_element_buffer;
+    struct bonsai_render_command_unmap_and_deallocate_pbo bonsai_render_command_unmap_and_deallocate_pbo;
+    struct bonsai_render_command_setup_shader bonsai_render_command_setup_shader;
+    struct bonsai_render_command_teardown_shader bonsai_render_command_teardown_shader;
+    struct bonsai_render_command_set_shader_uniform bonsai_render_command_set_shader_uniform;
+    struct bonsai_render_command_draw_world_chunk_draw_list bonsai_render_command_draw_world_chunk_draw_list;
+    struct bonsai_render_command_draw_all_entities bonsai_render_command_draw_all_entities;
+    struct bonsai_render_command_gl_timer_init bonsai_render_command_gl_timer_init;
+    struct bonsai_render_command_gl_timer_start bonsai_render_command_gl_timer_start;
+    struct bonsai_render_command_gl_timer_end bonsai_render_command_gl_timer_end;
+    struct bonsai_render_command_gl_timer_read_value_and_histogram bonsai_render_command_gl_timer_read_value_and_histogram;
+    struct bonsai_render_command_cancel_all_noise_readback_jobs bonsai_render_command_cancel_all_noise_readback_jobs;
+  };
+};
+
+

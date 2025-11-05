@@ -1,0 +1,363 @@
+// external/bonsai_stdlib/src/poof_functions.h:2600:0
+
+
+
+
+struct gpu_readback_buffer_block
+{
+  /* u32 Index; */
+  umm At;
+  gpu_readback_buffer Elements[8];
+};
+
+struct gpu_readback_buffer_block_array_index
+{
+  umm Index; 
+};
+
+struct gpu_readback_buffer_block_array
+{
+  gpu_readback_buffer_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
+  memory_arena *Memory; poof(@no_serialize)
+  
+};
+
+link_internal gpu_readback_buffer_block_array
+GpuReadbackBufferBlockArray(memory_arena *Memory)
+{
+  gpu_readback_buffer_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(gpu_readback_buffer_block_array_index *Thing1, gpu_readback_buffer_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
+  {
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( gpu_readback_buffer_block_array_index ) );
+
+    return Result;
+  }
+  else
+  {
+    return (Thing1 == Thing2);
+  }
+}
+
+link_internal b32
+AreEqual(gpu_readback_buffer_block_array_index Thing1, gpu_readback_buffer_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( gpu_readback_buffer_block_array_index ) );
+
+  return Result;
+}
+
+
+typedef gpu_readback_buffer_block_array gpu_readback_buffer_paged_list;
+
+link_internal gpu_readback_buffer_block_array_index
+operator++( gpu_readback_buffer_block_array_index &I0 )
+{
+  I0.Index++;
+  return I0;
+}
+
+link_internal b32
+operator<( gpu_readback_buffer_block_array_index I0, gpu_readback_buffer_block_array_index I1 )
+{
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( gpu_readback_buffer_block_array_index I0, gpu_readback_buffer_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
+  return Result;
+}
+
+link_inline umm
+GetIndex( gpu_readback_buffer_block_array_index *Index)
+{
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal gpu_readback_buffer_block_array_index
+ZerothIndex( gpu_readback_buffer_block_array *Arr )
+{
+  return {};
+}
+
+link_internal gpu_readback_buffer_block_array_index
+Capacity( gpu_readback_buffer_block_array *Arr )
+{
+  gpu_readback_buffer_block_array_index Result = {Arr->BlockCount * 8};
+  return Result;
+}
+
+link_internal gpu_readback_buffer_block_array_index
+AtElements( gpu_readback_buffer_block_array *Arr )
+{
+  gpu_readback_buffer_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( gpu_readback_buffer_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal gpu_readback_buffer_block_array_index
+LastIndex( gpu_readback_buffer_block_array *Arr )
+{
+  gpu_readback_buffer_block_array_index Result = {};
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
+  return Result;
+}
+
+link_internal umm
+Count( gpu_readback_buffer_block_array *Arr )
+{
+  auto Result = AtElements(Arr).Index;
+  return Result;
+}
+
+link_internal gpu_readback_buffer_block *
+GetBlock( gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index )
+{
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  gpu_readback_buffer_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
+}
+
+link_internal gpu_readback_buffer *
+GetPtr( gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+
+  gpu_readback_buffer_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  gpu_readback_buffer *Result = (Block->Elements + ElementIndex);
+  return Result;
+}
+
+
+link_internal gpu_readback_buffer *
+GetPtr( gpu_readback_buffer_block_array *Arr, umm Index )
+{
+  gpu_readback_buffer_block_array_index I = {Index};
+  return GetPtr(Arr, I);
+}
+
+
+link_internal gpu_readback_buffer *
+TryGetPtr( gpu_readback_buffer_block_array *Arr, gpu_readback_buffer_block_array_index Index)
+{
+  gpu_readback_buffer * Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
+  {
+    Result = GetPtr(Arr, Index);
+  }
+  return Result;
+}
+
+link_internal gpu_readback_buffer *
+TryGetPtr( gpu_readback_buffer_block_array *Arr, umm Index)
+{
+  auto Result = TryGetPtr(Arr, gpu_readback_buffer_block_array_index{Index});
+  return Result;
+}
+
+
+
+
+
+link_internal cs
+CS( gpu_readback_buffer_block_array_index Index )
+{
+  return FSz("(%u)", Index.Index);
+}
+
+link_internal gpu_readback_buffer *
+Set( gpu_readback_buffer_block_array *Arr,
+  gpu_readback_buffer *Element,
+  gpu_readback_buffer_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  gpu_readback_buffer_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = *Element;
+  return Slot;
+}
+
+link_internal void
+NewBlock( gpu_readback_buffer_block_array *Arr )
+{
+  gpu_readback_buffer_block  *NewBlock     = Allocate( gpu_readback_buffer_block , Arr->Memory,                 1);
+  gpu_readback_buffer_block **NewBlockPtrs = Allocate( gpu_readback_buffer_block*, Arr->Memory, Arr->BlockCount+1);
+
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
+  {
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
+  }
+
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
+}
+
+link_internal void
+RemoveUnordered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index)
+{
+  auto LastI = LastIndex(Array);
+  Assert(Index.Index <= LastI.Index);
+
+  auto LastElement = GetPtr(Array, LastI);
+  Set(Array, LastElement, Index);
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index IndexToRemove)
+{
+  Assert(IndexToRemove.Index < Array->ElementCount);
+
+  gpu_readback_buffer *Prev = {};
+
+  gpu_readback_buffer_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
+  {
+    gpu_readback_buffer *E = GetPtr(Array, Index);
+
+    if (Prev)
+    {
+      *Prev = *E;
+    }
+
+    Prev = E;
+  }
+
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
+    }
+  }
+}
+
+link_internal gpu_readback_buffer_block_array_index
+Find( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Query)
+{
+  gpu_readback_buffer_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  IterateOver(Array, E, Index)
+  {
+    if ( E == Query )
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+
+
+link_internal b32
+IsValid(gpu_readback_buffer_block_array_index *Index)
+{
+  gpu_readback_buffer_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  b32 Result = (AreEqual(Index, &Test) == False);
+  return Result;
+}
+
+link_internal gpu_readback_buffer *
+Push( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element)
+{
+  Assert(Array->Memory);
+
+  if (AtElements(Array) == Capacity(Array))
+  {
+    NewBlock(Array);
+  }
+
+  gpu_readback_buffer *Result = Set(Array, Element, AtElements(Array));
+
+  Array->ElementCount += 1;
+
+  return Result;
+}
+
+link_internal gpu_readback_buffer *
+Push( gpu_readback_buffer_block_array *Array )
+{
+  gpu_readback_buffer Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
+link_internal void
+Insert( gpu_readback_buffer_block_array *Array, gpu_readback_buffer_block_array_index Index, gpu_readback_buffer *Element )
+{
+  Assert(Index.Index <= LastIndex(Array).Index);
+  Assert(Array->Memory);
+
+  // Alocate a new thingy
+  gpu_readback_buffer *Prev = Push(Array);
+
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
+  {
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
+    Prev = E;
+  }
+
+  *Prev = *Element;
+}
+
+link_internal void
+Insert( gpu_readback_buffer_block_array *Array, u32 Index, gpu_readback_buffer *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
+}
+
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
+
+
+

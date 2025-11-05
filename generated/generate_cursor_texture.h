@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/texture_cursor.cpp:10:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct texture_cursor
 {
   texture *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   texture *At;
   texture *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal texture_cursor
 TextureCursor(umm ElementCount, memory_arena* Memory)
 {
   texture *Start = (texture*)PushStruct(Memory, sizeof(texture)*ElementCount, 1, 0);
-  texture_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  texture_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(texture_cursor *Cursor, umm ElementIndex)
   texture *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal texture*
+TryGetPtr(texture_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal texture*

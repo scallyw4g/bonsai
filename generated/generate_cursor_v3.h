@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:40:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct v3_cursor
 {
   v3 *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   v3 *At;
   v3 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal v3_cursor
 V3Cursor(umm ElementCount, memory_arena* Memory)
 {
   v3 *Start = (v3*)PushStruct(Memory, sizeof(v3)*ElementCount, 1, 0);
-  v3_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  v3_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(v3_cursor *Cursor, umm ElementIndex)
   v3 *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal v3*
+TryGetPtr(v3_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal v3*

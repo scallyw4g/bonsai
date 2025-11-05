@@ -67,7 +67,10 @@ struct model
 {
   vox_data Vox;
 
+  // TODO(Jesse): Delete
   lod_element_buffer Meshes; poof(@no_serialize)
+
+  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
 
   /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;
@@ -95,6 +98,7 @@ poof(maybe(model_buffer))
 #include <generated/maybe_model_buffer.h>
 
 
+#if 0
 link_internal voxel *
 TryGetVoxel(chunk_data *ChunkData, v3i P)
 {
@@ -103,6 +107,7 @@ TryGetVoxel(chunk_data *ChunkData, v3i P)
   if (Index > -1) { Result = ChunkData->Voxels + Index; }
   return Result;
 }
+#endif
 
 struct maybe_model
 {

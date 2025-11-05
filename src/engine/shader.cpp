@@ -1,7 +1,7 @@
-poof(gen_shader_uniform_push(camera));
+poof(set_shader_uniform(camera));
 #include <generated/gen_shader_uniform_push_camera.h>
 
-poof(gen_shader_uniform_push(light));
+poof(set_shader_uniform(light));
 #include <generated/gen_shader_uniform_push_light.h>
 
 
@@ -12,19 +12,23 @@ BindEngineUniform(shader_uniform *Uniform)
 {
   TIMED_FUNCTION();
 
+  s32 Count = Uniform->Count ? s32(*Uniform->Count) : 1;
+
   switch(Uniform->Type)
   {
     case ShaderUniform_Light:
     {
       TIMED_BLOCK("ShaderUniform_Light");
-      GL.Uniform3fv(Uniform->ID, 1, &Uniform->Light->Position.E[0]);
+      Assert(Count);
+      GetGL()->Uniform3fv(Uniform->ID, Count, &Uniform->Light->Position.E[0]);
       END_BLOCK();
     } break;
 
     case ShaderUniform_Camera:
     {
       TIMED_BLOCK("ShaderUniform_Camera");
-      GL.Uniform3fv(Uniform->ID, 1, &Uniform->Camera->RenderSpacePosition.E[0]);
+      Assert(Count);
+      GetGL()->Uniform3fv(Uniform->ID, Count, &Uniform->Camera->RenderSpacePosition.E[0]);
       END_BLOCK();
     } break;
 

@@ -1,6 +1,6 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:7:0
-
+// external/bonsai_stdlib/src/poof_functions.h:799:0
 link_internal b32 AreEqual(ui_toggle_linked_list_node *Node1, ui_toggle_linked_list_node *Node2 );
+link_internal b32 AreEqual(ui_toggle *Element1, ui_toggle *Element2 );
 
 link_internal ui_toggle_linked_list_node *
 Allocate_ui_toggle_linked_list_node(memory_arena *Memory)
@@ -63,7 +63,7 @@ Insert(ui_toggle_linked_list_node *Node, ui_toggle_hashtable *Table)
   ui_toggle_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
@@ -165,4 +165,11 @@ GetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
   }
   return Result;
 }
+
+link_inline ui_toggle *
+TryGetPtr(ui_toggle_hashtable *Hashtable, ui_toggle_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
 

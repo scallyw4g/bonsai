@@ -1,5 +1,4 @@
-// src/engine/asset.h:197:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2199:0
 struct maybe_asset_ptr
 {
   maybe_tag Tag;

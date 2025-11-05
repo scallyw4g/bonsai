@@ -8,7 +8,7 @@ SetDrawBuffers(framebuffer *FBO)
     Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
   }
 
-  GL.DrawBuffers((s32)FBO->Attachments, Attachments);
+  GetGL()->DrawBuffers((s32)FBO->Attachments, Attachments);
 }
 
 void
@@ -49,15 +49,10 @@ AllocateAndInitSsaoNoise(v2i ApplicationResolution, ao_render_group *AoGroup, me
   return SsaoNoiseTexture;
 }
 
-link_internal lighting_render_group
-MakeLightingRenderGroup()
-{
-  lighting_render_group Result = {};
-  return Result;
-}
-
-shader
-MakeCompositeShader( memory_arena *GraphicsMemory,
+link_internal b32
+MakeCompositeShader(
+                     shader *Shader,
+                     memory_arena *GraphicsMemory,
                      v2 *ApplicationResolution,
                      g_buffer_textures *gTextures,
                      texture *ShadowMap,
@@ -78,69 +73,48 @@ MakeCompositeShader( memory_arena *GraphicsMemory,
                      tone_mapping_type *ToneMappingType
                    )
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
+  b32 Result = CompileShaderPair( Shader, CSz(BONSAI_SHADER_PATH "composite.vertexshader"), CSz(BONSAI_SHADER_PATH "composite.fragmentshader") );
+  if (Result)
+  {
+    Shader->Uniforms = ShaderUniformBuffer(11, GraphicsMemory);
 
-  shader_uniform **Current = &Shader.FirstUniform;
+    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
+    /* Current = &(*Current)->Next; */
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
-  /* Current = &(*Current)->Next; */
+    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
+    /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
+    /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap"); */
+    /* Current = &(*Current)->Next; */
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
-  /* Current = &(*Current)->Next; */
+    /* *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao"); */
+    /* Current = &(*Current)->Next; */
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap"); */
-  /* Current = &(*Current)->Next; */
+    /* InitShaderUniform(&Shader, 8, ShadowMVP, "ShadowMVP"); *1/ */
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao"); */
-  /* Current = &(*Current)->Next; */
+    /* InitShaderUniform(&Shader, 9, Camera, "CameraP"); *1/ */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BloomTex, "BloomTex");
-  Current = &(*Current)->Next;
 
-  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyAccum, "TransparencyAccum");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, TransparencyCount, "TransparencyCount");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, LuminanceTex, "LuminanceTex");
-  Current = &(*Current)->Next;
-
-  /* *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP"); */
-  /* Current = &(*Current)->Next; */
-
-  /* *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP"); */
-  /* Current = &(*Current)->Next; */
-
-  *Current = GetUniform(GraphicsMemory, &Shader, Exposure, "Exposure");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, (int*)ToneMappingType, "ToneMappingType");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
-
+    InitShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
+    InitShaderUniform(Shader, 1, BloomTex, "BloomTex");
+    InitShaderUniform(Shader, 2, TransparencyAccum, "TransparencyAccum");
+    InitShaderUniform(Shader, 3, TransparencyCount, "TransparencyCount");
+    InitShaderUniform(Shader, 4, (u32*)UseLightingBloom, "UseLightingBloom");
+    InitShaderUniform(Shader, 5, (u32*)BravoilMyersOIT, "BravoilMyersOIT");
+    InitShaderUniform(Shader, 6, (u32*)BravoilMcGuireOIT, "BravoilMcGuireOIT");
+    InitShaderUniform(Shader, 7, LuminanceTex, "LuminanceTex");
+    InitShaderUniform(Shader, 8, Exposure, "Exposure");
+    InitShaderUniform(Shader, 9, (int*)ToneMappingType, "ToneMappingType");
+    InitShaderUniform(Shader, 10, ApplicationResolution, "ApplicationResolution");
+  }
 
   AssertNoGlErrors;
 
-  return Shader;
+  return Result;
 }
 
-shader
-MakeLightingShader( memory_arena *GraphicsMemory,
+link_internal void
+MakeLightingShader( lighting_render_group *Group,
 
                     v2 *ApplicationResolution,
                     g_buffer_textures *gTextures,
@@ -172,112 +146,69 @@ MakeLightingShader( memory_arena *GraphicsMemory,
                     b32 *UseLightingBloom
                   )
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "Lighting.vertexshader"), CSz(BONSAI_SHADER_PATH "Lighting.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  InitializeLightingRenderGroup( Group,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor");
-  Current = &(*Current)->Next;
+   &gTextures->Color,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
+   &gTextures->Normal,
 
-/*   *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
-  /* Current = &(*Current)->Next; */
+   &gTextures->Depth,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
-  Current = &(*Current)->Next;
+   ShadowMap,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMap, "shadowMap");
-  Current = &(*Current)->Next;
+   Ssao,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Ssao, "Ssao");
-  Current = &(*Current)->Next;
+   AccumTex,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, AccumTex, "TransparencyAccum");
-  Current = &(*Current)->Next;
+   CountTex,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, CountTex, "TransparencyCount");
-  Current = &(*Current)->Next;
+   BravoilMyersOIT,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
+   BravoilMcGuireOIT,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
+   InverseViewMatrix,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
-  Current = &(*Current)->Next;
+   InverseProjectionMatrix,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
-  Current = &(*Current)->Next;
+   ShadowMVP,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMVP, "ShadowMVP");
-  Current = &(*Current)->Next;
+   &Lights->ColorTex,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->ColorTex, "LightColors");
-  Current = &(*Current)->Next;
+   &Lights->PositionTex,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->PositionTex, "LightPositions");
-  Current = &(*Current)->Next;
+   &Lights->IndexToUV,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->IndexToUV, "LightIndexToUV");
-  Current = &(*Current)->Next;
+   &Lights->Count,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
-  Current = &(*Current)->Next;
+   Camera,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, Camera, "CameraP");
-  Current = &(*Current)->Next;
+   SunPosition,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SunPosition, "SunPosition");
-  Current = &(*Current)->Next;
+   SunColor,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, SunColor, "SunColor");
-  Current = &(*Current)->Next;
+   FogColor,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, FogColor, "FogColor");
-  Current = &(*Current)->Next;
+   FogPower,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, FogPower, "FogPower");
-  Current = &(*Current)->Next;
+   (u32*)UseSsao,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseSsao, "UseSsao");
-  Current = &(*Current)->Next;
+   (u32*)UseShadowMapping,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseShadowMapping, "UseShadowMapping");
-  Current = &(*Current)->Next;
+   (u32*)UseLightingBloom,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, (u32*)UseLightingBloom, "UseLightingBloom");
-  Current = &(*Current)->Next;
+   ApplicationResolution,
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
+   ShadowMapResolution
+  );
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ShadowMapResolution, "ShadowMapResolution");
-  Current = &(*Current)->Next;
-
-  AssertNoGlErrors;
-
-#if 0
-  if (Lights)
-  {
-    *Current = GetUniform(GraphicsMemory, &Shader, Lights->Lights, "Lights");
-    Current = &(*Current)->Next;
-
-    *Current = GetUniform(GraphicsMemory, &Shader, &Lights->Count, "LightCount");
-    Current = &(*Current)->Next;
-  }
-#endif
-
-  return Shader;
 }
 
 framebuffer
 GenFramebuffer()
 {
   framebuffer Framebuffer = {};
-  GL.GenFramebuffers(1, &Framebuffer.ID);
+  GetGL()->GenFramebuffers(1, &Framebuffer.ID);
 
   return Framebuffer;
 }
@@ -291,42 +222,41 @@ CreateAoRenderGroup(memory_arena *Mem)
   return Result;
 }
 
-link_internal gaussian_render_group
-MakeGaussianBlurRenderGroup(v2 *ApplicationResolution, memory_arena *GraphicsMemory)
+link_internal void
+InitGaussianBlurRenderGroup(gaussian_render_group *Result, v2 *ApplicationResolution, memory_arena *GraphicsMemory)
 {
-  gaussian_render_group Result = {};
-
-  Result.Shader = LoadShaders(CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader"));
+  Ensure(CompileShaderPair(&Result->Shader, CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Gaussian.fragmentshader")));
 
   {
-    shader_uniform **Current = &Result.Shader.FirstUniform;
-
-    *Current = GetUniform(GraphicsMemory, &Result.Shader, ApplicationResolution, "ApplicationResolution");
-    Current = &(*Current)->Next;
+    Result->Shader.Uniforms = ShaderUniformBuffer(1, GraphicsMemory);
+    InitShaderUniform(&Result->Shader, 0, ApplicationResolution, "ApplicationResolution");
   }
 
 
-  Result.FBOs[0] = GenFramebuffer();
-  Result.FBOs[1] = GenFramebuffer();
+  Result->FBOs[0] = GenFramebuffer();
+  Result->FBOs[1] = GenFramebuffer();
 
   // TODO(Jesse)(make_texture_rgba): Can we use MakeTexture_RGBA
   for (s32 Index = 0; Index < 2; ++Index)
   {
-    GL.BindFramebuffer(GL_FRAMEBUFFER, Result.FBOs[Index].ID);
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Result->FBOs[Index].ID);
+    AssertNoGlErrors;
 
     u32 Channels = 4;
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RGBA32F;
-    Result.Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
+    Result->Textures[Index] = GenTexture(V2i(*ApplicationResolution), CSz("GaussianBlur"), StorageFormat, Channels, Slices);
+    GetGL()->TexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, s32(ApplicationResolution->x), s32(ApplicationResolution->y), 0, GL_RGBA, GL_FLOAT, 0);
 
-    FramebufferTexture(&Result.FBOs[Index], Result.Textures+Index);
-    SetDrawBuffers(&Result.FBOs[Index]);
+    AssertNoGlErrors;
+
+    FramebufferTexture(&Result->FBOs[Index], Result->Textures+Index);
+    AssertNoGlErrors;
+    SetDrawBuffers(&Result->FBOs[Index]);
+    AssertNoGlErrors;
 
     Ensure(CheckAndClearFramebuffer());
   }
-
-  return Result;
 }
 
 g_buffer_render_group *
@@ -338,105 +268,78 @@ CreateGbuffer(memory_arena *Memory)
 }
 
 
-shader
-CreateGbufferShader(graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
+link_internal b32
+CreateGbufferShader(shader *Shader, graphics *Graphics, memory_arena *GraphicsMemory, v3 *MinClipP_worldspace, v3 *MaxClipP_worldspace, m4 *ViewProjection, camera *Camera, texture *ColorPaletteTexture)
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
+  b32 Result = CompileShaderPair(Shader, CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "gBuffer.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader->Uniforms = ShaderUniformBuffer(12, GraphicsMemory);
 
-  *Current = GetUniform(GraphicsMemory, &Shader, MinClipP_worldspace, "MinClipP_worldspace");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, MaxClipP_worldspace, "MaxClipP_worldspace");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
-
+  InitShaderUniform(Shader, 0, MinClipP_worldspace, "MinClipP_worldspace");
+  InitShaderUniform(Shader, 1, MaxClipP_worldspace, "MaxClipP_worldspace");
+  InitShaderUniform(Shader, 2, ViewProjection, "ViewProjection");
   // @janky_model_matrix_bs
-  *Current = GetUniform(GraphicsMemory, &Shader, &IdentityMatrix, "ModelMatrix");
-  Current = &(*Current)->Next;
+  InitShaderUniform(Shader, 3, &IdentityMatrix, "ModelMatrix");
+  InitShaderUniform(Shader, 4, ColorPaletteTexture, "ColorPalette");
+  InitShaderUniform(Shader, 5, &Camera->Frust.farClip, "FarClip");
+  InitShaderUniform(Shader, 6, &Camera->Frust.nearClip, "NearClip");
+  InitShaderUniform(Shader, 7, &Camera->RenderSpacePosition, "CameraToWorld");
+  InitShaderUniform(Shader, 8, &Graphics->OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
+  InitShaderUniform(Shader, 9, &Graphics->Settings.MajorGridDim, "MajorGridDim");
+  InitShaderUniform(Shader, 10, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
+  InitShaderUniform(Shader, 11, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
 
-  *Current = GetUniform(GraphicsMemory, &Shader, ColorPaletteTexture, "ColorPalette");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.farClip, "FarClip");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->Frust.nearClip, "NearClip");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Camera->RenderSpacePosition, "CameraToWorld");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.OffsetOfWorldCenterToGrid, "OffsetOfWorldCenterToGrid");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.MajorGridDim, "MajorGridDim");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMajorGrid, "DrawMajorGrid");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &Graphics->Settings.DrawMinorGrid, "DrawMinorGrid");
-  Current = &(*Current)->Next;
-
-  return Shader;
+  return Result;
 }
 
-shader
-MakeSsaoShader(      memory_arena *GraphicsMemory,
-                g_buffer_textures *gTextures,
-                          texture *SsaoNoiseTexture,
-                               v3 *SsaoNoiseTile,
-                               m4 *InverseViewMatrix,
-                               m4 *InverseProjectionMatrix,
-                               m4 *ViewProjection )
+link_internal b32
+MakeSsaoShader( shader *Shader,
+          memory_arena *GraphicsMemory,
+     g_buffer_textures *gTextures,
+               texture *SsaoNoiseTexture,
+                    v3 *SsaoNoiseTile,
+                    m4 *InverseViewMatrix,
+                    m4 *InverseProjectionMatrix,
+                    m4 *ViewProjection )
 {
-  shader Shader = LoadShaders( CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
+  b32 Result = CompileShaderPair(Shader, CSz(STDLIB_SHADER_PATH "Passthrough.vertexshader"), CSz(BONSAI_SHADER_PATH "Ao.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  if (Result)
+  {
+    Shader->Uniforms = ShaderUniformBuffer(7, GraphicsMemory);
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
-  /* Current = &(*Current)->Next; */
+    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Color, "gColor"); */
+    /* Current = &(*Current)->Next; */
 
-  /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
-  /* Current = &(*Current)->Next; */
+    /* *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Position, "gPosition"); */
+    /* Current = &(*Current)->Next; */
 
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Normal, "gNormal");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, &gTextures->Depth, "gDepth");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTexture, "SsaoNoiseTexture");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, SsaoNoiseTile, "SsaoNoiseTile");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseViewMatrix, "InverseViewMatrix");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, InverseProjectionMatrix, "InverseProjectionMatrix");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(GraphicsMemory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
+    InitShaderUniform(Shader, 0, &gTextures->Normal, "gNormal");
+    InitShaderUniform(Shader, 1, &gTextures->Depth, "gDepth");
+    InitShaderUniform(Shader, 2, SsaoNoiseTexture, "SsaoNoiseTexture");
+    InitShaderUniform(Shader, 3, SsaoNoiseTile, "SsaoNoiseTile");
+    InitShaderUniform(Shader, 4, InverseViewMatrix, "InverseViewMatrix");
+    InitShaderUniform(Shader, 5, InverseProjectionMatrix, "InverseProjectionMatrix");
+    InitShaderUniform(Shader, 6, ViewProjection, "ViewProjection");
+  }
 
   AssertNoGlErrors;
 
-  return Shader;
+  return Result;
 }
 
 link_internal bool
 InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 {
-  GL.BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, AoGroup->FBO.ID);
 
   b32 IsDepthTexture = False;
-  AoGroup->Texture = MakeTexture_SingleChannel( ApplicationResolution/2, CSz("AoTexture"), IsDepthTexture, TextureStorageFormat_R16F);
+  AoGroup->Texture = MakeTexture_SingleChannel(
+      ApplicationResolution/2,
+      0,
+      CSz("AoTexture"),
+      IsDepthTexture,
+      TextureStorageFormat_R16F );
 
   FramebufferTexture(&AoGroup->FBO, &AoGroup->Texture);
   SetDrawBuffers(&AoGroup->FBO);
@@ -453,9 +356,9 @@ InitAoRenderGroup(v2i ApplicationResolution, ao_render_group *AoGroup)
 bool
 InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer)
 {
-  GL.GenQueries(1, &gBuffer->GlTimerObject);
+  GetGL()->GenQueries(1, &gBuffer->GlTimerObject);
 
-  GL.BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, gBuffer->FBO.ID);
 
   gBuffer->Textures.Color  = MakeTexture_RGBA(ApplicationResolution, (v4*)0, CSz("gBufferColor"),  1, TextureStorageFormat_RGBA16F);
   gBuffer->Textures.Normal = MakeTexture_RGB( ApplicationResolution, (v3*)0, CSz("gBufferNormal"), 1, TextureStorageFormat_RGBA16F);
@@ -476,62 +379,49 @@ InitGbufferRenderGroup(v2i ApplicationResolution, g_buffer_render_group *gBuffer
 }
 
 link_internal void
-InitRenderToTextureGroup(render_entity_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
+InitRenderToTextureGroup(render_to_texture_group *Group, texture *ColorPalette, memory_arena *Memory)
 {
   // TODO(Jesse): Can this not re-use the immediate mode GpuMap from the 3D renderer?
-  AllocateGpuElementBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Group->GeoBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   // TODO(Jesse): Should we not hard-code the depth texture size here?
   texture DepthTexture = MakeDepthTexture( V2i(1024), CSz("RenderToTexture Depth"));
   FramebufferDepthTexture(&DepthTexture);
 
-  Group->Shader = MakeRenderToTextureShader(Memory, &Group->ViewProjection, ColorPalette);
+  Ensure( MakeRenderToTextureShader(&Group->Shader, Memory, &Group->ViewProjection, ColorPalette) );
 
   Ensure(CheckAndClearFramebuffer());
 }
 
-link_internal shader
-MakeTransparencyShader(v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
+link_internal b32
+MakeTransparencyShader(shader *Shader, v2 *ApplicationResolution, b32 *BravoilMyersOIT, b32 *BravoilMcGuireOIT, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
-  shader Shader = LoadShaders( CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
+  b32 Result = CompileShaderPair(Shader, CSz(BONSAI_SHADER_PATH "gBuffer.vertexshader"), CSz(BONSAI_SHADER_PATH "3DTransparency.fragmentshader") );
 
-  shader_uniform **Current = &Shader.FirstUniform;
+  Shader->Uniforms = ShaderUniformBuffer(7, Memory);
 
-  *Current = GetUniform(Memory, &Shader, ViewProjection, "ViewProjection");
-  Current = &(*Current)->Next;
-
+  InitShaderUniform(Shader, 0, ViewProjection, "ViewProjection");
   // @janky_model_matrix_bs
-  *Current = GetUniform(Memory, &Shader, &IdentityMatrix, "ModelMatrix");
-  Current = &(*Current)->Next;
+  InitShaderUniform(Shader, 1, &IdentityMatrix, "ModelMatrix");
+  InitShaderUniform(Shader, 2, gBufferDepthTexture, "gBufferDepthTexture");
+  InitShaderUniform(Shader, 3, BravoilMyersOIT, "BravoilMyersOIT");
+  InitShaderUniform(Shader, 4, BravoilMcGuireOIT, "BravoilMcGuireOIT");
+  InitShaderUniform(Shader, 5, ApplicationResolution, "ApplicationResolution");
+  InitShaderUniform(Shader, 6, ColorPaletteTexture, "ColorPalette");
 
-  *Current = GetUniform(Memory, &Shader, gBufferDepthTexture, "gBufferDepthTexture");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(Memory, &Shader, BravoilMyersOIT, "BravoilMyersOIT");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(Memory, &Shader, BravoilMcGuireOIT, "BravoilMcGuireOIT");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(Memory, &Shader, ApplicationResolution, "ApplicationResolution");
-  Current = &(*Current)->Next;
-
-  *Current = GetUniform(Memory, &Shader, ColorPaletteTexture, "ColorPalette");
-  Current = &(*Current)->Next;
-
-  return Shader;
+  return Result;
 }
 
 link_internal void
 InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group *Group, v2i TextureSize, m4 *ViewProjection, texture *gBufferDepthTexture, texture *ColorPaletteTexture, memory_arena *Memory)
 {
-  AllocateGpuElementBuffer(&Group->GpuBuffer, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Group->GpuBuffer, DataType_v3, (u32)Megabytes(1));
 
   Group->FBO = GenFramebuffer();
-  GL.BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
+  GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Group->FBO.ID);
 
   // TODO(Jesse)(make_texture_rgba) : ?
   {
@@ -539,7 +429,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RGBA16F;
     Group->AccumTex = GenTexture(TextureSize, CSz("Transparency Accum"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
+    GetGL()->TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RGBA, GL_FLOAT, 0);
   }
 
   {
@@ -547,7 +437,7 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
     u32 Slices = 1;
     texture_storage_format StorageFormat = TextureStorageFormat_RG16F;
     Group->RevealTex = GenTexture(TextureSize, CSz("Transparency Reveal"), StorageFormat, Channels, Slices);
-    GL.TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
+    GetGL()->TexImage2D( GL_TEXTURE_2D, 0, StorageFormat, TextureSize.x, TextureSize.y, 0, GL_RG, GL_FLOAT, 0);
   }
 
   // NOTE(Jesse): These have to be bound in this order because they're cleared
@@ -556,83 +446,114 @@ InitTransparencyRenderGroup(render_settings *Settings, transparency_render_group
   FramebufferTexture(&Group->FBO, &Group->RevealTex);
   SetDrawBuffers(&Group->FBO);
 
-  Group->Shader = MakeTransparencyShader(&Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, ColorPaletteTexture, Memory);
+  MakeTransparencyShader(&Group->Shader, &Settings->ApplicationResolution, &Settings->BravoilMyersOIT, &Settings->BravoilMcGuireOIT, ViewProjection, gBufferDepthTexture, ColorPaletteTexture, Memory);
 
   Ensure( CheckAndClearFramebuffer() );
+}
+
+
+#define RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH "runtime_settings/graphics_settings.bin"
+
+link_internal void
+DefaultRenderSettings(render_settings *Settings, engine_settings *EngineSettings, r32 GameCameraFOV)
+{
+    Settings->ToneMappingType = ToneMappingType_Exposure;
+
+    Settings->UseSsao           = True;
+
+    Settings->BravoilMyersOIT   = True;
+    Settings->BravoilMcGuireOIT = True;
+
+    /* Settings->UseShadowMapping = True; */
+    Settings->UseLightingBloom = True;
+
+    /* Settings->DrawMajorGrid = True; */
+    /* Settings->DrawMinorGrid = True; */
+    Settings->MajorGridDim = 16.f;
+
+    Settings->ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+    Settings->ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+    Settings->LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+    Settings->iApplicationResolution  = GetApplicationResolution(EngineSettings);
+    Settings->iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+    Settings->iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+
+    Settings->GameCameraFOV = GameCameraFOV;
+
+    {
+      lighting_settings *Lighting = &Settings->Lighting;
+
+      Lighting->tDay = -1.5f;
+
+      Lighting->SunP = V3(-1.f, -1.f, 0.35f);
+
+      Lighting->DawnHSV = V3(0.11f, 0.48f, 0.87f);
+      Lighting->SunHSV  = V3(0.00f, 0.00f, 0.00f);
+      Lighting->DuskHSV = V3(0.74f, 0.35f, 0.38f);
+      Lighting->MoonHSV = V3(0.63f, 0.15f, 0.22f);
+
+      Lighting->DawnIntensity = 0.78f;
+      Lighting->SunIntensity  = 1.10f;
+      Lighting->DuskIntensity = 0.66f;
+      Lighting->MoonIntensity = 0.18f;
+    }
 }
 
 link_internal b32
 GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *GraphicsMemory)
 {
+  Assert(FutexIsSignaled(&Result->Initialized) == False);
+
+
+  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
+  {
+    v2i SR = V2i(1024*2);
+    if (!InitializeShadowRenderGroup(Result, SG, SR))
+    {
+      SoftError("Initializing Shadow Buffer");// return False;
+    }
+  }
+
+
   Init_Global_QuadVertexBuffer();
 
   Result->Memory = GraphicsMemory;
 
-  Result->Settings.ToneMappingType = ToneMappingType_Exposure;
+  StandardCamera(&Result->GameCamera, 100000.f, 500.f);
+  StandardCamera(&Result->DebugCamera, 100000.f, 500.f);
+  Result->Camera = &Result->GameCamera;
 
-  Result->Settings.UseSsao           = True;
+  if (FileExists(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH))
+  {
+    u8_cursor Bytes = BeginDeserialization(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH), GetTranArena());
+    if (Deserialize(&Bytes, &Result->Settings, GetTranArena()) == False)
+    {
+      Result->Settings = {};
+      Remove(CSz(RUNTIME_SETTINGS__GRAPHICS_SETTINGS_PATH));
+      DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
+    }
+    FinalizeDeserialization(&Bytes);
+  }
+  else
+  {
+    DefaultRenderSettings(&Result->Settings, EngineSettings, Result->Camera->Frust.FOV);
+  }
 
-  Result->Settings.BravoilMyersOIT   = True;
-  Result->Settings.BravoilMcGuireOIT = True;
-
-  Result->Settings.UseShadowMapping = True;
-  Result->Settings.UseLightingBloom = True;
-
-  Result->Settings.DrawMajorGrid = True;
-  Result->Settings.DrawMinorGrid = True;
-  Result->Settings.MajorGridDim = 8.f;
+  Result->PrevSettings = Result->Settings;
 
   Result->Exposure = 1.5f;
 
-  Result->Settings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
-  Result->Settings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
-  Result->Settings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
 
-  Result->Settings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
-  Result->Settings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
-  Result->Settings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
-
-  Result->FogPower = 2.f;
-
-  Result->FogColor = V3(0.01f, 0.04f, 0.25f);
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
-  {
-    lighting_settings *Lighting = &Result->Settings.Lighting;
-
-    Lighting->tDay = 0.75f;
-
-    Lighting->SunP = V3(-1.f, -1.f, 0.35f);
-
-    Lighting->DawnColor = V3(0.37f, 0.11f, 0.10f);
-    Lighting->SunColor  = V3(0.17f, 0.13f, 0.17f);
-    Lighting->DuskColor = V3(0.13f, 0.12f, 0.14f);
-    Lighting->MoonColor = V3(0.04f, 0.07f, 0.18f);
-
-    Lighting->SunIntensity  = 1.10f;
-    Lighting->MoonIntensity = 0.10f;
-    Lighting->DawnIntensity = 0.70f;
-    Lighting->DuskIntensity = 0.50f;
-  }
-
-  StandardCamera(&Result->GameCamera, 10000.f, 500.f);
-  StandardCamera(&Result->DebugCamera, 10000.f, 500.f);
-
-  Result->Camera = &Result->GameCamera;
-
-  AllocateGpuElementBuffer(Result->GpuBuffers + 0, DataType_v3, (u32)Megabytes(1));
-  AllocateGpuElementBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Result->ImmediateGeometry, DataType_v3, (u32)Megabytes(1));
+  /* AllocateGpuBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1)); */
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);
   if (!InitGbufferRenderGroup(Result->Settings.iApplicationResolution, gBuffer))
   {
     Error("Initializing g_buffer_render_group"); return False;
-  }
-
-  shadow_render_group *SG = Allocate(shadow_render_group, GraphicsMemory, 1);
-  if (!InitializeShadowRenderGroup(Result, SG, Result->Settings.iShadowMapResolution))
-  {
-    SoftError("Initializing Shadow Buffer");// return False;
   }
 
   ao_render_group *AoGroup = CreateAoRenderGroup(GraphicsMemory);
@@ -641,7 +562,13 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Error("Initializing ao_render_group"); return False;
   }
 
-  InitTransparencyRenderGroup(&Result->Settings, &Result->Transparency, Result->Settings.iApplicationResolution, &gBuffer->ViewProjection, &gBuffer->Textures.Depth, &Result->ColorPaletteTexture, GraphicsMemory);
+  InitTransparencyRenderGroup( &Result->Settings,
+                               &Result->Transparency,
+                                Result->Settings.iApplicationResolution,
+                               &gBuffer->ViewProjection,
+                               &gBuffer->Textures.Depth,
+                               &Result->ColorPaletteTexture,
+                                GraphicsMemory);
 
   // Initialize the lighting group
   {
@@ -657,38 +584,36 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     Lights->IndexToUV = 1.0f / MAX_LIGHTS;
 
-    Lighting->Shader =
-      MakeLightingShader( GraphicsMemory,
+    MakeLightingShader( Lighting,
 
-                         &Result->Settings.ApplicationResolution,
-                         &gBuffer->Textures,
+                        &Result->Settings.ApplicationResolution,
+                        &gBuffer->Textures,
 
-                         &Result->Settings.ShadowMapResolution,
-                         &SG->ShadowMap,
+                        &Result->Settings.ShadowMapResolution,
+                        &SG->ShadowMap,
 
-                         &AoGroup->Texture,
+                        &AoGroup->Texture,
 
-                         &Result->Transparency.AccumTex,
-                         &Result->Transparency.RevealTex,
-                         &Result->Settings.BravoilMyersOIT,
-                         &Result->Settings.BravoilMcGuireOIT,
+                        &Result->Transparency.AccumTex,
+                        &Result->Transparency.RevealTex,
+                        &Result->Settings.BravoilMyersOIT,
+                        &Result->Settings.BravoilMcGuireOIT,
 
-                         &gBuffer->InverseViewMatrix,
-                         &gBuffer->InverseProjectionMatrix,
-                         &SG->Shader.MVP,
+                        &gBuffer->InverseViewMatrix,
+                        &gBuffer->InverseProjectionMatrix,
+                        &SG->Shader.ViewProjection,
 
-                         &Lighting->Lights,
+                        &Lighting->Lights,
                          Result->Camera,
-                         &Result->Settings.Lighting.SunP,
-                         &Result->Settings.Lighting.CurrentSunColor,
+                        &Result->Settings.Lighting.SunP,
+                        &Result->Settings.Lighting.CurrentSunColor,
 
-                         &Result->FogColor,
-                         &Result->FogPower,
+                        &Result->Settings.Lighting.FogColor,
+                        &Result->Settings.Lighting.FogPower,
 
-                         &Result->Settings.UseSsao,
-                         &Result->Settings.UseShadowMapping,
-                         &Result->Settings.UseLightingBloom
-                        );
+                        &Result->Settings.UseSsao,
+                        &Result->Settings.UseShadowMapping,
+                        &Result->Settings.UseLightingBloom );
 
     // Luminance FBO
     {
@@ -696,7 +621,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
       Lighting->FBO = GenFramebuffer();
 
-      GL.BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Lighting->FBO.ID);
       FramebufferTexture(&Lighting->FBO, &Lighting->LuminanceTex);
       /* FramebufferTexture(&Lighting->FBO, &Lighting->Bloom.Tex); */
       SetDrawBuffers(&Lighting->FBO);
@@ -704,7 +629,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     }
 
 
-    InitBloomRenderGroup(&Lighting->Bloom, &Result->Settings, GraphicsMemory);
+    InitBloomRenderGroup(&Result->Bloom, &Result->Settings, GraphicsMemory);
   }
 
   engine_resources *Resources = GetEngineResources();
@@ -712,7 +637,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   // TODO(Jesse): Move RTTGroup onto graphics?
   InitRenderToTextureGroup(&Resources->RTTGroup, &Result->ColorPaletteTexture, GraphicsMemory);
 
-  Result->Gaussian      = MakeGaussianBlurRenderGroup(&Result->Settings.ApplicationResolution, GraphicsMemory);
+  InitGaussianBlurRenderGroup(&Result->Gaussian, &Result->Settings.ApplicationResolution, GraphicsMemory);
 
   AoGroup->NoiseTexture = AllocateAndInitSsaoNoise(Result->Settings.iApplicationResolution, AoGroup, GraphicsMemory);
 
@@ -723,42 +648,167 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     Push(&Result->ColorPalette, MAGICAVOXEL_DEFAULT_PALETTE[ColorIndex]/255.f);
   }
 
-  gBuffer->gBufferShader =
-    CreateGbufferShader(Result, GraphicsMemory, &Result->MinClipP_worldspace, &Result->MaxClipP_worldspace, &gBuffer->ViewProjection, Result->Camera, &Result->ColorPaletteTexture);
 
-  AoGroup->Shader = MakeSsaoShader( GraphicsMemory,
-                                   &gBuffer->Textures,
-                                   &AoGroup->NoiseTexture,
-                                   &AoGroup->NoiseTile,
-                                   &gBuffer->InverseViewMatrix,
-                                   &gBuffer->InverseProjectionMatrix,
-                                   &gBuffer->ViewProjection );
+  Ensure(
+      CreateGbufferShader(&gBuffer->gBufferShader,
+                           Result,
+                           GraphicsMemory,
+                          &Result->MinClipP_worldspace,
+                          &Result->MaxClipP_worldspace,
+                          &gBuffer->ViewProjection,
+                           Result->Camera,
+                          &Result->ColorPaletteTexture));
+
+  MakeSsaoShader(&AoGroup->Shader,
+                  GraphicsMemory,
+                 &gBuffer->Textures,
+                 &AoGroup->NoiseTexture,
+                 &AoGroup->NoiseTile,
+                 &gBuffer->InverseViewMatrix,
+                 &gBuffer->InverseProjectionMatrix,
+                 &gBuffer->ViewProjection );
 
   AoGroup->SsaoKernelUniform = GetShaderUniform(&AoGroup->Shader, "SsaoKernel");
 
   // Initialize the composite group
   {
-    Result->CompositeGroup.Shader = MakeCompositeShader( GraphicsMemory,
-                                                        &Result->Settings.ApplicationResolution,
-                                                        &gBuffer->Textures,
-                                                        &SG->ShadowMap,
-                                                        &AoGroup->Texture,
-                                                        &Result->Lighting.LuminanceTex,
-                                                        &Result->Lighting.Bloom.Tex,
-                                                        &Result->Transparency.AccumTex,
-                                                        &Result->Transparency.RevealTex, 
-                                                        &SG->Shader.MVP,
-                                                         Result->Camera,
-                                                        &Result->Exposure,
-                                                        &Result->Settings.UseLightingBloom,
-                                                        &Result->Settings.BravoilMyersOIT,
-                                                        &Result->Settings.BravoilMcGuireOIT,
-                                                        &Result->Settings.ToneMappingType
-                                                       );
+     Ensure(MakeCompositeShader(&Result->CompositeGroup.Shader,
+                                 GraphicsMemory,
+                                &Result->Settings.ApplicationResolution,
+                                &gBuffer->Textures,
+                                &SG->ShadowMap,
+                                &AoGroup->Texture,
+                                &Result->Lighting.LuminanceTex,
+                                &Result->Bloom.Tex,
+                                &Result->Transparency.AccumTex,
+                                &Result->Transparency.RevealTex, 
+                                &SG->Shader.ViewProjection,
+                                 Result->Camera,
+                                &Result->Exposure,
+                                &Result->Settings.UseLightingBloom,
+                                &Result->Settings.BravoilMyersOIT,
+                                &Result->Settings.BravoilMcGuireOIT,
+                                &Result->Settings.ToneMappingType
+                               ));
   }
 
-  GL.Enable(GL_CULL_FACE);
-  GL.CullFace(GL_BACK);
+
+  //
+  // World Edit RC
+  //
+  world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
+
+   v3 ChunkDim = V3(66, 66, 66);
+  v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
+
+  {
+    {
+      terrain_shaping_render_context *TerrainShapingRC = &Result->TerrainShapingRC;
+      InitializeWorldEditRenderContext(WorldEditRC, &TerrainShapingRC->ChunkDim, &TerrainShapingRC->WorldspaceChunkBasis, &TerrainShapingRC->ChunkResolution, {});
+    }
+
+    RangeIterator(Index, 3)
+    {
+      WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
+      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
+
+      WorldEditRC->PingPongTextures[Index] = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("PingPongTexture"), 1, TextureStorageFormat_RGBA32F);
+
+      FramebufferTexture(&WorldEditRC->PingPongFBOs[Index], &WorldEditRC->PingPongTextures[Index]);
+      SetDrawBuffers(&WorldEditRC->PingPongFBOs[Index]);
+
+      Ensure(CheckAndClearFramebuffer());
+    }
+  }
+
+  //
+  // Terrain Shaping
+  //
+
+  {
+    terrain_shaping_render_context *RC = &Result->TerrainShapingRC;
+    InitializeTerrainShapingRenderContext(RC, ChunkDim, {}, {}, RC->ReshapeFunc);
+
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGBA(V2i(68, 68*68), Cast(v4*, 0), CSz("TerrainShaping"), 1, TextureStorageFormat_RGBA32F);
+
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  //
+  // Terrain Derivs
+  //
+
+  {
+    terrain_derivs_render_context *RC = &Result->TerrainDerivsRC;
+    InitializeTerrainDerivsRenderContext(RC, {});
+
+    RC->DestFBO = GenFramebuffer();
+    RC->DestTex = MakeTexture_RGB(TextureDim, Cast(v3*, 0), CSz("TerrainDerivs"), 1, TextureStorageFormat_RGB32F);
+
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, RC->DestFBO.ID);
+
+    FramebufferTexture(&RC->DestFBO, &RC->DestTex);
+    SetDrawBuffers(&RC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  //
+  // Terrain Decoration
+  //
+
+  {
+    terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
+    InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {});
+
+    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
+    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[0];
+
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
+
+    FramebufferTexture(TerrainDecorationRC->DestFBO, TerrainDecorationRC->DestTex);
+    SetDrawBuffers(TerrainDecorationRC->DestFBO);
+
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+
+
+
+  //
+  // Terrain Finalize RC
+  //
+  {
+    terrain_finalize_render_context *TerrainFinalizeRC = &Result->TerrainFinalizeRC;
+    Result->TerrainFinalizeRC.FBO = GenFramebuffer();
+    GetGL()->BindFramebuffer(GL_FRAMEBUFFER, Result->TerrainFinalizeRC.FBO.ID);
+
+    {
+      u32 Channels = 1;
+      u32 Slices = 1;
+      // @shared_terrain_texture
+      TerrainFinalizeRC->DestTex = GenTexture(TextureDim, CSz("TerrainFinalizeTexture"), TextureStorageFormat_R32UI, Channels, Slices, False);
+      GetGL()->TexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, TextureDim.x, TextureDim.y, 0, GL_RED_INTEGER, GL_UNSIGNED_INT, 0);
+      AssertNoGlErrors;
+      GetGL()->BindTexture(GL_TEXTURE_2D, 0);
+    }
+    FramebufferTexture(&Result->TerrainFinalizeRC.FBO, &TerrainFinalizeRC->DestTex);
+    SetDrawBuffers(&Result->TerrainFinalizeRC.FBO);
+
+
+    /* InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, &Result->TerrainShapingRC.DestTex); */
+    InitializeTerrainFinalizeRenderContext(TerrainFinalizeRC, 0);
+    Ensure(CheckAndClearFramebuffer());
+  }
+
+  GetGL()->Enable(GL_CULL_FACE);
+  GetGL()->CullFace(GL_BACK);
 
   AssertNoGlErrors;
 

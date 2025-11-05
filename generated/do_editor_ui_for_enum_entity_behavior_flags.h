@@ -1,19 +1,20 @@
-// src/engine/editor.cpp:181:0
-
+// src/engine/editor.h:484:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1CF5460C);
+
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "enum value.type value.name", Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle entity_behavior_flags", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element), Params))
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum EntityBehaviorFlags_None", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_None == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_None == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -34,9 +35,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element), Params))
+    if (Button(Ui, CSz("Gravity"), UiId(Window, "enum EntityBehaviorFlags_Gravity", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_Gravity == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -57,9 +58,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element), Params))
+    if (Button(Ui, CSz("WorldCollision"), UiId(Window, "enum EntityBehaviorFlags_WorldCollision", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_WorldCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -80,9 +81,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element), Params))
+    if (Button(Ui, CSz("EntityCollision"), UiId(Window, "enum EntityBehaviorFlags_EntityCollision", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_EntityCollision == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -103,9 +104,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element), Params))
+    if (Button(Ui, CSz("UnspawnOnParticleSystemTerminate"), UiId(Window, "enum EntityBehaviorFlags_UnspawnOnParticleSystemTerminate", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_UnspawnOnParticleSystemTerminate == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -126,9 +127,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element), Params))
+    if (Button(Ui, CSz("FitCollisionVolumeToModel"), UiId(Window, "enum EntityBehaviorFlags_FitCollisionVolumeToModel", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_FitCollisionVolumeToModel == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -149,9 +150,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element), Params))
+    if (Button(Ui, CSz("DefatulCameraGhostBehavior"), UiId(Window, "enum EntityBehaviorFlags_DefatulCameraGhostBehavior", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_DefatulCameraGhostBehavior == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -172,9 +173,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element), Params))
+    if (Button(Ui, CSz("WorldCenter"), UiId(Window, "enum EntityBehaviorFlags_WorldCenter", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_WorldCenter == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -195,9 +196,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element), Params))
+    if (Button(Ui, CSz("Default"), UiId(Window, "enum EntityBehaviorFlags_Default", Element, ThisHash), Params))
     {
-      if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
+            if (EntityBehaviorFlags_Default == entity_behavior_flags(0))
       {
         *Element = entity_behavior_flags(0);
       }
@@ -217,10 +218,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_behavior_flags *Elemen
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+
   }
   else
   {
     PushNewRow(Ui);
   }
 }
+
 

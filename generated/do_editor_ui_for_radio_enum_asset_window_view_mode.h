@@ -1,5 +1,4 @@
-// src/engine/editor.h:683:0
-
+// src/engine/editor.h:577:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
 {
@@ -18,8 +17,9 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-    { CSz("AssetFiles"), UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
-    { CSz("AssetTable"), UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
+        { CSz("AssetFiles"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
+    { CSz("AssetTable"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
+
   };
 
   ui_toggle_button_handle_buffer ButtonBuffer = {
@@ -27,7 +27,7 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
     ButtonHandles
   };
 
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_RadioButtons));
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
   return Result;
 }
 
@@ -39,6 +39,7 @@ DoEditorUi( renderer_2d *Ui,
   window_layout *Window,
   asset_window_view_mode *Element,
   cs GroupName,
+  u32 ParentHash,
   ui_render_params *Params = &DefaultUiRenderParams_Generic,
   ui_toggle_button_group_flags ExtraFlags = ToggleButtonGroupFlags_None)
 {

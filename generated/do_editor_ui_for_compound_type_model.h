@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:267:0
+// src/engine/editor.h:305:0
+struct model;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x4BAE73F);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle model", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(vox_data*,&Element->Vox),
-        CSz("Vox"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Vox");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(vox_data*, &Element->Vox),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,14 +52,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(lod_element_buffer*,&Element->Meshes),
-        CSz("Meshes"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Meshes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(lod_element_buffer*, &Element->Meshes),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -55,14 +78,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(untextured_3d_geometry_buffer*,&Element->TransparentMesh),
-        CSz("TransparentMesh"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mesh");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(gpu_mapped_element_buffer*, &Element->Mesh),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -70,14 +104,25 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(animation*,&Element->Animation),
-        CSz("Animation"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("TransparentMesh");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(untextured_3d_geometry_buffer*, &Element->TransparentMesh),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -85,16 +130,65 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Element, cs Name, ui_r
 
 
 
+        
+
+
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Dim),
-        CSz("Dim"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Animation");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(animation*, &Element->Animation),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Dim),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

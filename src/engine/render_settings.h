@@ -8,53 +8,38 @@ enum tone_mapping_type
   ToneMappingType_AGX_Punchy,
 };
 
-struct lighting_settings poof(@version(1))
+struct lighting_settings
+poof(@do_editor_ui)
 {
   b8 AutoDayNightCycle;
+  r32 tDaySpeed = 10.f; poof(@ui_value_range(1.f, 30.f))
 
   r32 tDay;      poof(@ui_value_range(-PI32, PI32))
 
   v3 SunP;       poof(@ui_skip)
 
+  r32 FogPower;
+  v3  FogColor; poof(@custom_ui(PushColumn(Ui, CSz("FogColor")); DoColorPickerToggle(Ui, Window, &Element->FogColor, False, ThisHash)))
+
   f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 DawnColor;
+  v3 DawnHSV; poof(@custom_ui(PushColumn(Ui, CSz("DawnColor")); DoColorPickerToggle(Ui, Window, &Element->DawnHSV, False, ThisHash)))
 
   f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
-  v3 SunColor;
+  v3 SunHSV; poof(@custom_ui(PushColumn(Ui, CSz("SunColor")); DoColorPickerToggle(Ui, Window, &Element->SunHSV, False, ThisHash)))
 
   f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
   v3 DuskColor;
+  v3 DuskHSV; poof(@custom_ui(PushColumn(Ui, CSz("DuskColor")); DoColorPickerToggle(Ui, Window, &Element->DuskHSV, False, ThisHash)))
 
   f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
-  v3 MoonColor;
+  v3 MoonHSV; poof(@custom_ui(PushColumn(Ui, CSz("MoonColor")); DoColorPickerToggle(Ui, Window, &Element->MoonHSV, False, ThisHash)))
 
   // Computed from the above parameters and passed to the shader
   v3 CurrentSunColor;
 };
 
-struct lighting_settings_0
-{
-  b8 AutoDayNightCycle;
-
-  r32 tDay;      poof(@ui_value_range(-PI32, PI32))
-
-  v3 SunP;       poof(@ui_value_range(-1.f, 1.f))
-
-  v3 DawnColor;
-  v3 SunColor;
-  v3 DuskColor;
-  v3 MoonColor;
-
-  f32 SunIntensity;  poof(@ui_value_range(0.f, 3.f))
-  f32 MoonIntensity; poof(@ui_value_range(0.f, 3.f))
-  f32 DawnIntensity; poof(@ui_value_range(0.f, 3.f))
-  f32 DuskIntensity; poof(@ui_value_range(0.f, 3.f))
-
-  // Computed from the above parameters and passed to the shader
-  v3 CurrentSunColor;
-};
-
-struct render_settings poof(@version(1))
+struct render_settings
+poof(@do_editor_ui)
 {
   // NOTE(Jesse): These have to be 32bit because they get passed to shaders
   // and the shader system is too dumb to handle 8-bit or 1-bit values
@@ -67,13 +52,18 @@ struct render_settings poof(@version(1))
 
   b32 DrawMajorGrid;
   b32 DrawMinorGrid;
-  r32 MajorGridDim;             poof(@ui_value_range(0, 32))
+  r32 MajorGridDim;          poof(@ui_value_range(0, 32))
 
-  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
-  b32 Headless;                 poof(@ui_skip)
+  b32 DrawCameraGhost;
+  r32 CameraGhostSize = 1.f; poof(@ui_value_range(1, 100))
 
+  // Moved OffsetOfWorldCenterToGrid to graphics
+  v3 Ignored;   poof(@ui_skip)
+  b32 Headless; poof(@ui_skip)
 
   tone_mapping_type ToneMappingType;
+
+  f32 GameCameraFOV; poof(@ui_value_range(5, 250))
 
   lighting_settings Lighting;
 
@@ -86,25 +76,5 @@ struct render_settings poof(@version(1))
   v2i iLuminanceMapResolution;
 };
 
-struct render_settings_0
-{
-  // NOTE(Jesse): These have to be 32bit because they get passed to shaders
-  // and the shader system is too dumb to handle 8-bit or 1-bit values
-  b32 UseSsao;
-  b32 UseShadowMapping;
-  b32 UseLightingBloom;
-
-  b32 BravoilMyersOIT;
-  b32 BravoilMcGuireOIT;
-
-  b32 DrawMajorGrid;
-  b32 DrawMinorGrid;
-  r32 MajorGridDim;             poof(@ui_value_range(0, 32))
-
-  v3 OffsetOfWorldCenterToGrid; poof(@ui_skip)
-  b32 Headless;                 poof(@ui_skip)
-
-  tone_mapping_type ToneMappingType;
-
-  lighting_settings Lighting;
-};
+poof(are_equal(render_settings))
+#include <generated/are_equal_render_settings.h>

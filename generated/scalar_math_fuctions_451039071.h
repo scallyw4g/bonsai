@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/maff.h:367:0
-
+// external/bonsai_stdlib/src/maff.h:371:0
 inline r32
 Clamp( r32 Min, r32 Value, r32 Max )
 {
@@ -42,4 +41,5 @@ Clamp( s64 Min, s64 Value, s64 Max )
   if (Value < Min) { Value = Min; }
   return Value;
 }
+
 

@@ -1,0 +1,45 @@
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+uniform sampler2D DerivsTex;
+uniform sampler2D InputTex;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
+  v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);
+  v3 NormalValue = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  vec3 ColorValue = TexLookup.rgb;
+  f32 NoiseValue = TexLookup.a;
+
+  //
+  // -- user code --
+  //
+
+  {
+    if (length(ColorValue) < 0.01f)
+    {
+      ColorValue = V3(0.1f, 0.8f, 0.1f);
+    }
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

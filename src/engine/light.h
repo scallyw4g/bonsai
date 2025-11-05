@@ -5,6 +5,7 @@ struct light
 };
 
 struct game_lights
+poof(@do_editor_ui)
 {
   texture ColorTex;
   texture PositionTex;
@@ -18,16 +19,60 @@ struct game_lights
 };
 
 
-
 struct lighting_render_group
+poof(
+      @do_editor_ui
+      @render_pass
+      @vert_source_file(BONSAI_SHADER_PATH "Lighting.vertexshader")
+      @frag_source_file(BONSAI_SHADER_PATH "Lighting.fragmentshader")
+    )
 {
-  game_lights Lights;
+  shader         Program;
+  shader_uniform Uniforms[26];
 
   framebuffer FBO;
-  texture     LuminanceTex;
-  shader      Shader;
 
-  bloom_render_group Bloom;
+  texture *gColor;               poof (@uniform)
+  texture *gNormal;              poof (@uniform)
+  texture *gDepth;               poof (@uniform)
+  texture *shadowMap;            poof (@uniform)
+  texture *Ssao;                 poof (@uniform)
+
+  texture *TransparencyAccumTex; poof (@uniform)
+  texture *TransparencyCountTex; poof (@uniform)
+
+  b32 *BravoilMyersOIT;          poof (@uniform)
+  b32 *BravoilMcGuireOIT;        poof (@uniform)
+
+  m4 *InverseViewMatrix;         poof (@uniform)
+  m4 *InverseProjectionMatrix;   poof (@uniform)
+  m4 *ShadowMVP;                 poof (@uniform)
+
+  // from struct game_lights {
+    texture *LightColors;        poof (@uniform)
+    texture *LightPositions;     poof (@uniform)
+    f32 *LightIndexToUV;         poof (@uniform)
+    s32 *LightCount;             poof (@uniform)
+  // }
+
+  camera *Camera;                poof (@uniform)
+
+   v3 *SunPosition;              poof (@uniform)
+   v3 *SunColor;                 poof (@uniform)
+   v3 *FogColor;                 poof (@uniform)
+  f32 *FogPower;                 poof (@uniform)
+
+  b32 *UseSsao;                  poof (@uniform)
+
+  b32 *UseShadowMapping;         poof (@uniform)
+  b32 *UseLightingBloom;         poof (@uniform)
+
+  v2 *ApplicationResolution;      poof (@uniform)
+  v2 *ShadowMapResolution;        poof (@uniform)
+
+
+  texture LuminanceTex;
+  game_lights Lights;
 };
 
 link_internal void
@@ -56,10 +101,10 @@ DoLight(game_lights *Lights, v3 RenderPosition, v3 Color)
 /* #define SHADOW_MAP_RESOLUTION_X (2*1024) */
 /* #define SHADOW_MAP_RESOLUTION_Y (2*1024) */
 
-#define SHADOW_MAP_X 512
-#define SHADOW_MAP_Y 512
-#define SHADOW_MAP_Z_MIN -512
-#define SHADOW_MAP_Z_MAX  512
+#define SHADOW_MAP_X 1024*4
+#define SHADOW_MAP_Y 1024*4
+#define SHADOW_MAP_Z_MIN -1024*4
+#define SHADOW_MAP_Z_MAX  1024*4
 
 /* #define SHADOW_MAP_X 512 */
 /* #define SHADOW_MAP_Y 512 */

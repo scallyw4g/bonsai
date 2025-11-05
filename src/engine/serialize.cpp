@@ -3,10 +3,12 @@
 link_internal u8_cursor_block_array
 BeginSerialization()
 {
+  Assert(Global_SerializeTypeTableArena == 0);
+
   Global_SerializeTypeTableArena = AllocateArena();
   Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
 
-  u8_cursor_block_array Blocks = {};
+  u8_cursor_block_array Blocks = U8CursorBlockArray(Global_SerializeTypeTableArena);
   {
     Blocks.BlockSize = Megabytes(32);
     u8_cursor First = U8Cursor(Blocks.BlockSize, Global_SerializeTypeTableArena);
@@ -19,7 +21,7 @@ BeginSerialization()
 link_internal b32
 FinalizeSerialization(u8_cursor_block_array *Blocks, const char *Filename)
 {
-  u8_cursor_block_array TypeBufferOutputStream = {};
+  u8_cursor_block_array TypeBufferOutputStream = U8CursorBlockArray(Global_SerializeTypeTableArena);
   {
     TypeBufferOutputStream.BlockSize = Megabytes(32);
 
@@ -68,6 +70,8 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
       // TODO(Jesse): Audit .level savefiles and remove this.. it's hella legacy
       case 0:
       {
+        Assert(Global_SerializeTypeTable.Size == 0);
+        Assert(Global_SerializeTypeTable.Elements == 0);
         Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(64, Global_SerializeTypeTableArena);
 
         {
@@ -96,6 +100,9 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
       {
         bonsai_type_info_buffer TypeInfoBuffer = {};
         Deserialize(&LevelBytes, &TypeInfoBuffer, Global_SerializeTypeTableArena);
+
+        Assert(Global_SerializeTypeTable.Size == 0);
+        Assert(Global_SerializeTypeTable.Elements == 0);
         Global_SerializeTypeTable = Allocate_bonsai_type_info_hashtable(NextPowerOfTwo(TypeInfoBuffer.Count), Global_SerializeTypeTableArena);
 
         IterateOver(&TypeInfoBuffer, TypeInfo, TypeInfoIndex)
@@ -104,7 +111,7 @@ BeginDeserialization(cs Filename, memory_arena *TempMemory)
         }
       } break;
 
-      default: { SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); }
+      default: { SoftError("Could not load level file claiming version (%lu), bailing.", LevelHeaderVersion); LevelBytes = {}; }
     }
   }
   return LevelBytes;

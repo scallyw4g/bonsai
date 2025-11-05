@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/ansi_stream.h:3:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct u8_cursor
 {
   u8 *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u8 *At;
   u8 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal u8_cursor
 U8Cursor(umm ElementCount, memory_arena* Memory)
 {
   u8 *Start = (u8*)PushStruct(Memory, sizeof(u8)*ElementCount, 1, 0);
-  u8_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u8_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(u8_cursor *Cursor, umm ElementIndex)
   u8 *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal u8*
+TryGetPtr(u8_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal u8*

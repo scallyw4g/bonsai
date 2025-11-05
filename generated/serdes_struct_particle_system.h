@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:287:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("particle_system");
-  Result.Version =1 ;
+  Result.Version =  1 ;
 
   /* type.map(member) */
   /* { */
@@ -24,146 +23,166 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
 
-  Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber =1;
+    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
+  u64 VersionNumber = 1;
   Serialize(Bytes, &VersionNumber);
 
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
     particle_system *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Entropy);
+                                Result &= Serialize(Bytes, &Element->Entropy); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, (u32*)&Element->SpawnType);
 
+                    Result &= Serialize(Bytes, (u32*)&Element->SpawnType); // enum
 
 
 
-    Result &= Serialize(Bytes, &Element->Drag);
 
+                            Result &= Serialize(Bytes, &Element->Drag); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Lifetime);
 
 
+                            Result &= Serialize(Bytes, &Element->Lifetime); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->EmissionDelay);
 
 
 
+                            Result &= Serialize(Bytes, &Element->EmissionDelay); // default
 
 
-    Result &= Serialize(Bytes, &Element->EmissionLifespan);
 
 
 
 
+                            Result &= Serialize(Bytes, &Element->EmissionLifespan); // default
 
-    Result &= Serialize(Bytes, &Element->ActiveParticles);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->LifespanMod);
+                            Result &= Serialize(Bytes, &Element->ActiveParticles); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLifespan);
 
+                            Result &= Serialize(Bytes, &Element->LifespanMod); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticlesPerSecond);
 
 
+                            Result &= Serialize(Bytes, &Element->ParticleLifespan); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLightEmission);
 
 
 
+                            Result &= Serialize(Bytes, &Element->ParticlesPerSecond); // default
 
 
-    Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance);
 
 
 
 
+                            Result &= Serialize(Bytes, &Element->ParticleLightEmission); // default
 
-    Result &= Serialize(Bytes, &Element->ParticleStartingTransparency);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleEndingTransparency);
+                            Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleStartingDim);
 
+                            Result &= Serialize(Bytes, &Element->ParticleStartingTransparency); // default
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleEndingDim);
 
 
+                            Result &= Serialize(Bytes, &Element->ParticleEndingTransparency); // default
 
 
 
-    Result &= Serialize(Bytes, &Element->ParticleTurbMin);
 
 
 
+                            Result &= Serialize(Bytes, &Element->ParticleStartingDim); // default
 
 
-    Result &= Serialize(Bytes, &Element->ParticleTurbMax);
 
 
 
 
+                            Result &= Serialize(Bytes, &Element->ParticleEndingDim); // default
 
-    Result &= Serialize(Bytes, &Element->SpawnRegion);
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->SystemMovementCoefficient);
+                            Result &= Serialize(Bytes, &Element->ParticleTurbMin); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission);
 
+                            Result &= Serialize(Bytes, &Element->ParticleTurbMax); // default
 
 
 
 
-    {
-      umm ThisCount = 6;
+
+
+                            Result &= Serialize(Bytes, &Element->SpawnRegion); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->SystemMovementCoefficient); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission); // default
+
+
+
+
+
+
+                        {
+            umm ThisCount = 6;
 
       Result &= Serialize(Bytes, Element->PackedHSVColors, ThisCount);
     }
@@ -172,9 +191,55 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 
 
 
+        
 
 
-    
+            
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -192,11 +257,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, particle_system *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <=1);
+  Assert(TypeInfo->Version <= 1);
 
   b32 Result = True;
 
-  if (TypeInfo->Version == 0)
+    if (TypeInfo->Version == 0)
   {
     particle_system_0 T0 = {};
     Result &= Deserialize(Bytes, &T0, Memory);
@@ -204,7 +269,7 @@ DeserializeVersioned(u8_cursor *Bytes, particle_system *Element, bonsai_type_inf
   }
 
 
-  if (TypeInfo->Version ==1)
+  if (TypeInfo->Version == 1)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -217,7 +282,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Entropy, Memory);
 
@@ -225,12 +290,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
+          Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Drag, Memory);
 
@@ -238,7 +303,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
 
@@ -246,7 +311,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
 
@@ -254,7 +319,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
@@ -262,7 +327,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
 
@@ -270,7 +335,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
 
@@ -278,7 +343,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
 
@@ -286,7 +351,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
 
@@ -294,7 +359,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
 
@@ -302,7 +367,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
 
@@ -310,7 +375,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
 
@@ -318,7 +383,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
 
@@ -326,7 +391,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
@@ -334,7 +399,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
 
@@ -342,7 +407,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
@@ -350,7 +415,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
@@ -358,7 +423,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
@@ -366,7 +431,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
 
@@ -374,7 +439,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
 
@@ -382,8 +447,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-  {
-    umm Count = 6;
+            {
+        umm Count = 6;
 
     Result &= Deserialize(Bytes, Element->PackedHSVColors, Memory, Count);
   }
@@ -392,9 +457,33 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
+    
 
 
+    
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -408,7 +497,7 @@ Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, um
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("particle_system"));
+        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("particle_system"));
 
     if (MaybeSerializedType.Tag)
     {

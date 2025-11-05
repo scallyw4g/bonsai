@@ -28,21 +28,20 @@ poof(push_render_command(work_queue_entry__bonsai_render_command))
 #include <generated/push_render_command_work_queue_entry__bonsai_render_command.h>
 
 link_internal void
-PushDeallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
+DeallocateHandles(work_queue *RenderQueue, gpu_element_buffer_handles *Handles)
 {
-  // @vertex_handle_primal
-  if (Handles->VertexHandle) { PushBonsaiRenderCommandDeallocateBuffers(RenderQueue, &Handles->VertexHandle, 3); }
+  PushBonsaiRenderCommandDeallocateHandles(RenderQueue, *Handles);
   Clear(Handles);
 }
 
-link_internal void
-PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh)
-{
-  Assert(Mesh->Type);
-  Assert(Mesh->At);
-  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateBuffers(Handles, Mesh)));
-  PushWorkQueueEntry(RenderQueue, &Work);
-}
+/* link_internal void */
+/* PushReallocateBuffersCommand(work_queue *RenderQueue, gpu_element_buffer_handles *Handles, untextured_3d_geometry_buffer *Mesh) */
+/* { */
+/*   Assert(Mesh->Type); */
+/*   Assert(Mesh->At); */
+/*   work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandReallocateBuffers(Handles, Mesh))); */
+/*   PushWorkQueueEntry(RenderQueue, &Work); */
+/* } */
 
 link_internal void
 PushClearAllFramebuffersCommand(work_queue *RenderQueue)
@@ -75,9 +74,9 @@ PushSetupShaderCommand(work_queue *RenderQueue, bonsai_render_command_shader_id 
 }
 
 link_internal void
-PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, world_chunk_ptr_paged_list *DrawList, shader *Shader)
+PushDrawWorldChunkDrawListCommand(work_queue *RenderQueue, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
-  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader)));
+  work_queue_entry Work = WorkQueueEntry(WorkQueueEntryBonsaiRenderCommand(BonsaiRenderCommandDrawWorldChunkDrawList(DrawList, Shader, Camera)));
   PushWorkQueueEntry(RenderQueue, &Work);
 }
 

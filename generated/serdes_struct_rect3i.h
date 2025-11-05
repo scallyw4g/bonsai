@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:271:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(rect3i *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("rect3i");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, rect3i *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,15 +33,27 @@ Serialize(u8_cursor_block_array *Bytes, rect3i *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     rect3i *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->Min);
+                                Result &= Serialize(Bytes, &Element->Min); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Max);
 
-    
+                            Result &= Serialize(Bytes, &Element->Max); // default
+
+
+
+
+
+
+
+
+            
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -63,7 +74,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, rect3i *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Min, Memory);
 
@@ -71,11 +82,19 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rect3i *Element, memory_arena *Memor
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Max, Memory);
 
+
+
+
+
+
+
+    
   
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -89,7 +108,7 @@ Deserialize(u8_cursor *Bytes, rect3i *Element, memory_arena *Memory, umm Count)
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

@@ -1,0 +1,15 @@
+uniform v3 ChunkResolution;
+
+uniform sampler2D InputTex;
+
+in vec2 UV;
+out vec3 Output;
+
+
+void main()
+{
+  ivec2 InputTexDim = ivec2(68);
+  ivec2 OutputTexDim = ivec2(66);
+
+  Output = ComputeNormal(InputTex, gl_FragCoord.xy, InputTexDim, OutputTexDim, ChunkResolution.z);
+}

@@ -13,9 +13,9 @@ struct mesh_freelist
 {
 #if BONSAI_INTERNAL
   bonsai_futex DebugFutex;
-  u32 MeshSize;
 #endif
 
+  u32 MeshSize;
   volatile freelist_entry *FirstFreeMesh;
 };
 
@@ -40,7 +40,7 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
   // NOTE(Jesse): So we include the 1*minsize in the 0th bucket, 2*minsize in 1th bucket, etc
   if (Size % WORLD_CHUNK_MESH_MIN_SIZE == 0) { Size = Size-1; }
 
-  u32 Index = Size/WORLD_CHUNK_MESH_MIN_SIZE;
+  u32 Index = (Size)/WORLD_CHUNK_MESH_MIN_SIZE;
   if (Index < TIERED_MESH_FREELIST_MAX_ELEMENTS)
   {
     Result = TieredFreelist->Start + Index;
@@ -51,13 +51,6 @@ TryGetTierForSize(tiered_mesh_freelist *TieredFreelist, u32 Size)
 
   return Result;
 }
-
-link_internal void
-MarkBufferForGrowth(untextured_2d_geometry_buffer *Dest, umm Grow)
-{
-  NotImplemented;
-}
-
 
 poof(
   func grow_buffer(buffer_t)
@@ -174,9 +167,9 @@ poof(
         auto Src1 = Rotate(Src[VertIndex + 1], Rot);
         auto Src2 = Rotate(Src[VertIndex + 2], Rot);
 
-        f32_reg Vert0;
-        f32_reg Vert1;
-        f32_reg Vert2;
+        f32_4x Vert0;
+        f32_4x Vert1;
+        f32_4x Vert2;
 
         Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
         Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -186,9 +179,9 @@ poof(
         Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
         Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
-        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
-        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.E[0]), result_primitive_t.name(Vert0.E[1]), result_primitive_t.name(Vert0.E[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.E[0]), result_primitive_t.name(Vert1.E[1]), result_primitive_t.name(Vert1.E[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.E[0]), result_primitive_t.name(Vert2.E[1]), result_primitive_t.name(Vert2.E[2]) }};
 
         Dest[0] = Result0;
         Dest[1] = Result1;
@@ -217,9 +210,9 @@ poof(
         auto Src1 = Src[VertIndex + 1];
         auto Src2 = Src[VertIndex + 2];
 
-        f32_reg Vert0;
-        f32_reg Vert1;
-        f32_reg Vert2;
+        f32_4x Vert0;
+        f32_4x Vert1;
+        f32_4x Vert2;
 
         Vert0.Sse = _mm_set_ps(0, Src0.z, Src0.y, Src0.x);
         Vert1.Sse = _mm_set_ps(0, Src1.z, Src1.y, Src1.x);
@@ -229,9 +222,9 @@ poof(
         Vert1.Sse = _mm_add_ps( _mm_mul_ps(Vert1.Sse, mmScale), mmOffset);
         Vert2.Sse = _mm_add_ps( _mm_mul_ps(Vert2.Sse, mmScale), mmOffset);
 
-        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.F[0]), result_primitive_t.name(Vert0.F[1]), result_primitive_t.name(Vert0.F[2]) }};
-        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.F[0]), result_primitive_t.name(Vert1.F[1]), result_primitive_t.name(Vert1.F[2]) }};
-        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.F[0]), result_primitive_t.name(Vert2.F[1]), result_primitive_t.name(Vert2.F[2]) }};
+        dest_t.name Result0 = {{ result_primitive_t.name(Vert0.E[0]), result_primitive_t.name(Vert0.E[1]), result_primitive_t.name(Vert0.E[2]) }};
+        dest_t.name Result1 = {{ result_primitive_t.name(Vert1.E[0]), result_primitive_t.name(Vert1.E[1]), result_primitive_t.name(Vert1.E[2]) }};
+        dest_t.name Result2 = {{ result_primitive_t.name(Vert2.E[0]), result_primitive_t.name(Vert2.E[1]), result_primitive_t.name(Vert2.E[2]) }};
 
         Dest[0] = Result0;
         Dest[1] = Result1;
@@ -739,9 +732,9 @@ DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, u16 Pack
 }
 
 inline void
-DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 HSVColor, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
+DrawVoxel( untextured_3d_geometry_buffer *Mesh, v3 RenderP_VoxelCenter, v3 RGBColor, v3 Diameter, v2 TransEmiss = V2(0.f, 0.f))
 {
-  DrawVoxel(Mesh, RenderP_VoxelCenter, PackHSVColor(HSVColor), Diameter, TransEmiss);
+  DrawVoxel(Mesh, RenderP_VoxelCenter, RGBtoPackedHSV(RGBColor), Diameter, TransEmiss);
 }
 
 inline void

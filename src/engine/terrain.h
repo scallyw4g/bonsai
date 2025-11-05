@@ -1,4 +1,145 @@
 
+#define MIN_TERRAIN_NOISE_WIDTH (64)
+
+#define COMPUTE_NOISE_INPUT(channel_name, offset, chunk) (chunk->DimInChunks.channel_name/2.f) + ((f32(offset)+channel_name)*chunk->DimInChunks.channel_name) + (chunk->WorldP.channel_name*WorldChunkDim.channel_name)
+
+
+poof(
+  func terrain_iteration_pattern( type_poof_symbol noise_input_name,
+                                  type_poof_symbol noise_value_name,
+                                  type_poof_symbol packed_HSV_color_value_name,
+                                  type_poof_symbol user_code)
+  @code_fragment
+  {
+    Period = Max(Period, V3(1.f));
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      s64 WorldZ = s64(COMPUTE_NOISE_INPUT(z, 0, Chunk));
+      s64 WorldZBiased = WorldZ - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        for ( s32 x = 0; x < Dim.x; ++ x)
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+          Chunk->Voxels[VoxIndex].Flags = Voxel_Empty;
+
+          v3 noise_input_name = V3(
+              COMPUTE_NOISE_INPUT(x, 0, Chunk),
+              COMPUTE_NOISE_INPUT(y, 0, Chunk),
+              COMPUTE_NOISE_INPUT(z, 0, Chunk)
+          );
+
+
+          r32 noise_value_name = 0.f;
+
+          user_code
+
+          s32 NoiseChoice = r64((noise_value_name)) > r64(WorldZBiased);
+
+          SetOccupancyBit(Chunk, VoxIndex, NoiseChoice);
+          /* SetOccupancyByte(Chunk, VoxIndex, OccupancyByte); */
+          Chunk->Voxels[VoxIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+          ChunkSum += u32(NoiseChoice);
+
+          Assert( (Chunk->Voxels[VoxIndex].Flags&VoxelFaceMask) == 0);
+        }
+      }
+    }
+  }
+)
+
+
+
+poof(
+  func terrain_iteration_pattern_8x( type_poof_symbol noise_input_name,
+                                     type_poof_symbol noise_value_name,
+                                     type_poof_symbol packed_HSV_color_value_name,
+                                     type_poof_symbol user_code)
+  @code_fragment
+  {
+    // NOTE(Jesse): This must hold true for using any Noise_8x func
+    Assert(Chunk->Dim % V3i(8) == V3i(0));
+
+    Period = Max(Period, V3(1.f));
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      f32 zCoord = COMPUTE_NOISE_INPUT(z, 0, Chunk);
+      f32 WorldZBiased = zCoord - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
+        for ( s32 x = 0; x < Dim.x; x += 8 )
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+
+          user_code
+
+          u8 OccupancyByte = 0;
+          RangeIterator(ValueIndex, 8)
+          {
+            s32 ThisIndex = VoxIndex+ValueIndex;
+            s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
+            ChunkSum += u32(NoiseChoice);
+
+            OccupancyByte |= (NoiseChoice << ValueIndex);
+            Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+          }
+
+          SetOccupancyByte(Chunk, VoxIndex, OccupancyByte);
+        }
+      }
+    }
+  }
+)
+
+poof(
+  func terrain_iteration_pattern_16x( type_poof_symbol noise_input_name,
+                                      type_poof_symbol noise_value_name,
+                                      type_poof_symbol packed_HSV_color_value_name,
+                                      type_poof_symbol user_code)
+  @code_fragment
+  {
+    // NOTE(Jesse): This must hold true for using any Noise_16x func
+    Assert(Chunk->Dim % V3i(16) == V3i(0));
+
+    Period = Max(Period, V3(1.f));
+
+    for ( s32 z = 0; z < Dim.z; ++ z)
+    {
+      f32 zCoord = COMPUTE_NOISE_INPUT(z, 0, Chunk);
+      f32 WorldZBiased = zCoord - zMin;
+      for ( s32 y = 0; y < Dim.y; ++ y)
+      {
+        f32 yCoord = COMPUTE_NOISE_INPUT(y, 0, Chunk);
+        for ( s32 x = 0; x < Dim.x; x += 16 )
+        {
+          s32 VoxIndex = GetIndex(Voxel_Position(x,y,z), Dim);
+
+          user_code
+
+          u16 OccupancyByte = 0;
+          RangeIterator(ValueIndex, 16)
+          {
+            s32 ThisIndex = VoxIndex+ValueIndex;
+            s32 NoiseChoice = NoiseValues[ThisIndex] > WorldZBiased;
+            ChunkSum += u32(NoiseChoice);
+
+            OccupancyByte |= (NoiseChoice << ValueIndex);
+            Chunk->Voxels[ThisIndex].Color = packed_HSV_color_value_name*u16(NoiseChoice);
+          }
+          SetOccupancyByte(Chunk, VoxIndex, u8(OccupancyByte));
+          SetOccupancyByte(Chunk, VoxIndex+8, u8(OccupancyByte>>8));
+        }
+      }
+    }
+  }
+)
+
+
+
+
 struct noise_value_to_material_index
 {
   f32 NoiseValue;
@@ -45,6 +186,7 @@ MapNoiseValueToFinal(f32 Value)
   /* Assert(Value >= 0.f); */
 
   // NOTE(Jesse): Descending order so we can scan from the front and find the interval we care about
+
   /* v2 Points[] = */
   /* { */
   /*   {{1.0f, 1.0f }}, */
@@ -66,25 +208,26 @@ MapNoiseValueToFinal(f32 Value)
   /* }; */
 
   // Pretty nice
-/*   v2 Points[] = */
-/*   { */
-/*     {{1.0f, 1.0f }}, */
-/*     {{0.7f, 0.7f }}, */
-/*     {{0.65f, 0.43f }}, */
-/*     {{0.6f, 0.4f }}, */
-/*     {{0.5f, 0.1f }}, */
-/*     {{0.0f, 0.0f }}, */
-/*   }; */
 
-  // Pillar-y
   v2 Points[] =
   {
-    {{1.0f, 0.5f }},
-    {{0.6f, 0.3f }},
-    {{0.1f, 0.2f }},
-    {{0.05f, 0.45f }},
-    {{0.0f , 0.5f }},
+    {{1.0f, 1.0f }},
+    {{0.7f, 0.7f }},
+    {{0.65f, 0.43f }},
+    {{0.6f, 0.4f }},
+    {{0.5f, 0.1f }},
+    {{-1.0f, -1.0f }},
   };
+
+  // Pillar-y
+  /* v2 Points[] = */
+  /* { */
+  /*   {{1.0f, 0.5f }}, */
+  /*   {{0.6f, 0.3f }}, */
+  /*   {{0.1f, 0.2f }}, */
+  /*   {{0.05f, 0.45f }}, */
+  /*   {{0.0f , 0.5f }}, */
+  /* }; */
 
 /*   v2 Points[] = */
 /*   { */
@@ -137,12 +280,28 @@ MapNoiseValueToFinal(f32 Value)
 }
 
 
-link_internal void
-ComputeNormalsForChunkFromNoiseValues( r32 ChunkWorldZ, r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim);
+/* link_internal void */
+/* ComputeNormalsForChunkFromNoiseValues( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim); */
+
+/* link_internal void */
+/* ComputeNormalsForChunkFromNoiseValues_avx( r32 *NoiseValues, v3i NoiseDim, v3 *Normals, v3i NormalsDim); */
 
 
 /* link_internal u32 */
-/* Terrain_Voronoi2D( world_chunk *, v3i, v3i, v3i, u16, s32, s32, s64, v3i, void *); */
+/* Terrain_WhiteNoise( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
+
+/* link_internal u32 */
+/* Terrain_Perlin3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
+
+/* link_internal u32 */
+/* Terrain_Perlin2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
+
+/* link_internal u32 */
+
+/* Terrain_Voronoi3D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
+
+/* link_internal u32 */
+/* Terrain_Voronoi2D( world_chunk *Chunk, v3i  NoiseBasis, void *NoiseParams, void *UserData ); */
 
 link_internal u32
-Terrain_Voronoi3D( world_chunk *, v3i, void *, void * );
+FinalizeOccupancyMasksFromNoiseValues(world_chunk *Chunk, v3i WorldBasis, v3i NoiseDim, u16 *NoiseValues, v3i SrcToDest, s64 zMin);

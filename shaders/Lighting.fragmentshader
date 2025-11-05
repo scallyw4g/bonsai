@@ -15,8 +15,8 @@ uniform r32 LightIndexToUV;
 uniform sampler2D LightColors;
 uniform sampler2D LightPositions;
 
-uniform sampler2D TransparencyAccum;
-uniform sampler2D TransparencyCount;
+uniform sampler2D TransparencyAccumTex;
+uniform sampler2D TransparencyCountTex;
 uniform bool BravoilMyersOIT;
 uniform bool BravoilMcGuireOIT;
 
@@ -26,7 +26,7 @@ uniform mat4 ShadowMVP;
 
 uniform vec3 SunPosition;
 uniform vec3 SunColor;
-uniform vec3 CameraP;
+uniform vec3 Camera;
 
 uniform r32  FogPower;
 uniform vec3 FogColor;
@@ -42,6 +42,7 @@ uniform v2 ShadowMapResolution;
 int AoBlurSize = 4; // size of AO noise texture
 float BlurredAO = 0.0f;
 
+/* fda */
 
 // NOTE(Jesse): Better shader noise function for when I need it : https://www.shadertoy.com/view/4djSRW
 
@@ -130,16 +131,16 @@ void main()
   /* return; */
 
 
-  vec4 TransAccum = texture(TransparencyAccum, gBufferUV);
-  float TransAccumCount = texture(TransparencyCount, gBufferUV).r;
-  float TransAccumEmission = texture(TransparencyCount, gBufferUV).g;
+  vec4 TransAccum = texture(TransparencyAccumTex, gBufferUV);
+  float TransAccumCount = texture(TransparencyCountTex, gBufferUV).r;
+  float TransAccumEmission = texture(TransparencyCountTex, gBufferUV).g;
 
   vec3 AmbientLightContrib = SunColor*0.06f;
   vec3 KeyLightContrib     = V3(0.f);
   vec3 BackLightContrib    = V3(0.f);
   vec3 PointLightsContrib  = V3(0.f);
 
-  vec3 CameraToFrag = normalize(FragWorldP - CameraP); // TODO(Jesse): Pass this to the lighting calc that needs it
+  vec3 CameraToFrag = normalize(FragWorldP - Camera); // TODO(Jesse): Pass this to the lighting calc that needs it
 
   vec4 gColorTexel = texelFetch(gColor, texelCoord, 0);
 
@@ -148,8 +149,8 @@ void main()
 
   /* Diffuse *= Emission; */
 
+  /* vec3 FragNormal = gColorTexel.rgb; */
   vec3 FragNormal = texelFetch(gNormal, texelCoord, 0).rgb;
-  /* vec3 FragNormal   = texture(gNormal, gBufferUV).rgb; */
 
   vec3 ShadowVisibility = vec3(1.0f);
 
@@ -173,10 +174,10 @@ void main()
       vec3 LightToFrag = -FragToLight;
 
       float LightAtt = SunIntensity;
-      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, CameraP);
-      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragWorldP, FragNormal, CameraP); */
+      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, Camera);
+      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragWorldP, FragNormal, Camera); */
 
-      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, CameraP);
+      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, Camera);
     }
 
 
@@ -198,7 +199,7 @@ void main()
       if (Distance > 0) { LightAtt = 1.0f/(Distance*Distance); }
 
       vec3 reflectionVector = reflect(FragToLight, FragNormal);
-      vec3 CameraToFrag = normalize(FragWorldP - CameraP);
+      vec3 CameraToFrag = normalize(FragWorldP - Camera);
       float cosAngle = max(0.f, dot(CameraToFrag, reflectionVector));
       float SpecularPower = pow(cosAngle, materialShininess);
 
@@ -244,17 +245,18 @@ void main()
       f32 LinearDepth = Linearize(Depth, 5000.f, 0.1f);
       float acneBias = 0.045f * LinearDepth; // Fix acne
 
-      vec4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
-      float FragDepth = FragPShadowSpace.z - acneBias;
+      v4 FragPShadowSpace = ShadowMVP * vec4(FragWorldP, 1.f);
+      f32 FragDepth = FragPShadowSpace.z - acneBias;
       /* out_LightColor = vec4(FragDepth, FragDepth, FragDepth, 1.f); */
-      /* out_LightColor = FragPShadowSpace; */
+      /* out_LightColor = abs(FragPShadowSpace); */
       /* return; */
 
-
-      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
-
-      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x + acneBias;
+      float ShadowSampleDepth = texture(shadowMap, FragPShadowSpace.xy ).x; // + acneBias;
       if ( FragDepth > ShadowSampleDepth ) { ShadowVisibility -= vec3(1.f); }
+
+      /* out_LightColor = vec4(ShadowSampleDepth, ShadowSampleDepth, ShadowSampleDepth, 1.f); */
+      /* return; */
+
 
       // NOTE(Jesse): This is misguided.  The correct thing to do is to write
       // shadow information to a buffer, then sample that buffer using a box filter
@@ -270,6 +272,8 @@ void main()
       // Might be fine if the sun location was a fixed point, but that seems lame.
       //
 #if 0
+      v2 ShadowMapUVStep = vec2(1.f)/ShadowMapResolution;
+
       // TODO(Jesse): Does this produce better results using texelFetch?
       vec2 Mapped = vec2(FragPShadowSpace.xy + vec2(ShadowMapUVStep.x, 0.f));
       ShadowSampleDepth = texture(shadowMap, Mapped).x + acneBias;
@@ -302,10 +306,12 @@ void main()
      *  Fog
      */
     // TODO(Jesse): Can do squared?
-    float DistanceToFrag = distance(CameraP, FragWorldP);
-    float MaxFogDist = 20000.f;
+    float DistanceToFrag = distance(Camera, FragWorldP);
+    float MaxFogDist = 7000.f;
 
     float FogContrib = clamp( DistanceToFrag / MaxFogDist, 0.f, 1.f);
+    FogContrib *= FogContrib*1.2;
+    /* FogContrib = pow(FogContrib,1); */
     v3 Fog = FogContrib * FogColor * FogPower;
 #else
     v3 Fog = V3(0);
@@ -393,6 +399,9 @@ void main()
   }
 
   out_LightColor = V4(TotalLight + TransparencyContrib, 1.f);
+
+  /* out_LightColor = V4(FragNormal, 1.f); */
+
   /* out_LightColor = V4(Emission, 0.f, 0.f, 1.f); */
   /* return; */
 

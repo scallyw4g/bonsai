@@ -1,16 +1,15 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:26:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1563:0
 
 link_internal u64_cursor
 U64Cursor(umm ElementCount, memory_arena* Memory)
 {
   u64 *Start = (u64*)PushStruct(Memory, sizeof(u64)*ElementCount, 1, 0);
-  u64_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u64_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -22,6 +21,12 @@ GetPtr(u64_cursor *Cursor, umm ElementIndex)
   u64 *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal u64*
+TryGetPtr(u64_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal u64*

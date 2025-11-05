@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/rect.h:129:0
-
+// external/bonsai_stdlib/src/rect.h:58:0
 link_internal rect2
 RectMinMax(v2 Min, v2 Max)
 {
@@ -50,6 +49,14 @@ link_internal b32
 IsInside(v2 P, rect2 Rect)
 {
   b32 Result = (P >= Rect.Min && P < Rect.Max);
+  return Result;
+}
+
+// TODO(Jesse)(duplicate): make Contains primal and get rid of IsInside ..?
+link_internal b32
+Contains(rect2 Rect, v2 P)
+{
+  b32 Result = IsInside(P, Rect);
   return Result;
 }
 

@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/bitmap.cpp:37:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct bitmap_buffer
 {
   umm Count;
@@ -7,20 +6,12 @@ struct bitmap_buffer
 };
 
 link_internal bitmap_buffer
-BitmapBuffer( umm ElementCount, memory_arena* Memory)
+BitmapBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal bitmap_buffer
+BitmapBuffer( bitmap *Start, umm ElementCount)
 {
-  bitmap_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( bitmap, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate bitmap_buffer of 0 length.");
-  }
-
+  bitmap_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -68,9 +59,33 @@ GetPtr(bitmap_buffer *Buf, umm Index)
 }
 
 link_inline bitmap *
+TryGetPtr(bitmap_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline bitmap *
 Get(bitmap_buffer *Buf, umm Index)
 {
   bitmap *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal bitmap_buffer
+BitmapBuffer( umm ElementCount, memory_arena* Memory)
+{
+  bitmap_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( bitmap, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate bitmap_buffer of 0 length.");
+  }
+
   return Result;
 }
 

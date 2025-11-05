@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:18:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct counted_string_buffer
 {
   umm Count;
@@ -7,20 +6,12 @@ struct counted_string_buffer
 };
 
 link_internal counted_string_buffer
-CountedStringBuffer( umm ElementCount, memory_arena* Memory)
+CountedStringBuffer( umm ElementCount, memory_arena* Memory);
+
+link_internal counted_string_buffer
+CountedStringBuffer( counted_string *Start, umm ElementCount)
 {
-  counted_string_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( counted_string, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate counted_string_buffer of 0 length.");
-  }
-
+  counted_string_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -68,9 +59,33 @@ GetPtr(counted_string_buffer *Buf, umm Index)
 }
 
 link_inline counted_string *
+TryGetPtr(counted_string_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline counted_string *
 Get(counted_string_buffer *Buf, umm Index)
 {
   counted_string *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal counted_string_buffer
+CountedStringBuffer( umm ElementCount, memory_arena* Memory)
+{
+  counted_string_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( counted_string, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate counted_string_buffer of 0 length.");
+  }
+
   return Result;
 }
 

@@ -1,6 +1,6 @@
-// external/bonsai_stdlib/src/ui/ui.cpp:17:0
-
+// external/bonsai_stdlib/src/poof_functions.h:799:0
 link_internal b32 AreEqual(window_layout_linked_list_node *Node1, window_layout_linked_list_node *Node2 );
+link_internal b32 AreEqual(window_layout *Element1, window_layout *Element2 );
 
 link_internal window_layout_linked_list_node *
 Allocate_window_layout_linked_list_node(memory_arena *Memory)
@@ -63,7 +63,7 @@ Insert(window_layout_linked_list_node *Node, window_layout_hashtable *Table)
   window_layout_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
@@ -165,4 +165,11 @@ GetPtr(window_layout_hashtable *Hashtable, window_layout_hashtable_iterator Iter
   }
   return Result;
 }
+
+link_inline window_layout *
+TryGetPtr(window_layout_hashtable *Hashtable, window_layout_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
 

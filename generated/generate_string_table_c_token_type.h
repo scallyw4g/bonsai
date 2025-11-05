@@ -1,12 +1,202 @@
-// external/bonsai_stdlib/src/c_token.h:225:0
+// external/bonsai_stdlib/src/poof_functions.h:1744:0
+link_internal b32
+IsValid(c_token_type Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case CTokenType_Unknown:
+    case CT_ControlChar_Start_of_Heading:
+    case CT_ControlChar_Start_of_Text:
+    case CT_ControlChar_End_of_Text:
+    case CT_ControlChar_End_of_Transmission:
+    case CT_ControlChar_Enquiry:
+    case CT_ControlChar_Acknowledgement:
+    case CT_ControlChar_Bell:
+    case CT_ControlChar_Backspace:
+    case CT_ControlChar_Vertical_Tab:
+    case CT_ControlChar_Form_Feed:
+    case CT_ControlChar_Shift_Out:
+    case CT_ControlChar_Shift_In:
+    case CT_ControlChar_Data_Link_Escape:
+    case CT_ControlChar_Device_Control_1:
+    case CT_ControlChar_Device_Control_2:
+    case CT_ControlChar_Device_Control_3:
+    case CT_ControlChar_Device_Control_4:
+    case CT_ControlChar_Negative_Acknowledgement:
+    case CT_ControlChar_Synchronous_Idle:
+    case CT_ControlChar_End_of_Transmission_Block:
+    case CT_ControlChar_Cancel:
+    case CT_ControlChar_End_of_Medium:
+    case CT_ControlChar_Substitute:
+    case CT_ControlChar_Escape:
+    case CT_ControlChar_File_Separator:
+    case CT_ControlChar_Group_Separator:
+    case CT_ControlChar_Record_Separator:
+    case CT_ControlChar_Unit_Separator:
+    case CT_ControlChar_Delete:
+    case CTokenType_OpenBracket:
+    case CTokenType_CloseBracket:
+    case CTokenType_OpenBrace:
+    case CTokenType_CloseBrace:
+    case CTokenType_OpenParen:
+    case CTokenType_CloseParen:
+    case CTokenType_Dot:
+    case CTokenType_Comma:
+    case CTokenType_Semicolon:
+    case CTokenType_Colon:
+    case CTokenType_Hash:
+    case CTokenType_At:
+    case CTokenType_Dollar:
+    case CTokenType_Space:
+    case CTokenType_Tab:
+    case CTokenType_Star:
+    case CTokenType_Ampersand:
+    case CTokenType_SingleQuote:
+    case CTokenType_DoubleQuote:
+    case CTokenType_Equals:
+    case CTokenType_LT:
+    case CTokenType_GT:
+    case CTokenType_Plus:
+    case CTokenType_Minus:
+    case CTokenType_Percent:
+    case CTokenType_Bang:
+    case CTokenType_Hat:
+    case CTokenType_Question:
+    case CTokenType_FSlash:
+    case CTokenType_BSlash:
+    case CTokenType_Tilde:
+    case CTokenType_Backtick:
+    case CTokenType_Pipe:
+    case CTokenType_Newline:
+    case CTokenType_CarrigeReturn:
+    case CTokenType_EOF:
+    case CTokenType_CommentSingleLine:
+    case CTokenType_CommentMultiLine:
+    case CTokenType_EscapedNewline:
+    case CTokenType_Identifier:
+    case CTokenType_StringLiteral:
+    case CTokenType_CharLiteral:
+    case CTokenType_IntLiteral:
+    case CTokenType_DoubleLiteral:
+    case CTokenType_FloatLiteral:
+    case CTokenType_Poof:
+    case CT_Keyword_Noreturn:
+    case CT_Keyword_Override:
+    case CT_Keyword_Virtual:
+    case CT_Keyword_Noexcept:
+    case CT_Keyword_Explicit:
+    case CT_Keyword_Constexpr:
+    case CT_Keyword_Namespace:
+    case CT_Keyword_Class:
+    case CTokenType_Struct:
+    case CTokenType_Enum:
+    case CTokenType_Union:
+    case CTokenType_Typedef:
+    case CTokenType_Using:
+    case CTokenType_ThreadLocal:
+    case CTokenType_Const:
+    case CTokenType_Static:
+    case CTokenType_Volatile:
+    case CTokenType_Long:
+    case CTokenType_Unsigned:
+    case CTokenType_Signed:
+    case CTokenType_Bool:
+    case CTokenType_Auto:
+    case CTokenType_Void:
+    case CTokenType_Double:
+    case CTokenType_Float:
+    case CTokenType_Char:
+    case CTokenType_Int:
+    case CTokenType_Short:
+    case CTokenType_Inline:
+    case CTokenType_TemplateKeyword:
+    case CTokenType_OperatorKeyword:
+    case CT_Keyword_Public:
+    case CT_Keyword_Private:
+    case CT_Keyword_Protected:
+    case CT_KeywordPragma:
+    case CT_KeywordAttribute:
+    case CT_StaticAssert:
+    case CTokenType_Extern:
+    case CTokenType_Asm:
+    case CTokenType_Goto:
+    case CTokenType_Ellipsis:
+    case CTokenType_If:
+    case CTokenType_Else:
+    case CTokenType_Break:
+    case CTokenType_Switch:
+    case CTokenType_Case:
+    case CT_Keyword_Delete:
+    case CTokenType_Default:
+    case CTokenType_For:
+    case CTokenType_While:
+    case CTokenType_Continue:
+    case CTokenType_Return:
+    case CTokenType_LeftShift:
+    case CTokenType_RightShift:
+    case CTokenType_LessEqual:
+    case CTokenType_GreaterEqual:
+    case CTokenType_AreEqual:
+    case CTokenType_NotEqual:
+    case CTokenType_PlusEquals:
+    case CTokenType_MinusEquals:
+    case CTokenType_TimesEquals:
+    case CTokenType_DivEquals:
+    case CTokenType_ModEquals:
+    case CTokenType_AndEquals:
+    case CTokenType_OrEquals:
+    case CTokenType_XorEquals:
+    case CTokenType_Increment:
+    case CTokenType_Decrement:
+    case CTokenType_LogicalAnd:
+    case CTokenType_LogicalOr:
+    case CTokenType_Arrow:
+    case CT_ScopeResolutionOperator:
+    case CT_NameQualifier:
+    case CT_MacroLiteral:
+    case CT_MacroLiteral_SelfRefExpansion:
+    case CT_PreprocessorHasInclude:
+    case CT_PreprocessorHasIncludeNext:
+    case CT_PreprocessorPaste:
+    case CT_PreprocessorPaste_InvalidToken:
+    case CT_PreprocessorInclude:
+    case CT_PreprocessorIncludeNext:
+    case CT_PreprocessorIf:
+    case CT_PreprocessorElse:
+    case CT_PreprocessorElif:
+    case CT_PreprocessorEndif:
+    case CT_PreprocessorIfDefined:
+    case CT_PreprocessorIfNotDefined:
+    case CT_PreprocessorDefine:
+    case CT_PreprocessorUndef:
+    case CT_PreprocessorPragma:
+    case CT_PreprocessorError:
+    case CT_PreprocessorWarning:
+    case CT_Preprocessor_VA_ARGS_:
+    case CT_Preprocessor_Nuked:
+    case CT_InsertedCode:
+    case CT_PoofInsertedCode:
+    case CT_PoofModifiedToken:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
 
 link_internal counted_string
 ToStringPrefixless(c_token_type Type)
 {
+  Assert(IsValid(Type));
   counted_string Result = {};
+
   switch (Type)
   {
-    case CTokenType_Unknown: { Result = CSz("Unknown"); } break;
+        case CTokenType_Unknown: { Result = CSz("Unknown"); } break;
     case CT_ControlChar_Start_of_Heading: { Result = CSz("Heading"); } break;
     case CT_ControlChar_Start_of_Text: { Result = CSz("Text"); } break;
     case CT_ControlChar_End_of_Text: { Result = CSz("Text"); } break;
@@ -180,19 +370,22 @@ ToStringPrefixless(c_token_type Type)
     case CT_PoofInsertedCode: { Result = CSz("PoofInsertedCode"); } break;
     case CT_PoofModifiedToken: { Result = CSz("PoofModifiedToken"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 
 link_internal counted_string
 ToString(c_token_type Type)
 {
+  Assert(IsValid(Type));
+
   counted_string Result = {};
   switch (Type)
   {
-    case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
+        case CTokenType_Unknown: { Result = CSz("CTokenType_Unknown"); } break;
     case CT_ControlChar_Start_of_Heading: { Result = CSz("CT_ControlChar_Start_of_Heading"); } break;
     case CT_ControlChar_Start_of_Text: { Result = CSz("CT_ControlChar_Start_of_Text"); } break;
     case CT_ControlChar_End_of_Text: { Result = CSz("CT_ControlChar_End_of_Text"); } break;
@@ -366,9 +559,10 @@ ToString(c_token_type Type)
     case CT_PoofInsertedCode: { Result = CSz("CT_PoofInsertedCode"); } break;
     case CT_PoofModifiedToken: { Result = CSz("CT_PoofModifiedToken"); } break;
 
+
     
   }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (EnumType.name)", Type); } */
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
 }
 

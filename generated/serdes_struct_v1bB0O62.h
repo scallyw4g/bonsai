@@ -1,0 +1,105 @@
+// src/engine/serdes.h:495:0
+link_internal bonsai_type_info
+TypeInfo(m4 *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("m4");
+  Result.Version =  0 ;
+
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, m4 *BaseElement, umm Count = 1)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    m4 *Element = BaseElement + ElementIndex;
+                            {
+            umm ThisCount = 4;
+
+      Result &= Serialize(Bytes, Element->E, ThisCount);
+    }
+
+
+
+
+
+
+
+            
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, m4 *Element, memory_arena *Memory, umm Count = 1);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, m4 *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, m4 *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+              {
+        umm Count = 4;
+
+    Result &= Deserialize(Bytes, Element->E, Memory, Count);
+  }
+
+
+
+
+
+
+
+    
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, m4 *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+

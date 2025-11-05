@@ -1,26 +1,84 @@
-// TODO(Jesse): Should these live somewhere else?  @engine_draw_file_nodes_helpers
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesFilteredHelper(file_traversal_node Node, u64 Params)
+
+link_internal void
+LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
 {
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params *HelperParams = ReinterpretCast(filtered_file_traversal_helper_params*, Params);
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, HelperParams);
+  Assert(FileNode->Type == FileTraversalType_File);
+  cs Filename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, TempMemory);
+
+  u8_cursor Bytes = BeginDeserialization(Filename, TempMemory);
+
+  if (Bytes.Start)
+  {
+    world_edit_brush B = {};
+    CopyString( FileNode->Name.Start, B.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len)));
+    Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
+
+    if (Deserialize(&Bytes, Editor->CurrentBrush, TempMemory) == False)
+    {
+      SoftError("While deserializing brush (%S).", Filename);
+      *Editor->CurrentBrush = {};
+    }
+  }
+
+  FinalizeDeserialization(&Bytes);
+}
+
+link_internal world_edit *
+NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_index *IndexOut = 0)
+{
+  world_edit_block_array_index Index = {};
+  world_edit *Result = {};
+  IterateOver(&Editor->Edits, Edit, EditIndex)
+  {
+    if (Edit->Tombstone)
+    {
+      Edit->Tombstone = False;
+      Result = Edit;
+      Index = EditIndex;
+    }
+  }
+
+  if (Result == 0)
+  {
+    Result = Push(&Editor->Edits);
+    Index = LastIndex(&Editor->Edits);
+  }
+
+  Push(&Layer->EditIndices, &Index);
+
+  if (IndexOut)
+    *IndexOut = Index;
+
   return Result;
 }
 
-// @engine_draw_file_nodes_helpers
-link_internal b32 DefaultFileFilter(file_traversal_node *Node) { return True; }
-
-// @engine_draw_file_nodes_helpers
-link_internal maybe_file_traversal_node
-EngineDrawFileNodesHelper(file_traversal_node Node, u64 Window)
+link_internal world_edit *
+DuplicateEdit(level_editor *Editor, world_edit_layer *Layer, world_edit *Edit, world_edit_block_array_index *IndexOut)
 {
-  engine_resources *Engine = GetEngineResources();
-  filtered_file_traversal_helper_params HelperParams = {(window_layout*)Window, DefaultFileFilter};
-  maybe_file_traversal_node Result = DrawFileNodes(&Engine->Ui, Node, &HelperParams);
-  return Result;
+  world_edit_block_array_index DupIndex = {};
+  auto *Duplicated = NewEdit(Editor, Layer, &DupIndex);
+       *Duplicated = *Edit;
+        Duplicated->Selected = False;
+
+  *IndexOut = DupIndex;
+
+  return Duplicated;
 }
 
+
+link_internal world_edit_layer *
+NewLayer(level_editor *Editor)
+{
+  auto ResultIndex         = AtElements(&Editor->Layers);
+  auto Result              = Push(&Editor->Layers);
+       Result->EditIndices = WorldEditBlockArrayIndexBlockArray(Editor->Memory);
+
+  cs DefaultName = FSz("layer_%d", Editor->NextLayerIndex++);
+  CopyString(DefaultName.Start, Result->NameBuf, DefaultName.Count);
+
+  Editor->SelectedLayerIndex = ResultIndex;
+  return Result;
+}
 
 link_internal b32
 InitEditor(level_editor *Editor)
@@ -28,14 +86,25 @@ InitEditor(level_editor *Editor)
   b32 Result = True;
   Editor->Memory = AllocateArena();
 
-  Editor->AssetThumbnails.Memory = Editor->Memory;
+  Editor->Layers = WorldEditLayerBlockArray(Editor->Memory);
+  Assert(Editor->NextLayerIndex == 0);
 
-  RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
+  Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
+
+  Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
+
+  file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("brushes"), GetTranArena());
+
+  IterateOver(&Nodes, Node, NodeIndex)
   {
-    Editor->LayeredBrushEditor.LayerPreviews[LayerIndex].Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+    if (Node->Type == FileTraversalType_File)
+    {
+      LoadBrushFromFile(Editor, Node, GetTranArena());
+    }
   }
-  Editor->LayeredBrushEditor.SeedLayer.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
-  Editor->LayeredBrushEditor.Preview.Thumbnail.Texture.Dim = V2i(BRUSH_PREVIEW_TEXTURE_DIM);
+
+  Editor->Edits.Memory = Editor->Memory;
+  Editor->SelectedEditIndices.Memory = Editor->Memory;
 
   return Result;
 }
@@ -43,35 +112,16 @@ InitEditor(level_editor *Editor)
 link_internal b32
 HardResetEditor(level_editor *Editor)
 {
-  // TODO(Jesse)(leak): Delete textures allocated to visualize layered noise brushes?
-  // @hard_reset_texture_memory
-
-  /* if (Editor->Shape.Preview.Thumbnail.Texture.ID) */
-  /* { */
-  /*   DeleteTexture(&Editor->Shape.Preview.Thumbnail.Texture); */
-  /* } */
-
-  /* if (Editor->Noise.Preview.Thumbnail.Texture.ID) */
-  /* { */
-  /*   DeleteTexture(&Editor->Noise.Preview.Thumbnail.Texture); */
-  /* } */
-
   IterateOver(&Editor->AssetThumbnails, Thumb, Index)
   {
     DeleteTexture(&Thumb->Texture);
   }
 
-  // @editor_chunk_memory_question
-  //
-  // I guess here we can actually just not worry about clearing it because
-  // it'll get realloc'd in the update path ..?  Seems fine..
-  /* DeallocateWorldChunk(&Editor->Noise.Chunk, &GetEngineResources()->MeshFreelist); */
-
   VaporizeArena(Editor->Memory);
 
   // NOTE(Jesse): There are some default values in noise params that we want to reset to
-  *Editor = {};
   /* Clear(Editor); */
+  *Editor = {};
 
   b32 Result = InitEditor(Editor);
   return Result;
@@ -83,40 +133,19 @@ poof(block_array_c(asset_thumbnail, {8}))
 link_weak ui_debug *
 GetUiDebug()
 {
-  Assert(Global_EngineResources);
-  return &Global_EngineResources->EngineDebug.UiDebug;
+  return &GetEngineResources()->EngineDebug.UiDebug;
 }
 
+poof(string_and_value_tables(visible_region_size))
+#include <generated/string_and_value_tables_visible_region_size.h>
+poof(do_editor_ui_for_enum(visible_region_size))
+#include <generated/do_editor_ui_for_enum_visible_region_size.h>
 
-poof(do_editor_ui_for_compound_type(white_noise_params))
-#include <generated/do_editor_ui_for_compound_type_white_noise_params.h>
-
-poof(do_editor_ui_for_compound_type(perlin_noise_params))
-#include <generated/do_editor_ui_for_compound_type_perlin_noise_params.h>
-
-poof(do_editor_ui_for_compound_type(voronoi_noise_params))
-#include <generated/do_editor_ui_for_compound_type_voronoi_noise_params.h>
-
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_sphere))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_sphere.h>
-poof(do_editor_ui_for_compound_type(world_update_op_shape_params_rect))
-#include <generated/do_editor_ui_for_compound_type_world_update_op_shape_params_rect.h>
 poof(do_editor_ui_for_enum(shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
-poof(do_editor_ui_for_compound_type(shape_layer))
-#include <generated/do_editor_ui_for_compound_type_shape_layer.h>
-poof(do_editor_ui_for_compound_type(brush_settings))
-#include <generated/do_editor_ui_for_compound_type_brush_settings.h>
-
 
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
-
-poof(do_editor_ui_for_compound_type(ui_id))
-#include <generated/do_editor_ui_for_compound_type_ui_id.h>
-
-poof(do_editor_ui_for_compound_type(ui_toggle))
-#include <generated/do_editor_ui_for_compound_type_ui_toggle.h>
 
 link_internal cs
 CS(ui_toggle_hashtable_iterator &Iter)
@@ -129,29 +158,87 @@ poof(do_editor_ui_for_container(ui_toggle_hashtable))
 
 
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+#if 0
+  if (Element)
+  {
+    if (ToggleButton(Ui, FSz("v %s", Element->Name), FSz("> %s", Element->Name), UiId(Window, "toggle shader_uniform", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+
+      PushTableStart(Ui);
+      DoEditorUi(Ui, Window, &Element->Type, CSz("shader_uniform_type Type"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      switch (Element->Type)
+      {
+        InvalidCase(ShaderUniform_Undefined);
+
+        case ShaderUniform_M4:        { DoEditorUi(Ui, Window, Element->M4, CSz("M4"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_V2:        { DoEditorUi(Ui, Window, Element->V2, CSz("V2"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_V3:        { DoEditorUi(Ui, Window, Element->V3, CSz("V3"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_S32:       { DoEditorUi(Ui, Window, Element->S32, CSz("S32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
+        case ShaderUniform_U32:       { DoEditorUi(Ui, Window, Element->U32, CSz("U32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
+        case ShaderUniform_R32:       { DoEditorUi(Ui, Window, Element->R32, CSz("R32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); PushNewRow(Ui); } break;
+        case ShaderUniform_Texture:   { DoEditorUi(Ui, Window, Element->Texture, CSz("Texture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_Light:     { DoEditorUi(Ui, Window, Element->Light, CSz("Light"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+        case ShaderUniform_Camera:    { DoEditorUi(Ui, Window, Element->Camera, CSz("Camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
+      }
+
+      DoEditorUi(Ui, Window, &Element->ID, CSz("s32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      PushNewRow(Ui);
+      DoEditorUi(Ui, Window, &Element->Count, CSz("u32 Count"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      PushNewRow(Ui);
+
+      PushTableEnd(Ui);
+      /* DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); */
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+  }
+
+  PushNewRow(Ui);
+#else
+  NotImplemented;
+#endif
+}
+poof(do_editor_ui_for_container(shader_uniform_buffer))
+#include <generated/do_editor_ui_for_container_struct.h>
+
+/* poof(do_editor_ui_for_compound_type(shader)) */
+/* #include <generated/do_editor_ui_for_compound_type_shader.h> */
+
+poof(do_editor_ui_for_container(shader_ptr_block_array))
+#include <generated/do_editor_ui_for_container_shader_ptr_block_array.h>
+
+
 
 poof(do_editor_ui_for_compound_type(work_queue_entry))
 #include <generated/do_editor_ui_for_compound_type_work_queue_entry.h>
 
-poof(do_editor_ui_for_compound_type(work_queue))
-#include <generated/do_editor_ui_for_compound_type_work_queue.h>
+/* poof(do_editor_ui_for_compound_type(work_queue)) */
+/* #include <generated/do_editor_ui_for_compound_type_work_queue.h> */
 
-poof(do_editor_ui_for_compound_type(input_event))
-#include <generated/do_editor_ui_for_compound_type_input_event.h>
+/* poof(do_editor_ui_for_compound_type(input_event)) */
+/* #include <generated/do_editor_ui_for_compound_type_input_event.h> */
 
-poof(do_editor_ui_for_compound_type(input))
-#include <generated/do_editor_ui_for_compound_type_input.h>
+/* poof(do_editor_ui_for_compound_type(input)) */
+/* #include <generated/do_editor_ui_for_compound_type_input.h> */
 
-poof(do_editor_ui_for_compound_type(platform))
-#include <generated/do_editor_ui_for_compound_type_platform.h>
+/* poof(do_editor_ui_for_compound_type(platform)) */
+/* #include <generated/do_editor_ui_for_compound_type_platform.h> */
 
 #if BONSAI_DEBUG_SYSTEM_API
 poof(do_editor_ui_for_compound_type(debug_state))
 #include <generated/do_editor_ui_for_compound_type_debug_state.h>
 #endif
 
-poof(do_editor_ui_for_compound_type(bonsai_stdlib))
-#include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h>
+/* poof(do_editor_ui_for_compound_type(bonsai_stdlib)) */
+/* #include <generated/do_editor_ui_for_compound_type_bonsai_stdlib.h> */
 
 
 
@@ -186,45 +273,44 @@ poof(do_editor_ui_for_enum(tone_mapping_type))
 
 
 
-poof(do_editor_ui_for_compound_type(world))
-#include <generated/do_editor_ui_for_compound_type_world.h>
 
-poof(do_editor_ui_for_compound_type(lighting_settings))
-#include <generated/do_editor_ui_for_compound_type_lighting_settings.h>
+/* poof(do_editor_ui_for_compound_type(lighting_settings)) */
+/* #include <generated/do_editor_ui_for_compound_type_lighting_settings.h> */
 
-poof(do_editor_ui_for_compound_type(render_settings))
-#include <generated/do_editor_ui_for_compound_type_render_settings.h>
+/* poof(do_editor_ui_for_compound_type(render_settings)) */
+/* #include <generated/do_editor_ui_for_compound_type_render_settings.h> */
 
-poof(do_editor_ui_for_compound_type(physics))
-#include <generated/do_editor_ui_for_compound_type_physics.h>
+/* poof(do_editor_ui_for_compound_type(physics)) */
+/* #include <generated/do_editor_ui_for_compound_type_physics.h> */
 
-poof(do_editor_ui_for_compound_type(random_series))
-#include <generated/do_editor_ui_for_compound_type_random_series.h>
+/* poof(do_editor_ui_for_compound_type(random_series)) */
+/* #include <generated/do_editor_ui_for_compound_type_random_series.h> */
 
 poof(do_editor_ui_for_enum(particle_spawn_type))
 #include <generated/do_editor_ui_for_enum_particle_spawn_type.h>
 
-poof(do_editor_ui_for_compound_type(particle))
-#include <generated/do_editor_ui_for_compound_type_particle.h>
+/* poof(do_editor_ui_for_compound_type(particle)) */
+/* #include <generated/do_editor_ui_for_compound_type_particle.h> */
 
-poof(do_editor_ui_for_compound_type(particle_system))
-#include <generated/do_editor_ui_for_compound_type_particle_system.h>
+/* poof(do_editor_ui_for_compound_type(particle_system)) */
+/* #include <generated/do_editor_ui_for_compound_type_particle_system.h> */
 
-poof(do_editor_ui_for_compound_type(keyframe))
-#include <generated/do_editor_ui_for_compound_type_keyframe.h>
+/* poof(do_editor_ui_for_compound_type(keyframe)) */
+/* #include <generated/do_editor_ui_for_compound_type_keyframe.h> */
 
-poof(do_editor_ui_for_compound_type(animation))
-#include <generated/do_editor_ui_for_compound_type_animation.h>
+/* poof(do_editor_ui_for_compound_type(animation)) */
+/* #include <generated/do_editor_ui_for_compound_type_animation.h> */
 
-poof(do_editor_ui_for_compound_type(vertex_material))
-#include <generated/do_editor_ui_for_compound_type_vertex_material.h>
+/* poof(do_editor_ui_for_compound_type(vertex_material)) */
+/* #include <generated/do_editor_ui_for_compound_type_vertex_material.h> */
 
-poof(do_editor_ui_for_compound_type(bonsai_futex))
-#include <generated/do_editor_ui_for_compound_type_bonsai_futex.h>
+/* poof(do_editor_ui_for_compound_type(bonsai_futex)) */
+/* #include <generated/do_editor_ui_for_compound_type_bonsai_futex.h> */
 
-poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer))
-#include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h>
+/* poof(do_editor_ui_for_compound_type(untextured_3d_geometry_buffer)) */
+/* #include <generated/do_editor_ui_for_compound_type_untextured_3d_geometry_buffer.h> */
 
+#if 0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
@@ -239,6 +325,75 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, geo_u3d **ElementP, cs Name, 
     PushNewRow(Ui);
   }
 }
+#endif
+
+/* poof(do_editor_ui_for_compound_type(plane)) */
+/* #include <generated/do_editor_ui_for_compound_type_plane.h> */
+
+/* poof(do_editor_ui_for_compound_type(frustum)) */
+/* #include <generated/do_editor_ui_for_compound_type_frustum.h> */
+
+/* poof(do_editor_ui_for_compound_type(camera)) */
+/* #include <generated/do_editor_ui_for_compound_type_camera.h> */
+
+/* poof(do_editor_ui_for_compound_type(texture)) */
+/* #include <generated/do_editor_ui_for_compound_type_texture.h> */
+
+/* poof(do_editor_ui_for_compound_type(asset_thumbnail)) */
+/* #include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h> */
+
+/* poof(do_editor_ui_for_compound_type(chunk_thumbnail)) */
+/* #include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h> */
+
+
+
+
+poof(
+  for_datatypes(enum)
+  func (enum_t)
+  {
+    enum_t.has_tag(gen_ui_toolbar)?
+    {
+      string_and_value_tables(enum_t)
+      toolbar_for_enum(enum_t)
+    }
+
+    enum_t.has_tag(gen_string_and_value_tables)?
+    {
+      string_and_value_tables(enum_t)
+    }
+
+    enum_t.has_tag(do_editor_ui)?
+    {
+      do_editor_ui_for_enum(enum_t)
+    }
+  }
+)
+#include <generated/for_datatypes_kh9dwrCf.h>
+
+
+
+
+/* poof(do_editor_ui_for_compound_type(brush_layer)) */
+/* #include <generated/do_editor_ui_for_compound_type_brush_layer.h> */
+
+poof(do_editor_ui_for_compound_type(layered_brush))
+#include <generated/do_editor_ui_for_compound_type_layered_brush.h>
+
+poof(do_editor_ui_for_compound_type(world_edit_brush))
+#include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
+
+/* poof(do_editor_ui_for_compound_type(world_edit)) */
+/* #include <generated/do_editor_ui_for_compound_type_struct_world_edit.h> */
+
+/* poof(do_editor_ui_for_container(world_edit_ptr_block_array)) */
+/* #include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h> */
+
+poof(do_editor_ui_for_compound_type(world_edit_block_array_index))
+#include <generated/do_editor_ui_for_compound_type_world_edit_block_array_index.h>
+
+poof(do_editor_ui_for_container(world_edit_block_array_index_block_array))
+#include <generated/do_editor_ui_for_container_world_edit_block_array_index_block_array.h>
 
 poof(do_editor_ui_for_enum(chunk_flag))
 #include <generated/do_editor_ui_for_enum_chunk_flag.h>
@@ -279,10 +434,10 @@ poof(do_editor_ui_for_compound_type(file_traversal_node))
 // @dirty_entity_P_format_hack
 //
 link_internal void
-DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Column)
+DoEditorUi_entity_P(renderer_2d *Ui, window_layout *Window, entity *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Column)
 {
-  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), Params);
-  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), Params, 0.f, 32.f);
+  DoEditorUi(Ui, Window, &Element->P.WorldP, CSz("WorldP"), ParentHash, Params);
+  DoEditorUi(Ui, Window, &Element->P.Offset, CSz("Offset"), ParentHash, Params, 0.f, 32.f);
 }
 
 poof(do_editor_ui_for_compound_type(entity_id))
@@ -297,6 +452,12 @@ poof(do_editor_ui_for_container(entity_ptr_block_array))
 
 poof(do_editor_ui_for_compound_type(world_chunk))
 #include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+
+poof(do_editor_ui_for_compound_type(octree_node))
+#include <generated/do_editor_ui_for_compound_type_octree_node.h>
+
+poof(do_editor_ui_for_compound_type(world))
+#include <generated/do_editor_ui_for_compound_type_world.h>
 
 // NOTE(Jesse): Had to hack this slightly because the asset_load_state on Enitity is marked volatile
 /* poof(do_editor_ui_for_enum(asset_load_state)) */
@@ -320,126 +481,31 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 #include <generated/do_editor_ui_for_compound_type_entity_position_info.h>
 
 
-poof(do_editor_ui_for_compound_type(plane))
-#include <generated/do_editor_ui_for_compound_type_plane.h>
-
-poof(do_editor_ui_for_compound_type(frustum))
-#include <generated/do_editor_ui_for_compound_type_frustum.h>
-
-poof(do_editor_ui_for_compound_type(camera))
-#include <generated/do_editor_ui_for_compound_type_camera.h>
-
-poof(do_editor_ui_for_compound_type(texture))
-#include <generated/do_editor_ui_for_compound_type_texture.h>
-
-poof(do_editor_ui_for_compound_type(asset_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_asset_thumbnail.h>
-
-poof(do_editor_ui_for_compound_type(chunk_thumbnail))
-#include <generated/do_editor_ui_for_compound_type_chunk_thumbnail.h>
-
-poof(do_editor_ui_for_compound_type(noise_layer))
-#include <generated/do_editor_ui_for_compound_type_noise_layer.h>
-
-poof(do_editor_ui_for_compound_type(brush_layer))
-#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
-
-poof(do_editor_ui_for_compound_type(layered_brush_editor))
-#include <generated/do_editor_ui_for_compound_type_layered_brush_editor.h>
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
-{
-  if (Element)
+
+poof(
+  for_datatypes(struct)
+  func (struct_t)
   {
-    if (ToggleButton(Ui, FSz("v %s", Element->Name), FSz("> %s", Element->Name), UiId(Window, "toggle shader_uniform", Element), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    struct_t.has_tag(do_editor_ui)?
     {
-      PushNewRow(Ui);
-
-      PushTableStart(Ui);
-      DoEditorUi(Ui, Window, &Element->Type, CSz("shader_uniform_type Type"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      switch (Element->Type)
-      {
-        InvalidCase(ShaderUniform_Undefined);
-
-        case ShaderUniform_M4:        { DoEditorUi(Ui, Window, Element->M4, CSz("M4"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_V2:        { DoEditorUi(Ui, Window, Element->V2, CSz("V2"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_V3:        { DoEditorUi(Ui, Window, Element->V3, CSz("V3"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_S32:       { DoEditorUi(Ui, Window, Element->S32, CSz("S32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_U32:       { DoEditorUi(Ui, Window, Element->U32, CSz("U32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_R32:       { DoEditorUi(Ui, Window, Element->R32, CSz("R32"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_Texture:   { DoEditorUi(Ui, Window, Element->Texture, CSz("Texture"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_Light:     { DoEditorUi(Ui, Window, Element->Light, CSz("Light"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-        case ShaderUniform_Camera:    { DoEditorUi(Ui, Window, Element->Camera, CSz("Camera"), EDITOR_UI_FUNCTION_INSTANCE_NAMES); } break;
-      }
-
-      DoEditorUi(Ui, Window, &Element->ID, CSz("s32 ID"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-      PushTableEnd(Ui);
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, Window, Element->Next, CSz("shader_uniform Next"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+      do_editor_ui_for_compound_type(struct_t);
     }
   }
-  else
-  {
-    PushColumn(Ui, Name, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushNewRow(Ui);
-  }
-}
+)
+#include <generated/for_datatypes_Bxw4Q7AW.h>
 
-poof(do_editor_ui_for_compound_type(shader))
-#include <generated/do_editor_ui_for_compound_type_shader.h>
 
-poof(do_editor_ui_for_compound_type(render_buffers_2d))
-#include <generated/do_editor_ui_for_compound_type_render_buffers_2d.h>
-
-poof(do_editor_ui_for_compound_type(renderer_2d))
-#include <generated/do_editor_ui_for_compound_type_renderer_2d.h>
-
-poof(do_editor_ui_for_compound_type(game_lights))
-#include <generated/do_editor_ui_for_compound_type_game_lights.h>
-
-poof(do_editor_ui_for_compound_type(lighting_render_group))
-#include <generated/do_editor_ui_for_compound_type_lighting_render_group.h>
-
-poof(do_editor_ui_for_compound_type(g_buffer_render_group))
-#include <generated/do_editor_ui_for_compound_type_g_buffer_render_group.h>
-
-poof(do_editor_ui_for_compound_type(graphics))
-#include <generated/do_editor_ui_for_compound_type_graphics.h>
-
-poof(do_editor_ui_for_compound_type(render_debug))
-#include <generated/do_editor_ui_for_compound_type_render_debug.h>
-
-poof(do_editor_ui_for_compound_type(ui_debug))
-#include <generated/do_editor_ui_for_compound_type_ui_debug.h>
-
-poof(do_editor_ui_for_compound_type(engine_debug))
-#include <generated/do_editor_ui_for_compound_type_engine_debug.h>
 
 poof(do_editor_ui_for_enum(engine_debug_view_mode))
 #include <generated/do_editor_ui_for_enum_engine_debug_view_mode.h>
-
-poof(do_editor_ui_for_compound_type(level_editor))
-#include <generated/do_editor_ui_for_compound_type_level_editor.h>
 
 poof(do_editor_ui_for_enum(resolution_setting))
 #include <generated/do_editor_ui_for_enum_resolution_setting.h>
 
 poof(do_editor_ui_for_enum(shader_language_setting))
 #include <generated/do_editor_ui_for_enum_shader_language_setting.h>
-
-poof(do_editor_ui_for_compound_type(graphics_settings))
-#include <generated/do_editor_ui_for_compound_type_graphics_settings.h>
-
-poof(do_editor_ui_for_compound_type(engine_settings))
-#include <generated/do_editor_ui_for_compound_type_engine_settings.h>
-
-
-poof(do_editor_ui_for_compound_type(engine_resources))
-#include <generated/do_editor_ui_for_compound_type_engine_resources.h>
 
 
 link_internal rect3i
@@ -515,18 +581,6 @@ GetMax(v3 *SelectionRegion)
   v3 Result = Max(SelectionRegion[0], SelectionRegion[1]) + 1;
   return Result;
 }
-
-link_internal void
-ApplyEditToRegion(engine_resources *Engine, rect3 *SelectionAABB, v3 HSVColor, b32 PersistWhitespace, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
-{
-  world_edit_shape Shape = {
-    .Type = type_world_update_op_shape_params_rect,
-    .world_update_op_shape_params_rect.Region = *SelectionAABB
-  };
-
-  QueueWorldUpdateForRegion(Engine, WorldEditMode, Modifier, &Shape, HSVColor, PersistWhitespace, Engine->WorldUpdateMemory);
-}
-
 
 link_internal v3
 ConstrainUpdateVector(v3 UpdateVector, face_index Face, world_edit_selection_mode SelectionMode)
@@ -627,36 +681,31 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
   }
 }
 
-link_internal rect3i
-DoSelectonModification( engine_resources *Engine,
-                        ray *MouseRay,
-                        world_edit_selection_mode SelectionMode,
-                        selection_modification_state *SelectionState,
-                        aabb SelectionAABB )
+link_internal void
+UpdateSelectionStateForFrame( ray *MouseRay,
+    camera *Camera,
+    input *Input,
+        world_edit_selection_mode  SelectionMode,
+     selection_modification_state *SelectionState)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
-  rect3i Result  = Rect3i(SelectionAABB);
-
-  v3 Normal = {};
+  v3 Normal = NormalForFace(SelectionState->ClickedFace);
   v3 PlaneN = {};
 
   switch (SelectionMode)
   {
-    case SelectionMode_Noop: { return Result; }
+    case SelectionMode_Noop: { return; }
 
     case SelectionMode_TranslateLinear:
     case SelectionMode_ResizeSingleLinearAxis:
     case SelectionMode_ResizeBothLinearAxies:
     case SelectionMode_ResizeAllAxies:
     {
-      Normal   = NormalForFace(SelectionState->ClickedFace);
       v3 PerpN = Cross(Normal, Camera->Front);
       PlaneN   = Cross(Normal, PerpN);
     } break;
 
     case SelectionMode_TranslatePlanar:
     {
-      Normal = NormalForFace(SelectionState->ClickedFace);
       PlaneN = Normal;
     } break;
   }
@@ -671,158 +720,30 @@ DoSelectonModification( engine_resources *Engine,
       SelectionState->ClickedP[1] = PlaneIntersect;
     }
   }
+}
 
+link_internal rect3i
+DoSelectonModification( engine_resources *Engine,
+                        ray *MouseRay,
+                        world_edit_selection_mode SelectionMode,
+                        selection_modification_state *SelectionState,
+                        aabb SelectionAABB,
+                        v3 *Diff = 0)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
 
   v3 RoughUpdateVector = (SelectionState->ClickedP[1] - SelectionState->ClickedP[0]);
 
   v3 UpdateVector = ConstrainUpdateVector(RoughUpdateVector, SelectionState->ClickedFace, SelectionMode);
-          Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
+  rect3i Result  = ModifySelectionAABB(&SelectionAABB, V3i(UpdateVector), SelectionState->ClickedFace, SelectionMode);
 
+  if (Diff)
   {
-    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[0], RED); */
-    /* DEBUG_HighlightVoxel(Engine, SelectionState->ClickedP[1], BLUE); */
-    DEBUG_DrawSimSpaceVectorAt(Engine, SelectionState->ClickedP[0], UpdateVector, RGB_GREEN);
+    *Diff = UpdateVector;
   }
-
-  // Draw selection modification region
-  //
-  rect3 Draw = Rect3(&Result);
-  DEBUG_DrawSimSpaceAABB(Engine, &Draw, RGB_GREEN, 0.1f);
 
   Assert(Result.Min <= Result.Max);
-
   return Result;
-}
-
-link_internal void
-DoSelectedVoxelDebugWindow(engine_resources *Engine, cp VoxelCP)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  voxel *V = TryGetVoxelPointer(World, VoxelCP);
-
-
-  v3 SimP = Floor(GetSimSpaceP(World, VoxelCP));
-#if VOXEL_DEBUG_COLOR
-  if (V)
-  {
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)* 40.f,  GREEN, 0.25f);
-    DEBUG_DrawSimSpaceVectorAt(Engine, SimP, Normalize(V->DebugColor)*-40.f, YELLOW, 0.25f);
-    DEBUG_HighlightVoxel(Engine, SimP, YELLOW, DEFAULT_LINE_THICKNESS*2.f);
-  }
-#endif
-
-
-  {
-    local_persist window_layout Window = WindowLayout("Voxel Debug Window", V2(150.f, 150.f));
-    PushWindowStart(Ui, &Window);
-
-    if (V)
-    {
-      DoEditorUi(Ui, &Window, &V->Flags, CSz("Voxel Flags"));
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, &Window, &VoxelCP, CSz("CP"));
-
-#if VOXEL_DEBUG_COLOR
-      DoEditorUi(Ui, &Window, &V->DebugNoiseValue, CSz("Noise Value"));
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui, &Window, &V->DebugColor, CSz("DebugColor"));
-
-      r32 DotP = Dot(V->DebugColor, V3(0,0,1));
-      DoEditorUi(Ui, &Window, &DotP, CSz("Dot against V3(0,0,1)"));
-      PushNewRow(Ui);
-      PushNewRow(Ui);
-
-
-      world_chunk *ThisChunk = GetWorldChunkFromHashtable(World, VoxelCP.WorldP);
-
-      PushTableStart(Ui);
-        PushNewRow(Ui);
-        PushColumn(Ui, CSz("Contributed"));
-        PushColumn(Ui, CSz(" "));
-        PushColumn(Ui, CSz(" "));
-        PushColumn(Ui, CSz("Expected"));
-        PushNewRow(Ui);
-
-        PushColumn(Ui, CSz("To Normal"));
-        PushColumn(Ui, CSz("Offset"));
-        PushColumn(Ui, CSz("NoiseValue"));
-        PushColumn(Ui, CSz("NoiseValue"));
-        PushColumn(Ui, CSz(""));
-        PushNewRow(Ui);
-        v3i Dim = V3i(3,3,3);
-        for (s32 dz = -1; dz < 2; ++dz)
-        {
-          for (s32 dy = -1; dy < 2; ++dy)
-          {
-            for (s32 dx = -1; dx < 2; ++dx)
-            {
-              /* if (dz == 0 && dy == 0 && dx == 0) continue; // ? */
-
-              s32 NormalIndex = GetIndex(VoxelCP.Offset+V3(dx,dy,dz)+1, ThisChunk->Dim+2);
-              s32 NoiseIndex = GetIndex(VoxelCP.Offset+V3(dx,dy,dz)+2, ThisChunk->Dim+4);
-              v3 ExpectedNormalValue = V3(f32_MAX);
-              r32 ExpectedNoiseValue = f32_MAX;
-              if (ThisChunk->NoiseValues) { ExpectedNoiseValue = ThisChunk->NoiseValues[NoiseIndex]; }
-              if (ThisChunk->NormalValues) { ExpectedNormalValue = ThisChunk->NormalValues[NormalIndex]; }
-
-              voxel *dV = TryGetVoxelPointer(World, Canonicalize(World, VoxelCP + V3(dx,dy,dz)));
-
-              ui_style *Style = &DefaultStyle;
-
-              b32 ValueContributedToNormal = False;
-              if (dV && dV->DebugNoiseValue-dz > Truncate(V->DebugNoiseValue))
-              {
-                Style = &DefaultSelectedStyle;
-                ValueContributedToNormal = True;
-              }
-
-              {
-                if (ValueContributedToNormal)
-                {
-                  PushColumn(Ui, CSz("+"));
-                }
-                else
-                {
-                  PushColumn(Ui, CSz(" "));
-                }
-
-                PushColumn(Ui, FSz("(%d %d %d)", dx, dy, dz), Style);
-                if (dV) { PushColumn(Ui, CS(dV->DebugNoiseValue)); }
-                else    { PushColumn(Ui, CSz("(INVALID NOISE INDEX)")); }
-
-                if (dV && ExpectedNoiseValue != dV->DebugNoiseValue) { Style = &Global_DefaultErrorStyle; DEBUG_HighlightVoxel(Engine, SimP+V3(dx,dy,dz), RED); }
-                else                                                 { Style = &DefaultStyle; }
-
-                if (ExpectedNoiseValue < f32_MAX) { PushColumn(Ui, FSz("(%.2f)", r64(ExpectedNoiseValue)), Style); }
-                else                              { PushColumn(Ui, FSz("(THIS CHUNK (%p) DID NOT HAVE VALID NOISE VALUE POINTER)", ThisChunk)); }
-
-                if (dV && ExpectedNormalValue != dV->DebugColor) { Style = &Global_DefaultErrorStyle; DEBUG_HighlightVoxel(Engine, SimP+V3(dx,dy,dz), PINK); }
-                else                                             { Style = &DefaultStyle; }
-
-                if (ExpectedNormalValue.x < f32_MAX) { PushColumn(Ui, FSz("(%.2f,%.2f,%.2f)", r64(ExpectedNormalValue.x), r64(ExpectedNormalValue.y), r64(ExpectedNormalValue.z) ), Style); }
-                else                                 { PushColumn(Ui, FSz("(THIS CHUNK (%p) DID NOT HAVE VALID NORMAL VALUE POINTER)", ThisChunk)); }
-
-
-                PushNewRow(Ui);
-              }
-            }
-            PushNewRow(Ui);
-          }
-          PushNewRow(Ui);
-        }
-      PushTableEnd(Ui);
-#endif
-
-    }
-    else
-    {
-      PushColumn(Ui, CSz("(null)"));
-    }
-    PushWindowEnd(Ui, &Window);
-  }
 }
 
 #if 1
@@ -839,7 +760,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
     Assert(Texture->Dim > V2i(0));
     Texture->Queued = True;
     /* PushBonsaiRenderCommandAllocateTexture(&Engine->Plat->RenderQ, Texture); */
-    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.RenderQ, Texture, Texture->Dim, 0, CSz("NoisePreviewTexture"));
+    MakeTexture_RGB_Async(&Engine->Stdlib.Plat.LoRenderQ, Texture, Texture->Dim, 0, CSz("NoisePreviewTexture"));
     /* *Texture = MakeTexture_RGB(V2i(256), 0, CSz("NoisePreviewTexture")); */
     StandardCamera(ThumbCamera, 10000.f, 500.f, 30.f);
   }
@@ -859,7 +780,7 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
     if (Ui->Input->LMB.Pressed) { MouseDP = MouseDelta*2.f; }
     if (Ui->Input->RMB.Pressed) { CameraZDelta += MouseDelta.y*2.f; }
   }
-  UpdateGameCamera(GetWorld(), MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
+  UpdateGameCamera(GetWorld(), Engine->Stdlib.Plat.ScreenDim, MouseDP, CameraZDelta, {}, ThumbCamera, 0.f);
 
   /* if (Ui->Input->LMB.Pressed == False && Hover(Ui, &B)) { PushTooltip(Ui, ToString(Texture)); } */
 
@@ -869,311 +790,20 @@ InteractWithThumbnailTexture(engine_resources *Engine, renderer_2d *Ui, window_l
 
 
 link_internal v3
-GetHotVoxelForEditMode(engine_resources *Engine, world_edit_mode WorldEditMode)
+GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEditMode)
 {
-  picked_voxel_position Pos = PickedVoxel_FirstFilled;
-
-  switch (WorldEditMode)
-  {
-    case WorldEdit_Mode_Disabled: {} break;
-    case WorldEdit_Mode_Attach:
-    {
-      Pos = PickedVoxel_LastEmpty;
-    } break;
-
-    case WorldEdit_Mode_Paint:
-    case WorldEdit_Mode_Remove:
-    {
-      Pos = PickedVoxel_FirstFilled;
-    } break;
-  }
-
-  v3 Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
+  v3 Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled));
   return Result;
 }
 
-link_internal v3
-GetHotVoxelForFlood(engine_resources *Engine, world_edit_mode WorldEditMode, world_edit_mode_modifier Modifier)
-{
-  v3 Result = {};
-  picked_voxel_position Pos = {};
-
-  if (Modifier == WorldEdit_Modifier_Flood)
-  {
-    switch (WorldEditMode)
-    {
-      case WorldEdit_Mode_Disabled: {} break;
-      case WorldEdit_Mode_Attach:
-      {
-        Pos = PickedVoxel_FirstFilled;
-      } break;
-
-      case WorldEdit_Mode_Paint:
-      case WorldEdit_Mode_Remove:
-      {
-        Pos = PickedVoxel_LastEmpty;
-      } break;
-    }
-
-    Result = Floor(GetSimSpaceP(Engine->World, &Engine->MousedOverVoxel.Value, Pos));
-  }
-
-  return Result;
-}
-
-link_internal v3i
-GetShapeDim(shape_layer *Layer)
-{
-  v3i Result = {};
-  switch (Layer->Type)
-  {
-    case ShapeType_None: { } break;
-    case ShapeType_Sphere:
-    {
-      // NOTE(Jesse): This can't have a +1 because that dialates it outside the selection region.
-      Result = V3i(Layer->Sphere.Radius*2.f);
-    } break;
-
-    case ShapeType_Rect:
-    {
-      Result = V3i(GetDim(Layer->Rect.Region));
-    } break;
-  }
-
-  return Result;
-}
-
-link_internal v3i
-GetRequiredDimForLayer(v3i SelectionDim, brush_layer *Layer)
-{
-  v3i Request = GetDim(Layer->Settings.Offset);
-  switch (Layer->Settings.Type)
-  {
-    case BrushLayerType_Noise:
-    {
-      Request += SelectionDim;
-    } break;
-
-    case BrushLayerType_Shape:
-    {
-
-      shape_layer *Shape = &Layer->Settings.Shape;
-      switch (Shape->Type)
-      {
-        case ShapeType_None: { } break;
-        case ShapeType_Sphere:
-        {
-          Request += V3i(Shape->Sphere.Radius*2.f);
-        } break;
-
-        case ShapeType_Rect:
-        {
-          Request += SelectionDim;
-        } break;
-      }
-    } break;
-  }
-
-  v3i Result = Max(V3i(0), Request);
-  return Result;
-}
-
-// NOTE(Jesse): This is a little wacky, and I actually don't quite know why the
-// preview chunk dimension is primal for noise layers, but .. there you go.
-link_internal v3i
-GetLayerDim(brush_layer *Layer)
-{
-  v3i Result = GetDim(Layer->Settings.Offset);
-  switch (Layer->Settings.Type)
-  {
-    case BrushLayerType_Shape:
-    {
-      Result += GetShapeDim(&Layer->Settings.Shape);
-    } break;
-
-    case BrushLayerType_Noise:
-    {
-      Result += GetSelectionDim(GetWorld(), GetLevelEditor()); //Preview->Chunk.Dim;
-    } break;
-  }
-  return Result;
-}
-
-link_internal b32
-CheckForChangesAndUpdate_ThenRenderToPreviewTexture(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  brush_settings *Settings     = &Layer->Settings;
-  brush_settings *PrevSettings = &Layer->PrevSettings;
-
-  v3i SelectionDim     = GetSelectionDim(World, Editor);
-  v3i RequiredLayerDim = GetRequiredDimForLayer(SelectionDim, Layer);
-
-  b32 ReallocChunk     = Editor->SelectionChanged || Preview->Chunk.Dim != RequiredLayerDim;
-  b32 SettingsChanged  = !AreEqual(Settings, PrevSettings);
-  b32 UpdateVoxels     = ReallocChunk || SettingsChanged;
-
-  *PrevSettings = *Settings;
-
-
-
-  world_chunk *Chunk = &Preview->Chunk;
-  if (ReallocChunk)
-  {
-    // TODO(Jesse)(leak): Figure out exactly how this works.  We can't allocate from the Editor
-    // memory pool because the goemetry buffers get freed to a freelist, and the editor memory
-    // pool gets cleared on game reload
-    //
-    // @editor_chunk_memory_question
-    //
-    /* DeallocateWorldChunk(Chunk, MeshFreelist); */
-    DeallocateGpuBuffers(RenderQ, Chunk);
-    AllocateWorldChunk(Chunk, {}, RequiredLayerDim, Editor->Memory);
-  }
-
-  if (UpdateVoxels)
-  {
-    /* Info("Detected changes to settings, updating voxels. ReallocChunk(%b) SettingsChanged(%b)", ReallocChunk, SettingsChanged); */
-
-    switch (Settings->Type)
-    {
-      case BrushLayerType_Shape:
-      {
-        shape_layer *Shape = &Settings->Shape;
-        switch (Shape->Type)
-        {
-          case ShapeType_None: {} break;
-
-          case ShapeType_Rect:
-          {
-            rect3 Region = RectMinDim({}, V3(SelectionDim));
-
-            Region.Min += V3(Settings->Offset.Min);
-            Region.Max += V3(Settings->Offset.Max);
-
-            Sanitize(&Region);
-
-            Shape->Rect.Region.Min = Min(Region.Min, Region.Max);
-            Shape->Rect.Region.Max = Max(Region.Min, Region.Max);
-
-            Assert(GetDim(Shape->Rect.Region) == V3(RequiredLayerDim));
-            Assert(Chunk->Dim == RequiredLayerDim);
-
-          } break;
-
-          case ShapeType_Sphere:
-          {
-            // NOTE(Jesse): Constrain maximum sphere radius to minimum selection dimension
-            r32 MaxSphereRadius = Min(Min(SelectionDim.x, SelectionDim.y), SelectionDim.z)/2.f;
-            Shape->Sphere.Radius = MaxSphereRadius;
-            Shape->Sphere.Location = Canonical_Position(V3(MaxSphereRadius), {});
-
-          } break;
-        }
-
-        if (LengthSq(GetShapeDim(Shape)) > 0)
-        {
-          ApplyBrushLayer(Engine, Layer, Preview, Chunk, Settings->Offset.Min);
-          FinalizeChunkInitialization(Chunk);
-          QueueChunkForMeshRebuild(&Plat->LowPriority, Chunk);
-        }
-
-      } break;
-
-      case BrushLayerType_Noise:
-      {
-        noise_layer *Noise = &Settings->Noise;
-        chunk_init_callback NoiseFunc = {};
-
-        generic_noise_params NoiseParams = {};
-        void *UserData = {};
-
-        NoiseParams.RGBColor     = Settings->RGBColor;
-        switch (Noise->Type)
-        {
-          case NoiseType_White:
-          {
-            NoiseFunc             = Terrain_WhiteNoise;
-            NoiseParams.Threshold = Noise->White.Threshold;
-          } break;
-
-          case NoiseType_Perlin:
-          {
-            NoiseFunc             = Terrain_Perlin3D;
-            NoiseParams.Threshold = Noise->Perlin.Threshold;
-            NoiseParams.Period    = Noise->Perlin.Period;
-            NoiseParams.Amplitude = Noise->Perlin.Amplitude;
-          } break;
-
-          case NoiseType_Voronoi:
-          {
-            NoiseFunc             = Terrain_Voronoi3D;
-            NoiseParams.Threshold = Noise->Voronoi.Threshold;
-            NoiseParams.Period    = Noise->Voronoi.Period;
-            NoiseParams.Amplitude = Noise->Voronoi.Amplitude;
-            UserData = Cast(void*, &Noise->Voronoi);
-          } break;
-        }
-
-        Assert(NoiseFunc);
-
-        Chunk->Flags = Chunk_Queued;
-
-        InitializeChunkWithNoise( NoiseFunc,
-                                  GetThreadLocalState(ThreadLocal_ThreadIndex),
-                                  Chunk,
-                                  Cast(void*, &NoiseParams),
-                                  ChunkInitFlag_Noop,
-                                  UserData,
-                                  True,
-                                  Settings->NoiseBasisOffset + V3i(GetAbsoluteP(Editor->SelectionRegion.Min, GetWorldChunkDim())));
-      } break;
-    }
-
-    SyncGpuBuffersAsync(Engine, &Chunk->Meshes);
-  }
-
-  if (Preview->Thumbnail.Texture.ID) //  NOTE(Jesse): Avoid spamming a warning to console
-  {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, &Preview->Thumbnail, &Chunk->Meshes, V3(Chunk->Dim)/-2.f, 0);
-  }
-
-  return UpdateVoxels;
-}
-
+#if 0
 link_internal void
-BrushSettingsForShapeBrush(engine_resources *Engine, window_layout *Window, shape_layer *Layer)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  DoEditorUi(Ui, Window, &Layer->Type, CSz("ShapeType"));
-
-  v3 SelectionDim = GetDim(GetSelectionRect(World, Editor));
-  switch (Layer->Type)
-  {
-    case ShapeType_None: { } break;
-
-    case ShapeType_Rect:
-    {
-      DoEditorUi(Ui, Window, &Layer->Rect, CSz(""));
-    } break;
-
-    case ShapeType_Sphere:
-    {
-      DoEditorUi(Ui, Window, &Layer->Sphere, CSz(""));
-    } break;
-  }
-
-}
-
-link_internal void
-BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer, chunk_thumbnail *Preview)
+BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, noise_layer *Layer)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   PushTableStart(Ui);
-    if (SelectionComplete(Editor->SelectionClicks))
+    if (SelectionComplete(Editor->Selection.Clicks))
     {
       DoEditorUi(Ui, Window, &Layer->Type, CSz("NoiseType"), &DefaultUiRenderParams_Generic);
       PushTableStart(Ui); // TODO(Jesse): Necessary?
@@ -1203,170 +833,7 @@ BrushSettingsForNoiseBrush(engine_resources *Engine, window_layout *Window, nois
     }
   PushTableEnd(Ui);
 }
-
-link_internal void
-DoSettingsForBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, window_layout *Window)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  brush_settings *Settings = &Layer->Settings;
-
-  OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-
-  PushNewRow(Ui);
-  DoEditorUi(Ui, Window, &Settings->Type, CSz("Type"), &DefaultUiRenderParams_Generic);
-
-
-  switch (Layer->Settings.Type)
-  {
-    case BrushLayerType_Noise:
-    {
-      BrushSettingsForNoiseBrush(Engine, Window, &Settings->Noise, Preview);
-    } break;
-
-    case BrushLayerType_Shape:
-    {
-      BrushSettingsForShapeBrush(Engine, Window, &Settings->Shape);
-    } break;
-  }
-
-
-  // TODO(Jesse): do enum selector for Mode/Modifier/iterations
-  DoEditorUi(Ui, Window, &Settings->Mode,       CSz("Mode"));
-  DoEditorUi(Ui, Window, &Settings->Modifier,   CSz("Modifier"));
-  if (Settings->Modifier == WorldEdit_Modifier_Surface || Settings->Modifier == WorldEdit_Modifier_Flood)
-  {
-    DoEditorUi(Ui, Window, &Settings->Iterations, CSz("Iterations"));
-    PushNewRow(Ui); // Primitives require a new row.. I forget why, but there's a good reason.
-  }
-
-  DoEditorUi(Ui, Window, &Settings->Offset,           CSz("Dilation"));
-  DoEditorUi(Ui, Window, &Settings->NoiseBasisOffset, CSz("Basis"), &DefaultUiRenderParams_Generic);
-
-  DoEditorUi(Ui, Window, &Settings->Invert,           CSz("Invert"), &DefaultUiRenderParams_Generic);
-  PushNewRow(Ui);
-
-  // NOTE(Jesse): These are only stricly necessary if Modifier is Flood or Surface .. do we care?
-  /* Settings->Offset.Min = Min(V3i(-Settings->Iterations), Settings->Offset.Min); */
-  /* Settings->Offset.Max = Max(V3i( Settings->Iterations), Settings->Offset.Max); */
-
-  {
-    ui_style Style = UiStyleFromLightestColor(Settings->RGBColor);
-    PushUntexturedQuad(Ui, {}, V2(Global_Font.Size.y), zDepth_Text, &Style, DefaultGenericPadding);
-
-
-    ui_id ColorPickerModalId = UiId(Window, "color modal interaction", Cast(void*, Settings));
-
-    if (Button(Ui, CSz("Set Color"), UiId(Window, "set color interaction", Cast(void*, Settings))))
-    {
-      ToggleModal(Ui, "Color Picker", ColorPickerModalId);
-    }
-    PushNewRow(Ui);
-
-    ColorPickerModal(Engine, ColorPickerModalId, &Settings->RGBColor, False);
-
-    PushNewRow(Ui);
-  }
-
-  PushTableStart(Ui);
-    InteractWithThumbnailTexture(Engine, Ui, Window, "noise preview interaction", &Preview->Thumbnail);
-    PushNewRow(Ui);
-  PushTableEnd(Ui);
-  CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-}
-
-link_internal void
-ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  if (LengthSq(DestChunk->Dim) > 0)
-  {
-    brush_settings *Settings = &Layer->Settings;
-
-    world_edit_mode              Mode = Settings->Mode;
-    world_edit_mode_modifier Modifier = Settings->Modifier;
-
-
-    rect3i UpdateBounds = {{}, DestChunk->Dim};
-
-    world_edit_shape Shape = {};
-    switch (Settings->Type)
-    {
-      case BrushLayerType_Shape:
-      {
-        Shape.Type = world_update_op_shape_type(Settings->Shape.Type);
-
-        switch (Settings->Shape.Type)
-        {
-          case ShapeType_None: { } break;
-
-          case ShapeType_Sphere:
-          {
-            Shape.world_update_op_shape_params_sphere = Settings->Shape.Sphere;
-            Shape.world_update_op_shape_params_sphere.Location.Offset = ((DestChunk->Dim/2.f) - V3(SmallestMinOffset));
-          } break;
-
-          case ShapeType_Rect:
-          {
-            Shape.world_update_op_shape_params_rect = Settings->Shape.Rect;
-
-            Shape.world_update_op_shape_params_rect.Region.Min -= V3(SmallestMinOffset);
-            Shape.world_update_op_shape_params_rect.Region.Max -= V3(SmallestMinOffset);
-          } break;
-        }
-
-      } break;
-
-      case BrushLayerType_Noise:
-      {
-        noise_layer     *Noise = &Settings->Noise;
-        world_chunk  *SrcChunk = &Preview->Chunk;
-        v3i       SrcOffsetMin = Settings->Offset.Min;
-
-        v3i DestRelativeMinCorner = (-1*SmallestMinOffset) + SrcOffsetMin;
-
-        chunk_data D = {SrcChunk->Flags, SrcChunk->Dim, SrcChunk->Voxels, SrcChunk->VoxelLighting};
-        world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(DestRelativeMinCorner) };
-
-        Assert(SrcChunk->Dim <= DestChunk->Dim);
-
-        Shape.Type = type_world_update_op_shape_params_chunk_data;
-        Shape.world_update_op_shape_params_chunk_data = ChunkDataShape;
-      } break;
-    }
-
-    v3 SimFloodOrigin = V3(0);
-
-    s32 Iterations = Settings->Iterations;
-    if (Iterations > 1) { Info("%d", Iterations); }
-    RangeIterator(IterIndex, Iterations)
-    {
-      work_queue_entry_update_world_region Job = WorkQueueEntryUpdateWorldRegion(Mode, Modifier, SimFloodOrigin, &Shape, Layer->Settings.RGBColor, {}, {}, {}, {}, 0);
-      ApplyUpdateToRegion(GetThreadLocalState(ThreadLocal_ThreadIndex), &Job, UpdateBounds, DestChunk, Layer->Settings.Invert);
-      DestChunk->FilledCount = MarkBoundaryVoxels_MakeExteriorFaces( DestChunk->Voxels, DestChunk->Dim, {{}}, DestChunk->Dim );
-    }
-  }
-
-}
-
-link_internal v3i
-GetSmallestMinOffset(layered_brush_editor *LayeredBrush, v3i *LargestLayerDim)
-{
-  v3i SmallestMinOffset = V3i(s32_MAX);
-
-  brush_layer *Layers =  LayeredBrush->Layers;
-  RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-  {
-    brush_layer *Layer = Layers + LayerIndex;
-
-    if (LargestLayerDim) { v3i LayerDim = GetLayerDim(Layer); *LargestLayerDim = Max(LayerDim, *LargestLayerDim); }
-    SmallestMinOffset = Min(Layer->Settings.Offset.Min, SmallestMinOffset);
-  }
-
-  return SmallestMinOffset;
-}
-
+#endif
 
 link_internal cs
 GetFilenameForBrush(cs Name, s32 Version = 0)
@@ -1388,326 +855,346 @@ GetFilenameForBrush(cs Name, s32 Version = 0)
 }
 
 link_internal void
-SaveBrush(layered_brush_editor *LayeredBrush, const char *FilenameZ)
+SaveBrush(world_edit_brush *Brush, const char *FilenameZ)
 {
+  ZeroMemory(Brush->NameBuf, NameBuf_Len);
+  cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
+
+  cs BrushBasename = Basename(CS(FilenameZ));
+  CopyString(&BrushBasename, &BrushNameBuf);
+
   u8_cursor_block_array OutputStream = BeginSerialization();
-  Serialize(&OutputStream, LayeredBrush);
+  Serialize(&OutputStream, Brush);
 
   if (FinalizeSerialization(&OutputStream, FilenameZ) == False)
   {
-    SoftError("Unable to serialize brush (%s) to file (%s).", LayeredBrush->NameBuf, FilenameZ);
-  }
-  else
-  {
-    ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-    cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-
-    cs BrushBasename = Basename(CS(FilenameZ));
-    CopyString(&BrushBasename, &BrushNameBuf);
+    SoftError("Unable to serialize brush (%s) to file (%s).", Brush->NameBuf, FilenameZ);
   }
 }
 
 
 link_internal void
-NewBrush(layered_brush_editor *LayeredBrush)
+NewBrush(world_edit_brush *Brush)
 {
-  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-  brush_layer *Layers =  LayeredBrush->Layers;
+  cs BrushNameBuf = CS(Brush->NameBuf, NameBuf_Len);
 
-  ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
+  ZeroMemory(Brush->NameBuf, NameBuf_Len);
 
   cs Src = CSz("_untitled.brush");
   CopyString(&Src, &BrushNameBuf);
 
-  LayeredBrush->LayerCount = 1;
+  brush_layer *Layers =  Brush->Layered.Layers;
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
     brush_layer *Layer = Layers + LayerIndex;
     Layer->Settings = {};
   }
+
+  Brush->Layered.LayerCount = 1;
+
+  // Initialize PrevSettings so we don't fire a changed event straight away..
+  // @prevent_change_event
+  CheckSettingsChanged(&Brush->Layered);
+}
+
+link_internal world_edit_brush
+NewBrush()
+{
+  world_edit_brush Brush = {};
+  NewBrush(&Brush);
+  return Brush;
+}
+
+link_internal cs
+GetLayerUiText(brush_layer *Layer, memory_arena *TempMem)
+{
+  cs LayerType = ToStringPrefixless(Layer->Settings.Type);
+  cs SubType = {};
+  switch (Layer->Settings.Type)
+  {
+    case BrushLayerType_Noise: { SubType = ToStringPrefixless(Layer->Settings.Noise.Type); } break;
+    case BrushLayerType_Shape: { SubType = ToStringPrefixless(Layer->Settings.Shape.Type); } break;
+  }
+
+  return FSz("%S(%S)", LayerType, SubType);
 }
 
 link_internal void
-BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSettingsWindow)
+DoColorSwatch(renderer_2d *Ui, v2 QuadDim, v3 RGB)
+{
+  ui_style Style = FlatUiStyle(RGB);
+  PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
+  PushNewRow(Ui);
+}
+
+link_internal void
+DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  layered_brush_editor *LayeredBrush = &Editor->LayeredBrushEditor;
-  brush_layer          *Layers             =  LayeredBrush->Layers;
-  chunk_thumbnail      *Previews           =  LayeredBrush->LayerPreviews;
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
 
-  cs BrushNameBuf = CS(LayeredBrush->NameBuf, NameBuf_Len);
-
-  b32 IsNewBrush = False;
-  if (LayeredBrush->NameBuf[0] == 0 && LayeredBrush->LayerCount == 0)
+  PushWindowStart(Ui, BrushSettingsWindow);
+  Assert(Brush);
   {
-    NewBrush(LayeredBrush);
-    IsNewBrush = True;
-  }
-
-  {
-    PushWindowStart(Ui, BrushSettingsWindow);
-    memory_arena *Tran = GetTranArena();
-
-    if (LayeredBrush->LayerCount)
+    b32 IsNewBrush = False;
+    layered_brush *LayeredBrush = &Brush->Layered;
     {
-      if (Button(Ui, CSz("Save"), UiId(BrushSettingsWindow, "brush save", 0u)))
+      b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0;
+      if (BrushUninitialized)
       {
-        cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf));
-        SaveBrush(LayeredBrush, BrushFilepath.Start);
-      }
-
-      if (Button(Ui, CSz("Duplicate"), UiId(BrushSettingsWindow, "brush dup", 0u)))
-      {
-        cs_buffer Pieces = Split( CS(LayeredBrush->NameBuf), '.', Tran);
-
-        if (Pieces.Count > 2)
-        {
-          cs BrushNameString = Pieces.Start[0];
-          cs VersionString   = Pieces.Start[Pieces.Count-2];
-
-          s32 VersionNumber;
-          if ( ParseInteger(VersionString, &VersionNumber) )
-          {
-            cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-            while (FileExists(BrushFilepath.Start))
-            {
-              ++VersionNumber;
-              BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
-            }
-
-            SaveBrush(LayeredBrush, BrushFilepath.Start);
-          }
-        }
-        else
-        {
-          cs BrushFilepath = GetFilenameForBrush(CS(LayeredBrush->NameBuf), 1);
-          SaveBrush(LayeredBrush, BrushFilepath.Start);
-        }
-      }
-    }
-
-
-    ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
-    if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
-    {
-      PushNewRow(Ui);
-
-      filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
-      maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
-
-      if (ClickedFileNode.Tag)
-      {
-        cs Filename = Concat(ClickedFileNode.Value.Dir, CSz("/"), ClickedFileNode.Value.Name, Tran);
-        u8_cursor Bytes = BeginDeserialization(Filename, Tran);
-        if (Deserialize(&Bytes, &Editor->LayeredBrushEditor, Tran) == False)
-        {
-          SoftError("While deserializing brush (%S).", Filename);
-          Editor->LayeredBrushEditor = {};
-        }
-        FinalizeDeserialization(&Bytes);
-
-        // NOTE(Jesse): This has to happen after deserialization cause some
-        // brushes got saved out with a name, which gets read back in..
-        ZeroMemory(LayeredBrush->NameBuf, NameBuf_Len);
-        CopyString(&ClickedFileNode.Value.Name, &BrushNameBuf);
-
-        SetToggleButton(Ui, ImportToggleId, False);
-      }
-    }
-    else
-    {
-
-      if (Button(Ui, CSz("New"), UiId(BrushSettingsWindow, "brush new", 0u)))
-      {
-        NewBrush(LayeredBrush);
+        NewBrush(Brush);
         IsNewBrush = True;
       }
+    }
+
+    //
+    // Brush toolbar buttons
+    //
+    {
+      memory_arena *Tran = GetTranArena();
 
       if (LayeredBrush->LayerCount)
       {
-        PushNewRow(Ui);
-        PushNewRow(Ui);
-
+        ui_brush_actions BrushAction = {};
+        ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
+        switch (BrushAction)
         {
-          ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", LayeredBrush->NameBuf);
-          cs NameBuf = CS(LayeredBrush->NameBuf);
-          TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
-          PushNewRow(Ui);
+          case UiBrushAction_NoAction: {} break;
 
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), &DefaultUiRenderParams_Generic);
-          // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
-          LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
-          LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
-          PushNewRow(Ui);
-          PushNewRow(Ui);
-        }
+          case UiBrushAction_New:
+          {
+            world_edit_brush ThisBrush = NewBrush();
+            Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+          } break;
 
-        {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic);
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic);
-          PushNewRow(Ui);
-        }
+          case UiBrushAction_Save:
+          {
+            cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
+            SaveBrush(Brush, BrushFilepath.Start);
+          } break;
 
-        {
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->SeedBrushWithSelection, CSz("SeedBrushWithSelection"), &DefaultUiRenderParams_Checkbox);
-          PushNewRow(Ui);
+          case UiBrushAction_Duplicate:
+          {
+            world_edit_brush Duplicated = *Brush;
 
-          DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox);
-          PushNewRow(Ui);
-          PushNewRow(Ui);
-        }
+            cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', Tran);
 
-      }
-    }
-  }
+            if (Pieces.Count > 2)
+            {
+              cs BrushNameString = Pieces.Start[0];
+              cs VersionString   = Pieces.Start[Pieces.Count-2];
 
+              s32 VersionNumber;
+              if ( ParseInteger(VersionString, &VersionNumber) )
+              {
+                cs BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+                while (FileExists(BrushFilepath.Start))
+                {
+                  ++VersionNumber;
+                  BrushFilepath = GetFilenameForBrush(BrushNameString, VersionNumber);
+                }
 
-  if (SelectionComplete(Editor->SelectionClicks))
-  {
-    b32 AnyChanges = False;
-    RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-    {
-      brush_layer *Layer = Layers + LayerIndex;
-      chunk_thumbnail *Preview = Previews + LayerIndex;
-      AnyChanges |= CheckForChangesAndUpdate_ThenRenderToPreviewTexture(Engine, Layer, Preview);
-    }
+                SaveBrush(&Duplicated, BrushFilepath.Start);
+              }
+            }
+            else
+            {
+              cs BrushFilepath = GetFilenameForBrush(CS(Duplicated.NameBuf), 1);
+              SaveBrush(&Duplicated, BrushFilepath.Start);
+            }
 
-    if (AnyChanges)
-    {
-      Editor->RootChunkNeedsNewMesh = True;
-      Editor->MostRecentSelectionRegionMin = Editor->SelectionRegion.Min;
-    }
-  }
+            Editor->CurrentBrush = Insert(Duplicated, &Editor->LoadedBrushes, Editor->Memory);
+          } break;
 
-
-
-
-  {
-    /* local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Right); */
-    /* PushWindowStart(Ui, BrushSettingsWindow); */
-
-    // NOTE(Jesse): Debug
 #if 0
-    if (LayeredBrush->SeedBrushWithSelection)
-    {
-      PushTableStart(Ui);
-          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
-          chunk_thumbnail *SeedPreview = &LayeredBrush->SeedLayer;
-        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &SeedPreview->Thumbnail, &SeedChunk->Meshes, V3(SeedChunk->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "seed preview interaction", &Editor->LayeredBrushEditor.SeedLayer.Thumbnail);
-        PushNewRow(Ui);
-      PushTableEnd(Ui);
+          case UiBrushAction_Import:
+          {
+            ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
+            if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
+            {
+              PushNewRow(Ui);
 
-      PushTableStart(Ui);
-        world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
-        if (SeedPreview->Thumbnail.Texture.ID) { RenderToTexture_Async(&Plat->RenderQ, Engine, &LayeredBrush->Preview.Thumbnail, &Root_LayeredBrushPreview->Meshes, V3(Root_LayeredBrushPreview->Dim)/-2.f, 0); }
-        InteractWithThumbnailTexture(Engine, Ui, BrushSettingsWindow, "root preview interaction", &Editor->LayeredBrushEditor.Preview.Thumbnail);
-        PushNewRow(Ui);
-      PushTableEnd(Ui);
-    }
+              filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
+              maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+              if (ClickedFileNode.Tag)
+              {
+                LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
+                SetToggleButton(Ui, ImportToggleId, False);
+              }
+            }
+          } break;
 #endif
 
-    {
+        }
+      }
 
       {
-        b32 ReorderUp         = False;
-        b32 ReorderDown       = False;
-        b32 Duplicate         = False;
-        b32 Delete            = False;
-        s32 EditLayerIndex = 0;
-        PushTableStart(Ui);
-        RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+
+        if (LayeredBrush->LayerCount)
         {
-          brush_layer *Layer = Layers + LayerIndex;
-          chunk_thumbnail *Preview = Previews + LayerIndex;
-
-          ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", Layer);
-          if (ToggleButton(Ui, FSz("v Layer %d", LayerIndex), FSz("> Layer %d", LayerIndex), ToggleId))
-          {
-            if (Button(Ui, CSz("Up"), UiId(BrushSettingsWindow, "layer_reorder_up", Layer)))
-            {
-              ReorderUp = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Down"), UiId(BrushSettingsWindow, "layer_reorder_down", Layer)))
-            {
-              ReorderDown = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Dup"), UiId(BrushSettingsWindow, "layer_duplicate", Layer)))
-            {
-              Duplicate = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            if (Button(Ui, CSz("Del"), UiId(BrushSettingsWindow, "layer_delete", Layer)))
-            {
-              Delete = True;
-              EditLayerIndex = LayerIndex;
-            }
-
-            DoSettingsForBrushLayer(Engine, Layer, Preview, BrushSettingsWindow);
-          }
-
-          if (IsNewBrush && LayerIndex == 0)
-          {
-            SetToggleButton(Ui, ToggleId, True);
-          }
-
           PushNewRow(Ui);
-        }
-        PushTableEnd(Ui);
+          PushNewRow(Ui);
 
-        if (ReorderUp)
-        {
-          if (EditLayerIndex > 0)
           {
-            brush_layer *Layer = Layers + EditLayerIndex;
-            brush_layer Tmp = Layers[EditLayerIndex-1];
-            Layers[EditLayerIndex-1].Settings = Layer->Settings;
-            Layer->Settings = Tmp.Settings;
+            ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
+            cs NameBuf = CS(Brush->NameBuf);
+            TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
+            PushNewRow(Ui);
+
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic);
+            // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
+            LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
+            LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
+            PushNewRow(Ui);
+            PushNewRow(Ui);
           }
+
+          {
+            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic); */
+            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic); */
+            /* PushNewRow(Ui); */
+          }
+
+          {
+            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox);
+            PushNewRow(Ui);
+            PushNewRow(Ui);
+
+            PushColumn(Ui, CSz(" ----- LAYERS -----"));
+            PushNewRow(Ui);
+            PushNewRow(Ui);
+
+            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
+            /* PushNewRow(Ui); */
+            /* PushNewRow(Ui); */
+          }
+
         }
 
-        if (ReorderDown)
         {
-          if (LayeredBrush->LayerCount)
+          s32 EditLayerIndex = 0;
+          ui_brush_layer_actions BrushLayerAction = {};
+
+          PushTableStart(Ui);
+
+          brush_layer *BrushLayers = Brush->Layered.Layers;
+          RangeIterator(LayerIndex, LayeredBrush->LayerCount)
           {
-            if (EditLayerIndex < LayeredBrush->LayerCount-1)
+            brush_layer *BrushLayer = BrushLayers + LayerIndex;
+
+            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex), ThisHash);
+            cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
+
+            if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
             {
-              brush_layer *Layer = Layers + EditLayerIndex;
-              brush_layer Tmp = Layers[EditLayerIndex+1];
-              Layers[EditLayerIndex+1].Settings = Layer->Settings;
-              Layer->Settings = Tmp.Settings;
+              PushNewRow(Ui);
+
+
+              auto ActionsToolbarRef = PushTableStart(Ui);
+                ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical);
+                if (Toolbar.AnyElementClicked)
+                {
+                  EditLayerIndex = LayerIndex;
+
+                  if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+
+                  b32 ThisState = GetToggleState(Ui, ToggleId);
+
+                  if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+                  {
+                    ui_id NextId = ToggleId;
+                    NextId.ElementBits -= 1;
+                    b32 NextState = GetToggleState(Ui, NextId);
+
+                    SetToggleButton(Ui, ToggleId, NextState);
+                    SetToggleButton(Ui, NextId, ThisState);
+                  }
+
+                  if (BrushLayerAction == UiBrushLayerAction_MoveDown)
+                  {
+                    ui_id NextId = ToggleId;
+                    NextId.ElementBits += 1;
+                    b32 NextState = GetToggleState(Ui, NextId);
+
+                    SetToggleButton(Ui, ToggleId, NextState);
+                    SetToggleButton(Ui, NextId, ThisState);
+                  }
+
+                }
+              PushTableEnd(Ui);
+
+              PushTableStart(Ui, Position_RightOf, ActionsToolbarRef);
+                OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                  DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
+                CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+              PushTableEnd(Ui);
+            }
+            else
+            {
+              DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
+            }
+
+            if (IsNewBrush && LayerIndex == 0)
+            {
+              SetToggleButton(Ui, ToggleId, True);
+            }
+
+            PushNewRow(Ui);
+          }
+          PushTableEnd(Ui);
+
+          if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+          {
+            if (EditLayerIndex > 0)
+            {
+              brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+              brush_layer Tmp = BrushLayers[EditLayerIndex-1];
+              BrushLayers[EditLayerIndex-1].Settings = BrushLayer->Settings;
+              BrushLayer->Settings = Tmp.Settings;
             }
           }
-        }
 
-        if (Duplicate)
-        {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+          if (BrushLayerAction == UiBrushLayerAction_MoveDown)
           {
-            LayeredBrush->LayerCount += 1;
-
-            // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
-            RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+            if (LayeredBrush->LayerCount)
             {
-              Layers[LayerIndex].Settings = Layers[LayerIndex-1].Settings;
+              if (EditLayerIndex < LayeredBrush->LayerCount-1)
+              {
+                brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
+                brush_layer Tmp = BrushLayers[EditLayerIndex+1];
+                BrushLayers[EditLayerIndex+1].Settings = BrushLayer->Settings;
+                BrushLayer->Settings = Tmp.Settings;
+              }
             }
           }
-        }
 
-        if (Delete)
-        {
-          if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+          if (BrushLayerAction == UiBrushLayerAction_Duplicate)
           {
+            if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+            {
+              LayeredBrush->LayerCount += 1;
+
+              // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
+              RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
+              {
+                BrushLayers[LayerIndex].Settings = BrushLayers[LayerIndex-1].Settings;
+              }
+            }
+          }
+
+          if (BrushLayerAction == UiBrushLayerAction_Delete)
+          {
+            // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
+            // delete a layer if there aren't any to delete!
+            Assert(LayeredBrush->LayerCount > 0);
+
             // Shuffle layers backwards, overwriting EditLayerIndex
             RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
             {
-              Layers[LayerIndex-1].Settings = Layers[LayerIndex].Settings;
+              Assert(LayerIndex >= 0 && LayerIndex < MAX_BRUSH_LAYERS);
+              BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
             }
 
             LayeredBrush->LayerCount -= 1;
@@ -1715,174 +1202,9 @@ BrushSettingsForLayeredBrush(engine_resources *Engine, window_layout *BrushSetti
         }
       }
 
-      {
-        world_chunk *Root_LayeredBrushPreview = &LayeredBrush->Preview.Chunk;
-        Assert( (Root_LayeredBrushPreview->Flags&Chunk_Queued) == False );
-
-        //
-        // TODO(Jesse)(async, speed): It would be kinda nice if this ran async..
-        if ( Editor->RootChunkNeedsNewMesh )
-        {
-          // TODO(Jesse): Shouldn't the LargestLayerDim take into account the largest Offset too..?
-          v3i LargestLayerDim = GetSelectionDim(World, Editor) + 2;
-          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrush, &LargestLayerDim);
-          /* if (SmallestMinOffset == V3i(0)) */
-          /* {SmallestMinOffset = V3i(1);} */
-
-          // Clear the voxels if the size didn't change, otherwise realloc
-          if (Root_LayeredBrushPreview->Dim == LargestLayerDim)
-          {
-            // TODO(Jesse): Actually necessary??  I think maybe not
-            ClearChunkVoxels(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim);
-          }
-          else
-          {
-            // @editor_chunk_memory_question
-            AllocateWorldChunk(Root_LayeredBrushPreview, {}, LargestLayerDim, Editor->Memory);
-          }
-
-          world_chunk *SeedChunk = &LayeredBrush->SeedLayer.Chunk;
-          if (SeedChunk->Dim == LargestLayerDim)
-          {
-            ClearChunkVoxels(SeedChunk->Voxels, SeedChunk->Dim);
-          }
-          else
-          {
-            AllocateWorldChunk(SeedChunk, {}, LargestLayerDim, Editor->Memory);
-          }
-
-
-
-
-#if 1
-          auto Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-          if (LayeredBrush->SeedBrushWithSelection)
-          {
-            if (SelectionComplete(Editor->SelectionClicks))
-            {
-              rect3cp GatherRegion = Editor->SelectionRegion;
-              GatherRegion.Min.Offset -= V3(1);
-              GatherRegion.Max.Offset += V3(1);
-              Canonicalize(World, &GatherRegion.Min);
-              Canonicalize(World, &GatherRegion.Max);
-
-              world_chunk Seed = GatherVoxelsOverlappingArea(Engine, GatherRegion, GetTranArena());
-              /* CopyChunkOffset(&Seed, Seed.Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, -1*SmallestMinOffset); */
-              CopyChunkOffset(&Seed, Seed.Dim, SeedChunk, SeedChunk->Dim, {});
-
-              /* // NOTE(Jesse): Zero out everything on the exterior edge */
-              /* RangeIterator (z, SeedChunk->Dim.z) */
-              /* RangeIterator (y, SeedChunk->Dim.y) */
-              /* RangeIterator (x, SeedChunk->Dim.x) */
-              /* { */
-              /*   if (z == 0 || y == 0 || x == 0 || */
-              /*       z == (SeedChunk->Dim.z-1) || y == (SeedChunk->Dim.y-1) || x == (SeedChunk->Dim.x-1)) */
-              /*   /1* if (z == 0 || y == 0 || x == 0) *1/ */
-              /*   { */
-              /*     s32 Index = GetIndex(x,y,z, SeedChunk->Dim); */
-              /*     SeedChunk->Voxels[Index] = {}; */
-              /*   } */
-              /* } */
-
-              MarkBoundaryVoxels_MakeExteriorFaces(SeedChunk->Voxels, SeedChunk->Dim, {}, SeedChunk->Dim);
-
-              FinalizeChunkInitialization(SeedChunk);
-
-              data_type Type = GetMeshDatatypeForDimension(SeedChunk->Dim);
-              auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
-              RebuildWorldChunkMesh(Thread, SeedChunk, {}, SeedChunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-              SyncGpuBuffersAsync(Engine, &SeedChunk->Meshes);
-
-              CopyChunkOffset(SeedChunk, SeedChunk->Dim, Root_LayeredBrushPreview, Root_LayeredBrushPreview->Dim, {});
-            }
-          }
-#endif
-
-          RangeIterator(LayerIndex, LayeredBrush->LayerCount)
-          {
-            brush_layer *Layer = Layers + LayerIndex;
-            chunk_thumbnail *Preview = Previews + LayerIndex;
-            ApplyBrushLayer(Engine, Layer, Preview, Root_LayeredBrushPreview, SmallestMinOffset+V3i(-1));
-          }
-
-          FinalizeChunkInitialization(Root_LayeredBrushPreview);
-
-          {
-            auto Chunk = Root_LayeredBrushPreview;
-
-            data_type Type = GetMeshDatatypeForDimension(Chunk->Dim);
-            auto *TempMesh = AllocateTempMesh(Thread->TempMemory, Type);
-
-            MarkBoundaryVoxels_MakeExteriorFaces(Root_LayeredBrushPreview->Voxels, Root_LayeredBrushPreview->Dim, {}, Root_LayeredBrushPreview->Dim-V3i(2));
-
-            RebuildWorldChunkMesh(Thread, Chunk, {}, Chunk->Dim, MeshBit_Lod0, TempMesh, Thread->TempMemory);
-          }
-
-          Editor->RootChunkNeedsNewMesh = False;
-          Editor->NextSelectionRegionMin = Editor->MostRecentSelectionRegionMin;
-
-          if (SyncGpuBuffersAsync(Engine, &Root_LayeredBrushPreview->Meshes))
-          {
-            Editor->EditorPreviewRegionMin = Editor->NextSelectionRegionMin;
-          }
-        }
-
-
-
-      }
-    }
-
-    PushWindowEnd(Ui, BrushSettingsWindow);
-  }
-}
-
-link_internal void
-DoBrushSettingsWindow(engine_resources *Engine, world_edit_tool WorldEditTool, world_edit_brush_type WorldEditBrushType)
-{
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-  local_persist window_layout Window = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-  switch (WorldEditTool)
-  {
-    case  WorldEdit_Tool_Disabled:
-    case  WorldEdit_Tool_Select:
-    case  WorldEdit_Tool_Eyedropper:
-    case  WorldEdit_Tool_BlitEntity:
-    {
-    } break;
-
-    case WorldEdit_Tool_Brush:
-    {
-      switch (WorldEditBrushType)
-      {
-        case WorldEdit_BrushType_Disabled:  {} break;
-        case WorldEdit_BrushType_Single:    {} break;
-        case WorldEdit_BrushType_Entity:    {} break;
-        case WorldEdit_BrushType_Asset:     {} break;
-
-        case WorldEdit_BrushType_Layered:
-        {
-          BrushSettingsForLayeredBrush(Engine, &Window);
-        } break;
-
-      }
-    } break;
-  }
-}
-
-link_internal b32
-CurrentToolIs(level_editor *Editor, world_edit_tool Tool, world_edit_brush_type BrushType)
-{
-  b32 Result = False;
-  if (Editor->Tool == Tool)
-  {
-    Result = True;
-    if (Editor->Tool == WorldEdit_Tool_Brush)
-    {
-      Result = (Editor->BrushType == BrushType);
     }
   }
-  return Result;
+  PushWindowEnd(Ui, BrushSettingsWindow);
 }
 
 link_internal aabb_intersect_result
@@ -1890,154 +1212,153 @@ EditWorldSelection(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
+  auto PrevRegion = Editor->Selection.Region;
+
   aabb_intersect_result AABBTest = {};
 
-  if (Editor->SelectionClicks)
-  {
-    r32 Thickness = 0.10f;
+  Editor->Selection.InitialSelect = False;
+  Editor->Selection.Diff          = {};
 
-    if (SelectionIncomplete(Editor->SelectionClicks))
+  aabb TotalEditAreas = InvertedInfinityRectangle_rect3();
+  // NOTE(Jesse): We can't predicate this because when we deselect everything
+  // we want this to automagically resize
+  /* if (AtElements(&Editor->SelectedEditIndices).Index) */
+  {
+    IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
     {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      aabb EditAABB = GetSimSpaceRect(World, Edit->Region);
+      TotalEditAreas = Union(&TotalEditAreas, &EditAABB);
+    }
+    Editor->Selection.Region = SimSpaceToCanonical(World, &TotalEditAreas);
+  }
+
+
+  if (Count(&Editor->SelectedEditIndices) == 0)
+  {
+    Editor->Selection.ModMode = SelectionModificationMode_None;
+  }
+
+
+  switch (Editor->Selection.ModMode)
+  {
+    case SelectionModificationMode_None:
+    {
+      Assert(Count(&Editor->SelectedEditIndices) == 0);
+    } break;
+
+    case SelectionModificationMode_Initialize:
+    {
+      Assert(SelectionIncomplete(Editor->Selection.Clicks));
+      Assert(Count(&Editor->SelectedEditIndices) == 1);
+
+      // Hot update selection region before we click the second point
+      // Must come first or we get a frame of lag.
+      //
       if (Engine->MousedOverVoxel.Tag)
       {
         auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
         MouseP.Offset = Floor(MouseP.Offset);
 
-        cp MinP = Min(Editor->SelectionBase, MouseP);
-        cp MaxP = Max(Editor->SelectionBase, MouseP) + V3(1.f);
+        cp MinP = Min(Editor->Selection.Base, MouseP);
+        cp MaxP = Max(Editor->Selection.Base, MouseP) + V3(1.f);
         /* Assert(MinP <= MaxP); */
-        Editor->SelectionRegion = RectMinMax(MinP, MaxP);
+        Editor->Selection.Region = RectMinMax(MinP, MaxP);
       }
-    }
-    else
-    {
-      Thickness = 0.20f;
-    }
 
-    if (CurrentToolIs(Editor, WorldEdit_Tool_Brush, WorldEdit_BrushType_Layered))
-    {
-      layered_brush_editor *Brush = &Editor->LayeredBrushEditor;
-      if (Brush->BrushFollowsCursor)
+      // Update Clicks and initial position
+      //
+      if (Input->LMB.Clicked)
       {
-        if (Engine->MousedOverVoxel.Tag)
+        switch (Editor->Selection.Clicks)
         {
-          cp MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value, PickedVoxel_LastEmpty);
+          case 0:
+          {
+            if (Engine->MousedOverVoxel.Tag)
+            {
+              Editor->Selection.Clicks += 1;
+              auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
+              MouseP.Offset = Floor(MouseP.Offset);
+              Editor->Selection.Base = MouseP;
+            }
+          } break;
 
-          v3 SelectionDim = GetDim(GetSimSpaceRect(World, Editor->SelectionRegion));
-          v3 SelectionRad = SelectionDim / 2.f;
+          case 1:
+          {
+            Editor->Selection.Clicks += 1;
+            Editor->Selection.InitialSelect = True;
+            Editor->Selection.ModMode = SelectionModificationMode_Modify;
+          } break;
 
-          Editor->SelectionRegion.Min = MouseP - SelectionRad;
-          Editor->SelectionRegion.Max = MouseP + SelectionRad;
-
-          Canonicalize(World, &Editor->SelectionRegion.Min);
-          Canonicalize(World, &Editor->SelectionRegion.Max);
-
-          Truncate(&Editor->SelectionRegion.Min.Offset);
-          Truncate(&Editor->SelectionRegion.Max.Offset);
-
+          InvalidDefaultCase;
         }
       }
-    }
+    } break;
 
-    aabb SelectionAABB = GetSimSpaceRect(World, Editor->SelectionRegion);
+    case SelectionModificationMode_Modify:
     {
-      if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
+      Assert(SelectionComplete(Editor->Selection.Clicks));
+      Assert(Count(&Editor->SelectedEditIndices) > 0);
+      // Edit the selection region
+      //
+      rect3i ModifiedSelection = {};
       {
-        ray Ray = Engine->MaybeMouseRay.Ray;
-
-        /* Ray.Origin = GetSimSpaceP(World, Canonical_Position(World->ChunkDim, Ray.Origin, {})); */
-        AABBTest = Intersect(&SelectionAABB, &Ray);
-
-        face_index Face = AABBTest.Face;
-        /* PushColumn(Ui, CS(Face)); */
-        /* PushNewRow(Ui); */
-
-        if (Face)
+        // If we're hovering a face and click, set ClickedFace, which is the
+        // source of truth that signals we're editing the selection region
+        //
+        if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
         {
-          /* r32 InsetWidth = 0.25f; */
-          r32 InsetWidth  = 0.f;
-          v3  HiColor     = RGB_GREEN;
-          r32 HiThickness = Thickness*1.2f;
+          ray Ray = Engine->MaybeMouseRay.Ray;
 
-          HighlightFace(Engine, Face, SelectionAABB, InsetWidth, HiColor, HiThickness);
-
-          if ( Input->LMB.Clicked && (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) )
+          aabb SelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+          AABBTest = Intersect(&SelectionAABB, &Ray);
+          face_index Face = AABBTest.Face;
+          if (Face)
           {
-            v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
-            Editor->Selection.ClickedFace = Face;
-            Editor->Selection.ClickedP[0] = PlaneBaseP;
+            if ( Input->LMB.Clicked && (Input->Shift.Pressed || Input->Alt.Pressed) )
+            {
+              v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
+              Editor->Selection.ModState.ClickedFace = Face;
+              Editor->Selection.ModState.ClickedP[0] = PlaneBaseP;
+            }
+          }
+
+          // If we're editing the selection region, Compute the proposed modification
+          // and make it permanent when we release the LMB
+          //
+          if (Editor->Selection.ModState.ClickedFace)
+          {
+            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+            if (SelectionMode) // We could have started a selection edit and released the accelerator key
+            {
+              UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
+              v3 UpdateVector = {};
+              ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
+              if (Input->LMB.Pressed == False)
+              {
+                // If we actually changed the selection region
+                rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
+
+                // Make ModifiedSelection permanent
+                Editor->Selection.Region = ProposedSelection;
+                Editor->Selection.Diff   = UpdateVector;
+              }
+
+              // Draw proposed modification region
+              //
+              rect3 ModifiedAABB = Rect3(&ModifiedSelection);
+              v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
+              r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&ModifiedAABB)) );
+              DEBUG_DrawSimSpaceAABB(Engine, &ModifiedAABB, RGB_GREEN, BaseThicc*0.75f);
+            }
           }
         }
 
-        if (Editor->Selection.ClickedFace)
-        {
-          world_edit_selection_mode SelectionMode = {};
-
-          // Intentionally an el-if chain from most specific, to least.  What's the alternative?
-          //
-          // Shift is resize
-          // Ctrl  is move
-          //
-          if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeAllAxies;
-          }
-          else if (Input->Shift.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeBothLinearAxies;
-          }
-          else if (Input->Ctrl.Pressed && Input->Alt.Pressed)
-          {
-            SelectionMode = SelectionMode_TranslateLinear;
-          }
-          else if (Input->Shift.Pressed)
-          {
-            SelectionMode = SelectionMode_ResizeSingleLinearAxis;
-          }
-          else if (Input->Ctrl.Pressed)
-          {
-            SelectionMode =  SelectionMode_TranslatePlanar;
-          }
-
-          /* Info("%S", ToString(SelectionMode)); */
-          /* if (SelectionMode) { Ui->RequestedForceCapture = True; } */
-
-          rect3i ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection, SelectionAABB);
-
-          if (!Input->LMB.Pressed)
-          {
-            // If we actually changed the selection region
-            rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
-
-            // Make ModifiedSelection permanent
-            Editor->SelectionRegion = ProposedSelection;
-            Editor->Selection.ClickedFace = FaceIndex_None;
-          }
-        }
       }
-    }
-
-    // Draw selection box
-    //
-
-    v3 BaseColor = RGB_WHITE;
-    DEBUG_DrawSimSpaceAABB(Engine, &SelectionAABB, BaseColor, Thickness);
+    } break;
   }
 
-
-  // Don't fire selection changed event when dragging selection with selection edit tool
-  if (Editor->SelectionClicks != 1)
-  {
-    if (AreEqual(Editor->SelectionRegion, Editor->PrevSelectionRegion))
-    {
-      Editor->SelectionChanged = False;
-    }
-    else
-    {
-      Editor->SelectionChanged = True;
-    }
-    Editor->PrevSelectionRegion = Editor->SelectionRegion;
-  }
+  if (Editor->Selection.InitialSelect) { Info("InitialSelect"); }
 
   return AABBTest;
 }
@@ -2046,43 +1367,7 @@ link_internal cp
 GetSelectionCenterP(world *World, level_editor *Editor)
 {
   v3i Dim = GetSelectionDim(World, Editor);
-  cp Result = Canonicalize(World, Editor->SelectionRegion.Min + V3(Dim/2));
-  return Result;
-}
-
-link_internal b32
-InputStateIsValidToApplyEdit(input *Input)
-{
-  b32 Result = Input->LMB.Clicked && !Input->Shift.Pressed && !Input->Ctrl.Pressed && !Input->Alt.Pressed;
-  return Result;
-}
-
-link_internal world_edit_mode
-GetEditModeForSelectedTool(level_editor *Editor)
-{
-  // Default is attach for tools/brushes that don't have a mode in their settings
-  world_edit_mode Result = WorldEdit_Mode_Attach;
-
-  switch(Editor->Tool)
-  {
-    case WorldEdit_Tool_Disabled:   {} break;
-    case WorldEdit_Tool_Select:     {} break;
-    case WorldEdit_Tool_Eyedropper: {} break;
-    case WorldEdit_Tool_BlitEntity: {} break;
-
-    case WorldEdit_Tool_Brush:
-    {
-      switch(Editor->BrushType)
-      {
-        case WorldEdit_BrushType_Disabled: {} break;
-        case WorldEdit_BrushType_Entity:   {} break;
-        case WorldEdit_BrushType_Single:   { Result = Editor->SingleBrush.Mode; } break;
-        case WorldEdit_BrushType_Asset:    { Result = Editor->AssetBrush.Mode;  } break;
-        case WorldEdit_BrushType_Layered:  { Result = Editor->LayeredBrushEditor.Mode;} break;
-      }
-    } break;
-  }
-
+  cp Result = Canonicalize(World, Editor->Selection.Region.Min + V3(Dim/2));
   return Result;
 }
 
@@ -2102,28 +1387,27 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDest, u32 ElementIndex, u32 Slices, v2 WidgetDim, r32 CurrentValue)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
+  v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
+  v4 Padding = V4(0);
+  v3 HSV = *HSVDest;
+
+  r32 CurrentValue = HSVDest->E[HSVElementIndex];
 
   ui_element_reference SaturationTable = PushTableStart(Ui);
   RangeIterator_t(u8, ColorIndex, Slices)
   {
-    /* v3 Color = GetColorData(u32(ColorIndex)); */
-
-    v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
-    v4 Padding = V4(0);
-    v3 BorderColor = V3(1.0f);
-
     r32 Value = r32(ColorIndex)/r32(Slices);
 
-    v3 HSV = *HSVDest;
-    HSV.E[ElementIndex] = Value;
+    HSV.E[HSVElementIndex] = Value;
     v3 RGB = HSVtoRGB(HSV);
 
     b32 Selected = Value == CurrentValue;
     ui_style Style = FlatUiStyle(RGB);
-    interactable_handle ColorPickerButton = PushButtonStart(Ui, UiId(Window, "ColorPicker value button", Cast(void*, u64(ColorIndex) | u64(ElementIndex<<16))) );
+    ui_id Id = UiId( Window, "ColorPicker value button", u32(u64(HSVDest)), ThisHash ^ u32(u64(Cast(void*, u64(ColorIndex) | u64(HSVElementIndex<<16)))) );
+
+    interactable_handle ColorPickerButton = PushButtonStart(Ui, Id);
       PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, Padding );
     PushButtonEnd(Ui);
 
@@ -2131,6 +1415,7 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
     if (Selected || ButtonHover)
     {
       f32 BorderDim = 1.f;
+       v3 BorderColor = V3(1.0f);
       PushRelativeBorder(Ui, V2(-1.f,1.f)*QuadDim, BorderColor, V4(BorderDim));
     }
 
@@ -2139,9 +1424,9 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
       PushTooltip(Ui, FSz("%d %.2V3", ColorIndex, &RGB));
     }
 
-    if (ButtonHover && Input->LMB.Pressed)
+    if (Clicked(Ui, &ColorPickerButton))
     {
-      HSVDest->E[ElementIndex] = Value;
+      HSVDest->E[HSVElementIndex] = Value;
     }
   }
   PushTableEnd(Ui);
@@ -2149,14 +1434,12 @@ DoColorPickerSection(engine_resources *Engine, window_layout *Window, v3 *HSVDes
 }
 
 link_internal void
-DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 ShowColorSwatch)
+DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
 {
-  UNPACK_ENGINE_RESOURCES(Engine);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
 
-  /* u8 FourBits   = 0b1111; */
   u8 FiveBits   = 0b11111;
   u8 SixBits    = 0b111111;
-  /* u8 EightBits  = 0b11111111; */
 
   u16 HueSlices        = SixBits;
   u16 SaturationSlices = FiveBits;
@@ -2164,415 +1447,404 @@ DoColorPicker(engine_resources *Engine, window_layout *Window, v3 *RGBDest, b32 
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  v3 HSV = RGBtoHSV(*RGBDest);
-
-  DoColorPickerSection(Engine, Window, &HSV, 0, HueSlices,        ColorPickerSectionDim, RGBDest->h);
-  DoColorPickerSection(Engine, Window, &HSV, 1, SaturationSlices, ColorPickerSectionDim, RGBDest->s);
-  DoColorPickerSection(Engine, Window, &HSV, 2, ValueSlices,      ColorPickerSectionDim, RGBDest->v);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
 
   PushNewRow(Ui);
 
-  *RGBDest = HSVtoRGB(HSV);
-
+  v3 RGB = HSVtoRGB(*HSVDest);
   if (ShowColorSwatch)
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
-    ui_style Style = FlatUiStyle(*RGBDest);
-    PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
-    PushNewRow(Ui);
+    DoColorSwatch(Ui, QuadDim, RGB);
   }
 
-  cs HSVColorString = FSz("HSV (%.2V3)", &HSV);
-  cs RGBColorString = FSz("RGB (%.2V3)", RGBDest);
+  cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
+  cs RGBColorString = FSz("RGB (%.2V3)", &RGB);
 
   PushColumn(Ui, HSVColorString );
   PushNewRow(Ui);
 
   PushColumn(Ui, RGBColorString );
   PushNewRow(Ui);
-
-  /* DoEditorUi(Ui, &Window, &Editor->HSVColorSelection, CSz("HSV Color") ); */
 }
 
 link_internal void
-ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *RGBDest, b32 ShowColorSwatch /* = True */)
+DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColorSwatch, u32 ParentHash)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
+
+  ui_id InteractionId = UiId(Window, "ColorPicker toggle button", HSVDest, ThisHash);
+
+  u32 ColumnIndex = StartColumn(Ui);
+    if (ToggledOn(Ui, InteractionId))
+    {
+      // NOTE(Jesse): Gotta use a discrete button id for this
+      if (Button(Ui, CSz("Done"), UiId(Window, "ColorPicker toggle close", HSVDest, ThisHash))) { SetToggleButton(Ui, InteractionId, False); }
+      PushNewRow(Ui);
+      DoColorPicker(Ui, Window, HSVDest, ShowColorSwatch, ParentHash);
+    }
+    else
+    {
+      ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
+      ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
+        v2 Dim = V2(25);
+        PushUntexturedQuad(Ui, V2(0), Dim, zDepth_Text, &BStyle);
+      ToggleButtonEnd(Ui);
+    }
+  EndColumn(Ui, ColumnIndex);
+
+  PushNewRow(Ui);
+}
+
+link_internal b32
+CheckSettingsChanged(layered_brush *Brush)
+{
+  b32 Result = False;
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+    Result |= !AreEqual(&Layer->Settings, &Layer->PrevSettings);
+    Layer->PrevSettings = Layer->Settings;
+  }
+  return Result;
+}
+
+link_internal b32
+CheckSettingsChanged(world_edit *Edit)
+{
+  b32 Result = False;
+  if (Edit->Brush)
+  {
+    Result = CheckSettingsChanged(&Edit->Brush->Layered);
+  }
+  return Result;
+}
+
+link_internal void
+ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Edit->Tombstone == False);
 
-  if (window_layout *Window = ModalIsActive(Ui, ModalId))
+  Info("Applying Edit(%p) to Octree", Edit);
+
+  // Gather newly overlapping nodes and add the edit
+
   {
-    DoColorPicker(Engine, Window, RGBDest, ShowColorSwatch);
+    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
-    PushNewRow(Ui);
+    rect3cp QueryRegion = Edit->Region;
 
-    if (Button(Ui, CSz("Close"), UiId(Window, "modal close button", 0u)))
+
+    // NOTE(Jesse):
+#if 0
     {
-      CompleteModal(Ui, ModalId);
-    }
+      QueryRegion.Min.Offset -= 1.f;
+      QueryRegion.Max.Offset += 1.f;
 
-    PushNewRow(Ui);
+      Canonicalize(World, &QueryRegion.Min);
+      Canonicalize(World, &QueryRegion.Max);
+    }
+#endif
+
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      AcquireFutex(&Node->Lock);
+
+      /* auto EditAABB = GetSimSpaceAABB(World, Node); */
+      /* random_series S = {u64(Node)}; */
+      /* v3 BaseColor = RandomV3Unilateral(&S); */
+      /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
+
+      {
+        // Shouldn't have this edit already attached ..
+        world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
+        Assert( IsValid(&Index) == False );
+      }
+
+      if (Node->Edits.Memory == 0)
+      {
+        Node->Edits = WorldEditPtrBlockArray(Editor->Memory);
+      }
+
+      Push(&Node->Edits, Edit);
+
+      Node->Dirty = True;
+      ReleaseFutex(&Node->Lock);
+    }
   }
 }
 
+#if BONSAI_INTERNAL
+link_internal void
+SanityCheckOctreeDoesNotContainEdit_Recursive(world *World, octree_node *Current, world_edit *Edit)
+{
+  Assert(Current);
+
+  IterateOver(&Current->Edits, TestEdit, EditIndex)
+  {
+    Assert(Edit != TestEdit);
+  }
+
+  switch(Current->Type)
+  {
+    InvalidCase(OctreeNodeType_Undefined);
+
+    case OctreeNodeType_Leaf:
+    {
+    } break;
+
+    case OctreeNodeType_Branch:
+    {
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[0], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[1], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[2], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[3], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[4], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[5], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[6], Edit);
+      SanityCheckOctreeDoesNotContainEdit_Recursive(World, Current->Children[7], Edit);
+    } break;
+  }
+}
+#endif
+
+link_internal void
+DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  Assert(Edit->Tombstone == False);
+
+  octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+
+  rect3cp QueryRegion = Edit->Region;
+
+
+  // NOTE(Jesse):
+#if 0
+  {
+    QueryRegion.Min.Offset -= 1.f;
+    QueryRegion.Max.Offset += 1.f;
+
+    Canonicalize(World, &QueryRegion.Min);
+    Canonicalize(World, &QueryRegion.Max);
+  }
+#endif
+
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+
+
+  IterateOver(&Nodes, Node, NodeIndex)
+  {
+    AcquireFutex(&Node->Lock);
+    auto Index = Find(&Node->Edits, Edit);
+    Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
+    RemoveUnordered(&Node->Edits, Index);
+
+    // Need to reinitialize chunks that no longer have the edit so that it
+    // doesn't stay intact in chunks that lose it entirely
+    Node->Dirty = True;
+    ReleaseFutex(&Node->Lock);
+  }
+
+#if BONSAI_INTERNAL
+  SanityCheckOctreeDoesNotContainEdit_Recursive(World, &World->Root, Edit);
+#endif
+}
+
+link_internal void
+UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
+{
+  Assert(Edit->Tombstone == False);
+
+  DropEditFromOctree(Engine, Edit, TempMemory);
+  Edit->Region = Region;
+  ApplyEditToOctree(Engine, Edit, TempMemory);
+}
+
+link_internal void
+ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
+{
+  // TODO(Jesse): Is there a better way to do this, or do we even care?
+  UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory);
+}
+
+#if 0
+
+link_internal void
+IncrementAllEditOrdinalsAbove(world_edit_block_array *Edits, u32 Ordinal)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    if (Edit->Ordinal >= Ordinal)
+    {
+      if (Edit->Ordinal == EDIT_ORDINAL_TOMBSTONE) { continue; }
+      ++Edit->Ordinal;
+    }
+  }
+}
+
+
+// NOTE(Jesse): @duplicated_edit_ordinal_sort_code
+link_internal sort_key_buffer
+GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem)
+{
+  umm EditCount = TotalElements(Edits);
+  sort_key *Keys = Allocate(sort_key, TempMem, EditCount);
+
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    u32 KeyIndex = u32(GetIndex(&EditIndex));
+    Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+  }
+
+  BubbleSort_descending(Keys, u32(EditCount));
+
+  return {EditCount, Keys};
+}
+#endif
+
+
+link_internal void
+ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_index_block_array *Edits, world_edit_selection_mode SelectionMode)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  IterateOver(Edits, EditI, EditII)
+  {
+    world_edit *Edit = GetPtr(&Editor->Edits, *EditI);
+
+    Assert(Engine->MaybeMouseRay.Tag == Maybe_Yes);
+    ray *Ray = &Engine->MaybeMouseRay.Ray;
+    aabb SelectionAABB = GetSimSpaceAABB(World, &Edit->Region);
+    rect3i ModifiedSelection = DoSelectonModification(Engine, Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB);
+
+    rect3cp NewRegion = SimSpaceToCanonical(World, &ModifiedSelection);
+    UpdateWorldEditBounds(Engine, Edit, NewRegion, GetTranArena());
+  }
+}
+
+link_internal void
+DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_index *EditIndex, world_edit_layer *Layer = 0)
+{
+  Assert(Edit->Tombstone == False);
+
+  level_editor *Editor = &Engine->Editor;
+
+  DropEditFromOctree(Engine, Edit, GetTranArena());
+
+  umm SelIndex = IndexOfValue(&Editor->SelectedEditIndices, EditIndex).Index;
+  if (SelIndex != INVALID_BLOCK_ARRAY_INDEX)
+  {
+    RemoveUnordered(&Editor->SelectedEditIndices, {SelIndex});
+  }
+
+  if (Layer)
+  {
+    RemoveOrdered(&Layer->EditIndices, EditIndex);
+  }
+
+  *Edit = {};
+   Edit->Tombstone = True;
+}
+
+link_internal world_edit *
+GetClosestEditIntersectingRay(world *World, world_edit_block_array *Edits, ray *Ray, world_edit_block_array_index *ResultIndex = 0)
+{
+  world_edit *Result = {};
+  world_edit_block_array_index Index = {INVALID_BLOCK_ARRAY_INDEX};
+
+  r32 tMin = f32_MAX;
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    aabb Box = GetSimSpaceAABB(World, Edit->Region);
+    aabb_intersect_result I = Intersect(Box, Ray);
+    if (I.t < tMin)
+    {
+      tMin = I.t;
+      Result = Edit;
+      Index = EditIndex;
+    }
+  }
+
+  if (ResultIndex)
+    *ResultIndex = Index;
+
+  return Result;
+}
+
+link_internal void
+DeselectAllEdits(level_editor *Editor)
+{
+  IterateOver(&Editor->SelectedEditIndices, EI, EII)
+  {
+    auto SelEdit = GetPtr(&Editor->Edits, *EI);
+    SelEdit->Selected = False;
+  }
+  Editor->SelectedEditIndices.ElementCount = 0;
+}
+
+link_internal void
+SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index EditIndex, b32 MultiSelect = False)
+{
+  world_edit_block_array_index_block_array *SelectedEditIndices = &Editor->SelectedEditIndices;
+  Assert(Edit);
+  Assert(EditIndex.Index != INVALID_BLOCK_ARRAY_INDEX);
+
+  if (MultiSelect)
+  {
+    if (Edit->Selected)
+    {
+      Assert(Edit->Selected == True);
+      Edit->Selected = False;
+
+      auto I = IndexOfValue(SelectedEditIndices, &EditIndex);
+      Assert(I.Index != INVALID_BLOCK_ARRAY_INDEX);
+      RemoveUnordered(SelectedEditIndices, I);
+    }
+    else
+    {
+      Assert(Edit->Selected == False);
+      Edit->Selected = True;
+      Push(SelectedEditIndices, &EditIndex);
+    }
+  }
+  else
+  {
+    DeselectAllEdits(Editor);
+    Push(SelectedEditIndices, &EditIndex);
+    Edit->Selected = True;
+  }
+
+  Editor->Selection.Clicks  = 2;
+  Editor->Selection.ModMode = SelectionModificationMode_Modify;
+}
 
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  // @selection_changed_flag
-  //
+  Editor->HotEdit = 0;
+  Editor->HotEditIndex = {INVALID_BLOCK_ARRAY_INDEX};
+
+  if (Editor->CurrentBrush == 0)
+  {
+    world_edit_brush ThisBrush = NewBrush();
+    Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
+  }
+
   aabb_intersect_result AABBTest = EditWorldSelection(Engine);
-  aabb SelectionAABB = GetSimSpaceRect(World, Editor->SelectionRegion);
 
-  ui_toggle_button_group WorldEditToolButtonGroup = {};
-  ui_toggle_button_group WorldEditModeButtonGroup = {};
-  ui_toggle_button_group WorldEditBrushTypeButtonGroup = {};
-  ui_toggle_button_group WorldEditModifierButtonGroup = {};
-
+  if (Engine->MaybeMouseRay.Tag == Maybe_Yes)
   {
-    local_persist window_layout Window = WindowLayout("World Edit");
-    PushWindowStart(Ui, &Window);
-
-    PushTableStart(Ui);
-      ui_render_params Params = DefaultUiRenderParams_Button;
-      Params.Padding = V4(6, 3, 6, 3);
-      ui_element_reference CurrentRef = {};
-
-      {
-        WorldEditToolButtonGroup = DoEditorUi(Ui, &Window, &Editor->Tool, CSz("Tool"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditToolButtonGroup.UiRef;
-      }
-
-      if (Editor->Tool == WorldEdit_Tool_Brush)
-      {
-        Params.RelativePosition.Position   = Position_RightOf;
-        Params.RelativePosition.RelativeTo = CurrentRef;
-        WorldEditBrushTypeButtonGroup = DoEditorUi(Ui, &Window, &Editor->BrushType, CSz("Brush Type"), &Params, ToggleButtonGroupFlags_DrawVertical);
-        CurrentRef = WorldEditBrushTypeButtonGroup.UiRef;
-      }
-
-    PushTableEnd(Ui);
-
-    /* DoColorPicker(Engine, &Window, &Editor->HSVColorSelection); */
-
-    PushWindowEnd(Ui, &Window);
+    ray *Ray = &Engine->MaybeMouseRay.Ray;
+    Editor->HotEdit = GetClosestEditIntersectingRay(World, &Editor->Edits, Ray, &Editor->HotEditIndex);
   }
-
-
-
-
-
-
-
-
-  //
-  //
-  // Do tool selection actions (what happens when we change a tool selection)
-  //
-  //
-
-  if (WorldEditToolButtonGroup.AnyElementClicked)
-  {
-    switch (Editor->Tool)
-    {
-      case WorldEdit_Tool_Disabled:
-      case WorldEdit_Tool_Brush:
-      case WorldEdit_Tool_Eyedropper:
-      case WorldEdit_Tool_BlitEntity:
-      /* case WorldEdit_Tool_StandingSpots: */
-      { } break;
-
-      case WorldEdit_Tool_Select:
-      {
-        ResetSelection(Editor);
-      } break;
-    }
-  }
-
-  //
-  //
-  // Edit tool interactions in the world
-  //
-  //
-
-  if ( UiCapturedMouseInput(Ui) == False &&
-       UiHoveredMouseInput(Ui)  == False  )
-  {
-    switch (Editor->Tool)
-    {
-      case WorldEdit_Tool_Disabled:
-
-      case WorldEdit_Tool_Brush:
-      {
-        switch (Editor->BrushType)
-        {
-          case WorldEdit_BrushType_Disabled:
-          {} break;
-
-          case WorldEdit_BrushType_Entity:
-          case WorldEdit_BrushType_Asset:
-          {
-            if (Input->LMB.Clicked)
-            {
-              if (EngineDebug->SelectedAsset.FileNode.Type)
-              {
-                cp EntityOrigin = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                EntityOrigin.Offset = Round(EntityOrigin.Offset);
-
-                maybe_asset_ptr MaybeAsset = GetAssetPtr(Engine, &EngineDebug->SelectedAsset);
-                if (MaybeAsset.Tag)
-                {
-                  asset *Asset = MaybeAsset.Value;
-
-                  switch (Asset->Type)
-                  {
-                    InvalidCase(AssetType_Undefined);
-
-                    case AssetType_WorldChunk:
-                    case AssetType_Models:
-                    {
-                      // TODO(Jesse): There should be an unsafe version of this function, and rename this one to TryGetDimForAssetModel ..?
-                      maybe_v3i MaybeDim = GetDimForAssetModel(Asset, u32(EngineDebug->ModelIndex));
-                      if (MaybeDim.Tag)
-                      {
-                        v3 AssetHalfDim = MaybeDim.Value / 2.f;
-                        world_update_op_shape_params_asset AssetUpdateShape =
-                        {
-                          EngineDebug->SelectedAsset,
-                          EngineDebug->ModelIndex,
-                          Canonicalize(World, EntityOrigin - V3(AssetHalfDim.xy, 0.f))
-                        };
-
-                        if (Editor->BrushType == WorldEdit_BrushType_Asset)
-                        {
-                          world_edit_shape Shape =
-                          {
-                            type_world_update_op_shape_params_asset,
-                            .world_update_op_shape_params_asset = AssetUpdateShape,
-                          };
-                          QueueWorldUpdateForRegion(Engine, Editor->AssetBrush.Mode, Editor->AssetBrush.Modifier, &Shape, {}, {}, Engine->WorldUpdateMemory);
-                        }
-                        else if (Editor->BrushType == WorldEdit_BrushType_Entity)
-                        {
-                          entity *E = TryGetFreeEntityPtr(Engine->EntityTable);
-                          if (E)
-                          {
-                            SpawnEntity(E, &EngineDebug->SelectedAsset, EngineDebug->ModelIndex, EntityBehaviorFlags_Default, 0, &AssetUpdateShape.Origin, AssetHalfDim);
-                          }
-                        }
-                        else
-                        {
-                          InvalidCodePath(); // NOTE(Jesse): This is redundant because we already checked it's one of these,
-                                             // but I'm going to keep it here in case we ever move this code.. or the checks.
-                        }
-                      }
-                      else
-                      {
-                        BUG("Somehow requested a ModelIndex from an Asset that did not have one!");
-                      }
-                    } break;
-
-                  }
-
-                }
-              }
-            }
-          } break;
-
-          case WorldEdit_BrushType_Single:
-          {
-            // NOTE(Jesse): This is kind of an optimization to jump directly to
-            // rebuilding the chunk mesh instead of doing all the hoop-jumping
-            // related to editing.  I'm not really sure if it's worth the extra
-            // complexity here, and/or the slight bit of jank it introduces.  I
-            // expect that once I serialize the world edits this should go away
-            // and we can just collapse world edits automatically in the edit thread.
-            //
-            // When my laptop is unplugged running on battery power, this is _much_ faster.
-            NotImplemented;
-#if 0
-            if (Editor->Params.Mode == WorldEdit_Mode_Paint)
-            {
-
-              b32 DoPaint = Input->LMB.Pressed;
-              if (DoPaint)
-              {
-                Ui->RequestedForceCapture = True;;
-                if (Engine->MousedOverVoxel.Tag)
-                {
-                  if (voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled))
-                  {
-                    V->Color = Engine->Editor.SelectedColorIndex;
-                    QueueChunkForMeshRebuild(&Plat->LowPriority, Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Chunk);
-                  }
-                }
-              }
-            }
-            else
-            {
-              b32 DoPaint = Input->LMB.Clicked;
-              if (DoPaint)
-              {
-                Ui->RequestedForceCapture = True;
-                if (Engine->MousedOverVoxel.Tag)
-                {
-                  v3 P0 = GetHotVoxelForEditMode(Engine, Editor->Params.Mode);
-                  rect3 AABB = RectMinMax(P0, P0+1.f);
-                  ApplyEditToRegion(Engine, &AABB, Engine->Editor.SelectedColorIndex, {}, Editor->Params.Mode, Editor->Params.Modifier);
-                }
-              }
-            }
-#endif
-          } break;
-
-          case WorldEdit_BrushType_Layered:
-          {
-            if (AABBTest.Face && InputStateIsValidToApplyEdit(Input))
-            {
-              v3i Offset = V3i(s32_MAX);
-              world_chunk *Chunk = &Editor->LayeredBrushEditor.Preview.Chunk;
-
-              // TODO(Jesse): Call GetSmallestMinOffset here
-              RangeIterator(LayerIndex, Editor->LayeredBrushEditor.LayerCount)
-              {
-                brush_layer *Layer = Editor->LayeredBrushEditor.Layers + LayerIndex;
-                Offset = Min(Layer->Settings.Offset.Min, Offset);
-              }
-
-              chunk_data D = {Chunk->Flags, Chunk->Dim, Chunk->Voxels, Chunk->VoxelLighting};
-              world_update_op_shape_params_chunk_data ChunkDataShape = { D, V3(Offset) + GetSimSpaceP(World, Editor->SelectionRegion.Min) - V3i(1) };
-
-              world_edit_shape Shape =
-              {
-                type_world_update_op_shape_params_chunk_data,
-                .world_update_op_shape_params_chunk_data = ChunkDataShape,
-              };
-              QueueWorldUpdateForRegion(Engine, Editor->LayeredBrushEditor.Mode, Editor->LayeredBrushEditor.Modifier, &Shape, DEFAULT_HSV_COLOR, Editor->LayeredBrushEditor.SeedBrushWithSelection, Engine->WorldUpdateMemory);
-            }
-          } break;
-
-        }
-      } break;
-
-      case WorldEdit_Tool_Select:
-      {
-        if (Input->LMB.Clicked)
-        { switch (Editor->SelectionClicks)
-          {
-            case 0:
-            {
-              if (Engine->MousedOverVoxel.Tag)
-              {
-                Editor->SelectionClicks += 1;
-                auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-                MouseP.Offset = Floor(MouseP.Offset);
-                Editor->SelectionBase = MouseP;
-              }
-            } break;
-
-            case 1:
-            {
-              Editor->SelectionClicks += 1;
-
-              if (Editor->PreviousTool)
-              {
-                Editor->Tool = Editor->PreviousTool;
-                Editor->PreviousTool = {};
-              }
-            } break;
-
-          }
-        }
-      } break;
-
-      case WorldEdit_Tool_Eyedropper:
-      {
-        if (Engine->MousedOverVoxel.Tag)
-        {
-          auto MouseP = Canonical_Position(&Engine->MousedOverVoxel.Value);
-          voxel *V = GetVoxelPointer(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
-
-          Engine->Editor.HoverColorIndex = V->Color;
-
-          if (Input->LMB.Clicked)
-          {
-            /* Info("Selecting Color (%S)", CS(V->Color)); */
-            /* Engine->Editor.HSVColorSelection = UnpackHSVColor(V->Color); */
-
-            if (Editor->PreviousTool)
-            {
-              Editor->Tool = Editor->PreviousTool;
-              Editor->PreviousTool = {};
-            }
-          }
-        }
-        else
-        {
-          Engine->Editor.HoverColorIndex = INVALID_COLOR_INDEX;
-        }
-      } break;
-
-      case WorldEdit_Tool_BlitEntity:
-      {
-        entity *SelectedEntity = GetEntity(EntityTable, EngineDebug->SelectedEntity);
-        if (SelectedEntity)
-        {
-          aabb EntityAABB = GetSimSpaceAABB(World, SelectedEntity);
-          if (Engine->MaybeMouseRay.Tag)
-          {
-            ray *Ray = &Engine->MaybeMouseRay.Ray;
-            aabb_intersect_result IntersectionResult = Intersect(EntityAABB, Ray);
-            if (Input->LMB.Clicked && IntersectionResult.Face)
-            {
-#if 1
-              world_update_op_shape_params_asset AssetUpdateShape =
-              {
-                SelectedEntity->AssetId,
-                SelectedEntity->ModelIndex,
-                SelectedEntity->P,
-              };
-
-              world_edit_shape Shape =
-              {
-                type_world_update_op_shape_params_asset,
-                .world_update_op_shape_params_asset = AssetUpdateShape,
-              };
-              QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
-#endif
-            }
-          }
-        }
-      } break;
-
-#if 0
-      case WorldEdit_Tool_StandingSpots:
-      {
-        NotImplemented;
-        if (Input->LMB.Clicked && AABBTest.Face && !Input->Shift.Pressed && !Input->Ctrl.Pressed)
-        {
-          world_edit_shape Shape = {
-            .Type = type_world_update_op_shape_params_rect,
-            .world_update_op_shape_params_rect.P0 = SelectionAABB.Min,
-            .world_update_op_shape_params_rect.P1 = SelectionAABB.Max,
-          };
-          QueueWorldUpdateForRegion(Engine, WorldUpdateOperationMode_StandingSpots, &Shape, Editor->SelectedColorIndex, Engine->WorldUpdateMemory);
-        }
-      } break;
-#endif
-
-    }
-  }
-
-
-  // NOTE(Jesse): This has to come after the tool interactions because of a trivial
-  // but important interaction.  If there's a previous tool to pop back to, we
-  // need to do that pop back before the brush settings get updated and the
-  // brush preview gets drawn or else when we pop back the settings window thinks
-  // the Select tool is active, doesn't update any of the brush stuff, then
-  // the preview gets drawn because we pop back to the Layered brush tool and
-  // there's a frame of lag.
-  DoBrushSettingsWindow(Engine, Editor->Tool, Editor->BrushType);
 
 
 
@@ -2583,101 +1855,737 @@ DoWorldEditor(engine_resources *Engine)
   //
 
 
-  if (Input->Ctrl.Pressed || Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
+  if (Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Select; ResetSelection(Editor); }
-
-  if (Input->Ctrl.Pressed && Input->E.Clicked) { Editor->PreviousTool = Editor->Tool; Editor->Tool = WorldEdit_Tool_Eyedropper; ResetSelectionIfIncomplete(Editor); }
-
-  if (Input->Ctrl.Pressed && Input->G.Clicked) { if (entity *Ghost = GetCameraGhost(Engine)) { Ghost->P = GetSelectionCenterP(World, Editor); } }
-
-  if (Editor->SelectionClicks == 2)
+  if (Input->Ctrl.Pressed && Input->G.Clicked)
   {
-    if (Input->Ctrl.Pressed && Input->D.Clicked) { ApplyEditToRegion(Engine, &SelectionAABB, {}, {}, WorldEdit_Mode_Remove, WorldEdit_Modifier_Default); }
-
-    if (Input->Ctrl.Pressed && Input->C.Clicked) { Editor->CopyRegion = Editor->SelectionRegion; }
-
-    if (Input->Ctrl.Pressed && Input->V.Clicked)
+    if (AtElements(&Editor->SelectedEditIndices).Index)
     {
-      v3 CopyDim = GetDim(World, Editor->CopyRegion);
-      s32 VoxelCount = s32(Volume(CopyDim));
-      Leak("voxel *V = Allocate(voxel, Engine->Memory, VoxelCount)");
-      voxel *V = Allocate(voxel, Engine->WorldUpdateMemory, VoxelCount);
-
-      Leak("");
-      world_chunk_ptr_buffer Chunks = GatherChunksOverlappingArea(World, Editor->CopyRegion, Engine->WorldUpdateMemory);
-      GatherVoxelsOverlappingArea(World, GetSimSpaceRect3i(World, Editor->CopyRegion), &Chunks, V, VoxelCount);
-
-      chunk_data D = {};
-      D.Dim = V3i(CopyDim);
-      D.Voxels = V;
-
-      world_update_op_shape_params_chunk_data ChunkDataShape = { D, GetSimSpaceP(World, Editor->SelectionRegion.Min) };
-
-      world_edit_shape Shape =
+      if (entity *Ghost = GetCameraGhost(Engine))
       {
-        type_world_update_op_shape_params_chunk_data,
-        .world_update_op_shape_params_chunk_data = ChunkDataShape,
-      };
-      QueueWorldUpdateForRegion(Engine, WorldEdit_Mode_Attach, WorldEdit_Modifier_Default, &Shape, {}, {}, Engine->WorldUpdateMemory);
+        Ghost->P = GetSelectionCenterP(World, Editor);
+      }
     }
   }
 
-#if VOXEL_DEBUG_COLOR
+  if (Input->Ctrl.Pressed && Input->S.Clicked)
   {
-    cp DebugVoxel = {};
-    if (Editor->SelectionClicks > 0)
+    world_edit_layer *Layer = TryGetSelectedLayer(Editor);
+    if (Layer == 0)  { Layer = NewLayer(Editor); }
+
+    world_edit_block_array_index Index = {};
+    auto E = NewEdit(Editor, Layer, &Index);
+    E->Brush = Editor->CurrentBrush;
+
+    SelectEdit(Editor, E, Index);
+
+    // NOTE(Jesse): Must come after SelectEdit because it sets the ModMode to Modify
+    ResetSelection(Editor);
+    Editor->Selection.ModMode = SelectionModificationMode_Initialize;
+  }
+
+
+  { // All Brushes Window
+    local_persist window_layout AllBrushesWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
+    PushWindowStart(Ui, &AllBrushesWindow);
+
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
-      DebugVoxel = Editor->SelectionRegion.Min;
+      if (Brush)
+      {
+        ui_style *Style = &DefaultStyle;
+        if (Brush == Editor->CurrentBrush)
+        {
+          Style = &DefaultSelectedStyle;
+        }
+
+        if (Button(Ui, CS(Brush->NameBuf), UiId(&AllBrushesWindow, "brush select", Brush), Style))
+        {
+          Editor->CurrentBrush = Brush;
+          CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
+        }
+        PushNewRow(Ui);
+      }
     }
-    else if (Engine->MousedOverVoxel.Tag)
+    PushWindowEnd(Ui, &AllBrushesWindow);
+
+    window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Settings", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+    DoBrushSettingsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
+
+    // NOTE(Jesse): Must come after the settings window draws because the
+    // settings window detects and initializes new brushes
+    if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
     {
-      DebugVoxel = Canonical_Position(&Engine->MousedOverVoxel.Value, PickedVoxel_FirstFilled);
+      if (Editor->Selection.InitialSelect)
+      {
+        Info("Setting Initial edit state");
+        Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+        Assert(LengthSq(Editor->Selection.Diff) == 0.f);
+
+        auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
+        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+        UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+      }
+
+      if (LengthSq(Editor->Selection.Diff) > 0.f)
+      {
+        Info("Applying diff to edit buffer");
+        world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+        Assert(SelectionMode);
+        ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
+        Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+      }
+
+      b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
+      if (SettingsChanged)
+      {
+        IterateOver(&Editor->Edits, Edit, EditIndex)
+        {
+          if (Edit->Tombstone) { continue; }
+
+          if (Edit->Brush == Editor->CurrentBrush)
+          {
+            ReapplyEditToOctree(Engine, Edit, GetTranArena());
+          }
+        }
+      }
+    }
+  }
+
+  {
+    local_persist window_layout LayersWindow = WindowLayout("Layers", WindowLayoutFlag_Align_Bottom);
+    PushWindowStart(Ui, &LayersWindow);
+
+    if (Button(Ui, CSz("New Layer"), UiId(&LayersWindow, "new layer", 0ull)))
+    {
+      NewLayer(Editor);
     }
 
-    DoSelectedVoxelDebugWindow(Engine, DebugVoxel);
+    PushNewRow(Ui);
+    PushNewRow(Ui);
+
+    PushTableStart(Ui);
+
+    world_edit_layer *PrevLayer = {};
+
+    IterateOver(&Editor->Layers, Layer, LayerIndex)
+    {
+      cs Name = CS(Layer->NameBuf);
+      b32 LayerSelected = Editor->SelectedLayerIndex == LayerIndex;
+
+      PushTableStart(Ui);
+      {
+        ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
+        if (Button(Ui, Name, UiId(&LayersWindow, Layer, Layer), Style))
+        {
+          Editor->SelectedLayerIndex = LayerIndex;
+
+          // NOTE(Jesse): Clear the list if we didn't have ctrl pressed
+          b32 MultiSelect = Input->Ctrl.Pressed;
+          IterateOver(&Layer->EditIndices, EditIndex, EII)
+          {
+            auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+            SelectEdit(Editor, Edit, *EditIndex, MultiSelect);
+            MultiSelect = True;
+          }
+        }
+
+        ui_layer_toolbar_actions LayerToolbarAction = {};
+        ui_toggle_button_group Toolbar = PushToolbar(Ui, &LayersWindow, {}, &LayerToolbarAction, u64(Layer));
+        if (Toolbar.AnyElementClicked)
+        {
+          switch (LayerToolbarAction)
+          {
+            case LayerToolbarActions_NoAction: {} break;
+
+            case LayerToolbarActions_Rename:
+            {
+            } break;
+
+            case LayerToolbarActions_Duplicate:
+            {
+              auto SrcLayer = Layer;
+              auto DstLayer = NewLayer(Editor);
+
+              b32 MultiSelect = Input->Ctrl.Pressed;
+              IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
+              {
+                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+                world_edit_block_array_index DupIndex = {};
+                auto *Duplicated = DuplicateEdit(Editor, DstLayer, Edit, &DupIndex);
+
+                SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+
+                ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+                MultiSelect = True;
+              }
+            } break;
+
+            case LayerToolbarActions_Delete:
+            {
+              IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+              {
+                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+                // NOTE(Jesse): We're deleting the layer here so we don't need
+                // to remove the edits one-by-one .. we'll clear the whole thing.
+                DeleteEdit(Engine, Edit, EditIndex);
+              }
+
+              Layer->EditIndices.ElementCount = 0;
+
+              RemoveOrdered(&Editor->Layers, Layer);
+              Layer = 0;
+
+              Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
+              LayerIndex = AtElements(&Editor->Layers);
+            } break;
+          }
+        }
+
+      }
+      PushTableEnd(Ui);
+
+      if (Layer)
+      {
+        PushTableStart(Ui);
+        if (AtElements(&Layer->EditIndices).Index == 0)
+        {
+          PushColumn(Ui, CSz("--- no edits ---"));
+          PushNewRow(Ui);
+        }
+        else
+        {
+          {
+            world_edit_block_array_index *PrevEditIndex = {};
+            IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+            {
+              world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+              Assert(Edit->Tombstone == False);
+
+              const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
+
+              ui_reorder_action EditReorderAction = {};
+              PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+
+              switch(EditReorderAction)
+              {
+                case UiReorderAction_NoAction: break;
+
+                case UiReorderAction_ReorderUp:
+                {
+                  if (PrevEditIndex)
+                  {
+                    world_edit *PrevEdit = GetPtr(&Editor->Edits, *PrevEditIndex);
+                    Assert(Edit != PrevEdit);
+                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                    ReapplyEditToOctree(Engine, PrevEdit, GetTranArena());
+
+                    auto Tmp = *PrevEditIndex;
+                    *PrevEditIndex = *EditIndex;
+                    *EditIndex = Tmp;
+                  }
+                  else if (PrevLayer)
+                  {
+                    Push(&PrevLayer->EditIndices, EditIndex);
+                    RemoveOrdered(&Layer->EditIndices, EditIndex);
+
+                    // NOTE(Jesse): No need to reapply because we didn't change
+                    // the ordering, just shifted up a layer
+                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
+                  }
+
+                } break;
+
+                case UiReorderAction_ReorderDown:
+                {
+                  auto NextEditIndexIndex = EditIndexIndex;
+                     ++NextEditIndexIndex;
+
+                  if (auto NextEditIndex = TryGetPtr(&Layer->EditIndices, NextEditIndexIndex))
+                  {
+                    world_edit *NextEdit = GetPtr(&Editor->Edits, *NextEditIndex);
+                    Assert(Edit != NextEdit);
+                    ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                    ReapplyEditToOctree(Engine, NextEdit, GetTranArena());
+
+                    auto Tmp = *NextEditIndex;
+                    *NextEditIndex = *EditIndex;
+                    *EditIndex = Tmp;
+
+                    EditIndexIndex = AtElements(&Layer->EditIndices);
+                  }
+                  else
+                  {
+                    auto NextLayerIndex = LayerIndex;
+                       ++NextLayerIndex;
+
+                    if (auto NextLayer = TryGetPtr(&Editor->Layers, GetIndex(&NextLayerIndex)))
+                    {
+                      RemoveOrdered(&Layer->EditIndices, EditIndex);
+                      Shift(&NextLayer->EditIndices, EditIndex);
+
+                    // NOTE(Jesse): No need to reapply because we didn't change
+                    // the ordering, just shifted up a layer
+                    /* ReapplyEditToOctree(Engine, Edit, GetTranArena()); */
+                    }
+
+                    EditIndexIndex = AtElements(&Layer->EditIndices);
+                  }
+                }
+
+                break;
+              }
+
+
+              ui_render_params ButtonParams = DefaultUiRenderParams_Button;
+
+              b32 EditIsSelected = Edit->Selected;
+              if (EditIsSelected)
+              {
+                ButtonParams.FStyle = &DefaultSelectedStyle;
+              }
+
+              auto EditSelectButton = PushSimpleButton(Ui, FSz("(%s)", NameBuf), UiId(&LayersWindow, "edit select", Edit), &ButtonParams);
+              if (Clicked(Ui, &EditSelectButton))
+              {
+                // NOTE(Jesse): We do SelectEdit on the HotEdit later
+                /* b32 MultiSelect = Input->Ctrl.Pressed; */
+                /* SelectEdit(Editor, Edit, *EditIndex, MultiSelect); */
+
+                Editor->SelectedLayerIndex = LayerIndex;
+                if (Edit->Brush)
+                {
+                  Editor->CurrentBrush = Edit->Brush;
+                  CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+                }
+              }
+
+              if (Hover(Ui, &EditSelectButton))
+              {
+                Editor->HotEdit = Edit;
+                Editor->HotEditIndex = *EditIndex;
+              }
+
+              ui_layer_edit_actions LayerEditAction = {};
+              PushToolbar( Ui, &LayersWindow, {}, &LayerEditAction, u64(Edit));
+              switch (LayerEditAction)
+              {
+                case UiLayerEditAction_NoAction: {} break;
+
+                case UiLayerEditAction_SetBrush:
+                {
+                  Assert(Editor->CurrentBrush);
+                  Edit->Brush = Editor->CurrentBrush;
+                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                } break;
+
+                case UiLayerEditAction_Duplicate:
+                {
+                  world_edit_block_array_index DupIndex = {};
+                  auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+
+                  b32 MultiSelect = Input->Ctrl.Pressed;
+                  SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+
+                  ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+                } break;
+
+                case UiLayerEditAction_Delete:
+                {
+                  DeleteEdit(Engine, Edit, EditIndex, Layer);
+                } break;
+              }
+
+              PrevEditIndex = EditIndex;
+            }
+          }
+        }
+        PushTableEnd(Ui);
+        PushNewRow(Ui);
+
+        PrevLayer = Layer;
+      }
+    }
+
+    PushNewRow(Ui);
+    PushTableEnd(Ui);
+    PushWindowEnd(Ui, &LayersWindow);
+  }
+
+
+
+  //
+  //
+  // Draw
+  //
+  //
+
+  {
+    v3 CameraSimP = GetSimSpaceP(World, Camera->CurrentP);
+
+    auto Face = Editor->Selection.ModState.ClickedFace;
+    if (Face == FaceIndex_None) { Face = AABBTest.Face; }
+
+    f32 HiThicknessMod           = 1.5f;
+    f32 SelectionThicknessMod    = 3.0f;
+
+
+    b32 ShiftOrAltPressed = Input->Shift.Pressed | Input->Alt.Pressed;
+
+    // Selection region
+    //
+    if (Editor->Selection.ModMode && Editor->Selection.Clicks > 0)
+    {
+      aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
+      r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&FinalSelectionAABB)) );
+
+      if (Face && ShiftOrAltPressed)
+      {
+        /* r32 InsetWidth = 0.25f; */
+        r32 InsetWidth  = 0.f;
+        v3  HiColor     = RGB_RED;
+
+        HighlightFace(Engine, Face, FinalSelectionAABB, InsetWidth, HiColor, BaseThicc*SelectionThicknessMod*HiThicknessMod);
+      }
+
+      DEBUG_DrawSimSpaceAABB(Engine, &FinalSelectionAABB, RGB_GREEN, BaseThicc*SelectionThicknessMod);
+    }
+
+    // Highlight moused over voxel
+    //
+    if (Engine->MousedOverVoxel.Tag)
+    {
+      v3 HotVoxel = GetHotVoxelForEditMode(Engine, WorldEdit_Mode_Subtractive );
+      DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
+    }
+
+    // Highlight edits in the current layer
+    //
+    {
+      if ( world_edit_layer *Layer = TryGetSelectedLayer(Editor) )
+      {
+        IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+        {
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          Assert(Edit->Tombstone == False);
+
+          if (Edit == Editor->HotEdit) continue;
+          if (Edit->Selected)          continue;
+
+          auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+          random_series S = {u64(Edit)};
+          v3 BaseColor = RandomV3Unilateral(&S);
+
+          r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+          DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, BaseThicc);
+        }
+      }
+    }
+
+    // Highlight currently selected edits
+    //
+    {
+      IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
+      {
+        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+        Assert(Edit->Tombstone == False);
+
+
+        auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
+        random_series S = {u64(Edit)};
+        v3 BaseColor = RandomV3Unilateral(&S);
+
+        r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+        if (Face && ShiftOrAltPressed)
+        {
+          /* r32 InsetWidth = 0.25f; */
+          r32 InsetWidth  = 0.f;
+          v3  HiColor     = RGB_RED;
+
+          HighlightFace(Engine, Face, EditAABB, InsetWidth, HiColor, BaseThicc*HiThicknessMod);
+        }
+
+        // NOTE(Jesse): This is intentionally after the HighlightFace call; we
+        // always wanna highlight that no matter if we're hovering or not
+        if (Edit == Editor->HotEdit) continue;
+
+        DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_YELLOW, BaseThicc);
+      }
+    }
+
+    // Highlight the hot edit
+    //
+    if (Editor->HotEdit)
+    {
+      if ( Input->Shift.Pressed  == False &&
+           Input->Alt.Pressed    == False &&
+           Editor->Selection.ModMode != SelectionModificationMode_Initialize )
+      {
+        if (Input->LMB.Clicked)
+        {
+          b32 MultiSelect = Input->Ctrl.Pressed;
+          SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
+        }
+      }
+
+      auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
+      r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
+      DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, RGB_PINK, BaseThicc);
+    }
+
+  }
+
+
+#if BONSAI_INTERNAL
+  // NOTE(Jesse): Sanity check we keep the selected flag in sync with the array
+  IterateOver(&Editor->Edits, Edit, EI)
+  {
+    auto SelectedEditIndex = IndexOfValue(&Editor->SelectedEditIndices, &EI);
+    if (SelectedEditIndex.Index == INVALID_BLOCK_ARRAY_INDEX)
+    {
+      Assert(Edit->Selected == False);
+    }
+    else
+    {
+      Assert(Edit->Selected == True);
+    }
   }
 #endif
 
-  if (Engine->MousedOverVoxel.Tag)
+
+  u32 Ordinal = 0;
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
   {
-    v3 HotVoxel = GetHotVoxelForEditMode(Engine, GetEditModeForSelectedTool(Editor) );
-    DEBUG_HighlightVoxel( Engine, HotVoxel, RGB_RED, 0.075f);
+    IterateOver(&Layer->EditIndices, EditIndex, EII)
+    {
+      world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+      Edit->Ordinal = Ordinal++;
+    }
+  }
+
+}
+
+link_internal void
+DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale );
+
+link_internal void
+ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
+{
+  IterateOver(Edits, Edit, EditIndex)
+  {
+    if (Edit->Tombstone) { continue; }
+    ApplyEditToOctree(Engine, Edit, GetTranArena());
   }
 }
 
 link_internal void
-DrawEditorPreview(engine_resources *Engine, shader *Shader)
+DoLevelWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  world_chunk *Chunk = {};
-  v3 Basis = {};
+  local_persist window_layout Window = WindowLayout("Level");
 
-  switch (Editor->Tool)
-  {
-    case WorldEdit_Tool_Brush:
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
+  //
+  // Level Export
+  //
+  PushWindowStart(Ui, &Window);
+  PushTableStart(Ui);
+    if (Button(Ui, CSz("Export Level"), UiId(&Window, "export_level_button", 0ull)))
     {
-      switch (Editor->BrushType)
+      u8_cursor_block_array OutputStream = BeginSerialization();
+
+      u32 EntityCount = 0;
+      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
       {
-        case WorldEdit_BrushType_Layered:
-        {
-          layered_brush_editor *LayeredBrushEditor = &Editor->LayeredBrushEditor;
-          v3i SmallestMinOffset = GetSmallestMinOffset(LayeredBrushEditor);
-          Chunk = &LayeredBrushEditor->Preview.Chunk;
-          Basis = V3(SmallestMinOffset) + GetRenderP(Engine, Editor->EditorPreviewRegionMin) - V3i(1);
-        } break;
-
-        default: {} break;
+        entity *E = EntityTable[EntityIndex];
+        if (Spawned(E)) { ++EntityCount; }
       }
-    } break;
 
-    default: {} break;
-  }
+      level_header Header = {};
 
-  if (Chunk)
+      Header.WorldCenter        =  World->Center;
+      Header.VisibleRegionSize  =  World->VisibleRegionSize;
+      Header.Camera             = *Camera;
+      Header.RenderSettings     =  Graphics->Settings;
+      Header.EntityCount        =  EntityCount;
+      Header.SelectedLayerIndex =  u32(Editor->SelectedLayerIndex.Index);
+      Header.LayerCount         =  u32(AtElements(&Editor->Layers).Index);
+      Header.EditCount          =  u32(AtElements(&Editor->Edits).Index);
+
+      {
+        cs Filename = Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename;
+        cs Dest = CS(Header.TerrainShapingShader, NameBuf_Len);
+        CopyString(&Filename, &Dest);
+      }
+      {
+        cs Filename = Engine->Graphics.TerrainDecorationRC.Program.FragSourceFilename;
+        cs Dest = CS(Header.TerrainDecorationShader, NameBuf_Len);
+        CopyString(&Filename, &Dest);
+      }
+
+      Serialize(&OutputStream, &Header);
+
+      u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+      Ensure(Serialize(&OutputStream, &Delimeter));
+
+      IterateOver(&Editor->Layers, Layer, LI)
+      {
+        Serialize(&OutputStream, Layer);
+      }
+      Ensure(Serialize(&OutputStream, &Delimeter));
+
+      IterateOver(&Editor->Edits, Edit, EI)
+      {
+        Serialize(&OutputStream, Edit);
+      }
+      Ensure(Serialize(&OutputStream, &Delimeter));
+
+      RangeIterator(EntityIndex, TOTAL_ENTITY_COUNT)
+      {
+        entity *E = EntityTable[EntityIndex];
+        if (Spawned(E))
+        {
+          Serialize(&OutputStream, E);
+        }
+      }
+
+      Ensure(Serialize(&OutputStream, &Delimeter));
+
+      const char *Filename = "../bonsai_levels/test.level";
+      if (FinalizeSerialization(&OutputStream, Filename) == False)
+      {
+        SoftError("Could not serialize (%s).", Filename);
+      }
+    }
+  PushTableEnd(Ui);
+  PushNewRow(Ui);
+
+  PushTableStart(Ui);
+    maybe_file_traversal_node ClickedNode = PlatformTraverseDirectoryTreeUnordered(CSz("../bonsai_levels"), EngineDrawFileNodesHelper, Cast(u64, &Window));
+  PushTableEnd(Ui);
+  PushNewRow(Ui);
+
+  //
+  // Level Import
+  //
+  if (ClickedNode.Tag)
   {
-    DrawLod(Engine, Shader, &Chunk->Meshes, 0.f, Basis);
+    cs Filename = Concat(ClickedNode.Value.Dir, CSz("/"), ClickedNode.Value.Name, GetTranArena());
+
+    u8_cursor LevelBytes = BeginDeserialization(Filename, GetTranArena());
+    if (LevelBytes.Start)
+    {
+      level_header LevelHeader = {};
+
+      Leak("Leaking level_header because we need to hold the level_header::TerrainGenShader such that we can reload the shader next frame ..");
+      if (Deserialize(&LevelBytes, &LevelHeader, Thread->PermMemory))
+      {
+        u64 Delimeter = LEVEL_FILE_DEBUG_OBJECT_DELIM;
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
+
+        {
+          engine_settings *EngineSettings = &GetEngineResources()->Settings;
+          LevelHeader.RenderSettings.ApplicationResolution  = V2(GetApplicationResolution(EngineSettings));
+          LevelHeader.RenderSettings.ShadowMapResolution    = V2(GetShadowMapResolution(EngineSettings));
+          LevelHeader.RenderSettings.LuminanceMapResolution = V2(GetLuminanceMapResolution(EngineSettings));
+
+          LevelHeader.RenderSettings.iApplicationResolution  = GetApplicationResolution(EngineSettings);
+          LevelHeader.RenderSettings.iShadowMapResolution    = GetShadowMapResolution(EngineSettings);
+          LevelHeader.RenderSettings.iLuminanceMapResolution = GetLuminanceMapResolution(EngineSettings);
+        }
+
+        FreeOctreeChildren(Engine, &World->Root);
+        SignalAndWaitForWorkers(&Plat->WorkerThreadsSuspendFutex);
+
+
+        Graphics->Settings       = LevelHeader.RenderSettings;
+       *Graphics->Camera         = LevelHeader.Camera;
+        World->VisibleRegionSize = LevelHeader.VisibleRegionSize;
+        World->Center            = LevelHeader.WorldCenter;
+
+        /* Global_ProjectSwitcherGameLibName  = LevelHeader.TerrainGenShader; */
+
+        Engine->Graphics.TerrainShapingRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainShapingShader, Thread->PermMemory);
+        Engine->Graphics.TerrainDecorationRC.Program.FragSourceFilename = CopyString(LevelHeader.TerrainDecorationShader, Thread->PermMemory);
+
+        // Must come after we fill out the VisibleRegion so the root octree node
+        // gets initialized to the correct size
+        //
+        //
+        // HACK(Jesse): This is a maaaajor hack and should be dealt with in a better way
+        bonsai_type_info_hashtable Tmp = Global_SerializeTypeTable;
+        Global_SerializeTypeTable = {};
+        HardResetEngine(Engine);
+        Global_SerializeTypeTable = Tmp;
+
+        Engine->Editor.SelectedLayerIndex = {LevelHeader.SelectedLayerIndex};
+
+
+        /* s32 ChunkCount = Cast(s32, LevelHeader.ChunkCount); */
+        s32 ChunkCount = 0;
+        /* Info("ChunksFreed (%u) ChunksLoaded (%u)", ChunksFreed, ChunkCount); */
+
+        RangeIterator_t(u32, LayerIndex, LevelHeader.LayerCount)
+        {
+          world_edit_layer DeserLayer =  {};
+          Deserialize(&LevelBytes, &DeserLayer, Editor->Memory);
+          world_edit_layer *FinalLayer = Push(&Editor->Layers, &DeserLayer);
+          FinalLayer->EditIndices.Memory = Editor->Memory;
+        }
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
+
+        RangeIterator_t(u32, EditIndex, LevelHeader.EditCount)
+        {
+          world_edit DeserEdit = {}; // TODO(Jesse): Do we actually have to clear this?
+          Deserialize(&LevelBytes, &DeserEdit, Editor->Memory);
+
+          world_edit *FinalEdit = Push(&Editor->Edits, &DeserEdit);
+          if (FinalEdit->Tombstone == False)
+          {
+            if (FinalEdit->Brush)
+            {
+              FinalEdit->Brush = Upsert(*FinalEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+            }
+
+            if (FinalEdit->Selected)
+            {
+              FinalEdit->Selected = False; // Minor hack so SelectEdit doesn't assert
+              SelectEdit(Editor, FinalEdit, {EditIndex}, True);
+              Editor->Selection.ModMode == SelectionModificationMode_Modify;
+            }
+
+            ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+          }
+        }
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
+
+        b32 Error = False;
+        u32 EntityCount = LevelHeader.EntityCount;
+        RangeIterator_t(u32, EntityIndex, EntityCount)
+        {
+          entity *E = EntityTable[EntityIndex];
+          if (Deserialize(&LevelBytes, E, Thread->PermMemory) == False)
+          {
+            SoftError("Could not deserialize entity (%d), bailing.", EntityIndex);
+            Error = True;
+            break;
+          }
+          E->Id.Index = EntityIndex; // NOTE(Jesse): Hack.. entities got saved out with 0 indexes..
+        }
+
+        Ensure(Read_u64(&LevelBytes) == Delimeter);
+
+        Assert(ThreadLocal_ThreadIndex == 0);
+        if (Engine->Stdlib.AppApi.OnLibraryLoad) { Engine->Stdlib.AppApi.OnLibraryLoad(Engine, GetThreadLocalState(ThreadLocal_ThreadIndex)); }
+
+        UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
+      }
+    }
+    FinalizeDeserialization(&LevelBytes);
+
   }
+  PushWindowEnd(Ui, &Window);
 }
 

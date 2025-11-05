@@ -112,13 +112,6 @@ struct entity_entity_collision_event
 };
 
 inline void
-UnSetFlag( voxel_flag *Flags, voxel_flag Flag )
-{
-  *Flags = (voxel_flag)(*Flags & ~Flag);
-  return;
-}
-
-inline void
 UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
 {
   *Flags = (chunk_flag)(*Flags & ~Flag);
@@ -126,9 +119,9 @@ UnSetFlag( chunk_flag *Flags, chunk_flag Flag )
 }
 
 inline void
-UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
+UnSetFlag( octree_node *Node, chunk_flag Flag )
 {
-  UnSetFlag(&Chunk->Flags, Flag);
+  UnSetFlag(&Node->Flags, Flag);
   return;
 }
 
@@ -138,14 +131,6 @@ UnSetFlag( world_chunk *Chunk, chunk_flag Flag )
 /*   UnSetFlag(Chunk->Data, Flag); */
 /*   return; */
 /* } */
-
-inline void
-SetFlag( u8 *Flags, voxel_flag Flag )
-{
-  /* Assert(Flag < u8_MAX); */
-  *Flags = (u8)(*Flags | Flag);
-  return;
-}
 
 inline void
 SetFlag( chunk_flag *Flags, chunk_flag Flag )
@@ -163,31 +148,10 @@ SetFlag( chunk_flag *Flags, chunk_flag Flag )
 /* } */
 
 inline void
-SetFlag( world_chunk *Chunk, chunk_flag Flag )
+SetFlag( octree_node *Node, chunk_flag Flag )
 {
-  Chunk->Flags = (chunk_flag)(Chunk->Flags | Flag);
+  Node->Flags = (chunk_flag)(Node->Flags | Flag);
   return;
-}
-
-inline void
-SetFlag(voxel *Voxel, voxel_flag Flag )
-{
-  SetFlag(&Voxel->Flags, Flag);
-  return;
-}
-
-inline void
-SetFlag(boundary_voxel *Voxel, voxel_flag Flag )
-{
-  SetFlag(&Voxel->V.Flags, Flag);
-  return;
-}
-
-inline b32
-IsSet( u8 Flags, voxel_flag Flag )
-{
-  b32 Result = ( (Flags & Flag) != 0 );
-  return Result;
 }
 
 inline b32
@@ -205,30 +169,9 @@ IsSet( chunk_flag Flags, chunk_flag Flag )
 /* } */
 
 inline b32
-IsSet( world_chunk *Chunk, chunk_flag Flag )
+IsSet( octree_node *Chunk, chunk_flag Flag )
 {
   b32 Result = IsSet(Chunk->Flags, Flag);
-  return Result;
-}
-
-inline b32
-IsSet( voxel *V, voxel_flag Flag )
-{
-  b32 Result = IsSet(V->Flags, Flag);
-  return Result;
-}
-
-inline b32
-IsSet( boundary_voxel *V, voxel_flag Flag )
-{
-  b32 Result = IsSet(&V->V, Flag);
-  return Result;
-}
-
-inline b32
-NotSet( voxel_flag Flags, voxel_flag Flag )
-{
-  b32 Result = !(IsSet(Flags, Flag));
   return Result;
 }
 
@@ -247,16 +190,9 @@ NotSet( chunk_flag Flags, chunk_flag Flag )
 /* } */
 
 inline b32
-NotSet( world_chunk *Chunk, chunk_flag Flag )
+NotSet( octree_node *Chunk, chunk_flag Flag )
 {
   b32 Result = !(IsSet(Chunk, Flag));
-  return Result;
-}
-
-inline b32
-NotSet( voxel *Voxel, voxel_flag Flag )
-{
-  b32 Result = !(IsSet(Voxel, Flag));
   return Result;
 }
 
@@ -314,54 +250,24 @@ Unspawned(entity *Entity)
 link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
+  Assert(HasGpuMesh(Chunk) == False);
+#if 0
+  *Chunk = {};
+#else
   Chunk->WorldP = INVALID_WORLD_CHUNK_POSITION;
   Chunk->FilledCount = {};
-  Chunk->DrawBoundingVoxels = {};
-  Chunk->PointsToLeaveRemaining = {};
-  Chunk->TriCount = {};
-  Chunk->EdgeBoundaryVoxelCount = {};
+  /* Chunk->DrawBoundingVoxels = {}; */
+  /* Chunk->PointsToLeaveRemaining = {}; */
+  /* Chunk->TriCount = {}; */
+  /* Chunk->EdgeBoundaryVoxelCount = {}; */
   Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
   Chunk->Entities = {};
   Chunk->Next = {};
 
-  Chunk->DEBUG_OwnedByThread = {};
+  Chunk->Handles = {};
 
-  Clear(&Chunk->Meshes);
-
-  Chunk->Flags = {};
-}
-
-inline b32
-IsFilled(voxel *Voxel)
-{
-  b32 Result = (Voxel->Flags & Voxel_Filled) == Voxel_Filled;
-
-#if BONSAI_INTERNAL
-  if (!Result) Assert( (Voxel->Flags&VoxelFaceMask) == 0);
+  Chunk->DimInChunks = {};
 #endif
-  return Result;
-}
-
-inline b32
-NotFilled(voxel *Voxel)
-{
-  b32 Result = !IsFilled(Voxel);
-  return Result;
-}
-
-inline b32
-IsFilled( voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
-{
-  s32 VoxelIndex = GetIndex(VoxelP, Dim);
-  b32 isFilled = IsSet(Voxels + VoxelIndex, Voxel_Filled);
-  return isFilled;
-}
-
-inline b32
-NotFilled(voxel *Voxels, voxel_position VoxelP, chunk_dimension Dim)
-{
-  b32 Result = !IsFilled(Voxels, VoxelP, Dim);
-  return Result;
 }
 
 inline world_position

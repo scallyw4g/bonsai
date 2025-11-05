@@ -1,5 +1,4 @@
-// src/engine/mesh.cpp:247:0
-
+// src/engine/mesh.cpp:121:0
 link_internal untextured_3d_geometry_buffer *
 TakeOwnershipSync( lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
@@ -80,7 +79,7 @@ DeallocateMeshes(lod_element_buffer *Buf, tiered_mesh_freelist* MeshFreelist)
 link_internal b32
 HasGpuMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
-  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].VertexHandle != 0);
+  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].Handles[mesh_VertexHandle] != 0);
   return Result;
 }
 
@@ -91,7 +90,7 @@ HasGpuMesh(lod_element_buffer *Buf)
   b32 Result = False;
   RangeIterator(MeshIndex, MeshIndex_Count)
   {
-    Result |= (Buf->GpuBufferHandles[MeshIndex].VertexHandle != 0);
+    Result |= (Buf->GpuBufferHandles[MeshIndex].Handles[mesh_VertexHandle] != 0);
   }
   return Result;
 }
@@ -110,7 +109,7 @@ HasCpuMesh(lod_element_buffer *Buf)
 link_internal b32
 HasMesh(lod_element_buffer *Buf, world_chunk_mesh_bitfield MeshBit)
 {
-  b32 Result = (Buf->E[ToIndex(MeshBit)] != 0);
+  b32 Result = (Buf->GpuBufferHandles[ToIndex(MeshBit)].Handles[0] != 0);
   return Result;
 }
 

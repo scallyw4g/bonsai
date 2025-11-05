@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:43:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2199:0
 struct maybe_bonsai_type_info
 {
   maybe_tag Tag;

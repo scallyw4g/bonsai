@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:298:0
+// src/engine/editor.h:305:0
+struct world_chunk;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3331643E);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_chunk", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle world_chunk", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,270 +27,326 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(world_chunk*, Element->Next),
-        CSz("Next"),
-        Params
-        );
+            
 
+      { 
+        
+        
+        
+        cs MemberName = CSz("Next");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_chunk*, Element->Next),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
 
 
 
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(chunk_flag*,&Element->Flags),
-        CSz("Flags"),
-        Params
-        );
 
+        
 
 
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->Dim),
-        CSz("Dim"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel*, Element->Voxels),
-        CSz("Voxels"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel_lighting*, Element->VoxelLighting),
-        CSz("VoxelLighting"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(lod_element_buffer*,&Element->Meshes),
-        CSz("Meshes"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(voxel_position_cursor*,&Element->StandingSpots),
-        CSz("StandingSpots"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(v3i*,&Element->WorldP),
-        CSz("WorldP"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->FilledCount),
-        CSz("FilledCount"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        Cast(b8*,&Element->DrawBoundingVoxels),
-        CSz("DrawBoundingVoxels"),
-        &DefaultUiRenderParams_Checkbox
-        );
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->PointsToLeaveRemaining),
-        CSz("PointsToLeaveRemaining"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->TriCount),
-        CSz("TriCount"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->EdgeBoundaryVoxelCount),
-        CSz("EdgeBoundaryVoxelCount"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->_Pad0),
-        CSz("_Pad0"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(entity_ptr_block_array*,&Element->Entities),
-        CSz("Entities"),
-        Params
-        );
-
-
-
-
-
-
-
-      
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(s32*,&Element->DEBUG_OwnedByThread),
-        CSz("DEBUG_OwnedByThread"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      if (ToggleButton(Ui, CSz("v _Pad1[28]"), CSz("> _Pad1[28]"), UiId(Window, "toggle world_chunk u8 _Pad1", Element->_Pad1), Params ))
-      {
-        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-        PushNewRow(Ui);
-        RangeIterator(ArrayIndex, 28)
-        {
-          DoEditorUi(Ui, Window, Element->_Pad1+ArrayIndex, FSz("_Pad1[%d]", ArrayIndex), Params);
- PushNewRow(Ui); 
-        }
-        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
       }
-      PushNewRow(Ui);
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Dim");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->Dim),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
-      PushNewRow(Ui);
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Occupancy");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->Occupancy),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("xOccupancyBorder");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->xOccupancyBorder),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FaceMasks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u64*, Element->FaceMasks),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("IsOnFreelist");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->IsOnFreelist),
+          MemberName,
+          ThisHash,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Handles");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(gpu_element_buffer_handles*, &Element->Handles),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("StandingSpots");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(voxel_position_cursor*, &Element->StandingSpots),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("DimInChunks");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->DimInChunks),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("WorldP");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(v3i*, &Element->WorldP),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("FilledCount");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(s32*, &Element->FilledCount),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Entities");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(entity_ptr_block_array*, &Element->Entities),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

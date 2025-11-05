@@ -1,240 +1,363 @@
-// external/bonsai_stdlib/src/bitmap.cpp:182:0
+// external/bonsai_stdlib/src/poof_functions.h:2600:0
+
+
+
 
 struct bitmap_block
 {
-  u32 Index;
-  u32 At;
-  bitmap *Elements;
-  bitmap_block *Next;
+  /* u32 Index; */
+  umm At;
+  bitmap Elements[8];
 };
 
 struct bitmap_block_array_index
 {
-  bitmap_block *Block;
-  u32 BlockIndex;
-  u32 ElementIndex;
+  umm Index; 
 };
 
 struct bitmap_block_array
 {
-  bitmap_block *First;
-  bitmap_block *Current;
+  bitmap_block **BlockPtrs; poof(@array_length(Element->BlockCount))
+  u32   BlockCount;
+  u32   ElementCount;
   memory_arena *Memory; poof(@no_serialize)
   
 };
 
-typedef bitmap_block_array bitmap_paged_list;
-
-link_internal bitmap_block_array_index
-operator++(bitmap_block_array_index &I0)
+link_internal bitmap_block_array
+BitmapBlockArray(memory_arena *Memory)
 {
-  if (I0.Block)
+  bitmap_block_array Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
+link_internal b32
+AreEqual(bitmap_block_array_index *Thing1, bitmap_block_array_index *Thing2)
+{
+  if (Thing1 && Thing2)
   {
-    if (I0.ElementIndex == 8-1)
-    {
-      I0.ElementIndex = 0;
-      I0.BlockIndex++;
-      I0.Block = I0.Block->Next;
-    }
-    else
-    {
-      I0.ElementIndex++;
-    }
+        b32 Result = MemoryIsEqual((u8*)Thing1, (u8*)Thing2, sizeof( bitmap_block_array_index ) );
+
+    return Result;
   }
   else
   {
-    I0.ElementIndex++;
+    return (Thing1 == Thing2);
   }
+}
+
+link_internal b32
+AreEqual(bitmap_block_array_index Thing1, bitmap_block_array_index Thing2)
+{
+    b32 Result = MemoryIsEqual((u8*)&Thing1, (u8*)&Thing2, sizeof( bitmap_block_array_index ) );
+
+  return Result;
+}
+
+
+typedef bitmap_block_array bitmap_paged_list;
+
+link_internal bitmap_block_array_index
+operator++( bitmap_block_array_index &I0 )
+{
+  I0.Index++;
   return I0;
 }
 
 link_internal b32
-operator<(bitmap_block_array_index I0, bitmap_block_array_index I1)
+operator<( bitmap_block_array_index I0, bitmap_block_array_index I1 )
 {
-  b32 Result = I0.BlockIndex < I1.BlockIndex || (I0.BlockIndex == I1.BlockIndex & I0.ElementIndex < I1.ElementIndex);
+  b32 Result = I0.Index < I1.Index;
+  return Result;
+}
+
+link_internal b32
+operator==( bitmap_block_array_index I0, bitmap_block_array_index I1 )
+{
+  b32 Result = I0.Index == I1.Index;
   return Result;
 }
 
 link_inline umm
-GetIndex(bitmap_block_array_index *Index)
+GetIndex( bitmap_block_array_index *Index)
 {
-  umm Result = Index->ElementIndex + (Index->BlockIndex*8);
+  umm Result = Index->Index;
+  return Result;
+}
+
+
+link_internal bitmap_block_array_index
+ZerothIndex( bitmap_block_array *Arr )
+{
+  return {};
+}
+
+link_internal bitmap_block_array_index
+Capacity( bitmap_block_array *Arr )
+{
+  bitmap_block_array_index Result = {Arr->BlockCount * 8};
   return Result;
 }
 
 link_internal bitmap_block_array_index
-ZerothIndex(bitmap_block_array *Arr)
+AtElements( bitmap_block_array *Arr )
+{
+  bitmap_block_array_index Result = {Arr->ElementCount};
+  return Result;
+}
+
+
+link_internal umm
+TotalElements( bitmap_block_array *Arr )
+{
+  umm Result = AtElements(Arr).Index;
+  return Result;
+}
+
+
+link_internal bitmap_block_array_index
+LastIndex( bitmap_block_array *Arr )
 {
   bitmap_block_array_index Result = {};
-  Result.Block = Arr->First;
-  /* Assert(Result.Block->Index == 0); */
+  umm Count = AtElements(Arr).Index;
+  if (Count) Result.Index = Count-1;
   return Result;
 }
 
 link_internal umm
-TotalElements(bitmap_block_array *Arr)
+Count( bitmap_block_array *Arr )
 {
-  umm Result = 0;
-  if (Arr->Current)
-  {
-    Result = (Arr->Current->Index * 8) + Arr->Current->At;
-  }
+  auto Result = AtElements(Arr).Index;
   return Result;
 }
 
-link_internal bitmap_block_array_index
-LastIndex(bitmap_block_array *Arr)
+link_internal bitmap_block *
+GetBlock( bitmap_block_array *Arr, bitmap_block_array_index Index )
 {
-  bitmap_block_array_index Result = {};
-  if (Arr->Current)
-  {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
-    Assert(Result.ElementIndex);
-    Result.ElementIndex--;
-  }
+  umm BlockIndex   = Index.Index / 8;
+  Assert(BlockIndex < Arr->BlockCount);
+  bitmap_block *Block = Arr->BlockPtrs[BlockIndex];
+  return Block;
+}
+
+link_internal bitmap *
+GetPtr( bitmap_block_array *Arr, bitmap_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+
+  bitmap_block *Block = GetBlock(Arr, Index);
+
+  umm ElementIndex = Index.Index % 8;
+  bitmap *Result = (Block->Elements + ElementIndex);
   return Result;
 }
 
-link_internal bitmap_block_array_index
-AtElements(bitmap_block_array *Arr)
+
+link_internal bitmap *
+GetPtr( bitmap_block_array *Arr, umm Index )
 {
-  bitmap_block_array_index Result = {};
-  if (Arr->Current)
+  bitmap_block_array_index I = {Index};
+  return GetPtr(Arr, I);
+}
+
+
+link_internal bitmap *
+TryGetPtr( bitmap_block_array *Arr, bitmap_block_array_index Index)
+{
+  bitmap * Result = {};
+  if (Arr->BlockPtrs && Index < AtElements(Arr))
   {
-    Result.Block = Arr->Current;
-    Result.BlockIndex = Arr->Current->Index;
-    Result.ElementIndex = Arr->Current->At;
+    Result = GetPtr(Arr, Index);
   }
   return Result;
 }
 
 link_internal bitmap *
-GetPtr(bitmap_block_array *Arr, bitmap_block_array_index Index)
+TryGetPtr( bitmap_block_array *Arr, umm Index)
 {
-  bitmap *Result = {};
-  if (Index.Block) { Result = Index.Block->Elements + Index.ElementIndex; }
+  auto Result = TryGetPtr(Arr, bitmap_block_array_index{Index});
   return Result;
 }
 
-link_internal bitmap *
-GetPtr(bitmap_block *Block, umm Index)
-{
-  bitmap *Result = 0;
-  if (Index < Block->At) { Result = Block->Elements + Index; }
-  return Result;
-}
-
-link_internal bitmap *
-GetPtr(bitmap_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  umm AtBlock = 0;
-  bitmap_block *Block = Arr->First;
-  while (AtBlock++ < BlockIndex)
-  {
-    Block = Block->Next;
-  }
-
-  bitmap *Result = Block->Elements+ElementIndex;
-  return Result;
-}
-
-link_internal bitmap *
-TryGetPtr(bitmap_block_array *Arr, umm Index)
-{
-  umm BlockIndex = Index / 8;
-  umm ElementIndex = Index % 8;
-
-  auto AtE = AtElements(Arr);
-  umm Total = GetIndex(&AtE);
-  bitmap *Result = {};
-  if (Index < Total) { Result = GetPtr(Arr, Index); }
-  return Result;
-}
-
-link_internal u32
-AtElements(bitmap_block *Block)
-{
-  return Block->At;
-}
 
 
-link_internal bitmap_block*
-Allocate_bitmap_block(memory_arena *Memory)
-{
-  bitmap_block *Result = Allocate(bitmap_block, Memory, 1);
-  Result->Elements = Allocate(bitmap, Memory, 8);
-  return Result;
-}
+
 
 link_internal cs
-CS(bitmap_block_array_index Index)
+CS( bitmap_block_array_index Index )
 {
-  return FSz("(%u)(%u)", Index.BlockIndex, Index.ElementIndex);
+  return FSz("(%u)", Index.Index);
+}
+
+link_internal bitmap *
+Set( bitmap_block_array *Arr,
+  bitmap *Element,
+  bitmap_block_array_index Index )
+{
+  Assert(Arr->BlockPtrs);
+  Assert(Index.Index < Capacity(Arr).Index);
+  bitmap_block *Block = GetBlock(Arr, Index);
+  umm ElementIndex = Index.Index % 8;
+  auto Slot = Block->Elements+ElementIndex;
+  *Slot = *Element;
+  return Slot;
 }
 
 link_internal void
-RemoveUnordered(bitmap_block_array *Array, bitmap_block_array_index Index)
+NewBlock( bitmap_block_array *Arr )
 {
-  bitmap_block_array_index LastI = LastIndex(Array);
+  bitmap_block  *NewBlock     = Allocate( bitmap_block , Arr->Memory,                 1);
+  bitmap_block **NewBlockPtrs = Allocate( bitmap_block*, Arr->Memory, Arr->BlockCount+1);
 
-  bitmap *Element = GetPtr(Array, Index);
-  bitmap *LastElement = GetPtr(Array, LastI);
-
-  *Element = *LastElement;
-
-  Assert(Array->Current->At);
-  Array->Current->At -= 1;
-
-  if (Array->Current->At == 0)
+  RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
-    // Walk the chain till we get to the second-last one
-    bitmap_block *Current = Array->First;
-    bitmap_block *LastB = LastI.Block;
+    NewBlockPtrs[BlockI] = Arr->BlockPtrs[BlockI];
+  }
 
-    while (Current->Next && Current->Next != LastB)
+  NewBlockPtrs[Arr->BlockCount] = NewBlock;
+
+  
+  
+  Arr->BlockPtrs = NewBlockPtrs;
+  Arr->BlockCount += 1;
+}
+
+link_internal void
+RemoveUnordered( bitmap_block_array *Array, bitmap_block_array_index Index)
+{
+  auto LastI = LastIndex(Array);
+  Assert(Index.Index <= LastI.Index);
+
+  auto LastElement = GetPtr(Array, LastI);
+  Set(Array, LastElement, Index);
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( bitmap_block_array *Array, bitmap_block_array_index IndexToRemove)
+{
+  Assert(IndexToRemove.Index < Array->ElementCount);
+
+  bitmap *Prev = {};
+
+  bitmap_block_array_index Max = AtElements(Array);
+  RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
+  {
+    bitmap *E = GetPtr(Array, Index);
+
+    if (Prev)
     {
-      Current = Current->Next;
+      *Prev = *E;
     }
 
-    Assert(Current->Next == LastB || Current->Next == 0);
-    Array->Current = Current;
+    Prev = E;
   }
+
+  Array->ElementCount -= 1;
+}
+
+link_internal void
+RemoveOrdered( bitmap_block_array *Array, bitmap *Element )
+{
+  IterateOver(Array, E, I)
+  {
+    if (E == Element)
+    {
+      RemoveOrdered(Array, I);
+      break;
+    }
+  }
+}
+
+link_internal bitmap_block_array_index
+Find( bitmap_block_array *Array, bitmap *Query)
+{
+  bitmap_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  IterateOver(Array, E, Index)
+  {
+    if ( E == Query )
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
+
+
+link_internal b32
+IsValid(bitmap_block_array_index *Index)
+{
+  bitmap_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  b32 Result = (AreEqual(Index, &Test) == False);
+  return Result;
 }
 
 link_internal bitmap *
-Push(bitmap_block_array *Array, bitmap *Element)
+Push( bitmap_block_array *Array, bitmap *Element)
 {
-  if (Array->Memory == 0) { Array->Memory = AllocateArena(); }
+  Assert(Array->Memory);
 
-  if (Array->First == 0) { Array->First = Allocate_bitmap_block(Array->Memory); Array->Current = Array->First; }
-
-  if (Array->Current->At == 8)
+  if (AtElements(Array) == Capacity(Array))
   {
-    if (Array->Current->Next)
-    {
-      Array->Current = Array->Current->Next;
-      Assert(Array->Current->At == 0);
-    }
-    else
-    {
-      bitmap_block *Next = Allocate_bitmap_block(Array->Memory);
-      Next->Index = Array->Current->Index + 1;
-
-      Array->Current->Next = Next;
-      Array->Current = Next;
-    }
+    NewBlock(Array);
   }
 
-  bitmap *Result = Array->Current->Elements + Array->Current->At;
+  bitmap *Result = Set(Array, Element, AtElements(Array));
 
-  Array->Current->Elements[Array->Current->At++] = *Element;
+  Array->ElementCount += 1;
 
   return Result;
 }
+
+link_internal bitmap *
+Push( bitmap_block_array *Array )
+{
+  bitmap Element = {};
+  auto Result = Push(Array, &Element);
+  return Result;
+}
+
+link_internal void
+Insert( bitmap_block_array *Array, bitmap_block_array_index Index, bitmap *Element )
+{
+  Assert(Index.Index <= LastIndex(Array).Index);
+  Assert(Array->Memory);
+
+  // Alocate a new thingy
+  bitmap *Prev = Push(Array);
+
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
+  {
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
+    Prev = E;
+  }
+
+  *Prev = *Element;
+}
+
+link_internal void
+Insert( bitmap_block_array *Array, u32 Index, bitmap *Element )
+{
+  Insert(Array, { .Index = Index }, Element);
+}
+
+link_internal void
+Shift( bitmap_block_array *Array, bitmap *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
+}
+
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
+
 
 

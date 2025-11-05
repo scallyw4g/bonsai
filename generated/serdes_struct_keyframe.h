@@ -1,12 +1,11 @@
-// src/engine/serdes.cpp:262:0
-
+// src/engine/serdes.h:495:0
 link_internal bonsai_type_info
 TypeInfo(keyframe *Ignored)
 {
   bonsai_type_info Result = {};
 
   Result.Name = CSz("keyframe");
-  Result.Version = 0 ;
+  Result.Version =  0 ;
 
   /* type.map(member) */
   /* { */
@@ -24,7 +23,7 @@ Serialize(u8_cursor_block_array *Bytes, keyframe *BaseElement, umm Count = 1)
 {
   Assert(Count > 0);
 
-  u64 PointerTrue = True;
+  u64 PointerTrue  = True;
   u64 PointerFalse = False;
 
   b32 Result = True;
@@ -34,15 +33,27 @@ Serialize(u8_cursor_block_array *Bytes, keyframe *BaseElement, umm Count = 1)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     keyframe *Element = BaseElement + ElementIndex;
-    Result &= Serialize(Bytes, &Element->tEnd);
+                                Result &= Serialize(Bytes, &Element->tEnd); // default
 
 
 
 
 
-    Result &= Serialize(Bytes, &Element->Value);
 
-    
+                            Result &= Serialize(Bytes, &Element->Value); // default
+
+
+
+
+
+
+
+
+            
+
+        
+
+
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
   }
@@ -63,7 +74,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Memory)
 {
   b32 Result = True;
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+              // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->tEnd, Memory);
 
@@ -71,11 +82,19 @@ DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Mem
 
 
 
-  // NOTE(Jesse): Unfortunately we can't check for primitives because
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
   Result &= Deserialize(Bytes, &Element->Value, Memory);
 
+
+
+
+
+
+
+    
   
+
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
   return Result;
@@ -89,7 +108,7 @@ Deserialize(u8_cursor *Bytes, keyframe *Element, memory_arena *Memory, umm Count
   b32 Result = True;
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
 
   }
 

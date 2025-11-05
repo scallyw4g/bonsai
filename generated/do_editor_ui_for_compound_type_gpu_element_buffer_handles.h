@@ -1,8 +1,11 @@
-// src/engine/editor.cpp:258:0
+// src/engine/editor.h:305:0
+struct gpu_element_buffer_handles;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, ui_render_params *Params = &DefaultUiRenderParams_Button)
+
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0xA286F82);
+
   if (Element)
   {
     // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
@@ -11,7 +14,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
     b32 DidToggle = False;
     if (Name.Count)
     {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle gpu_element_buffer_handles", Element), Params))
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle gpu_element_buffer_handles", Element, ThisHash), Params))
       {
         DidToggle = True;
         PushNewRow(Ui);
@@ -24,15 +27,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
     if (DrawChildren)
     {
-      PushTableStart(Ui);
+      if (Name.Count) { PushTableStart(Ui); }
+
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->VertexHandle),
-        CSz("VertexHandle"),
-        Params
-        );
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("VAO");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->VAO),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -40,78 +52,67 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->NormalHandle),
-        CSz("NormalHandle"),
-        Params
-        );
+                PushNewRow(Ui);
 
 
 
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->MatHandle),
-        CSz("MatHandle"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u32*,&Element->ElementCount),
-        CSz("ElementCount"),
-        Params
-        );
-
-
-
-
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(data_type*,&Element->ElementType),
-        CSz("ElementType"),
-        Params
-        );
-
-
-
-
-
-
-
+      }
       
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->Mapped),
-        CSz("Mapped"),
-        Params
-        );
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Handles");
+                                
+
+        if (ToggleButton(Ui,
+            CSz("v Handles[3]"),
+            CSz("> Handles[3]"),
+            UiId(Window, "toggle gpu_element_buffer_handles u32 Handles", Element->Handles, ThisHash),
+            Params ))
+        {
+          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+          PushNewRow(Ui);
+                    s32 End = 3;
+
+          RangeIterator(ArrayIndex, End)
+          {
+                        DoEditorUi(Ui,
+              Window,
+              Element->Handles+ArrayIndex,
+              FSz("Handles[%d]", ArrayIndex),
+              ThisHash,
+              Params);
+
+             PushNewRow(Ui); 
+          }
+          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+        }
+        PushNewRow(Ui);
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("ElementCount");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->ElementCount),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -119,31 +120,26 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(b8*,&Element->Pad),
-        CSz("Pad"),
-        Params
-        );
+                PushNewRow(Ui);
 
 
 
+      }
+      
 
-
-
-
-      PushNewRow(Ui);
-
-      DoEditorUi(Ui,
-        Window,
-        // Cast to remove const/volatile keywords if they're there
-        Cast(u16*,&Element->Flags),
-        CSz("Flags"),
-        Params
-        );
+      { 
+        
+        
+        
+        cs MemberName = CSz("ElementType");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(data_type*, &Element->ElementType),
+          MemberName,
+          ThisHash,
+          Params
+          );
 
 
 
@@ -151,9 +147,94 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *E
 
 
 
-      PushNewRow(Ui);
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Mapped");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->Mapped),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Pad");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(b8*, &Element->Pad),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Flags");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u16*, &Element->Flags),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      PushTableEnd(Ui);
+      if (Name.Count) { PushTableEnd(Ui); }
     }
     else
     {

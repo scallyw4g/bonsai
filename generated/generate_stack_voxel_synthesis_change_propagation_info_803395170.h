@@ -1,5 +1,4 @@
-// src/engine/voxel_synthesis.h:310:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1444:0
 struct voxel_synthesis_change_propagation_info_stack
 {
   voxel_synthesis_change_propagation_info *Start;
@@ -12,11 +11,10 @@ link_internal voxel_synthesis_change_propagation_info_stack
 VoxelSynthesisChangePropagationInfoStack(umm ElementCount, memory_arena* Memory)
 {
   voxel_synthesis_change_propagation_info *Start = (voxel_synthesis_change_propagation_info*)PushStruct(Memory, sizeof(voxel_synthesis_change_propagation_info)*ElementCount, 1, 0);
-  voxel_synthesis_change_propagation_info_stack Result = {
-    .Start = Start,
-    .End = ElementCount,
-    .At = 0,
-  };
+  voxel_synthesis_change_propagation_info_stack Result = {};
+  Result.Start = Start;
+  Result.End = ElementCount;
+  Result.At = 0;
   return Result;
 }
 

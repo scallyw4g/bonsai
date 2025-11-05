@@ -18,7 +18,6 @@ struct maybe_ray
   ray Ray;
 };
 
-
 struct aabb_intersect_result
 {
   face_index Face;
@@ -103,6 +102,23 @@ Intersect(aabb AABB, ray *Ray)
 {
   return Intersect(&AABB, Ray);
 }
+
+link_internal b32
+Intersect(aabb *AABB, ray *Ray, r32 *t)
+{
+  b32 Result = False;
+  aabb_intersect_result IRes = Intersect(AABB, Ray);
+
+  if (IRes.Face != FaceIndex_None)
+  {
+    Assert(IRes.t != f32_MAX);
+    *t = IRes.t;
+    Result = True;
+  }
+  return Result;
+}
+
+
 
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection.html

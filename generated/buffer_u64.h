@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:23:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct u64_buffer
 {
   umm Count;
@@ -7,20 +6,12 @@ struct u64_buffer
 };
 
 link_internal u64_buffer
-U64Buffer( umm ElementCount, memory_arena* Memory)
+U64Buffer( umm ElementCount, memory_arena* Memory);
+
+link_internal u64_buffer
+U64Buffer( u64 *Start, umm ElementCount)
 {
-  u64_buffer Result = {};
-
-  if (ElementCount)
-  {
-    Result.Start = Allocate( u64, Memory, ElementCount );
-    Result.Count = ElementCount;
-  }
-  else
-  {
-    Warn("Attempted to allocate u64_buffer of 0 length.");
-  }
-
+  u64_buffer Result = {ElementCount, Start};
   return Result;
 }
 
@@ -68,9 +59,33 @@ GetPtr(u64_buffer *Buf, umm Index)
 }
 
 link_inline u64 *
+TryGetPtr(u64_buffer *Buf, umm Index)
+{
+  return GetPtr(Buf, Index);
+}
+
+link_inline u64 *
 Get(u64_buffer *Buf, umm Index)
 {
   u64 *Result = GetPtr(Buf, Index);
+  return Result;
+}
+
+link_internal u64_buffer
+U64Buffer( umm ElementCount, memory_arena* Memory)
+{
+  u64_buffer Result = {};
+
+  if (ElementCount)
+  {
+    Result.Start = Allocate( u64, Memory, ElementCount );
+    Result.Count = ElementCount;
+  }
+  else
+  {
+    Warn("Attempted to allocate u64_buffer of 0 length.");
+  }
+
   return Result;
 }
 

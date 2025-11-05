@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/c_token.cpp:8:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2037:0
 struct c_token_buffer_stream_chunk
 {
   c_token_buffer Element;
@@ -13,6 +12,14 @@ struct c_token_buffer_stream
   c_token_buffer_stream_chunk* LastChunk;
   umm ChunkCount;
 };
+
+link_internal c_token_buffer_stream
+CTokenBufferStream(memory_arena *Memory)
+{
+  c_token_buffer_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
 
 link_internal void
 Deallocate(c_token_buffer_stream *Stream)
@@ -62,10 +69,7 @@ IsLastElement(c_token_buffer_iterator* Iter)
 link_internal c_token_buffer *
 Push(c_token_buffer_stream* Stream, c_token_buffer Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   c_token_buffer_stream_chunk* NextChunk = (c_token_buffer_stream_chunk*)PushStruct(Stream->Memory, sizeof(c_token_buffer_stream_chunk), 1, 0);

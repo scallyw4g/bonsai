@@ -1,5 +1,4 @@
-// src/engine/bonsai_type_info.h:40:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1087:0
 bonsai_type_info_buffer
 ToBuffer( bonsai_type_info_hashtable *Table, memory_arena *Memory )
 {

@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/binary_parser.cpp:9:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2057:0
 struct u32_cursor
 {
   u32 *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   u32 *At;
   u32 *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal u32_cursor
 U32Cursor(umm ElementCount, memory_arena* Memory)
 {
   u32 *Start = (u32*)PushStruct(Memory, sizeof(u32)*ElementCount, 1, 0);
-  u32_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  u32_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(u32_cursor *Cursor, umm ElementIndex)
   u32 *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal u32*
+TryGetPtr(u32_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal u32*
@@ -194,6 +198,14 @@ struct u32_stream
   umm ChunkCount;
 };
 
+link_internal u32_stream
+U32Stream(memory_arena *Memory)
+{
+  u32_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(u32_stream *Stream)
 {
@@ -242,10 +254,7 @@ IsLastElement(u32_iterator* Iter)
 link_internal u32 *
 Push(u32_stream* Stream, u32 Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   u32_stream_chunk* NextChunk = (u32_stream_chunk*)PushStruct(Stream->Memory, sizeof(u32_stream_chunk), 1, 0);

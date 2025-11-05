@@ -1,5 +1,4 @@
-// external/bonsai_stdlib/src/counted_string.cpp:32:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2037:0
 struct tuple_cs_cs_stream_chunk
 {
   tuple_cs_cs Element;
@@ -13,6 +12,14 @@ struct tuple_cs_cs_stream
   tuple_cs_cs_stream_chunk* LastChunk;
   umm ChunkCount;
 };
+
+link_internal tuple_cs_cs_stream
+TupleCsCsStream(memory_arena *Memory)
+{
+  tuple_cs_cs_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
 
 link_internal void
 Deallocate(tuple_cs_cs_stream *Stream)
@@ -62,10 +69,7 @@ IsLastElement(tuple_cs_cs_iterator* Iter)
 link_internal tuple_cs_cs *
 Push(tuple_cs_cs_stream* Stream, tuple_cs_cs Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   tuple_cs_cs_stream_chunk* NextChunk = (tuple_cs_cs_stream_chunk*)PushStruct(Stream->Memory, sizeof(tuple_cs_cs_stream_chunk), 1, 0);

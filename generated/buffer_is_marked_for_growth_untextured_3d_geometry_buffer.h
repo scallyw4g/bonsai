@@ -1,5 +1,4 @@
-// src/engine/mesh.h:87:0
-
+// src/engine/mesh.h:56:0
 link_internal b32
 BufferIsMarkedForGrowth(untextured_3d_geometry_buffer *Dest)
 {

@@ -1,0 +1,239 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+#define PI 3.14159265358
+
+uvec3 murmurHash33(uvec3 src) {
+    const uint M = 0x5bd1e995u;
+    uvec3 h = uvec3(1190494759u, 2147483647u, 3559788179u);
+    src *= M; src ^= src>>24u; src *= M;
+    h *= M; h ^= src.x; h *= M; h ^= src.y; h *= M; h ^= src.z;
+    h ^= h>>13u; h *= M; h ^= h>>15u;
+    return h;
+}
+
+// 3 outputs, 3 inputs
+vec3 hash(vec3 src) {
+    uvec3 h = murmurHash33(floatBitsToUint(src));
+    return uintBitsToFloat(h & 0x007fffffu | 0x3f800000u) - 1.0;
+}
+
+float sdBox( in vec2 p, in vec2 b, in vec4 r )
+{
+    r.xy = (p.x>0.0)?r.xy : r.zw;
+    r.x  = (p.y>0.0)?r.x  : r.y;
+    vec2 q = abs(p)-b+r.x;
+    return min(max(q.x,q.y),0.0) + length(max(q,0.0)) - r.x;
+}
+
+float sdPentagram(in vec2 p, in float r )
+{
+    const float k1x = 0.809016994; // cos(¿/ 5) = ¼(¿5+1)
+    const float k2x = 0.309016994; // sin(¿/10) = ¼(¿5-1)
+    const float k1y = 0.587785252; // sin(¿/ 5) = ¼¿(10-2¿5)
+    const float k2y = 0.951056516; // cos(¿/10) = ¼¿(10+2¿5)
+    const float k1z = 0.726542528; // tan(¿/ 5) = ¿(5-2¿5)
+    const vec2  ve1  = vec2( k1x,-k1y);
+    const vec2  ve2  = vec2(-k1x,-k1y);
+    const vec2  ve3  = vec2( k2x,-k2y);
+    
+    p.x = abs(p.x);
+    p -= 2.0*max(dot(ve1,p),0.0)*ve1;
+    p -= 2.0*max(dot(ve2,p),0.0)*ve2;
+    p.x = abs(p.x);
+    p.y -= r;
+    return length(p-ve3*clamp(dot(p,ve3),0.0,k1z*r))
+           * sign(p.y*ve3.x-p.x*ve3.y);
+}
+
+float sdOrientedBox( in vec2 p, in vec2 a, in vec2 b, float th )
+{
+    float l = length(b-a);
+    vec2  d = (b-a)/l;
+    vec2  q = p-(a+b)*0.5;
+          q = mat2(d.x,-d.y,d.y,d.x)*q;
+          q = abs(q)-vec2(l*0.5,th);
+    return length(max(q,0.0)) + min(max(q.x,q.y),0.0);    
+}
+
+// returns offset to the center of the cell in the current tile
+vec3 get_point(vec2 pos){
+    ivec2 p = (ivec2(pos) - 1) * 3;
+    vec3 rng = hash(vec3(float(p.x), float(p.y), float(p.x + p.y)));
+    return rng.xyz;
+}
+
+const vec2 offsets[24] = vec2[24](
+    vec2(-2, -2),
+    vec2(-1, -2),
+    vec2(0, -2),
+    vec2(1, -2),
+    vec2(2, -2),
+    vec2(-2, -1),
+    vec2(-1, -1),
+    vec2(0, -1),
+    vec2(1, -1),
+    vec2(2, -1),
+    vec2(-2, 0),
+    vec2(-1, 0),
+    vec2(1, 0),
+    vec2(2, 0),
+    vec2(-2, 1),
+    vec2(-1, 1),
+    vec2(0, 1),
+    vec2(1, 1),
+    vec2(2, 1),
+    vec2(-2, 2),
+    vec2(-1, 2),
+    vec2(0, 2),
+    vec2(1, 2),
+    vec2(2, 2)
+    
+);
+
+float sdShape(vec2 pos, float rand){
+    //return sdBox(pos, vec2(.8), vec4(0.));
+    //return sdPentagram(pos, .9);
+    float r = .7;
+    rand*=PI*2.;
+    vec2 v = vec2(sin(rand), cos(rand));
+    float d = abs(sdOrientedBox(pos, v, -v, .2))-.2;
+    return d;
+}
+
+float sdVoronoi(vec2 pos){
+    pos-=.5;
+    vec2 p = fract(pos);
+    
+    //nearest is initialized to the center cell because of potential future optimizations to reduce iteration count
+    vec3 rng = get_point(pos);
+    vec2 nearest = rng.xy;
+    vec2 lastnearest = vec2(100.);
+    vec2 current = vec2(0.);
+    
+    vec2 lastrng = vec2(rng.z);
+    
+    vec3 dists = vec3(
+        sdShape(p-nearest, rng.z), 
+        sdShape(p-lastnearest, rng.z),
+        sdShape(p-current, rng.z));
+    
+    //finding the two nearest points to the sampling point
+    for (int i = 0; i<24; i++){
+        current = offsets[i];
+        rng = get_point(pos+offsets[i]);
+        current += rng.xy;
+        
+        dists.z = sdShape(p-current, rng.z);
+        
+        if (dists.z<dists.y){
+            dists.yz = dists.zy;
+            lastnearest = current;
+            lastrng.y = rng.z;
+        }
+        
+        if (dists.y<dists.x){
+            dists.xy = dists.yx;
+            lastrng.y=lastrng.x;
+            lastrng.x=rng.z;
+            lastnearest = nearest;
+            nearest = current;
+        }
+    }
+    
+    //float d = length(p-lastnearest)-.5+.5*(cos(iTime));
+    float d = sdShape(p-lastnearest, lastrng.y);
+    return d;
+}
+
+float scene(vec2 p){
+    float d = sdVoronoi(p);
+    
+    return d;
+}
+
+v4 noise( v2 uv )
+{
+    float d = scene(uv);
+
+    vec3 col = (d>0.0) ? vec3(0.9,0.6,0.3) : vec3(0.65,0.85,1.0);
+    col *= 1.0 - exp(-6.0*abs(d));
+	col *= 0.8 + 0.2*cos(150.0*d);
+	col = mix( col, vec3(1.0), 1.0-smoothstep(0.0,0.01,abs(d)));
+    
+    if(uv.x<0.)col = vec3(smoothstep(-1., 1., d));
+    
+    if (d<0.01 && d>0.){col = vec3(0.);}
+    // Output to screen
+    v4 fragColor = vec4(col, d);
+    return fragColor;
+}
+
+
+
+
+f32 ClampPositive(f32 Value)
+{
+  return Value < 0.f ? 0.f : Value;
+}
+
+
+
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+
+  vec3 Offset = vec3(0);
+  vec3 Basis = Offset + WorldspaceChunkBasis + (vec3(x,y,z)*ChunkResolution);
+
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  vec3 ColorValue = vec3(0.f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code --
+  //
+  {
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    NoiseValue += StartingZDepth - Basis.z;
+
+    f32 CliffMask = 1.f;
+    {
+      vec3 Period = vec3(150.f);
+      /* vec3 Period = vec3(10.f); */
+      float Amplitude = 300.f;
+
+      vec3 xyz = Basis / Period;
+      v4 N = noise(xyz.xy);
+
+      N.w *= -1.f;
+      /* N.w = ClampPositive(N.w); */
+
+      N.w = (N.w/2.f)+0.5f;
+
+      N.w = RemapSample(N.w, SampleRemapCurvePoints, SampleRemapCurvePointCount );
+
+      NoiseValue += N.w * Amplitude;
+      ColorValue = N.rgb;
+    }
+
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

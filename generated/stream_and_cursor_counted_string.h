@@ -1,12 +1,10 @@
-// external/bonsai_stdlib/src/counted_string.h:116:0
-
+// external/bonsai_stdlib/src/poof_functions.h:2057:0
 struct counted_string_cursor
 {
   counted_string *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   counted_string *At;
   counted_string *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal counted_string_cursor
 CountedStringCursor(umm ElementCount, memory_arena* Memory)
 {
   counted_string *Start = (counted_string*)PushStruct(Memory, sizeof(counted_string)*ElementCount, 1, 0);
-  counted_string_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  counted_string_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
   counted_string *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal counted_string*
+TryGetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal counted_string*
@@ -194,6 +198,14 @@ struct counted_string_stream
   umm ChunkCount;
 };
 
+link_internal counted_string_stream
+CountedStringStream(memory_arena *Memory)
+{
+  counted_string_stream Result = {};
+  Result.Memory = Memory;
+  return Result;
+}
+
 link_internal void
 Deallocate(counted_string_stream *Stream)
 {
@@ -242,10 +254,7 @@ IsLastElement(counted_string_iterator* Iter)
 link_internal counted_string *
 Push(counted_string_stream* Stream, counted_string Element)
 {
-  if (Stream->Memory == 0)
-  {
-    Stream->Memory = AllocateArena();
-  }
+  Assert(Stream->Memory);
 
   /* (Type.name)_stream_chunk* NextChunk = AllocateProtection((Type.name)_stream_chunk*), Stream->Memory, 1, False) */
   counted_string_stream_chunk* NextChunk = (counted_string_stream_chunk*)PushStruct(Stream->Memory, sizeof(counted_string_stream_chunk), 1, 0);

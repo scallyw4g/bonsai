@@ -1,0 +1,522 @@
+uniform  v3 WorldspaceChunkBasis;
+uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
+
+uniform int BrushType;
+uniform int BlendMode;
+uniform int ColorMode;
+uniform int ValueModifiers;
+
+uniform int GenerateNormals;
+
+uniform f32 Power;
+uniform f32 ValueBias;
+
+uniform v3 Axis;
+
+//
+// Clipping params
+//
+uniform v3 ChunkRelEditMin;
+uniform v3 ChunkRelEditMax;
+
+
+//
+// Shape params
+//
+uniform s32  ShapeType; // shape_type
+uniform mat4 RotTransform;
+uniform f32  Rounding;
+uniform  v3  Stretch;
+uniform  v3  Repeat;
+
+//
+// Rect Params
+//
+
+uniform v3 RectDim;
+
+//
+// Sphere Params
+//
+uniform  v3 EditRelativeSphereCenter;
+uniform f32 Radius;
+
+//
+// Cylinder Params
+//
+
+uniform r32 Height;
+
+//
+// Plane Params
+//
+uniform v3 PlaneNormal;
+uniform f32 Planed;
+uniform f32 PlaneRadius;
+
+//
+// Torus Params
+//
+
+uniform f32 MinorRadius;
+
+
+
+
+//
+// Noise params
+//
+uniform  int NoiseType;
+uniform   v3 RGBColor;
+uniform   v3 Period;
+uniform  f32 Threshold;
+uniform bool Invert;
+
+//
+// Voronoi Params
+//
+uniform f32 Squareness; // 0 == not square, 1 == square
+
+
+
+uniform       int SampleInputTex;
+uniform sampler2D InputTex;
+
+uniform       int SampleBlendTex;
+uniform sampler2D BlendTex;
+
+in vec2 UV;
+out vec4 Output;
+
+r32 DistanceToPlane(v3 PlaneNormal, f32 Planed, v3 P)
+{
+  r32 a = PlaneNormal.x;
+  r32 b = PlaneNormal.y;
+  r32 c = PlaneNormal.z;
+
+  r32 d = Planed;
+
+  r32 Distance = a*P.x + b*P.y + c*P.z + d;
+  return Distance;
+}
+
+f32 iq_sdSphere(v3 p, f32 r)
+{
+  return length(p) - r;
+}
+
+// p == sample point
+// b == box dimension
+//
+f32 iq_sdBox(vec3 p, vec3 b)
+{
+  vec3 q = abs(p) - b;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+
+// p == sample point
+// h == height
+// r == radius
+//
+float iq_sdCappedCylinder( vec3 p, float h, float r )
+{
+  vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+float iq_sdCylinder( vec3 p, vec3 c )
+{
+  return length(p.xz-c.xy)-c.z;
+}
+
+// p == sample point
+// a == start point
+// b == end point
+// r == radius
+float iq_sdRoundedLine( vec3 p, vec3 a, vec3 b, float r )
+{
+  vec3 pa = p - a, ba = b - a;
+  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+  return length( pa - ba*h ) - r;
+}
+
+// p   == sample point
+// t.x == major radius
+// t.y == minor radius
+//
+float iq_sdTorus( vec3 p, vec2 t )
+{
+  vec2 q = vec2(length(p.xz)-t.x,p.y);
+  return length(q)-t.y;
+}
+
+
+// p == sample point
+// h == stretch vector
+vec4 iq_opElongate( vec3 p, vec3 h )
+{
+  // faster, but produces zero in the interior elongated box
+  /* return vec4( p-clamp(p,-h,h), 0.0 ); */
+
+  /* return vec4(0); */
+
+  vec3 q = abs(p)-h;
+  return vec4( max(q,0.0), min(max(q.x,max(q.y,q.z)),0.0) );
+}
+
+// p == sample point
+// p == spacing between instances
+//
+v3 iq_opRepetition( v3 p, v3 s )
+{
+    vec3 q = p - s*round(p/s);
+    return q;
+}
+
+v4 DoInputTransforms(v3 p, mat3 Transform, v3 Stretch, v3 Repeat)
+{
+  p *= Transform;
+  if (length(Repeat) > 0.f)
+  {
+    p  = iq_opRepetition(p, Repeat);
+  }
+  v4 w  = iq_opElongate(p, Stretch);
+  return w;
+}
+
+#if 1
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
+{
+  return (1.f-IQSample)/Rad;
+}
+#else
+f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
+{
+  return (1.f-IQSample);
+}
+#endif
+
+void main()
+{
+  v4 TexLookup = vec4(0);
+  if (SampleInputTex > 0)
+  {
+    TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+  }
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  vec3 ColorValue = TexLookup.rgb;
+
+  f32  InitialAccumulator = TexLookup.a;
+  f32  Accumulator = TexLookup.a;
+
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+  v3 xyz = V3(x,y,z) * ChunkResolution;
+
+  mat3 RotMatrix = mat3(RotTransform);
+
+  // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
+  // think it should be >= Min and < Max .. but I'm just going to leave it for now..
+  if (
+      xyz.x > ChunkRelEditMin.x &&
+      xyz.y > ChunkRelEditMin.y &&
+      xyz.z > ChunkRelEditMin.z &&
+
+      xyz.x <= ChunkRelEditMax.x &&
+      xyz.y <= ChunkRelEditMax.y &&
+      xyz.z <= ChunkRelEditMax.z  )
+  {
+    v3 Basis = WorldspaceChunkBasis + xyz;
+    v3 EditRelxyz = xyz - ChunkRelEditMin;
+    v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
+    v3 EditRad = EditDim/2.f;
+
+
+    {
+      v3 ColorSample = RGBColor;
+      f32 InitialSample = 0.f;
+
+      s32 Octaves = 1;
+      switch (BrushType)
+      {
+        case 0: // BrushLayerType_Noise
+        {
+          v3 NoiseBasis = Basis / Period;
+          switch (NoiseType)
+          {
+            case 0: // NoiseType_Perlin:
+            {
+              InitialSample = value_noise_derivs(NoiseBasis).x;
+            } break;
+
+            case 1: // NoiseType_Voronoi:
+            {
+              InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
+            } break;
+
+            case 2: // NoiseType_White:
+            {
+              InitialSample = white_noise(NoiseBasis);
+            } break;
+          }
+
+          break;
+        }
+
+        case 1: // BrushLayerType_Shape
+        {
+          switch (ShapeType)
+          {
+            // ShapeType_Rect
+            case 0:
+            {
+              /* v3 BoxR = EditDim/4.f; */
+              /* v3 BoxR = v3(20.f); */
+              /* v3 BoxR = v3(200.f); */
+              v3 BoxR = RectDim/2.f;
+              if (length(BoxR) > 0.f)
+              {
+              }
+              else
+              {
+                BoxR = EditDim;
+              }
+
+              v3 Center = EditDim/2.f;
+              v3 p    = (EditRelxyz - Center);
+              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+              InitialSample = -IQSample;
+
+            } break;
+
+            // ShapeType_Sphere
+            case 1:
+            {
+              v3 p  = (EditRelxyz - EditRelativeSphereCenter);
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample  = w.w+iq_sdSphere(w.xyz, Radius);
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Line
+            case 2:
+            {
+              v3 p = EditRelxyz;
+              v3 start = v3(Radius);
+              v3 end = EditDim-v3(Radius);
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Cylinder
+            case 3:
+            {
+              v3 p = (EditRelxyz - EditRad);
+              v3 c = Axis;
+
+              f32 r = 4.f;
+              f32 h = 102.f;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Plane
+            case 4:
+            {
+              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
+              if (abs(Dist) < PlaneRadius*ChunkResolution.x)
+              {
+                InitialSample = 1.f;
+              }
+            } break;
+
+            // ShapeType_Torus
+            case 5:
+            {
+              v2  t = v2(Radius, MinorRadius);
+              v3  p = EditRelxyz;
+
+              v3  BoxR = EditDim/2.f;
+              p = EditRelxyz;
+              p   -= BoxR;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 n = w.w+iq_sdTorus( w.xyz, t );
+
+              InitialSample = -n;
+
+            } break;
+
+            // @sdf_shape_step(7): Add more cases and implementations here
+            // for shape types added in Step 1
+            //
+          }
+
+          InitialSample += Rounding;
+        } break;
+
+        default: {ColorValue = V3(1.f, 0.f, 1.f);  Accumulator = 1.f;} break;
+      }
+
+      /* InitialSample = Clamp01(InitialSample); */
+
+      f32 ThisSample = (InitialSample + ValueBias) * Power;
+      if (Invert)
+      {
+        ThisSample = ThisSample * -1.f;
+      }
+
+
+
+
+
+
+
+
+
+      if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+      {
+        ThisSample = max(0.f, ThisSample);
+      }
+
+      if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+      {
+        ThisSample = min(0.f, ThisSample);
+      }
+
+      if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
+      {
+        if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
+      }
+
+      if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
+      {
+        ThisSample = 0.f;
+      }
+
+
+
+
+
+
+
+
+
+
+      // Blend Value
+      //
+      switch (BlendMode)
+      {
+        case 0: // WorldEdit_Mode_Additive
+        {
+          if (ThisSample > 0.f)
+          {
+            Accumulator = Accumulator + ThisSample;
+          }
+        } break;
+
+        case 1: // WorldEdit_Mode_Subtractive
+        {
+          if (ThisSample > 0.f)
+          {
+            Accumulator = Accumulator - ThisSample;
+          }
+        } break;
+
+        case 2: // WorldEdit_Mode_Multiply
+        {
+          // Don't wanna check this because we want to use this to mask values out
+          /* if (ThisSample > 0.f) */
+          {
+            Accumulator = Accumulator * ThisSample;
+          }
+        } break;
+
+        case 3: // WorldEdit_Mode_Threshold
+        {
+          f32 AbsSampleValue = abs(ThisSample);
+          {
+            if(ThisSample >= Threshold)
+            {
+              Accumulator = Threshold;
+            }
+          }
+
+        } break;
+
+        case 4: // WorldEdit_Mode_Disabled
+        { ThisSample = 0.f; } break;
+      }
+
+
+      // Blend Color
+      //
+      switch (ColorMode)
+      {
+        case 0: // WorldEdit_ColorBlendMode_ValuePositive
+        { if (ThisSample > 0.f) { ColorValue = ColorSample; } } break;
+
+        case 1: // WorldEdit_ColorBlendMode_ValueNegative
+        { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
+
+        case 2: // WorldEdit_ColorBlendMode_Surface
+        {
+          if (InitialAccumulator <= 0.f)
+          {
+            if (Accumulator > 0.f)
+            {
+              ColorValue = ColorSample;
+              /* ColorValue = ColorSample * (InitialSample); */
+            }
+          }
+        } break;
+        /* { ColorValue = ColorValue + ColorSample; } break; */
+
+#if 0
+        case 3: // Subtractive
+        { ColorValue = ColorValue - ColorSample; } break;
+
+        case 4: // Multiply
+        { ColorValue = ColorValue * ColorSample; } break;
+
+        case 5: // Divide
+        { ColorValue = SafeDivide0(ColorValue, ColorSample); } break;
+
+        case 6: // Average
+        { f32 StartingIntensity = length(ColorValue);Threshold : Set sample to 0 if it does not pass threshold, before Power and ValueBias
+          ColorValue = (ColorValue + ColorSample)/StartingIntensity; } break;
+#endif
+      }
+
+    }
+
+  }
+
+  if (SampleBlendTex > 0)
+  {
+    v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
+
+    if (Accumulator <= 0.f)
+    /* if (TexLookup.a > 0.f) */
+    {
+      // Take Max of Accumulator or current world value
+      if (Accumulator < TexLookup.a)
+      {
+        Accumulator = TexLookup.a;
+        ColorValue  = TexLookup.rgb;
+      }
+    }
+  }
+
+  Output.rgb = ColorValue;
+  Output.a = Accumulator;
+}

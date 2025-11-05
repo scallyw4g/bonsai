@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:280:0
+// src/engine/work_queue.h:191:0
 
 
 
@@ -146,6 +146,7 @@
 
 
 
+finalize_shit_and_fuckin_do_stuff_async_params finalize_shit_and_fuckin_do_stuff_async_params;
 
 
 
@@ -174,6 +175,7 @@
 
 
 
+initialize_easing_function_visualizer_render_pass_async_params initialize_easing_function_visualizer_render_pass_async_params;
 
 
 
@@ -186,7 +188,6 @@
 
 
 
-render_to_texture_async_params render_to_texture_async_params;
 
 
 
@@ -512,6 +513,7 @@ render_to_texture_async_params render_to_texture_async_params;
 
 
 
+compile_shader_pair_async_params compile_shader_pair_async_params;
 
 
 
@@ -563,70 +565,6 @@ render_to_texture_async_params render_to_texture_async_params;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-draw_lod_async_params draw_lod_async_params;
 
 
 

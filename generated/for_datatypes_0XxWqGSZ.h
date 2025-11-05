@@ -1,4 +1,4 @@
-// src/engine/work_queue.h:336:0
+// src/engine/work_queue.h:250:0
 
 
 
@@ -146,54 +146,52 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct render_to_texture_async_params;
+struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_entry
-WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
+WorkQueueEntryAsyncFunction( finalize_shit_and_fuckin_do_stuff_async_params *Params )
 {
   work_queue_entry Result = {};
   Result.Type = type_work_queue_entry_async_function_call;
-  Result.work_queue_entry_async_function_call.Type = type_render_to_texture_async_params;
-  Result.work_queue_entry_async_function_call.render_to_texture_async_params = *Params;
+  Result.work_queue_entry_async_function_call.Type = type_finalize_shit_and_fuckin_do_stuff_async_params;
+  Result.work_queue_entry_async_function_call.finalize_shit_and_fuckin_do_stuff_async_params = *Params;
+  return Result;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct initialize_easing_function_visualizer_render_pass_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_initialize_easing_function_visualizer_render_pass_async_params;
+  Result.work_queue_entry_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
 
@@ -533,119 +531,67 @@ WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct draw_lod_async_params;
+struct compile_shader_pair_async_params;
 link_internal work_queue_entry
-WorkQueueEntryAsyncFunction( draw_lod_async_params *Params )
+WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
 {
   work_queue_entry Result = {};
   Result.Type = type_work_queue_entry_async_function_call;
-  Result.work_queue_entry_async_function_call.Type = type_draw_lod_async_params;
-  Result.work_queue_entry_async_function_call.draw_lod_async_params = *Params;
+  Result.work_queue_entry_async_function_call.Type = type_compile_shader_pair_async_params;
+  Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

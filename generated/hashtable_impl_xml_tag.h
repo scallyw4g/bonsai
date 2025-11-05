@@ -1,6 +1,6 @@
-// external/bonsai_stdlib/src/xml.cpp:10:0
-
+// external/bonsai_stdlib/src/poof_functions.h:799:0
 link_internal b32 AreEqual(xml_tag_linked_list_node *Node1, xml_tag_linked_list_node *Node2 );
+link_internal b32 AreEqual(xml_tag *Element1, xml_tag *Element2 );
 
 link_internal xml_tag_linked_list_node *
 Allocate_xml_tag_linked_list_node(memory_arena *Memory)
@@ -63,7 +63,7 @@ Insert(xml_tag_linked_list_node *Node, xml_tag_hashtable *Table)
   xml_tag_linked_list_node **Bucket = Table->Elements + HashValue;
   while (*Bucket)
   {
-    /* Assert(!AreEqual(*Bucket, Node)); */
+    /* Assert(!AreEqual(&Bucket[0]->Element, &Node->Element)); */
     Bucket = &(*Bucket)->Next;
   }
   *Bucket = Node;
@@ -165,4 +165,11 @@ GetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
   }
   return Result;
 }
+
+link_inline xml_tag *
+TryGetPtr(xml_tag_hashtable *Hashtable, xml_tag_hashtable_iterator Iterator)
+{
+  return GetPtr(Hashtable, Iterator);
+}
+
 

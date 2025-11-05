@@ -1,12 +1,10 @@
-// src/engine/world_update.h:38:0
-
+// external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct voxel_stack_element_cursor
 {
   voxel_stack_element *Start;
   // TODO(Jesse)(immediate): For the love of fucksakes change these to indices
   voxel_stack_element *At;
   voxel_stack_element *End;
-  /* OWNED_BY_THREAD_MEMBER(); */
 };
 
 
@@ -15,12 +13,12 @@ link_internal voxel_stack_element_cursor
 VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
 {
   voxel_stack_element *Start = (voxel_stack_element*)PushStruct(Memory, sizeof(voxel_stack_element)*ElementCount, 1, 0);
-  voxel_stack_element_cursor Result = {
-    .Start = Start,
-    .End = Start+ElementCount,
-    .At = Start,
-    /* OWNED_BY_THREAD_MEMBER_INIT() */
-  };
+  voxel_stack_element_cursor Result = {};
+
+  Result.Start = Start;
+  Result.End = Start+ElementCount;
+  Result.At = Start;
+
   return Result;
 }
 
@@ -32,6 +30,12 @@ GetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
   voxel_stack_element *Result = {};
   if (ElementIndex < AtElements(Cursor)) { Result = Cursor->Start+ElementIndex; }
   return Result;
+}
+
+link_internal voxel_stack_element*
+TryGetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+{
+  return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal voxel_stack_element*
