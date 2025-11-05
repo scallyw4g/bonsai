@@ -130,6 +130,7 @@ poof(
 )
 
 // multi-select group
+//
 poof(
   func toggle_button_group_for_enum(enum_t)
   {
@@ -144,6 +145,7 @@ poof(
 )
 
 // radio group
+//
 poof(
   func radio_button_group_for_enum(enum_t)
   {
@@ -957,8 +959,8 @@ poof(do_editor_ui_for_radio_enum(asset_window_view_mode))
 poof(string_and_value_tables(world_edit_blend_mode))
 #include <generated/string_and_value_tables_world_edit_blend_mode.h>
 
-poof(do_editor_ui_for_radio_enum(world_edit_blend_mode))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_blend_mode.h>
+poof(do_editor_ui_for_enum(world_edit_blend_mode))
+#include <generated/do_editor_ui_for_enum_QKyV0TwP.h>
 
 poof(string_and_value_tables(world_edit_color_blend_mode))
 #include <generated/string_and_value_tables_world_edit_color_blend_mode.h>
@@ -1186,13 +1188,14 @@ enum brush_layer_type
 
 poof(string_and_value_tables(brush_layer_type))
 #include <generated/string_and_value_tables_enum_brush_layer_type.h>
-poof(do_editor_ui_for_radio_enum(brush_layer_type))
-#include <generated/do_editor_ui_for_radio_enum_brush_layer_type.h>
+
+poof(do_editor_ui_for_enum(brush_layer_type))
+#include <generated/do_editor_ui_for_enum_brush_layer_type.h>
 
 struct brush_settings
 poof(@do_editor_ui)
 {
-  brush_layer_type Type; poof(@ui_display_name(CSz("BrushType")))
+  brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
 
   noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
   shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
@@ -1204,6 +1207,7 @@ poof(@do_editor_ui)
   f32 Power     = 10.f; // poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element)))
   r32 ValueBias =  0.f; poof(@ui_value_range(-1.f,  1.f))
   f32 Threshold =  0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
+
   world_edit_blend_mode_modifier ValueModifier;
   world_edit_blend_mode          BlendMode;
   world_edit_color_blend_mode    ColorMode;
@@ -1233,6 +1237,7 @@ poof(are_equal(brush_settings))
 #include <generated/are_equal_struct.h>
 
 struct brush_layer
+poof(@do_editor_ui)
 {
   brush_settings Settings;     poof(@ui_display_name({}))
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection

@@ -1,4 +1,4 @@
-// src/engine/editor.h:303:0
+// src/engine/editor.h:305:0
 struct vox_data;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, vox_data *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

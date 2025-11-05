@@ -1,29 +1,29 @@
 // src/engine/editor.h:484:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_tag *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1FBAE2DF);
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x136838E8);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
 
   cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle maybe_tag", Element, ThisHash);
+  ui_id ToggleButtonId = UiId(Window, "toggle brush_layer_type", Element, ThisHash);
   if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("No"), UiId(Window, "enum Maybe_No", Element, ThisHash), Params))
+    if (Button(Ui, CSz("Noise"), UiId(Window, "enum BrushLayerType_Noise", Element, ThisHash), Params))
     {
-            *Element = Maybe_No;
+            *Element = BrushLayerType_Noise;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Yes"), UiId(Window, "enum Maybe_Yes", Element, ThisHash), Params))
+    if (Button(Ui, CSz("Shape"), UiId(Window, "enum BrushLayerType_Shape", Element, ThisHash), Params))
     {
-            *Element = Maybe_Yes;
+            *Element = BrushLayerType_Shape;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

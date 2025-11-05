@@ -50,7 +50,7 @@ poof(
   r32 TargetDistanceFromTarget;
 
   r32 Blend; // How fast the camera interpolates.  0 is instant, 0.1f is verrry slow
-  r32 Speed = 3.0f; // How fast the camera ghost moves
+  r32 Speed = 8.0f; // How fast the camera ghost moves
 
   v3 Front;
   v3 Right;

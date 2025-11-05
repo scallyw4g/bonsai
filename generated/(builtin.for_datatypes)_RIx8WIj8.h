@@ -1,4 +1,4 @@
-// src/engine/editor.h:600:0
+// src/engine/editor.h:602:0
 
 
 
@@ -591,7 +591,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 
 
 
-
+struct brush_layer;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 

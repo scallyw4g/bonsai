@@ -374,8 +374,8 @@ poof(
 
 
 
-poof(do_editor_ui_for_compound_type(brush_layer))
-#include <generated/do_editor_ui_for_compound_type_brush_layer.h>
+/* poof(do_editor_ui_for_compound_type(brush_layer)) */
+/* #include <generated/do_editor_ui_for_compound_type_brush_layer.h> */
 
 poof(do_editor_ui_for_compound_type(layered_brush))
 #include <generated/do_editor_ui_for_compound_type_layered_brush.h>
@@ -1060,6 +1060,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           {
             DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("AffectExisting"), ThisHash, &DefaultUiRenderParams_Checkbox);
             PushNewRow(Ui);
+            PushNewRow(Ui);
 
             /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
             /* PushNewRow(Ui); */
@@ -1084,40 +1085,47 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
             if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
             {
-              ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex));
-              if (Toolbar.AnyElementClicked)
-              {
-                EditLayerIndex = LayerIndex;
+              PushNewRow(Ui);
 
-                if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
 
-                b32 ThisState = GetToggleState(Ui, ToggleId);
-
-                if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+              auto ActionsToolbarRef = PushTableStart(Ui);
+                ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical);
+                if (Toolbar.AnyElementClicked)
                 {
-                  ui_id NextId = ToggleId;
-                  NextId.ElementBits -= 1;
-                  b32 NextState = GetToggleState(Ui, NextId);
+                  EditLayerIndex = LayerIndex;
 
-                  SetToggleButton(Ui, ToggleId, NextState);
-                  SetToggleButton(Ui, NextId, ThisState);
+                  if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
+
+                  b32 ThisState = GetToggleState(Ui, ToggleId);
+
+                  if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+                  {
+                    ui_id NextId = ToggleId;
+                    NextId.ElementBits -= 1;
+                    b32 NextState = GetToggleState(Ui, NextId);
+
+                    SetToggleButton(Ui, ToggleId, NextState);
+                    SetToggleButton(Ui, NextId, ThisState);
+                  }
+
+                  if (BrushLayerAction == UiBrushLayerAction_MoveDown)
+                  {
+                    ui_id NextId = ToggleId;
+                    NextId.ElementBits += 1;
+                    b32 NextState = GetToggleState(Ui, NextId);
+
+                    SetToggleButton(Ui, ToggleId, NextState);
+                    SetToggleButton(Ui, NextId, ThisState);
+                  }
+
                 }
+              PushTableEnd(Ui);
 
-                if (BrushLayerAction == UiBrushLayerAction_MoveDown)
-                {
-                  ui_id NextId = ToggleId;
-                  NextId.ElementBits += 1;
-                  b32 NextState = GetToggleState(Ui, NextId);
-
-                  SetToggleButton(Ui, ToggleId, NextState);
-                  SetToggleButton(Ui, NextId, ThisState);
-                }
-
-              }
-
-              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
-              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+              PushTableStart(Ui, Position_RightOf, ActionsToolbarRef);
+                OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                  DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
+                CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+              PushTableEnd(Ui);
             }
             else
             {
@@ -1897,8 +1905,8 @@ DoWorldEditor(engine_resources *Engine)
     }
     PushWindowEnd(Ui, &AllBrushesWindow);
 
-    local_persist window_layout BrushSettingsWindow = WindowLayout("Brush Settings", WindowLayoutFlag_Align_Right);
-    DoBrushSettingsWindow(Engine, Editor->CurrentBrush, &BrushSettingsWindow);
+    window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Settings", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+    DoBrushSettingsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
 
     // NOTE(Jesse): Must come after the settings window draws because the
     // settings window detects and initializes new brushes

@@ -1,4 +1,4 @@
-// src/engine/editor.h:303:0
+// src/engine/editor.h:305:0
 struct gpu_element_buffer_handles;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

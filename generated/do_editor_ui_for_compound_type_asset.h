@@ -1,4 +1,4 @@
-// src/engine/editor.h:303:0
+// src/engine/editor.h:305:0
 struct asset;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
