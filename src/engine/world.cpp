@@ -609,10 +609,13 @@ OctreeLeafShouldSplit(engine_resources *Engine, octree_node *Node)
 link_internal s32
 ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camera *GameCamera)
 {
+  local_persist random_series PriorityRNG = {543267543756437};
+  /* s32 Jitter = RandomBetween(-16, &PriorityRNG, 16); */
+  s32 Jitter = 0; //RandomBetween(-16, &PriorityRNG, 16);
   /* s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep); */
   /* s32 IdealListIndex = Min(Node->Resolution.x*32, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
   /* s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
-  s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1);
+  s32 IdealListIndex = Min(Jitter + Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1);
 
 
   // Prefer large nodes close to the camera
@@ -620,11 +623,27 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
     v3 CamSimP = GetSimSpaceP(World, GameCamera->CurrentP);
     aabb Box = GetSimSpaceAABB(World, Node);
 
+#if 1
+#if 0
     r32 D = DistanceToBox(CamSimP, Box);
     // DRatio is small when a large box is close to the camera
     r32 DRatio = D / Node->Resolution.x;
     s32 Offset = s32((1.f/DRatio) * 32.f);
     IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-Offset);
+#else
+    if (IsInside(CamSimP, Box))
+    {
+      IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-100);
+    }
+    else
+    {
+      r32 D = DistanceToBox(CamSimP, Box);
+      r32 SizeOverDistance = Node->Resolution.x / D;
+      s32 Offset = s32(SizeOverDistance * 32.f);
+      IdealListIndex = Max(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex-Offset);
+    }
+#endif
+#endif
   }
 
   // Prefer nodes who intersect the camera ray
@@ -643,12 +662,21 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-#if 1
+#if 0
   // Penalize nodes who are not in the frustum
   if (IsInFrustum(World, GameCamera, Node) == False)
   {
     /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
     IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
+  }
+
+  if (Parent)
+  {
+    if (IsInFrustum(World, GameCamera, Parent) == False)
+    {
+      /* IdealListIndex = OCTREE_PRIORITY_QUEUE_LIST_COUNT-1; */
+      IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, IdealListIndex+128);
+    }
   }
 #endif
 

@@ -357,7 +357,7 @@ main( s32 ArgCount, const char ** Args )
         }
         else
         {
-          SleepMs(MSUntilFrameTime);
+          SleepMs(u32(MSUntilFrameTime));
           break;
         }
       }
