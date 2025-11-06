@@ -219,6 +219,81 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
         
         
         
+        cs MemberName = CSz("OcclusionQueryId");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(u32*, &Element->OcclusionQueryId),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("QueryActive");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->QueryActive),
+          MemberName,
+          ThisHash,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("OcclusionFrames");
+                                                DoEditorUi(Ui,
+          Window,
+          Cast(b8*, &Element->OcclusionFrames),
+          MemberName,
+          ThisHash,
+          &DefaultUiRenderParams_Checkbox
+          );
+
+
+
+
+
+                PushNewRow(Ui);
+
+
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("StandingSpots");
                                                                 DoEditorUi(Ui,
           Window,

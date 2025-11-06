@@ -1165,6 +1165,31 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 
 
 
+link_internal void
+CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+
+  check_occlusion_query_async_params Params =
+  {
+      Chunk, 
+  };
+
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  PushWorkQueueEntry(Queue, &Entry);
+}
+
+link_internal void
+DoJob(check_occlusion_query_async_params *Params)
+{
+   CheckOcclusionQuery( Params->Chunk );
+  
+}
+
+
+
+
 
 
 

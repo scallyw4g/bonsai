@@ -14,6 +14,17 @@
 
 
 
+struct check_occlusion_query_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_check_occlusion_query_async_params;
+  Result.work_queue_entry_async_function_call.check_occlusion_query_async_params = *Params;
+  return Result;
+}
+
 
 
 

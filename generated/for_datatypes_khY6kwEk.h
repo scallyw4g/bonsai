@@ -1126,6 +1126,16 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 
 
+struct check_occlusion_query_async_params poof(@async_function_params)
+{
+  
+    world_chunk *Chunk;
+
+};
+
+
+
+
 
 
 

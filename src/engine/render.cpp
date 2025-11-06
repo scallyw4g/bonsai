@@ -1496,12 +1496,12 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 }
 
 link_internal void
+poof(@async @render)
 CheckOcclusionQuery(world_chunk *Chunk)
 {
   auto GL = GetGL();
 
-  Assert(Chunk->OcclusionFrames == 0);
-  if (Chunk->QueryActive)
+  if (Chunk->OcclusionFrames == 0 && Chunk->QueryActive)
   {
     s32 Available = 0;
     GL->GetQueryObjectiv(Chunk->OcclusionQueryId, GL_QUERY_RESULT_AVAILABLE, &Available);
@@ -1599,8 +1599,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
           DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
         }
 
-
-        CheckOcclusionQuery(Chunk);
+        /* CheckOcclusionQuery(Chunk); */
       }
 
 

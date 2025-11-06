@@ -14,6 +14,8 @@
 
 
 
+type_check_occlusion_query_async_params,
+
 
 
 

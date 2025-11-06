@@ -242,3 +242,6 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count);
 
 link_internal void
 FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode);
+
+link_internal void
+CheckOcclusionQuery(world_chunk *Chunk);

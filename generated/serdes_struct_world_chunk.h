@@ -67,6 +67,27 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
 
 
         
+                            Result &= Serialize(Bytes, &Element->OcclusionQueryId); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->QueryActive); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->OcclusionFrames); // default
+
+
+
+
+
+
         
                             Result &= Serialize(Bytes, &Element->DimInChunks); // default
 
@@ -104,6 +125,12 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count = 1)
         
 
         
+        
+
+        
+
+        
+
         
         
 
@@ -187,6 +214,30 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
     
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->OcclusionQueryId, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->QueryActive, Memory);
+
+
+
+
+
+            // NOTE(Jesse): Unfortunately we can't check for primitives because
+  // strings are considered primitive, but need memory to deserialize
+  Result &= Deserialize(Bytes, &Element->OcclusionFrames, Memory);
+
+
+
+
+
     
             // NOTE(Jesse): Unfortunately we can't check for primitives because
   // strings are considered primitive, but need memory to deserialize
@@ -253,6 +304,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
   }
 
 
+  
+  
+  
   
   
   

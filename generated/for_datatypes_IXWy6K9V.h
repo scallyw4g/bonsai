@@ -802,6 +802,7 @@ UseShader( lighting_render_group *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
