@@ -267,6 +267,10 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->Handles = {};
 
   Chunk->DimInChunks = {};
+
+  Chunk->QueryActive = {};
+  Chunk->OcclusionFrames = {};
+
 #endif
 }
 

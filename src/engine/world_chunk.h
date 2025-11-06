@@ -335,7 +335,12 @@ struct world_chunk poof(@version(1))
   b32 IsOnFreelist;
 
   gpu_element_buffer_handles Handles; poof(@no_serialize)
-  /* gpu_mapped_element_buffer Mesh; poof(@no_serialize) */
+
+
+  u32 OcclusionQueryId;
+  b32 QueryActive;
+  b32 OcclusionFrames;
+
 
   voxel_position_cursor StandingSpots;   poof(@no_serialize)
 

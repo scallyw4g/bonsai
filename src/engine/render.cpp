@@ -1496,6 +1496,37 @@ ComputeDrawListsAndQueueUnallocatedChunks(engine_resources *Engine)
 }
 
 link_internal void
+CheckOcclusionQuery(world_chunk *Chunk)
+{
+  auto GL = GetGL();
+
+  Assert(Chunk->OcclusionFrames == 0);
+  if (Chunk->QueryActive)
+  {
+    s32 Available = 0;
+    GL->GetQueryObjectiv(Chunk->OcclusionQueryId, GL_QUERY_RESULT_AVAILABLE, &Available);
+    if (Available)
+    {
+      Chunk->QueryActive = False;
+
+      s32 FragmentsWritten = 0;
+      GL->GetQueryObjectiv(Chunk->OcclusionQueryId, GL_QUERY_RESULT, &FragmentsWritten);
+
+      if (FragmentsWritten == 0)
+      {
+        local_persist random_series OcclusionEntropy = {43654747355143};
+        Chunk->OcclusionFrames = RandomBetween(0u, &OcclusionEntropy, 20u);
+        Info("Occluded");
+      }
+      else
+      {
+        Info("Visible");
+      }
+    }
+  }
+}
+
+link_internal void
 RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
   world *World = Engine->World;;
@@ -1525,12 +1556,14 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
     sort_key_f32 *Key = Keys + KeyIndex;
     octree_node *Node = Cast(octree_node *, Key->Index);
 
-    auto Chunk = Node->Chunk;
+    world_chunk *Chunk = Node->Chunk;
     Assert(Chunk);
 
     // In case gpu meshes got deallocated after the chunk was added to the draw list
     if (HasGpuMesh(Chunk))
     {
+      if (Chunk->OcclusionFrames) { Chunk->OcclusionFrames--; continue; }
+
       v3 Offset = V3(Node->Resolution);
       /* v3 Offset = V3(Node->Resolution*0.5f); */
       /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
@@ -1544,7 +1577,33 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
       {
         Basis += GetSimSpaceP(World, Chunk->WorldP);
       }
-      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
+
+      if (Camera)
+      {
+        auto GL = GetGL();
+        if (Chunk->OcclusionQueryId == 0)
+        {
+          GL->GenQueries(1, &Chunk->OcclusionQueryId);
+          Assert(Chunk->OcclusionQueryId);
+        }
+
+        if (Chunk->QueryActive == False)
+        {
+          Chunk->QueryActive = True;
+          GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId);
+          DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
+          GL->EndQuery(GL_SAMPLES_PASSED);
+        }
+        else
+        {
+          DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
+        }
+
+
+        CheckOcclusionQuery(Chunk);
+      }
+
+
       AssertNoGlErrors;
     }
   }
