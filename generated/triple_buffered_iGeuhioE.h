@@ -1,6 +1,7 @@
 // external/bonsai_stdlib/src/gpu_mapped_buffer.h:2:0
 
 
+
 struct triple_buffered_gpu_mapped_ui_buffer
 {
   u32 CurrentIndex;
@@ -16,11 +17,32 @@ CurrentHandles( triple_buffered_gpu_mapped_ui_buffer *Buf )
   return Result;
 }
 
-link_internal void               
+link_internal b32
+UnmapGpuBuffer(gpu_mapped_ui_buffer *GpuMap);
+
+link_internal void
+MapGpuBuffer(gpu_mapped_ui_buffer *GpuMap);
+
+link_internal void
+UnmapGpuBuffer( triple_buffered_gpu_mapped_ui_buffer *Buf )
+{
+  auto Current = CurrentHandles(Buf);
+  gpu_mapped_ui_buffer Synthetic = {*Current, Buf->Buffer};
+  UnmapGpuBuffer(&Synthetic);
+  *Current = Synthetic.Handles;
+  Buf->Buffer = Synthetic.Buffer;
+}
+
+link_internal void
 MapGpuBuffer( triple_buffered_gpu_mapped_ui_buffer *Buf )
 {
   Buf->CurrentIndex = (Buf->CurrentIndex + 1) % 3;
-  Buf->Buffer = MapGpuBuffer_gpu_mapped_ui_buffer(CurrentHandles(Buf)).Buffer;
+
+  auto Current = CurrentHandles(Buf);
+  gpu_mapped_ui_buffer Synthetic = {*Current, Buf->Buffer};
+  MapGpuBuffer(&Synthetic);
+  *Current = Synthetic.Handles;
+  Buf->Buffer = Synthetic.Buffer;
 }
 
 link_internal void
@@ -39,11 +61,4 @@ DrawBuffer( triple_buffered_gpu_mapped_ui_buffer *Buf, v2 *ScreenDim )
 }
 
 link_internal void
-AllocateGpuBuffer( triple_buffered_gpu_mapped_ui_buffer *Buf, data_type Type, u32 ElementCount )
-{
-  AllocateGpuBuffer_gpu_mapped_ui_buffer(Buf->Handles+0, Type, ElementCount);
-  AllocateGpuBuffer_gpu_mapped_ui_buffer(Buf->Handles+1, Type, ElementCount);
-  AllocateGpuBuffer_gpu_mapped_ui_buffer(Buf->Handles+2, Type, ElementCount);
-  Buf->Buffer.End = ElementCount;
-}
-
+AllocateGpuBuffer( triple_buffered_gpu_mapped_ui_buffer *Buf, data_type Type, u32 ElementCount, memory_arena *Memory);

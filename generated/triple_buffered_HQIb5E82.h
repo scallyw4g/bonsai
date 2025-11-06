@@ -1,6 +1,7 @@
 // external/bonsai_stdlib/src/gpu_mapped_buffer.h:2:0
 
 
+
 struct triple_buffered_gpu_mapped_element_buffer
 {
   u32 CurrentIndex;
@@ -16,7 +17,7 @@ CurrentHandles( triple_buffered_gpu_mapped_element_buffer *Buf )
   return Result;
 }
 
-link_internal void               
+link_internal void
 MapGpuBuffer( triple_buffered_gpu_mapped_element_buffer *Buf )
 {
   Buf->CurrentIndex = (Buf->CurrentIndex + 1) % 3;

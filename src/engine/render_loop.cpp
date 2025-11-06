@@ -219,14 +219,14 @@ DrainHiRenderQueue(engine_resources *Engine)
               DrawVoxel(&Mesh, {}, V3(0.7f), V3(1)*(Graphics->GameCamera.DistanceFromTarget/1000.f*Graphics->Settings.CameraGhostSize));
             }
 
-            Ensure( FlushBuffersToCard_gpu_mapped_element_buffer(CurrentHandles(GpuMap)) ); // Unmaps buffer
+            /* Ensure( UnmapGpuBuffer(CurrentHandles(GpuMap)) ); */
 
-            if (GpuMap->Buffer.At)
+            /* if (GpuMap->Buffer.At) */
             {
-              RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics);
+              /* RenderImmediateGeometryToGBuffer(GetApplicationResolution(&Engine->Settings), GpuMap, Graphics); */
               /* RenderImmediateGeometryToShadowMap(World, Graphics, GpuMap); */
             }
-            Clear(&GpuMap->Buffer);
+            /* Clear(&GpuMap->Buffer); */
 
             /* DrawBuffer(GpuMap, &Plat->ScreenDim); */
 
@@ -250,21 +250,18 @@ DrainHiRenderQueue(engine_resources *Engine)
 
             UiFrameEnd(&Engine->Ui);
 
+            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
             MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
             MapGpuBuffer(&Ui->TextGroup->Buf);
 
-            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+            // Map GPU buffers for next frame
+            /* MapGpuBuffer(GpuMap); */
+            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
 
+            Assert(GpuMap->Buffer.At == 0);
 
             HotReloadShaders(GetStdlib());
-
-
-            /* GpuMap = GetNextGpuMap(Graphics); */
-
-            // Map GPU buffers for next frame
-            MapGpuBuffer(GpuMap);
-            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-            Assert(GpuMap->Buffer.At == 0);
 
             UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
 
@@ -372,7 +369,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                   case GL_CONDITION_SATISFIED:
                   {
                     AtomicDecrement(&Graphics->NoiseFinalizeJobsPending);
-                    TIMED_NAMED_BLOCK(MapBuffer);
+                    TIMED_NAMED_BLOCK(DeleteBuffersAndPBO);
                     AssertNoGlErrors;
                     GetGL()->DeleteBuffers(1, &PBOJob->PBOBuf.PBO);
                     GetGL()->DeleteSync(PBOJob->PBOBuf.Fence);
@@ -900,14 +897,19 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* Assert(NoiseDim == V3(66)); */
             v3i NoiseDim = V3i(66);
 
-            s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
-            s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
+            u32 NoiseElementCount = u32(Volume(CurrentAccumulationTexture->Dim));
+            u32 NoiseByteCount = NoiseElementCount*sizeof(u32);
 
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
               u32 PBO;
               GetGL()->GenBuffers(1, &PBO);
               AssertNoGlErrors;
+
+              {
+                u32 Size = sizeof(u32)*u32(Volume(V3i(66)));
+                Assert(Size == NoiseByteCount);
+              }
 
               /* Info("(%d) Allocated PBO (%u)", ThreadLocal_ThreadIndex, PBO); */
               GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBO);
@@ -1004,7 +1006,9 @@ DrainLoRenderQueue(engine_resources *Engine)
           /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
           GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
           AssertNoGlErrors;
-          u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+          /* u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY)); */
+          u32 Size = sizeof(u32)*u32(Volume(V3i(66)));
+          u32 *NoiseValues = Cast(u32*, GetGL()->MapBufferRange(GL_PIXEL_PACK_BUFFER, 0, Size, GL_MAP_READ_BIT ));
           AssertNoGlErrors;
 
           auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));

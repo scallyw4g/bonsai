@@ -753,7 +753,7 @@ DrawFrustum(world *World, graphics *Graphics, camera *Camera)
 link_internal void
 RenderTransparencyBuffers(v2i ApplicationResolution, render_settings *Settings, transparency_render_group *Group)
 {
-  FlushBuffersToCard_gpu_mapped_element_buffer(&Group->GpuBuffer.Handles);
+  FlushBuffersToCard(&Group->GpuBuffer);
 
   if (Group->GpuBuffer.Buffer.At)
   {
@@ -883,6 +883,7 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count)
   GL->BindVertexArray(Handles->VAO);
   /* SetupVertexAttribsFor_u3d_geo_element_buffer(Handles); */
   Draw(Count);
+  GetGL()->BindVertexArray(0);
   GL->BindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -1230,7 +1231,7 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_
       untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
 
       BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
-      FlushBuffersToCard_gpu_mapped_element_buffer(&RTTGroup->GeoBuffer.Handles);
+      FlushBuffersToCard(&RTTGroup->GeoBuffer);
     }
 
     GetGL()->Enable(GL_DEPTH_TEST);
@@ -1704,7 +1705,7 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
   // @dest_chunk_can_have_mesh
   /* Assert(HasGpuMesh(DestChunk)       == False); */
 
-  FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
+  FlushBuffersToCard(&GenChunk->Mesh);
 
   auto DestHandles = DestChunk->Handles;
 
