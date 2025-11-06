@@ -1500,8 +1500,31 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 {
   world *World = Engine->World;;
 
-  IterateOver(DrawList, Node, NodeIndex)
+  sort_key_f32 *Keys = Allocate(sort_key_f32, GetTranArena(), DrawList->ElementCount);
+
   {
+    IterateOver(DrawList, Node, KeyIndex)
+    {
+      sort_key_f32 *Key = Keys + KeyIndex.Index;
+
+      Key->Index = u64(Node);
+      if (Camera)
+      {
+        Key->Value = Distance(GetSimSpaceP(Engine->World, Node->WorldP), GetSimSpaceP(Engine->World, Camera->CurrentP));
+      }
+    }
+  }
+
+  if (Camera)
+  {
+    BubbleSort_descending(Keys, DrawList->ElementCount);
+  }
+
+  RangeIterator_t(u32, KeyIndex, DrawList->ElementCount)
+  {
+    sort_key_f32 *Key = Keys + KeyIndex;
+    octree_node *Node = Cast(octree_node *, Key->Index);
+
     auto Chunk = Node->Chunk;
     Assert(Chunk);
 
