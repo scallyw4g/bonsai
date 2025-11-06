@@ -1516,11 +1516,11 @@ CheckOcclusionQuery(world_chunk *Chunk)
       {
         local_persist random_series OcclusionEntropy = {43654747355143};
         Chunk->OcclusionFrames = RandomBetween(0u, &OcclusionEntropy, 20u);
-        Info("Occluded");
+        /* Info("Occluded"); */
       }
       else
       {
-        Info("Visible");
+        /* Info("Visible"); */
       }
     }
   }
