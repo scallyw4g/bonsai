@@ -295,9 +295,11 @@ void main()
             // ShapeType_Sphere
             case 1:
             {
+              f32 Rad = Radius;
+              if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
               v3 p  = (EditRelxyz - EditRelativeSphereCenter);
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample  = w.w+iq_sdSphere(w.xyz, Radius);
+              f32 IQSample  = w.w+iq_sdSphere(w.xyz, Rad);
               InitialSample = -IQSample;
             } break;
 
@@ -318,9 +320,6 @@ void main()
             {
               v3 p = (EditRelxyz - EditRad);
               v3 c = Axis;
-
-              f32 r = 4.f;
-              f32 h = 102.f;
 
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
