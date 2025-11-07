@@ -10,6 +10,7 @@ struct texture_block
   texture Elements[8];
 };
 
+
 struct texture_block_array_index
 {
   umm Index; 

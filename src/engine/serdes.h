@@ -151,7 +151,7 @@ poof(
     }
 
     link_internal b32
-    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count = 1)
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count)
     {
       Assert(Count > 0);
 
@@ -212,7 +212,32 @@ poof(
                       Result &= Serialize(Bytes, &Element->(member.name)); // default
                     }
                     {
-                      /// NOTE(Jesse): This path is here because of a bug in poof, issue #19
+                      member.is_union?
+                      {
+                        member.has_tag(type_tag)?
+                        {
+                          switch ( Element->Type )
+                          {
+                            @var enum_t member.tag_value(type_tag)
+                            enum_t.map_values(tag_v)
+                            {
+                              tag_v.has_tag(no_serialize)?
+                              {
+                                case tag_v.name: {} break;
+                              }
+                              {
+                                case tag_v.name:
+                                {
+                                  Result &= Serialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case);
+                                } break;
+                              }
+                            }
+                          }
+                        }
+                        {
+                          @poof_error { anonymous union members must have a @type_tag that specifies an enum type }
+                        }
+                      }
                     }
                   }
                 }
@@ -245,6 +270,13 @@ poof(
 
       return Result;
     }
+
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement)
+    {
+      return Serialize(Bytes, BaseElement, 1);
+    }
+
   }
 )
 
@@ -327,9 +359,45 @@ poof(
                   }
                 }
                 {
-                  // NOTE(Jesse): Unfortunately we can't check for primitives because
-                  // strings are considered primitive, but need memory to deserialize
-                  Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                  member.is_union?
+                  {
+                    member.name?
+                    {
+                      /// NOTE(Jesse): Unfortunately we can't check for primitives because
+                      /// strings are considered primitive, but need memory to deserialize
+                      Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                    }
+                    {
+                      member.has_tag(type_tag)?
+                      {
+                        switch ( Element->Type )
+                        {
+                          @var enum_t member.tag_value(type_tag)
+                          enum_t.map_values(tag_v)
+                          {
+                            tag_v.has_tag(no_serialize)?
+                            {
+                              case tag_v.name: { SoftError("Deserialized tag value (tag_v.name), which was marked @no_serialize!"); } break;
+                            }
+                            {
+                              case tag_v.name:
+                              {
+                                Result &= Deserialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case, Memory);
+                              } break;
+                            }
+                          }
+                        }
+                      }
+                      {
+                        @poof_error { anonymous union members must have a @type_tag that specifies an enum (member)(type) }
+                      }
+                    }
+                  }
+                  {
+                    /// NOTE(Jesse): Unfortunately we can't check for primitives because
+                    /// strings are considered primitive, but need memory to deserialize
+                    Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                  }
                 }
               }
             }
@@ -577,3 +645,24 @@ poof(serdes_primitive({u8 s8 u16 s16 u32 s32 u64 s64 b8 r32 r64}))
 struct world_chunk;
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count);
+
+poof(
+  for_datatypes(struct)
+    func (type)
+    {
+      type.has_tag(serdes)?
+      {
+        struct type;
+
+        link_internal b32
+        Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement);
+
+        link_internal b32
+        Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count);
+
+        link_internal b32
+        Deserialize(u8_cursor *Bytes, type.name *Element, memory_arena *Memory, umm Count);
+      }
+    }
+)
+#include <generated/(builtin.for_datatypes)_rnQjkoAj.h>

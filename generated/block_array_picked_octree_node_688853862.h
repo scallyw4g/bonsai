@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct picked_octree_node_block
   umm At;
   picked_octree_node Elements[8];
 };
+
 
 struct picked_octree_node_block_array_index
 {

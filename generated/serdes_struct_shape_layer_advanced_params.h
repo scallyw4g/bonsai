@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(shape_layer_advanced_params *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(shape_layer_advanced_params *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -80,6 +80,13 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, shape_layer_advanced_params *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -92,33 +99,40 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->Rounding, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Stretch, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Repeat, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Axis, Memory);
+
+
 
 
 

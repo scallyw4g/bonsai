@@ -10,6 +10,7 @@ struct asset_thumbnail_block
   asset_thumbnail Elements[8];
 };
 
+
 struct asset_thumbnail_block_array_index
 {
   umm Index; 

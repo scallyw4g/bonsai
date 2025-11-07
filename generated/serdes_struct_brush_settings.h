@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(brush_settings *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -95,21 +95,14 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
 
 
-                            Result &= Serialize(Bytes, &Element->Iterations); // default
+                            Result &= Serialize(Bytes, &Element->SelectionModifier); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Offset); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->NoiseBasisOffset); // default
+                            Result &= Serialize(Bytes, &Element->BasisOffset); // default
 
 
 
@@ -151,8 +144,6 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
         
 
-        
-
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -160,6 +151,13 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count =
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm Count = 1);
@@ -179,41 +177,46 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->Noise, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Shape, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Power, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Threshold, Memory);
+
 
 
 
@@ -234,40 +237,36 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->Invert, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Iterations, Memory);
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->SelectionModifier, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Offset, Memory);
+
+                
+  
+  Result &= Deserialize(Bytes, &Element->BasisOffset, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->NoiseBasisOffset, Memory);
 
 
-
-
-
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
 
@@ -276,8 +275,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
+
+
     
-  
   
   
   

@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct file_traversal_node_block
   umm At;
   file_traversal_node Elements[8];
 };
+
 
 struct file_traversal_node_block_array_index
 {

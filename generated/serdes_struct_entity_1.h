@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(entity_1 *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(entity_1 *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -166,6 +166,13 @@ Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement, umm Count = 1)
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity_1 *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, entity_1 *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -178,65 +185,75 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->Id, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->P, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Scale, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
+
 
 
 
@@ -259,17 +276,19 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_1 *Element, memory_arena *Mem
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->Carrying, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->UserType, Memory);
+
 
 
 

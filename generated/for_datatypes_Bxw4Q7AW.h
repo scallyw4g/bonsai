@@ -1,4 +1,4 @@
-// src/engine/editor.cpp:488:0
+// src/engine/editor.cpp:512:0
 
 
 
@@ -1429,6 +1429,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 }
 ;
+
 
 
 
@@ -5127,6 +5128,120 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
 
 
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, simple_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x187219A3);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle simple_brush", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Name");
+                
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Outline");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(brush_settings*, &Element->Outline),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("Texture");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(layered_brush*, Element->Texture),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
+;
+
+
+
 
 
 
@@ -8596,6 +8711,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -10461,6 +10577,58 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
         
         
         
+        cs MemberName = CSz("SimpleBrushes");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(simple_brush_block_array*, &Element->SimpleBrushes),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("SelectedSimpleBrushIndex");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(simple_brush_block_array_index*, &Element->SelectedSimpleBrushIndex),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
         cs MemberName = CSz("LoadedBrushes");
                                                                 DoEditorUi(Ui,
           Window,
@@ -10649,7 +10817,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
 
 
       }
-      
+       if (HasThresholdModifier(Element)) 
 
       { 
         
@@ -10663,7 +10831,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           MemberName,
           ThisHash,
           Params
-          );
+          ,  0.f, 25.f );
 
 
 
@@ -10841,8 +11009,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
-        cs MemberName = CSz("Iterations");
-                
+        cs MemberName = CSz("SelectionModifier");
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(rect3i*, &Element->SelectionModifier),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
 
       }
       
@@ -10851,17 +11035,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         
         
         
-        cs MemberName = CSz("Offset");
-                
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("NoiseBasisOffset");
+        cs MemberName = CSz("BasisOffset");
                 
 
       }
@@ -14819,7 +14993,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_update_op_shape_params_sphere*, &Element->Line),
+          Cast(world_update_op_shape_params_line*, &Element->Line),
           MemberName,
           ThisHash,
           Params
@@ -16788,6 +16962,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -16873,6 +17048,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 }
 ;
+
 
 
 

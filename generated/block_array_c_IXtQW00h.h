@@ -4,19 +4,19 @@
 
 
 link_internal cs
-CS( texture_block_array_index Index )
+CS( simple_brush_block_array_index Index )
 {
   return FSz("(%u)", Index.Index);
 }
 
-link_internal texture *
-Set( texture_block_array *Arr,
-  texture *Element,
-  texture_block_array_index Index )
+link_internal simple_brush *
+Set( simple_brush_block_array *Arr,
+  simple_brush *Element,
+  simple_brush_block_array_index Index )
 {
   Assert(Arr->BlockPtrs);
   Assert(Index.Index < Capacity(Arr).Index);
-  texture_block *Block = GetBlock(Arr, Index);
+  simple_brush_block *Block = GetBlock(Arr, Index);
   umm ElementIndex = Index.Index % 8;
   auto Slot = Block->Elements+ElementIndex;
   *Slot = *Element;
@@ -24,10 +24,10 @@ Set( texture_block_array *Arr,
 }
 
 link_internal void
-NewBlock( texture_block_array *Arr )
+NewBlock( simple_brush_block_array *Arr )
 {
-  texture_block  *NewBlock     = Allocate( texture_block , Arr->Memory,                 1);
-  texture_block **NewBlockPtrs = Allocate( texture_block*, Arr->Memory, Arr->BlockCount+1);
+  simple_brush_block  *NewBlock     = Allocate( simple_brush_block , Arr->Memory,                 1);
+  simple_brush_block **NewBlockPtrs = Allocate( simple_brush_block*, Arr->Memory, Arr->BlockCount+1);
 
   RangeIterator_t(u32, BlockI, Arr->BlockCount)
   {
@@ -43,7 +43,7 @@ NewBlock( texture_block_array *Arr )
 }
 
 link_internal void
-RemoveUnordered( texture_block_array *Array, texture_block_array_index Index)
+RemoveUnordered( simple_brush_block_array *Array, simple_brush_block_array_index Index)
 {
   auto LastI = LastIndex(Array);
   Assert(Index.Index <= LastI.Index);
@@ -54,16 +54,16 @@ RemoveUnordered( texture_block_array *Array, texture_block_array_index Index)
 }
 
 link_internal void
-RemoveOrdered( texture_block_array *Array, texture_block_array_index IndexToRemove)
+RemoveOrdered( simple_brush_block_array *Array, simple_brush_block_array_index IndexToRemove)
 {
   Assert(IndexToRemove.Index < Array->ElementCount);
 
-  texture *Prev = {};
+  simple_brush *Prev = {};
 
-  texture_block_array_index Max = AtElements(Array);
+  simple_brush_block_array_index Max = AtElements(Array);
   RangeIteratorRange_t(umm, Index, Max.Index, IndexToRemove.Index)
   {
-    texture *E = GetPtr(Array, Index);
+    simple_brush *E = GetPtr(Array, Index);
 
     if (Prev)
     {
@@ -77,7 +77,7 @@ RemoveOrdered( texture_block_array *Array, texture_block_array_index IndexToRemo
 }
 
 link_internal void
-RemoveOrdered( texture_block_array *Array, texture *Element )
+RemoveOrdered( simple_brush_block_array *Array, simple_brush *Element )
 {
   IterateOver(Array, E, I)
   {
@@ -89,10 +89,10 @@ RemoveOrdered( texture_block_array *Array, texture *Element )
   }
 }
 
-link_internal texture_block_array_index
-Find( texture_block_array *Array, texture *Query)
+link_internal simple_brush_block_array_index
+Find( simple_brush_block_array *Array, simple_brush *Query)
 {
-  texture_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  simple_brush_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
   IterateOver(Array, E, Index)
   {
     if ( E == Query )
@@ -107,15 +107,15 @@ Find( texture_block_array *Array, texture *Query)
 
 
 link_internal b32
-IsValid(texture_block_array_index *Index)
+IsValid(simple_brush_block_array_index *Index)
 {
-  texture_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
+  simple_brush_block_array_index Test = {INVALID_BLOCK_ARRAY_INDEX};
   b32 Result = (AreEqual(Index, &Test) == False);
   return Result;
 }
 
-link_internal texture *
-Push( texture_block_array *Array, texture *Element)
+link_internal simple_brush *
+Push( simple_brush_block_array *Array, simple_brush *Element)
 {
   Assert(Array->Memory);
 
@@ -124,29 +124,29 @@ Push( texture_block_array *Array, texture *Element)
     NewBlock(Array);
   }
 
-  texture *Result = Set(Array, Element, AtElements(Array));
+  simple_brush *Result = Set(Array, Element, AtElements(Array));
 
   Array->ElementCount += 1;
 
   return Result;
 }
 
-link_internal texture *
-Push( texture_block_array *Array )
+link_internal simple_brush *
+Push( simple_brush_block_array *Array )
 {
-  texture Element = {};
+  simple_brush Element = {};
   auto Result = Push(Array, &Element);
   return Result;
 }
 
 link_internal void
-Insert( texture_block_array *Array, texture_block_array_index Index, texture *Element )
+Insert( simple_brush_block_array *Array, simple_brush_block_array_index Index, simple_brush *Element )
 {
   Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
 
   // Alocate a new thingy
-  texture *Prev = Push(Array);
+  simple_brush *Prev = Push(Array);
 
   auto Last = LastIndex(Array);
 
@@ -161,13 +161,13 @@ Insert( texture_block_array *Array, texture_block_array_index Index, texture *El
 }
 
 link_internal void
-Insert( texture_block_array *Array, u32 Index, texture *Element )
+Insert( simple_brush_block_array *Array, u32 Index, simple_brush *Element )
 {
   Insert(Array, { .Index = Index }, Element);
 }
 
 link_internal void
-Shift( texture_block_array *Array, texture *Element )
+Shift( simple_brush_block_array *Array, simple_brush *Element )
 {
   Insert(Array, { .Index = 0 }, Element);
 }

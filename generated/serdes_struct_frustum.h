@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(frustum *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(frustum *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -107,6 +107,13 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count = 1)
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, frustum *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -119,57 +126,64 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->farClip, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->nearClip, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->FOV, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Top, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Bottom, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Left, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Right, Memory);
+
 
 
 

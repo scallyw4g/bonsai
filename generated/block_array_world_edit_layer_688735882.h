@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct world_edit_layer_block
   umm At;
   world_edit_layer Elements[8];
 };
+
 
 struct world_edit_layer_block_array_index
 {

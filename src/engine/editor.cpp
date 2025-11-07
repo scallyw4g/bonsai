@@ -1,4 +1,7 @@
 
+poof(block_array_c(simple_brush, {8}))
+#include <generated/block_array_c_IXtQW00h.h>
+
 link_internal void
 LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
 {
@@ -102,6 +105,27 @@ InitEditor(level_editor *Editor)
       LoadBrushFromFile(Editor, Node, GetTranArena());
     }
   }
+
+
+  simple_brush Brushes[] = {
+    {
+      {CSz("Sphere")},
+      {
+        BrushSettings(  BrushLayerType_Shape, {},
+                        ShapeLayer(  ShapeType_Sphere, {}, {}, {}, {}, {}, {}, {}),
+                        {}, {}, {}, {}, {}, {}, {}, {}, {}, {} ),
+      },
+      0,
+    }
+  };
+
+  Editor->SimpleBrushes.Memory = Editor->Memory;
+
+  RangeIterator_t(umm, BrushIndex, ArrayCount(Brushes))
+  {
+    Push(&Editor->SimpleBrushes, Brushes+BrushIndex);
+  }
+
 
   Editor->Edits.Memory = Editor->Memory;
   Editor->SelectedEditIndices.Memory = Editor->Memory;
@@ -1884,6 +1908,8 @@ DoWorldEditor(engine_resources *Engine)
     Editor->Selection.ModMode = SelectionModificationMode_Initialize;
   }
 
+  { //
+  }
 
   { // All Brushes Window
     local_persist window_layout AllBrushesWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
@@ -1950,6 +1976,31 @@ DoWorldEditor(engine_resources *Engine)
         }
       }
     }
+  }
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Simple Brushes");
+    PushWindowStart(Ui, Window);
+
+
+    IterateOver(&Editor->SimpleBrushes, Brush, Index)
+    {
+      ui_style *Style = &DefaultStyle;
+      if (Editor->SelectedSimpleBrushIndex == Index)
+      {
+        Style = &DefaultSelectedStyle;
+      }
+
+      ui_id Id = UiId(Window, "simple brush select", Cast(void*, Brush));
+      if (Button(Ui, Brush->Name, Id, Style))
+      {
+        Editor->SelectedSimpleBrushIndex = Index;
+      }
+    }
+
+
+
+    PushWindowEnd(Ui, Window);
   }
 
   {

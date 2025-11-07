@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(voxel *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(voxel *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -44,6 +44,13 @@ Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement, umm Count = 1)
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, voxel *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, voxel *Element, memory_arena *Memory, umm Count = 1);

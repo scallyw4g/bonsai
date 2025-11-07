@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct octree_node_ptr_block
   umm At;
   octree_node_ptr Elements[8];
 };
+
 
 struct octree_node_ptr_block_array_index
 {

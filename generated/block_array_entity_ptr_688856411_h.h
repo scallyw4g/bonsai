@@ -10,6 +10,7 @@ struct entity_ptr_block
   entity_ptr Elements[8];
 };
 
+
 struct entity_ptr_block_array_index
 {
   umm Index; 

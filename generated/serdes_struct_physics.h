@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(physics *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(physics *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -89,6 +89,13 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count = 1)
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, physics *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, physics *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -101,41 +108,49 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                  
+  
   Result &= Deserialize(Bytes, &Element->Velocity, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Force, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Delta, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Mass, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
+
 
 
 

@@ -19,7 +19,7 @@ TypeInfo(entity *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -167,4 +167,11 @@ Serialize(u8_cursor_block_array *Bytes, entity *BaseElement, umm Count = 1)
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, entity *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 

@@ -104,16 +104,34 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
         
         
         
-        cs MemberName = CSz("Layered");
+        cs MemberName = CSz("Type");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(layered_brush*, &Element->Layered),
+          Cast(world_edit_brush_type*, &Element->Type),
           MemberName,
           ThisHash,
           Params
           );
 
+
+
+
+
+
+
+        
+
+
+      }
+      
+
+      { 
+        
+        
+        
+        cs MemberName = CSz("(anonymous)");
+                                                                
 
 
 

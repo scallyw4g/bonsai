@@ -1,6 +1,6 @@
 #define INVALID_COLOR_INDEX (0xffff)
 
-#define DEFAULT_HSV_COLOR (V3(0.5f, 0.5f, 1.f))
+#define DEFAULT_HSV_COLOR (V3(1.f))
 #define DEFAULT_RGB_COLOR (HSVtoRGB(DEFAULT_HSV_COLOR))
 
 #if 1

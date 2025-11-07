@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct gpu_readback_buffer_block
   umm At;
   gpu_readback_buffer Elements[8];
 };
+
 
 struct gpu_readback_buffer_block_array_index
 {

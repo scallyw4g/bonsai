@@ -839,11 +839,9 @@ enum world_edit_tool
 
 enum world_edit_brush_type
 {
-  WorldEdit_BrushType_Disabled,   // poof(@ui_skip)
-  WorldEdit_BrushType_Single,
-  WorldEdit_BrushType_Asset,
-  WorldEdit_BrushType_Entity,
-  WorldEdit_BrushType_Layered,
+  WorldEditBrushType_Disabled poof(@no_serialize), // poof(@ui_skip)
+  WorldEditBrushType_Layered,
+  WorldEditBrushType_Simple,
 };
 
 enum world_edit_blend_mode
@@ -852,7 +850,7 @@ enum world_edit_blend_mode
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
   WorldEdit_Mode_Multiply,
   WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue
-  WorldEdit_Mode_Disabled,    // Useful for turning the layer off
+  WorldEdit_Mode_Disabled,     // Useful for turning the layer off
 };
 
 enum world_edit_color_blend_mode
@@ -1133,7 +1131,7 @@ poof(@do_editor_ui)
   // them and your parameter selections stay intact.
   world_update_op_shape_params_rect     Rect;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Rect))
   world_update_op_shape_params_sphere   Sphere;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Sphere))
-  world_update_op_shape_params_sphere   Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
+  world_update_op_shape_params_line     Line;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Line))
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
   world_update_op_shape_params_plane    Plane;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Plane))
   world_update_op_shape_params_torus    Torus;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Torus))
@@ -1144,6 +1142,9 @@ poof(@do_editor_ui)
   // NOTE(Jesse): Just in another struct for the UI
   shape_layer_advanced_params Advanced;
 };
+
+poof(gen_constructor(shape_layer))
+#include <generated/gen_constructor_SMWhmUr7.h>
 
 // NOTE(Jesse): This is intentionally not a d_union such that you can flip
 // between different noise selections and your parameters stay intact.
@@ -1204,9 +1205,9 @@ poof(@do_editor_ui)
   // Common across brush types
   //
 
-  f32 Power     = 10.f; // poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element)))
-  r32 ValueBias =  0.f; poof(@ui_value_range(-1.f,  1.f))
-  f32 Threshold =  0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
+  f32 Power     = 1.f; poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element)))
+  r32 ValueBias = 0.f; poof(@ui_value_range(-1.f,  1.f))
+  f32 Threshold = 0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
 
   world_edit_blend_mode_modifier ValueModifier;
   world_edit_blend_mode          BlendMode;
@@ -1214,20 +1215,12 @@ poof(@do_editor_ui)
 
   b8 Invert;
 
-
-
-
-
-
-  s32 Iterations = 1; poof(@ui_skip)
-
-  // NOTE(Jesse): This is the relative offset from the base selection.
-  // Used to inflate or contract the area affected by the brush.
+  // NOTE(Jesse): This is the relative offset from the base selection, which is
+  // used to inflate or contract the area affected by the brush.
   //
-  // TODO(Jesse): Rename to dilation
-  rect3i Offset; poof(@ui_skip)
+  rect3i SelectionModifier;
 
-  v3i NoiseBasisOffset; poof(@ui_skip)
+  v3i BasisOffset; poof(@ui_skip)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
@@ -1235,6 +1228,9 @@ poof(@do_editor_ui)
 
 poof(are_equal(brush_settings))
 #include <generated/are_equal_struct.h>
+
+poof(gen_constructor(brush_settings))
+#include <generated/gen_constructor_lJ6fXxTn.h>
 
 struct brush_layer
 poof(@do_editor_ui)
@@ -1249,26 +1245,38 @@ poof(@do_editor_ui)
 #define MAX_BRUSH_LAYERS 16
 #define BRUSH_PREVIEW_TEXTURE_DIM 256
 struct layered_brush
+poof(@serdes)
 {
-  // NOTE(Jesse): The layer previews have to be seperate from the brush_layer
-  // because the deserialization code isn't smart enough to not stomp on the
-  // texture handles when it marshals old types to the current one.
-              s32 LayerCount;
-      brush_layer Layers       [MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
-
-  /* chunk_thumbnail LayerPreviews[MAX_BRUSH_LAYERS]; poof(@array_length(LayerCount) @no_serialize) */
-  /* chunk_thumbnail SeedLayer; poof(@no_serialize) // NOTE(Jesse): Special layer that acts as the seed value */
-
-  b8 AffectExisting = True;
-  /* b8 BrushFollowsCursor; */
-
-  // NOTE(Jesse): These are the global settings for the brush when it gets applied to the world.
-  /* world_edit_blend_mode          Mode; */
-  /* world_edit_blend_mode_modifier Modifier; */
-
-  // NOTE(Jesse): This is actually just using the chunk .. should probably change it
-  /* chunk_thumbnail Preview; poof(@no_serialize) */
+          s32 LayerCount;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
+           b8 AffectExisting = True;
 };
+
+
+struct simple_brush
+poof(@do_editor_ui @serdes)
+{
+              cs  Name; poof(@ui_skip)
+  brush_settings  Outline;
+   layered_brush *Texture;
+};
+
+link_internal b32
+AreEqual(simple_brush *Thing1, simple_brush *Thing2)
+{
+  NotImplemented; return False;
+}
+
+link_internal b32
+AreEqual(simple_brush Thing1, simple_brush Thing2)
+{
+  NotImplemented; return False;
+}
+
+
+poof(block_array_h(simple_brush, {8}, {}))
+#include <generated/block_array_h_dvMGY5g0.h>
+
 
 
 
@@ -1304,13 +1312,14 @@ struct world_edit_brush
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
 
-  /* world_edit_brush_type Type; */
-  /* union */
-  /* { */
+  world_edit_brush_type Type;
+  union
+  {
   /*   single_brush  Single; */
   /*   asset_brush   Asset; */
+    simple_brush  Simple;
     layered_brush Layered;
-  /* }; */
+  }; poof(@type_tag(world_edit_brush_type))
 };
 
 link_internal umm
@@ -1417,6 +1426,9 @@ poof(@do_editor_ui)
 
   world_edit                   *HotEdit;      // Hovered
   world_edit_block_array_index  HotEditIndex;
+
+  simple_brush_block_array SimpleBrushes;
+  simple_brush_block_array_index SelectedSimpleBrushIndex = {INVALID_BLOCK_ARRAY_INDEX};
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
   // up, we just keep pointers into it.  Change to a paged-array and store the

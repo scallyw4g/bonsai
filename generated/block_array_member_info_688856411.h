@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct member_info_block
   umm At;
   member_info Elements[8];
 };
+
 
 struct member_info_block_array_index
 {

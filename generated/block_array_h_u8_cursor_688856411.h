@@ -10,6 +10,7 @@ struct u8_cursor_block
   u8_cursor Elements[8];
 };
 
+
 struct u8_cursor_block_array_index
 {
   umm Index; 

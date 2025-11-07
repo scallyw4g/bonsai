@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(particle_system *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(particle_system *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -248,6 +248,13 @@ Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement, umm Count 
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, particle_system *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -282,9 +289,10 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->Entropy, Memory);
+
 
 
 
@@ -295,153 +303,175 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system *Element, memory_are
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->Drag, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
+
 
 
 

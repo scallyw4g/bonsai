@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(white_noise_params *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(white_noise_params *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -42,6 +42,13 @@ Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement, umm Cou
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, white_noise_params *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory, umm Count = 1);

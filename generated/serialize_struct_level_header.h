@@ -19,7 +19,7 @@ TypeInfo(level_header *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -136,4 +136,11 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count = 1
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 

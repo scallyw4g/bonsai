@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(world_edit_brush *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(world_edit_brush *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -53,7 +53,30 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
 
-                            Result &= Serialize(Bytes, &Element->Layered); // default
+                    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
+
+
+
+
+                                    switch ( Element->Type )
+    {
+      
+                  case WorldEditBrushType_Disabled: {} break;
+
+            case WorldEditBrushType_Layered:
+      {
+        Result &= Serialize(Bytes, &Element->Layered);
+      } break;
+
+            case WorldEditBrushType_Simple:
+      {
+        Result &= Serialize(Bytes, &Element->Simple);
+      } break;
+
+
+    }
+
+
 
 
 
@@ -70,6 +93,8 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
         
 
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -77,6 +102,13 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
   return Result;
 }
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory, umm Count = 1);
@@ -111,9 +143,31 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
-  Result &= Deserialize(Bytes, &Element->Layered, Memory);
+          Element->Type = Cast(world_edit_brush_type, Read_u32(Bytes));
+
+
+
+
+                  switch ( Element->Type )
+  {
+    
+            case WorldEditBrushType_Disabled: { SoftError("Deserialized tag value WorldEditBrushType_Disabled, which was marked @no_serialize!"); } break;
+
+        case WorldEditBrushType_Layered:
+    {
+      Result &= Deserialize(Bytes, &Element->Layered, Memory);
+    } break;
+
+        case WorldEditBrushType_Simple:
+    {
+      Result &= Deserialize(Bytes, &Element->Simple, Memory);
+    } break;
+
+
+  }
+
+
+
 
 
 
@@ -122,6 +176,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
     
+  
   
   
   

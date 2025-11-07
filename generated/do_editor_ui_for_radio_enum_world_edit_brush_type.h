@@ -17,11 +17,9 @@ RadioButtonGroup_world_edit_brush_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Disabled"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEdit_BrushType_Disabled")), WorldEdit_BrushType_Disabled },
-    { CSz("Single"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEdit_BrushType_Single")), WorldEdit_BrushType_Single },
-    { CSz("Asset"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEdit_BrushType_Asset")), WorldEdit_BrushType_Asset },
-    { CSz("Entity"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEdit_BrushType_Entity")), WorldEdit_BrushType_Entity },
-    { CSz("Layered"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEdit_BrushType_Layered")), WorldEdit_BrushType_Layered },
+        { CSz("Disabled"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Disabled")), WorldEditBrushType_Disabled },
+    { CSz("Layered"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Layered")), WorldEditBrushType_Layered },
+    { CSz("Simple"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Simple")), WorldEditBrushType_Simple },
 
   };
 

@@ -453,7 +453,7 @@ while (( "$#" )); do
     "BundleRelease")
       BundleRelease=1
       OPTIMIZATION_LEVEL="-O2"
-      BONSAI_INTERNAL="-D BONSAI_INTERNAL=1 -D BONSAI_SOFT_ASSERT=1"
+      BONSAI_INTERNAL="-D BONSAI_INTERNAL=1"
     ;;
 
     "-Od")

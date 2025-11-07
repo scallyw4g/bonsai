@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_plane *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(world_update_op_shape_params_plane *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -60,6 +60,13 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *Base
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, world_update_op_shape_params_plane *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -77,9 +84,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->Thickness, Memory);
+
 
 
 

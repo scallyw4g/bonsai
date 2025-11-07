@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct dummy_work_queue_entry_build_chunk_mesh_block
   umm At;
   dummy_work_queue_entry_build_chunk_mesh Elements[8];
 };
+
 
 struct dummy_work_queue_entry_build_chunk_mesh_block_array_index
 {

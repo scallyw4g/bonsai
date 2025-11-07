@@ -447,6 +447,9 @@ poof(serdes_struct(shape_layer))
 poof(serdes_struct(brush_settings))
 #include <generated/serdes_struct_brush_settings.h>
 
+poof(serdes_struct(simple_brush))
+#include <generated/serdes_struct_SmTUPkbF.h>
+
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 

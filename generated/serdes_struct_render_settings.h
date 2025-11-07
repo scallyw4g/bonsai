@@ -1,4 +1,4 @@
-// src/engine/serdes.h:495:0
+// src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
 {
@@ -19,7 +19,7 @@ TypeInfo(render_settings *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count = 1)
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -231,6 +231,13 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count 
 }
 
 link_internal b32
+Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
 Deserialize(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory, umm Count = 1);
 
 link_internal b32
@@ -243,97 +250,110 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+                
+  
   Result &= Deserialize(Bytes, &Element->UseSsao, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->UseShadowMapping, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->UseLightingBloom, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->MajorGridDim, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->CameraGhostSize, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->Ignored, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Headless, Memory);
+
 
 
 
@@ -344,65 +364,79 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+              
+  
   Result &= Deserialize(Bytes, &Element->GameCameraFOV, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Lighting, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+                
+  
   Result &= Deserialize(Bytes, &Element->ApplicationResolution, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->iApplicationResolution, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
 
 
 
 
 
-            // NOTE(Jesse): Unfortunately we can't check for primitives because
-  // strings are considered primitive, but need memory to deserialize
+
+
+                
+  
   Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
+
+
 
 
 

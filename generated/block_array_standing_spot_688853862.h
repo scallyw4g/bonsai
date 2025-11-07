@@ -1,4 +1,4 @@
-// external/bonsai_stdlib/src/poof_functions.h:2600:0
+// external/bonsai_stdlib/src/poof_functions.h:2601:0
 
 
 
@@ -9,6 +9,7 @@ struct standing_spot_block
   umm At;
   standing_spot Elements[8];
 };
+
 
 struct standing_spot_block_array_index
 {

@@ -10,6 +10,7 @@ struct shader_ptr_block
   shader_ptr Elements[64];
 };
 
+
 struct shader_ptr_block_array_index
 {
   umm Index; 
