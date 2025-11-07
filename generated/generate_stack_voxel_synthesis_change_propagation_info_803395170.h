@@ -1,3 +1,7 @@
+// callsite
+// src/engine/voxel_synthesis.h:315:0
+
+// def (generate_stack)
 // external/bonsai_stdlib/src/poof_functions.h:1444:0
 struct voxel_synthesis_change_propagation_info_stack
 {

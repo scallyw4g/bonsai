@@ -1,4 +1,8 @@
-// src/engine/editor.cpp:376:0
+// callsite
+// src/engine/editor.cpp:378:0
+
+// def ((builtin.for_datatypes))
+// src/engine/editor.cpp:378:0
 
 
 
@@ -113,19 +117,24 @@ IsValid(ui_brush_layer_actions Value)
 link_internal counted_string
 ToStringPrefixless(ui_brush_layer_actions Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case UiBrushLayerAction_NoAction: { Result = CSz("NoAction"); } break;
-    case UiBrushLayerAction_MoveUp: { Result = CSz("MoveUp"); } break;
-    case UiBrushLayerAction_MoveDown: { Result = CSz("MoveDown"); } break;
-    case UiBrushLayerAction_Duplicate: { Result = CSz("Duplicate"); } break;
-    case UiBrushLayerAction_Delete: { Result = CSz("Delete"); } break;
+    switch (Type)
+    {
+            case UiBrushLayerAction_NoAction: { Result = CSz("NoAction"); } break;
+      case UiBrushLayerAction_MoveUp: { Result = CSz("MoveUp"); } break;
+      case UiBrushLayerAction_MoveDown: { Result = CSz("MoveDown"); } break;
+      case UiBrushLayerAction_Duplicate: { Result = CSz("Duplicate"); } break;
+      case UiBrushLayerAction_Delete: { Result = CSz("Delete"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
@@ -320,17 +329,22 @@ IsValid(selection_modification_mode Value)
 link_internal counted_string
 ToStringPrefixless(selection_modification_mode Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case SelectionModificationMode_None: { Result = CSz("None"); } break;
-    case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
-    case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
+    switch (Type)
+    {
+            case SelectionModificationMode_None: { Result = CSz("None"); } break;
+      case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
+      case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
@@ -468,18 +482,23 @@ IsValid(ui_layer_edit_actions Value)
 link_internal counted_string
 ToStringPrefixless(ui_layer_edit_actions Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case UiLayerEditAction_NoAction: { Result = CSz("NoAction"); } break;
-    case UiLayerEditAction_SetBrush: { Result = CSz("SetBrush"); } break;
-    case UiLayerEditAction_Duplicate: { Result = CSz("Duplicate"); } break;
-    case UiLayerEditAction_Delete: { Result = CSz("Delete"); } break;
+    switch (Type)
+    {
+            case UiLayerEditAction_NoAction: { Result = CSz("NoAction"); } break;
+      case UiLayerEditAction_SetBrush: { Result = CSz("SetBrush"); } break;
+      case UiLayerEditAction_Duplicate: { Result = CSz("Duplicate"); } break;
+      case UiLayerEditAction_Delete: { Result = CSz("Delete"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
@@ -652,17 +671,22 @@ IsValid(ui_reorder_action Value)
 link_internal counted_string
 ToStringPrefixless(ui_reorder_action Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case UiReorderAction_NoAction: { Result = CSz("NoAction"); } break;
-    case UiReorderAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
-    case UiReorderAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
+    switch (Type)
+    {
+            case UiReorderAction_NoAction: { Result = CSz("NoAction"); } break;
+      case UiReorderAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
+      case UiReorderAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
@@ -861,18 +885,23 @@ IsValid(ui_brush_actions Value)
 link_internal counted_string
 ToStringPrefixless(ui_brush_actions Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case UiBrushAction_NoAction: { Result = CSz("NoAction"); } break;
-    case UiBrushAction_New: { Result = CSz("New"); } break;
-    case UiBrushAction_Save: { Result = CSz("Save"); } break;
-    case UiBrushAction_Duplicate: { Result = CSz("Duplicate"); } break;
+    switch (Type)
+    {
+            case UiBrushAction_NoAction: { Result = CSz("NoAction"); } break;
+      case UiBrushAction_New: { Result = CSz("New"); } break;
+      case UiBrushAction_Save: { Result = CSz("Save"); } break;
+      case UiBrushAction_Duplicate: { Result = CSz("Duplicate"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;
@@ -1101,18 +1130,23 @@ IsValid(ui_layer_toolbar_actions Value)
 link_internal counted_string
 ToStringPrefixless(ui_layer_toolbar_actions Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case LayerToolbarActions_NoAction: { Result = CSz("NoAction"); } break;
-    case LayerToolbarActions_Rename: { Result = CSz("Rename"); } break;
-    case LayerToolbarActions_Duplicate: { Result = CSz("Duplicate"); } break;
-    case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
+    switch (Type)
+    {
+            case LayerToolbarActions_NoAction: { Result = CSz("NoAction"); } break;
+      case LayerToolbarActions_Rename: { Result = CSz("Rename"); } break;
+      case LayerToolbarActions_Duplicate: { Result = CSz("Duplicate"); } break;
+      case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

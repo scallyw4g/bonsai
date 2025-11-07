@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/work_queue.h:237:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(work_queue_entry_type Value)
 {
@@ -30,26 +34,31 @@ IsValid(work_queue_entry_type Value)
 link_internal counted_string
 ToStringPrefixless(work_queue_entry_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case type_work_queue_entry_noop: { Result = CSz("noop"); } break;
-    case type_work_queue_entry_init_world_chunk: { Result = CSz("chunk"); } break;
-    case type_work_queue_entry_finalize_noise_values: { Result = CSz("values"); } break;
-    case type_work_queue_entry_build_chunk_mesh: { Result = CSz("mesh"); } break;
-    case type_work_queue_entry_copy_buffer_set: { Result = CSz("set"); } break;
-    case type_work_queue_entry_copy_buffer_ref: { Result = CSz("ref"); } break;
-    case type_work_queue_entry_init_asset: { Result = CSz("asset"); } break;
-    case type_work_queue_entry_rebuild_mesh: { Result = CSz("mesh"); } break;
-    case type_work_queue_entry_sim_particle_system: { Result = CSz("system"); } break;
-    case type_work_queue_entry__bonsai_render_command: { Result = CSz("bonsai_render_command"); } break;
-    case type_work_queue_entry_async_function_call: { Result = CSz("call"); } break;
-    case type_work_queue_entry__align_to_cache_line_helper: { Result = CSz("align_to_cache_line_helper"); } break;
+    switch (Type)
+    {
+            case type_work_queue_entry_noop: { Result = CSz("noop"); } break;
+      case type_work_queue_entry_init_world_chunk: { Result = CSz("chunk"); } break;
+      case type_work_queue_entry_finalize_noise_values: { Result = CSz("values"); } break;
+      case type_work_queue_entry_build_chunk_mesh: { Result = CSz("mesh"); } break;
+      case type_work_queue_entry_copy_buffer_set: { Result = CSz("set"); } break;
+      case type_work_queue_entry_copy_buffer_ref: { Result = CSz("ref"); } break;
+      case type_work_queue_entry_init_asset: { Result = CSz("asset"); } break;
+      case type_work_queue_entry_rebuild_mesh: { Result = CSz("mesh"); } break;
+      case type_work_queue_entry_sim_particle_system: { Result = CSz("system"); } break;
+      case type_work_queue_entry__bonsai_render_command: { Result = CSz("bonsai_render_command"); } break;
+      case type_work_queue_entry_async_function_call: { Result = CSz("call"); } break;
+      case type_work_queue_entry__align_to_cache_line_helper: { Result = CSz("align_to_cache_line_helper"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

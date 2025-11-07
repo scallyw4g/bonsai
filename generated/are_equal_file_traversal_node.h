@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/file.h:28:0
+
+// def (are_equal)
 // external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(file_traversal_node *Thing1, file_traversal_node *Thing2)

@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/binary_parser.cpp:441:0
+
+// def (gen_read_primitive_from_native_file)
 // external/bonsai_stdlib/src/binary_parser.cpp:426:0
 link_internal s8
 Read_s8(native_file *File)

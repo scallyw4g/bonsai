@@ -1,3 +1,7 @@
+// callsite
+// src/engine/editor.cpp:409:0
+
+// def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
 struct world_edit_brush;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
@@ -104,34 +108,16 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
         
         
         
-        cs MemberName = CSz("Type");
+        cs MemberName = CSz("Layered");
                                                                 DoEditorUi(Ui,
           Window,
           // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_brush_type*, &Element->Type),
+          Cast(layered_brush*, &Element->Layered),
           MemberName,
           ThisHash,
           Params
           );
 
-
-
-
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("(anonymous)");
-                                                                
 
 
 

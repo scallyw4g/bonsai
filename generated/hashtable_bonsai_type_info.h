@@ -1,3 +1,7 @@
+// callsite
+// src/engine/bonsai_type_info.h:37:0
+
+// def (hashtable)
 // external/bonsai_stdlib/src/poof_functions.h:777:0
 struct bonsai_type_info_linked_list_node
 {

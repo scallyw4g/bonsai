@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/vector.h:802:0
+
+// def (gen_common_vector)
 // external/bonsai_stdlib/src/poof_functions.h:452:0
 inline r32
 LengthSq( v2 Vec )

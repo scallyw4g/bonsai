@@ -687,6 +687,11 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                       switch (Layer->Settings.Type)
                       {
+                        case BrushLayerType_Brush:
+                        {
+                          NotImplemented;
+                        } break;
+
                         case BrushLayerType_Noise:
                         {
                           noise_layer *Noise = &Layer->Settings.Noise;

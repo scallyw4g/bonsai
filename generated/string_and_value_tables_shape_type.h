@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:1113:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(shape_type Value)
 {
@@ -24,20 +28,25 @@ IsValid(shape_type Value)
 link_internal counted_string
 ToStringPrefixless(shape_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case ShapeType_Rect: { Result = CSz("Rect"); } break;
-    case ShapeType_Sphere: { Result = CSz("Sphere"); } break;
-    case ShapeType_Line: { Result = CSz("Line"); } break;
-    case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
-    case ShapeType_Plane: { Result = CSz("Plane"); } break;
-    case ShapeType_Torus: { Result = CSz("Torus"); } break;
+    switch (Type)
+    {
+            case ShapeType_Rect: { Result = CSz("Rect"); } break;
+      case ShapeType_Sphere: { Result = CSz("Sphere"); } break;
+      case ShapeType_Line: { Result = CSz("Line"); } break;
+      case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
+      case ShapeType_Plane: { Result = CSz("Plane"); } break;
+      case ShapeType_Torus: { Result = CSz("Torus"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

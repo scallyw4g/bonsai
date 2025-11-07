@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/vector.h:782:0
+
+// def (gen_vector_infix_operator)
 // external/bonsai_stdlib/src/poof_functions.h:170:0
 inline v3i
 operator&( v3i P1, v3i P2 )

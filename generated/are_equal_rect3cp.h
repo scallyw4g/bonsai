@@ -1,3 +1,7 @@
+// callsite
+// src/engine/canonical_position.h:264:0
+
+// def (are_equal)
 // external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(rect3cp *Thing1, rect3cp *Thing2)

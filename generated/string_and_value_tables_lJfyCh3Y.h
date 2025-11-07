@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/work_queue.h:204:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(async_function_call_type Value)
 {
@@ -22,18 +26,23 @@ IsValid(async_function_call_type Value)
 link_internal counted_string
 ToStringPrefixless(async_function_call_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case type_check_occlusion_query_async_params: { Result = CSz("params"); } break;
-    case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("params"); } break;
-    case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("params"); } break;
-    case type_compile_shader_pair_async_params: { Result = CSz("params"); } break;
+    switch (Type)
+    {
+            case type_check_occlusion_query_async_params: { Result = CSz("params"); } break;
+      case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("params"); } break;
+      case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("params"); } break;
+      case type_compile_shader_pair_async_params: { Result = CSz("params"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

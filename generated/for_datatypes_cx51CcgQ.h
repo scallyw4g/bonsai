@@ -1,3 +1,7 @@
+// callsite
+// src/engine/work_queue.h:273:0
+
+// def ((builtin.for_datatypes))
 // src/engine/work_queue.h:273:0
 
 
@@ -256,7 +260,6 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
-
 
 
 

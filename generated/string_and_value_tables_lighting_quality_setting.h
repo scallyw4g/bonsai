@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/settings.h:30:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(lighting_quality_setting Value)
 {
@@ -22,18 +26,23 @@ IsValid(lighting_quality_setting Value)
 link_internal counted_string
 ToStringPrefixless(lighting_quality_setting Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case LightingQualitySetting_High: { Result = CSz("High"); } break;
-    case LightingQualitySetting_Med: { Result = CSz("Med"); } break;
-    case LightingQualitySetting_Low: { Result = CSz("Low"); } break;
-    case LightingQualitySetting_Off: { Result = CSz("Off"); } break;
+    switch (Type)
+    {
+            case LightingQualitySetting_High: { Result = CSz("High"); } break;
+      case LightingQualitySetting_Med: { Result = CSz("Med"); } break;
+      case LightingQualitySetting_Low: { Result = CSz("Low"); } break;
+      case LightingQualitySetting_Off: { Result = CSz("Off"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

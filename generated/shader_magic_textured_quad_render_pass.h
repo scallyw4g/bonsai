@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/ui/ui.cpp:10:0
+
+// def (shader_magic)
 // external/bonsai_stdlib/src/shader.h:6:0
 link_internal b32
 poof()

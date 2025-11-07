@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:827:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(world_edit_selection_mode Value)
 {
@@ -24,20 +28,25 @@ IsValid(world_edit_selection_mode Value)
 link_internal counted_string
 ToStringPrefixless(world_edit_selection_mode Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case SelectionMode_Noop: { Result = CSz("Noop"); } break;
-    case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("ResizeSingleLinearAxis"); } break;
-    case SelectionMode_ResizeBothLinearAxies: { Result = CSz("ResizeBothLinearAxies"); } break;
-    case SelectionMode_ResizeAllAxies: { Result = CSz("ResizeAllAxies"); } break;
-    case SelectionMode_TranslateLinear: { Result = CSz("TranslateLinear"); } break;
-    case SelectionMode_TranslatePlanar: { Result = CSz("TranslatePlanar"); } break;
+    switch (Type)
+    {
+            case SelectionMode_Noop: { Result = CSz("Noop"); } break;
+      case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("ResizeSingleLinearAxis"); } break;
+      case SelectionMode_ResizeBothLinearAxies: { Result = CSz("ResizeBothLinearAxies"); } break;
+      case SelectionMode_ResizeAllAxies: { Result = CSz("ResizeAllAxies"); } break;
+      case SelectionMode_TranslateLinear: { Result = CSz("TranslateLinear"); } break;
+      case SelectionMode_TranslatePlanar: { Result = CSz("TranslatePlanar"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

@@ -1,3 +1,7 @@
+// callsite
+// src/engine/work_queue.h:210:0
+
+// def (d_union)
 // src/engine/work_queue.h:210:0
 enum work_queue_entry_type
 {

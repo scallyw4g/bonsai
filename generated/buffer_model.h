@@ -1,3 +1,7 @@
+// callsite
+// src/engine/model.h:91:0
+
+// def (buffer_t)
 // external/bonsai_stdlib/src/poof_functions.h:1428:0
 struct model_buffer
 {

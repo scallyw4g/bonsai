@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:412:0
+
+// def (anonymous)
 // external/bonsai_stdlib/src/platform/win32/win32_platform.cpp:412:0
 BindKeyupToInput( VK_RETURN, Enter);
 

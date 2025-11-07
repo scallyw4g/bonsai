@@ -1,3 +1,7 @@
+// callsite
+// src/engine/mesh.h:80:0
+
+// def (grow_buffer)
 // src/engine/mesh.h:56:0
 link_internal b32
 BufferIsMarkedForGrowth(untextured_3d_geometry_buffer *Dest)

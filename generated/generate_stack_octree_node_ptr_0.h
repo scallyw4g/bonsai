@@ -1,3 +1,7 @@
+// callsite
+// src/engine/world.h:80:0
+
+// def (generate_stack)
 // external/bonsai_stdlib/src/poof_functions.h:1444:0
 struct octree_node_ptr_stack
 {

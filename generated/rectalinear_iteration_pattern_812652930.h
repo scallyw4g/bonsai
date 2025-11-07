@@ -1,3 +1,7 @@
+// callsite
+// src/engine/world_update.cpp:521:0
+
+// def (rectalinear_iteration_pattern)
 // src/engine/world_update.cpp:310:0
 NotImplemented;
 /* DimIterator(x, y, z, UpdateDim) */

@@ -1,3 +1,7 @@
+// callsite
+// src/engine/voxel_synthesis.h:163:0
+
+// def (hashtable)
 // external/bonsai_stdlib/src/poof_functions.h:777:0
 struct voxel_synth_tile_linked_list_node
 {

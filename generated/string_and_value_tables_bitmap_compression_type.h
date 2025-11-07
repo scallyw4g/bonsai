@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// external/bonsai_stdlib/src/bitmap.cpp:76:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(bitmap_compression_type Value)
 {
@@ -28,24 +32,29 @@ IsValid(bitmap_compression_type Value)
 link_internal counted_string
 ToStringPrefixless(bitmap_compression_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case BitmapCompressionType_RGB: { Result = CSz("RGB"); } break;
-    case BitmapCompressionType_RLE8: { Result = CSz("RLE8"); } break;
-    case BitmapCompressionType_RLE4: { Result = CSz("RLE4"); } break;
-    case BitmapCompressionType_BITFIELDS: { Result = CSz("BITFIELDS"); } break;
-    case BitmapCompressionType_JPEG: { Result = CSz("JPEG"); } break;
-    case BitmapCompressionType_PNG: { Result = CSz("PNG"); } break;
-    case BitmapCompressionType_ALPHABITFIELDS: { Result = CSz("ALPHABITFIELDS"); } break;
-    case BitmapCompressionType_CMYK: { Result = CSz("CMYK"); } break;
-    case BitmapCompressionType_CMYKRLE8: { Result = CSz("CMYKRLE8"); } break;
-    case BitmapCompressionType_CMYKRLE4: { Result = CSz("CMYKRLE4"); } break;
+    switch (Type)
+    {
+            case BitmapCompressionType_RGB: { Result = CSz("RGB"); } break;
+      case BitmapCompressionType_RLE8: { Result = CSz("RLE8"); } break;
+      case BitmapCompressionType_RLE4: { Result = CSz("RLE4"); } break;
+      case BitmapCompressionType_BITFIELDS: { Result = CSz("BITFIELDS"); } break;
+      case BitmapCompressionType_JPEG: { Result = CSz("JPEG"); } break;
+      case BitmapCompressionType_PNG: { Result = CSz("PNG"); } break;
+      case BitmapCompressionType_ALPHABITFIELDS: { Result = CSz("ALPHABITFIELDS"); } break;
+      case BitmapCompressionType_CMYK: { Result = CSz("CMYK"); } break;
+      case BitmapCompressionType_CMYKRLE8: { Result = CSz("CMYKRLE8"); } break;
+      case BitmapCompressionType_CMYKRLE4: { Result = CSz("CMYKRLE4"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

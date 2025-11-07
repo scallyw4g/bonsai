@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_debug/src/api.h:107:0
+
+// def (generate_cursor)
 // external/bonsai_stdlib/src/poof_functions.h:1541:0
 struct debug_profile_scope_cursor
 {

@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/world_chunk.h:82:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(chunk_flag Value)
 {
@@ -24,49 +28,54 @@ IsValid(chunk_flag Value)
 link_internal counted_string
 ToStringPrefixless(chunk_flag Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
-    case Chunk_Queued: { Result = CSz("Queued"); } break;
-    case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
-    case Chunk_Garbage: { Result = CSz("Garbage"); } break;
-    case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
-    case Chunk_Freelist: { Result = CSz("Freelist"); } break;
-
-
-        // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
-    // but the metaprogram might have to be a bit fancier..
-    default:
+    switch (Type)
     {
-      u32 CurrentFlags = u32(Type);
+            case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
+      case Chunk_Queued: { Result = CSz("Queued"); } break;
+      case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
+      case Chunk_Garbage: { Result = CSz("Garbage"); } break;
+      case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
+      case Chunk_Freelist: { Result = CSz("Freelist"); } break;
 
-      u32 BitsSet = CountBitsSet_Kernighan(CurrentFlags);
-      switch(BitsSet)
+
+            // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
+      // but the metaprogram might have to be a bit fancier..
+      default:
       {
-        case 0: // We likely passed 0 into this function, and the enum didn't have a 0 value
-        case 1: // The value we passed in was outside the range of the valid enum values
-        {
-          Result = FSz("(invalid value (%d))", CurrentFlags);
-        } break;
+        u32 CurrentFlags = u32(Type);
 
-        default:
+        u32 BitsSet = CountBitsSet_Kernighan(CurrentFlags);
+        switch(BitsSet)
         {
-          u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
-          Result = ToStringPrefixless(chunk_flag(FirstValue));
-
-          while (CurrentFlags)
+          case 0: // We likely passed 0 into this function, and the enum didn't have a 0 value
+          case 1: // The value we passed in was outside the range of the valid enum values
           {
-            u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
-            cs Next = ToStringPrefixless(chunk_flag(Value));
-            Result = FSz("%S | %S", Result, Next);
-          }
-        } break;
-      }
-    } break;
+            Result = FSz("(invalid value (%d))", CurrentFlags);
+          } break;
 
+          default:
+          {
+            u32 FirstValue = UnsetLeastSignificantSetBit(&CurrentFlags);
+            Result = ToStringPrefixless(chunk_flag(FirstValue));
+
+            while (CurrentFlags)
+            {
+              u32 Value = UnsetLeastSignificantSetBit(&CurrentFlags);
+              cs Next = ToStringPrefixless(chunk_flag(Value));
+              Result = FSz("%S | %S", Result, Next);
+            }
+          } break;
+        }
+      } break;
+
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

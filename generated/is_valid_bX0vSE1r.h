@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2624:0
+// callsite
+// external/bonsai_stdlib/src/ui/ui.h:82:0
+
+// def (is_valid)
+// external/bonsai_stdlib/src/poof_functions.h:2629:0
 link_internal b32
 IsValid(window_layout_flags Value)
 {

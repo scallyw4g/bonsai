@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.cpp:450:0
+
+// def (serdes_struct)
 // src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(brush_layer *Ignored)

@@ -1,4 +1,8 @@
-// src/engine/editor.cpp:512:0
+// callsite
+// src/engine/editor.cpp:514:0
+
+// def ((builtin.for_datatypes))
+// src/engine/editor.cpp:514:0
 
 
 
@@ -10802,6 +10806,32 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
           Window,
           // Cast to remove const/volatile keywords if they're there
           Cast(shape_layer*, &Element->Shape),
+          MemberName,
+          ThisHash,
+          Params
+          );
+
+
+
+
+
+
+
+        
+
+
+      }
+       if (Element->Type == BrushLayerType_Brush) 
+
+      { 
+        
+        
+        
+        cs MemberName = {};
+                                                                DoEditorUi(Ui,
+          Window,
+          // Cast to remove const/volatile keywords if they're there
+          Cast(world_edit_brush*, Element->Brush),
           MemberName,
           ThisHash,
           Params

@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2037:0
+// callsite
+// external/bonsai_stdlib/src/binary_parser.cpp:29:0
+
+// def (generate_stream)
+// external/bonsai_stdlib/src/poof_functions.h:2042:0
 struct u64_stream_chunk
 {
   u64 Element;

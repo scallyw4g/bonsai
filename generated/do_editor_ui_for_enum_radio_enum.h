@@ -1,3 +1,7 @@
+// callsite
+// examples/ui_test/game.cpp:44:0
+
+// def (do_editor_ui_for_enum)
 // src/engine/editor.h:484:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, radio_enum Selection)

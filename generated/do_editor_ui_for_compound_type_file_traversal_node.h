@@ -1,3 +1,7 @@
+// callsite
+// src/engine/editor.cpp:457:0
+
+// def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
 struct file_traversal_node;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)

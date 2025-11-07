@@ -443,13 +443,6 @@ poof(serdes_struct(shape_layer_advanced_params))
 poof(serdes_struct(shape_layer))
 #include <generated/serdes_struct_shape_layer.h>
 
-
-poof(serdes_struct(brush_settings))
-#include <generated/serdes_struct_brush_settings.h>
-
-poof(serdes_struct(brush_layer))
-#include <generated/serdes_struct_brush_layer.h>
-
 poof(
   for_datatypes(struct)
     func (type)
@@ -462,9 +455,6 @@ poof(
     }
 )
 #include <generated/serdes_implementations.h>
-
-poof(serdes_struct(world_edit_brush))
-#include <generated/serdes_struct_world_edit_brush.h>
 
 poof(serdes_struct(world_edit))
 #include <generated/serdes_struct_world_edit.h>

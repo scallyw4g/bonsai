@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/settings.h:26:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(resolution_setting Value)
 {
@@ -21,17 +25,22 @@ IsValid(resolution_setting Value)
 link_internal counted_string
 ToStringPrefixless(resolution_setting Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case ResolutionSetting_4096x2160: { Result = CSz("4096x2160"); } break;
-    case ResolutionSetting_1920x1080: { Result = CSz("1920x1080"); } break;
-    case ResolutionSetting_1280x720: { Result = CSz("1280x720"); } break;
+    switch (Type)
+    {
+            case ResolutionSetting_4096x2160: { Result = CSz("4096x2160"); } break;
+      case ResolutionSetting_1920x1080: { Result = CSz("1920x1080"); } break;
+      case ResolutionSetting_1280x720: { Result = CSz("1280x720"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

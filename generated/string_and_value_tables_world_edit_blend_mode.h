@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:957:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(world_edit_blend_mode Value)
 {
@@ -23,19 +27,24 @@ IsValid(world_edit_blend_mode Value)
 link_internal counted_string
 ToStringPrefixless(world_edit_blend_mode Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case WorldEdit_Mode_Additive: { Result = CSz("Additive"); } break;
-    case WorldEdit_Mode_Subtractive: { Result = CSz("Subtractive"); } break;
-    case WorldEdit_Mode_Multiply: { Result = CSz("Multiply"); } break;
-    case WorldEdit_Mode_Threshold: { Result = CSz("Threshold"); } break;
-    case WorldEdit_Mode_Disabled: { Result = CSz("Disabled"); } break;
+    switch (Type)
+    {
+            case WorldEdit_Mode_Additive: { Result = CSz("Additive"); } break;
+      case WorldEdit_Mode_Subtractive: { Result = CSz("Subtractive"); } break;
+      case WorldEdit_Mode_Multiply: { Result = CSz("Multiply"); } break;
+      case WorldEdit_Mode_Threshold: { Result = CSz("Threshold"); } break;
+      case WorldEdit_Mode_Disabled: { Result = CSz("Disabled"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

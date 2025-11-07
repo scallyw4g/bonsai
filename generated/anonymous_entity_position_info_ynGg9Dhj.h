@@ -1,3 +1,7 @@
+// callsite
+// src/engine/entity.h:217:0
+
+// def (anonymous)
 // src/engine/entity.h:217:0
 Entity->LastResolvedPosInfo.P = Entity->P;
 Entity->LastResolvedPosInfo._CollisionVolumeRadius = Entity->_CollisionVolumeRadius;

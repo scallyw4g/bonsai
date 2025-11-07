@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.cpp:447:0
+
+// def (serdes_struct)
 // src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
@@ -49,6 +53,11 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
 
 
 
+
+
+
+                if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
@@ -124,6 +133,10 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
 
         
 
+                if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
+
+
+
         
 
         
@@ -192,6 +205,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
+
+
+
+        b64 HadBrushPointer = Read_u64(Bytes);
+  Assert(HadBrushPointer < 2); // Should be 0 or 1
 
 
 
@@ -280,6 +298,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
     
   
   
+      if (HadBrushPointer)
+  {
+        umm Count = 1;
+
+
+    if (Element->Brush == 0)
+    {
+      Element->Brush = Allocate(world_edit_brush, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Brush, Memory, Count);
+  }
+
+
   
   
   

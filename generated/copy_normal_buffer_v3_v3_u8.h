@@ -1,3 +1,7 @@
+// callsite
+// src/engine/mesh.h:323:0
+
+// def (copy_normal_buffer)
 // src/engine/mesh.h:264:0
 link_inline void
 CopyNormalBuffer( v3 *Dest, v3_u8 *Src, u32 NumVerts, Quaternion Rot)

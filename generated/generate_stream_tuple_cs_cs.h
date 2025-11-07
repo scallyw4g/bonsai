@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2037:0
+// callsite
+// external/bonsai_stdlib/src/counted_string.cpp:43:0
+
+// def (generate_stream)
+// external/bonsai_stdlib/src/poof_functions.h:2042:0
 struct tuple_cs_cs_stream_chunk
 {
   tuple_cs_cs Element;

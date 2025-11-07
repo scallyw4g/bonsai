@@ -1,6 +1,13 @@
+// callsite
+// src/engine/serdes.cpp:74:0
+
+// def (deserialize_struct)
 // src/engine/serdes.h:284:0
 link_internal b32
-Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory);
@@ -187,5 +194,11 @@ Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory, umm Count
   }
 
   return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
 }
 

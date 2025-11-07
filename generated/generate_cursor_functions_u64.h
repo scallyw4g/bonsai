@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/binary_parser.cpp:26:0
+
+// def (generate_cursor_functions)
 // external/bonsai_stdlib/src/poof_functions.h:1563:0
 
 link_internal u64_cursor

@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/ui/interactable.h:28:0
+
+// def (gen_default_equality_operator)
 // external/bonsai_stdlib/src/poof_functions.h:96:0
 link_internal b32
 operator==( ui_id E1, ui_id E2 )

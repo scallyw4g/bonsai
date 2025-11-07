@@ -1,3 +1,7 @@
+// callsite
+// src/engine/editor.cpp:421:0
+
+// def (do_editor_ui_for_container)
 // src/engine/editor.h:545:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index_block_array *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)

@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.cpp:459:0
+
+// def (serdes_struct)
 // src/engine/serdes.h:563:0
 link_internal bonsai_type_info
 TypeInfo(world_edit_brush *Ignored)
@@ -53,30 +57,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
-
-
-
-
-                                    switch ( Element->Type )
-    {
-      
-                  case WorldEditBrushType_Disabled: {} break;
-
-            case WorldEditBrushType_Layered:
-      {
-        Result &= Serialize(Bytes, &Element->Layered);
-      } break;
-
-            case WorldEditBrushType_Simple:
-      {
-        Result &= Serialize(Bytes, &Element->Simple);
-      } break;
-
-
-    }
-
-
+                            Result &= Serialize(Bytes, &Element->Layered); // default
 
 
 
@@ -86,8 +67,6 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
             
-
-        
 
         
 
@@ -143,40 +122,18 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
-          Element->Type = Cast(world_edit_brush_type, Read_u32(Bytes));
-
-
-
-
-                  switch ( Element->Type )
-  {
-    
-            case WorldEditBrushType_Disabled: { SoftError("Deserialized tag value WorldEditBrushType_Disabled, which was marked @no_serialize!"); } break;
-
-        case WorldEditBrushType_Layered:
-    {
-      Result &= Deserialize(Bytes, &Element->Layered, Memory);
-    } break;
-
-        case WorldEditBrushType_Simple:
-    {
-      Result &= Deserialize(Bytes, &Element->Simple, Memory);
-    } break;
-
-
-  }
-
-
-
-
-
-
-
-
-
-
-    
+              
   
+  Result &= Deserialize(Bytes, &Element->Layered, Memory);
+
+
+
+
+
+
+
+
+    
   
   
   

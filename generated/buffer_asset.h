@@ -1,3 +1,7 @@
+// callsite
+// src/engine/asset.h:194:0
+
+// def (buffer)
 // external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct asset_buffer
 {

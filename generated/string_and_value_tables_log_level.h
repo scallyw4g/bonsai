@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// external/bonsai_stdlib/src/console_io.h:13:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(log_level Value)
 {
@@ -24,20 +28,25 @@ IsValid(log_level Value)
 link_internal counted_string
 ToStringPrefixless(log_level Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case LogLevel_Undefined: { Result = CSz("Undefined"); } break;
-    case LogLevel_Verbose: { Result = CSz("Verbose"); } break;
-    case LogLevel_Debug: { Result = CSz("Debug"); } break;
-    case LogLevel_Info: { Result = CSz("Info"); } break;
-    case LogLevel_Error: { Result = CSz("Error"); } break;
-    case LogLevel_Shush: { Result = CSz("Shush"); } break;
+    switch (Type)
+    {
+            case LogLevel_Undefined: { Result = CSz("Undefined"); } break;
+      case LogLevel_Verbose: { Result = CSz("Verbose"); } break;
+      case LogLevel_Debug: { Result = CSz("Debug"); } break;
+      case LogLevel_Info: { Result = CSz("Info"); } break;
+      case LogLevel_Error: { Result = CSz("Error"); } break;
+      case LogLevel_Shush: { Result = CSz("Shush"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

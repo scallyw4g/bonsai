@@ -1,3 +1,7 @@
+// callsite
+// examples/ui_test/game.cpp:32:0
+
+// def (do_editor_ui_for_enum)
 // src/engine/editor.h:484:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)

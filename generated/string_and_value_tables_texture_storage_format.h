@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// external/bonsai_stdlib/src/to_string.cpp:62:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(texture_storage_format Value)
 {
@@ -32,28 +36,33 @@ IsValid(texture_storage_format Value)
 link_internal counted_string
 ToStringPrefixless(texture_storage_format Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
-    case TextureStorageFormat_R16I: { Result = CSz("R16I"); } break;
-    case TextureStorageFormat_R16F: { Result = CSz("R16F"); } break;
-    case TextureStorageFormat_R32I: { Result = CSz("R32I"); } break;
-    case TextureStorageFormat_R32UI: { Result = CSz("R32UI"); } break;
-    case TextureStorageFormat_R32F: { Result = CSz("R32F"); } break;
-    case TextureStorageFormat_RG16F: { Result = CSz("RG16F"); } break;
-    case TextureStorageFormat_RG32F: { Result = CSz("RG32F"); } break;
-    case TextureStorageFormat_RGB16F: { Result = CSz("RGB16F"); } break;
-    case TextureStorageFormat_RGB32F: { Result = CSz("RGB32F"); } break;
-    case TextureStorageFormat_RGBA8: { Result = CSz("RGBA8"); } break;
-    case TextureStorageFormat_RGBA16F: { Result = CSz("RGBA16F"); } break;
-    case TextureStorageFormat_RGBA32F: { Result = CSz("RGBA32F"); } break;
-    case TextureStorageFormat_Depth32: { Result = CSz("Depth32"); } break;
+    switch (Type)
+    {
+            case TextureStorageFormat_Undefined: { Result = CSz("Undefined"); } break;
+      case TextureStorageFormat_R16I: { Result = CSz("R16I"); } break;
+      case TextureStorageFormat_R16F: { Result = CSz("R16F"); } break;
+      case TextureStorageFormat_R32I: { Result = CSz("R32I"); } break;
+      case TextureStorageFormat_R32UI: { Result = CSz("R32UI"); } break;
+      case TextureStorageFormat_R32F: { Result = CSz("R32F"); } break;
+      case TextureStorageFormat_RG16F: { Result = CSz("RG16F"); } break;
+      case TextureStorageFormat_RG32F: { Result = CSz("RG32F"); } break;
+      case TextureStorageFormat_RGB16F: { Result = CSz("RGB16F"); } break;
+      case TextureStorageFormat_RGB32F: { Result = CSz("RGB32F"); } break;
+      case TextureStorageFormat_RGBA8: { Result = CSz("RGBA8"); } break;
+      case TextureStorageFormat_RGBA16F: { Result = CSz("RGBA16F"); } break;
+      case TextureStorageFormat_RGBA32F: { Result = CSz("RGBA32F"); } break;
+      case TextureStorageFormat_Depth32: { Result = CSz("Depth32"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

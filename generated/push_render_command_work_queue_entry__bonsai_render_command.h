@@ -1,3 +1,7 @@
+// callsite
+// src/engine/render_command.cpp:27:0
+
+// def (push_render_command)
 // src/engine/render_command.cpp:3:0
 link_internal void
 PushBonsaiRenderCommandInitializeNoiseBuffer(

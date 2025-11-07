@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:94:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(shape_axis Value)
 {
@@ -26,22 +30,27 @@ IsValid(shape_axis Value)
 link_internal counted_string
 ToStringPrefixless(shape_axis Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case ShapeAxis_InferFromMajorAxis: { Result = CSz("InferFromMajorAxis"); } break;
-    case ShapeAxis_PosX: { Result = CSz("PosX"); } break;
-    case ShapeAxis_NegX: { Result = CSz("NegX"); } break;
-    case ShapeAxis_PosY: { Result = CSz("PosY"); } break;
-    case ShapeAxis_NegY: { Result = CSz("NegY"); } break;
-    case ShapeAxis_PosZ: { Result = CSz("PosZ"); } break;
-    case ShapeAxis_NegZ: { Result = CSz("NegZ"); } break;
-    case ShapeAxis_Count: { Result = CSz("Count"); } break;
+    switch (Type)
+    {
+            case ShapeAxis_InferFromMajorAxis: { Result = CSz("InferFromMajorAxis"); } break;
+      case ShapeAxis_PosX: { Result = CSz("PosX"); } break;
+      case ShapeAxis_NegX: { Result = CSz("NegX"); } break;
+      case ShapeAxis_PosY: { Result = CSz("PosY"); } break;
+      case ShapeAxis_NegY: { Result = CSz("NegY"); } break;
+      case ShapeAxis_PosZ: { Result = CSz("PosZ"); } break;
+      case ShapeAxis_NegZ: { Result = CSz("NegZ"); } break;
+      case ShapeAxis_Count: { Result = CSz("Count"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

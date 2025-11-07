@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/counted_string.cpp:40:0
+
+// def (tuple)
 // external/bonsai_stdlib/src/poof_functions.h:682:0
 struct tuple_cs_cs
 {

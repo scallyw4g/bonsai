@@ -1,4 +1,8 @@
-// src/engine/serdes.h:563:0
+// callsite
+// src/engine/serdes.cpp:282:0
+
+// def (serdes_struct)
+// src/engine/serdes.h:572:0
 link_internal bonsai_type_info
 TypeInfo(random_series *Ignored)
 {
@@ -60,7 +64,10 @@ Serialize(u8_cursor_block_array *Bytes, random_series *BaseElement)
 
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory, umm Count = 1);
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, random_series *Element, memory_arena *Memory);
@@ -103,6 +110,12 @@ Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory, umm 
   }
 
   return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, random_series *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
 }
 
 

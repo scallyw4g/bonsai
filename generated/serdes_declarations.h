@@ -1,4 +1,8 @@
-// src/engine/serdes.h:650:0
+// callsite
+// src/engine/serdes.h:659:0
+
+// def ((builtin.for_datatypes))
+// src/engine/serdes.h:659:0
 
 
 
@@ -120,6 +124,11 @@ Serialize(u8_cursor_block_array *Bytes, simple_brush *BaseElement);
 
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, simple_brush *BaseElement, umm Count);
+
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm Count);
@@ -333,12 +342,21 @@ Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm C
 
 
 
+struct brush_settings;
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement);
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count);
 
 
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory);
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm Count);
 
 
 
@@ -346,12 +364,21 @@ Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm C
 
 
 
+struct world_edit_brush;
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement);
 
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count);
 
 
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory);
 
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory, umm Count);
 
 
 
@@ -483,6 +510,37 @@ Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm C
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct brush_layer;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_layer *BaseElement, umm Count);
+
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Count);
 
 
 
@@ -578,8 +636,14 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement);
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count);
 
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory);
+
 link_internal b32
 Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory, umm Count);
+
 
 
 

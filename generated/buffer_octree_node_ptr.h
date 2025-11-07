@@ -1,3 +1,7 @@
+// callsite
+// src/engine/world.h:69:0
+
+// def (buffer)
 // external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct octree_node_ptr_buffer
 {

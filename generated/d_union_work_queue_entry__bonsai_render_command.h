@@ -1,3 +1,7 @@
+// callsite
+// src/engine/render_command.h:166:0
+
+// def (d_union)
 // src/engine/render_command.h:166:0
 enum work_queue_entry__bonsai_render_command_type
 {

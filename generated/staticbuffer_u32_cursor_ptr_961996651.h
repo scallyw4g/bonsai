@@ -1,3 +1,7 @@
+// callsite
+// src/engine/voxel_synthesis.h:42:0
+
+// def (staticbuffer)
 // external/bonsai_stdlib/src/poof_functions.h:1185:0
 struct entropy_lists
 {

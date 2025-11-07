@@ -1,3 +1,7 @@
+// callsite
+// src/engine/voxel_synthesis.h:85:0
+
+// def (buffer)
 // external/bonsai_stdlib/src/poof_functions.h:1435:0
 struct voxel_synth_tile_buffer
 {

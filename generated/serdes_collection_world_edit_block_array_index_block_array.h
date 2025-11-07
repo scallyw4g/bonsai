@@ -1,4 +1,8 @@
-// src/engine/serdes.h:522:0
+// callsite
+// src/engine/serdes.cpp:465:0
+
+// def (serdes_collection)
+// src/engine/serdes.h:531:0
 
 
 link_internal b32

@@ -107,6 +107,7 @@ InitEditor(level_editor *Editor)
   }
 
 
+#if 0
   simple_brush Brushes[] = {
     {
       {CSz("Sphere")},
@@ -126,6 +127,7 @@ InitEditor(level_editor *Editor)
     Push(&Editor->SimpleBrushes, Brushes+BrushIndex);
   }
 
+#endif
 
   Editor->Edits.Memory = Editor->Memory;
   Editor->SelectedEditIndices.Memory = Editor->Memory;
@@ -936,6 +938,7 @@ GetLayerUiText(brush_layer *Layer, memory_arena *TempMem)
   cs SubType = {};
   switch (Layer->Settings.Type)
   {
+    case BrushLayerType_Brush: { SubType = Layer->Settings.Brush ? CS(Layer->Settings.Brush->NameBuf) : CSz("(null)"); } break;
     case BrushLayerType_Noise: { SubType = ToStringPrefixless(Layer->Settings.Noise.Type); } break;
     case BrushLayerType_Shape: { SubType = ToStringPrefixless(Layer->Settings.Shape.Type); } break;
   }
@@ -978,7 +981,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
     {
       memory_arena *Tran = GetTranArena();
 
-      if (LayeredBrush->LayerCount)
+      /* if (LayeredBrush->LayerCount) */
       {
         ui_brush_actions BrushAction = {};
         ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
@@ -1056,7 +1059,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
       {
 
-        if (LayeredBrush->LayerCount)
+        /* if (LayeredBrush->LayerCount) */
         {
           PushNewRow(Ui);
           PushNewRow(Ui);

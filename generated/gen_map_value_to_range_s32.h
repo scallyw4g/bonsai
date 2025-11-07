@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/random.h:210:0
+
+// def (gen_map_value_funcs)
 // external/bonsai_stdlib/src/random.h:177:0
 link_internal s32
 MapValueToRange( s32 LowestPossibleValue, r32 Value, s32 HighestPossibleValue)

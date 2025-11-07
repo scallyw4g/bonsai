@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/c_token.h:390:0
+
+// def (generate_cursor_functions)
 // external/bonsai_stdlib/src/poof_functions.h:1563:0
 
 link_internal c_token_cursor

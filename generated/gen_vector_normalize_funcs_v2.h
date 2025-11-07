@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/vector.h:811:0
+
+// def (gen_vector_normalize)
 // external/bonsai_stdlib/src/poof_functions.h:573:0
 inline v2
 Normalize( v2 Vec, r32 Length)

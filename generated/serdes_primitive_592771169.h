@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.h:651:0
+
+// def (serdes_primitive)
 // src/engine/serdes.h:56:0
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, u8 *Element, umm Count = 1)

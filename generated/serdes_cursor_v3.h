@@ -1,4 +1,8 @@
-// src/engine/serdes.h:484:0
+// callsite
+// src/engine/serdes.cpp:21:0
+
+// def (serdes_cursor)
+// src/engine/serdes.h:493:0
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, v3_cursor* Cursor)
 {

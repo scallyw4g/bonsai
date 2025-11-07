@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:743:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(data_type Value)
 {
@@ -21,17 +25,22 @@ IsValid(data_type Value)
 link_internal counted_string
 ToStringPrefixless(data_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
-    case DataType_v3: { Result = CSz("v3"); } break;
-    case DataType_v3_u8: { Result = CSz("u8"); } break;
+    switch (Type)
+    {
+            case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
+      case DataType_v3: { Result = CSz("v3"); } break;
+      case DataType_v3_u8: { Result = CSz("u8"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

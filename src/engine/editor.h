@@ -1019,8 +1019,8 @@ poof(@do_editor_ui)
 struct world_update_op_shape_params_sphere
 poof(@do_editor_ui)
 {
-   cp Location;      poof(@ui_skip)
-  f32 Radius = 10.f;
+   cp Location; poof(@ui_skip)
+  f32 Radius; // 0 defaults to filling the minimum radius on the selection area
 };
 
 
@@ -1185,6 +1185,7 @@ enum brush_layer_type
 {
   BrushLayerType_Noise,
   BrushLayerType_Shape,
+  BrushLayerType_Brush,
 };
 
 poof(string_and_value_tables(brush_layer_type))
@@ -1193,13 +1194,16 @@ poof(string_and_value_tables(brush_layer_type))
 poof(do_editor_ui_for_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_enum_brush_layer_type.h>
 
+struct world_edit_brush;
+
 struct brush_settings
-poof(@do_editor_ui)
+poof(@do_editor_ui @serdes)
 {
   brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
 
   noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
   shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+  world_edit_brush *Brush; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Brush))
 
   //
   // Common across brush types
@@ -1233,7 +1237,7 @@ poof(gen_constructor(brush_settings))
 #include <generated/gen_constructor_lJ6fXxTn.h>
 
 struct brush_layer
-poof(@do_editor_ui)
+poof(@do_editor_ui @serdes)
 {
   brush_settings Settings;     poof(@ui_display_name({}))
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
@@ -1302,6 +1306,7 @@ struct asset_brush
 
 
 struct world_edit_brush
+poof(@serdes)
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
@@ -1312,14 +1317,14 @@ struct world_edit_brush
   world_edit_blend_mode          Mode;
   world_edit_blend_mode_modifier Modifier;
 
-  world_edit_brush_type Type;
-  union
-  {
+  /* world_edit_brush_type Type; */
+  /* union */
+  /* { */
   /*   single_brush  Single; */
   /*   asset_brush   Asset; */
-    simple_brush  Simple;
+    /* simple_brush  Simple; */
     layered_brush Layered;
-  }; poof(@type_tag(world_edit_brush_type))
+  /* }; poof(@type_tag(world_edit_brush_type)) */
 };
 
 link_internal umm
@@ -1556,6 +1561,7 @@ HasThresholdModifier(brush_settings *Element)
   return Result;
 }
 
+#if 0
 link_internal r32
 GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
 {
@@ -1601,6 +1607,7 @@ GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
 
   return Result;
 }
+#endif
 
 
 link_internal b32

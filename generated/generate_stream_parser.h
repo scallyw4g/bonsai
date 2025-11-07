@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2037:0
+// callsite
+// external/bonsai_stdlib/src/c_parser.h:96:0
+
+// def (generate_stream)
+// external/bonsai_stdlib/src/poof_functions.h:2042:0
 struct parser_stream_chunk
 {
   parser Element;

@@ -1,3 +1,7 @@
+// callsite
+// src/engine/work_queue.h:293:0
+
+// def (anonymous)
 // src/engine/work_queue.h:293:0
 {
   tmatch( check_occlusion_query_async_params, Task, Job );

@@ -1,3 +1,7 @@
+// callsite
+// src/engine/render_settings.h:79:0
+
+// def (are_equal)
 // external/bonsai_stdlib/src/poof_functions.h:626:0
 link_internal b32
 AreEqual(render_settings *Thing1, render_settings *Thing2)

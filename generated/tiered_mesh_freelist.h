@@ -1,3 +1,7 @@
+// callsite
+// src/engine/mesh.h:26:0
+
+// def (staticbuffer)
 // external/bonsai_stdlib/src/poof_functions.h:1185:0
 struct tiered_mesh_freelist
 {

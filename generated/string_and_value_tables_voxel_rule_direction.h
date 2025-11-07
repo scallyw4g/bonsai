@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.h:74:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(voxel_rule_direction Value)
 {
@@ -25,21 +29,26 @@ IsValid(voxel_rule_direction Value)
 link_internal counted_string
 ToStringPrefixless(voxel_rule_direction Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case VoxelRuleDir_PosX: { Result = CSz("PosX"); } break;
-    case VoxelRuleDir_NegX: { Result = CSz("NegX"); } break;
-    case VoxelRuleDir_PosY: { Result = CSz("PosY"); } break;
-    case VoxelRuleDir_NegY: { Result = CSz("NegY"); } break;
-    case VoxelRuleDir_PosZ: { Result = CSz("PosZ"); } break;
-    case VoxelRuleDir_NegZ: { Result = CSz("NegZ"); } break;
-    case VoxelRuleDir_Count: { Result = CSz("Count"); } break;
+    switch (Type)
+    {
+            case VoxelRuleDir_PosX: { Result = CSz("PosX"); } break;
+      case VoxelRuleDir_NegX: { Result = CSz("NegX"); } break;
+      case VoxelRuleDir_PosY: { Result = CSz("PosY"); } break;
+      case VoxelRuleDir_NegY: { Result = CSz("NegY"); } break;
+      case VoxelRuleDir_PosZ: { Result = CSz("PosZ"); } break;
+      case VoxelRuleDir_NegZ: { Result = CSz("NegZ"); } break;
+      case VoxelRuleDir_Count: { Result = CSz("Count"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

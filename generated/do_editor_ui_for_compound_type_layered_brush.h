@@ -1,3 +1,7 @@
+// callsite
+// src/engine/editor.cpp:406:0
+
+// def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
 struct layered_brush;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)

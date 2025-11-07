@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2057:0
+// callsite
+// external/bonsai_stdlib/src/binary_parser.cpp:9:0
+
+// def (stream_and_cursor)
+// external/bonsai_stdlib/src/poof_functions.h:2062:0
 struct u32_cursor
 {
   u32 *Start;

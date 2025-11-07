@@ -1,3 +1,7 @@
+// callsite
+// src/engine/editor.h:1194:0
+
+// def (do_editor_ui_for_enum)
 // src/engine/editor.h:484:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
@@ -24,6 +28,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     if (Button(Ui, CSz("Shape"), UiId(Window, "enum BrushLayerType_Shape", Element, ThisHash), Params))
     {
             *Element = BrushLayerType_Shape;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Brush"), UiId(Window, "enum BrushLayerType_Brush", Element, ThisHash), Params))
+    {
+            *Element = BrushLayerType_Brush;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

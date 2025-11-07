@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/shader.cpp:1:0
+
+// def (buffer_c)
 // external/bonsai_stdlib/src/poof_functions.h:1404:0
 link_internal shader_uniform_buffer
 ShaderUniformBuffer( u32 ElementCount, memory_arena* Memory)

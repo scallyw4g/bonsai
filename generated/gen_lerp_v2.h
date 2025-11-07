@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/vector.h:785:0
+
+// def (vector_interpolation_functions)
 // external/bonsai_stdlib/src/poof_functions.h:374:0
 inline v2
 Lerp(r32 t, v2 P1, v2 P2)

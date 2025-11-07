@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/input.h:165:0
+
+// def (anonymous)
 // external/bonsai_stdlib/src/input.h:165:0
 Input->Enter.Clicked = False;
 

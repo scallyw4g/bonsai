@@ -284,7 +284,10 @@ poof(
   func deserialize_struct(type)
   {
     link_internal b32
-    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count = 1);
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory);
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count);
 
     link_internal b32
     DeserializeCurrentVersion(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory);
@@ -471,6 +474,12 @@ poof(
       }
 
       return Result;
+    }
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory)
+    {
+      return Deserialize(Bytes, Element, Memory, 1);
     }
   }
 )
@@ -660,8 +669,14 @@ poof(
         link_internal b32
         Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count);
 
+
+
+        link_internal b32
+        Deserialize(u8_cursor *Bytes, type.name *Element, memory_arena *Memory);
+
         link_internal b32
         Deserialize(u8_cursor *Bytes, type.name *Element, memory_arena *Memory, umm Count);
+
       }
     }
 )

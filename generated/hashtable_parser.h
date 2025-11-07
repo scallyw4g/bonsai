@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/c_parser.cpp:1:0
+
+// def (hashtable)
 // external/bonsai_stdlib/src/poof_functions.h:777:0
 struct parser_linked_list_node
 {

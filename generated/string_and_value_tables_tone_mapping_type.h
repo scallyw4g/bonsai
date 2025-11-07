@@ -1,4 +1,8 @@
-// external/bonsai_stdlib/src/poof_functions.h:2049:0
+// callsite
+// src/engine/editor.cpp:284:0
+
+// def (string_and_value_tables)
+// external/bonsai_stdlib/src/poof_functions.h:2054:0
 link_internal b32
 IsValid(tone_mapping_type Value)
 {
@@ -24,20 +28,25 @@ IsValid(tone_mapping_type Value)
 link_internal counted_string
 ToStringPrefixless(tone_mapping_type Type)
 {
-  Assert(IsValid(Type));
-  counted_string Result = {};
-
-  switch (Type)
+  cs Result = {};
+  if (IsValid(Type))
   {
-        case ToneMappingType_None: { Result = CSz("None"); } break;
-    case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
-    case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
-    case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
-    case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
-    case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
+    switch (Type)
+    {
+            case ToneMappingType_None: { Result = CSz("None"); } break;
+      case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
+      case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
+      case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
+      case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
+      case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
 
 
-    
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
   }
   /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
   return Result;

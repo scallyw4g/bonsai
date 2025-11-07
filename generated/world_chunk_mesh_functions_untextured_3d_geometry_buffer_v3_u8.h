@@ -1,3 +1,7 @@
+// callsite
+// src/engine/world_chunk.cpp:2171:0
+
+// def (world_chunk_mesh_functions)
 // src/engine/world_chunk.cpp:1485:0
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,

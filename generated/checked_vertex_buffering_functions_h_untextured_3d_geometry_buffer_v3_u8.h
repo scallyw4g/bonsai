@@ -1,3 +1,7 @@
+// callsite
+// src/engine/mesh.h:606:0
+
+// def (checked_vertex_buffering_functions_h)
 // src/engine/mesh.h:555:0
 //
 // Rotate, Scale and Offset

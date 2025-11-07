@@ -1,3 +1,7 @@
+// callsite
+// src/engine/voxel_face.h:216:0
+
+// def (vertex_data_functions)
 // src/engine/voxel_face.h:72:0
 inline void
 RightFaceVertexData( v3_u8 MinP, v3 Diameter, v3_u8 *Result)

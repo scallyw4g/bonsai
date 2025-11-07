@@ -1,3 +1,7 @@
+// callsite
+// src/engine/work_queue.h:153:0
+
+// def ((builtin.for_datatypes))
 // src/engine/work_queue.h:153:0
 
 
@@ -242,7 +246,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
   octree_node *DestNode;
 
 };
-
 
 
 

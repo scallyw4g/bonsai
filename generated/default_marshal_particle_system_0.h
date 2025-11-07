@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.cpp:288:0
+
+// def (default_marshal)
 // src/engine/serdes.h:15:0
 Live->Entropy = Stored->Entropy;
 

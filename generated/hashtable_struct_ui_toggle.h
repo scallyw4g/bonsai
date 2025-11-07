@@ -1,3 +1,7 @@
+// callsite
+// external/bonsai_stdlib/src/ui/ui.h:272:0
+
+// def (hashtable_struct)
 // external/bonsai_stdlib/src/poof_functions.h:780:0
 struct ui_toggle_linked_list_node
 {

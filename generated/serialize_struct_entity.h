@@ -1,3 +1,7 @@
+// callsite
+// src/engine/serdes.cpp:369:0
+
+// def (serialize_struct)
 // src/engine/serdes.h:132:0
 link_internal bonsai_type_info
 TypeInfo(entity *Ignored)
