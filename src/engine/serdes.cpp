@@ -447,17 +447,21 @@ poof(serdes_struct(shape_layer))
 poof(serdes_struct(brush_settings))
 #include <generated/serdes_struct_brush_settings.h>
 
-poof(serdes_struct(simple_brush))
-#include <generated/serdes_struct_SmTUPkbF.h>
-
 poof(serdes_struct(brush_layer))
 #include <generated/serdes_struct_brush_layer.h>
 
-/* poof(serdes_dunion(world_edit_shape)) */
-/* #include <generated/serdes_world_edit_shape.h> */
-
-poof(serdes_struct(layered_brush))
-#include <generated/serdes_struct_layered_brush.h>
+poof(
+  for_datatypes(struct)
+    func (type)
+    {
+      type.has_tag(serdes)?
+      {
+        serialize_struct(type)
+        deserialize_struct(type)
+      }
+    }
+)
+#include <generated/serdes_implementations.h>
 
 poof(serdes_struct(world_edit_brush))
 #include <generated/serdes_struct_world_edit_brush.h>

@@ -665,4 +665,4 @@ poof(
       }
     }
 )
-#include <generated/(builtin.for_datatypes)_rnQjkoAj.h>
+#include <generated/serdes_declarations.h>
