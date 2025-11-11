@@ -2,7 +2,8 @@
 // external/bonsai_debug/src/api.h:107:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1541:0
+// external/bonsai_stdlib/src/poof_functions.h:1542:0
+
 struct debug_profile_scope_cursor
 {
   debug_profile_scope *Start;
@@ -10,6 +11,7 @@ struct debug_profile_scope_cursor
   debug_profile_scope *At;
   debug_profile_scope *End;
 };
+
 
 
 
@@ -27,7 +29,7 @@ DebugProfileScopeCursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal debug_profile_scope*
-GetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+GetPtr( debug_profile_scope_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -37,13 +39,13 @@ GetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal debug_profile_scope*
-TryGetPtr(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+TryGetPtr( debug_profile_scope_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal debug_profile_scope*
-GetPtrUnsafe(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( debug_profile_scope_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -53,7 +55,7 @@ GetPtrUnsafe(debug_profile_scope_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal debug_profile_scope
-Get(debug_profile_scope_cursor *Cursor, umm ElementIndex)
+Get( debug_profile_scope_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -63,7 +65,7 @@ Get(debug_profile_scope_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(debug_profile_scope_cursor *Cursor, umm ElementIndex, debug_profile_scope Element)
+Set( debug_profile_scope_cursor *Cursor, umm ElementIndex, debug_profile_scope Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -78,7 +80,7 @@ Set(debug_profile_scope_cursor *Cursor, umm ElementIndex, debug_profile_scope El
 }
 
 link_internal debug_profile_scope*
-Advance(debug_profile_scope_cursor *Cursor)
+Advance( debug_profile_scope_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -88,7 +90,7 @@ Advance(debug_profile_scope_cursor *Cursor)
 }
 
 link_internal debug_profile_scope *
-Push(debug_profile_scope_cursor *Cursor, debug_profile_scope Element)
+Push( debug_profile_scope_cursor *Cursor, debug_profile_scope Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -99,7 +101,7 @@ Push(debug_profile_scope_cursor *Cursor, debug_profile_scope Element)
 }
 
 link_internal debug_profile_scope
-Pop(debug_profile_scope_cursor *Cursor)
+Pop( debug_profile_scope_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +112,7 @@ Pop(debug_profile_scope_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(debug_profile_scope_cursor *Cursor)
+LastIndex( debug_profile_scope_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -119,7 +121,7 @@ LastIndex(debug_profile_scope_cursor *Cursor)
 }
 
 link_internal debug_profile_scope*
-LastElement(debug_profile_scope_cursor *Cursor)
+LastElement( debug_profile_scope_cursor *Cursor)
 {
   debug_profile_scope *Result = {};
   s32 I = LastIndex(Cursor);
@@ -128,7 +130,7 @@ LastElement(debug_profile_scope_cursor *Cursor)
 }
 
 link_internal b32
-Remove(debug_profile_scope_cursor *Cursor, debug_profile_scope Query)
+Remove( debug_profile_scope_cursor *Cursor, debug_profile_scope Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -151,7 +153,7 @@ Remove(debug_profile_scope_cursor *Cursor, debug_profile_scope Query)
 
 
 link_internal b32
-ResizeCursor(debug_profile_scope_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( debug_profile_scope_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 

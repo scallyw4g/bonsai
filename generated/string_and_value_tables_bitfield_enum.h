@@ -2,7 +2,7 @@
 // examples/ui_test/game.cpp:58:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2054:0
+// external/bonsai_stdlib/src/poof_functions.h:2104:0
 link_internal b32
 IsValid(bitfield_enum Value)
 {

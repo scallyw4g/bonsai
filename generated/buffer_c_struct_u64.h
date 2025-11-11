@@ -2,7 +2,7 @@
 // src/engine/model.cpp:1:0
 
 // def (buffer_c)
-// external/bonsai_stdlib/src/poof_functions.h:1404:0
+// external/bonsai_stdlib/src/poof_functions.h:1405:0
 link_internal model_buffer
 ModelBuffer( u64 ElementCount, memory_arena* Memory)
 {

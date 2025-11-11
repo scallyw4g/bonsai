@@ -2,7 +2,8 @@
 // external/bonsai_stdlib/src/binary_parser.cpp:26:0
 
 // def (generate_cursor_functions)
-// external/bonsai_stdlib/src/poof_functions.h:1563:0
+// external/bonsai_stdlib/src/poof_functions.h:1564:0
+
 
 link_internal u64_cursor
 U64Cursor(umm ElementCount, memory_arena* Memory)
@@ -18,7 +19,7 @@ U64Cursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal u64*
-GetPtr(u64_cursor *Cursor, umm ElementIndex)
+GetPtr( u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -28,13 +29,13 @@ GetPtr(u64_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal u64*
-TryGetPtr(u64_cursor *Cursor, umm ElementIndex)
+TryGetPtr( u64_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal u64*
-GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -44,7 +45,7 @@ GetPtrUnsafe(u64_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal u64
-Get(u64_cursor *Cursor, umm ElementIndex)
+Get( u64_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -54,7 +55,7 @@ Get(u64_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(u64_cursor *Cursor, umm ElementIndex, u64 Element)
+Set( u64_cursor *Cursor, umm ElementIndex, u64 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -69,7 +70,7 @@ Set(u64_cursor *Cursor, umm ElementIndex, u64 Element)
 }
 
 link_internal u64*
-Advance(u64_cursor *Cursor)
+Advance( u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -79,7 +80,7 @@ Advance(u64_cursor *Cursor)
 }
 
 link_internal u64 *
-Push(u64_cursor *Cursor, u64 Element)
+Push( u64_cursor *Cursor, u64 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -90,7 +91,7 @@ Push(u64_cursor *Cursor, u64 Element)
 }
 
 link_internal u64
-Pop(u64_cursor *Cursor)
+Pop( u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -101,7 +102,7 @@ Pop(u64_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(u64_cursor *Cursor)
+LastIndex( u64_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +111,7 @@ LastIndex(u64_cursor *Cursor)
 }
 
 link_internal u64*
-LastElement(u64_cursor *Cursor)
+LastElement( u64_cursor *Cursor)
 {
   u64 *Result = {};
   s32 I = LastIndex(Cursor);
@@ -119,7 +120,7 @@ LastElement(u64_cursor *Cursor)
 }
 
 link_internal b32
-Remove(u64_cursor *Cursor, u64 Query)
+Remove( u64_cursor *Cursor, u64 Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -142,7 +143,7 @@ Remove(u64_cursor *Cursor, u64 Query)
 
 
 link_internal b32
-ResizeCursor(u64_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( u64_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 

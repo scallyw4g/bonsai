@@ -2,7 +2,8 @@
 // src/engine/world.h:92:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1541:0
+// external/bonsai_stdlib/src/poof_functions.h:1542:0
+
 struct octree_node_ptr_cursor
 {
   octree_node_ptr *Start;
@@ -10,6 +11,7 @@ struct octree_node_ptr_cursor
   octree_node_ptr *At;
   octree_node_ptr *End;
 };
+
 
 
 
@@ -27,7 +29,7 @@ OctreeNodePtrCursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal octree_node_ptr*
-GetPtr(octree_node_ptr_cursor *Cursor, umm ElementIndex)
+GetPtr( octree_node_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -37,13 +39,13 @@ GetPtr(octree_node_ptr_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal octree_node_ptr*
-TryGetPtr(octree_node_ptr_cursor *Cursor, umm ElementIndex)
+TryGetPtr( octree_node_ptr_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal octree_node_ptr*
-GetPtrUnsafe(octree_node_ptr_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( octree_node_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -53,7 +55,7 @@ GetPtrUnsafe(octree_node_ptr_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal octree_node_ptr
-Get(octree_node_ptr_cursor *Cursor, umm ElementIndex)
+Get( octree_node_ptr_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -63,7 +65,7 @@ Get(octree_node_ptr_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(octree_node_ptr_cursor *Cursor, umm ElementIndex, octree_node_ptr Element)
+Set( octree_node_ptr_cursor *Cursor, umm ElementIndex, octree_node_ptr Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -78,7 +80,7 @@ Set(octree_node_ptr_cursor *Cursor, umm ElementIndex, octree_node_ptr Element)
 }
 
 link_internal octree_node_ptr*
-Advance(octree_node_ptr_cursor *Cursor)
+Advance( octree_node_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -88,7 +90,7 @@ Advance(octree_node_ptr_cursor *Cursor)
 }
 
 link_internal octree_node_ptr *
-Push(octree_node_ptr_cursor *Cursor, octree_node_ptr Element)
+Push( octree_node_ptr_cursor *Cursor, octree_node_ptr Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -99,7 +101,7 @@ Push(octree_node_ptr_cursor *Cursor, octree_node_ptr Element)
 }
 
 link_internal octree_node_ptr
-Pop(octree_node_ptr_cursor *Cursor)
+Pop( octree_node_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +112,7 @@ Pop(octree_node_ptr_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(octree_node_ptr_cursor *Cursor)
+LastIndex( octree_node_ptr_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -119,7 +121,7 @@ LastIndex(octree_node_ptr_cursor *Cursor)
 }
 
 link_internal octree_node_ptr*
-LastElement(octree_node_ptr_cursor *Cursor)
+LastElement( octree_node_ptr_cursor *Cursor)
 {
   octree_node_ptr *Result = {};
   s32 I = LastIndex(Cursor);
@@ -128,7 +130,7 @@ LastElement(octree_node_ptr_cursor *Cursor)
 }
 
 link_internal b32
-Remove(octree_node_ptr_cursor *Cursor, octree_node_ptr Query)
+Remove( octree_node_ptr_cursor *Cursor, octree_node_ptr Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -151,7 +153,7 @@ Remove(octree_node_ptr_cursor *Cursor, octree_node_ptr Query)
 
 
 link_internal b32
-ResizeCursor(octree_node_ptr_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( octree_node_ptr_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 

@@ -2,7 +2,8 @@
 // external/bonsai_stdlib/src/binary_parser.cpp:40:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1541:0
+// external/bonsai_stdlib/src/poof_functions.h:1542:0
+
 struct v3_cursor
 {
   v3 *Start;
@@ -10,6 +11,7 @@ struct v3_cursor
   v3 *At;
   v3 *End;
 };
+
 
 
 
@@ -27,7 +29,7 @@ V3Cursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal v3*
-GetPtr(v3_cursor *Cursor, umm ElementIndex)
+GetPtr( v3_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -37,13 +39,13 @@ GetPtr(v3_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal v3*
-TryGetPtr(v3_cursor *Cursor, umm ElementIndex)
+TryGetPtr( v3_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal v3*
-GetPtrUnsafe(v3_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( v3_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -53,7 +55,7 @@ GetPtrUnsafe(v3_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal v3
-Get(v3_cursor *Cursor, umm ElementIndex)
+Get( v3_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -63,7 +65,7 @@ Get(v3_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(v3_cursor *Cursor, umm ElementIndex, v3 Element)
+Set( v3_cursor *Cursor, umm ElementIndex, v3 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -78,7 +80,7 @@ Set(v3_cursor *Cursor, umm ElementIndex, v3 Element)
 }
 
 link_internal v3*
-Advance(v3_cursor *Cursor)
+Advance( v3_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -88,7 +90,7 @@ Advance(v3_cursor *Cursor)
 }
 
 link_internal v3 *
-Push(v3_cursor *Cursor, v3 Element)
+Push( v3_cursor *Cursor, v3 Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -99,7 +101,7 @@ Push(v3_cursor *Cursor, v3 Element)
 }
 
 link_internal v3
-Pop(v3_cursor *Cursor)
+Pop( v3_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +112,7 @@ Pop(v3_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(v3_cursor *Cursor)
+LastIndex( v3_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -119,7 +121,7 @@ LastIndex(v3_cursor *Cursor)
 }
 
 link_internal v3*
-LastElement(v3_cursor *Cursor)
+LastElement( v3_cursor *Cursor)
 {
   v3 *Result = {};
   s32 I = LastIndex(Cursor);
@@ -128,7 +130,7 @@ LastElement(v3_cursor *Cursor)
 }
 
 link_internal b32
-Remove(v3_cursor *Cursor, v3 Query)
+Remove( v3_cursor *Cursor, v3 Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -151,7 +153,7 @@ Remove(v3_cursor *Cursor, v3 Query)
 
 
 link_internal b32
-ResizeCursor(v3_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( v3_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 

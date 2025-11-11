@@ -2,7 +2,7 @@
 // src/engine/world_chunk.cpp:4:0
 
 // def (block_array_c)
-// external/bonsai_stdlib/src/poof_functions.h:2384:0
+// external/bonsai_stdlib/src/poof_functions.h:2434:0
 
 
 

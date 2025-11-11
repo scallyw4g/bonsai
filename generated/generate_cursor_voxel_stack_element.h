@@ -2,7 +2,8 @@
 // src/engine/world_update.h:21:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1541:0
+// external/bonsai_stdlib/src/poof_functions.h:1542:0
+
 struct voxel_stack_element_cursor
 {
   voxel_stack_element *Start;
@@ -10,6 +11,7 @@ struct voxel_stack_element_cursor
   voxel_stack_element *At;
   voxel_stack_element *End;
 };
+
 
 
 
@@ -27,7 +29,7 @@ VoxelStackElementCursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal voxel_stack_element*
-GetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+GetPtr( voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -37,13 +39,13 @@ GetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal voxel_stack_element*
-TryGetPtr(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+TryGetPtr( voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal voxel_stack_element*
-GetPtrUnsafe(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -53,7 +55,7 @@ GetPtrUnsafe(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal voxel_stack_element
-Get(voxel_stack_element_cursor *Cursor, umm ElementIndex)
+Get( voxel_stack_element_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -63,7 +65,7 @@ Get(voxel_stack_element_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(voxel_stack_element_cursor *Cursor, umm ElementIndex, voxel_stack_element Element)
+Set( voxel_stack_element_cursor *Cursor, umm ElementIndex, voxel_stack_element Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -78,7 +80,7 @@ Set(voxel_stack_element_cursor *Cursor, umm ElementIndex, voxel_stack_element El
 }
 
 link_internal voxel_stack_element*
-Advance(voxel_stack_element_cursor *Cursor)
+Advance( voxel_stack_element_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -88,7 +90,7 @@ Advance(voxel_stack_element_cursor *Cursor)
 }
 
 link_internal voxel_stack_element *
-Push(voxel_stack_element_cursor *Cursor, voxel_stack_element Element)
+Push( voxel_stack_element_cursor *Cursor, voxel_stack_element Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -99,7 +101,7 @@ Push(voxel_stack_element_cursor *Cursor, voxel_stack_element Element)
 }
 
 link_internal voxel_stack_element
-Pop(voxel_stack_element_cursor *Cursor)
+Pop( voxel_stack_element_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +112,7 @@ Pop(voxel_stack_element_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(voxel_stack_element_cursor *Cursor)
+LastIndex( voxel_stack_element_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -119,7 +121,7 @@ LastIndex(voxel_stack_element_cursor *Cursor)
 }
 
 link_internal voxel_stack_element*
-LastElement(voxel_stack_element_cursor *Cursor)
+LastElement( voxel_stack_element_cursor *Cursor)
 {
   voxel_stack_element *Result = {};
   s32 I = LastIndex(Cursor);
@@ -128,7 +130,7 @@ LastElement(voxel_stack_element_cursor *Cursor)
 }
 
 link_internal b32
-Remove(voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
+Remove( voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -151,7 +153,7 @@ Remove(voxel_stack_element_cursor *Cursor, voxel_stack_element Query)
 
 
 link_internal b32
-ResizeCursor(voxel_stack_element_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( voxel_stack_element_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 

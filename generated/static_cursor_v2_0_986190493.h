@@ -4,6 +4,7 @@
 // def (static_cursor)
 // external/bonsai_stdlib/src/poof_functions.h:1235:0
 
+
 struct v2_static_cursor_16
 poof(@do_editor_ui)
 {

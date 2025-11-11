@@ -2,7 +2,7 @@
 // src/engine/model.h:97:0
 
 // def (maybe)
-// external/bonsai_stdlib/src/poof_functions.h:2204:0
+// external/bonsai_stdlib/src/poof_functions.h:2254:0
 struct maybe_model_buffer
 {
   maybe_tag Tag;

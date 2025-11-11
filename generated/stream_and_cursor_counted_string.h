@@ -2,7 +2,8 @@
 // external/bonsai_stdlib/src/counted_string.h:123:0
 
 // def (stream_and_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:2062:0
+// external/bonsai_stdlib/src/poof_functions.h:2112:0
+
 struct counted_string_cursor
 {
   counted_string *Start;
@@ -10,6 +11,7 @@ struct counted_string_cursor
   counted_string *At;
   counted_string *End;
 };
+
 
 
 
@@ -27,7 +29,7 @@ CountedStringCursor(umm ElementCount, memory_arena* Memory)
 }
 
 link_internal counted_string*
-GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+GetPtr( counted_string_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -37,13 +39,13 @@ GetPtr(counted_string_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal counted_string*
-TryGetPtr(counted_string_cursor *Cursor, umm ElementIndex)
+TryGetPtr( counted_string_cursor *Cursor, umm ElementIndex)
 {
   return GetPtr(Cursor, ElementIndex);
 }
 
 link_internal counted_string*
-GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
+GetPtrUnsafe( counted_string_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -53,7 +55,7 @@ GetPtrUnsafe(counted_string_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal counted_string
-Get(counted_string_cursor *Cursor, umm ElementIndex)
+Get( counted_string_cursor *Cursor, umm ElementIndex)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -63,7 +65,7 @@ Get(counted_string_cursor *Cursor, umm ElementIndex)
 }
 
 link_internal void
-Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
+Set( counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -78,7 +80,7 @@ Set(counted_string_cursor *Cursor, umm ElementIndex, counted_string Element)
 }
 
 link_internal counted_string*
-Advance(counted_string_cursor *Cursor)
+Advance( counted_string_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -88,7 +90,7 @@ Advance(counted_string_cursor *Cursor)
 }
 
 link_internal counted_string *
-Push(counted_string_cursor *Cursor, counted_string Element)
+Push( counted_string_cursor *Cursor, counted_string Element)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -99,7 +101,7 @@ Push(counted_string_cursor *Cursor, counted_string Element)
 }
 
 link_internal counted_string
-Pop(counted_string_cursor *Cursor)
+Pop( counted_string_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -110,7 +112,7 @@ Pop(counted_string_cursor *Cursor)
 }
 
 link_internal s32
-LastIndex(counted_string_cursor *Cursor)
+LastIndex( counted_string_cursor *Cursor)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -119,7 +121,7 @@ LastIndex(counted_string_cursor *Cursor)
 }
 
 link_internal counted_string*
-LastElement(counted_string_cursor *Cursor)
+LastElement( counted_string_cursor *Cursor)
 {
   counted_string *Result = {};
   s32 I = LastIndex(Cursor);
@@ -128,7 +130,7 @@ LastElement(counted_string_cursor *Cursor)
 }
 
 link_internal b32
-Remove(counted_string_cursor *Cursor, counted_string Query)
+Remove( counted_string_cursor *Cursor, counted_string Query)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
@@ -151,7 +153,7 @@ Remove(counted_string_cursor *Cursor, counted_string Query)
 
 
 link_internal b32
-ResizeCursor(counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
+ResizeCursor( counted_string_cursor *Cursor, umm Count, memory_arena *Memory)
 {
   /* ENSURE_OWNED_BY_THREAD(Cursor); */
 
