@@ -310,9 +310,254 @@ DrainHiRenderQueue(engine_resources *Engine)
   }
 }
 
-link_internal void
-ApplyBrush()
+link_internal rtt_framebuffer *
+ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum)
 {
+  layered_brush *Brush = &Edit->Brush->Layered;
+
+  world *World = GetWorld();
+  b32 BindInputTexture = Brush->AffectExisting;
+
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    BindFramebuffer(Write);
+
+    BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
+    if (BindInputTexture)
+    {
+      texture *InputTex = &Read->DestTexture;
+      // @derivs_texture_binding_to_shader_unit_0
+      BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
+    }
+    BindInputTexture = True;
+
+    b32 LastLayer = LayerIndex == Brush->LayerCount-1;
+    b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
+    BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
+    if (BindBlendTex)
+    {
+      texture *BlendTex = &Accum->DestTexture;
+      BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
+    }
+
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+
+    {
+      v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+      BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+    }
+
+    BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
+    BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
+    BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
+    BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
+    BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
+    BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
+    BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
+    BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
+
+
+    rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+       v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+       v3 EditRectRad = GetRadius(&SimEditRect);
+
+    // NOTE(Jesse): Must call bind explicitly because the
+    // driver doesn't cache these values otherwise .. it
+    // just reads them whenever it wants through the pointer..
+    v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
+    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
+    AssertNoGlErrors;
+
+    v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
+    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
+    AssertNoGlErrors;
+
+    v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
+
+    switch (Layer->Settings.Type)
+    {
+      case BrushLayerType_Brush:
+      {
+        NotImplemented;
+      } break;
+
+      case BrushLayerType_Noise:
+      {
+        noise_layer *Noise = &Layer->Settings.Noise;
+        BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
+
+        switch (Noise->Type)
+        {
+          case NoiseType_Perlin:
+          {
+            auto *Perlin = &Noise->Perlin;
+            BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+          } break;
+
+          case NoiseType_Voronoi:
+          {
+            auto *Voronoi = &Noise->Voronoi;
+            BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
+            BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
+          } break;
+
+          case NoiseType_White:
+          {} break;
+        }
+
+      } break;
+
+      case BrushLayerType_Shape:
+      {
+        shape_layer *Shape = &Layer->Settings.Shape;
+        BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
+
+        BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
+        BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
+        BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
+
+        m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
+        BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
+
+        switch(Shape->Type)
+        {
+          case ShapeType_Rect:
+          {
+            auto Rect = &Shape->Rect;
+            BindUniformByName(&WorldEditRC->Program, "RectDim", &Rect->Dim);
+          } break;
+
+          case ShapeType_Sphere:
+          {
+            auto Sphere = &Shape->Sphere;
+
+            v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
+            v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
+
+            BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
+            BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
+          } break;
+
+          case ShapeType_Line:
+          {
+            auto Line = &Shape->Line;
+            BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
+          } break;
+
+          case ShapeType_Cylinder:
+          {
+            auto Cylinder = &Shape->Cylinder;
+            BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
+            BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
+          } break;
+
+          case ShapeType_Plane:
+          {
+            auto Plane = &Shape->Plane;
+            auto Orientation = Plane->Orientation;
+
+            v3 xAxis = V3(1,0,0);
+            v3 yAxis = V3(0,1,0);
+            v3 zAxis = V3(0,0,1);
+
+            switch (Orientation)
+            {
+              InvalidCase(ShapeAxis_Count);
+
+              case ShapeAxis_InferFromMajorAxis:
+              {} break;
+
+              // Traverses the X axis and ascends
+              case ShapeAxis_PosX:
+              {
+                xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+              // Traverses the X axis and descends
+              case ShapeAxis_NegX:
+              {
+                xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
+                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+
+              case ShapeAxis_PosY:
+              {
+                xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+              case ShapeAxis_NegY:
+              {
+                xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+
+              case ShapeAxis_PosZ:
+              {
+                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+              case ShapeAxis_NegZ:
+              {
+                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+            }
+
+            v3 Plane_SimShapeOrigin = EditRectRad;
+            v3 PlaneNormal = zAxis;
+
+            auto PlaneRadius = Plane->Thickness/2.f;
+            auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
+                                    PlaneNormal.y*Plane_SimShapeOrigin.y +
+                                    PlaneNormal.z*Plane_SimShapeOrigin.z );
+
+            auto PlanePos = Plane_SimShapeOrigin;
+
+            BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
+            BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
+            BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+
+          } break;
+
+          case ShapeType_Torus:
+          {
+            auto Torus = &Shape->Torus;
+
+            BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
+            BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
+
+          } break;
+
+          // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
+          //
+        }
+      } break;
+    }
+
+
+    /* gpu_timer Timer = StartGpuTimer(); */
+    RenderQuad();
+    /* EndGpuTimer(&Timer); */
+    /* Push(&Graphics->GpuTimers, &Timer); */
+
+    /* Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex); */
+
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+    Swap(Read, Write);
+#undef Swap
+  }
+
+  // This is actually the last-written to texture
+  return Read;
 }
 
 link_export void
@@ -603,9 +848,6 @@ DrainLoRenderQueue(engine_resources *Engine)
                 // }
 
 
-#define AdvanceIndex(i) i = ((i+1) % 3)
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
-
                 RangeIterator(KeyIndex, EditCount)
                 {
                   TIMED_NAMED_BLOCK(WorldEditDrawCall);
@@ -614,8 +856,6 @@ DrainLoRenderQueue(engine_resources *Engine)
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
                     layered_brush *Brush = &Edit->Brush->Layered;
-
-
 
                     b32 BindInputTexture = Brush->AffectExisting;
 
@@ -626,244 +866,8 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
                     rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
-                    /* rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex; */
 
-                    RangeIterator(LayerIndex, Brush->LayerCount)
-                    {
-                      BindFramebuffer(Write);
-
-                      BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
-                      if (BindInputTexture)
-                      {
-                        texture *InputTex = &Read->DestTexture;
-                        /* texture *InputTex = &WorldEditRC->Framebuffers[CurrentReadTextureIndex].DestTexture; */
-                        // @derivs_texture_binding_to_shader_unit_0
-                        BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
-                      }
-                      BindInputTexture = True;
-
-                      b32 LastLayer = LayerIndex == Brush->LayerCount-1;
-                      b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
-                      BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
-                      if (BindBlendTex)
-                      {
-                        texture *BlendTex = &Accum->DestTexture;
-                        /* texture *BlendTex = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture; */
-                        BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
-                      }
-
-                      brush_layer *Layer = Brush->Layers + LayerIndex;
-
-                      {
-                        v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-                        BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
-                      }
-
-                      BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
-                      BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
-                      BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
-                      BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
-                      BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
-                      BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
-                      BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
-                      BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
-
-
-                      rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
-                         v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-                         v3 EditRectRad = GetRadius(&SimEditRect);
-
-                      // NOTE(Jesse): Must call bind explicitly because the
-                      // driver doesn't cache these values otherwise .. it
-                      // just reads them whenever it wants through the pointer..
-                      v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
-                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
-                      AssertNoGlErrors;
-
-                      v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
-                      BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
-                      AssertNoGlErrors;
-
-                      v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
-
-                      switch (Layer->Settings.Type)
-                      {
-                        case BrushLayerType_Brush:
-                        {
-                          NotImplemented;
-                        } break;
-
-                        case BrushLayerType_Noise:
-                        {
-                          noise_layer *Noise = &Layer->Settings.Noise;
-                          BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
-
-                          switch (Noise->Type)
-                          {
-                            case NoiseType_Perlin:
-                            {
-                              auto *Perlin = &Noise->Perlin;
-                              BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
-                            } break;
-
-                            case NoiseType_Voronoi:
-                            {
-                              auto *Voronoi = &Noise->Voronoi;
-                              BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
-                              BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
-                            } break;
-
-                            case NoiseType_White:
-                            {} break;
-                          }
-
-                        } break;
-
-                        case BrushLayerType_Shape:
-                        {
-                          shape_layer *Shape = &Layer->Settings.Shape;
-                          BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
-
-                          BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
-                          BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
-                          BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
-
-                          m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
-                          BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
-
-                          switch(Shape->Type)
-                          {
-                            case ShapeType_Rect:
-                            {
-                              auto Rect = &Shape->Rect;
-                              BindUniformByName(&WorldEditRC->Program, "RectDim", &Rect->Dim);
-                            } break;
-
-                            case ShapeType_Sphere:
-                            {
-                              auto Sphere = &Shape->Sphere;
-
-                              v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
-                              v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
-
-                              BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
-                              BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
-                            } break;
-
-                            case ShapeType_Line:
-                            {
-                              auto Line = &Shape->Line;
-                              BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
-                            } break;
-
-                            case ShapeType_Cylinder:
-                            {
-                              auto Cylinder = &Shape->Cylinder;
-                              BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
-                              BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
-                            } break;
-
-                            case ShapeType_Plane:
-                            {
-                              auto Plane = &Shape->Plane;
-                              auto Orientation = Plane->Orientation;
-
-                              v3 xAxis = V3(1,0,0);
-                              v3 yAxis = V3(0,1,0);
-                              v3 zAxis = V3(0,0,1);
-
-                              switch (Orientation)
-                              {
-                                InvalidCase(ShapeAxis_Count);
-
-                                case ShapeAxis_InferFromMajorAxis:
-                                {} break;
-
-                                // Traverses the X axis and ascends
-                                case ShapeAxis_PosX:
-                                {
-                                  xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
-                                  yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-                                // Traverses the X axis and descends
-                                case ShapeAxis_NegX:
-                                {
-                                  xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
-                                  yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-
-
-                                case ShapeAxis_PosY:
-                                {
-                                  xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
-                                  yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-                                case ShapeAxis_NegY:
-                                {
-                                  xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
-                                  yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-
-
-                                case ShapeAxis_PosZ:
-                                {
-                                  xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                                  yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-
-                                case ShapeAxis_NegZ:
-                                {
-                                  xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                                  yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
-                                  zAxis = Normalize(Cross(xAxis, yAxis));
-                                } break;
-                              }
-
-                              v3 Plane_SimShapeOrigin = EditRectRad;
-                              v3 PlaneNormal = zAxis;
-
-                              auto PlaneRadius = Plane->Thickness/2.f;
-                              auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
-                                                      PlaneNormal.y*Plane_SimShapeOrigin.y +
-                                                      PlaneNormal.z*Plane_SimShapeOrigin.z );
-
-                              auto PlanePos = Plane_SimShapeOrigin;
-
-                              BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
-                              BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
-                              BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
-
-                            } break;
-
-                            case ShapeType_Torus:
-                            {
-                              auto Torus = &Shape->Torus;
-
-                              BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
-                              BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
-
-                            } break;
-
-                            // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
-                            //
-                          }
-                        } break;
-                      }
-
-
-                      /* gpu_timer Timer = StartGpuTimer(); */
-                      RenderQuad();
-                      /* EndGpuTimer(&Timer); */
-                      /* Push(&Graphics->GpuTimers, &Timer); */
-
-                      /* Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex); */
-                      Swap(Read, Write);
-                    }
+                    Read = ApplyBrush(WorldEditRC, Edit, Chunk, Read, Write, Accum);
 
                     /* CurrentAccumulationTextureIndex = CurrentReadTextureIndex; */
                     Accum = Read;
