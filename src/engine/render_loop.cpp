@@ -310,6 +310,11 @@ DrainHiRenderQueue(engine_resources *Engine)
   }
 }
 
+link_internal void
+ApplyBrush()
+{
+}
+
 link_export void
 DrainLoRenderQueue(engine_resources *Engine)
 {
@@ -559,14 +564,14 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             DispatchTerrainShaders(Graphics, Chunk);
 
-            s32 CurrentAccumulationTextureIndex = 0;
-
             //
             // Apply edits
             //
 
-
             auto WorldEditRC = &Graphics->WorldEditRC;
+
+            s32 CurrentAccumulationTextureIndex = 0;
+            rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex;
             {
               AcquireFutex(&Node->Lock);
               if (TotalElements(&Node->Edits))
@@ -602,16 +607,14 @@ DrainLoRenderQueue(engine_resources *Engine)
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
 
                 RangeIterator(KeyIndex, EditCount)
-                /* IterateOver(&Node->Edits, Edit, EditIndex) */
                 {
                   TIMED_NAMED_BLOCK(WorldEditDrawCall);
-
-                  /* world_edit *Edit = GetPtr(&Editor->Edits, *Edit); */
 
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
                     layered_brush *Brush = &Edit->Brush->Layered;
+
 
 
                     b32 BindInputTexture = Brush->AffectExisting;
@@ -629,14 +632,19 @@ DrainLoRenderQueue(engine_resources *Engine)
                       AdvanceIndex(CurrentReadTextureIndex);
                     }
 
+                    rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
+                    rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
+                    /* rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex; */
+
                     RangeIterator(LayerIndex, Brush->LayerCount)
                     {
-                      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->Framebuffers[CurrentWriteTextureIndex].FBO.ID);
+                      BindFramebuffer(Write);
 
                       BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
                       if (BindInputTexture)
                       {
-                        texture *InputTex = &WorldEditRC->Framebuffers[CurrentReadTextureIndex].DestTexture;
+                        texture *InputTex = &Read->DestTexture;
+                        /* texture *InputTex = &WorldEditRC->Framebuffers[CurrentReadTextureIndex].DestTexture; */
                         // @derivs_texture_binding_to_shader_unit_0
                         BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
                       }
@@ -647,7 +655,8 @@ DrainLoRenderQueue(engine_resources *Engine)
                       BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
                       if (BindBlendTex)
                       {
-                        texture *BlendTex = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture;
+                        texture *BlendTex = &Accum->DestTexture;
+                        /* texture *BlendTex = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture; */
                         BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
                       }
 
@@ -860,10 +869,12 @@ DrainLoRenderQueue(engine_resources *Engine)
                       /* EndGpuTimer(&Timer); */
                       /* Push(&Graphics->GpuTimers, &Timer); */
 
-                      Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex);
+                      /* Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex); */
+                      Swap(Read, Write);
                     }
 
-                    CurrentAccumulationTextureIndex = CurrentReadTextureIndex;
+                    /* CurrentAccumulationTextureIndex = CurrentReadTextureIndex; */
+                    Accum = Read;
                   }
 
                   AssertNoGlErrors;
@@ -877,7 +888,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
-            texture *CurrentAccumulationTexture = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture;
+            texture *CurrentAccumulationTexture = &Accum->DestTexture;
 
             //
             // Terrain Finalize
