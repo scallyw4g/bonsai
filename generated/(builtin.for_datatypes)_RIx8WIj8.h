@@ -294,7 +294,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 
 
 
-
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -622,6 +621,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_laye
 
 
 
+
 struct random_series;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -642,7 +642,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 struct rtt_framebuffer_static_cursor_3;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 

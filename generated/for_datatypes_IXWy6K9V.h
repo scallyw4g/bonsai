@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:120:0
+// src/engine/graphics.h:122:0
 
 // def ((builtin.for_datatypes))
-// src/engine/graphics.h:120:0
+// src/engine/graphics.h:122:0
 
 
 
@@ -1193,7 +1193,6 @@ InitializeWorldEditRenderContext
     
   
   
-  
   , v3 *ChunkDim
   , v3 *WorldspaceChunkBasis
   , v3 *ChunkResolution
@@ -1210,7 +1209,6 @@ InitializeWorldEditRenderContext
     u32 UniformIndex = 0;
 
         
-    
     
     
             Element->ChunkDim = ChunkDim;
@@ -1307,7 +1305,6 @@ UseRenderPass_world_edit_render_context
             
       
       
-      
                   {
         shader_uniform *Uniform = Element->Uniforms+UniformIndex;
         BindUniformById(Uniform, &TextureUnit);
@@ -1375,7 +1372,6 @@ UseShader( world_edit_render_context *Element )
 {
   UseRenderPass_world_edit_render_context(Element);
 }
-
 
 
 

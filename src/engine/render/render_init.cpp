@@ -1,17 +1,5 @@
 
 void
-SetDrawBuffers(framebuffer *FBO)
-{
-  u32 *Attachments = Allocate(u32, GetTranArena(), FBO->Attachments);
-  for (u32 AttIndex = 0; AttIndex < FBO->Attachments; ++AttIndex)
-  {
-    Attachments[AttIndex] =  GL_COLOR_ATTACHMENT0 + AttIndex;
-  }
-
-  GetGL()->DrawBuffers((s32)FBO->Attachments, Attachments);
-}
-
-void
 InitSsaoKernel(v3 *Kernel, s32 Count, random_series *Entropy)
 {
   for (int KernelIndex = 0;
@@ -202,15 +190,6 @@ MakeLightingShader( lighting_render_group *Group,
    ShadowMapResolution
   );
 
-}
-
-framebuffer
-GenFramebuffer()
-{
-  framebuffer Framebuffer = {};
-  GetGL()->GenFramebuffers(1, &Framebuffer.ID);
-
-  return Framebuffer;
 }
 
 ao_render_group *
@@ -709,15 +688,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
     RangeIterator(Index, 3)
     {
-      WorldEditRC->PingPongFBOs[Index] = GenFramebuffer();
-      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[Index].ID);
-
-      WorldEditRC->PingPongTextures[Index] = MakeTexture_RGBA(TextureDim, Cast(v4*, 0), CSz("PingPongTexture"), 1, TextureStorageFormat_RGBA32F);
-
-      FramebufferTexture(&WorldEditRC->PingPongFBOs[Index], &WorldEditRC->PingPongTextures[Index]);
-      SetDrawBuffers(&WorldEditRC->PingPongFBOs[Index]);
-
-      Ensure(CheckAndClearFramebuffer());
+      InitializeRenderToTextureFramebuffer(WorldEditRC->Framebuffers + Index, TextureDim, FSz("PingPongFBO(%d)", Index));
     }
   }
 
@@ -767,8 +738,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
     terrain_decoration_render_context *TerrainDecorationRC = &Result->TerrainDecorationRC;
     InitializeTerrainDecorationRenderContext(TerrainDecorationRC, &Result->TerrainDerivsRC.DestTex, ChunkDim, {}, {});
 
-    TerrainDecorationRC->DestFBO = &WorldEditRC->PingPongFBOs[0];
-    TerrainDecorationRC->DestTex = &WorldEditRC->PingPongTextures[0];
+    TerrainDecorationRC->DestFBO = &WorldEditRC->Framebuffers[0].FBO;
+    TerrainDecorationRC->DestTex = &WorldEditRC->Framebuffers[0].DestTexture;
 
     GetGL()->BindFramebuffer(GL_FRAMEBUFFER, TerrainDecorationRC->DestFBO->ID);
 

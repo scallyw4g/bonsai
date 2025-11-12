@@ -343,7 +343,6 @@ Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm C
 
 
 
-
 struct brush_settings;
 
 link_internal b32

@@ -631,12 +631,12 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     RangeIterator(LayerIndex, Brush->LayerCount)
                     {
-                      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->PingPongFBOs[CurrentWriteTextureIndex].ID);
+                      GetGL()->BindFramebuffer(GL_FRAMEBUFFER, WorldEditRC->Framebuffers[CurrentWriteTextureIndex].FBO.ID);
 
                       BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
                       if (BindInputTexture)
                       {
-                        texture *InputTex = &WorldEditRC->PingPongTextures[CurrentReadTextureIndex];
+                        texture *InputTex = &WorldEditRC->Framebuffers[CurrentReadTextureIndex].DestTexture;
                         // @derivs_texture_binding_to_shader_unit_0
                         BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
                       }
@@ -647,7 +647,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                       BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
                       if (BindBlendTex)
                       {
-                        texture *BlendTex = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
+                        texture *BlendTex = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture;
                         BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
                       }
 
@@ -877,7 +877,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
-            texture *CurrentAccumulationTexture = &WorldEditRC->PingPongTextures[CurrentAccumulationTextureIndex];
+            texture *CurrentAccumulationTexture = &WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex].DestTexture;
 
             //
             // Terrain Finalize

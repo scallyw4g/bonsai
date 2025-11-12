@@ -69,8 +69,10 @@ poof( @render_pass
 {
           shader  Program;
   shader_uniform  Uniforms[4];
-     framebuffer  PingPongFBOs[3];
-         texture  PingPongTextures[3];
+
+  rtt_framebuffer Framebuffers[3];
+     /* framebuffer  PingPongFBOs[3]; */
+     /*     texture  PingPongTextures[3]; */
 
               v3 *ChunkDim;             poof(@uniform)
               v3 *WorldspaceChunkBasis; poof(@uniform)

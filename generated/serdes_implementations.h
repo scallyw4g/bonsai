@@ -489,7 +489,6 @@ Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory)
 
 
 
-
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
 {

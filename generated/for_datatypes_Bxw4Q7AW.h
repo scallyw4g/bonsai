@@ -6421,13 +6421,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
         
         
         
-        cs MemberName = CSz("PingPongFBOs");
+        cs MemberName = CSz("Framebuffers");
                                 
 
         if (ToggleButton(Ui,
-            CSz("v PingPongFBOs[3]"),
-            CSz("> PingPongFBOs[3]"),
-            UiId(Window, "toggle world_edit_render_context framebuffer PingPongFBOs", Element->PingPongFBOs, ThisHash),
+            CSz("v Framebuffers[3]"),
+            CSz("> Framebuffers[3]"),
+            UiId(Window, "toggle world_edit_render_context rtt_framebuffer Framebuffers", Element->Framebuffers, ThisHash),
             Params ))
         {
           OPEN_INDENT_FOR_TOGGLEABLE_REGION();
@@ -6438,48 +6438,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
           {
                         DoEditorUi(Ui,
               Window,
-              Element->PingPongFBOs+ArrayIndex,
-              FSz("PingPongFBOs[%d]", ArrayIndex),
-              ThisHash,
-              Params);
-
-            
-          }
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-        }
-        PushNewRow(Ui);
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("PingPongTextures");
-                                
-
-        if (ToggleButton(Ui,
-            CSz("v PingPongTextures[3]"),
-            CSz("> PingPongTextures[3]"),
-            UiId(Window, "toggle world_edit_render_context texture PingPongTextures", Element->PingPongTextures, ThisHash),
-            Params ))
-        {
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-          PushNewRow(Ui);
-                    s32 End = 3;
-
-          RangeIterator(ArrayIndex, End)
-          {
-                        DoEditorUi(Ui,
-              Window,
-              Element->PingPongTextures+ArrayIndex,
-              FSz("PingPongTextures[%d]", ArrayIndex),
+              Element->Framebuffers+ArrayIndex,
+              FSz("Framebuffers[%d]", ArrayIndex),
               ThisHash,
               Params);
 
@@ -8293,7 +8253,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
 }
 ;
-
 
 
 
@@ -17098,6 +17057,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -18060,7 +18020,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
 }
 ;
-
 
 
 
