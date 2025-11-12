@@ -619,18 +619,10 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     b32 BindInputTexture = Brush->AffectExisting;
 
-                    s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex;
-                    s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex;
+                    s32 CurrentReadTextureIndex = BindInputTexture ? CurrentAccumulationTextureIndex :
+                                                                     CurrentAccumulationTextureIndex + 2;
 
-                    AdvanceIndex(CurrentWriteTextureIndex);
-
-                    // If we're not trying to seed the brush with the current
-                    // accumulator texture, set to the empty one
-                    if (BindInputTexture == False)
-                    {
-                      AdvanceIndex(CurrentReadTextureIndex);
-                      AdvanceIndex(CurrentReadTextureIndex);
-                    }
+                    s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex + 1;
 
                     rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
                     rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
