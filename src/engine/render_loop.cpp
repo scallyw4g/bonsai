@@ -310,13 +310,38 @@ DrainHiRenderQueue(engine_resources *Engine)
   }
 }
 
-link_internal rtt_framebuffer *
-ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum)
+link_internal b32
+AnyValidLayersRemaining(layered_brush *Brush, s32 At)
 {
-  layered_brush *Brush = &Edit->Brush->Layered;
+  b32 HasValidLayer = False;
+  RangeIteratorRange(LayerIndex, At, Brush->LayerCount)
+  {
+    brush_layer *Layer = &Brush->Layers[LayerIndex];
+    switch (Layer->Settings.Type)
+    {
+      case BrushLayerType_Brush:
+      {
+        if (Layer->Settings.Brush) { HasValidLayer = True; }
+      } break;
+
+      case BrushLayerType_Noise:
+      case BrushLayerType_Shape:
+      {
+        HasValidLayer = True;
+      } break;
+    }
+  }
+  return HasValidLayer;
+}
+
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+
+link_internal rtt_framebuffer *
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, b32 BindInputTexture, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum)
+{
+  layered_brush *Brush = &EditBrush->Layered;
 
   world *World = GetWorld();
-  b32 BindInputTexture = Brush->AffectExisting;
 
   RangeIterator(LayerIndex, Brush->LayerCount)
   {
@@ -331,7 +356,7 @@ ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk
     }
     BindInputTexture = True;
 
-    b32 LastLayer = LayerIndex == Brush->LayerCount-1;
+    b32 LastLayer = (AnyValidLayersRemaining(Brush, LayerIndex) == False);
     b32 BindBlendTex = (Brush->AffectExisting == False) && LastLayer;
     BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
     if (BindBlendTex)
@@ -347,17 +372,17 @@ ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk
       BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
     }
 
-    BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
+    BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer-> Settings.ValueBias);
     BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
     BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.BlendMode);
-    BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
+    BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer-> Settings.ValueModifier);
     BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
     BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
     BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
     BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
 
 
-    rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+    rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
        v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
        v3 EditRectRad = GetRadius(&SimEditRect);
 
@@ -378,7 +403,31 @@ ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk
     {
       case BrushLayerType_Brush:
       {
-        NotImplemented;
+        world_edit_brush *NestedBrush = Layer->Settings.Brush;
+        if (NestedBrush)
+        {
+          rtt_framebuffer B0 = {}, B1 = {};
+
+          InitializeRenderToTextureFramebuffer(&B0, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 0"));
+          InitializeRenderToTextureFramebuffer(&B1, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 1"));
+
+          rtt_framebuffer *Applied = ApplyBrush(WorldEditRC, EditBounds, NestedBrush, False, Chunk, &B0, &B1, 0);
+        }
+        else
+        {
+          // NOTE(Jesse): It is important we continue here so we do not do the draw call and
+          // swap the read/write Framebuffer pointers at the end of the loop because we didn't
+          // in fact do anything.  Unless we're on the last layer, in which case we want to do the swap
+          // because we return Read, which needs to be the last-written buffer
+          //
+          // What a mess..
+          if (LastLayer)
+          {
+            /* Swap(Read, Write); */
+          }
+
+          continue;
+        }
       } break;
 
       case BrushLayerType_Noise:
@@ -431,7 +480,7 @@ ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk
           {
             auto Sphere = &Shape->Sphere;
 
-            v3 SimSphereOrigin = GetSimSpaceP(World, Edit->Region.Min + EditRectRad);
+            v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
             v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
 
             BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
@@ -549,9 +598,6 @@ ApplyBrush(world_edit_render_context *WorldEditRC, world_edit *Edit, world_chunk
     /* EndGpuTimer(&Timer); */
     /* Push(&Graphics->GpuTimers, &Timer); */
 
-    /* Swap(CurrentWriteTextureIndex, CurrentReadTextureIndex); */
-
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
     Swap(Read, Write);
 #undef Swap
   }
@@ -855,9 +901,8 @@ DrainLoRenderQueue(engine_resources *Engine)
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
-                    layered_brush *Brush = &Edit->Brush->Layered;
-
-                    b32 BindInputTexture = Brush->AffectExisting;
+                    world_edit_brush *Brush = Edit->Brush;
+                    b32 BindInputTexture = Brush->Layered.AffectExisting;
 
                     s32 CurrentReadTextureIndex = BindInputTexture ? CurrentAccumulationTextureIndex :
                                                                      CurrentAccumulationTextureIndex + 2;
@@ -867,7 +912,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                     rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
                     rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
 
-                    Read = ApplyBrush(WorldEditRC, Edit, Chunk, Read, Write, Accum);
+                    Read = ApplyBrush(WorldEditRC, Edit->Region, Brush, BindInputTexture, Chunk, Read, Write, Accum);
 
                     /* CurrentAccumulationTextureIndex = CurrentReadTextureIndex; */
                     Accum = Read;
