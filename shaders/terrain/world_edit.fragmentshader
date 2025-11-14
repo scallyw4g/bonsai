@@ -199,7 +199,10 @@ f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
 
 // Blend Value
 //
-void BlendSample(int Mode, inout f32 Accumulator, inout v3 ColorValue, inout f32 ThisSample, in v3 ColorSample)
+void BlendSample(
+    int Mode,
+    inout f32 Accumulator, inout v3 ColorValue,
+    inout f32  ThisSample,    in v3 ColorSample )
 {
   switch (Mode)
   {
@@ -231,7 +234,13 @@ void BlendSample(int Mode, inout f32 Accumulator, inout v3 ColorValue, inout f32
 
     case 4: // WorldEdit_Mode_Difference
     {
-      Accumulator = sign(-ThisSample) * Accumulator;
+      if (Accumulator > 0.f && ThisSample > 0.f)
+      {
+        Accumulator *= -1.f;
+      }
+      /* Accumulator = max(-1.f*Accumulator, ThisSample); */
+      /* Accumulator = sign(-ThisSample) * Accumulator; */
+      /* Accumulator = min(Accumulator, -(ThisSample+0.00001f)); */
     } break;
 
     case 5: // WorldEdit_Mode_Multiply
@@ -346,9 +355,6 @@ void main()
             // ShapeType_Rect
             case 0:
             {
-              /* v3 BoxR = EditDim/4.f; */
-              /* v3 BoxR = v3(20.f); */
-              /* v3 BoxR = v3(200.f); */
               v3 BoxR = RectDim/2.f;
               if (length(BoxR) > 0.f)
               {
@@ -496,11 +502,15 @@ void main()
     v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
 
     f32 BlendValue = TexLookup.a;
+    /* f32 BlendValue = -1.f*TexLookup.a; */
     v3 BlendColor = TexLookup.rgb;
 
 
 #if 1
-    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, Accumulator, ColorValue);
+    /* f32 A = -1.f*Accumulator; */
+    f32 A = Accumulator;
+    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, A, ColorValue);
+
     Accumulator = BlendValue;
     ColorValue = BlendColor;
 #else
@@ -522,6 +532,6 @@ void main()
 
 
 
-  Output.rgb = ColorValue;
   Output.a = Accumulator;
+  Output.rgb = ColorValue;
 }
