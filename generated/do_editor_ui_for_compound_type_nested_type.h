@@ -34,100 +34,130 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, nested_typ
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("NestedFoo");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s32*, &Element->NestedFoo),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("NestedBar");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->NestedBar),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Array");
-                                
-
-        if (ToggleButton(Ui,
-            CSz("v Array[4]"),
-            CSz("> Array[4]"),
-            UiId(Window, "toggle nested_type u32 Array", Element->Array, ThisHash),
-            Params ))
         {
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-          PushNewRow(Ui);
-                    s32 End = 4;
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NestedFoo");
 
-          RangeIterator(ArrayIndex, End)
-          {
-                        DoEditorUi(Ui,
+                                                                                                auto Member = Cast(s32*, &Element->NestedFoo);
+            DoEditorUi(Ui,
               Window,
-              Element->Array+ArrayIndex,
-              FSz("Array[%d]", ArrayIndex),
+              Member,
+              MemberName,
               ThisHash,
-              Params);
+              Params
+              );
 
-             PushNewRow(Ui); 
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
           }
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
-        PushNewRow(Ui);
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NestedBar");
+
+                                                                                                auto Member = Cast(f32*, &Element->NestedBar);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
-                PushNewRow(Ui);
 
 
 
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Array");
+
+                                                
+
+            if (ToggleButton(Ui,
+                CSz("v Array[4]"),
+                CSz("> Array[4]"),
+                UiId(Window, "toggle nested_type u32 Array", Element->Array, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = 4;
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Array+ArrayIndex,
+                  FSz("Array[%d]", ArrayIndex),
+                  ThisHash,
+                  Params);
+
+                 PushNewRow(Ui); 
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

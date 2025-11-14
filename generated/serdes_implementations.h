@@ -573,7 +573,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->LayerBlendMode); // enum
 
 
 
@@ -734,7 +734,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
 
 
-          Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+          Element->LayerBlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 
@@ -888,7 +888,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->Mode); // enum
+                    Result &= Serialize(Bytes, (u32*)&Element->BrushBlendMode); // enum
 
 
 
@@ -956,7 +956,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
-          Element->Mode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+          Element->BrushBlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
 
 
 
@@ -1413,18 +1413,9 @@ Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count)
 
 
 
-                            Result &= Serialize(Bytes, &Element->AffectExisting); // default
-
-
-
-
-
-
 
 
             
-
-        
 
         
 
@@ -1479,19 +1470,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena
 
 
 
-              
-  
-  Result &= Deserialize(Bytes, &Element->AffectExisting, Memory);
-
-
-
-
-
-
 
 
     
-  
   
 
 

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:500:0
+// src/engine/editor.cpp:508:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,47 +34,65 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("LoadState");
+
+                                                                                                auto Member = Cast(asset_load_state*, &Element->LoadState);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("LoadState");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(asset_load_state*, &Element->LoadState),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Id");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(asset_id*, &Element->Id),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Id");
+
+                                                                                                auto Member = Cast(asset_id*, &Element->Id);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -82,25 +100,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("LRUFrameIndex");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u64*, &Element->LRUFrameIndex),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("LRUFrameIndex");
+
+                                                                                                auto Member = Cast(u64*, &Element->LRUFrameIndex);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -108,26 +136,36 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Type");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(asset_type*, &Element->Type),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Type");
+
+                                                                                                auto Member = Cast(asset_type*, &Element->Type);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -135,27 +173,40 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("(anonymous)");
-                                                                
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("(anonymous)");
+
+                                                                                                
 
 
 
 
 
 
-        
+
+            
 
 
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:479:0
+// src/engine/editor.cpp:487:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,47 +34,65 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Next");
+
+                                                                                                auto Member = Cast(world_chunk*, Element->Next);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Next");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_chunk*, Element->Next),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Dim");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3i*, &Element->Dim),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Dim");
+
+                                                                                                auto Member = Cast(v3i*, &Element->Dim);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -82,25 +100,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Occupancy");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u64*, Element->Occupancy),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Occupancy");
+
+                                                                                                auto Member = Cast(u64*, Element->Occupancy);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -108,26 +136,36 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("xOccupancyBorder");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u64*, Element->xOccupancyBorder),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("xOccupancyBorder");
+
+                                                                                                auto Member = Cast(u64*, Element->xOccupancyBorder);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -135,26 +173,36 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("FaceMasks");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u64*, Element->FaceMasks),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FaceMasks");
+
+                                                                                                auto Member = Cast(u64*, Element->FaceMasks);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -162,50 +210,71 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("IsOnFreelist");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->IsOnFreelist),
-          MemberName,
-          ThisHash,
-          &DefaultUiRenderParams_Checkbox
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("IsOnFreelist");
+
+                                                                        auto Member = Cast(b32*, &Element->IsOnFreelist);
+            DoEditorUi(Ui,
+              Window,
+              Cast(u8*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
 
 
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Handles");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(gpu_element_buffer_handles*, &Element->Handles),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Handles");
+
+                                                                                                auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -213,25 +282,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("OcclusionQueryId");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->OcclusionQueryId),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("OcclusionQueryId");
+
+                                                                                                auto Member = Cast(u32*, &Element->OcclusionQueryId);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -239,74 +318,106 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("QueryActive");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->QueryActive),
-          MemberName,
-          ThisHash,
-          &DefaultUiRenderParams_Checkbox
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("QueryActive");
+
+                                                                        auto Member = Cast(b32*, &Element->QueryActive);
+            DoEditorUi(Ui,
+              Window,
+              Cast(u8*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
 
 
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("OcclusionFrames");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->OcclusionFrames),
-          MemberName,
-          ThisHash,
-          &DefaultUiRenderParams_Checkbox
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("OcclusionFrames");
+
+                                                                        auto Member = Cast(b32*, &Element->OcclusionFrames);
+            DoEditorUi(Ui,
+              Window,
+              Cast(u8*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
 
 
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("StandingSpots");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(voxel_position_cursor*, &Element->StandingSpots),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("StandingSpots");
+
+                                                                                                auto Member = Cast(voxel_position_cursor*, &Element->StandingSpots);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -314,25 +425,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("DimInChunks");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3i*, &Element->DimInChunks),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DimInChunks");
+
+                                                                                                auto Member = Cast(v3i*, &Element->DimInChunks);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -340,25 +461,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("WorldP");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3i*, &Element->WorldP),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("WorldP");
+
+                                                                                                auto Member = Cast(v3i*, &Element->WorldP);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -366,25 +497,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("FilledCount");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s32*, &Element->FilledCount),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FilledCount");
+
+                                                                                                auto Member = Cast(s32*, &Element->FilledCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -392,26 +533,36 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-                PushNewRow(Ui);
+                        PushNewRow(Ui);
 
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Entities");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(entity_ptr_block_array*, &Element->Entities),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Entities");
+
+                                                                                                auto Member = Cast(entity_ptr_block_array*, &Element->Entities);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -419,9 +570,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
 
 
 
-        
+            
 
 
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

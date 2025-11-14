@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:246:0
+// src/engine/editor.cpp:254:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,49 +34,70 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Type");
+
+                                                                                                auto Member = Cast(work_queue_entry_type*, &Element->Type);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Type");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(work_queue_entry_type*, &Element->Type),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("(anonymous)");
-                                                                
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("(anonymous)");
+
+                                                                                                
 
 
 
 
 
 
-        
+
+            
 
 
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

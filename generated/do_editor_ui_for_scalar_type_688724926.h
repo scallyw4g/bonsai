@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:597:0
+// src/engine/editor.h:609:0
 
 // def (do_editor_ui_for_primitive_type)
 // src/engine/editor.h:261:0

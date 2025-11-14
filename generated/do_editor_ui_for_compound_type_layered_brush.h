@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:406:0
+// src/engine/editor.cpp:414:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,100 +34,93 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, layered_br
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("LayerCount");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s32*, &Element->LayerCount),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Layers");
-                                
-
-        if (ToggleButton(Ui,
-            CSz("v Layers[16]"),
-            CSz("> Layers[16]"),
-            UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers, ThisHash),
-            Params ))
         {
-          OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-          PushNewRow(Ui);
-                    s32 End = s32(Element->LayerCount);
-          Assert( End < 16 );
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("LayerCount");
 
-          RangeIterator(ArrayIndex, End)
-          {
-                        DoEditorUi(Ui,
+                                                                                                auto Member = Cast(s32*, &Element->LayerCount);
+            DoEditorUi(Ui,
               Window,
-              Element->Layers+ArrayIndex,
-              FSz("Layers[%d]", ArrayIndex),
+              Member,
+              MemberName,
               ThisHash,
-              Params);
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Layers");
+
+                                                
+
+            if (ToggleButton(Ui,
+                CSz("v Layers[16]"),
+                CSz("> Layers[16]"),
+                UiId(Window, "toggle layered_brush brush_layer Layers", Element->Layers, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = s32(Element->LayerCount);
+              Assert( End < 16 );
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Layers+ArrayIndex,
+                  FSz("Layers[%d]", ArrayIndex),
+                  ThisHash,
+                  Params);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
 
             
+
+
           }
-          CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
         }
-        PushNewRow(Ui);
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("AffectExisting");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(b8*, &Element->AffectExisting),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

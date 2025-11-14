@@ -84,6 +84,7 @@ uniform sampler2D InputTex;
 
 uniform       int SampleBlendTex;
 uniform sampler2D BlendTex;
+uniform int BlendTexBlendMode;
 
 in vec2 UV;
 out vec4 Output;
@@ -195,6 +196,79 @@ f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
   return (1.f-IQSample);
 }
 #endif
+
+// Blend Value
+//
+void BlendSample(int Mode, inout f32 Accumulator, inout v3 ColorValue, inout f32 ThisSample, in v3 ColorSample)
+{
+  switch (Mode)
+  {
+    case 0: // WorldEdit_Mode_Additive
+    {
+      if (ThisSample > 0.f)
+      {
+        Accumulator = Accumulator + ThisSample;
+      }
+    } break;
+
+    case 1: // WorldEdit_Mode_Subtractive
+    {
+      if (ThisSample > 0.f)
+      {
+        Accumulator = Accumulator - ThisSample;
+      }
+    } break;
+ 
+    case 2: // WorldEdit_Mode_Union
+    {
+      Accumulator = max(Accumulator, ThisSample);
+    } break;
+
+    case 3: // WorldEdit_Mode_Intersection
+    {
+      Accumulator = min(Accumulator, ThisSample);
+    } break;
+
+    case 4: // WorldEdit_Mode_Difference
+    {
+      Accumulator = sign(-ThisSample) * Accumulator;
+    } break;
+
+    case 5: // WorldEdit_Mode_Multiply
+    {
+      Accumulator = Accumulator * ThisSample;
+    } break;
+
+    case 6: // WorldEdit_Mode_Disabled
+    { ThisSample = 0.f; } break;
+  }
+
+
+  // Blend Color
+  //
+  switch (ColorMode)
+  {
+    case 0: // WorldEdit_ColorBlendMode_ValuePositive
+    { if (ThisSample > 0.f) { ColorValue = ColorSample; } } break;
+
+    case 1: // WorldEdit_ColorBlendMode_ValueNegative
+    { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
+ 
+    case 2: // WorldEdit_ColorBlendMode_Surface
+    {
+      /* if (InitialAccumulator <= 0.f) */
+      /* { */
+      /*   if (Accumulator > 0.f) */
+      /*   { */ 
+      /*     ColorValue = ColorSample; */
+      /*     /1* ColorValue = ColorSample * (InitialSample); *1/ */
+      /*   } */
+      /* } */
+    } break;
+    /* { ColorValue = ColorValue + ColorSample; } break; */
+
+  }
+}
 
 void main()
 {
@@ -405,116 +479,48 @@ void main()
 
 
 
+      BlendSample(BlendMode, Accumulator, ColorValue, ThisSample, ColorSample);
 
 
 
-
-
-
-      // Blend Value
-      //
-      switch (BlendMode)
-      {
-        case 0: // WorldEdit_Mode_Additive
-        {
-          if (ThisSample > 0.f)
-          {
-            Accumulator = Accumulator + ThisSample;
-          }
-        } break;
-
-        case 1: // WorldEdit_Mode_Subtractive
-        {
-          if (ThisSample > 0.f)
-          {
-            Accumulator = Accumulator - ThisSample;
-          }
-        } break;
-
-        case 2: // WorldEdit_Mode_Multiply
-        {
-          // Don't wanna check this because we want to use this to mask values out
-          /* if (ThisSample > 0.f) */
-          {
-            Accumulator = Accumulator * ThisSample;
-          }
-        } break;
-
-        case 3: // WorldEdit_Mode_Threshold
-        {
-          f32 AbsSampleValue = abs(ThisSample);
-          {
-            if(ThisSample >= Threshold)
-            {
-              Accumulator = Threshold;
-            }
-          }
-
-        } break;
-
-        case 4: // WorldEdit_Mode_Disabled
-        { ThisSample = 0.f; } break;
-      }
-
-
-      // Blend Color
-      //
-      switch (ColorMode)
-      {
-        case 0: // WorldEdit_ColorBlendMode_ValuePositive
-        { if (ThisSample > 0.f) { ColorValue = ColorSample; } } break;
-
-        case 1: // WorldEdit_ColorBlendMode_ValueNegative
-        { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
-
-        case 2: // WorldEdit_ColorBlendMode_Surface
-        {
-          if (InitialAccumulator <= 0.f)
-          {
-            if (Accumulator > 0.f)
-            {
-              ColorValue = ColorSample;
-              /* ColorValue = ColorSample * (InitialSample); */
-            }
-          }
-        } break;
-        /* { ColorValue = ColorValue + ColorSample; } break; */
-
-#if 0
-        case 3: // Subtractive
-        { ColorValue = ColorValue - ColorSample; } break;
-
-        case 4: // Multiply
-        { ColorValue = ColorValue * ColorSample; } break;
-
-        case 5: // Divide
-        { ColorValue = SafeDivide0(ColorValue, ColorSample); } break;
-
-        case 6: // Average
-        { f32 StartingIntensity = length(ColorValue);Threshold : Set sample to 0 if it does not pass threshold, before Power and ValueBias
-          ColorValue = (ColorValue + ColorSample)/StartingIntensity; } break;
-#endif
-      }
 
     }
 
+
   }
 
+  // We sample the blend texture outside the bounds check because we need to pass
+  // the previous stage sample values through
   if (SampleBlendTex > 0)
   {
     v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
 
-    if (Accumulator <= 0.f)
-    /* if (TexLookup.a > 0.f) */
-    {
-      // Take Max of Accumulator or current world value
-      if (Accumulator < TexLookup.a)
-      {
-        Accumulator = TexLookup.a;
-        ColorValue  = TexLookup.rgb;
-      }
-    }
+    f32 BlendValue = TexLookup.a;
+    v3 BlendColor = TexLookup.rgb;
+
+
+#if 1
+    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, Accumulator, ColorValue);
+    Accumulator = BlendValue;
+    ColorValue = BlendColor;
+#else
+    BlendSample(BlendTexBlendMode, Accumulator, ColorValue, BlendValue, BlendColor);
+#endif
+
+    /* if (Accumulator <= 0.f) */
+    /* /1* if (TexLookup.a > 0.f) *1/ */
+    /* { */
+    /*   // Take Max of Accumulator or current world value */
+    /*   if (Accumulator < TexLookup.a) */
+    /*   { */
+    /*     Accumulator = TexLookup.a; */
+    /*     ColorValue  = TexLookup.rgb; */
+    /*   } */
+    /* } */
   }
+
+
+
 
   Output.rgb = ColorValue;
   Output.a = Accumulator;

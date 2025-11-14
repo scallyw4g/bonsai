@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:754:0
+// src/engine/editor.h:766:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,47 +34,65 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3 *Ele
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Min");
+
+                                                                                                auto Member = Cast(v3*, &Element->Min);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Min");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->Min),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Max");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(v3*, &Element->Max),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Max");
+
+                                                                                                auto Member = Cast(v3*, &Element->Max);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -82,9 +100,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3 *Ele
 
 
 
-        
+            
 
 
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

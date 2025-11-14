@@ -343,121 +343,133 @@ poof(
           if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
             type.map(member)
             {
-              member.has_tag(ui_display_condition)?  { if ((member.tag_value(ui_display_condition))) }{}
+              {
+                /* member.has_tag(ui_null_behavior)? */
+                /* { */
+                /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+                /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+                /* }{} */
 
-              { /// NOTE(Jesse): this scope is here for the ui_display_condition if above..
-                /// Yes, it's pretty janky, but it's the best I could come up with in a few minutes.
-                ///
-                /// It also hides the MemberName local, which .. is fine ..
-                cs MemberName = member.has_tag(ui_display_name)? {member.tag_value(ui_display_name)}{CSz("member.name")};
-                member.has_tag(ui_skip)?
                 {
-                }
-                {
-                  member.has_tag(ui_construct_as)?
-                  {
-                    auto Value = member.tag_value(ui_construct_as)(Element->member.name);
-                    DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
-                  }
-                  {
-                    member.is_array?
+                  member.has_tag(ui_display_condition)?  { if ((member.tag_value(ui_display_condition))) }{}
+                  { /// NOTE(Jesse): this scope is here for the ui_display_condition if above..
+                    /// Yes, it's pretty janky, but it's the best I could come up with in a few minutes.
+                    ///
+                    /// It also hides the Member and MemberName locals, which .. is fine ..
+                    cs MemberName = member.has_tag(ui_display_name)? {member.tag_value(ui_display_name)}{CSz("member.name")};
+
+                    member.has_tag(ui_skip)?
                     {
-                      member.has_tag(ui_display_name)? {poof_error(ui_display_name tag is incompatible with array members )}
-
-                      if (ToggleButton(Ui,
-                            CSz("v member.name[member.array]"),
-                            CSz("> member.name[member.array]"),
-                            UiId(Window, "toggle type.name member.type member.name", Element->(member.name), ThisHash),
-                            Params ))
+                    }
+                    {
+                      member.has_tag(ui_construct_as)?
                       {
-                        OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                        auto Value = member.tag_value(ui_construct_as)(Element->member.name);
+                        DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+                      }
+                      {
+                        member.is_array?
+                        {
+                          member.has_tag(ui_display_name)? {poof_error(ui_display_name tag is incompatible with array members )}
+
+                          if (ToggleButton(Ui,
+                                CSz("v member.name[member.array]"),
+                                CSz("> member.name[member.array]"),
+                                UiId(Window, "toggle type.name member.type member.name", Element->(member.name), ThisHash),
+                                Params ))
+                          {
+                            OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                              PushNewRow(Ui);
+                              member.has_tag(array_length)?
+                                {
+                                  s32 End = s32((member.tag_value(array_length)));
+                                  Assert( End < member.array );
+                                }{
+                                  s32 End = member.array;
+                                }
+                              RangeIterator(ArrayIndex, End)
+                              {
+                                member.has_tag(custom_ui)?
+                                {
+                                  member.tag_value(custom_ui);
+                                }
+                                {
+                                  DoEditorUi(Ui,
+                                      Window,
+                                      Element->(member.name)+ArrayIndex,
+                                      FSz("member.name[%d]", ArrayIndex),
+                                      ThisHash,
+                                      Params);
+                                }
+                                member.is_primitive?  { PushNewRow(Ui); }
+                              }
+                            CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+                          }
                           PushNewRow(Ui);
-                          member.has_tag(array_length)?
-                            {
-                              s32 End = s32((member.tag_value(array_length)));
-                              Assert( End < member.array );
-                            }{
-                              s32 End = member.array;
-                            }
-                          RangeIterator(ArrayIndex, End)
-                          {
-                            member.has_tag(custom_ui)?
-                            {
-                              member.tag_value(custom_ui);
-                            }
-                            {
-                              DoEditorUi(Ui,
-                                  Window,
-                                  Element->(member.name)+ArrayIndex,
-                                  FSz("member.name[%d]", ArrayIndex),
-                                  ThisHash,
-                                  Params);
-                            }
-                            member.is_primitive?  { PushNewRow(Ui); }
-                          }
-                        CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-                      }
-                      PushNewRow(Ui);
-                    }
-                    {
-                      member.has_tag(custom_ui)?
-                      {
-                        member.tag_value(custom_ui);
-                      }
-                      {
-                        member.is_type(b32)?
-                        {
-                          DoEditorUi(Ui,
-                                     Window,
-                                     Cast(b8*, member.is_pointer?{}{&}Element->(member.name)),
-                                     MemberName,
-                                     ThisHash,
-                                     &DefaultUiRenderParams_Checkbox
-                                     member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
                         }
                         {
-                          member.is_union?
+                          member.has_tag(custom_ui)?
                           {
-                            member.name?
-                            {
-                              DoEditorUi(Ui,
-                                         Window,
-                                         // Cast to remove const/volatile keywords if they're there
-                                         Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
-                                         MemberName,
-                                         ThisHash,
-                                         Params
-                                         member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
-                            }
-                            {
-                            }
+                            member.tag_value(custom_ui);
                           }
                           {
-                            member.is_function?
+                            member.is_type(b32)?
                             {
-                            }
-                            {
+                              auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
                               DoEditorUi(Ui,
                                          Window,
-                                         // Cast to remove const/volatile keywords if they're there
-                                         Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)),
+                                         Cast(u8*, Member),
                                          MemberName,
                                          ThisHash,
-                                         Params
+                                         &DefaultUiRenderParams_Checkbox
                                          member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                            }
+                            {
+                              member.is_union?
+                              {
+                                member.name?
+                                {
+                                  auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
+                                  DoEditorUi(Ui,
+                                             Window,
+                                             Member,
+                                             MemberName,
+                                             ThisHash,
+                                             Params
+                                             member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                                }
+                                {
+                                  /// Don't display anythinig for unnamed unions
+                                }
+                              }
+                              {
+                                member.is_function?
+                                {
+                                }
+                                {
+                                  auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
+                                  DoEditorUi(Ui,
+                                             Window,
+                                             Member,
+                                             MemberName,
+                                             ThisHash,
+                                             Params
+                                             member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                                }
+                              }
                             }
                           }
                         }
                       }
-                    }
-                  }
 
-                  member.is_primitive?
-                  {
-                    PushNewRow(Ui);
+                      member.is_primitive?
+                      {
+                        PushNewRow(Ui);
+                      }
+                    }
+
                   }
                 }
-
               }
             }
           if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
@@ -848,9 +860,12 @@ enum world_edit_blend_mode
 {
   WorldEdit_Mode_Additive,    // Adds layer value to noise value
   WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
+  WorldEdit_Mode_Union,
+  WorldEdit_Mode_Intersection,
+  WorldEdit_Mode_Difference,
   WorldEdit_Mode_Multiply,
-  WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue
-  WorldEdit_Mode_Disabled,     // Useful for turning the layer off
+  /* WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue */
+  WorldEdit_Mode_Disabled,    // Useful for turning the layer off
 };
 
 enum world_edit_color_blend_mode
@@ -1203,7 +1218,14 @@ poof(@do_editor_ui @serdes)
 
   noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
   shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
-  world_edit_brush *Brush; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Brush))
+
+  /* world_edit_brush *Brush; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Brush)) */
+  world_edit_brush *Brush;
+  poof(
+    @ui_display_name({})
+    @ui_display_condition(Element->Type == BrushLayerType_Brush)
+    @custom_ui( DoWorldEditBrushPicker(Ui, Window, Element, ThisHash) )
+  )
 
   //
   // Common across brush types
@@ -1214,7 +1236,7 @@ poof(@do_editor_ui @serdes)
   f32 Threshold = 0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
 
   world_edit_blend_mode_modifier ValueModifier;
-  world_edit_blend_mode          BlendMode;
+  world_edit_blend_mode          LayerBlendMode;
   world_edit_color_blend_mode    ColorMode;
 
   b8 Invert;
@@ -1229,6 +1251,9 @@ poof(@do_editor_ui @serdes)
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 };
+
+link_internal void
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash);
 
 poof(are_equal(brush_settings))
 #include <generated/are_equal_struct.h>
@@ -1253,7 +1278,7 @@ poof(@serdes)
 {
           s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
-           b8 AffectExisting = True;
+           /* b8 AffectExisting = True; */
 };
 
 
@@ -1314,7 +1339,7 @@ poof(@serdes)
   char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
   /* world_edit_shape               Shape; */
-  world_edit_blend_mode          Mode;
+  world_edit_blend_mode          BrushBlendMode;
   world_edit_blend_mode_modifier Modifier;
 
   /* world_edit_brush_type Type; */
@@ -1557,7 +1582,7 @@ TryGetSelectedLayer(level_editor *Editor)
 link_internal b32
 HasThresholdModifier(brush_settings *Element)
 {
-  b32 Result = (Element->ValueModifier&WorldEdit_ValueModifier_Threshold || Element->BlendMode&WorldEdit_Mode_Threshold);
+  b32 Result = (Element->ValueModifier & WorldEdit_ValueModifier_Threshold);
   return Result;
 }
 
@@ -1610,6 +1635,9 @@ GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
 #endif
 
 
+link_internal level_editor *
+GetEditor();
+
 link_internal b32
 CheckSettingsChanged(layered_brush *);
 
@@ -1644,3 +1672,6 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
 
 link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
+
+link_internal rtt_framebuffer
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32);

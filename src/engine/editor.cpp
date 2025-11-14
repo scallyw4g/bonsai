@@ -2,6 +2,14 @@
 poof(block_array_c(simple_brush, {8}))
 #include <generated/block_array_c_IXtQW00h.h>
 
+link_internal level_editor *
+GetEditor()
+{
+  engine_resources *Engine = GetEngineResources();
+  return &Engine->Editor;
+}
+
+
 link_internal void
 LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
 {
@@ -1079,15 +1087,16 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
           }
 
           {
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Mode,     CSz("Mode"),     &DefaultUiRenderParams_Generic); */
+            DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode,     CSz("Brush Blend Mode"), ThisHash, &DefaultUiRenderParams_Generic);
             /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic); */
             /* PushNewRow(Ui); */
           }
 
           {
-            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox);
-            PushNewRow(Ui);
-            PushNewRow(Ui);
+            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */
+            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */
+            /* PushNewRow(Ui); */
+            /* PushNewRow(Ui); */
 
             PushColumn(Ui, CSz(" ----- LAYERS -----"));
             PushNewRow(Ui);
@@ -2641,5 +2650,346 @@ DoLevelWindow(engine_resources *Engine)
 
   }
   PushWindowEnd(Ui, &Window);
+}
+
+link_internal void
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash)
+{
+  if (Element->Brush)
+  {
+    DoEditorUi(Ui, Window, Element->Brush, CSz("?"), 0);
+  }
+  else
+  {
+    PushColumn(Ui, CSz("(null)"));
+    PushNewRow(Ui);
+
+    auto Editor = GetEditor();
+    IterateOver(&Editor->LoadedBrushes, ThisBrush, BrushIndex)
+    {
+      if (ThisBrush)
+      {
+        ui_style *Style = &DefaultStyle;
+        if (ThisBrush == Editor->CurrentBrush)
+        {
+          Style = &DefaultSelectedStyle;
+        }
+
+        if (Button(Ui, CS(ThisBrush->NameBuf), UiId(Window, "brush select 2", ThisBrush), Style))
+        {
+          Element->Brush = ThisBrush;
+        }
+        PushNewRow(Ui);
+      }
+    }
+  }
+}
+
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+link_internal rtt_framebuffer
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32 BindInputTexture)
+{
+  layered_brush *Brush = &EditBrush->Layered;
+
+  world *World = GetWorld();
+
+  /* b32 BindInputTexture = False; */
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    BindFramebuffer(Write);
+
+    BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
+    if (BindInputTexture)
+    {
+      texture *InputTex = &Read->DestTexture;
+      // @derivs_texture_binding_to_shader_unit_0
+      BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
+    }
+    BindInputTexture = True;
+
+    b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False);
+    b32 BindBlendTex = IsLastValidLayer;
+    /* b32 BindBlendTex = (Brush->AffectExisting == False) && IsLastValidLayer; */
+    BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
+    if (BindBlendTex)
+    {
+      texture *BlendTex = &Accum->DestTexture;
+      BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
+
+      // NOTE(Jesse): We pass this blend mode in because we want to take the
+      // layers blend mode, not the blend mode for the brush.
+      BindUniformByName(&WorldEditRC->Program, "BlendTexBlendMode", BlendMode);
+    }
+
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+
+    {
+      v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+      BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
+    }
+
+            //
+    BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
+    BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
+    BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.LayerBlendMode);
+    BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
+    BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
+    BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
+            //
+    BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
+    BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
+
+
+    rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
+       v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+            //*
+       v3 EditRectRad = GetRadius(&SimEditRect);
+
+    // NOTE(Jesse): Must call bind explicitly because the
+    // driver doesn't cache these values otherwise .. it
+    // just reads them whenever it wants through the pointer..
+    v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
+    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
+    AssertNoGlErrors;
+
+            //
+    v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
+    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
+    AssertNoGlErrors;
+
+    v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
+            //
+
+    switch (Layer->Settings.Type)
+    {
+      case BrushLayerType_Brush:
+      {
+        world_edit_brush *NestedBrush = Layer->Settings.Brush;
+        if (NestedBrush)
+        {
+          rtt_framebuffer B0 = {}, B1 = {};
+
+          InitializeRenderToTextureFramebuffer(&B0, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 0"));
+          InitializeRenderToTextureFramebuffer(&B1, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 1"));
+
+          rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
+                                                EditBounds,
+                                                NestedBrush,
+                                                Layer->Settings.LayerBlendMode,
+                                                Chunk,
+                                                &B0, &B1, Read, False);
+
+          // NOTE(Jesse): This is kinda gross, but if we're the last layer we have 
+          // to apply the result of the brush back into the accumulation texture
+          //*
+          // There's probably a better way of doing this, but I'm pretty sure
+          // this'll work, so I'm just going to put the pig-hat on and go for it.
+          //
+          if (IsLastValidLayer)
+          {
+            world_edit_brush VoidBrush = {};
+            VoidBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
+            VoidBrush.Layered.LayerCount = 1;
+            VoidBrush.Layered.Layers[0].Settings.LayerBlendMode = WorldEdit_Mode_Disabled;
+
+
+            Applied = ApplyBrush( WorldEditRC,
+                                  EditBounds,
+                                  &VoidBrush,
+                                  WorldEdit_Mode_Union,
+                                  Chunk,
+                                  &Applied,
+                                  Read, // Intentionally writing into read here because that's what we return
+                                  Accum,
+                                  True );
+          }
+          else
+          {
+            DeallocateRenderToTextureFramebuffer(Read);
+            *Read = Applied;
+          }
+        }
+
+        // NOTE(Jesse): It is important we continue here so we do not do the
+        // draw call and swap the read/write Framebuffer pointers 
+        //
+        continue;
+
+      } break;
+
+      case BrushLayerType_Noise:
+      {
+        noise_layer *Noise = &Layer->Settings.Noise;
+        BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
+
+        switch (Noise->Type)
+        {
+          case NoiseType_Perlin:
+          {
+            auto *Perlin = &Noise->Perlin;
+            BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+          } break;
+
+          case NoiseType_Voronoi:
+          {
+            auto *Voronoi = &Noise->Voronoi;
+            BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
+            BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
+          } break;
+
+          case NoiseType_White:
+          {} break;
+        }
+
+      } break;
+
+      case BrushLayerType_Shape:
+      {
+        shape_layer *Shape = &Layer->Settings.Shape;
+        BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
+
+        BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
+        BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
+        BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
+
+        m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
+        BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
+
+        switch(Shape->Type)
+        {
+          case ShapeType_Rect:
+          {
+            auto Rect = &Shape->Rect;
+            BindUniformByName(&WorldEditRC->Program, "RectDim", &Rect->Dim);
+          } break;
+
+          case ShapeType_Sphere:
+          {
+            auto Sphere = &Shape->Sphere;
+
+            v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
+            v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
+
+            BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
+            BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
+          } break;
+
+          case ShapeType_Line:
+          {
+            auto Line = &Shape->Line;
+            BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
+          } break;
+
+          case ShapeType_Cylinder:
+          {
+            auto Cylinder = &Shape->Cylinder;
+            BindUniformByName(&WorldEditRC->Program, "Radius", Cylinder->Radius);
+            BindUniformByName(&WorldEditRC->Program, "Height", Cylinder->Height);
+          } break;
+
+          case ShapeType_Plane:
+          {
+            auto Plane = &Shape->Plane;
+            auto Orientation = Plane->Orientation;
+
+            v3 xAxis = V3(1,0,0);
+            v3 yAxis = V3(0,1,0);
+            v3 zAxis = V3(0,0,1);
+
+            switch (Orientation)
+            {
+              InvalidCase(ShapeAxis_Count);
+
+              case ShapeAxis_InferFromMajorAxis:
+              {} break;
+
+              // Traverses the X axis and ascends
+              case ShapeAxis_PosX:
+              {
+                xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+              // Traverses the X axis and descends
+              case ShapeAxis_NegX:
+              {
+                xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
+                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+
+              case ShapeAxis_PosY:
+              {
+                xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+              case ShapeAxis_NegY:
+              {
+                xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+
+              case ShapeAxis_PosZ:
+              {
+                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+
+              case ShapeAxis_NegZ:
+              {
+                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+                yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
+                zAxis = Normalize(Cross(xAxis, yAxis));
+              } break;
+            }
+
+            v3 Plane_SimShapeOrigin = EditRectRad;
+            v3 PlaneNormal = zAxis;
+
+            auto PlaneRadius = Plane->Thickness/2.f;
+            auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
+                                    PlaneNormal.y*Plane_SimShapeOrigin.y +
+                                    PlaneNormal.z*Plane_SimShapeOrigin.z );
+
+            auto PlanePos = Plane_SimShapeOrigin;
+
+            BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
+            BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
+            BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+
+          } break;
+
+          case ShapeType_Torus:
+          {
+            auto Torus = &Shape->Torus;
+
+            BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
+            BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
+
+          } break;
+
+          // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
+          //
+        }
+      } break;
+    }
+
+
+    /* gpu_timer Timer = StartGpuTimer(); */
+    RenderQuad();
+    /* EndGpuTimer(&Timer); */
+    /* Push(&Graphics->GpuTimers, &Timer); */
+
+    Swap(Read, Write);
+#undef Swap
+  }
+
+  // This is actually the last-written to texture
+  return *Read;
 }
 

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:492:0
+// src/engine/editor.cpp:500:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,58 +34,78 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Index");
+
+                                                                                                auto Member = Cast(u16*, &Element->Index);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FileNode");
+
+                                                                                                auto Member = Cast(file_traversal_node*, &Element->FileNode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Index");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u16*, &Element->Index),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("FileNode");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(file_traversal_node*, &Element->FileNode),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:409:0
+// src/engine/editor.cpp:417:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:305:0
@@ -34,37 +34,91 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NameBuf");
+
+                                    auto Value = CS(Element->NameBuf);
+            DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BrushBlendMode");
+
+                                                                                                auto Member = Cast(world_edit_blend_mode*, &Element->BrushBlendMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("NameBuf");
-                        auto Value = CS(Element->NameBuf);
-        DoEditorUi(Ui, Window, &Value, MemberName, ThisHash, Params);
 
-
-                PushNewRow(Ui);
-
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Mode");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode*, &Element->Mode),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Modifier");
+
+                                                                                                auto Member = Cast(world_edit_blend_mode_modifier*, &Element->Modifier);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -72,51 +126,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 
 
 
-        
+            
 
 
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Modifier");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(world_edit_blend_mode_modifier*, &Element->Modifier),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Layered");
 
-
-
-
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("Layered");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(layered_brush*, &Element->Layered),
-          MemberName,
-          ThisHash,
-          Params
-          );
+                                                                                                auto Member = Cast(layered_brush*, &Element->Layered);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -124,9 +162,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 
 
 
-        
+            
 
 
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }

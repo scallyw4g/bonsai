@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:960:0
+// src/engine/editor.h:975:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:496:0
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
@@ -34,18 +34,36 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Multiply"), UiId(Window, "enum WorldEdit_Mode_Multiply", Element, ThisHash), Params))
+    if (Button(Ui, CSz("Union"), UiId(Window, "enum WorldEdit_Mode_Union", Element, ThisHash), Params))
     {
-            *Element = WorldEdit_Mode_Multiply;
+            *Element = WorldEdit_Mode_Union;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Threshold"), UiId(Window, "enum WorldEdit_Mode_Threshold", Element, ThisHash), Params))
+    if (Button(Ui, CSz("Intersection"), UiId(Window, "enum WorldEdit_Mode_Intersection", Element, ThisHash), Params))
     {
-            *Element = WorldEdit_Mode_Threshold;
+            *Element = WorldEdit_Mode_Intersection;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Difference"), UiId(Window, "enum WorldEdit_Mode_Difference", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_Difference;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Multiply"), UiId(Window, "enum WorldEdit_Mode_Multiply", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_Multiply;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

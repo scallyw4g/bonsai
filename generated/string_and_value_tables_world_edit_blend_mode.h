@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:957:0
+// src/engine/editor.h:972:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2104:0
@@ -11,8 +11,10 @@ IsValid(world_edit_blend_mode Value)
   {
         case WorldEdit_Mode_Additive:
     case WorldEdit_Mode_Subtractive:
+    case WorldEdit_Mode_Union:
+    case WorldEdit_Mode_Intersection:
+    case WorldEdit_Mode_Difference:
     case WorldEdit_Mode_Multiply:
-    case WorldEdit_Mode_Threshold:
     case WorldEdit_Mode_Disabled:
 
     {
@@ -34,8 +36,10 @@ ToStringPrefixless(world_edit_blend_mode Type)
     {
             case WorldEdit_Mode_Additive: { Result = CSz("Additive"); } break;
       case WorldEdit_Mode_Subtractive: { Result = CSz("Subtractive"); } break;
+      case WorldEdit_Mode_Union: { Result = CSz("Union"); } break;
+      case WorldEdit_Mode_Intersection: { Result = CSz("Intersection"); } break;
+      case WorldEdit_Mode_Difference: { Result = CSz("Difference"); } break;
       case WorldEdit_Mode_Multiply: { Result = CSz("Multiply"); } break;
-      case WorldEdit_Mode_Threshold: { Result = CSz("Threshold"); } break;
       case WorldEdit_Mode_Disabled: { Result = CSz("Disabled"); } break;
 
 
@@ -60,8 +64,10 @@ ToString(world_edit_blend_mode Type)
   {
         case WorldEdit_Mode_Additive: { Result = CSz("WorldEdit_Mode_Additive"); } break;
     case WorldEdit_Mode_Subtractive: { Result = CSz("WorldEdit_Mode_Subtractive"); } break;
+    case WorldEdit_Mode_Union: { Result = CSz("WorldEdit_Mode_Union"); } break;
+    case WorldEdit_Mode_Intersection: { Result = CSz("WorldEdit_Mode_Intersection"); } break;
+    case WorldEdit_Mode_Difference: { Result = CSz("WorldEdit_Mode_Difference"); } break;
     case WorldEdit_Mode_Multiply: { Result = CSz("WorldEdit_Mode_Multiply"); } break;
-    case WorldEdit_Mode_Threshold: { Result = CSz("WorldEdit_Mode_Threshold"); } break;
     case WorldEdit_Mode_Disabled: { Result = CSz("WorldEdit_Mode_Disabled"); } break;
 
 
@@ -78,8 +84,10 @@ WorldEditBlendMode(counted_string S)
 
     if (StringsMatch(S, CSz("WorldEdit_Mode_Additive"))) { return WorldEdit_Mode_Additive; }
   if (StringsMatch(S, CSz("WorldEdit_Mode_Subtractive"))) { return WorldEdit_Mode_Subtractive; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Union"))) { return WorldEdit_Mode_Union; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Intersection"))) { return WorldEdit_Mode_Intersection; }
+  if (StringsMatch(S, CSz("WorldEdit_Mode_Difference"))) { return WorldEdit_Mode_Difference; }
   if (StringsMatch(S, CSz("WorldEdit_Mode_Multiply"))) { return WorldEdit_Mode_Multiply; }
-  if (StringsMatch(S, CSz("WorldEdit_Mode_Threshold"))) { return WorldEdit_Mode_Threshold; }
   if (StringsMatch(S, CSz("WorldEdit_Mode_Disabled"))) { return WorldEdit_Mode_Disabled; }
 
 

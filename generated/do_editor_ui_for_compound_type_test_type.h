@@ -34,48 +34,211 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type 
       if (Name.Count) { PushTableStart(Ui); }
 
       if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("UnsignedNumber");
+
+                                                                                                auto Member = Cast(u32*, &Element->UnsignedNumber);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("FloatNumber");
+
+                                                                                                auto Member = Cast(f32*, &Element->FloatNumber);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("SignedNumber");
+
+                                                                                                auto Member = Cast(s32*, &Element->SignedNumber);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Boolean");
+
+                                                                        auto Member = Cast(b32*, &Element->Boolean);
+            DoEditorUi(Ui,
+              Window,
+              Cast(u8*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = {};
+
+                                                                                                auto Member = Cast(nested_type*, &Element->Nested);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
             
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("UnsignedNumber");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(u32*, &Element->UnsignedNumber),
-          MemberName,
-          ThisHash,
-          Params
-          );
 
-
-
-
-
-
-
-                PushNewRow(Ui);
-
-
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("FloatNumber");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(f32*, &Element->FloatNumber),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BasicEnum");
+
+                                                                                                auto Member = Cast(test_enum*, &Element->BasicEnum);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -83,26 +246,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type 
 
 
 
-                PushNewRow(Ui);
+            
 
 
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("SignedNumber");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(s32*, &Element->SignedNumber),
-          MemberName,
-          ThisHash,
-          Params
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BitfieldEnum");
+
+                                                                                                auto Member = Cast(bitfield_enum*, &Element->BitfieldEnum);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -110,50 +282,35 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type 
 
 
 
-                PushNewRow(Ui);
+            
 
 
-
+          }
+        }
       }
-      
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
 
-      { 
-        
-        
-        
-        cs MemberName = CSz("Boolean");
-                                                DoEditorUi(Ui,
-          Window,
-          Cast(b8*, &Element->Boolean),
-          MemberName,
-          ThisHash,
-          &DefaultUiRenderParams_Checkbox
-          );
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("RadioEnum");
 
-
-
-
-
-                PushNewRow(Ui);
-
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = {};
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(nested_type*, &Element->Nested),
-          MemberName,
-          ThisHash,
-          Params
-          );
+                                                                                                auto Member = Cast(radio_enum*, &Element->RadioEnum);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -161,87 +318,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type 
 
 
 
-        
+            
 
 
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("BasicEnum");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(test_enum*, &Element->BasicEnum),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("BitfieldEnum");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(bitfield_enum*, &Element->BitfieldEnum),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-        
-
-
-      }
-      
-
-      { 
-        
-        
-        
-        cs MemberName = CSz("RadioEnum");
-                                                                DoEditorUi(Ui,
-          Window,
-          // Cast to remove const/volatile keywords if they're there
-          Cast(radio_enum*, &Element->RadioEnum),
-          MemberName,
-          ThisHash,
-          Params
-          );
-
-
-
-
-
-
-
-        
-
-
+          }
+        }
       }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
