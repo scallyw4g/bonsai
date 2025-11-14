@@ -594,8 +594,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             //
 
             s32 CurrentAccumulationTextureIndex = 0;
-            /* rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex; */
-            rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex];
+            rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex;
+            /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
             {
               AcquireFutex(&Node->Lock);
               if (TotalElements(&Node->Edits))
@@ -643,14 +643,33 @@ DrainLoRenderQueue(engine_resources *Engine)
                     rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
                     rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
 
+                    Assert(Read->FBO.ID != Write->FBO.ID);
+                    Assert(Read->FBO.ID != Accum->FBO.ID);
+                    Assert(Write->FBO.ID != Accum->FBO.ID);
+
                     rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
                                                           Edit->Region,
                                                           Brush,
                                                           Brush->BrushBlendMode,
                                                           Chunk,
-                                                          Read, Write, &Accum, False);
+                                                          Read, Write, Accum, False);
 
-                    Accum = Applied;
+                    if (Applied.FBO.ID == Read->FBO.ID)
+                    {
+                      *Read = *Accum;
+                    }
+                    else
+                    {
+                      Assert(Applied.FBO.ID == Write->FBO.ID);
+                      *Write = *Accum;
+                    }
+
+                    *Accum = Applied;
+
+
+                    Assert(Read->FBO.ID != Write->FBO.ID);
+                    Assert(Read->FBO.ID != Accum->FBO.ID);
+                    Assert(Write->FBO.ID != Accum->FBO.ID);
                   }
 
                   AssertNoGlErrors;
@@ -664,7 +683,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
-            texture *CurrentAccumulationTexture = &Accum.DestTexture;
+            texture *CurrentAccumulationTexture = &Accum->DestTexture;
 
             //
             // Terrain Finalize
