@@ -22,7 +22,7 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
     CopyString( FileNode->Name.Start, B.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len)));
     Editor->CurrentBrush = Upsert(B, &Editor->LoadedBrushes, &Global_PermMemory);
 
-    if (Deserialize(&Bytes, Editor->CurrentBrush, TempMemory) == False)
+    if (Deserialize(&Bytes, Editor->CurrentBrush, &Global_PermMemory) == False)
     {
       SoftError("While deserializing brush (%S).", Filename);
       *Editor->CurrentBrush = {};
@@ -2668,7 +2668,7 @@ DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *E
 link_internal void
 BindUniformsForBrush(
     shader *Program,
-                          brush_layer *Layer,
+    brush_layer *Layer,
     rtt_framebuffer *Write,
     b32 BindInputTexture,
     rtt_framebuffer *Read,
