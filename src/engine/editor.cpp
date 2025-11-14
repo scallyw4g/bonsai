@@ -2665,8 +2665,75 @@ DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *E
   }
 }
 
+link_internal void
+BindUniformsForBrush(
+    shader *Program,
+                          brush_layer *Layer,
+    rtt_framebuffer *Write,
+    b32 BindInputTexture,
+    rtt_framebuffer *Read,
+    b32 SampleBlendTex,
+    rtt_framebuffer *Blend,
+    world_edit_blend_mode  BlendMode,
+    v3 *ChunkRelEditMin,
+    v3 *ChunkRelEditMax
+    )
+{
+  BindFramebuffer(Write);
+
+  BindUniformByName(Program, "SampleInputTex", BindInputTexture);
+  if (BindInputTexture)
+  {
+    texture *InputTex = &Read->DestTexture;
+    // @derivs_texture_binding_to_shader_unit_0
+    BindUniformByName(Program, "InputTex", InputTex, 1);
+  }
+  BindInputTexture = True;
+
+  BindUniformByName(Program, "SampleBlendTex", SampleBlendTex);
+  if (SampleBlendTex)
+  {
+    texture *BlendTex = &Blend->DestTexture;
+    BindUniformByName(Program, "BlendTex", BlendTex, 2);
+
+    // NOTE(Jesse): We pass this blend mode in because we want to take the
+    // layers blend mode, not the blend mode for the brush.
+    BindUniformByName(Program, "BlendTexBlendMode", BlendMode);
+  }
+
+  {
+    v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+    BindUniformByName(Program, "RGBColor", &RGBColor);
+  }
+
+  BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
+  BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
+  BindUniformByName(Program, "BlendMode",      Layer->Settings.LayerBlendMode);
+  BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueModifier);
+  BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
+  BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
+  BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold);
+  BindUniformByName(Program, "Power",          Layer->Settings.Power);
+
+  // NOTE(Jesse): Must call bind explicitly because the
+  // driver doesn't cache these values otherwise .. it
+  // just reads them whenever it wants through the pointer..
+  BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin);
+  BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax);
+
+  AssertNoGlErrors;
+}
+
 link_internal rtt_framebuffer
-ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32 BindInputTexture)
+ApplyBrush( world_edit_render_context *WorldEditRC,
+                              rect3cp  EditBounds,
+                     world_edit_brush *EditBrush,
+                world_edit_blend_mode  BlendMode,
+                          world_chunk *Chunk,
+                      rtt_framebuffer *Read,
+                      rtt_framebuffer *Write,
+                      rtt_framebuffer *Accum,
+                                  b32  BindInputTexture )
 {
   layered_brush *Brush = &EditBrush->Layered;
 
@@ -2674,63 +2741,31 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
 
   RangeIterator(LayerIndex, Brush->LayerCount)
   {
-    BindFramebuffer(Write);
-
-    BindUniformByName(&WorldEditRC->Program, "SampleInputTex", BindInputTexture);
-    if (BindInputTexture)
-    {
-      texture *InputTex = &Read->DestTexture;
-      // @derivs_texture_binding_to_shader_unit_0
-      BindUniformByName(&WorldEditRC->Program, "InputTex", InputTex, 1);
-    }
-    BindInputTexture = True;
-
     b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False);
-    b32 BindBlendTex = IsLastValidLayer;
-    BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
-    if (BindBlendTex)
-    {
-      texture *BlendTex = &Accum->DestTexture;
-      BindUniformByName(&WorldEditRC->Program, "BlendTex", BlendTex, 2);
-
-      // NOTE(Jesse): We pass this blend mode in because we want to take the
-      // layers blend mode, not the blend mode for the brush.
-      BindUniformByName(&WorldEditRC->Program, "BlendTexBlendMode", BlendMode);
-    }
+    b32 SampleBlendTex = IsLastValidLayer;
 
     brush_layer *Layer = Brush->Layers + LayerIndex;
-
-    {
-      v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-      BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
-    }
-
-    BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
-    BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
-    BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.LayerBlendMode);
-    BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
-    BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
-    BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
-    BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
-    BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
 
 
     rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
        v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
        v3 EditRectRad = GetRadius(&SimEditRect);
 
-    // NOTE(Jesse): Must call bind explicitly because the
-    // driver doesn't cache these values otherwise .. it
-    // just reads them whenever it wants through the pointer..
     v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
-    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
-    AssertNoGlErrors;
-
     v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
-    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
-    AssertNoGlErrors;
+    v3 EditDim = ChunkRelEditMax -  ChunkRelEditMin;
 
-    v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
+    BindUniformsForBrush( &WorldEditRC->Program,
+                           Layer,
+                           Write,
+                           BindInputTexture,
+                           Read,
+                           SampleBlendTex,
+                           Accum,
+                           BlendMode,
+                           &ChunkRelEditMin,
+                           &ChunkRelEditMax
+                         );
 
     switch (Layer->Settings.Type)
     {
@@ -2845,7 +2880,21 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
           case ShapeType_Rect:
           {
             auto Rect = &Shape->Rect;
-            BindUniformByName(&WorldEditRC->Program, "RectDim", &Rect->Dim);
+
+            v3 Dim = Rect->Dim;
+            RangeIterator(Index, 3)
+            {
+              if (Dim.E[Index] == 0)
+              {
+                Dim.E[Index] = EditDim.E[Index];
+              }
+
+              if (Dim.E[Index] < 0)
+              {
+                Dim.E[Index] = EditDim.E[Index] + Dim.E[Index];
+              }
+            }
+            BindUniformByName(&WorldEditRC->Program, "RectDim", &Dim);
           } break;
 
           case ShapeType_Sphere:
@@ -2973,6 +3022,8 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
     Swap(Read, Write);
 #undef Swap
+
+    BindInputTexture = True;
   }
 
   // This is actually the last-written to texture
