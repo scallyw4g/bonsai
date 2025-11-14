@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:522:0
+// src/engine/editor.cpp:520:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:522:0
+// src/engine/editor.cpp:520:0
 
 
 
@@ -1859,7 +1859,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
 
 }
 ;
-
 
 
 
@@ -6629,150 +6628,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
 
 
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, simple_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x187219A3);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle simple_brush", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      if (Name.Count) { PushTableStart(Ui); }
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Name");
-
-                        
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Outline");
-
-                                                                                                auto Member = Cast(brush_settings*, &Element->Outline);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Texture");
-
-                                                                                                auto Member = Cast(layered_brush*, Element->Texture);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
-;
-
-
-
 
 
 
@@ -11235,7 +11090,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -13626,78 +13480,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             cs MemberName = CSz("HotEditIndex");
 
                                                                                                 auto Member = Cast(world_edit_block_array_index*, &Element->HotEditIndex);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("SimpleBrushes");
-
-                                                                                                auto Member = Cast(simple_brush_block_array*, &Element->SimpleBrushes);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("SelectedSimpleBrushIndex");
-
-                                                                                                auto Member = Cast(simple_brush_block_array_index*, &Element->SelectedSimpleBrushIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22054,7 +21836,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
 
 
-
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -22160,7 +21941,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
 
 }
 ;
-
 
 
 

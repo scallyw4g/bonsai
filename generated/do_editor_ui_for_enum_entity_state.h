@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:299:0
+// src/engine/editor.cpp:297:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:496:0

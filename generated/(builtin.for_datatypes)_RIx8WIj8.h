@@ -42,7 +42,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_set
 
 
 
-
 struct texture;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -160,9 +159,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *El
 ; 
 
 
-struct simple_brush;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, simple_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
-; 
 
 
 
@@ -303,7 +299,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 struct particle;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 
@@ -602,11 +597,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 
 
 
-
 struct brush_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 

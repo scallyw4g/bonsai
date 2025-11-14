@@ -1,6 +1,4 @@
 
-poof(block_array_c(simple_brush, {8}))
-#include <generated/block_array_c_IXtQW00h.h>
 
 link_internal level_editor *
 GetEditor()
@@ -1991,26 +1989,8 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    window_layout *Window = GetOrCreateWindow(Ui, "Simple Brushes");
+    window_layout *Window = GetOrCreateWindow(Ui, "Editor Tools");
     PushWindowStart(Ui, Window);
-
-
-    IterateOver(&Editor->SimpleBrushes, Brush, Index)
-    {
-      ui_style *Style = &DefaultStyle;
-      if (Editor->SelectedSimpleBrushIndex == Index)
-      {
-        Style = &DefaultSelectedStyle;
-      }
-
-      ui_id Id = UiId(Window, "simple brush select", Cast(void*, Brush));
-      if (Button(Ui, Brush->Name, Id, Style))
-      {
-        Editor->SelectedSimpleBrushIndex = Index;
-      }
-    }
-
-
 
     PushWindowEnd(Ui, Window);
   }
@@ -2685,7 +2665,6 @@ DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *E
   }
 }
 
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
 link_internal rtt_framebuffer
 ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32 BindInputTexture)
 {
@@ -2985,6 +2964,7 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
     /* EndGpuTimer(&Timer); */
     /* Push(&Graphics->GpuTimers, &Timer); */
 
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
     Swap(Read, Write);
 #undef Swap
   }

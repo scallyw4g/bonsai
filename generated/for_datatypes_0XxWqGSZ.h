@@ -162,8 +162,6 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
 
 
 
-
-
 struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( finalize_shit_and_fuckin_do_stuff_async_params *Params )
@@ -212,9 +210,6 @@ WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_a
   Result.work_queue_entry_async_function_call.initialize_easing_function_visualizer_render_pass_async_params = *Params;
   return Result;
 }
-
-
-
 
 
 

@@ -118,25 +118,6 @@
 
 
 
-struct simple_brush;
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, simple_brush *BaseElement);
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, simple_brush *BaseElement, umm Count);
-
-
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory);
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, simple_brush *Element, memory_arena *Memory, umm Count);
-
-
-
-
 
 
 
@@ -526,7 +507,6 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory, u
 
 
 
-
 struct brush_layer;
 
 link_internal b32
@@ -542,7 +522,6 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Count);
-
 
 
 

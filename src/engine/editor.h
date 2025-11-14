@@ -1282,35 +1282,6 @@ poof(@serdes)
 };
 
 
-struct simple_brush
-poof(@do_editor_ui @serdes)
-{
-              cs  Name; poof(@ui_skip)
-  brush_settings  Outline;
-   layered_brush *Texture;
-};
-
-link_internal b32
-AreEqual(simple_brush *Thing1, simple_brush *Thing2)
-{
-  NotImplemented; return False;
-}
-
-link_internal b32
-AreEqual(simple_brush Thing1, simple_brush Thing2)
-{
-  NotImplemented; return False;
-}
-
-
-poof(block_array_h(simple_brush, {8}, {}))
-#include <generated/block_array_h_dvMGY5g0.h>
-
-
-
-
-
-
 
 struct single_brush
 {
@@ -1347,7 +1318,6 @@ poof(@serdes)
   /* { */
   /*   single_brush  Single; */
   /*   asset_brush   Asset; */
-    /* simple_brush  Simple; */
     layered_brush Layered;
   /* }; poof(@type_tag(world_edit_brush_type)) */
 };
@@ -1456,9 +1426,6 @@ poof(@do_editor_ui)
 
   world_edit                   *HotEdit;      // Hovered
   world_edit_block_array_index  HotEditIndex;
-
-  simple_brush_block_array SimpleBrushes;
-  simple_brush_block_array_index SelectedSimpleBrushIndex = {INVALID_BLOCK_ARRAY_INDEX};
 
   // TODO(Jesse): This is a stupid form of stoarge.  We don't ever look anything
   // up, we just keep pointers into it.  Change to a paged-array and store the
