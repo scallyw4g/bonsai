@@ -2672,7 +2672,6 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
 
   world *World = GetWorld();
 
-  /* b32 BindInputTexture = False; */
   RangeIterator(LayerIndex, Brush->LayerCount)
   {
     BindFramebuffer(Write);
@@ -2688,7 +2687,6 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
 
     b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False);
     b32 BindBlendTex = IsLastValidLayer;
-    /* b32 BindBlendTex = (Brush->AffectExisting == False) && IsLastValidLayer; */
     BindUniformByName(&WorldEditRC->Program, "SampleBlendTex", BindBlendTex);
     if (BindBlendTex)
     {
@@ -2707,21 +2705,18 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
       BindUniformByName(&WorldEditRC->Program, "RGBColor", &RGBColor);
     }
 
-            //
     BindUniformByName(&WorldEditRC->Program, "ValueBias",      Layer->Settings.ValueBias);
     BindUniformByName(&WorldEditRC->Program, "BrushType",      Layer->Settings.Type);
     BindUniformByName(&WorldEditRC->Program, "BlendMode",      Layer->Settings.LayerBlendMode);
     BindUniformByName(&WorldEditRC->Program, "ValueModifiers", Layer->Settings.ValueModifier);
     BindUniformByName(&WorldEditRC->Program, "ColorMode",      Layer->Settings.ColorMode);
     BindUniformByName(&WorldEditRC->Program, "Invert",         Layer->Settings.Invert);
-            //
     BindUniformByName(&WorldEditRC->Program, "Threshold",      Layer->Settings.Threshold);
     BindUniformByName(&WorldEditRC->Program, "Power",          Layer->Settings.Power);
 
 
     rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
        v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-            //*
        v3 EditRectRad = GetRadius(&SimEditRect);
 
     // NOTE(Jesse): Must call bind explicitly because the
@@ -2731,13 +2726,11 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
     BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
     AssertNoGlErrors;
 
-            //
     v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
     BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
     AssertNoGlErrors;
 
     v3 EditDim = ChunkRelEditMax - ChunkRelEditMin;
-            //
 
     switch (Layer->Settings.Type)
     {
@@ -2781,11 +2774,24 @@ ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edi
                                   Read, // Intentionally writing into read here because that's what we return
                                   Accum,
                                   True );
+
+            DeallocateRenderToTextureFramebuffer(&B0);
+            DeallocateRenderToTextureFramebuffer(&B1);
           }
           else
           {
             DeallocateRenderToTextureFramebuffer(Read);
             *Read = Applied;
+
+            if (Applied.FBO.ID == B0.FBO.ID)
+            {
+              DeallocateRenderToTextureFramebuffer(&B1);
+            }
+            else
+            {
+              Assert(Applied.FBO.ID == B1.FBO.ID);
+              DeallocateRenderToTextureFramebuffer(&B0);
+            }
           }
         }
 
