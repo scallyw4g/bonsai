@@ -147,10 +147,6 @@ CompositeGameTexturesAndDisplay( platform *Plat, graphics *Graphics )
   GetGL()->Disable(GL_BLEND);
 
   RenderQuad();
-
-  AssertNoGlErrors;
-
-  return;
 }
 
 // Does lighting on gBuffer textures.  Also composites transparent surfaces

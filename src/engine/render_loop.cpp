@@ -237,7 +237,6 @@ DrainHiRenderQueue(engine_resources *Engine)
             // why that would be, but here we are.
             if (Graphics->Settings.UseSsao) { RenderAoTexture(GetApplicationResolution(&Engine->Settings), AoGroup); }
 
-
             {
               /* RenderTransparencyBuffers(GetApplicationResolution(&Engine->Settings), &Graphics->Settings, &Graphics->Transparency); */
               RenderLuminanceTexture(GetApplicationResolution(&Engine->Settings), Lighting, Graphics);

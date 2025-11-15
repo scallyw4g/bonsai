@@ -47,7 +47,6 @@ RunBloomRenderPass(graphics *Graphics)
   /* GetGL()->EnableVertexAttribArray(0); */
   /* GetGL()->BindBuffer(GL_ARRAY_BUFFER, Global_QuadVertexBuffer); */
   /* GetGL()->VertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0); */
-  /* AssertNoGlErrors; */
 
   //
   // Downsample
@@ -88,7 +87,6 @@ RunBloomRenderPass(graphics *Graphics)
   {
     texture *MipTex = Group->MipChain + MipIndex;
     SetViewport(MipTex->Dim);
-
     GetGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, MipTex->ID, 0);
     RenderQuad();
 
@@ -105,6 +103,5 @@ RunBloomRenderPass(graphics *Graphics)
 
   // Teardown VBO
   GetGL()->BindBuffer(GL_ARRAY_BUFFER, 0);
-  GetGL()->DisableVertexAttribArray(0);
 
 }

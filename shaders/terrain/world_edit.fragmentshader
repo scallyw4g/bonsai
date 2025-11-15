@@ -9,7 +9,6 @@ uniform int ValueModifiers;
 uniform int GenerateNormals;
 
 uniform f32 Hollow;
-uniform f32 Power;
 uniform f32 ValueBias;
 
 uniform v3 Axis;
@@ -511,7 +510,7 @@ void main()
 
       /* InitialSample = Clamp01(InitialSample); */
 
-      f32 ThisSample = (InitialSample + ValueBias) * Power;
+      f32 ThisSample = (InitialSample + ValueBias);
       if (Invert)
       {
         ThisSample = ThisSample * -1.f;
