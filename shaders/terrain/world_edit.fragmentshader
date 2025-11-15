@@ -8,6 +8,7 @@ uniform int ValueModifiers;
 
 uniform int GenerateNormals;
 
+uniform f32 Hollow;
 uniform f32 Power;
 uniform f32 ValueBias;
 
@@ -310,6 +311,11 @@ void BlendSample(
   }
 }
 
+float iq_opOnion( in float sdf, in float thickness )
+{
+    return abs(sdf)-thickness;
+}
+
 void main()
 {
   v4 TexLookup = vec4(0);
@@ -399,6 +405,7 @@ void main()
               v3 p    = (EditRelxyz - Center);
               v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
               f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
               InitialSample = -IQSample;
 
             } break;
@@ -408,9 +415,12 @@ void main()
             {
               f32 Rad = Radius;
               if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
+              Rad -= Hollow;
+
               v3 p  = (EditRelxyz - EditRelativeSphereCenter);
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
               f32 IQSample  = w.w+iq_sdSphere(w.xyz, Rad);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
               InitialSample = -IQSample;
             } break;
 
@@ -423,6 +433,7 @@ void main()
 
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
               f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
+              /* if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); } */
               InitialSample = -IQSample;
             } break;
 
@@ -435,6 +446,7 @@ void main()
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
               f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
               InitialSample = -IQSample;
             } break;
 
@@ -460,9 +472,10 @@ void main()
 
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
-              f32 n = w.w+iq_sdTorus( w.xyz, t );
+              f32 IQSample = w.w+iq_sdTorus( w.xyz, t );
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
-              InitialSample = -n;
+              InitialSample = -IQSample;
 
             } break;
 
@@ -470,7 +483,8 @@ void main()
             case 6:
             {
               f32 S = EditDim.z;
-              f32  h = Radius;
+
+              f32  h = Radius > 0.f ? Radius : 1.f;
 
               v3  BoxR = EditDim/(2.f*S);
               v3  p = EditRelxyz/EditDim;
@@ -478,9 +492,10 @@ void main()
 
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
-              f32 n = w.w+iq_sdPyramid( w.xyz, h );
-              InitialSample = -n;
+              f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
+              InitialSample = -IQSample;
             } break;
 
             // @sdf_shape_step(7): Add more cases and implementations here
