@@ -1972,18 +1972,21 @@ DoWorldEditor(engine_resources *Engine)
         Editor->Selection.ModState.ClickedFace = FaceIndex_None;
       }
 
-      b32 SettingsChanged = CheckSettingsChanged(&Editor->CurrentBrush->Layered);
-      if (SettingsChanged)
-      {
-        IterateOver(&Editor->Edits, Edit, EditIndex)
-        {
-          if (Edit->Tombstone) { continue; }
+    }
+  }
 
-          if (Edit->Brush == Editor->CurrentBrush)
-          {
-            ReapplyEditToOctree(Engine, Edit, GetTranArena());
-          }
-        }
+  {
+    b32 CurrentBrushSettingsChanged  = Editor->CurrentBrush && CheckSettingsChanged(&Editor->CurrentBrush->Layered);
+    IterateOver(&Editor->Edits, Edit, EditIndex)
+    {
+      if (Edit->Tombstone) { continue; }
+
+      if ( Edit->Dirty ||
+           (Edit->Brush == Editor->CurrentBrush && 
+            CurrentBrushSettingsChanged) )
+      {
+        Edit->Dirty = False;
+        ReapplyEditToOctree(Engine, Edit, GetTranArena());
       }
     }
   }
@@ -2237,6 +2240,14 @@ DoWorldEditor(engine_resources *Engine)
                 {
                   DeleteEdit(Engine, Edit, EditIndex, Layer);
                 } break;
+              }
+
+              if (EditIsSelected)
+              {
+                if (DoEditorUi(Ui, &LayersWindow, &Edit->Axis, CSz("Axis"), 0))
+                {
+                  Edit->Dirty = True;
+                }
               }
 
               PrevEditIndex = EditIndex;
@@ -2727,6 +2738,7 @@ BindUniformsForBrush(
 link_internal rtt_framebuffer
 ApplyBrush( world_edit_render_context *WorldEditRC,
                               rect3cp  EditBounds,
+                                   v3  ParentAxis,
                      world_edit_brush *EditBrush,
                 world_edit_blend_mode  BlendMode,
                           world_chunk *Chunk,
@@ -2781,6 +2793,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
           rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
                                                 EditBounds,
+                                                ParentAxis,
                                                 NestedBrush,
                                                 Layer->Settings.LayerBlendMode,
                                                 Chunk,
@@ -2802,6 +2815,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
             Applied = ApplyBrush( WorldEditRC,
                                   EditBounds,
+                                  ParentAxis,
                                   &VoidBrush,
                                   WorldEdit_Mode_Union,
                                   Chunk,
@@ -2872,7 +2886,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
 
-        m4 Rot = RotateTransform(Shape->Advanced.Axis*PI32);
+        m4 Rot = RotateTransform((ParentAxis+Shape->Advanced.Axis)*PI32);
         BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
 
         switch(Shape->Type)

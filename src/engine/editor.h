@@ -227,9 +227,10 @@ poof(
   {
     type_list.map(type)
     {
-      link_internal void
+      link_internal b32
       DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
+        b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
         type.member(0, (E) 
@@ -243,7 +244,7 @@ poof(
                 PushTableStart(Ui);
                   E.map_array(e_index)
                   {
-                    DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
+                    Result |= DoEditorUi(Ui, Window, &Value->(E.name)[e_index], {}, ThisHash, Params, EDITOR_UI_VALUE_RANGE_INSTANCE_NAMES );
                   }
                 PushTableEnd(Ui);
                 /* PushNewRow(Ui); */
@@ -252,6 +253,7 @@ poof(
           /* PushTableEnd(Ui); */
         })
         PushNewRow(Ui);
+        return Result;
       }
     }
   }
@@ -262,9 +264,10 @@ poof(
   {
     type_list.map(type)
     {
-      link_internal void
+      link_internal b32
       DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
       {
+        b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
         Params = Params ? Params : &DefaultUiRenderParams_Blank;
@@ -275,9 +278,9 @@ poof(
         {
           u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
             PushTableStart(Ui);
-              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; }
+              if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value - 1; Result = True; }
                   PushColumn(Ui, CS(*Value), &DefaultUiRenderParams_Generic);
-              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; }
+              if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash), &DefaultUiRenderParams_Button)) { *Value = *Value + 1; Result = True; }
             PushTableEnd(Ui);
           EndColumn(Ui, Start);
         }
@@ -287,6 +290,7 @@ poof(
           PushNewRow(Ui);
         }
 
+        return Result;
       }
 
     }
@@ -620,9 +624,10 @@ poof(
 #include <generated/(builtin.for_datatypes)_RIx8WIj8.h>
 
 
-link_internal void
+link_internal b32
 DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min, r32 Max, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = {};
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Generic);
     PushTableStart(Ui);
       if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Blank); }
@@ -652,14 +657,17 @@ DebugSlider(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, r32 Min
         r32 NewPerc = Clamp01(Offset.x / Width);
         r32 NewValue = (Range*NewPerc) + Min;
         *Value = NewValue;
+        Result = True;
       }
     PushTableEnd(Ui);
   EndColumn(Ui, Start);
+  return Result;
 }
 
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {
+  b32 Result = {};
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(Name.Start)));
 
   if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
@@ -668,9 +676,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
     PushTableStart(Ui);
       if (Value)
       {
-        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash))) { *Value = *Value - 1.f; }
-          DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
-        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash))) { *Value = *Value + 1.f; }
+        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash))) { *Value = *Value - 1.f; Result = True; }
+          Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
+        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash))) { *Value = *Value + 1.f; Result = True; }
       }
       else
       {
@@ -678,6 +686,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
       }
     PushTableEnd(Ui);
   EndColumn(Ui, Start);
+  return Result;
 }
 
 link_internal void
@@ -1351,9 +1360,12 @@ struct world_edit poof(@do_editor_ui)
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
   world_edit_brush *Brush;
 
+  v3 Axis; poof(@ui_value_range(-1.f, 1.f))
+
   // TODO(Jese): Pack these into a Flags field
   // {
     b32 Tombstone;
+    b32 Dirty;
 
     // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing
     // SelectEdit such that we can also makes
@@ -1650,4 +1662,4 @@ link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
 
 link_internal rtt_framebuffer
-ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32);
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32);

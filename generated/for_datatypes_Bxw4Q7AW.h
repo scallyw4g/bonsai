@@ -10768,9 +10768,80 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             
             
+            cs MemberName = CSz("Axis");
+
+                                                                                                auto Member = Cast(v3*, &Element->Axis);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              , -1.f, 1.f );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Tombstone");
 
                                                                         auto Member = Cast(b32*, &Element->Tombstone);
+            DoEditorUi(Ui,
+              Window,
+              Cast(u8*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Dirty");
+
+                                                                        auto Member = Cast(b32*, &Element->Dirty);
             DoEditorUi(Ui,
               Window,
               Cast(u8*, Member),
