@@ -37,7 +37,14 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
   RangeIterator_t(umm, ElementIndex, Count)
   {
     shape_layer_advanced_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Rounding); // default
+                                Result &= Serialize(Bytes, &Element->Hollow); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Rounding); // default
 
 
 
@@ -68,6 +75,8 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
 
 
             
+
+        
 
         
 
@@ -107,6 +116,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 {
   b32 Result = True;
                 
+  
+  Result &= Deserialize(Bytes, &Element->Hollow, Memory);
+
+
+
+
+
+
+              
   
   Result &= Deserialize(Bytes, &Element->Rounding, Memory);
 
@@ -148,6 +166,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
 
     
+  
   
   
   

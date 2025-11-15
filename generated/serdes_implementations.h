@@ -382,21 +382,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
 
 
 
-                            Result &= Serialize(Bytes, &Element->Power); // default
-
-
-
-
-
-
                             Result &= Serialize(Bytes, &Element->ValueBias); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Threshold); // default
 
 
 
@@ -457,10 +443,6 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
                 if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
 
 
-
-        
-
-        
 
         
 
@@ -539,25 +521,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
 
               
   
-  Result &= Deserialize(Bytes, &Element->Power, Memory);
-
-
-
-
-
-
-              
-  
   Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
-
-
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->Threshold, Memory);
 
 
 
@@ -636,8 +600,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_aren
   }
 
 
-  
-  
   
   
   

@@ -2712,8 +2712,8 @@ BindUniformsForBrush(
   BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueModifier);
   BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
-  BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold);
-  BindUniformByName(Program, "Power",          Layer->Settings.Power);
+  /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
+  /* BindUniformByName(Program, "Power",          Layer->Settings.Power); */
 
   // NOTE(Jesse): Must call bind explicitly because the
   // driver doesn't cache these values otherwise .. it
@@ -2867,7 +2867,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       {
         shape_layer *Shape = &Layer->Settings.Shape;
         BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
-
+        BindUniformByName(&WorldEditRC->Program, "Hollow",     Shape->Advanced.Hollow);
         BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
         BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);

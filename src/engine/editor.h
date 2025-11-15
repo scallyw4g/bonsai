@@ -1139,6 +1139,7 @@ poof(string_and_value_tables(shape_type))
 struct shape_layer_advanced_params
 poof(@do_editor_ui)
 {
+  r32 Hollow;
   r32 Rounding;
    v3 Stretch;
    v3 Repeat;
@@ -1240,9 +1241,9 @@ poof(@do_editor_ui @serdes)
   // Common across brush types
   //
 
-  f32 Power     = 1.f; poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element)))
+  /* f32 Power     = 1.f; poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element))) */
+  /* f32 Threshold = 0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element))) */
   r32 ValueBias = 0.f; poof(@ui_value_range(-1.f,  1.f))
-  f32 Threshold = 0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element)))
 
   world_edit_blend_mode_modifier ValueModifier;
   world_edit_blend_mode          LayerBlendMode;
@@ -1287,7 +1288,6 @@ poof(@serdes)
 {
           s32 LayerCount;
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
-           /* b8 AffectExisting = True; */
 };
 
 

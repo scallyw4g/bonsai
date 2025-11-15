@@ -8409,6 +8409,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
             
             
             
+            cs MemberName = CSz("Hollow");
+
+                                                                                                auto Member = Cast(r32*, &Element->Hollow);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Rounding");
 
                                                                                                 auto Member = Cast(r32*, &Element->Rounding);
@@ -13778,43 +13815,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
         /* }{} */
 
         {
-           if (HasThresholdModifier(Element)) 
-          { 
-            
-            
-            
-            cs MemberName = CSz("Power");
-
-                                                                                                auto Member = Cast(f32*, &Element->Power);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              ,  0.f, 25.f );
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
           
           { 
             
@@ -13830,43 +13830,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
               ThisHash,
               Params
               , -1.f,  1.f );
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-           if (HasThresholdModifier(Element)) 
-          { 
-            
-            
-            
-            cs MemberName = CSz("Threshold");
-
-                                                                                                auto Member = Cast(f32*, &Element->Threshold);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              ,  0.f,  1.f );
 
 
 
