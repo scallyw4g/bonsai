@@ -151,6 +151,35 @@ float iq_sdTorus( vec3 p, vec2 t )
   return length(q)-t.y;
 }
 
+float iq_sdPyramid( vec3 p, float h )
+{
+  // NOTE(Jesse): iq uses y-up, so we flip y and z
+  f32 z = p.z;
+  f32 y = p.y;
+
+  p.z = y;
+  p.y = z;
+
+
+  float m2 = h*h + 0.25;
+
+  p.xz = abs(p.xz);
+  p.xz = (p.z>p.x) ? p.zx : p.xz;
+  p.xz -= 0.5;
+
+  vec3 q = vec3( p.z, h*p.y - 0.5*p.x, h*p.x + 0.5*p.y);
+
+  float s = max(-q.x,0.0);
+  float t = clamp( (q.y-0.5*p.z)/(m2+0.25), 0.0, 1.0 );
+
+  float a = m2*(q.x+s)*(q.x+s) + q.y*q.y;
+  float b = m2*(q.x+0.5*t)*(q.x+0.5*t) + (q.y-m2*t)*(q.y-m2*t);
+
+  float d2 = min(q.y,-q.x*m2-q.y*0.5) > 0.0 ? 0.0 : min(a,b);
+
+  return sqrt( (d2+q.z*q.z)/m2 ) * sign(max(q.z,-p.y));
+}
+
 
 // p == sample point
 // h == stretch vector
@@ -159,14 +188,12 @@ vec4 iq_opElongate( vec3 p, vec3 h )
   // faster, but produces zero in the interior elongated box
   /* return vec4( p-clamp(p,-h,h), 0.0 ); */
 
-  /* return vec4(0); */
-
   vec3 q = abs(p)-h;
   return vec4( max(q,0.0), min(max(q.x,max(q.y,q.z)),0.0) );
 }
 
 // p == sample point
-// p == spacing between instances
+// s == spacing between instances
 //
 v3 iq_opRepetition( v3 p, v3 s )
 {
@@ -174,13 +201,15 @@ v3 iq_opRepetition( v3 p, v3 s )
     return q;
 }
 
-v4 DoInputTransforms(v3 p, mat3 Transform, v3 Stretch, v3 Repeat)
+v4 DoInputTransforms(v3 p, mat3 RotationTransform, v3 Stretch, v3 Repeat)
 {
-  p *= Transform;
+  p *= RotationTransform;
+
   if (length(Repeat) > 0.f)
   {
     p  = iq_opRepetition(p, Repeat);
   }
+
   v4 w  = iq_opElongate(p, Stretch);
   return w;
 }
@@ -234,6 +263,8 @@ void BlendSample(
 
     case 4: // WorldEdit_Mode_Difference
     {
+      // TODO(Jesse): This is wack.  I tried a bunch of other formulation that
+      // I think should have worked, but coudn't figure it out..
       if (Accumulator > 0.f && ThisSample > 0.f)
       {
         Accumulator *= -1.f;
@@ -431,6 +462,23 @@ void main()
 
               f32 n = w.w+iq_sdTorus( w.xyz, t );
 
+              InitialSample = -n;
+
+            } break;
+
+            // ShapeType_Pyramid
+            case 6:
+            {
+              f32 S = EditDim.z;
+              f32  h = Radius;
+
+              v3  BoxR = EditDim/(2.f*S);
+              v3  p = EditRelxyz/EditDim;
+              p.xy   -= 0.5f;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 n = w.w+iq_sdPyramid( w.xyz, h );
               InitialSample = -n;
 
             } break;

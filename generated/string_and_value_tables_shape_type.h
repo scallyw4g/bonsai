@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1128:0
+// src/engine/editor.h:1136:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2104:0
@@ -15,6 +15,7 @@ IsValid(shape_type Value)
     case ShapeType_Cylinder:
     case ShapeType_Plane:
     case ShapeType_Torus:
+    case ShapeType_Pyramid:
 
     {
       Result = True;
@@ -39,6 +40,7 @@ ToStringPrefixless(shape_type Type)
       case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
       case ShapeType_Plane: { Result = CSz("Plane"); } break;
       case ShapeType_Torus: { Result = CSz("Torus"); } break;
+      case ShapeType_Pyramid: { Result = CSz("Pyramid"); } break;
 
 
       
@@ -66,6 +68,7 @@ ToString(shape_type Type)
     case ShapeType_Cylinder: { Result = CSz("ShapeType_Cylinder"); } break;
     case ShapeType_Plane: { Result = CSz("ShapeType_Plane"); } break;
     case ShapeType_Torus: { Result = CSz("ShapeType_Torus"); } break;
+    case ShapeType_Pyramid: { Result = CSz("ShapeType_Pyramid"); } break;
 
 
     
@@ -85,6 +88,7 @@ ShapeType(counted_string S)
   if (StringsMatch(S, CSz("ShapeType_Cylinder"))) { return ShapeType_Cylinder; }
   if (StringsMatch(S, CSz("ShapeType_Plane"))) { return ShapeType_Plane; }
   if (StringsMatch(S, CSz("ShapeType_Torus"))) { return ShapeType_Torus; }
+  if (StringsMatch(S, CSz("ShapeType_Pyramid"))) { return ShapeType_Pyramid; }
 
 
   return Result;

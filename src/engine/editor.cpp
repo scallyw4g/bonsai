@@ -3007,6 +3007,15 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
           } break;
 
+          case ShapeType_Pyramid:
+          {
+            auto Pyramid = &Shape->Pyramid;
+
+            BindUniformByName(&WorldEditRC->Program, "Radius",      Pyramid->Height);
+
+          } break;
+
+
           // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
           //
         }

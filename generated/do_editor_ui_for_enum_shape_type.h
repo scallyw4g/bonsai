@@ -69,6 +69,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_type *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Pyramid"), UiId(Window, "enum ShapeType_Pyramid", Element, ThisHash), Params))
+    {
+            *Element = ShapeType_Pyramid;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
 
   }
   else

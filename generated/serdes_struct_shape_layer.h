@@ -1,5 +1,5 @@
 // callsite
-// src/engine/serdes.cpp:443:0
+// src/engine/serdes.cpp:445:0
 
 // def (serdes_struct)
 // src/engine/serdes.h:572:0
@@ -84,6 +84,13 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count)
 
 
 
+                            Result &= Serialize(Bytes, &Element->Pyramid); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->Advanced); // default
 
 
@@ -94,6 +101,8 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count)
 
 
             
+
+        
 
         
 
@@ -201,6 +210,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
               
   
+  Result &= Deserialize(Bytes, &Element->Pyramid, Memory);
+
+
+
+
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Advanced, Memory);
 
 
@@ -211,6 +229,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
     
+  
   
   
   

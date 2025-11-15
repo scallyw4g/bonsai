@@ -1068,6 +1068,13 @@ poof(@do_editor_ui)
 };
 
 
+struct world_update_op_shape_params_pyramid
+poof(@do_editor_ui)
+{
+  f32 Height;
+};
+
+
 // @sdf_shape_step(2): Add new asset struct here
 //
 
@@ -1121,6 +1128,7 @@ enum shape_type
   ShapeType_Cylinder = 3,
   ShapeType_Plane    = 4,
   ShapeType_Torus    = 5,
+  ShapeType_Pyramid  = 6,
 
   // @sdf_shape_step(1): Add shape types here
   //
@@ -1150,6 +1158,7 @@ poof(@do_editor_ui)
   world_update_op_shape_params_cylinder Cylinder; poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Cylinder))
   world_update_op_shape_params_plane    Plane;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Plane))
   world_update_op_shape_params_torus    Torus;    poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Torus))
+  world_update_op_shape_params_pyramid  Pyramid;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == ShapeType_Pyramid))
   // @sdf_shape_step(6): Add an instance of the new shape here
   //
 

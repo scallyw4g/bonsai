@@ -1,0 +1,3 @@
+[33m * Warning [37m- Attempted to register arena from (./external\bonsai_debug/src/platform/win32_etw.cpp:27) before DebugState was initialized
+[34m   Info    [37m- Spanwing Entity(0x300021D0)
+[33m * Warning [37m- Attempted to allocate bonsai_type_info_buffer of 0 length.

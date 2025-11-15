@@ -434,6 +434,8 @@ poof(serdes_struct(world_update_op_shape_params_plane))
 #include <generated/serdes_struct_world_update_op_shape_params_plane.h>
 poof(serdes_struct(world_update_op_shape_params_torus))
 #include <generated/serdes_struct_world_update_op_shape_params_torus.h>
+poof(serdes_struct(world_update_op_shape_params_pyramid))
+#include <generated/serdes_struct_world_update_op_shape_params_pyramid.h>
 // @sdf_shape_step(3): Add new asset struct here to generate serialization code
 //
 
