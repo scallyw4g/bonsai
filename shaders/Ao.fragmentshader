@@ -18,7 +18,7 @@ uniform mat4 InverseProjectionMatrix;
 uniform mat4 ViewProjection;
 
 // Tuning
-  float SsaoRadius = 0.45f;
+  float SsaoRadius = 0.0005f;
   float DepthThreshold = 0.0013f;
 //
 
@@ -54,7 +54,7 @@ void main()
   // NOTE(Jesse): Made bias proportional to the depth of the fragment such that
   // at large distances banding doesn't come back
   //
-  float Bias = FragDepth*0.0001f;
+  float Bias = FragDepth*0.0005f;
   /* float Bias = 0.0000f; */
   float BiasedFragDepth = FragDepth - Bias;
 

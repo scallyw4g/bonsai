@@ -39,7 +39,7 @@ uniform bool UseLightingBloom;
 uniform v2 ApplicationResolution;
 uniform v2 ShadowMapResolution;
 
-int AoBlurSize = 4; // size of AO noise texture
+int AoBlurSize = 2; // size of AO noise texture
 float BlurredAO = 0.0f;
 
 /* fda */
@@ -62,8 +62,8 @@ float BlurredAO = 0.0f;
 /* float SunIntensity = 0.0005f;
 /* float SunIntensity = 0.005f; */
 /* float SunIntensity = 0.05f; */
-float SunIntensity = 0.5f;
-/* float SunIntensity = 1.0f; */
+/* float SunIntensity = 0.5f; */
+float SunIntensity = 1.0f;
 
 // Tuning
   float gamma = 2.2f;
@@ -173,11 +173,8 @@ void main()
       vec3 FragToLight = normalize(SunPosition);
       vec3 LightToFrag = -FragToLight;
 
-      float LightAtt = SunIntensity;
-      KeyLightContrib = LightingCalc(LightAtt, SunColor, FragToLight, FragNormal, Camera);
-      /* KeyLightContrib += SpecLightingCalc(LightAtt, Diffuse, FragToLight, FragWorldP, FragNormal, Camera); */
-
-      BackLightContrib = LightingCalc(LightAtt, 0.15f*SunColor, LightToFrag, FragNormal, Camera);
+      KeyLightContrib  =       LightingCalc(SunIntensity, SunColor, FragToLight, FragNormal, Camera);
+      BackLightContrib = 0.15f*LightingCalc(SunIntensity, SunColor, LightToFrag, FragNormal, Camera);
     }
 
 
@@ -214,6 +211,7 @@ void main()
 
     if (UseSsao)
     {
+#if 1
       vec2 texelSize = 1.0 / vec2(textureSize(Ssao, 0));
       float AccumAO = 0.0;
 
@@ -227,6 +225,9 @@ void main()
       }
 
       BlurredAO = AccumAO / float(AoBlurSize * AoBlurSize);
+#else
+      BlurredAO = texture(Ssao, gBufferUV).r;
+#endif
     }
     else
     {
@@ -321,11 +322,20 @@ void main()
      *  Tone-mapping && gamma correction
      */
 
+#if 0
     TotalLight = (Diffuse*KeyLightContrib*ShadowVisibility) +
                  (Diffuse*AmbientLightContrib*BlurredAO) +
                  (Diffuse*BackLightContrib*BlurredAO) +
                  (PointLightsContrib*BlurredAO) +
                  Fog;
+#else
+    TotalLight = (Diffuse*KeyLightContrib*ShadowVisibility) +
+                 (Diffuse*AmbientLightContrib) +
+                 (Diffuse*BackLightContrib) +
+                 (PointLightsContrib) +
+                 Fog;
+    TotalLight *= BlurredAO;
+#endif
                  /* Emission * Diffuse + */
 
     /* if (Emission > 1.f) */
