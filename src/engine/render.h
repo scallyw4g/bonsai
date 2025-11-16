@@ -174,10 +174,24 @@ Perspective_clipped(radians FOV, v2 WindowDim, r32 NearClip, r32 FarClip)
   return Result;
 }
 
+inline v3
+RadiansFromDegress(v3 Degrees)
+{
+  v3 Result = (Degrees*PI32/180.f);
+  return Result;
+}
+
+inline radians
+RadiansFromDegress(degrees Degrees)
+{
+  radians Result = (Degrees*PI32/180.f);
+  return Result;
+}
+
 inline radians
 Rads(degrees Degrees)
 {
-  radians Result = (Degrees/180.f);
+  radians Result = (Degrees*PI32/180.f);
   return Result;
 }
 
