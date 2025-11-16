@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.h:150:0
 
 // def (hashtable_struct)
-// external/bonsai_stdlib/src/poof_functions.h:780:0
+// external/bonsai_stdlib/src/poof_functions.h:792:0
 struct window_layout_linked_list_node
 {
   b32 Tombstoned;

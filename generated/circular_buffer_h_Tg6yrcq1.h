@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/framebuffer.h:18:0
 
 // def (circular_buffer_h)
-// external/bonsai_stdlib/src/poof_functions.h:1746:0
+// external/bonsai_stdlib/src/poof_functions.h:1758:0
 /* generate_cursor_struct(element_t) */
 link_internal b32
 AreEqual(rtt_framebuffer *Thing1, rtt_framebuffer *Thing2)

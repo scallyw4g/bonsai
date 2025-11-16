@@ -49,7 +49,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
 
 
-                            Result &= Serialize(Bytes, &Element->Axis); // default
+                            Result &= Serialize(Bytes, &Element->Rotation); // default
 
 
 
@@ -149,7 +149,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
 
                 
   
-  Result &= Deserialize(Bytes, &Element->Axis, Memory);
+  Result &= Deserialize(Bytes, &Element->Rotation, Memory);
 
 
 

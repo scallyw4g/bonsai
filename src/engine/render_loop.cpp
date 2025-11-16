@@ -648,7 +648,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
                                                           Edit->Region,
-                                                          Edit->Axis,
+                                                          Edit->Rotation,
                                                           Brush,
                                                           Brush->BrushBlendMode,
                                                           Chunk,

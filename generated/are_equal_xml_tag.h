@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/xml.cpp:7:0
 
 // def (are_equal)
-// external/bonsai_stdlib/src/poof_functions.h:626:0
+// external/bonsai_stdlib/src/poof_functions.h:638:0
 link_internal b32
 AreEqual(xml_tag *Thing1, xml_tag *Thing2)
 {

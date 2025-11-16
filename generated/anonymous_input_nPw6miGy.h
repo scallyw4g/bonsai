@@ -49,7 +49,6 @@ BindKeydownToInput( VK_OEM_2, FSlash);
 
 BindKeydownToInput( VK_SPACE, Space);
 
-
 BindKeydownToInput( 0x30, N0);
 
 BindKeydownToInput( 0x31, N1);

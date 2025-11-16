@@ -56,6 +56,18 @@ MaxChannel( v3_u8 P1 )
   return Result;
 }
 
+inline u8
+MinChannel( v3_u8 P1 )
+{
+  u8 Result = P1.E[0];
+    Result = Cast(u8, Min(Result, P1.E[0]));
+  Result = Cast(u8, Min(Result, P1.E[1]));
+  Result = Cast(u8, Min(Result, P1.E[2]));
+;
+  return Result;
+}
+
+
 inline b32
 operator<( v3_u8 P1, v3_u8 P2 )
 {

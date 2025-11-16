@@ -1152,7 +1152,7 @@ poof(@do_editor_ui)
   r32 Rounding;
    v3 Stretch;
    v3 Repeat;
-   v3 Axis; poof(@ui_value_range(-1.f, 1.f))
+   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 };
 
 struct shape_layer
@@ -1360,7 +1360,7 @@ struct world_edit poof(@do_editor_ui)
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
   world_edit_brush *Brush;
 
-  v3 Axis; poof(@ui_value_range(-1.f, 1.f))
+  v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
 
   // TODO(Jese): Pack these into a Flags field
   // {

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/vector.h:808:0
 
 // def (gen_common_vector)
-// external/bonsai_stdlib/src/poof_functions.h:452:0
+// external/bonsai_stdlib/src/poof_functions.h:464:0
 inline s32
 LengthSq( v3i Vec )
 {

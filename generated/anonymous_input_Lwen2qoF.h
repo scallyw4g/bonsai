@@ -74,19 +74,6 @@ if (Input->Space.Clicked)
   Text.Count++;
 }
 
-if (Input->Underscore.Clicked)
-{
-  if (Input->Shift.Pressed)
-  {
-    Cast(char*, Text.Start)[Text.Count] = ToUpper('_');
-  }
-  else
-  {
-    Cast(char*, Text.Start)[Text.Count] = '_';
-  }
-  Text.Count++;
-}
-
 if (Input->N0.Clicked)
 {
   if (Input->Shift.Pressed)

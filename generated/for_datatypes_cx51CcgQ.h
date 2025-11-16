@@ -723,6 +723,7 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
@@ -1198,6 +1199,7 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
 
 
 

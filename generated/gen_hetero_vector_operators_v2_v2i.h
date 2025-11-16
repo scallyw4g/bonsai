@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/vector.h:238:0
 
 // def (gen_hetero_vector_operators)
-// external/bonsai_stdlib/src/poof_functions.h:355:0
+// external/bonsai_stdlib/src/poof_functions.h:367:0
 inline v2
 operator+( v2 P1, v2i P2 )
 {

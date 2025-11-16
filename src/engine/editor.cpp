@@ -2244,7 +2244,7 @@ DoWorldEditor(engine_resources *Engine)
 
               if (EditIsSelected)
               {
-                if (DoEditorUi(Ui, &LayersWindow, &Edit->Axis, CSz("Axis"), 0))
+                if (DoEditorUi(Ui, &LayersWindow, &Edit->Rotation, CSz("Rotation"), 0))
                 {
                   Edit->Dirty = True;
                 }
@@ -2738,7 +2738,7 @@ BindUniformsForBrush(
 link_internal rtt_framebuffer
 ApplyBrush( world_edit_render_context *WorldEditRC,
                               rect3cp  EditBounds,
-                                   v3  ParentAxis,
+                                   v3  ParentRotation,
                      world_edit_brush *EditBrush,
                 world_edit_blend_mode  BlendMode,
                           world_chunk *Chunk,
@@ -2793,7 +2793,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
           rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
                                                 EditBounds,
-                                                ParentAxis,
+                                                ParentRotation,
                                                 NestedBrush,
                                                 Layer->Settings.LayerBlendMode,
                                                 Chunk,
@@ -2815,7 +2815,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
             Applied = ApplyBrush( WorldEditRC,
                                   EditBounds,
-                                  ParentAxis,
+                                  ParentRotation,
                                   &VoidBrush,
                                   WorldEdit_Mode_Union,
                                   Chunk,
@@ -2886,7 +2886,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
 
-        m4 Rot = RotateTransform((ParentAxis+Shape->Advanced.Axis)*PI32);
+        Quaternion Q = FromEuler(RadiansFromDegress(ParentRotation)) * FromEuler(RadiansFromDegress(Shape->Advanced.Rotation));
+
+        m4 Rot = RotateTransform(Q);
         BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot);
 
         switch(Shape->Type)
@@ -3016,8 +3018,80 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           {
             auto Torus = &Shape->Torus;
 
-            BindUniformByName(&WorldEditRC->Program, "Radius",      Torus->MajorRadius);
-            BindUniformByName(&WorldEditRC->Program, "MinorRadius", Torus->MinorRadius);
+
+            r32 MinRad = Torus->MinorRadius;
+            s32 MinRadIndex = 0;
+            if (MinRad == 0.f)
+            {
+              MinRad = EditDim.E[0];
+
+              if  (MinRad > EditDim.E[1])
+              {
+                MinRad = EditDim.E[1];
+                MinRadIndex = 1;
+              }
+
+              if (MinRad > EditDim.E[2])
+              {
+                MinRad = EditDim.E[2];
+                MinRadIndex = 2;
+              }
+              Assert(MinRad == MinChannel(EditDim));
+
+              MinRad /= 2.f;
+            }
+
+
+            r32 MajRad = Torus->MajorRadius;
+            s32 MajRadIndex = 0;
+            if (MajRad == 0.f)
+            {
+              MajRad = EditDim.E[0];
+
+              if (MajRad < EditDim.E[1])
+              {
+                MajRad = EditDim.E[1];
+                MajRadIndex = 1;
+              }
+
+              if (MajRad < EditDim.E[2])
+              {
+                MajRad = EditDim.E[2];
+                MajRadIndex = 2;
+              }
+              Assert(MajRad == MaxChannel(EditDim));
+
+              MajRad /= 2.f;
+
+              MajRad -= MinRad*2.f;
+            }
+
+            switch(MinRadIndex)
+            {
+              case 0:
+              {
+                Quaternion Q2 = FromEuler(RadiansFromDegress(V3(0,0,90)));
+                m4 Rot2 = RotateTransform(Q2);
+                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+              } break;
+
+              case 1:
+              {
+                // Already facing the Y axis
+              } break;
+
+              case 2:
+              {
+                Quaternion Q2 = FromEuler(RadiansFromDegress(V3(90,0,0)));
+                m4 Rot2 = RotateTransform(Q2);
+                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+              } break;
+
+            }
+
+
+            BindUniformByName(&WorldEditRC->Program, "Radius",      MajRad);
+            BindUniformByName(&WorldEditRC->Program, "MinorRadius", MinRad);
 
           } break;
 

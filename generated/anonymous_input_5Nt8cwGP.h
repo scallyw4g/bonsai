@@ -49,7 +49,6 @@ BindKeyupToInput( VK_OEM_2, FSlash);
 
 BindKeyupToInput( VK_SPACE, Space);
 
-
 BindKeyupToInput( 0x30, N0);
 
 BindKeyupToInput( 0x31, N1);

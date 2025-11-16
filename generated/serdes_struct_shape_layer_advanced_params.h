@@ -65,7 +65,7 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
 
 
 
-                            Result &= Serialize(Bytes, &Element->Axis); // default
+                            Result &= Serialize(Bytes, &Element->Rotation); // default
 
 
 
@@ -155,7 +155,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
                 
   
-  Result &= Deserialize(Bytes, &Element->Axis, Memory);
+  Result &= Deserialize(Bytes, &Element->Rotation, Memory);
 
 
 

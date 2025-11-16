@@ -19,7 +19,7 @@ void main()
 
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.1f, 0.8f, 0.1f);
+  v3 ColorValue = V3(0.03f, 0.3f, 0.08f);
   f32 NoiseValue = 0.f;
 
   //
@@ -27,7 +27,7 @@ void main()
   //
   {
     f32 White = white_noise(v3(x,y,z));
-    ColorValue -= 0.05f*White;
+    ColorValue -= 0.02f*White;
 
     NoiseValue += DEFAULT_FLOOR_HEIGHT;
 

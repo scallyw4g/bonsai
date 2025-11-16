@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:19:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:799:0
+// external/bonsai_stdlib/src/poof_functions.h:811:0
 link_internal b32 AreEqual(ui_toggle_linked_list_node *Node1, ui_toggle_linked_list_node *Node2 );
 link_internal b32 AreEqual(ui_toggle *Element1, ui_toggle *Element2 );
 
