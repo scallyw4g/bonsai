@@ -226,6 +226,34 @@ f32 IQSampleToBonsaiSample(f32 IQSample, f32 Rad)
 }
 #endif
 
+float iq_opSmoothUnion( float d1, float d2, float k )
+{
+    d1 *= -1.f;
+    d2 *= -1.f;
+
+    k *= 4.0;
+    float h = max(k-abs(d1-d2),0.0);
+    return -1.f* (min(d1, d2) - h*h*0.25/k);
+}
+
+float iq_opSmoothSubtraction( float d1, float d2, float k )
+{
+    return -iq_opSmoothUnion(d1,-d2,k);
+
+    //k *= 4.0;
+    // float h = max(k-abs(-d1-d2),0.0);
+    // return max(-d1, d2) + h*h*0.25/k;
+}
+
+float iq_opSmoothIntersection( float d1, float d2, float k )
+{
+    return -iq_opSmoothUnion(-d1,-d2,k);
+
+    //k *= 4.0;
+    // float h = max(k-abs(d1-d2),0.0);
+    // return max(d1, d2) + h*h*0.25/k;
+}
+
 // Blend Value
 //
 void BlendSample(
@@ -235,33 +263,17 @@ void BlendSample(
 {
   switch (Mode)
   {
-    case 0: // WorldEdit_Mode_Additive
-    {
-      if (ThisSample > 0.f)
-      {
-        Accumulator = Accumulator + ThisSample;
-      }
-    } break;
-
-    case 1: // WorldEdit_Mode_Subtractive
-    {
-      if (ThisSample > 0.f)
-      {
-        Accumulator = Accumulator - ThisSample;
-      }
-    } break;
- 
-    case 2: // WorldEdit_Mode_Union
+    case 0: // WorldEdit_Mode_Union
     {
       Accumulator = max(Accumulator, ThisSample);
     } break;
 
-    case 3: // WorldEdit_Mode_Intersection
+    case 1: // WorldEdit_Mode_Intersection
     {
       Accumulator = min(Accumulator, ThisSample);
     } break;
 
-    case 4: // WorldEdit_Mode_Difference
+    case 2: // WorldEdit_Mode_Difference
     {
       // TODO(Jesse): This is wack.  I tried a bunch of other formulation that
       // I think should have worked, but coudn't figure it out..
@@ -274,12 +286,41 @@ void BlendSample(
       /* Accumulator = min(Accumulator, -(ThisSample+0.00001f)); */
     } break;
 
-    case 5: // WorldEdit_Mode_Multiply
+    case 3: // WorldEdit_Mode_SmoothUnion
+    {
+      Accumulator = iq_opSmoothUnion(Accumulator, ThisSample, 2.f);
+    } break;
+
+    case 4: // WorldEdit_Mode_Intersection
+    {
+    } break;
+
+    case 5: // WorldEdit_Mode_Difference
+    {
+    } break;
+
+    case 6: // WorldEdit_Mode_Additive
+    {
+      if (ThisSample > 0.f)
+      {
+        Accumulator = Accumulator + ThisSample;
+      }
+    } break;
+
+    case 7: // WorldEdit_Mode_Subtractive
+    {
+      if (ThisSample > 0.f)
+      {
+        Accumulator = Accumulator - ThisSample;
+      }
+    } break;
+ 
+    case 8: // WorldEdit_Mode_Multiply
     {
       Accumulator = Accumulator * ThisSample;
     } break;
 
-    case 6: // WorldEdit_Mode_Disabled
+    case 9: // WorldEdit_Mode_Disabled
     { ThisSample = 0.f; } break;
   }
 
@@ -317,14 +358,15 @@ float iq_opOnion( in float sdf, in float thickness )
 
 void main()
 {
-  v4 TexLookup = vec4(0);
+  v4 TexLookup = vec4(-3.4028234663852885981170418348451692544e+38);
+
   if (SampleInputTex > 0)
   {
     TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
   }
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  vec3 ColorValue = TexLookup.rgb;
+  vec3 ColorAccumulator = TexLookup.rgb;
 
   f32  InitialAccumulator = TexLookup.a;
   f32  Accumulator = TexLookup.a;
@@ -347,6 +389,7 @@ void main()
       xyz.y <= ChunkRelEditMax.y &&
       xyz.z <= ChunkRelEditMax.z  )
   {
+
     v3 Basis = WorldspaceChunkBasis + xyz;
     v3 EditRelxyz = xyz - ChunkRelEditMin;
     v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
@@ -418,9 +461,10 @@ void main()
 
               v3 p  = (EditRelxyz - EditRelativeSphereCenter);
               v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample  = w.w+iq_sdSphere(w.xyz, Rad);
+              f32 IQSample  = w.w+iq_sdSphere(p, Rad);
               if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
               InitialSample = -IQSample;
+              /* InitialSample = IQSample; */
             } break;
 
             // ShapeType_Line
@@ -505,10 +549,9 @@ void main()
           InitialSample += Rounding;
         } break;
 
-        default: {ColorValue = V3(1.f, 0.f, 1.f);  Accumulator = 1.f;} break;
+        default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
       }
 
-      /* InitialSample = Clamp01(InitialSample); */
 
       f32 ThisSample = (InitialSample + ValueBias);
       if (Invert)
@@ -545,13 +588,7 @@ void main()
       }
 
 
-
-
-      BlendSample(BlendMode, Accumulator, ColorValue, ThisSample, ColorSample);
-
-
-
-
+      BlendSample(BlendMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
     }
 
 
@@ -564,36 +601,17 @@ void main()
     v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
 
     f32 BlendValue = TexLookup.a;
-    /* f32 BlendValue = -1.f*TexLookup.a; */
     v3 BlendColor = TexLookup.rgb;
 
-
-#if 1
-    /* f32 A = -1.f*Accumulator; */
-    f32 A = Accumulator;
-    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, A, ColorValue);
+    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, Accumulator, ColorAccumulator);
 
     Accumulator = BlendValue;
-    ColorValue = BlendColor;
-#else
-    BlendSample(BlendTexBlendMode, Accumulator, ColorValue, BlendValue, BlendColor);
-#endif
-
-    /* if (Accumulator <= 0.f) */
-    /* /1* if (TexLookup.a > 0.f) *1/ */
-    /* { */
-    /*   // Take Max of Accumulator or current world value */
-    /*   if (Accumulator < TexLookup.a) */
-    /*   { */
-    /*     Accumulator = TexLookup.a; */
-    /*     ColorValue  = TexLookup.rgb; */
-    /*   } */
-    /* } */
+    ColorAccumulator = BlendColor;
   }
 
 
 
 
   Output.a = Accumulator;
-  Output.rgb = ColorValue;
+  Output.rgb = ColorAccumulator;
 }

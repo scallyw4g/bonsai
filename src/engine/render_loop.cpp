@@ -582,6 +582,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             auto WorldEditRC = &Graphics->WorldEditRC;
 
+            GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
             ClearFramebuffer(WorldEditRC->Framebuffers + 0);
             ClearFramebuffer(WorldEditRC->Framebuffers + 1);
             ClearFramebuffer(WorldEditRC->Framebuffers + 2);

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:984:0
+// src/engine/editor.h:989:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:500:0
@@ -16,24 +16,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Additive"), UiId(Window, "enum WorldEdit_Mode_Additive", Element, ThisHash), Params))
-    {
-            *Element = WorldEdit_Mode_Additive;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Subtractive"), UiId(Window, "enum WorldEdit_Mode_Subtractive", Element, ThisHash), Params))
-    {
-            *Element = WorldEdit_Mode_Subtractive;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Union"), UiId(Window, "enum WorldEdit_Mode_Union", Element, ThisHash), Params))
     {
             *Element = WorldEdit_Mode_Union;
@@ -55,6 +37,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_blend_mode *Elemen
     if (Button(Ui, CSz("Difference"), UiId(Window, "enum WorldEdit_Mode_Difference", Element, ThisHash), Params))
     {
             *Element = WorldEdit_Mode_Difference;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("SmoothUnion"), UiId(Window, "enum WorldEdit_Mode_SmoothUnion", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_SmoothUnion;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("SmoothIntersection"), UiId(Window, "enum WorldEdit_Mode_SmoothIntersection", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_SmoothIntersection;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("SmoothDifference"), UiId(Window, "enum WorldEdit_Mode_SmoothDifference", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_SmoothDifference;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Additive"), UiId(Window, "enum WorldEdit_Mode_Additive", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_Additive;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Subtractive"), UiId(Window, "enum WorldEdit_Mode_Subtractive", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_Mode_Subtractive;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

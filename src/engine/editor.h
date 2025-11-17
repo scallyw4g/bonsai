@@ -867,11 +867,16 @@ enum world_edit_brush_type
 
 enum world_edit_blend_mode
 {
-  WorldEdit_Mode_Additive,    // Adds layer value to noise value
-  WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
   WorldEdit_Mode_Union,
   WorldEdit_Mode_Intersection,
   WorldEdit_Mode_Difference,
+
+  WorldEdit_Mode_SmoothUnion,
+  WorldEdit_Mode_SmoothIntersection,
+  WorldEdit_Mode_SmoothDifference,
+
+  WorldEdit_Mode_Additive,    // Adds layer value to noise value
+  WorldEdit_Mode_Subtractive, // Subtracts layer value from noise value
   WorldEdit_Mode_Multiply,
   /* WorldEdit_Mode_Threshold,   // Sets CurrentSample = SampleValue */
   WorldEdit_Mode_Disabled,    // Useful for turning the layer off
