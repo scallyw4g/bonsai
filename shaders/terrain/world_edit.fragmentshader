@@ -396,200 +396,198 @@ void main()
     v3 EditRad = EditDim/2.f;
 
 
+    v3 ColorSample = RGBColor;
+    f32 InitialSample = 0.f;
+
+    s32 Octaves = 1;
+    switch (BrushType)
     {
-      v3 ColorSample = RGBColor;
-      f32 InitialSample = 0.f;
-
-      s32 Octaves = 1;
-      switch (BrushType)
+      case 0: // BrushLayerType_Noise
       {
-        case 0: // BrushLayerType_Noise
+        v3 NoiseBasis = Basis / Period;
+        switch (NoiseType)
         {
-          v3 NoiseBasis = Basis / Period;
-          switch (NoiseType)
+          case 0: // NoiseType_Perlin:
           {
-            case 0: // NoiseType_Perlin:
-            {
-              InitialSample = value_noise_derivs(NoiseBasis).x;
-            } break;
+            InitialSample = value_noise_derivs(NoiseBasis).x;
+          } break;
 
-            case 1: // NoiseType_Voronoi:
-            {
-              InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
-            } break;
+          case 1: // NoiseType_Voronoi:
+          {
+            InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
+          } break;
 
-            case 2: // NoiseType_White:
-            {
-              InitialSample = white_noise(NoiseBasis);
-            } break;
-          }
-
-          break;
+          case 2: // NoiseType_White:
+          {
+            InitialSample = white_noise(NoiseBasis);
+          } break;
         }
 
-        case 1: // BrushLayerType_Shape
+        break;
+      }
+
+      case 1: // BrushLayerType_Shape
+      {
+        switch (ShapeType)
         {
-          switch (ShapeType)
+          // ShapeType_Rect
+          case 0:
           {
-            // ShapeType_Rect
-            case 0:
+            v3 BoxR = RectDim/2.f;
+            if (length(BoxR) > 0.f)
             {
-              v3 BoxR = RectDim/2.f;
-              if (length(BoxR) > 0.f)
-              {
-              }
-              else
-              {
-                BoxR = EditDim;
-              }
-
-              v3 Center = EditDim/2.f;
-              v3 p    = (EditRelxyz - Center);
-              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-              InitialSample = -IQSample;
-
-            } break;
-
-            // ShapeType_Sphere
-            case 1:
+            }
+            else
             {
-              f32 Rad = Radius;
-              if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
-              Rad -= Hollow;
+              BoxR = EditDim;
+            }
 
-              v3 p  = (EditRelxyz - EditRelativeSphereCenter);
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample  = w.w+iq_sdSphere(p, Rad);
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-              InitialSample = -IQSample;
-              /* InitialSample = IQSample; */
-            } break;
+            v3 Center = EditDim/2.f;
+            v3 p    = (EditRelxyz - Center);
+            v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            InitialSample = -IQSample;
 
-            // ShapeType_Line
-            case 2:
+          } break;
+
+          // ShapeType_Sphere
+          case 1:
+          {
+            f32 Rad = Radius;
+            if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
+            Rad -= Hollow;
+
+            v3 p  = (EditRelxyz - EditRelativeSphereCenter);
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32 IQSample  = w.w+iq_sdSphere(p, Rad);
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            InitialSample = -IQSample;
+            /* InitialSample = IQSample; */
+          } break;
+
+          // ShapeType_Line
+          case 2:
+          {
+            v3 p = EditRelxyz;
+            v3 start = v3(Radius);
+            v3 end = EditDim-v3(Radius);
+
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
+            /* if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); } */
+            InitialSample = -IQSample;
+          } break;
+
+          // ShapeType_Cylinder
+          case 3:
+          {
+            v3 p = (EditRelxyz - EditRad);
+            v3 c = Axis;
+
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+            f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            InitialSample = -IQSample;
+          } break;
+
+          // ShapeType_Plane
+          case 4:
+          {
+            f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
+            if (abs(Dist) < PlaneRadius*ChunkResolution.x)
             {
-              v3 p = EditRelxyz;
-              v3 start = v3(Radius);
-              v3 end = EditDim-v3(Radius);
+              InitialSample = 1.f;
+            }
+          } break;
 
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
-              /* if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); } */
-              InitialSample = -IQSample;
-            } break;
+          // ShapeType_Torus
+          case 5:
+          {
+            v2  t = v2(Radius, MinorRadius);
+            v3  p = EditRelxyz;
 
-            // ShapeType_Cylinder
-            case 3:
-            {
-              v3 p = (EditRelxyz - EditRad);
-              v3 c = Axis;
+            v3  BoxR = EditDim/2.f;
+            p = EditRelxyz;
+            p   -= BoxR;
 
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
-              f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-              InitialSample = -IQSample;
-            } break;
+            f32 IQSample = w.w+iq_sdTorus( w.xyz, t );
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
-            // ShapeType_Plane
-            case 4:
-            {
-              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
-              if (abs(Dist) < PlaneRadius*ChunkResolution.x)
-              {
-                InitialSample = 1.f;
-              }
-            } break;
+            InitialSample = -IQSample;
 
-            // ShapeType_Torus
-            case 5:
-            {
-              v2  t = v2(Radius, MinorRadius);
-              v3  p = EditRelxyz;
+          } break;
 
-              v3  BoxR = EditDim/2.f;
-              p = EditRelxyz;
-              p   -= BoxR;
+          // ShapeType_Pyramid
+          case 6:
+          {
+            f32 S = EditDim.z;
 
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32  h = Radius > 0.f ? Radius : 1.f;
 
-              f32 IQSample = w.w+iq_sdTorus( w.xyz, t );
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            v3  BoxR = EditDim/(2.f*S);
+            v3  p = EditRelxyz/EditDim;
+            p.xy   -= 0.5f;
 
-              InitialSample = -IQSample;
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
-            } break;
+            f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
-            // ShapeType_Pyramid
-            case 6:
-            {
-              f32 S = EditDim.z;
+            InitialSample = -IQSample;
+          } break;
 
-              f32  h = Radius > 0.f ? Radius : 1.f;
+          // @sdf_shape_step(7): Add more cases and implementations here
+          // for shape types added in Step 1
+          //
+        }
 
-              v3  BoxR = EditDim/(2.f*S);
-              v3  p = EditRelxyz/EditDim;
-              p.xy   -= 0.5f;
+        InitialSample += Rounding;
+      } break;
 
-              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-
-              f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-
-              InitialSample = -IQSample;
-            } break;
-
-            // @sdf_shape_step(7): Add more cases and implementations here
-            // for shape types added in Step 1
-            //
-          }
-
-          InitialSample += Rounding;
-        } break;
-
-        default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
-      }
-
-
-      f32 ThisSample = (InitialSample + ValueBias);
-      if (Invert)
-      {
-        ThisSample = ThisSample * -1.f;
-      }
-
-
-
-
-
-
-
-
-
-      if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
-      {
-        ThisSample = max(0.f, ThisSample);
-      }
-
-      if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
-      {
-        ThisSample = min(0.f, ThisSample);
-      }
-
-      if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
-      {
-        if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
-      }
-
-      if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
-      {
-        ThisSample = 0.f;
-      }
-
-
-      BlendSample(BlendMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
+      default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
     }
+
+
+    f32 ThisSample = (InitialSample + ValueBias);
+    if (Invert)
+    {
+      ThisSample = ThisSample * -1.f;
+    }
+
+
+
+
+
+
+
+
+
+    if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+    {
+      ThisSample = max(0.f, ThisSample);
+    }
+
+    if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+    {
+      ThisSample = min(0.f, ThisSample);
+    }
+
+    if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
+    {
+      if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
+    }
+
+    if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
+    {
+      ThisSample = 0.f;
+    }
+
+
+    BlendSample(BlendMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
 
 
   }
