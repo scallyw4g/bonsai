@@ -592,26 +592,34 @@ void main()
 
 
     BlendSample(BlendMode, ColorMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
+
+    // We sample the blend texture outside the bounds check because we need to pass
+    // the previous stage sample values through
+    if (SampleBlendTex > 0)
+    {
+      v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
+
+      f32 BlendValue = TexLookup.a;
+      v3 BlendColor = TexLookup.rgb;
+
+      // Conceptually, we want to blend the accumulator into the blendvalue here,
+      // so we don't do it this way.
+      /* BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor ); */
+      BlendSample(BlendTexBlendMode, 0 /* WorldEdit_ColorBlendMode_ValuePositive */ , BlendValue, BlendColor, Accumulator, ColorAccumulator);
+      Accumulator = BlendValue;
+      ColorAccumulator = BlendColor;
+    }
   }
-
-  // We sample the blend texture outside the bounds check because we need to pass
-  // the previous stage sample values through
-  if (SampleBlendTex > 0)
+  else
   {
-    v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
+    // if we were outside the affected brush region, we just pass the blend values through
+    if (SampleBlendTex > 0)
+    {
+      v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
+      Accumulator = TexLookup.a;
+      ColorAccumulator = TexLookup.rgb;;
+    }
 
-    f32 BlendValue = TexLookup.a;
-    v3 BlendColor = TexLookup.rgb;
-
-#if 1
-    BlendSample(BlendTexBlendMode, 0 /* WorldEdit_ColorBlendMode_ValuePositive */ , BlendValue, BlendColor, Accumulator, ColorAccumulator);
-    Accumulator = BlendValue;
-    ColorAccumulator = BlendColor;
-#else
-    // Conceptually, we want to blend the accumulator into the blendvalue here,
-    // so we don't do it this way.
-    BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor );
-#endif
   }
 
 
