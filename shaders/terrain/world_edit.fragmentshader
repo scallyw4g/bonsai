@@ -350,6 +350,9 @@ void BlendSample(
       b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend > -1.f;
       /* b32 ThisSampleCloserToBlendThanAccumulator = False; */
 
+      /* b32 AnythingPositive = Blended > 0.f || Accumulator > 0.f; */
+      b32 AnythingPositive = False;
+
       /* if (ThisSample > 0.f || ThisSampleCloserToBlendThanAccumulator) */
       /* if ( (ThisSample > 0.f || Accumulator <= 0.f || Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator ) */
       /* if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator) ) */
@@ -365,7 +368,8 @@ void BlendSample(
            /* (Accumulator <= 0.f && Blended > 0.f) || */
            /* (Blended > 0.f && ThisSample > Blended) || */
            /* (ThisSampleCloserToBlendThanAccumulator) */
-          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
+          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator &&
+          (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
           /* Blended > Accumulator */
          )
       {

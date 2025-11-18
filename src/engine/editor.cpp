@@ -2809,16 +2809,16 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           //
           if (IsLastValidLayer)
           {
-            world_edit_brush VoidBrush = {};
-            VoidBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
-            VoidBrush.Layered.LayerCount = 1;
-            VoidBrush.Layered.Layers[0].Settings.LayerBlendMode = WorldEdit_Mode_Disabled;
+            world_edit_brush BlendBrush = {};
+            BlendBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
+            BlendBrush.Layered.LayerCount = 1;
+            BlendBrush.Layered.Layers[0].Settings.LayerBlendMode = WorldEdit_Mode_Disabled;
 
 
             Applied = ApplyBrush( WorldEditRC,
                                   EditBounds,
                                   ParentRotation,
-                                  &VoidBrush,
+                                  &BlendBrush,
                                   EditBrush->BrushBlendMode,
                                   Chunk,
                                   &Applied,
