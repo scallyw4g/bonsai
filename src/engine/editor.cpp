@@ -2921,8 +2921,19 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
             v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
 
+            f32 Rad = Sphere->Radius;
+            if (Sphere->Radius == 0.f)
+            {
+              Rad = (MinChannel(EditDim)/2.f);
+            }
+
+            if (Sphere->Radius < 0.f)
+            {
+              Rad = (MinChannel(EditDim)/2.f) + Sphere->Radius;
+            }
+
             BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
-            BindUniformByName(&WorldEditRC->Program, "Radius", Sphere->Radius);
+            BindUniformByName(&WorldEditRC->Program, "Radius", Rad);
           } break;
 
           case ShapeType_Line:
