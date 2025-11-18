@@ -888,6 +888,7 @@ enum world_edit_color_blend_mode
   WorldEdit_ColorBlendMode_ValueNegative,
 
   WorldEdit_ColorBlendMode_Surface,
+  WorldEdit_ColorBlendMode_Always,
 
   // TODO(Jesse): Put back in?
   /* WorldEdit_ColorBlendMode_Additive, */

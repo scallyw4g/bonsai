@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:994:0
+// src/engine/editor.h:995:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:500:0
@@ -37,6 +37,15 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Button(Ui, CSz("Surface"), UiId(Window, "enum WorldEdit_ColorBlendMode_Surface", Element, ThisHash), Params))
     {
             *Element = WorldEdit_ColorBlendMode_Surface;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Always"), UiId(Window, "enum WorldEdit_ColorBlendMode_Always", Element, ThisHash), Params))
+    {
+            *Element = WorldEdit_ColorBlendMode_Always;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

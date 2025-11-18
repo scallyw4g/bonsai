@@ -259,18 +259,21 @@ float iq_opSmoothIntersection( float d1, float d2, float k )
 void BlendSample(
     int SampleMode, int ColorMode,
     inout f32 Accumulator, inout v3 ColorValue,
-    inout f32  ThisSample,    in v3 ColorSample )
+    inout f32  ThisSample_in,    in v3 ColorSample )
 {
+  f32 Blended = Accumulator;
+  f32 ThisSample = ThisSample_in;
+
   switch (SampleMode)
   {
     case 0: // WorldEdit_Mode_Union
     {
-      Accumulator = max(Accumulator, ThisSample);
+      Blended = max(Accumulator, ThisSample);
     } break;
 
     case 1: // WorldEdit_Mode_Intersection
     {
-      Accumulator = min(Accumulator, ThisSample);
+      Blended = min(Accumulator, ThisSample);
     } break;
 
     case 2: // WorldEdit_Mode_Difference
@@ -279,16 +282,16 @@ void BlendSample(
       // I think should have worked, but coudn't figure it out..
       if (Accumulator > 0.f && ThisSample > 0.f)
       {
-        Accumulator *= -1.f;
+        Blended = Accumulator * -1.f;
       }
-      /* Accumulator = max(-1.f*Accumulator, ThisSample); */
-      /* Accumulator = sign(-ThisSample) * Accumulator; */
-      /* Accumulator = min(Accumulator, -(ThisSample+0.00001f)); */
+      /* Blended = max(-1.f*Accumulator, ThisSample); */
+      /* Blended = sign(-ThisSample) * Accumulator; */
+      /* Blended = min(Accumulator, -(ThisSample+0.00001f)); */
     } break;
 
     case 3: // WorldEdit_Mode_SmoothUnion
     {
-      Accumulator = iq_opSmoothUnion(Accumulator, ThisSample, 2.f);
+      Blended = iq_opSmoothUnion(Accumulator, ThisSample, 4.f);
     } break;
 
     case 4: // WorldEdit_Mode_Intersection
@@ -303,7 +306,7 @@ void BlendSample(
     {
       if (ThisSample > 0.f)
       {
-        Accumulator = Accumulator + ThisSample;
+        Blended = Accumulator + ThisSample;
       }
     } break;
 
@@ -311,13 +314,13 @@ void BlendSample(
     {
       if (ThisSample > 0.f)
       {
-        Accumulator = Accumulator - ThisSample;
+        Blended = Accumulator - ThisSample;
       }
     } break;
  
     case 8: // WorldEdit_Mode_Multiply
     {
-      Accumulator = Accumulator * ThisSample;
+      Blended = Accumulator * ThisSample;
     } break;
 
     case 9: // WorldEdit_Mode_Disabled
@@ -330,7 +333,24 @@ void BlendSample(
   switch (ColorMode)
   {
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
-    { if (ThisSample > 0.f) { ColorValue = ColorSample; } } break;
+    {
+      /* if (ThisSample > 0.f || Accumulator <= 0.f) */
+      f32 AccToBlend = Blended-Accumulator;
+      f32 SampleToBlend = Blended-ThisSample;
+
+      // Here we're saying if the Blend value is closer to ThisSample than it is to
+      // the Accumulator, we take the sample value
+      b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend > 0.f;
+
+      /* if (ThisSample > 0.f || ThisSampleCloserToBlendThanAccumulator) */
+      /* if ( (ThisSample > 0.f || Accumulator <= 0.f) && ThisSampleCloserToBlendThanAccumulator) */
+      if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended > 0.f)) || ThisSampleCloserToBlendThanAccumulator )
+      /* if (ThisSample > 0.f                                          ) */
+      /* if (                    ThisSampleCloserToBlendThanAccumulator) */
+      {
+        ColorValue = ColorSample; 
+      }
+    } break;
 
     case 1: // WorldEdit_ColorBlendMode_ValueNegative
     { if (ThisSample < 0.f) { ColorValue = ColorSample; } } break;
@@ -347,12 +367,20 @@ void BlendSample(
       /* } */
     } break;
 
-    case 3: // WorldEdit_ColorBlendMode_Disabled
+    case 3: // WorldEdit_ColorBlendMode_Always
+    {
+      ColorValue = ColorSample;
+    } break;
+
+    case 4: // WorldEdit_ColorBlendMode_Disabled
     {
       ColorValue = ColorValue;
     } break;
 
   }
+
+  Accumulator = Blended;
+  ThisSample_in = ThisSample;
 }
 
 float iq_opOnion( in float sdf, in float thickness )

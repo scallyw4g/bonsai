@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:992:0
+// src/engine/editor.h:993:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2116:0
@@ -12,6 +12,7 @@ IsValid(world_edit_color_blend_mode Value)
         case WorldEdit_ColorBlendMode_ValuePositive:
     case WorldEdit_ColorBlendMode_ValueNegative:
     case WorldEdit_ColorBlendMode_Surface:
+    case WorldEdit_ColorBlendMode_Always:
     case WorldEdit_ColorBlendMode_Disabled:
 
     {
@@ -34,6 +35,7 @@ ToStringPrefixless(world_edit_color_blend_mode Type)
             case WorldEdit_ColorBlendMode_ValuePositive: { Result = CSz("ValuePositive"); } break;
       case WorldEdit_ColorBlendMode_ValueNegative: { Result = CSz("ValueNegative"); } break;
       case WorldEdit_ColorBlendMode_Surface: { Result = CSz("Surface"); } break;
+      case WorldEdit_ColorBlendMode_Always: { Result = CSz("Always"); } break;
       case WorldEdit_ColorBlendMode_Disabled: { Result = CSz("Disabled"); } break;
 
 
@@ -59,6 +61,7 @@ ToString(world_edit_color_blend_mode Type)
         case WorldEdit_ColorBlendMode_ValuePositive: { Result = CSz("WorldEdit_ColorBlendMode_ValuePositive"); } break;
     case WorldEdit_ColorBlendMode_ValueNegative: { Result = CSz("WorldEdit_ColorBlendMode_ValueNegative"); } break;
     case WorldEdit_ColorBlendMode_Surface: { Result = CSz("WorldEdit_ColorBlendMode_Surface"); } break;
+    case WorldEdit_ColorBlendMode_Always: { Result = CSz("WorldEdit_ColorBlendMode_Always"); } break;
     case WorldEdit_ColorBlendMode_Disabled: { Result = CSz("WorldEdit_ColorBlendMode_Disabled"); } break;
 
 
@@ -76,6 +79,7 @@ WorldEditColorBlendMode(counted_string S)
     if (StringsMatch(S, CSz("WorldEdit_ColorBlendMode_ValuePositive"))) { return WorldEdit_ColorBlendMode_ValuePositive; }
   if (StringsMatch(S, CSz("WorldEdit_ColorBlendMode_ValueNegative"))) { return WorldEdit_ColorBlendMode_ValueNegative; }
   if (StringsMatch(S, CSz("WorldEdit_ColorBlendMode_Surface"))) { return WorldEdit_ColorBlendMode_Surface; }
+  if (StringsMatch(S, CSz("WorldEdit_ColorBlendMode_Always"))) { return WorldEdit_ColorBlendMode_Always; }
   if (StringsMatch(S, CSz("WorldEdit_ColorBlendMode_Disabled"))) { return WorldEdit_ColorBlendMode_Disabled; }
 
 
