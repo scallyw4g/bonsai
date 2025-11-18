@@ -361,6 +361,9 @@ void BlendSample(
       /* if ( ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) */
       /* if ( (ThisSample > 0.f || Accumulator <= 0.f && Blended >= Accumulator) && ThisSampleCloserToBlendThanAccumulator) */
       /* if ( (ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) || (Accumulator <= 0.f && Blended > 0.f) ) */
+      b32 AccumulatorIsNegative = Accumulator <= 0.f;
+      b32 AccumulatorIsPositive = Accumulator > 0.f;
+      b32 BlendedIsPositive = Blended > 0.f;
       if (
            /* ( (ThisSample > Blended && (Blended > Accumulator) ) || */
             /* (ThisSample > 0.f && Accumulator > 0.f && Blended > Accumulator) || */
@@ -368,7 +371,13 @@ void BlendSample(
            /* (Accumulator <= 0.f && Blended > 0.f) || */
            /* (Blended > 0.f && ThisSample > Blended) || */
            /* (ThisSampleCloserToBlendThanAccumulator) */
-          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator &&
+          /* (ThisSample > 0.f) && */
+          /* (  (AccumulatorIsPositive && Blended >= Accumulator) ) && */
+          ( (AccumulatorIsNegative && BlendedIsPositive) || (AccumulatorIsPositive && Blended > Accumulator)) &&
+          /* ( (AccumulatorIsNegative && BlendedIsPositive) || (BlendedIsPositive && Blended > Accumulator)) && */
+          /* ( (AccumulatorIsNegative && BlendedIsPositive) ) && */
+          /* (Blended > 0.f || Accumulator > 0.f) && */
+          /* ThisSampleCloserToBlendThanAccumulator && */
           (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
           /* Blended > Accumulator */
          )
