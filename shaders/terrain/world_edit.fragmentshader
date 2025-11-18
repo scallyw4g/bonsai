@@ -264,6 +264,8 @@ void BlendSample(
   f32 Blended = Accumulator;
   f32 ThisSample = ThisSample_in;
 
+  // Larger when ThisSample is closer to Blended than Acumulator
+  f32 tBlend = 0.f;
   switch (SampleMode)
   {
     case 0: // WorldEdit_Mode_Union
@@ -292,6 +294,10 @@ void BlendSample(
     case 3: // WorldEdit_Mode_SmoothUnion
     {
       Blended = iq_opSmoothUnion(Accumulator, ThisSample, 4.f);
+      tBlend =  (ThisSample/Blended); // (Accumulator-Blended) ;
+      /* tBlend =  (Blended/ThisSample); // (Accumulator-Blended) ; */
+      /* tBlend =  (ThisSample-Blended) / (Accumulator-Blended) ; */
+      /* tBlend =   (Accumulator-Blended) / (ThisSample-Blended) ; */
     } break;
 
     case 4: // WorldEdit_Mode_Intersection
@@ -340,13 +346,26 @@ void BlendSample(
 
       // Here we're saying if the Blend value is closer to ThisSample than it is to
       // the Accumulator, we take the sample value
-      b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend > 0.f;
+      b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend > -1.f;
+      /* b32 ThisSampleCloserToBlendThanAccumulator = False; */
 
       /* if (ThisSample > 0.f || ThisSampleCloserToBlendThanAccumulator) */
-      /* if ( (ThisSample > 0.f || Accumulator <= 0.f) && ThisSampleCloserToBlendThanAccumulator) */
-      if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended > 0.f)) || ThisSampleCloserToBlendThanAccumulator )
+      /* if ( (ThisSample > 0.f || Accumulator <= 0.f || Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator ) */
+      /* if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator) ) */
+      /* if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended > 0.f) ) ) */
       /* if (ThisSample > 0.f                                          ) */
-      /* if (                    ThisSampleCloserToBlendThanAccumulator) */
+      /* if ( ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) */
+      /* if ( (ThisSample > 0.f || Accumulator <= 0.f && Blended >= Accumulator) && ThisSampleCloserToBlendThanAccumulator) */
+      /* if ( (ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) || (Accumulator <= 0.f && Blended > 0.f) ) */
+      if (
+           /* ( (ThisSample > Blended && (Blended > Accumulator) ) || */
+            /* (ThisSample > 0.f && Accumulator > 0.f && Blended > Accumulator) || */
+           /* (ThisSample < Blended) */
+           /* (Accumulator <= 0.f && Blended > 0.f) || */
+           /* (Blended > 0.f && ThisSample > Blended) || */
+           /* (ThisSampleCloserToBlendThanAccumulator) */
+          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
+         )
       {
         ColorValue = ColorSample; 
       }
