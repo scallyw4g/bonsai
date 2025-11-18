@@ -2778,6 +2778,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                            &ChunkRelEditMin,
                            &ChunkRelEditMax
                          );
+    BindInputTexture = True;
 
     switch (Layer->Settings.Type)
     {
@@ -2817,7 +2818,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                   EditBounds,
                                   ParentRotation,
                                   &VoidBrush,
-                                  WorldEdit_Mode_Union,
+                                  EditBrush->BrushBlendMode,
                                   Chunk,
                                   &Applied,
                                   Read, // Intentionally writing into read here because that's what we return
@@ -3119,8 +3120,6 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
     Swap(Read, Write);
 #undef Swap
-
-    BindInputTexture = True;
   }
 
   // This is actually the last-written to texture

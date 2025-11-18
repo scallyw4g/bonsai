@@ -346,7 +346,11 @@ void BlendSample(
       /*   } */
       /* } */
     } break;
-    /* { ColorValue = ColorValue + ColorSample; } break; */
+
+    case 3: // WorldEdit_ColorBlendMode_Disabled
+    {
+      ColorValue = ColorValue;
+    } break;
 
   }
 }
