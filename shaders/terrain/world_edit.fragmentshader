@@ -79,7 +79,8 @@ uniform f32 Squareness; // 0 == not square, 1 == square
 
 
 
-uniform       int SampleInputTex;
+uniform       int SeedColorValueFromInput;
+uniform       int SeedNoiseValueFromInput;
 uniform sampler2D InputTex;
 
 uniform       int SampleBlendTex;
@@ -365,6 +366,7 @@ void BlendSample(
            /* (Blended > 0.f && ThisSample > Blended) || */
            /* (ThisSampleCloserToBlendThanAccumulator) */
           Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
+          /* Blended > Accumulator */
          )
       {
         ColorValue = ColorSample; 
@@ -393,7 +395,6 @@ void BlendSample(
 
     case 4: // WorldEdit_ColorBlendMode_Disabled
     {
-      ColorValue = ColorValue;
     } break;
 
   }
@@ -409,18 +410,29 @@ float iq_opOnion( in float sdf, in float thickness )
 
 void main()
 {
-  v4 TexLookup = vec4(-3.4028234663852885981170418348451692544e+38);
+  v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
-  if (SampleInputTex > 0)
+  vec3 ColorAccumulator = DefaultValue.rgb;
+  f32  InitialAccumulator = DefaultValue.a;
+  f32  Accumulator = DefaultValue.a;
+
+  if (SeedColorValueFromInput > 0 || SeedNoiseValueFromInput > 0)
   {
-    TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+    v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+
+    if (SeedColorValueFromInput > 0)
+    {
+      ColorAccumulator = TexLookup.rgb;
+    }
+
+    if (SeedNoiseValueFromInput > 0)
+    {
+      InitialAccumulator = TexLookup.a;
+      Accumulator = TexLookup.a;
+    }
   }
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  vec3 ColorAccumulator = TexLookup.rgb;
-
-  f32  InitialAccumulator = TexLookup.a;
-  f32  Accumulator = TexLookup.a;
 
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);

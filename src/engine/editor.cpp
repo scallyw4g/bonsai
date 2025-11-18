@@ -2692,7 +2692,8 @@ BindUniformsForBrush(
 {
   BindFramebuffer(Write);
 
-  BindUniformByName(Program, "SampleInputTex", BindInputTexture);
+  BindUniformByName(Program, "SeedNoiseValueFromInput", BindInputTexture);
+  BindUniformByName(Program, "SeedColorValueFromInput", True);
   if (BindInputTexture)
   {
     texture *InputTex = &Read->DestTexture;
