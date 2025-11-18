@@ -257,11 +257,11 @@ float iq_opSmoothIntersection( float d1, float d2, float k )
 // Blend Value
 //
 void BlendSample(
-    int Mode,
+    int SampleMode, int ColorMode,
     inout f32 Accumulator, inout v3 ColorValue,
     inout f32  ThisSample,    in v3 ColorSample )
 {
-  switch (Mode)
+  switch (SampleMode)
   {
     case 0: // WorldEdit_Mode_Union
     {
@@ -591,9 +591,7 @@ void main()
     }
 
 
-    BlendSample(BlendMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
-
-
+    BlendSample(BlendMode, ColorMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
   }
 
   // We sample the blend texture outside the bounds check because we need to pass
@@ -605,10 +603,15 @@ void main()
     f32 BlendValue = TexLookup.a;
     v3 BlendColor = TexLookup.rgb;
 
-    BlendSample(BlendTexBlendMode, BlendValue, BlendColor, Accumulator, ColorAccumulator);
-
+#if 1
+    BlendSample(BlendTexBlendMode, 0 /* WorldEdit_ColorBlendMode_ValuePositive */ , BlendValue, BlendColor, Accumulator, ColorAccumulator);
     Accumulator = BlendValue;
     ColorAccumulator = BlendColor;
+#else
+    // Conceptually, we want to blend the accumulator into the blendvalue here,
+    // so we don't do it this way.
+    BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor );
+#endif
   }
 
 
