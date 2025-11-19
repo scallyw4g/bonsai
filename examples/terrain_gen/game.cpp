@@ -149,4 +149,27 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
 
+#if 0
+  IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+  {
+    if (StringsMatch(CS(Brush->NameBuf), CSz("test-blended-torus.brush")))
+    {
+      f32 BaseDiameter = 50.f;
+      Brush->Layered.Layers[0].Settings.Shape.Torus.MajorRadius = BaseDiameter + Sin(Plat->GameTime);
+
+      Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
+      /* Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */
+      Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
+    }
+  }
+#endif
+
+
+  /* maybe_world_edit_brush MB = GetByNameBuf(&Editor->LoadedBrushes, ); */
+  /* if (MB.Tag) */
+  /* { */
+  /*   world_edit_brush *Brush = MB.Brush; */
+  /* } */
+
+
 }
