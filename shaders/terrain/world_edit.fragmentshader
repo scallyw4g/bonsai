@@ -352,10 +352,12 @@ void BlendSample(
   //
   switch (ColorMode)
   {
+
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
+#if 1
     {
       if (
-           Blended > 0.f &&
+           /* Blended > 0.f && */
            /* Blended >= Accumulator && */
            /* Blended > Accumulator && */
           Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator &&
@@ -365,6 +367,7 @@ void BlendSample(
         ColorValue = ColorSample; 
       }
     } break;
+#endif
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
     {
@@ -377,8 +380,9 @@ void BlendSample(
           /* Blended > Accumulator */
           /* Blended > Accumulator && */
           /* Blended >= 0.f && */
+          /* Blended > 0.f && */
           Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
-          /* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator && */
+          /* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && */
           /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
          )
       {
