@@ -154,6 +154,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Ele
 
 
 
+
 struct camera;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 

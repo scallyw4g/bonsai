@@ -5844,6 +5844,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 

@@ -653,7 +653,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                                                           Brush,
                                                           Brush->BrushBlendMode,
                                                           Chunk,
-                                                          Read, Write, Accum, False);
+                                                          Read, Write, Accum, False, False);
 
                     if (Applied.FBO.ID == Read->FBO.ID)
                     {

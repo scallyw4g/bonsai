@@ -897,6 +897,7 @@ enum world_edit_color_blend_mode
   /* WorldEdit_ColorBlendMode_Divide, */
 
   WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
+  WorldEdit_ColorBlendMode_FinalBlend,
 };
 
 enum world_edit_blend_mode_modifier poof(@bitfield)
@@ -1360,6 +1361,12 @@ poof(are_equal(world_edit_brush))
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
 
+poof(maybe(world_edit_brush))
+#include <generated/maybe_qVFPWNB0.h>
+
+poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
+#include <generated/hashtable_get_SlF7m90R.h>
+
 struct world_edit poof(@do_editor_ui)
 {
   // TODO(Jesse): Rename to Bounds?
@@ -1668,4 +1675,4 @@ link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
 
 link_internal rtt_framebuffer
-ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32);
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32);

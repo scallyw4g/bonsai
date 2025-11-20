@@ -2681,26 +2681,31 @@ BindUniformsForBrush(
     shader *Program,
     brush_layer *Layer,
     rtt_framebuffer *Write,
-    b32 BindInputTexture,
+
+    b32 SeedNoiseValueFromInput,
+    b32 SeedColorValueFromInput,
     rtt_framebuffer *Read,
+
     b32 SampleBlendTex,
     rtt_framebuffer *Blend,
     world_edit_blend_mode  BlendMode,
+
     v3 *ChunkRelEditMin,
     v3 *ChunkRelEditMax
     )
 {
   BindFramebuffer(Write);
 
-  BindUniformByName(Program, "SeedNoiseValueFromInput", BindInputTexture);
-  BindUniformByName(Program, "SeedColorValueFromInput", True);
-  if (BindInputTexture)
+  BindUniformByName(Program, "SeedNoiseValueFromInput", SeedNoiseValueFromInput);
+  BindUniformByName(Program, "SeedColorValueFromInput", SeedColorValueFromInput);
+  if (SeedNoiseValueFromInput || SeedColorValueFromInput)
   {
     texture *InputTex = &Read->DestTexture;
     // @derivs_texture_binding_to_shader_unit_0
     BindUniformByName(Program, "InputTex", InputTex, 1);
   }
-  BindInputTexture = True;
+  SeedNoiseValueFromInput = True;
+  SeedColorValueFromInput = True;
 
   BindUniformByName(Program, "SampleBlendTex", SampleBlendTex);
   if (SampleBlendTex)
@@ -2746,7 +2751,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                       rtt_framebuffer *Read,
                       rtt_framebuffer *Write,
                       rtt_framebuffer *Accum,
-                                  b32  BindInputTexture )
+                                  b32  SeedNoise,
+                                  b32  SeedColor )
 {
   layered_brush *Brush = &EditBrush->Layered;
 
@@ -2771,15 +2777,20 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     BindUniformsForBrush( &WorldEditRC->Program,
                            Layer,
                            Write,
-                           BindInputTexture,
+
+                           SeedNoise,
+                           SeedColor,
                            Read,
+
                            SampleBlendTex,
                            Accum,
+
                            BlendMode,
                            &ChunkRelEditMin,
                            &ChunkRelEditMax
                          );
-    BindInputTexture = True;
+    SeedNoise = True;
+    SeedColor = True;
 
     switch (Layer->Settings.Type)
     {
@@ -2799,7 +2810,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                                 NestedBrush,
                                                 Layer->Settings.LayerBlendMode,
                                                 Chunk,
-                                                &B0, &B1, Read, False);
+                                                &B0, &B1, Read, False, False);
 
           // NOTE(Jesse): This is kinda gross, but if we're the last layer we have 
           // to apply the result of the brush back into the accumulation texture
@@ -2813,6 +2824,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             BlendBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
             BlendBrush.Layered.LayerCount = 1;
             BlendBrush.Layered.Layers[0].Settings.LayerBlendMode = WorldEdit_Mode_Disabled;
+            BlendBrush.Layered.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend;
 
 
             Applied = ApplyBrush( WorldEditRC,
@@ -2824,7 +2836,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                   &Applied,
                                   Read, // Intentionally writing into read here because that's what we return
                                   Accum,
-                                  True );
+                                  True, True);
 
             DeallocateRenderToTextureFramebuffer(&B0);
             DeallocateRenderToTextureFramebuffer(&B1);
@@ -3031,8 +3043,10 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           {
             auto Torus = &Shape->Torus;
 
-
             r32 MinRad = Torus->MinorRadius;
+            r32 MajRad = Torus->MajorRadius;
+
+#if 1
             s32 MinRadIndex = 0;
             if (MinRad == 0.f)
             {
@@ -3055,7 +3069,6 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             }
 
 
-            r32 MajRad = Torus->MajorRadius;
             s32 MajRadIndex = 0;
             if (MajRad == 0.f)
             {
@@ -3079,28 +3092,32 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               MajRad -= MinRad*2.f;
             }
 
-            switch(MinRadIndex)
+            /* if (MajRadIndex >= 0) */
             {
-              case 0:
+              switch(MinRadIndex)
               {
-                Quaternion Q2 = FromEuler(RadiansFromDegress(V3(0,0,90)));
-                m4 Rot2 = RotateTransform(Q2);
-                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
-              } break;
+                case 0:
+                {
+                  Quaternion Q2 = FromEuler(RadiansFromDegress(V3(0,0,90)));
+                  m4 Rot2 = RotateTransform(Q2);
+                  BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                } break;
 
-              case 1:
-              {
-                // Already facing the Y axis
-              } break;
+                case 1:
+                {
+                  // Already facing the Y axis
+                } break;
 
-              case 2:
-              {
-                Quaternion Q2 = FromEuler(RadiansFromDegress(V3(90,0,0)));
-                m4 Rot2 = RotateTransform(Q2);
-                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
-              } break;
+                case 2:
+                {
+                  Quaternion Q2 = FromEuler(RadiansFromDegress(V3(90,0,0)));
+                  m4 Rot2 = RotateTransform(Q2);
+                  BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                } break;
 
+              }
             }
+#endif
 
 
             BindUniformByName(&WorldEditRC->Program, "Radius",      MajRad);

@@ -324,6 +324,7 @@
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(brush_settings *Ignored)
 {

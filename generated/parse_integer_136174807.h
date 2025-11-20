@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/counted_string.h:876:0
+// external/bonsai_stdlib/src/counted_string.h:885:0
 
 // def (parse_integer)
-// external/bonsai_stdlib/src/counted_string.h:847:0
+// external/bonsai_stdlib/src/counted_string.h:856:0
 link_internal b32
 ParseInteger(cs String, u32 *Out)
 {

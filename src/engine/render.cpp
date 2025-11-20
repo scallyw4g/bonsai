@@ -1783,13 +1783,13 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 
   FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
 
-  auto DestHandles = DestChunk->Handles;
+  auto OldHandles = DestChunk->Handles;
 
   DestChunk->Handles = GenChunk->Mesh.Handles;
 
-  if (HasGpuMesh(&DestHandles))
+  if (HasGpuMesh(&OldHandles))
   {
-    DeleteGpuBuffer(&DestHandles);
+    DeleteGpuBuffer(&OldHandles);
   }
 
   GenChunk->Mesh = {};

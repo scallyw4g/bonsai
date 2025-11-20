@@ -294,8 +294,9 @@ void BlendSample(
 
     case 3: // WorldEdit_Mode_SmoothUnion
     {
-      Blended = iq_opSmoothUnion(Accumulator, ThisSample, 4.f);
-      tBlend =  (ThisSample/Blended); // (Accumulator-Blended) ;
+      Blended = iq_opSmoothUnion(Accumulator, ThisSample, 2.f);
+      /* Blended = max(Accumulator, ThisSample); */
+      /* tBlend =  (ThisSample/Blended); // (Accumulator-Blended) ; */
       /* tBlend =  (Blended/ThisSample); // (Accumulator-Blended) ; */
       /* tBlend =  (ThisSample-Blended) / (Accumulator-Blended) ; */
       /* tBlend =   (Accumulator-Blended) / (ThisSample-Blended) ; */
@@ -334,56 +335,57 @@ void BlendSample(
     { ThisSample = 0.f; } break;
   }
 
+  f32 AccToBlend = Blended-Accumulator;
+  f32 SampleToBlend = Blended-ThisSample;
+
+  // Here we're saying if the Blend value is closer to ThisSample than it is to
+  // the Accumulator, we take the sample value
+
+  // NOTE(Jesse): Can manipulate the 0.f to alter the blend factor
+  b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend >= 0.f;
+  /* b32 ThisSampleCloserToBlendThanAccumulator = False; */
+
+  /* b32 AnythingPositive = Blended > 0.f || Accumulator > 0.f; */
+  b32 AnythingPositive = False;
 
   // Blend Color
   //
   switch (ColorMode)
   {
-    case 0: // WorldEdit_ColorBlendMode_ValuePositive
+    case 5: // WorldEdit_ColorBlendMode_FinalBlend
     {
-      /* if (ThisSample > 0.f || Accumulator <= 0.f) */
-      f32 AccToBlend = Blended-Accumulator;
-      f32 SampleToBlend = Blended-ThisSample;
-
-      // Here we're saying if the Blend value is closer to ThisSample than it is to
-      // the Accumulator, we take the sample value
-      b32 ThisSampleCloserToBlendThanAccumulator = AccToBlend-SampleToBlend > -1.f;
-      /* b32 ThisSampleCloserToBlendThanAccumulator = False; */
-
-      /* b32 AnythingPositive = Blended > 0.f || Accumulator > 0.f; */
-      b32 AnythingPositive = False;
-
-      /* if (ThisSample > 0.f || ThisSampleCloserToBlendThanAccumulator) */
-      /* if ( (ThisSample > 0.f || Accumulator <= 0.f || Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator ) */
-      /* if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended >= 0.f) && ThisSampleCloserToBlendThanAccumulator) ) */
-      /* if ( (ThisSample > 0.f || (Accumulator <= 0.f && Blended > 0.f) ) ) */
-      /* if (ThisSample > 0.f                                          ) */
-      /* if ( ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) */
-      /* if ( (ThisSample > 0.f || Accumulator <= 0.f && Blended >= Accumulator) && ThisSampleCloserToBlendThanAccumulator) */
-      /* if ( (ThisSample > 0.f && ThisSampleCloserToBlendThanAccumulator) || (Accumulator <= 0.f && Blended > 0.f) ) */
-      b32 AccumulatorIsNegative = Accumulator <= 0.f;
-      b32 AccumulatorIsPositive = Accumulator > 0.f;
-      b32 BlendedIsPositive = Blended > 0.f;
       if (
-           /* ( (ThisSample > Blended && (Blended > Accumulator) ) || */
-            /* (ThisSample > 0.f && Accumulator > 0.f && Blended > Accumulator) || */
-           /* (ThisSample < Blended) */
-           /* (Accumulator <= 0.f && Blended > 0.f) || */
-           /* (Blended > 0.f && ThisSample > Blended) || */
-           /* (ThisSampleCloserToBlendThanAccumulator) */
-          /* (ThisSample > 0.f) && */
-          /* (  (AccumulatorIsPositive && Blended >= Accumulator) ) && */
-          ( (AccumulatorIsNegative && BlendedIsPositive) || (AccumulatorIsPositive && Blended > Accumulator)) &&
-          /* ( (AccumulatorIsNegative && BlendedIsPositive) || (BlendedIsPositive && Blended > Accumulator)) && */
-          /* ( (AccumulatorIsNegative && BlendedIsPositive) ) && */
-          /* (Blended > 0.f || Accumulator > 0.f) && */
-          /* ThisSampleCloserToBlendThanAccumulator && */
+           Blended > 0.f &&
+           /* Blended >= Accumulator && */
+           /* Blended > Accumulator && */
+          Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator &&
           (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
-          /* Blended > Accumulator */
          )
       {
         ColorValue = ColorSample; 
       }
+    } break;
+
+    case 0: // WorldEdit_ColorBlendMode_ValuePositive
+    {
+      /* ColorValue = V3(0,1,1); */
+      if (
+          /* ThisSample_in > 0.f */
+          /* ThisSample > 0.f */
+          /* Blended > 0.f */
+          /* Blended > 0.f && */
+          /* Blended > Accumulator */
+          /* Blended > Accumulator && */
+          /* Blended >= 0.f && */
+          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
+          /* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator && */
+          /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
+         )
+      {
+        /* ColorValue = V3(0,1,1); */
+        ColorValue = ColorSample; 
+      }
+        /* ColorValue = V3(0,1,1); */
     } break;
 
     case 1: // WorldEdit_ColorBlendMode_ValueNegative
@@ -408,7 +410,31 @@ void BlendSample(
 
     case 4: // WorldEdit_ColorBlendMode_Disabled
     {
+      /* ColorValue = V3(0,1,1); */
     } break;
+
+#if 0
+    case 5: // WorldEdit_ColorBlendMode_FinalBlend
+    {
+      // Blended is the accumulator, which is the blend texture value
+      // ThisSample_in is the current accumulation value
+      // ThisSample is 0
+      //
+      // ColorSample should never be negative by the time we get here.
+      if (
+          /* ThisSample_in >= 0.f || */
+          Blended > 0.f
+          /* Blended >= 0.f && */ 
+          /* ThisSample_in > 0.f && */
+          /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
+         )
+      {
+        /* ColorValue = V3(1,0,1); */
+        ColorValue = ColorSample;
+      }
+      /* ColorValue = V3(1,0,1); */
+    } break;
+#endif
 
   }
 
@@ -425,9 +451,10 @@ void main()
 {
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
-  vec3 ColorAccumulator = DefaultValue.rgb;
-  f32  InitialAccumulator = DefaultValue.a;
-  f32  Accumulator = DefaultValue.a;
+   v3 ColorAccumulator = DefaultValue.rgb;
+  f32 InitialAccumulator = DefaultValue.a;
+  f32 Accumulator = DefaultValue.a;
+   v3 ColorSample = RGBColor;
 
   if (SeedColorValueFromInput > 0 || SeedNoiseValueFromInput > 0)
   {
@@ -472,7 +499,6 @@ void main()
     v3 EditRad = EditDim/2.f;
 
 
-    v3 ColorSample = RGBColor;
     f32 InitialSample = 0.f;
 
     s32 Octaves = 1;
@@ -663,7 +689,7 @@ void main()
     }
 
 
-    BlendSample(BlendMode, ColorMode, Accumulator, ColorAccumulator, ThisSample, ColorSample);
+    BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample);
 
     // We sample the blend texture outside the bounds check because we need to pass
     // the previous stage sample values through
@@ -677,7 +703,9 @@ void main()
       // Conceptually, we want to blend the accumulator into the blendvalue here,
       // so we don't do it this way.
       /* BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor ); */
-      BlendSample(BlendTexBlendMode, 0 /* WorldEdit_ColorBlendMode_ValuePositive */ , BlendValue, BlendColor, Accumulator, ColorAccumulator);
+      /* BlendSample(BlendTexBlendMode, 0 /1* WorldEdit_ColorBlendMode_ValuePositive *1/ , BlendValue, BlendColor, Accumulator, ColorAccumulator); */
+      /* BlendSample(BlendTexBlendMode, ColorMode, BlendValue, BlendColor, Accumulator, ColorAccumulator); */
+      BlendSample(BlendTexBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
       Accumulator = BlendValue;
       ColorAccumulator = BlendColor;
     }
