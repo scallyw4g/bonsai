@@ -355,23 +355,14 @@ void BlendSample(
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
 #if 1
     {
-      b32 ThisSampleCloserToBlendThanAccumulator = Foo >= 0.0f;
+      b32 ThisSampleCloserToBlendThanAccumulator = Foo > 0.0f;
       if (
-#if 0
-           Blended > 0.f &&
-           /* Blended > Accumulator */
-           /* Blended >= Accumulator && */
-           Blended > Accumulator &&
-          /* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && */
-          /* Blended >= Accumulator && */
+          /* ThisSample_in > 0.f && */
+          /* Blended > 0.f && */
+          Blended > Accumulator &&
+          /* Blended > Accumulator */
           /* ThisSampleCloserToBlendThanAccumulator && */
           (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
-#else
-          /* ThisSample_in > 0.f && */
-          Blended > 0.f &&
-          Blended > Accumulator &&
-          (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
-#endif
          )
       {
         ColorValue = ColorSample; 
@@ -383,12 +374,13 @@ void BlendSample(
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
     {
+      b32 ThisSampleCloserToBlendThanAccumulator = Foo > 0.0f;
       /* ColorValue = V3(0,1,1); */
       if (
           /* ThisSample_in > 0.f */
           /* ThisSample > 0.f */
           /* Blended > 0.f */
-          /* Blended > 0.f && */
+          Blended > -0.04f &&
           Blended > Accumulator
           /* Blended > Accumulator && */
           /* Blended >= 0.f && */
