@@ -667,10 +667,13 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     *Accum = Applied;
 
-
                     Assert(Read->FBO.ID != Write->FBO.ID);
                     Assert(Read->FBO.ID != Accum->FBO.ID);
                     Assert(Write->FBO.ID != Accum->FBO.ID);
+
+                    GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
+                    ClearFramebuffer(Write);
+                    ClearFramebuffer(Read);
                   }
 
                   AssertNoGlErrors;
