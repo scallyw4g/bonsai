@@ -594,7 +594,13 @@ DrainLoRenderQueue(engine_resources *Engine)
             //
 
             s32 CurrentAccumulationTextureIndex = 0;
+            s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex + 1;
+            s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex + 2;
+
             rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex;
+            rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
+            rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
+
             /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
             {
               AcquireFutex(&Node->Lock);
@@ -635,13 +641,6 @@ DrainLoRenderQueue(engine_resources *Engine)
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
                     world_edit_brush *Brush = Edit->Brush;
-
-                    // TODO(Jesse): Can we swap these?
-                    s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex + 2;
-                    s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex + 1;
-
-                    rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
-                    rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
 
                     Assert(Read->FBO.ID != Write->FBO.ID);
                     Assert(Read->FBO.ID != Accum->FBO.ID);

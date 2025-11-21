@@ -8343,6 +8343,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
           }
         }
       }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("BrushTextureFramebufferFreelist");
+
+                                                                                                auto Member = Cast(rtt_framebuffer_paged_list*, &Element->BrushTextureFramebufferFreelist);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }

@@ -149,13 +149,20 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 
 
-#if 0
+#if 1
   IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
   {
-    if (StringsMatch(CS(Brush->NameBuf), CSz("test-blended-torus.brush")))
+    if (StringsMatch(CS(Brush->NameBuf), CSz("rotate.brush")))
     {
-      f32 BaseDiameter = 50.f;
-      Brush->Layered.Layers[0].Settings.Shape.Torus.MajorRadius = BaseDiameter + Sin(Plat->GameTime);
+      f32 BaseDiameter = 36.f;
+
+      auto Shape = &Brush->Layered.Layers[0].Settings.Shape;
+      auto Torus = &Brush->Layered.Layers[0].Settings.Shape.Torus;
+
+      Torus->MajorRadius = BaseDiameter + Sin(Plat->GameTime)*4.f;
+      if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; }
+      if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; }
+      if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
 
       Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
       /* Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */

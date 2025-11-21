@@ -38,6 +38,7 @@ AllocateWorld(world *World, v3i Center, visible_region_size VisibleRegionSize)
   return World;
 }
 
+#if 0
 link_internal void
 ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node *Parent, octree_node_priority_queue *Queue, octree_stats *Stats)
 {
@@ -56,6 +57,7 @@ ReinitializeOctreeNode(engine_resources *Engine, octree_node *Node, octree_node 
     ReleaseFutex(&Node->Lock);
   }
 }
+#endif
 
 
 // TODO(Jesse): rect3cp should probably be a pointer..?
@@ -612,12 +614,16 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   local_persist random_series PriorityRNG = {543267543756437};
   /* s32 Jitter = RandomBetween(-16, &PriorityRNG, 16); */
   s32 Jitter = 0; //RandomBetween(-16, &PriorityRNG, 16);
-  /* s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep); */
+
+  // This makes smaller nodes higher priority
+  s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep);
+
   /* s32 IdealListIndex = Min(Node->Resolution.x*32, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
   /* s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
-  s32 IdealListIndex = Min(Jitter + Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1);
+  /* s32 IdealListIndex = Min(Jitter + Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
 
 
+#if 0
   // Prefer large nodes close to the camera
   {
     v3 CamSimP = GetSimSpaceP(World, GameCamera->CurrentP);
@@ -645,6 +651,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
 #endif
 #endif
   }
+#endif
 
   // Prefer nodes who intersect the camera ray
 #if 0
@@ -695,20 +702,20 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   // Prefer chunks who have a higher chance of having geometry
   if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Handles))
   {
-    IdealListIndex = Max(0, IdealListIndex-30);
+    IdealListIndex = Max(0, IdealListIndex-256);
   }
 
-  // Prefer chunks who have been edited
-  if (Count(&Node->Edits))
-  {
-    IdealListIndex = Max(0, IdealListIndex-100);
-  }
+  /* // Prefer chunks who have been edited */
+  /* if (Count(&Node->Edits)) */
+  /* { */
+  /*   IdealListIndex = Max(0, IdealListIndex-100); */
+  /* } */
 
-  // Prefer chunks who are dirty
-  if (Node->Dirty)
-  {
-    IdealListIndex = Max(0, IdealListIndex-100);
-  }
+  /* // Prefer chunks who are dirty */
+  /* if (Node->Dirty) */
+  /* { */
+  /*   IdealListIndex = Max(0, IdealListIndex-100); */
+  /* } */
 
   Assert(IdealListIndex >= 0 && IdealListIndex < OCTREE_PRIORITY_QUEUE_LIST_COUNT);
   return IdealListIndex;
@@ -1113,6 +1120,8 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
   octree_stats Stats = {};
 
   {
+    TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
+
     s32 ChunksCurrentlyQueued = s32(Graphics->TotalChunkJobsActive);
     s32 Headroom = MAX_OCTREE_NODES_QUEUED_TOTAL - ChunksCurrentlyQueued;
     s32 MaxToQueueThisFrame = Max(0, Headroom);
@@ -1122,7 +1131,6 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
       Queue.Lists[ListIndex] = OctreeNodePtrCursor(OCTREE_PRIORITY_QUEUE_LIST_LENGTH, GetTranArena());
     }
 
-    TIMED_NAMED_BLOCK(SplitOctreeNode_Recursive);
     SplitOctreeNode_Recursive(Engine, &Queue, &World->Root, 0, World->OctreeMemory);
 
     {

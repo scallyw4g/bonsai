@@ -1,8 +1,8 @@
 // callsite
-// src/engine/graphics.h:122:0
+// src/engine/graphics.h:124:0
 
 // def ((builtin.for_datatypes))
-// src/engine/graphics.h:122:0
+// src/engine/graphics.h:124:0
 
 
 
@@ -1196,6 +1196,7 @@ InitializeWorldEditRenderContext
   , v3 *WorldspaceChunkBasis
   , v3 *ChunkResolution
   , s32 Type
+  
 
 )
 {
@@ -1270,6 +1271,7 @@ InitializeWorldEditRenderContext
 
 
 
+    
 
 
     u32 Expected =  4 ;
@@ -1336,6 +1338,7 @@ UseRenderPass_world_edit_render_context
       }
 
 
+      
 
 
       if (UniformIndex !=  4  )

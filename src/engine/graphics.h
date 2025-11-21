@@ -79,6 +79,8 @@ poof( @render_pass
               v3 *ChunkResolution;      poof(@uniform)
 
              s32  Type;                 poof(@uniform)
+
+  rtt_framebuffer_paged_list BrushTextureFramebufferFreelist;
 };
 
 struct terrain_finalize_render_context

@@ -677,6 +677,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
   //
   world_edit_render_context  *WorldEditRC  = &Result->WorldEditRC;
 
+  WorldEditRC->BrushTextureFramebufferFreelist.Memory = GraphicsMemory;
+
    v3 ChunkDim = V3(66, 66, 66);
   v2i TextureDim = V2i(u32(ChunkDim.x), u32(ChunkDim.y*ChunkDim.z));
 
