@@ -442,6 +442,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
 
 
 
+
 struct gen_chunk_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -511,6 +512,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *
 
 
 
+
 struct world_update_op_shape_params_torus;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -556,6 +558,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured
 struct work_queue;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 struct bloom_render_group;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -636,6 +639,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 struct rtt_framebuffer_static_cursor_3;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

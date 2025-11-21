@@ -182,3 +182,16 @@ Shift( asset_thumbnail_block_array *Array, asset_thumbnail *Element )
 /* } */
 
 
+link_internal asset_thumbnail *
+Pop( asset_thumbnail_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

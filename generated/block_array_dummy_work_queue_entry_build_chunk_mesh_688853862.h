@@ -2,7 +2,7 @@
 // src/engine/graphics.h:180:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2668:0
+// external/bonsai_stdlib/src/poof_functions.h:2681:0
 
 
 
@@ -363,6 +363,19 @@ Shift( dummy_work_queue_entry_build_chunk_mesh_block_array *Array, dummy_work_qu
 /* { */
 /*   do_editor_ui_for_container( block_array_t ) */
 /* } */
+
+
+link_internal dummy_work_queue_entry_build_chunk_mesh *
+Pop( dummy_work_queue_entry_build_chunk_mesh_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
 
 
 

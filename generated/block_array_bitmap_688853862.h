@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/bitmap.cpp:192:0
+// external/bonsai_stdlib/src/bitmap.cpp:199:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2668:0
+// external/bonsai_stdlib/src/poof_functions.h:2681:0
 
 
 
@@ -363,6 +363,19 @@ Shift( bitmap_block_array *Array, bitmap *Element )
 /* { */
 /*   do_editor_ui_for_container( block_array_t ) */
 /* } */
+
+
+link_internal bitmap *
+Pop( bitmap_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
 
 
 

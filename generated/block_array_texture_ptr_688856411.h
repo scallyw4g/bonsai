@@ -182,3 +182,16 @@ Shift( texture_ptr_block_array *Array, texture_ptr Element )
 /* } */
 
 
+link_internal texture_ptr 
+Pop( texture_ptr_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

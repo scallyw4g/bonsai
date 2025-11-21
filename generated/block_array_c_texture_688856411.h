@@ -182,3 +182,16 @@ Shift( texture_block_array *Array, texture *Element )
 /* } */
 
 
+link_internal texture *
+Pop( texture_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

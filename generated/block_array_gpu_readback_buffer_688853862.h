@@ -2,7 +2,7 @@
 // src/engine/graphics.h:169:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2668:0
+// external/bonsai_stdlib/src/poof_functions.h:2681:0
 
 
 
@@ -363,6 +363,19 @@ Shift( gpu_readback_buffer_block_array *Array, gpu_readback_buffer *Element )
 /* { */
 /*   do_editor_ui_for_container( block_array_t ) */
 /* } */
+
+
+link_internal gpu_readback_buffer *
+Pop( gpu_readback_buffer_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
 
 
 

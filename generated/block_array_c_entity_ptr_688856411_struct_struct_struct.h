@@ -182,3 +182,16 @@ Shift( entity_ptr_block_array *Array, entity_ptr Element )
 /* } */
 
 
+link_internal entity_ptr 
+Pop( entity_ptr_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

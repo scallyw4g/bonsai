@@ -182,3 +182,16 @@ Shift( shader_ptr_block_array *Array, shader_ptr Element )
 /* } */
 
 
+link_internal shader_ptr 
+Pop( shader_ptr_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

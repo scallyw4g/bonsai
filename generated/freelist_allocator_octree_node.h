@@ -2,7 +2,7 @@
 // src/engine/world.h:83:0
 
 // def (freelist_allocator)
-// external/bonsai_stdlib/src/poof_functions.h:2719:0
+// external/bonsai_stdlib/src/poof_functions.h:2732:0
 struct octree_node_freelist
 poof(@do_editor_ui)
 {

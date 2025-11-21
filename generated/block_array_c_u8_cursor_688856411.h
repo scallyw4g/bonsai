@@ -182,3 +182,16 @@ Shift( u8_cursor_block_array *Array, u8_cursor *Element )
 /* } */
 
 
+link_internal u8_cursor *
+Pop( u8_cursor_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

@@ -2,7 +2,7 @@
 // src/engine/model.h:88:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2668:0
+// external/bonsai_stdlib/src/poof_functions.h:2681:0
 
 
 
@@ -363,6 +363,19 @@ Shift( vox_data_block_array *Array, vox_data *Element )
 /* { */
 /*   do_editor_ui_for_container( block_array_t ) */
 /* } */
+
+
+link_internal vox_data *
+Pop( vox_data_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
 
 
 

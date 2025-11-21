@@ -508,6 +508,9 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory, u
 
 
 
+
+
+
 struct brush_layer;
 
 link_internal b32
@@ -523,6 +526,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory);
 
 link_internal b32
 Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Count);
+
 
 
 

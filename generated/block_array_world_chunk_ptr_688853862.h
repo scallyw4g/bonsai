@@ -182,3 +182,16 @@ Shift( world_chunk_ptr_block_array *Array, world_chunk_ptr Element )
 /* } */
 
 
+link_internal world_chunk_ptr 
+Pop( world_chunk_ptr_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+

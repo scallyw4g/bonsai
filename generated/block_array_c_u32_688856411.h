@@ -182,3 +182,16 @@ Shift( u32_block_array *Array, u32 *Element )
 /* } */
 
 
+link_internal u32 *
+Pop( u32_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
+
+
