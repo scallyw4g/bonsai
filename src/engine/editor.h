@@ -1192,8 +1192,18 @@ poof(gen_constructor(shape_layer))
 struct noise_layer
 poof(
     @do_editor_ui
-    @version(1)
+    @version(2)
   )
+{
+  ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
+  r32 Power;
+
+  white_noise_params   White;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
+  perlin_noise_params  Perlin;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
+  voronoi_noise_params Voronoi; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
+};
+
+struct noise_layer_1
 {
   ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
 
@@ -1210,6 +1220,13 @@ struct noise_layer_0
   voronoi_noise_params Voronoi;
 };
 
+
+link_internal void
+Marshal(noise_layer_1 *Stored, noise_layer *Live)
+{
+  poof(default_marshal(noise_layer_1))
+#include <generated/default_marshal_noise_layer_1.h>
+}
 
 link_internal void
 Marshal(noise_layer_0 *Stored, noise_layer *Live)

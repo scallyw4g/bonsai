@@ -414,6 +414,8 @@ poof(serdes_struct(voronoi_noise_params))
 #include <generated/serdes_struct_voronoi_noise_params.h>
 poof(serdes_struct(noise_layer_0))
 #include <generated/serdes_struct_noise_layer_0.h>
+poof(serdes_struct(noise_layer_1))
+#include <generated/serdes_struct_NbXeeKVO.h>
 poof(serdes_struct(noise_layer))
 #include <generated/serdes_struct_noise_layer.h>
 

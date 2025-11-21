@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:449:0
+// src/engine/serdes.cpp:451:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:449:0
+// src/engine/serdes.cpp:451:0
 
 
 
@@ -1072,6 +1072,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

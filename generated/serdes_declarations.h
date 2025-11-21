@@ -616,6 +616,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Co
 
 
 
+
 struct layered_brush;
 
 link_internal b32

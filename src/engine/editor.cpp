@@ -2907,6 +2907,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       case BrushLayerType_Noise:
       {
         noise_layer *Noise = &Layer->Settings.Noise;
+        BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power);
         BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
 
         switch (Noise->Type)

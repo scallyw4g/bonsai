@@ -70,6 +70,7 @@ uniform  int NoiseType;
 uniform   v3 RGBColor;
 uniform   v3 Period;
 uniform  f32 Threshold;
+uniform  f32 Power;
 uniform bool Invert;
 
 //
@@ -532,6 +533,8 @@ void main()
             InitialSample = white_noise(NoiseBasis);
           } break;
         }
+
+        InitialSample *= Power;
 
         break;
       }
