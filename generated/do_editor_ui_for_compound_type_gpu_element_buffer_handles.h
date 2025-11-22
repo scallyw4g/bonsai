@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:445:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:309:0
+// src/engine/editor.h:310:0
 struct gpu_element_buffer_handles;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

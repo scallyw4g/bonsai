@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ansi_stream.h:6:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2278:0
+// external/bonsai_stdlib/src/poof_functions.h:2279:0
 
 
 
@@ -21,6 +21,10 @@ struct u8_cursor_block_array_index
 };
 
 struct u8_cursor_block_array
+poof(
+  @collection
+  
+)
 {
   u8_cursor_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

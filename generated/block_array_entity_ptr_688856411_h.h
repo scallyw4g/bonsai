@@ -2,7 +2,7 @@
 // src/engine/world_chunk.h:315:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2278:0
+// external/bonsai_stdlib/src/poof_functions.h:2279:0
 
 
 
@@ -21,6 +21,10 @@ struct entity_ptr_block_array_index
 };
 
 struct entity_ptr_block_array
+poof(
+  @collection
+  
+)
 {
   entity_ptr_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

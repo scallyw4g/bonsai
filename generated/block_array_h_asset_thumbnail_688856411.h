@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:784:0
+// src/engine/editor.h:785:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2278:0
+// external/bonsai_stdlib/src/poof_functions.h:2279:0
 
 
 
@@ -21,6 +21,10 @@ struct asset_thumbnail_block_array_index
 };
 
 struct asset_thumbnail_block_array
+poof(
+  @collection
+  
+)
 {
   asset_thumbnail_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

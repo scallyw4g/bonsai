@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1416:0
+// src/engine/editor.h:1421:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2681:0
+// external/bonsai_stdlib/src/poof_functions.h:2694:0
 
 
 
@@ -21,6 +21,10 @@ struct world_edit_ptr_block_array_index
 };
 
 struct world_edit_ptr_block_array
+poof(
+  @collection
+  
+)
 {
   world_edit_ptr_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:374:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2681:0
+// external/bonsai_stdlib/src/poof_functions.h:2694:0
 
 
 
@@ -21,6 +21,10 @@ struct entity_block_array_index
 };
 
 struct entity_block_array
+poof(
+  @collection
+  
+)
 {
   entity_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

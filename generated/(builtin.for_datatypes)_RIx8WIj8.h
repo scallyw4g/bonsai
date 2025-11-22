@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:618:0
+// src/engine/editor.h:619:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:618:0
+// src/engine/editor.h:619:0
 
 
 
@@ -167,6 +167,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *El
 
 
 
+
+
 struct renderer_2d;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -182,6 +184,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2
 struct frustum;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
@@ -294,6 +297,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

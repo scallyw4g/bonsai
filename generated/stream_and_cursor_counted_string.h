@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/counted_string.h:123:0
 
 // def (stream_and_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:2124:0
+// external/bonsai_stdlib/src/poof_functions.h:2125:0
 
 struct counted_string_cursor
 {

@@ -5,9 +5,10 @@ poof(@gen_ui_toolbar)
 {
   LayerToolbarActions_NoAction   poof(@ui_skip),
 
-  LayerToolbarActions_Rename     poof(@ui_display_name(CSz("R"))),
-  LayerToolbarActions_Duplicate  poof(@ui_display_name(CSz("D"))),
-  LayerToolbarActions_Delete     poof(@ui_display_name(CSz("X"))),
+  LayerToolbarActions_Rename          poof(@ui_display_name(CSz("R"))),
+  LayerToolbarActions_Duplicate       poof(@ui_display_name(CSz("D"))),
+  LayerToolbarActions_ExportAsPrefab  poof(@ui_display_name(CSz("P"))),
+  LayerToolbarActions_Delete          poof(@ui_display_name(CSz("X"))),
   //
   // .. ?
 };
@@ -35,9 +36,9 @@ poof(@gen_ui_toolbar)
 {
   UiLayerEditAction_NoAction  poof(@ui_skip),
 
-  UiLayerEditAction_SetBrush  poof(@ui_display_name(CSz("S"))),
-  UiLayerEditAction_Duplicate poof(@ui_display_name(CSz("D"))),
-  UiLayerEditAction_Delete    poof(@ui_display_name(CSz("X"))),
+  UiLayerEditAction_SetBrush     poof(@ui_display_name(CSz("S"))),
+  UiLayerEditAction_Duplicate    poof(@ui_display_name(CSz("D"))),
+  UiLayerEditAction_Delete       poof(@ui_display_name(CSz("X"))),
 };
 
 enum ui_brush_layer_actions
@@ -1384,7 +1385,8 @@ poof(maybe(world_edit_brush))
 poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
 #include <generated/hashtable_get_SlF7m90R.h>
 
-struct world_edit poof(@do_editor_ui)
+struct world_edit 
+poof(@do_editor_ui @serdes @block_array_IndexOfValue)
 {
   // TODO(Jesse): Rename to Bounds?
   rect3cp Region = InvertedInfinityRectangle_rect3cp();
@@ -1408,9 +1410,12 @@ struct world_edit poof(@do_editor_ui)
 
 typedef world_edit* world_edit_ptr;
 
+poof(are_equal(world_edit))
+#include <generated/are_equal_aajSrrGo.h>
+
 // TODO(Jesse): Add `add_tag` to poof so we can reinstate this
 //
-/* poof(block_array(world_edit, {128})) */
+poof(block_array(world_edit, {128}))
 #include <generated/block_array_world_edit_688735882.h>
 
 poof(block_array(world_edit_ptr, {128}))
@@ -1421,9 +1426,12 @@ poof(block_array(world_edit_ptr, {128}))
 poof(block_array(world_edit_block_array_index, {128}))
 #include <generated/block_array_world_edit_block_array_index_688735882.h>
 
+poof(block_array_index_of_value(world_edit_block_array_index, world_edit_block_array_index_block_array, world_edit_block_array_index_block_array_index))
+#include <generated/block_array_index_of_value_f9Xbjkcl.h>
+
 struct world_edit_layer
 {
-  char NameBuf[NameBuf_Len+1];
+  char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
   // NOTE(Jesse): type name is confusing here .. this is an array of indices into
   // the world_edit block array
@@ -1433,6 +1441,78 @@ poof(block_array(world_edit_layer, {128}))
 #include <generated/block_array_world_edit_layer_688735882.h>
 
 
+enum prefab_spawn_callback
+{
+  PrefabSpawnCallback_None poof(@spawn_callback_skip),
+
+  poof(
+    for_datatypes(func)  @code_fragment
+    func (func_t)
+    {
+      func_t.has_tag(prefab_spawn_callback)?
+      {
+        PrefabSpawnCallback_(func_t.name),
+      }
+    }
+  )
+#include <generated/(builtin.for_datatypes)_KhyFHEuP.h>
+};
+
+struct prefab poof(@serdes)
+{
+  cs Name;
+  world_edit_paged_list Edits;
+
+  cs SpawnCallbackName;
+  /* prefab_spawn_callback SpawnCallback; */
+};
+
+link_internal b32
+AreEqual(prefab *E0, prefab *E1)
+{
+  return AreEqual(E0->Name, E1->Name);
+}
+
+link_internal umm
+Hash(prefab *E0)
+{
+  return Hash(E0->Name);
+}
+
+poof(hashtable(prefab))
+#include <generated/hashtable_pIp3Bn6L.h>
+
+
+link_internal void
+poof(@prefab_spawn_callback)
+DefaultPrefabSpawnCallback(prefab *Prefab, cp SpawnPoint)
+{
+}
+
+link_internal void
+DispatchPrefabSpawnCallback(prefab_spawn_callback SpawnCallbackType, prefab *Prefab, cp SpawnPoint)
+{
+  switch(SpawnCallbackType)
+  {
+    case PrefabSpawnCallback_None: {} break;
+    poof(
+      func (prefab_spawn_callback enum_t) @code_fragment
+      {
+        enum_t.map(enum_v)
+        {
+          enum_v.has_tag(spawn_callback_skip)?
+          {
+          }
+          {
+            case enum_v.name: { enum_v.name.strip_all_prefix.to_capital_case(Prefab, SpawnPoint); } break; 
+          }
+        }
+      }
+    )
+#include <generated/anonymous_fxISWGtl.h>
+
+  }
+}
 // NOTE(Jesse): This isn't really meant to be used outside the the level_editor
 // I just packed all the things together such that it's a bit more obvious
 // they're all for doing the selection
@@ -1483,6 +1563,9 @@ poof(@do_editor_ui)
   // indices such that we save space when doing serialize/deserialize;
   world_edit_brush_hashtable  LoadedBrushes;
   world_edit_brush           *CurrentBrush;
+
+  prefab_hashtable Prefabs;
+  u32 SelectedPrefabIndex;
 };
 
 

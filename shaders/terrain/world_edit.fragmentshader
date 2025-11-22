@@ -381,12 +381,12 @@ void BlendSample(
           /* ThisSample_in > 0.f */
           /* ThisSample > 0.f */
           /* Blended > 0.f */
-          Blended > -0.04f &&
-          Blended > Accumulator
+          /* Blended > -0.04f && */
+          /* Blended > Accumulator */
           /* Blended > Accumulator && */
           /* Blended >= 0.f && */
           /* Blended > 0.f && */
-          /* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator */
+          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
           /* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && */
           /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
          )

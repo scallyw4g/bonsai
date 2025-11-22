@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:388:0
 
 // def (deserialize_struct)
-// src/engine/serdes.h:284:0
+// src/engine/serdes.h:305:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 

@@ -2044,6 +2044,24 @@ DoWorldEditor(engine_resources *Engine)
           {
             case LayerToolbarActions_NoAction: {} break;
 
+            case LayerToolbarActions_ExportAsPrefab:
+            {
+              prefab P = {};
+              P.Name = CS(Layer->NameBuf);
+              P.Edits.Memory = GetTranArena();
+
+              IterateOver(&Layer->EditIndices, EditIndex, EII)
+              {
+                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+                Push(&P.Edits, Edit);
+              }
+
+              auto Blocks = BeginSerialization();
+              Serialize(&Blocks, &P);
+              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P.Name, GetTranArena(), 1).Start);
+
+            } break;
+
             case LayerToolbarActions_Rename:
             {
             } break;

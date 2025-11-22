@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/primitive_containers.h:14:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2278:0
+// external/bonsai_stdlib/src/poof_functions.h:2279:0
 
 
 
@@ -21,6 +21,10 @@ struct u32_block_array_index
 };
 
 struct u32_block_array
+poof(
+  @collection
+  
+)
 {
   u32_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

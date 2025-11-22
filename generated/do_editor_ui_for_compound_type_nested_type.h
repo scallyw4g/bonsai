@@ -2,7 +2,7 @@
 // examples/ui_test/game.cpp:71:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:309:0
+// src/engine/editor.h:310:0
 struct nested_type;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, nested_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

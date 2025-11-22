@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:419:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:572:0
+// src/engine/serdes.h:593:0
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)
 {

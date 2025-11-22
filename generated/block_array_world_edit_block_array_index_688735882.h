@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1421:0
+// src/engine/editor.h:1426:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2681:0
+// external/bonsai_stdlib/src/poof_functions.h:2694:0
 
 
 
@@ -21,6 +21,10 @@ struct world_edit_block_array_index_block_array_index
 };
 
 struct world_edit_block_array_index_block_array
+poof(
+  @collection
+  
+)
 {
   world_edit_block_array_index_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;
@@ -291,20 +295,6 @@ Find( world_edit_block_array_index_block_array *Array, world_edit_block_array_in
   return Result;
 }
 
-link_internal world_edit_block_array_index_block_array_index
-IndexOfValue( world_edit_block_array_index_block_array *Array, world_edit_block_array_index *Query)
-{
-  world_edit_block_array_index_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
-  IterateOver(Array, E, Index)
-  {
-    if (AreEqual(E, Query))
-    {
-      Result = Index;
-      break;
-    }
-  }
-  return Result;
-}
 
 
 link_internal b32

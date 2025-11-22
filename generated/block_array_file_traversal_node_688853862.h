@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/file.cpp:8:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2681:0
+// external/bonsai_stdlib/src/poof_functions.h:2694:0
 
 
 
@@ -21,6 +21,10 @@ struct file_traversal_node_block_array_index
 };
 
 struct file_traversal_node_block_array
+poof(
+  @collection
+  
+)
 {
   file_traversal_node_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

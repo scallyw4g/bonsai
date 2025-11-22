@@ -1,5 +1,8 @@
-// src/engine/editor.h:1250:0
+// callsite
+// src/engine/editor.h:1418:0
 
+// def (block_array)
+// external/bonsai_stdlib/src/poof_functions.h:2694:0
 
 
 
@@ -11,12 +14,17 @@ struct world_edit_block
   world_edit Elements[8];
 };
 
-struct world_edit_block_array_index poof(@block_array_IndexOfValue)
+
+struct world_edit_block_array_index
 {
   umm Index; 
 };
 
 struct world_edit_block_array
+poof(
+  @collection
+   @serdes 
+)
 {
   world_edit_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;
@@ -287,6 +295,21 @@ Find( world_edit_block_array *Array, world_edit *Query)
   return Result;
 }
 
+link_internal world_edit_block_array_index
+IndexOfValue( world_edit_block_array *Array, world_edit *Query)
+{
+  world_edit_block_array_index Result = {INVALID_BLOCK_ARRAY_INDEX};
+  IterateOver(Array, E, Index)
+  {
+    if (AreEqual(E, Query))
+    {
+      Result = Index;
+      break;
+    }
+  }
+  return Result;
+}
+
 
 
 link_internal b32
@@ -323,19 +346,20 @@ Push( world_edit_block_array *Array )
 }
 
 link_internal void
-Shift( world_edit_block_array *Array, world_edit *Element )
+Insert( world_edit_block_array *Array, world_edit_block_array_index Index, world_edit *Element )
 {
+  Assert(Index.Index <= LastIndex(Array).Index);
   Assert(Array->Memory);
-  world_edit *Prev = {};
 
   // Alocate a new thingy
-  Push(Array);
+  world_edit *Prev = Push(Array);
 
-  auto End = AtElements(Array);
-  RangeIteratorReverse(Index, s32(End.Index))
+  auto Last = LastIndex(Array);
+
+  RangeIteratorReverseRange(I, s32(Last.Index), s32(Index.Index))
   {
-    auto E = GetPtr(Array, umm(Index));
-    if (Prev) { *Prev = *E; }
+    auto E = GetPtr(Array, umm(I));
+    *Prev = *E;
     Prev = E;
   }
 
@@ -343,30 +367,34 @@ Shift( world_edit_block_array *Array, world_edit *Element )
 }
 
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+Insert( world_edit_block_array *Array, u32 Index, world_edit *Element )
 {
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash);
-  if (Container)
-  {
-    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
-    {
-      PushNewRow(Ui);
-      IterateOver(Container, Element, ElementIndex)
-      {
-        DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        PushNewRow(Ui);
-      }
-    }
-    PushNewRow(Ui);
-  }
-  else
-  {
-    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-    PushNewRow(Ui);
-  }
+  Insert(Array, { .Index = Index }, Element);
 }
 
+link_internal void
+Shift( world_edit_block_array *Array, world_edit *Element )
+{
+  Insert(Array, { .Index = 0 }, Element);
+}
+
+/* element_t.has_tag(do_editor_ui)? */
+/* { */
+/*   do_editor_ui_for_container( block_array_t ) */
+/* } */
+
+
+link_internal world_edit *
+Pop( world_edit_block_array *Array )
+{
+  if (auto Result = TryGetPtr(Array, LastIndex(Array)))
+  {
+    Assert(Array->ElementCount > 0);
+    Array->ElementCount -= 1;
+    return Result;
+  }
+  return 0;
+}
 
 
 

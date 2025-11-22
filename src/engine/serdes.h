@@ -123,6 +123,27 @@ poof(
 )
 
 
+poof(
+  func serialize_decl( type )
+  {
+    struct type.name;
+
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement);
+
+    link_internal b32
+    Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count);
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory);
+
+    link_internal b32
+    Deserialize(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory, umm Count);
+
+    link_internal b32
+    DeserializeCurrentVersion(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory);
+  }
+)
 
 //
 // Structs
@@ -655,6 +676,7 @@ struct world_chunk;
 link_internal b32
 Deserialize(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory, umm Count);
 
+#if 0
 poof(
   for_datatypes(struct)
     func (type)
@@ -669,15 +691,13 @@ poof(
         link_internal b32
         Serialize(u8_cursor_block_array *Bytes, (type.name) *BaseElement, umm Count);
 
-
-
         link_internal b32
         Deserialize(u8_cursor *Bytes, type.name *Element, memory_arena *Memory);
 
         link_internal b32
         Deserialize(u8_cursor *Bytes, type.name *Element, memory_arena *Memory, umm Count);
-
       }
     }
 )
 #include <generated/serdes_declarations.h>
+#endif

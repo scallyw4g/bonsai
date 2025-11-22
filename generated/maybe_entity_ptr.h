@@ -2,7 +2,7 @@
 // src/engine/resources.h:10:0
 
 // def (maybe)
-// external/bonsai_stdlib/src/poof_functions.h:2266:0
+// external/bonsai_stdlib/src/poof_functions.h:2267:0
 struct maybe_entity_ptr
 {
   maybe_tag Tag;

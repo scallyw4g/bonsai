@@ -1116,6 +1116,7 @@ IsValid(ui_layer_toolbar_actions Value)
         case LayerToolbarActions_NoAction:
     case LayerToolbarActions_Rename:
     case LayerToolbarActions_Duplicate:
+    case LayerToolbarActions_ExportAsPrefab:
     case LayerToolbarActions_Delete:
 
     {
@@ -1138,6 +1139,7 @@ ToStringPrefixless(ui_layer_toolbar_actions Type)
             case LayerToolbarActions_NoAction: { Result = CSz("NoAction"); } break;
       case LayerToolbarActions_Rename: { Result = CSz("Rename"); } break;
       case LayerToolbarActions_Duplicate: { Result = CSz("Duplicate"); } break;
+      case LayerToolbarActions_ExportAsPrefab: { Result = CSz("ExportAsPrefab"); } break;
       case LayerToolbarActions_Delete: { Result = CSz("Delete"); } break;
 
 
@@ -1163,6 +1165,7 @@ ToString(ui_layer_toolbar_actions Type)
         case LayerToolbarActions_NoAction: { Result = CSz("LayerToolbarActions_NoAction"); } break;
     case LayerToolbarActions_Rename: { Result = CSz("LayerToolbarActions_Rename"); } break;
     case LayerToolbarActions_Duplicate: { Result = CSz("LayerToolbarActions_Duplicate"); } break;
+    case LayerToolbarActions_ExportAsPrefab: { Result = CSz("LayerToolbarActions_ExportAsPrefab"); } break;
     case LayerToolbarActions_Delete: { Result = CSz("LayerToolbarActions_Delete"); } break;
 
 
@@ -1180,6 +1183,7 @@ UiLayerToolbarActions(counted_string S)
     if (StringsMatch(S, CSz("LayerToolbarActions_NoAction"))) { return LayerToolbarActions_NoAction; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Rename"))) { return LayerToolbarActions_Rename; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Duplicate"))) { return LayerToolbarActions_Duplicate; }
+  if (StringsMatch(S, CSz("LayerToolbarActions_ExportAsPrefab"))) { return LayerToolbarActions_ExportAsPrefab; }
   if (StringsMatch(S, CSz("LayerToolbarActions_Delete"))) { return LayerToolbarActions_Delete; }
 
 
@@ -1208,6 +1212,7 @@ RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
         { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_NoAction")), LayerToolbarActions_NoAction },
     { CSz("Rename"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
     { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
+    { CSz("ExportAsPrefab"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_ExportAsPrefab")), LayerToolbarActions_ExportAsPrefab },
     { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
 
   };
@@ -1263,6 +1268,18 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
+      CSz("P"),
+      CSz("ExportAsPrefab"),
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_ExportAsPrefab"),
+        Cast(void*, Index)
+      ),
+      LayerToolbarActions_ExportAsPrefab,
+    },
+
+        {
       CSz("X"),
       CSz("Delete"),
       UiId(
@@ -1291,6 +1308,11 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
 
 
 

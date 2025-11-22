@@ -2,7 +2,7 @@
 // src/engine/render/gpu_timer.h:9:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2278:0
+// external/bonsai_stdlib/src/poof_functions.h:2279:0
 
 
 
@@ -21,6 +21,10 @@ struct gpu_timer_block_array_index
 };
 
 struct gpu_timer_block_array
+poof(
+  @collection
+  
+)
 {
   gpu_timer_block **BlockPtrs; poof(@array_length(Element->BlockCount))
   u32   BlockCount;

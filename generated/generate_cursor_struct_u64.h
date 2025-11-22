@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/binary_parser.h:1:0
 
 // def (generate_cursor_struct)
-// external/bonsai_stdlib/src/poof_functions.h:1561:0
+// external/bonsai_stdlib/src/poof_functions.h:1562:0
 
 struct u64_cursor
 {

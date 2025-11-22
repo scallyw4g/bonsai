@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/vector.cpp:5:0
 
 // def (generate_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1554:0
+// external/bonsai_stdlib/src/poof_functions.h:1555:0
 
 struct v3i_cursor
 {
