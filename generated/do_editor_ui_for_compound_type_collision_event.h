@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:504:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:310:0
+// src/engine/editor.h:317:0
 struct collision_event;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

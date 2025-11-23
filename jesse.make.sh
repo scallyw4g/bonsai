@@ -13,9 +13,9 @@ OPT="-O2"
   BuildSingleExample examples/terrain_gen                      \
   BuildExecutables                                             \
   BuildSingleExample examples/project_and_level_picker         \
+  BuildSingleExample examples/blank_project                    \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
-  # BuildSingleExample examples/blank_project                    \
   # BuildSingleExample examples/transparency                     \
   # BuildSingleExample examples/turn_based                       \
   # BuildSingleExample examples/the_wanderer

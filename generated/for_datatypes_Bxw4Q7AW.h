@@ -13664,6 +13664,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             
             
+            cs MemberName = CSz("SelectedTool");
+
+                                                                                                auto Member = Cast(ui_editor_tool*, &Element->SelectedTool);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Selection");
 
                                                                                                 auto Member = Cast(selection_region*, &Element->Selection);
@@ -14097,9 +14133,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             
             
-            cs MemberName = CSz("SelectedPrefabIndex");
+            cs MemberName = CSz("SelectedPrefab");
 
-                                                                                                auto Member = Cast(u32*, &Element->SelectedPrefabIndex);
+                                                                                                auto Member = Cast(prefab*, Element->SelectedPrefab);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14114,8 +14150,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
 
 
 
-                        PushNewRow(Ui);
-
+            
 
 
           }

@@ -1057,6 +1057,173 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+IsValid(ui_editor_tool Value)
+{
+  b32 Result = False;
+  switch (Value)
+  {
+        case UiEditorTool_Brush:
+    case UiEditorTool_Prefab:
+
+    {
+      Result = True;
+    }
+  }
+  return Result;
+}
+
+
+
+link_internal counted_string
+ToStringPrefixless(ui_editor_tool Type)
+{
+  cs Result = {};
+  if (IsValid(Type))
+  {
+    switch (Type)
+    {
+            case UiEditorTool_Brush: { Result = CSz("Brush"); } break;
+      case UiEditorTool_Prefab: { Result = CSz("Prefab"); } break;
+
+
+      
+    }
+  }
+  else
+  {
+    Result = CSz("(CORRUPT ENUM VALUE)");
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
+  return Result;
+}
+
+link_internal counted_string
+ToString(ui_editor_tool Type)
+{
+  Assert(IsValid(Type));
+
+  counted_string Result = {};
+  switch (Type)
+  {
+        case UiEditorTool_Brush: { Result = CSz("UiEditorTool_Brush"); } break;
+    case UiEditorTool_Prefab: { Result = CSz("UiEditorTool_Prefab"); } break;
+
+
+    
+  }
+  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
+  return Result;
+}
+
+link_internal ui_editor_tool
+UiEditorTool(counted_string S)
+{
+  ui_editor_tool Result = {};
+
+    if (StringsMatch(S, CSz("UiEditorTool_Brush"))) { return UiEditorTool_Brush; }
+  if (StringsMatch(S, CSz("UiEditorTool_Prefab"))) { return UiEditorTool_Prefab; }
+
+
+  return Result;
+}
+
+
+link_internal void
+RadioSelect(ui_toggle_button_group *RadioGroup, ui_editor_tool Selection)
+{
+  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
+  SetRadioButton(RadioGroup, ToggleHandle, True);
+  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
+}
+
+link_internal ui_toggle_button_group
+RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
+  window_layout *Window,
+  cs  GroupName,
+  ui_editor_tool *Element,
+  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
+  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+{
+  ui_toggle_button_handle ButtonHandles[] =
+  {
+        { CSz("Brush"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Brush")), UiEditorTool_Brush },
+    { CSz("Prefab"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Prefab")), UiEditorTool_Prefab },
+
+  };
+
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
+
+  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
+  return Result;
+}
+
+
+
+
+link_internal ui_toggle_button_group
+PushToolbar(     renderer_2d *Ui, 
+  window_layout *Window,
+  cs  GroupName,
+  ui_editor_tool *Element,
+  u64  Index = 0,
+  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
+{
+  /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
+
+  ui_toggle_button_handle ButtonHandles[] =
+  {
+            {
+      CSz("Brush"),
+      {},
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_editor_tool UiEditorTool_Brush"),
+        Cast(void*, Index)
+      ),
+      UiEditorTool_Brush,
+    },
+
+        {
+      CSz("Prefab"),
+      {},
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_editor_tool UiEditorTool_Prefab"),
+        Cast(void*, Index)
+      ),
+      UiEditorTool_Prefab,
+    },
+
+
+  };
+
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ArrayCount(ButtonHandles),
+    ButtonHandles
+  };
+
+  ui_toggle_button_group Result = {};
+  Result.Ui = Ui;
+  Result.Flags = ui_toggle_button_group_flags(ToggleButtonGroupFlags_TypeClickButton | ExtraFlags);
+  Result.Buttons = ButtonBuffer;
+  Result.EnumStorage = Cast(u32*, Element);
+
+  DrawButtonGroup(&Result, GroupName);
+  return Result;
+}
+
+
+
+
+
+
 
 
 

@@ -1,5 +1,12 @@
 /* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
+enum ui_editor_tool
+poof(@gen_ui_toolbar)
+{
+  UiEditorTool_Brush,
+  UiEditorTool_Prefab,
+};
+
 enum ui_layer_toolbar_actions
 poof(@gen_ui_toolbar)
 {
@@ -1375,9 +1382,15 @@ Hash(world_edit_brush *Brush)
   return Result;
 }
 
+link_internal b32
+AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2)
+{
+  b32 Result = StringsMatch(Thing1->NameBuf, Thing2->NameBuf);
+  return Result;
+}
 
-poof(are_equal(world_edit_brush))
-#include <generated/are_equal_world_edit_brush.h>
+/* poof(are_equal(world_edit_brush)) */
+/* #include <generated/are_equal_world_edit_brush.h> */
 
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
@@ -1545,6 +1558,8 @@ poof(@do_editor_ui)
 {
   memory_arena *Memory;
 
+  ui_editor_tool SelectedTool;
+
   selection_region Selection;
 
   asset_thumbnail_block_array AssetThumbnails;
@@ -1568,7 +1583,7 @@ poof(@do_editor_ui)
   world_edit_brush           *CurrentBrush;
 
   prefab_hashtable Prefabs;
-  u32 SelectedPrefabIndex;
+  prefab *SelectedPrefab;
 };
 
 

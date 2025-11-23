@@ -70,7 +70,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   StandardCamera(Graphics->Camera, 30000.0f, 1000.0f);
 
-  AllocateWorld(World, WorldCenter, VisibleRegionSize_128);
+  AllocateWorld(World, WorldCenter, VisibleRegionSize_512);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   return GameState;

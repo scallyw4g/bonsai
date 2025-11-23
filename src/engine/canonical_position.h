@@ -332,6 +332,14 @@ GetDim(world *World, rect3cp Rect)
   return Result;
 }
 
+link_internal cp
+GetDim_cp(world *World, rect3cp Rect)
+{
+  cp Result = Rect.Max-Rect.Min;
+  return Result;
+}
+
+
 link_internal b32
 IsInside(cp P, rect3cp Rect)
 {

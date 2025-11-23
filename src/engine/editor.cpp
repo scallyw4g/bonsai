@@ -1860,6 +1860,38 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
 }
 
 link_internal void
+SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp P)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  world_edit_layer *Layer = NewLayer(Editor);
+
+  IterateOver(&Prefab->Edits, StoredEdit, StoredEditIndex)
+  {
+    world_edit_brush *B = Upsert(*StoredEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+
+    world_edit_block_array_index FinalEditIndex;
+    world_edit *FinalEdit = NewEdit(Editor, Layer, &FinalEditIndex);
+
+    FinalEdit->Rotation = StoredEdit->Rotation;
+    FinalEdit->Brush = B;
+
+    cp Dim = GetDim_cp(World, StoredEdit->Region);
+    FinalEdit->Region.Min = P;
+    FinalEdit->Region.Max = P + Dim;
+    Canonicalize(World, &FinalEdit->Region.Max);
+
+    /* *FinalEdit = *StoredEdit; */
+    /* FinalEdit->Brush = B; */
+    /* FinalEdit = */ 
+
+    /* Push(&Layer->EditIndices, &FinalEditIndex); */
+
+    ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+  }
+}
+
+link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -1919,61 +1951,113 @@ DoWorldEditor(engine_resources *Engine)
     Editor->Selection.ModMode = SelectionModificationMode_Initialize;
   }
 
-  { //
+
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Tools");
+    PushWindowStart(Ui, Window);
+      PushToolbar(Ui, Window, {}, &Editor->SelectedTool);
+    PushWindowEnd(Ui, Window);
   }
 
-  { // All Brushes Window
-    local_persist window_layout AllBrushesWindow = WindowLayout("All Brushes", WindowLayoutFlag_Align_BottomRight);
-    PushWindowStart(Ui, &AllBrushesWindow);
 
-    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+  // All Brushes Window
+  //
+  switch (Editor->SelectedTool)
+  {
+    case UiEditorTool_Prefab:
     {
-      if (Brush)
       {
-        ui_style *Style = &DefaultStyle;
-        if (Brush == Editor->CurrentBrush)
+        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight);
+        PushWindowStart(Ui, Window);
+
+        IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
         {
-          Style = &DefaultSelectedStyle;
+          if (Prefab)
+          {
+            b32 Selected = Editor->SelectedPrefab == Prefab;
+            if (Button(Ui, Prefab->Name, UiId(Window, "prefab select", Prefab), Selected))
+            {
+              Editor->SelectedPrefab = Prefab;
+            }
+            PushNewRow(Ui);
+          }
         }
 
-        if (Button(Ui, CS(Brush->NameBuf), UiId(&AllBrushesWindow, "brush select", Brush), Style))
+        PushWindowEnd(Ui, Window);
+      }
+
+      {
+        window_layout *Window = GetOrCreateWindow(Ui, "Prefab", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+        PushWindowStart(Ui, Window);
+        if (Editor->SelectedPrefab)
         {
-          Editor->CurrentBrush = Brush;
-          CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
+          DoEditorUi(Ui, Window, Editor->SelectedPrefab, Editor->SelectedPrefab->Name, 0);
         }
-        PushNewRow(Ui);
+        PushWindowEnd(Ui, Window);
       }
-    }
-    PushWindowEnd(Ui, &AllBrushesWindow);
 
-    window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Settings", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
-    DoBrushSettingsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
+      if ( Editor->SelectedPrefab &&
+           Engine->MousedOverVoxel.Tag && 
+           Input->LMB.Clicked )
+      {
+        SpawnPrefabInstance(Engine, Editor->SelectedPrefab, Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty]);
+      }
+    } break;
 
-    // NOTE(Jesse): Must come after the settings window draws because the
-    // settings window detects and initializes new brushes
-    if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
+    case UiEditorTool_Brush:
     {
-      if (Editor->Selection.InitialSelect)
+      window_layout *AllBrushesWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight);
+      PushWindowStart(Ui, AllBrushesWindow);
+
+      IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
       {
-        Info("Setting Initial edit state");
-        Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
-        Assert(LengthSq(Editor->Selection.Diff) == 0.f);
+        if (Brush)
+        {
+          ui_style *Style = &DefaultStyle;
+          if (Brush == Editor->CurrentBrush)
+          {
+            Style = &DefaultSelectedStyle;
+          }
 
-        auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
-        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-        UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+          if (Button(Ui, CS(Brush->NameBuf), UiId(AllBrushesWindow, "brush select", Brush), Style))
+          {
+            Editor->CurrentBrush = Brush;
+            CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
+          }
+          PushNewRow(Ui);
+        }
       }
+      PushWindowEnd(Ui, AllBrushesWindow);
 
-      if (LengthSq(Editor->Selection.Diff) > 0.f)
+      window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+      DoBrushSettingsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
+
+      // NOTE(Jesse): Must come after the settings window draws because the
+      // settings window detects and initializes new brushes
+      if (SelectionComplete(Editor->Selection.Clicks) && Editor->CurrentBrush)
       {
-        Info("Applying diff to edit buffer");
-        world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
-        Assert(SelectionMode);
-        ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
-        Editor->Selection.ModState.ClickedFace = FaceIndex_None;
-      }
+        if (Editor->Selection.InitialSelect)
+        {
+          Info("Setting Initial edit state");
+          Assert(AtElements(&Editor->SelectedEditIndices).Index == 1);
+          Assert(LengthSq(Editor->Selection.Diff) == 0.f);
 
-    }
+          auto EditIndex = GetPtr(&Editor->SelectedEditIndices, {});
+          world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+          UpdateWorldEditBounds(Engine, Edit, Editor->Selection.Region, GetTranArena());
+        }
+
+        if (LengthSq(Editor->Selection.Diff) > 0.f)
+        {
+          Info("Applying diff to edit buffer");
+          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+          Assert(SelectionMode);
+          ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
+          Editor->Selection.ModState.ClickedFace = FaceIndex_None;
+        }
+
+      }
+    } break;
   }
 
   {
@@ -1990,13 +2074,6 @@ DoWorldEditor(engine_resources *Engine)
         ReapplyEditToOctree(Engine, Edit, GetTranArena());
       }
     }
-  }
-
-  {
-    window_layout *Window = GetOrCreateWindow(Ui, "Editor Tools");
-    PushWindowStart(Ui, Window);
-
-    PushWindowEnd(Ui, Window);
   }
 
   {
