@@ -11,6 +11,11 @@ struct ui_toggle_linked_list_node
 };
 
 struct ui_toggle_hashtable
+poof(
+  @collection
+  
+   @do_editor_ui 
+)
 {
   umm Size;
   ui_toggle_linked_list_node **Elements;

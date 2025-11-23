@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1426:0
+// src/engine/editor.h:1429:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2694:0
+// external/bonsai_stdlib/src/poof_functions.h:2709:0
 
 
 
@@ -23,6 +23,7 @@ struct world_edit_block_array_index_block_array_index
 struct world_edit_block_array_index_block_array
 poof(
   @collection
+  
   
 )
 {

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/to_string.cpp:62:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2117:0
+// external/bonsai_stdlib/src/poof_functions.h:2131:0
 link_internal b32
 IsValid(texture_storage_format Value)
 {

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/texture.h:48:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2279:0
+// external/bonsai_stdlib/src/poof_functions.h:2293:0
 
 
 
@@ -24,6 +24,7 @@ struct texture_block_array
 poof(
   @collection
   
+   @do_editor_ui 
 )
 {
   texture_block **BlockPtrs; poof(@array_length(Element->BlockCount))

@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/xml.cpp:10:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:812:0
+// external/bonsai_stdlib/src/poof_functions.h:817:0
 link_internal b32 AreEqual(xml_tag_linked_list_node *Node1, xml_tag_linked_list_node *Node2 );
 link_internal b32 AreEqual(xml_tag *Element1, xml_tag *Element2 );
 
@@ -119,6 +119,8 @@ struct xml_tag_hashtable_iterator
   xml_tag_hashtable *Table;
   xml_tag_linked_list_node *Node;
 };
+
+
 
 link_internal xml_tag_hashtable_iterator
 operator++( xml_tag_hashtable_iterator &Iterator )

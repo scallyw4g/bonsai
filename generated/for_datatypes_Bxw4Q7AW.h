@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:520:0
+// src/engine/editor.cpp:515:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:520:0
+// src/engine/editor.cpp:515:0
 
 
 
@@ -131,7 +131,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -1312,7 +1313,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
   }
 
 }
-;
+
+
 
 
 
@@ -1514,7 +1516,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
   }
 
 }
-;
+
+
 
 
 
@@ -1643,7 +1646,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
   }
 
 }
-;
+
+
 
 
 
@@ -1770,7 +1774,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
   }
 
 }
-;
+
+
 
 
 
@@ -1858,7 +1863,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -2206,7 +2212,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
   }
 
 }
-;
+
+
 
 
 
@@ -2330,7 +2337,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -2457,7 +2465,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -2628,7 +2637,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -2680,7 +2690,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
   }
 
 }
-;
+
+
 
 
 
@@ -2772,7 +2783,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -3403,7 +3415,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
   }
 
 }
-;
+
+
 
 
 
@@ -3736,7 +3749,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
   }
 
 }
-;
+
+
 
 
 
@@ -3897,7 +3911,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
   }
 
 }
-;
+
+
 
 
 
@@ -4826,7 +4841,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -4995,7 +5011,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
   }
 
 }
-;
 
 
 
@@ -5006,6 +5021,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x179A010D);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -5366,7 +5413,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
   }
 
 }
-;
+
+
 
 
 
@@ -5625,7 +5673,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
   }
 
 }
-;
+
+
 
 
 
@@ -5828,7 +5877,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 
   }
 
 }
-;
+
+
 
 
 
@@ -6623,7 +6673,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
   }
 
 }
-;
 
 
 
@@ -6631,6 +6680,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x25FC21AE);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -7577,7 +7658,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -7893,7 +7975,170 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
   }
 
 }
-;
+
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x289FF1D1);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle prefab", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Name");
+
+                                                                                                auto Member = Cast(cs*, &Element->Name);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Edits");
+
+                                                                                                auto Member = Cast(world_edit_paged_list*, &Element->Edits);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("SpawnCallbackName");
+
+                                                                                                auto Member = Cast(cs*, &Element->SpawnCallbackName);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -8022,7 +8267,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
   }
 
 }
-;
+
+
 
 
 
@@ -8400,7 +8646,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
   }
 
 }
-;
+
+
 
 
 
@@ -8636,7 +8883,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
   }
 
 }
-;
+
+
 
 
 
@@ -8748,7 +8996,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -8983,7 +9232,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
   }
 
 }
-;
+
+
 
 
 
@@ -10306,7 +10556,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
   }
 
 }
-;
+
+
 
 
 
@@ -10395,8 +10646,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, perlin_noise_params *Element,
   }
 
 }
-;
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3935224D);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -10641,7 +10923,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
   }
 
 }
-;
+
+
 
 
 
@@ -10991,7 +11274,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
   }
 
 }
-;
+
+
 
 
 
@@ -11230,7 +11514,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
   }
 
 }
-;
+
+
 
 
 
@@ -11409,7 +11694,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
   }
 
 }
-;
+
+
 
 
 
@@ -11574,7 +11860,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -11708,7 +11995,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -12028,7 +12316,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
   }
 
 }
-;
+
+
 
 
 
@@ -12317,7 +12606,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
   }
 
 }
-;
+
+
 
 
 
@@ -12492,7 +12782,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
   }
 
 }
-;
+
+
 
 
 
@@ -13270,7 +13561,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -13847,7 +14139,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
   }
 
 }
-;
+
+
 
 
 
@@ -14309,10 +14602,41 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
   }
 
 }
-;
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11C9E45C);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -14549,7 +14873,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -14758,7 +15083,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
   }
 
 }
-;
+
+
 
 
 
@@ -14964,7 +15290,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
   }
 
 }
-;
+
+
 
 
 
@@ -15204,7 +15531,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
   }
 
 }
-;
+
+
 
 
 
@@ -15406,7 +15734,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
   }
 
 }
-;
+
+
 
 
 
@@ -17731,7 +18060,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
   }
 
 }
-;
+
+
 
 
 
@@ -18189,7 +18519,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
   }
 
 }
-;
+
+
 
 
 
@@ -18319,7 +18650,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
   }
 
 }
-;
+
+
 
 
 
@@ -18456,7 +18788,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
   }
 
 }
-;
+
+
 
 
 
@@ -18588,7 +18921,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -18898,7 +19232,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
   }
 
 }
-;
+
+
 
 
 
@@ -19260,7 +19595,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
   }
 
 }
-;
+
+
 
 
 
@@ -19640,7 +19976,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -20044,7 +20381,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
   }
 
 }
-;
+
+
 
 
 
@@ -20244,7 +20582,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
   }
 
 }
-;
+
+
 
 
 
@@ -20491,7 +20830,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
   }
 
 }
-;
+
+
 
 
 
@@ -20739,7 +21079,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
   }
 
 }
-;
+
+
 
 
 
@@ -21832,7 +22173,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
   }
 
 }
-;
+
+
 
 
 
@@ -22006,7 +22348,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
   }
 
 }
-;
+
+
 
 
 
@@ -22126,7 +22469,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -22230,7 +22574,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
   }
 
 }
-;
+
+
 
 
 
@@ -23256,7 +23601,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
   }
 
 }
-;
+
+
 
 
 
@@ -23406,7 +23752,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
   }
 
 }
-;
 
 
 
@@ -23427,6 +23772,38 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
 
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2C0C745);
+
+  if (Container)
+  {
+    if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, Name.Start, Container, ThisHash), EDITOR_UI_FUNCTION_INSTANCE_NAMES))
+    {
+      PushNewRow(Ui);
+      IterateOver(Container, Element, ElementIndex)
+      {
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
+      }
+    }
+    PushNewRow(Ui);
+  }
+  else
+  {
+    PushColumn(Ui, FSz("%S", Name), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushColumn(Ui, CSz("(null)"), EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+    PushNewRow(Ui);
+  }
+}
 
 
 
@@ -23737,7 +24114,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
   }
 
 }
-;
+
+
 
 
 
@@ -24094,7 +24472,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
   }
 
 }
-;
+
+
 
 
 
@@ -24209,7 +24588,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
   }
 
 }
-;
+
+
 
 
 
@@ -24349,7 +24729,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
   }
 
 }
-;
+
+
 
 
 
@@ -24585,7 +24966,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
   }
 
 }
-;
+
+
 
 
 
@@ -25161,7 +25543,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
   }
 
 }
-;
+
+
 
 
 
@@ -25475,7 +25858,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
   }
 
 }
-;
+
+
 
 
 
@@ -25673,6 +26057,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
   }
 
 }
-;
+
+
 
 

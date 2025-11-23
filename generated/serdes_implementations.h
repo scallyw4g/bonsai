@@ -125,6 +125,9 @@
 
 
 
+/* serdes_collection(type) */
+
+
 
 
 
@@ -1257,6 +1260,9 @@ Deserialize(u8_cursor *Bytes, world_edit_brush *Element, memory_arena *Memory)
 
 
 
+
+
+/* serdes_collection(type) */
 
 
 

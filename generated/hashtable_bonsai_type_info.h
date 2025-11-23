@@ -11,6 +11,11 @@ struct bonsai_type_info_linked_list_node
 };
 
 struct bonsai_type_info_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   bonsai_type_info_linked_list_node **Elements;
@@ -132,6 +137,8 @@ struct bonsai_type_info_hashtable_iterator
   bonsai_type_info_hashtable *Table;
   bonsai_type_info_linked_list_node *Node;
 };
+
+
 
 link_internal bonsai_type_info_hashtable_iterator
 operator++( bonsai_type_info_hashtable_iterator &Iterator )

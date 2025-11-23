@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/ui/ui.cpp:19:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:812:0
+// external/bonsai_stdlib/src/poof_functions.h:817:0
 link_internal b32 AreEqual(ui_toggle_linked_list_node *Node1, ui_toggle_linked_list_node *Node2 );
 link_internal b32 AreEqual(ui_toggle *Element1, ui_toggle *Element2 );
 
@@ -119,6 +119,13 @@ struct ui_toggle_hashtable_iterator
   ui_toggle_hashtable *Table;
   ui_toggle_linked_list_node *Node;
 };
+
+link_internal cs
+CS( ui_toggle_hashtable_iterator I )
+{
+  return CSz("Element");
+}
+
 
 link_internal ui_toggle_hashtable_iterator
 operator++( ui_toggle_hashtable_iterator &Iterator )

@@ -124,6 +124,23 @@
 
 
 
+struct prefab_hashtable;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, prefab_hashtable *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, prefab_hashtable *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, prefab_hashtable *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, prefab_hashtable *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, prefab_hashtable *Element, memory_arena *Memory);
+
 
 
 
@@ -468,6 +485,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
+
+struct world_edit_brush_hashtable;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush_hashtable *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, world_edit_brush_hashtable *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_brush_hashtable *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, world_edit_brush_hashtable *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush_hashtable *Element, memory_arena *Memory);
 
 
 

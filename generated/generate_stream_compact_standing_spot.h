@@ -2,7 +2,7 @@
 // src/engine/world_chunk.h:520:0
 
 // def (generate_stream_compact)
-// external/bonsai_stdlib/src/poof_functions.h:2075:0
+// external/bonsai_stdlib/src/poof_functions.h:2089:0
 link_internal standing_spot_buffer
 Compact(standing_spot_stream *Stream, memory_arena *PermMemory)
 {

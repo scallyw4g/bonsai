@@ -11,6 +11,11 @@ struct parser_linked_list_node
 };
 
 struct parser_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   parser_linked_list_node **Elements;
@@ -132,6 +137,8 @@ struct parser_hashtable_iterator
   parser_hashtable *Table;
   parser_linked_list_node *Node;
 };
+
+
 
 link_internal parser_hashtable_iterator
 operator++( parser_hashtable_iterator &Iterator )

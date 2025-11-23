@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/framebuffer.cpp:5:0
 
 // def (circular_buffer_c)
-// external/bonsai_stdlib/src/poof_functions.h:1771:0
+// external/bonsai_stdlib/src/poof_functions.h:1785:0
 /* generate_cursor_functions(element_t) */
 
 

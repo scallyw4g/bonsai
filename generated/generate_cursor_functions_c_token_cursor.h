@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/c_token.h:390:0
 
 // def (generate_cursor_functions)
-// external/bonsai_stdlib/src/poof_functions.h:1577:0
+// external/bonsai_stdlib/src/poof_functions.h:1591:0
 
 
 link_internal c_token_cursor

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1482:0
+// src/engine/editor.h:1486:0
 
 // def (hashtable)
 // external/bonsai_stdlib/src/poof_functions.h:790:0
@@ -11,6 +11,11 @@ struct prefab_linked_list_node
 };
 
 struct prefab_hashtable
+poof(
+  @collection
+   @serdes 
+   @do_editor_ui 
+)
 {
   umm Size;
   prefab_linked_list_node **Elements;
@@ -132,6 +137,13 @@ struct prefab_hashtable_iterator
   prefab_hashtable *Table;
   prefab_linked_list_node *Node;
 };
+
+link_internal cs
+CS( prefab_hashtable_iterator I )
+{
+  return CSz("Element");
+}
+
 
 link_internal prefab_hashtable_iterator
 operator++( prefab_hashtable_iterator &Iterator )

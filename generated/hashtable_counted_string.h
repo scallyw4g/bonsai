@@ -11,6 +11,11 @@ struct counted_string_linked_list_node
 };
 
 struct counted_string_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   counted_string_linked_list_node **Elements;
@@ -132,6 +137,8 @@ struct counted_string_hashtable_iterator
   counted_string_hashtable *Table;
   counted_string_linked_list_node *Node;
 };
+
+
 
 link_internal counted_string_hashtable_iterator
 operator++( counted_string_hashtable_iterator &Iterator )

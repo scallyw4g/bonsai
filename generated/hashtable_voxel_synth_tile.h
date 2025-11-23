@@ -11,6 +11,11 @@ struct voxel_synth_tile_linked_list_node
 };
 
 struct voxel_synth_tile_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   voxel_synth_tile_linked_list_node **Elements;
@@ -132,6 +137,8 @@ struct voxel_synth_tile_hashtable_iterator
   voxel_synth_tile_hashtable *Table;
   voxel_synth_tile_linked_list_node *Node;
 };
+
+
 
 link_internal voxel_synth_tile_hashtable_iterator
 operator++( voxel_synth_tile_hashtable_iterator &Iterator )

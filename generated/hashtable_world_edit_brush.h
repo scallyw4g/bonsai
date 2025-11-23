@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1379:0
+// src/engine/editor.h:1382:0
 
 // def (hashtable)
 // external/bonsai_stdlib/src/poof_functions.h:790:0
@@ -11,6 +11,11 @@ struct world_edit_brush_linked_list_node
 };
 
 struct world_edit_brush_hashtable
+poof(
+  @collection
+   @serdes 
+  
+)
 {
   umm Size;
   world_edit_brush_linked_list_node **Elements;
@@ -132,6 +137,8 @@ struct world_edit_brush_hashtable_iterator
   world_edit_brush_hashtable *Table;
   world_edit_brush_linked_list_node *Node;
 };
+
+
 
 link_internal world_edit_brush_hashtable_iterator
 operator++( world_edit_brush_hashtable_iterator &Iterator )

@@ -11,6 +11,11 @@ struct window_layout_linked_list_node
 };
 
 struct window_layout_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   window_layout_linked_list_node **Elements;

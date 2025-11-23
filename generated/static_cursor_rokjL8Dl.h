@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/framebuffer.h:15:0
 
 // def (static_cursor)
-// external/bonsai_stdlib/src/poof_functions.h:1248:0
+// external/bonsai_stdlib/src/poof_functions.h:1262:0
 
 
 struct rtt_framebuffer_static_cursor_3

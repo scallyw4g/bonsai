@@ -1,10 +1,10 @@
 // callsite
-// src/engine/editor.cpp:247:0
+// src/engine/editor.cpp:242:0
 
 // def (do_editor_ui_for_container)
 // src/engine/editor.h:562:0
 link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_ptr_block_array *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_ptr_block_array *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x11F70127);
 
@@ -15,8 +15,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_ptr_block_array *Conta
       PushNewRow(Ui);
       IterateOver(Container, Element, ElementIndex)
       {
-        DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-        PushNewRow(Ui);
+        if (Element)
+        {
+          DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+          PushNewRow(Ui);
+        }
       }
     }
     PushNewRow(Ui);

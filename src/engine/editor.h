@@ -562,7 +562,7 @@ poof(
   func do_editor_ui_for_container(type)
   {
     link_internal void
-    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+    DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Container, cs Name, u32 ParentHash, UI_FUNCTION_PROTO_NAMES)
     {
       u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
 
@@ -573,8 +573,11 @@ poof(
           PushNewRow(Ui);
           IterateOver(Container, Element, ElementIndex)
           {
-            DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
-            PushNewRow(Ui);
+            if (Element)
+            {
+              DoEditorUi(Ui, Window, Element, CS(ElementIndex), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+              PushNewRow(Ui);
+            }
           }
         }
         PushNewRow(Ui);
@@ -622,7 +625,7 @@ poof(
     struct_t.has_tag(do_editor_ui)?  { do_editor_ui_for_compound_type_decl(struct_t); }
   }
 )
-#include <generated/(builtin.for_datatypes)_RIx8WIj8.h>
+#include <generated/for_datatypes_do_editor_ui.h>
 
 
 link_internal b32
@@ -1458,7 +1461,8 @@ enum prefab_spawn_callback
 #include <generated/(builtin.for_datatypes)_KhyFHEuP.h>
 };
 
-struct prefab poof(@serdes)
+struct prefab
+poof(@serdes @do_editor_ui)
 {
   cs Name;
   world_edit_paged_list Edits;
@@ -1481,7 +1485,6 @@ Hash(prefab *E0)
 
 poof(hashtable(prefab))
 #include <generated/hashtable_pIp3Bn6L.h>
-
 
 link_internal void
 poof(@prefab_spawn_callback)

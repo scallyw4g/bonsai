@@ -11,6 +11,11 @@ struct u32_linked_list_node
 };
 
 struct u32_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   u32_linked_list_node **Elements;

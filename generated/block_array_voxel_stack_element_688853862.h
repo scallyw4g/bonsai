@@ -2,7 +2,7 @@
 // src/engine/world_update.h:18:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2694:0
+// external/bonsai_stdlib/src/poof_functions.h:2709:0
 
 
 
@@ -23,6 +23,7 @@ struct voxel_stack_element_block_array_index
 struct voxel_stack_element_block_array
 poof(
   @collection
+  
   
 )
 {

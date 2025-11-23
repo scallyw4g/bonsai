@@ -11,6 +11,11 @@ struct xml_tag_linked_list_node
 };
 
 struct xml_tag_hashtable
+poof(
+  @collection
+  
+  
+)
 {
   umm Size;
   xml_tag_linked_list_node **Elements;

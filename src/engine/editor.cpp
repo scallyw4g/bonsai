@@ -101,6 +101,7 @@ InitEditor(level_editor *Editor)
   Editor->AssetThumbnails = AssetThumbnailBlockArray(Editor->Memory);
 
   Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
+  Editor->Prefabs = Allocate_prefab_hashtable(128, Editor->Memory);
 
   file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("brushes"), GetTranArena());
 
@@ -179,14 +180,8 @@ poof(do_editor_ui_for_enum(shape_type))
 poof(do_editor_ui_for_container(v3_cursor))
 #include <generated/do_editor_ui_for_container_v3_cursor.h>
 
-link_internal cs
-CS(ui_toggle_hashtable_iterator &Iter)
-{
-  return CSz("(TODO @put_name_here)");
-}
-
-poof(do_editor_ui_for_container(ui_toggle_hashtable))
-#include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h>
+/* poof(do_editor_ui_for_container(ui_toggle_hashtable)) */
+/* #include <generated/do_editor_ui_for_container_ui_toggle_hashtable.h> */
 
 
 
@@ -522,7 +517,13 @@ poof(
   {
     struct_t.has_tag(do_editor_ui)?
     {
-      do_editor_ui_for_compound_type(struct_t);
+      struct_t.has_tag(collection)?
+      {
+        do_editor_ui_for_container(struct_t)
+      }
+      {
+        do_editor_ui_for_compound_type(struct_t)
+      }
     }
   }
 )
@@ -2047,14 +2048,22 @@ DoWorldEditor(engine_resources *Engine)
             case LayerToolbarActions_ExportAsPrefab:
             {
               prefab P = {};
+
+              // NOTE(Jesse): If the Upsert overwrites an existing prefab the previous
+              // Edits get leaked.  Not that this particularly matters .. but .. it would
+              // be kinda nice if that didn't happen.
+              Leak("Leaking prefab memory");
+
               P.Name = CS(Layer->NameBuf);
-              P.Edits.Memory = GetTranArena();
+              P.Edits.Memory = Editor->Memory;
 
               IterateOver(&Layer->EditIndices, EditIndex, EII)
               {
                 world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
                 Push(&P.Edits, Edit);
               }
+
+              Upsert(P, &Editor->Prefabs, Editor->Memory);
 
               auto Blocks = BeginSerialization();
               Serialize(&Blocks, &P);

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1418:0
+// src/engine/editor.h:1421:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2694:0
+// external/bonsai_stdlib/src/poof_functions.h:2709:0
 
 
 
@@ -24,6 +24,7 @@ struct world_edit_block_array
 poof(
   @collection
    @serdes 
+   @do_editor_ui 
 )
 {
   world_edit_block **BlockPtrs; poof(@array_length(Element->BlockCount))

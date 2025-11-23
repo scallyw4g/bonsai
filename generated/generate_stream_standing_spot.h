@@ -2,7 +2,7 @@
 // src/engine/world_chunk.h:517:0
 
 // def (generate_stream)
-// external/bonsai_stdlib/src/poof_functions.h:2105:0
+// external/bonsai_stdlib/src/poof_functions.h:2119:0
 struct standing_spot_stream_chunk
 {
   standing_spot Element;

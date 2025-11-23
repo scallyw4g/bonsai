@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/shader.h:198:0
 
 // def (buffer_h)
-// external/bonsai_stdlib/src/poof_functions.h:1342:0
+// external/bonsai_stdlib/src/poof_functions.h:1356:0
 struct shader_uniform_buffer
 {
   u32 Count;

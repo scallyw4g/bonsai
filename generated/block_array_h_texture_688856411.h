@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/texture.h:51:0
 
 // def (block_array_h)
-// external/bonsai_stdlib/src/poof_functions.h:2279:0
+// external/bonsai_stdlib/src/poof_functions.h:2293:0
 
 
 
@@ -23,6 +23,7 @@ struct texture_ptr_block_array_index
 struct texture_ptr_block_array
 poof(
   @collection
+  
   
 )
 {

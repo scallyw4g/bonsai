@@ -2,7 +2,7 @@
 // src/engine/bonsai_type_info.h:46:0
 
 // def (hashtable_get)
-// external/bonsai_stdlib/src/poof_functions.h:991:0
+// external/bonsai_stdlib/src/poof_functions.h:1005:0
 bonsai_type_info_linked_list_node*
 GetBucketByName( bonsai_type_info_hashtable *Table, cs Query )
 {

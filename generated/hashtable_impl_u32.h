@@ -2,7 +2,7 @@
 // external/bonsai_stdlib/src/primitive_containers.cpp:5:0
 
 // def (hashtable_impl)
-// external/bonsai_stdlib/src/poof_functions.h:812:0
+// external/bonsai_stdlib/src/poof_functions.h:817:0
 link_internal b32 AreEqual(u32_linked_list_node *Node1, u32_linked_list_node *Node2 );
 link_internal b32 AreEqual(u32 *Element1, u32 *Element2 );
 
@@ -119,6 +119,8 @@ struct u32_hashtable_iterator
   u32_hashtable *Table;
   u32_linked_list_node *Node;
 };
+
+
 
 link_internal u32_hashtable_iterator
 operator++( u32_hashtable_iterator &Iterator )

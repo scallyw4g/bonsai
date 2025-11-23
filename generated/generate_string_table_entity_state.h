@@ -2,7 +2,7 @@
 // src/engine/entity.h:36:0
 
 // def (generate_string_table)
-// external/bonsai_stdlib/src/poof_functions.h:1807:0
+// external/bonsai_stdlib/src/poof_functions.h:1821:0
 link_internal b32
 IsValid(entity_state Value)
 {

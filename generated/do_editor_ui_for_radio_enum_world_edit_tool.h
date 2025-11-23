@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1001:0
+// src/engine/editor.h:1004:0
 
 // def (do_editor_ui_for_radio_enum)
-// src/engine/editor.h:594:0
+// src/engine/editor.h:597:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {

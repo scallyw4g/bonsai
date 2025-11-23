@@ -112,7 +112,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_no
 
 
 
-
+struct texture_block_array;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture_block_array *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
@@ -185,7 +187,9 @@ struct frustum;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
 
-
+struct prefab;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 struct plane;

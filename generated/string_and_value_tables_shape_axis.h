@@ -2,7 +2,7 @@
 // src/engine/editor.h:95:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2117:0
+// external/bonsai_stdlib/src/poof_functions.h:2131:0
 link_internal b32
 IsValid(shape_axis Value)
 {
