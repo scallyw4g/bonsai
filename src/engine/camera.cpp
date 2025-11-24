@@ -315,30 +315,32 @@ ComputeCameraSpaceRayFromCursor(engine_resources *Engine, camera *Camera, v3i Wo
   world *World = Engine->World;
 
   maybe_ray Result = {};
-
-  m4 InverseViewProjection;
-  if (Inverse(&Camera->ViewProjection.E[0][0], &InverseViewProjection.E[0][0]))
+  if (Plat->ScreenDim > V2(0))
   {
-    v3 MouseMinWorldP = Unproject( Plat->MouseP,
-                                   0.1f,
-                                   Plat->ScreenDim,
-                                  &InverseViewProjection);
+    m4 InverseViewProjection;
+    if (Inverse(&Camera->ViewProjection.E[0][0], &InverseViewProjection.E[0][0]))
+    {
+      v3 MouseMinWorldP = Unproject( Plat->MouseP,
+                                     0.1f,
+                                     Plat->ScreenDim,
+                                    &InverseViewProjection);
 
-    v3 MouseMaxWorldP = Unproject( Plat->MouseP,
-                                   0.5f,
-                                   Plat->ScreenDim,
-                                  &InverseViewProjection);
+      v3 MouseMaxWorldP = Unproject( Plat->MouseP,
+                                     0.5f,
+                                     Plat->ScreenDim,
+                                    &InverseViewProjection);
 
-    v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
+      v3 RayDirection = Normalize(MouseMaxWorldP - MouseMinWorldP);
 
-    /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
-    /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim); */
-    /* v3 CameraOffset = GetSimSpaceP(World, ComputeTarget(Camera)); */
-    /* v3 CameraOffset = GetSimSpaceP(World, Camera->CurrentP); */
-    /* v3 CameraOffset = Camera->RenderSpacePosition; */
-    v3 CameraOffset = V3(0);
-    Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
-    Result.Tag = Maybe_Yes;
+      /* DEBUG_HighlightVoxel(Engine, Camera->ViewingTarget, RED); */
+      /* v3 CameraOffset = Camera->ViewingTarget.Offset + V3(Camera->ViewingTarget.WorldP * WorldChunkDim); */
+      /* v3 CameraOffset = GetSimSpaceP(World, ComputeTarget(Camera)); */
+      /* v3 CameraOffset = GetSimSpaceP(World, Camera->CurrentP); */
+      /* v3 CameraOffset = Camera->RenderSpacePosition; */
+      v3 CameraOffset = V3(0);
+      Result.Ray = { .Origin = MouseMinWorldP + CameraOffset, .Dir = RayDirection };
+      Result.Tag = Maybe_Yes;
+    }
   }
 
   return Result;

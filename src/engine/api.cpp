@@ -253,23 +253,21 @@ Bonsai_FrameBegin(engine_resources *Resources)
     {
       Resources->MaybeMouseRay = ComputeCameraSpaceRayFromCursor(Resources, Camera, World->ChunkDim);
 
-      ray *Ray = &Resources->MaybeMouseRay.Ray;
-      v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
-      Ray->Origin = GameCameraSimSpaceP;
+      if (Resources->MaybeMouseRay.Tag)
+      {
+        ray *Ray = &Resources->MaybeMouseRay.Ray;
+        v3 GameCameraSimSpaceP = GetSimSpaceP(World, Graphics->GameCamera.CurrentP);
+        Ray->Origin = GameCameraSimSpaceP;
+      }
     }
 
-    ray *Ray = &Resources->MaybeMouseRay.Ray;
-
-    /* DEBUG_VALUE_r32(Ray->Origin.x); */
-    /* DEBUG_VALUE_r32(Ray->Origin.y); */
-    /* DEBUG_VALUE_r32(Ray->Origin.z); */
-
-    /* DEBUG_VALUE_r32(Ray->Dir.x); */
-    /* DEBUG_VALUE_r32(Ray->Dir.y); */
-    /* DEBUG_VALUE_r32(Ray->Dir.z); */
-
-    Resources->MousedOverVoxel = MousePickVoxel(Resources, Ray);
-    Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
+    // TODO(Jesse): Should/could this actually be moved up into the above block?
+    if (Resources->MaybeMouseRay.Tag)
+    {
+      ray *Ray = &Resources->MaybeMouseRay.Ray;
+      Resources->MousedOverVoxel = MousePickVoxel(Resources, Ray);
+      Resources->HoverEntity     = GetClosestEntityIntersectingRay(World, EntityTable, &Resources->MaybeMouseRay.Ray);
+    }
   }
 
 #if 0
