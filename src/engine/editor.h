@@ -1,5 +1,19 @@
 /* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
+enum ui_icon_index
+{
+  UiIconIndex_RightChevron,
+  UiIconIndex_LeftArrow,
+  UiIconIndex_Check,
+  UiIconIndex_Cross,
+  UiIconIndex_EyeUnfilled,
+  UiIconIndex_EyeFilled,
+  UiIconIndex_List,
+  UiIconIndex_Hamburger,
+
+  UiIconIndex_Count,
+};
+
 enum ui_editor_tool
 poof(@gen_ui_toolbar)
 {

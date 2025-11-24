@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:991:0
+// src/engine/editor.h:1005:0
 
 // def (toggle_button_group_for_enum)
-// src/engine/editor.h:143:0
+// src/engine/editor.h:157:0
 link_internal ui_toggle_button_group
 ToggleButtonGroup_engine_debug_view_mode( renderer_2d *Ui,
   window_layout *Window,

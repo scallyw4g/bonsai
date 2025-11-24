@@ -962,7 +962,7 @@ DoColorSwatch(renderer_2d *Ui, v2 QuadDim, v3 RGB)
 }
 
 link_internal void
-DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
+DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -1097,6 +1097,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
             /* PushNewRow(Ui); */
             /* PushNewRow(Ui); */
 
+            PushNewRow(Ui);
             PushColumn(Ui, CSz(" ----- LAYERS -----"));
             PushNewRow(Ui);
             PushNewRow(Ui);
@@ -1124,7 +1125,10 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
             if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
             {
+              PushTexturedQuad(Ui, &Ui->IconTextureArray, UiIconIndex_Hamburger, V2(22.f), zDepth_Text);
+
               PushNewRow(Ui);
+
 
 
 #if 0
@@ -1964,7 +1968,7 @@ DoWorldEditor(engine_resources *Engine)
     case UiEditorTool_Prefab:
     {
       {
-        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight);
+         window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
         PushWindowStart(Ui, Window);
 
         IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
@@ -2003,7 +2007,7 @@ DoWorldEditor(engine_resources *Engine)
 
     case UiEditorTool_Brush:
     {
-      window_layout *AllBrushesWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight);
+      window_layout *AllBrushesWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
       PushWindowStart(Ui, AllBrushesWindow);
 
       IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
@@ -2026,8 +2030,8 @@ DoWorldEditor(engine_resources *Engine)
       }
       PushWindowEnd(Ui, AllBrushesWindow);
 
-      window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
-      DoBrushSettingsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
+      window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Details", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+      DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
 
       // NOTE(Jesse): Must come after the settings window draws because the
       // settings window detects and initializes new brushes

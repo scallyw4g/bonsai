@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:410:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:317:0
+// src/engine/editor.h:331:0
 struct world_edit_brush;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
