@@ -1127,6 +1127,7 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
               PushNewRow(Ui);
 
 
+#if 0
               auto ActionsToolbarRef = PushTableStart(Ui);
                 ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical);
                 if (Toolbar.AnyElementClicked)
@@ -1159,8 +1160,10 @@ DoBrushSettingsWindow(engine_resources *Engine, world_edit_brush *Brush, window_
 
                 }
               PushTableEnd(Ui);
+#endif
 
-              PushTableStart(Ui, Position_RightOf, ActionsToolbarRef);
+              /* PushTableStart(Ui, Position_RightOf, ActionsToolbarRef); */
+              PushTableStart(Ui);
                 OPEN_INDENT_FOR_TOGGLEABLE_REGION();
                   DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
                 CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
@@ -1880,12 +1883,6 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp P)
     FinalEdit->Region.Min = P;
     FinalEdit->Region.Max = P + Dim;
     Canonicalize(World, &FinalEdit->Region.Max);
-
-    /* *FinalEdit = *StoredEdit; */
-    /* FinalEdit->Brush = B; */
-    /* FinalEdit = */ 
-
-    /* Push(&Layer->EditIndices, &FinalEditIndex); */
 
     ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
   }

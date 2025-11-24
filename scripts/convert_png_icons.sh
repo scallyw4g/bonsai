@@ -6,6 +6,6 @@ for FILE in $PNG_IMAGES; do
   echo "Converting $FILE"
 
   Filename="$(basename -- $FILE .png)"
-  magick $FILE assets/icons/$Filename.bmp
+  magick $FILE assets/icons/bmp/$Filename.bmp
 done
 
