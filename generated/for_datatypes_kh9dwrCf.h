@@ -647,16 +647,10 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("D")
-,
-        }},
-
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline,
       
-            CSz("Duplicate")
-,
+      CSz("Duplicate"),
 
       UiId(
         Cast(void*, Window),
@@ -668,16 +662,10 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("X")
-,
-        }},
-
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
       
-            CSz("Delete")
-,
+      CSz("Delete"),
 
       UiId(
         Cast(void*, Window),
@@ -1545,16 +1533,10 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("D")
-,
-        }},
-
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline,
       
-            CSz("Duplicate")
-,
+      CSz("Duplicate"),
 
       UiId(
         Cast(void*, Window),
@@ -1587,16 +1569,10 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("X")
-,
-        }},
-
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
       
-            CSz("Delete")
-,
+      CSz("Delete"),
 
       UiId(
         Cast(void*, Window),

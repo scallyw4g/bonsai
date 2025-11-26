@@ -41,9 +41,9 @@ poof(@gen_ui_toolbar)
   LayerToolbarActions_NoAction   poof(@ui_skip),
 
   LayerToolbarActions_Rename          poof(@ui_display_name(CSz("R"))),
-  LayerToolbarActions_Duplicate       poof(@ui_display_name(CSz("D"))),
+  LayerToolbarActions_Duplicate       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline)),
   LayerToolbarActions_ExportAsPrefab  poof(@ui_display_name(CSz("P"))),
-  LayerToolbarActions_Delete          poof(@ui_display_name(CSz("X"))),
+  LayerToolbarActions_Delete          poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
   //
   // .. ?
 };
@@ -72,8 +72,8 @@ poof(@gen_ui_toolbar)
   UiLayerEditAction_NoAction  poof(@ui_skip),
 
   UiLayerEditAction_SetBrush     poof(@ui_display_name(CSz("S"))),
-  UiLayerEditAction_Duplicate    poof(@ui_display_name(CSz("D"))),
-  UiLayerEditAction_Delete       poof(@ui_display_name(CSz("X"))),
+  UiLayerEditAction_Duplicate    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline)),
+  UiLayerEditAction_Delete       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
 };
 
 enum ui_brush_layer_actions
