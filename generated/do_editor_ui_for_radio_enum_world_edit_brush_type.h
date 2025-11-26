@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1064:0
+// src/engine/editor.h:1067:0
 
 // def (do_editor_ui_for_radio_enum)
-// src/engine/editor.h:654:0
+// src/engine/editor.h:657:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_brush_type Selection)
 {
@@ -21,9 +21,9 @@ RadioButtonGroup_world_edit_brush_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { UiDisplayType_Text, {{ CSz("Disabled"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Disabled")), WorldEditBrushType_Disabled },
-    { UiDisplayType_Text, {{ CSz("Layered"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Layered")), WorldEditBrushType_Layered },
-    { UiDisplayType_Text, {{ CSz("Simple"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Simple")), WorldEditBrushType_Simple },
+        { UiDisplayType_Text, {{ CSz("Disabled"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Disabled")), WorldEditBrushType_Disabled },
+    { UiDisplayType_Text, {{ CSz("Layered"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Layered")), WorldEditBrushType_Layered },
+    { UiDisplayType_Text, {{ CSz("Simple"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_brush_type WorldEditBrushType_Simple")), WorldEditBrushType_Simple },
 
   };
 

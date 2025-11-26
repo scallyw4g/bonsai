@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:431:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:367:0
+// src/engine/editor.h:370:0
 struct voxel_lighting;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_lighting *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

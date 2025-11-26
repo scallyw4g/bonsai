@@ -2,7 +2,7 @@
 // examples/ui_test/game.cpp:44:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:558:0
+// src/engine/editor.h:561:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, radio_enum Selection)
 {
@@ -21,9 +21,9 @@ RadioButtonGroup_radio_enum( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { UiDisplayType_Text, {{ CSz("Foo"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Foo")), RadioEnum_Foo },
-    { UiDisplayType_Text, {{ CSz("Bar"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Bar")), RadioEnum_Bar },
-    { UiDisplayType_Text, {{ CSz("Baz"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Baz")), RadioEnum_Baz },
+        { UiDisplayType_Text, {{ CSz("Foo"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Foo")), RadioEnum_Foo },
+    { UiDisplayType_Text, {{ CSz("Bar"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Bar")), RadioEnum_Bar },
+    { UiDisplayType_Text, {{ CSz("Baz"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "radio_enum RadioEnum_Baz")), RadioEnum_Baz },
 
   };
 

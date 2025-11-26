@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1061:0
+// src/engine/editor.h:1064:0
 
 // def (do_editor_ui_for_radio_enum)
-// src/engine/editor.h:654:0
+// src/engine/editor.h:657:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, world_edit_tool Selection)
 {
@@ -21,10 +21,10 @@ RadioButtonGroup_world_edit_tool( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { UiDisplayType_Text, {{ CSz("Disabled"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
-    { UiDisplayType_Text, {{ CSz("Select"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Select")), WorldEdit_Tool_Select },
-    { UiDisplayType_Text, {{ CSz("Eyedropper"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
-    { UiDisplayType_Text, {{ CSz("BlitEntity"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
+        { UiDisplayType_Text, {{ CSz("Disabled"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Disabled")), WorldEdit_Tool_Disabled },
+    { UiDisplayType_Text, {{ CSz("Select"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Select")), WorldEdit_Tool_Select },
+    { UiDisplayType_Text, {{ CSz("Eyedropper"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_Eyedropper")), WorldEdit_Tool_Eyedropper },
+    { UiDisplayType_Text, {{ CSz("BlitEntity"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "world_edit_tool WorldEdit_Tool_BlitEntity")), WorldEdit_Tool_BlitEntity },
 
   };
 

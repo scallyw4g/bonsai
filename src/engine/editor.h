@@ -150,7 +150,7 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          { UiDisplayType_Text, {{ CSz("enum_v.name.strip_all_prefix"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
+          { UiDisplayType_Text, {{ CSz("enum_v.name.strip_all_prefix"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
         }
       };
 
@@ -230,6 +230,8 @@ poof(
               {
                 UiDisplayType_Icon,
                 enum_v.tag_value(ui_display_texture),
+                /// Tooltip
+                CSz("enum_v.name.strip_all_prefix"),
               }
               {
                 UiDisplayType_Text,
@@ -241,14 +243,15 @@ poof(
                   }{
                     CSz("enum_v.name.strip_all_prefix")
                   },
-                  /// Tooltip
-                  enum_v.has_tag(ui_display_name)?
-                  {
-                    CSz("enum_v.name.strip_all_prefix")
-                  }{
-                    {}
-                  },
                 }},
+
+                /// Tooltip
+                enum_v.has_tag(ui_display_name)?
+                {
+                  CSz("enum_v.name.strip_all_prefix")
+                }{
+                  {}
+                },
               }
               UiId(
                 Cast(void*, Window),
