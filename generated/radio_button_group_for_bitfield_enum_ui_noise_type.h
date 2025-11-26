@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:841:0
+// src/engine/editor.h:877:0
 
 // def (radio_button_group_for_enum)
-// src/engine/editor.h:172:0
+// src/engine/editor.h:186:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, ui_noise_type Selection)
 {
@@ -21,9 +21,9 @@ RadioButtonGroup_ui_noise_type( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Perlin"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
-    { CSz("Voronoi"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
-    { CSz("White"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
+        { UiDisplayType_Text, {{ CSz("Perlin"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Perlin")), NoiseType_Perlin },
+    { UiDisplayType_Text, {{ CSz("Voronoi"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
+    { UiDisplayType_Text, {{ CSz("White"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_noise_type NoiseType_White")), NoiseType_White },
 
   };
 

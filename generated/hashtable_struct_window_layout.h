@@ -1,5 +1,5 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.h:150:0
+// external/bonsai_stdlib/src/ui/ui.h:151:0
 
 // def (hashtable_struct)
 // external/bonsai_stdlib/src/poof_functions.h:793:0
@@ -14,7 +14,7 @@ struct window_layout_hashtable
 poof(
   @collection
   
-  
+   @do_editor_ui 
 )
 {
   umm Size;

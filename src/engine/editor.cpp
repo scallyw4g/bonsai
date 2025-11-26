@@ -510,6 +510,8 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 
 
 
+link_internal void
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash);
 
 poof(
   for_datatypes(struct)
@@ -958,7 +960,6 @@ DoColorSwatch(renderer_2d *Ui, v2 QuadDim, v3 RGB)
 {
   ui_style Style = FlatUiStyle(RGB);
   PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
-  PushNewRow(Ui);
 }
 
 link_internal void
@@ -1120,62 +1121,97 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
           {
             brush_layer *BrushLayer = BrushLayers + LayerIndex;
 
-            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", u32(LayerIndex), ThisHash);
+            ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", ThisHash, u32(LayerIndex));
             cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
 
-            if (ToggleButton(Ui, FSz("v %d %S", LayerIndex, LayerDetails), FSz("> %d %S", LayerIndex, LayerDetails), ToggleId))
             {
-              PushTexturedQuad(Ui, &Ui->IconTextureArray, UiIconIndex_Hamburger, V2(22.f), zDepth_Text);
+              /* ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical); */
+              v3 DefaultTint = V3(1.0f);
 
-              PushNewRow(Ui);
-
-
-
-#if 0
-              auto ActionsToolbarRef = PushTableStart(Ui);
-                ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical);
-                if (Toolbar.AnyElementClicked)
+              {
+                auto ButtonId = UiId(BrushSettingsWindow, "brush_layer hide layer", ThisHash, u32(LayerIndex));
+                s32 IconIndex = BrushLayer->Settings.Disabled ? UiIconIndex_EyeOutline : UiIconIndex_Eye ;
+                if (Button(Ui, &Ui->IconTextureArray, IconIndex, ButtonId))
                 {
-                  EditLayerIndex = LayerIndex;
+                  BrushLayer->Settings.Disabled = !BrushLayer->Settings.Disabled;
+                }
+              }
 
-                  if (BrushLayerAction == UiBrushLayerAction_Delete) { SetToggleButton(Ui, ToggleId, False); }
-
-                  b32 ThisState = GetToggleState(Ui, ToggleId);
-
-                  if (BrushLayerAction == UiBrushLayerAction_MoveUp)
+              {
+                b32 Enable = LayerIndex != 0;
+                if (Enable)
+                {
+                  auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move up", ThisHash, u32(LayerIndex));
+                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_UpArrow, ButtonId, DefaultTint))
                   {
+                    b32 ThisState = GetToggleState(Ui, ToggleId);
                     ui_id NextId = ToggleId;
                     NextId.ElementBits -= 1;
                     b32 NextState = GetToggleState(Ui, NextId);
 
                     SetToggleButton(Ui, ToggleId, NextState);
                     SetToggleButton(Ui, NextId, ThisState);
-                  }
 
-                  if (BrushLayerAction == UiBrushLayerAction_MoveDown)
+                    BrushLayerAction = UiBrushLayerAction_MoveUp;
+                    EditLayerIndex = LayerIndex;
+                  }
+                }
+                else
+                {
+                  PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
+                }
+              }
+
+              {
+                auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move down", ThisHash, u32(LayerIndex));
+                b32 Enable = LayerIndex != LayeredBrush->LayerCount-1;
+                if (Enable)
+                {
+                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_DownArrow, ButtonId))
                   {
+                    b32 ThisState = GetToggleState(Ui, ToggleId);
                     ui_id NextId = ToggleId;
                     NextId.ElementBits += 1;
                     b32 NextState = GetToggleState(Ui, NextId);
 
                     SetToggleButton(Ui, ToggleId, NextState);
                     SetToggleButton(Ui, NextId, ThisState);
+
+                    BrushLayerAction = UiBrushLayerAction_MoveDown;
+                    EditLayerIndex = LayerIndex;
                   }
-
                 }
-              PushTableEnd(Ui);
-#endif
+                else
+                {
+                  PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
+                }
+              }
 
-              /* PushTableStart(Ui, Position_RightOf, ActionsToolbarRef); */
-              PushTableStart(Ui);
-                OPEN_INDENT_FOR_TOGGLEABLE_REGION();
-                  DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
-                CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
-              PushTableEnd(Ui);
+              {
+                auto ButtonId = UiId(BrushSettingsWindow, "brush_layer duplicate", ThisHash, u32(LayerIndex));
+                if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_CloneOutline, ButtonId))
+                {
+                  BrushLayerAction = UiBrushLayerAction_Duplicate;
+                  EditLayerIndex = LayerIndex;
+                }
+              }
+
             }
-            else
+
+            /* if (ToggleButton(Ui, FSz("%d %S", LayerIndex, LayerDetails), FSz("%d %S", LayerIndex, LayerDetails), ToggleId)) */
+            if (Button(Ui, FSz("%S", LayerDetails), ToggleId))
             {
-              DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
+              Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
+            }
+
+            DoColorSwatch(Ui, V2(20), HSVtoRGB(BrushLayer->Settings.HSVColor));
+            PushForceAdvance(Ui, V2(10,0));
+
+            auto ButtonId = UiId(BrushSettingsWindow, "brush_layer delete", ThisHash, u32(LayerIndex));
+            if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, ButtonId))
+            {
+              BrushLayerAction = UiBrushLayerAction_Delete;
+              EditLayerIndex = LayerIndex;
             }
 
             if (IsNewBrush && LayerIndex == 0)
@@ -1185,6 +1221,25 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
             PushNewRow(Ui);
           }
+          PushTableEnd(Ui);
+
+          PushNewRow(Ui);
+          PushColumn(Ui, CSz(" ----- LAYER DETAILS -----"));
+          PushNewRow(Ui);
+          PushNewRow(Ui);
+
+
+          PushTableStart(Ui);
+            OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              {
+                if (Editor->CurrentBrush_SelectedLayerIndex >= 0 &&
+                    Editor->CurrentBrush_SelectedLayerIndex <= Editor->CurrentBrush->Layered.LayerCount)
+                {
+                  auto BrushLayer = Editor->CurrentBrush->Layered.Layers + Editor->CurrentBrush_SelectedLayerIndex;
+                  DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
+                }
+              }
+            CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
           PushTableEnd(Ui);
 
           if (BrushLayerAction == UiBrushLayerAction_MoveUp)
@@ -1500,6 +1555,7 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
   {
     v2 QuadDim = V2(ColorPickerSectionDim.x, ColorPickerSectionDim.x);
     DoColorSwatch(Ui, QuadDim, RGB);
+    PushNewRow(Ui);
   }
 
   cs HSVColorString = FSz("HSV (%.2V3)", HSVDest);
@@ -2885,6 +2941,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
     brush_layer *Layer = Brush->Layers + LayerIndex;
 
+    if (Layer->Settings.Disabled) continue;
 
     rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
        v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);

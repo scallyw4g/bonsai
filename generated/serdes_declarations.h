@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:451:0
+// src/engine/serdes.cpp:453:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:451:0
+// src/engine/serdes.cpp:453:0
 
 
 
@@ -95,6 +95,24 @@
 
 
 
+
+
+struct brush_settings_0;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory);
 
 
 
@@ -299,6 +317,7 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory, umm Cou
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory);
+
 
 
 

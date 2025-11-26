@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1010:0
+// src/engine/editor.h:1046:0
 
 // def (do_editor_ui_for_radio_enum)
-// src/engine/editor.h:618:0
+// src/engine/editor.h:654:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, asset_window_view_mode Selection)
 {
@@ -21,8 +21,8 @@ RadioButtonGroup_asset_window_view_mode( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("AssetFiles"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
-    { CSz("AssetTable"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
+        { UiDisplayType_Text, {{ CSz("AssetFiles"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetFiles")), AssetWindowViewMode_AssetFiles },
+    { UiDisplayType_Text, {{ CSz("AssetTable"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "asset_window_view_mode AssetWindowViewMode_AssetTable")), AssetWindowViewMode_AssetTable },
 
   };
 

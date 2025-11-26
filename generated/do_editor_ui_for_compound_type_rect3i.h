@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:803:0
+// src/engine/editor.h:839:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:331:0
+// src/engine/editor.h:367:0
 struct rect3i;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3i *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

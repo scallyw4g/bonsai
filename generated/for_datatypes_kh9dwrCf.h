@@ -93,6 +93,11 @@
 
 
 
+
+
+
+
+
 link_internal b32
 IsValid(ui_brush_layer_actions Value)
 {
@@ -195,11 +200,11 @@ RadioButtonGroup_ui_brush_layer_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_NoAction")), UiBrushLayerAction_NoAction },
-    { CSz("MoveUp"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp")), UiBrushLayerAction_MoveUp },
-    { CSz("MoveDown"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown")), UiBrushLayerAction_MoveDown },
-    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate")), UiBrushLayerAction_Duplicate },
-    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete")), UiBrushLayerAction_Delete },
+        { UiDisplayType_Text, {{ CSz("NoAction"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_NoAction")), UiBrushLayerAction_NoAction },
+    { UiDisplayType_Text, {{ CSz("MoveUp"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp")), UiBrushLayerAction_MoveUp },
+    { UiDisplayType_Text, {{ CSz("MoveDown"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown")), UiBrushLayerAction_MoveDown },
+    { UiDisplayType_Text, {{ CSz("Duplicate"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate")), UiBrushLayerAction_Duplicate },
+    { UiDisplayType_Text, {{ CSz("Delete"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete")), UiBrushLayerAction_Delete },
 
   };
 
@@ -230,8 +235,9 @@ PushToolbar(     renderer_2d *Ui,
   {
         
         {
-      CSz("MoveUp"),
-      {},
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_RightChevron,
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -242,8 +248,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("MoveDown"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("MoveDown")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -254,8 +268,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("Duplicate"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Duplicate")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -266,8 +288,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("Delete"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Delete")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -557,10 +587,10 @@ RadioButtonGroup_ui_layer_edit_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_NoAction")), UiLayerEditAction_NoAction },
-    { CSz("SetBrush"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_SetBrush")), UiLayerEditAction_SetBrush },
-    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Duplicate")), UiLayerEditAction_Duplicate },
-    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete")), UiLayerEditAction_Delete },
+        { UiDisplayType_Text, {{ CSz("NoAction"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_NoAction")), UiLayerEditAction_NoAction },
+    { UiDisplayType_Text, {{ CSz("SetBrush"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_SetBrush")), UiLayerEditAction_SetBrush },
+    { UiDisplayType_Text, {{ CSz("Duplicate"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Duplicate")), UiLayerEditAction_Duplicate },
+    { UiDisplayType_Text, {{ CSz("Delete"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete")), UiLayerEditAction_Delete },
 
   };
 
@@ -591,8 +621,16 @@ PushToolbar(     renderer_2d *Ui,
   {
         
         {
-      CSz("S"),
-      CSz("SetBrush"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("S")
+,
+          
+                    CSz("SetBrush")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -603,8 +641,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("D"),
-      CSz("Duplicate"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("D")
+,
+          
+                    CSz("Duplicate")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -615,8 +661,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("X"),
-      CSz("Delete"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("X")
+,
+          
+                    CSz("Delete")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -743,9 +797,9 @@ RadioButtonGroup_ui_reorder_action( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_NoAction")), UiReorderAction_NoAction },
-    { CSz("ReorderUp"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderUp")), UiReorderAction_ReorderUp },
-    { CSz("ReorderDown"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderDown")), UiReorderAction_ReorderDown },
+        { UiDisplayType_Text, {{ CSz("NoAction"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_NoAction")), UiReorderAction_NoAction },
+    { UiDisplayType_Text, {{ CSz("ReorderUp"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderUp")), UiReorderAction_ReorderUp },
+    { UiDisplayType_Text, {{ CSz("ReorderDown"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_reorder_action UiReorderAction_ReorderDown")), UiReorderAction_ReorderDown },
 
   };
 
@@ -776,8 +830,9 @@ PushToolbar(     renderer_2d *Ui,
   {
         
         {
-      CSz("^"),
-      CSz("ReorderUp"),
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_UpArrow,
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -788,8 +843,9 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("v"),
-      CSz("ReorderDown"),
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_DownArrow,
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -960,10 +1016,10 @@ RadioButtonGroup_ui_brush_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_NoAction")), UiBrushAction_NoAction },
-    { CSz("New"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New")), UiBrushAction_New },
-    { CSz("Save"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save")), UiBrushAction_Save },
-    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate")), UiBrushAction_Duplicate },
+        { UiDisplayType_Text, {{ CSz("NoAction"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_NoAction")), UiBrushAction_NoAction },
+    { UiDisplayType_Text, {{ CSz("New"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_New")), UiBrushAction_New },
+    { UiDisplayType_Text, {{ CSz("Save"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Save")), UiBrushAction_Save },
+    { UiDisplayType_Text, {{ CSz("Duplicate"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_actions UiBrushAction_Duplicate")), UiBrushAction_Duplicate },
 
   };
 
@@ -994,8 +1050,16 @@ PushToolbar(     renderer_2d *Ui,
   {
         
         {
-      CSz("New"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("New")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1006,8 +1070,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("Save"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Save")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1018,8 +1090,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("Duplicate"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Duplicate")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1147,8 +1227,8 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("Brush"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Brush")), UiEditorTool_Brush },
-    { CSz("Prefab"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Prefab")), UiEditorTool_Prefab },
+        { UiDisplayType_Text, {{ CSz("Brush"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Brush")), UiEditorTool_Brush },
+    { UiDisplayType_Text, {{ CSz("Prefab"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Prefab")), UiEditorTool_Prefab },
 
   };
 
@@ -1178,8 +1258,16 @@ PushToolbar(     renderer_2d *Ui,
   ui_toggle_button_handle ButtonHandles[] =
   {
             {
-      CSz("Brush"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Brush")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1190,8 +1278,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("Prefab"),
-      {},
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Prefab")
+,
+          
+                    {}
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1376,11 +1472,11 @@ RadioButtonGroup_ui_layer_toolbar_actions( renderer_2d *Ui,
 {
   ui_toggle_button_handle ButtonHandles[] =
   {
-        { CSz("NoAction"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_NoAction")), LayerToolbarActions_NoAction },
-    { CSz("Rename"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
-    { CSz("Duplicate"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
-    { CSz("ExportAsPrefab"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_ExportAsPrefab")), LayerToolbarActions_ExportAsPrefab },
-    { CSz("Delete"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
+        { UiDisplayType_Text, {{ CSz("NoAction"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_NoAction")), LayerToolbarActions_NoAction },
+    { UiDisplayType_Text, {{ CSz("Rename"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Rename")), LayerToolbarActions_Rename },
+    { UiDisplayType_Text, {{ CSz("Duplicate"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Duplicate")), LayerToolbarActions_Duplicate },
+    { UiDisplayType_Text, {{ CSz("ExportAsPrefab"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_ExportAsPrefab")), LayerToolbarActions_ExportAsPrefab },
+    { UiDisplayType_Text, {{ CSz("Delete"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_toolbar_actions LayerToolbarActions_Delete")), LayerToolbarActions_Delete },
 
   };
 
@@ -1411,8 +1507,16 @@ PushToolbar(     renderer_2d *Ui,
   {
         
         {
-      CSz("R"),
-      CSz("Rename"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("R")
+,
+          
+                    CSz("Rename")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1423,8 +1527,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("D"),
-      CSz("Duplicate"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("D")
+,
+          
+                    CSz("Duplicate")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1435,8 +1547,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("P"),
-      CSz("ExportAsPrefab"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("P")
+,
+          
+                    CSz("ExportAsPrefab")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
@@ -1447,8 +1567,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-      CSz("X"),
-      CSz("Delete"),
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("X")
+,
+          
+                    CSz("Delete")
+,
+        }},
+
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),

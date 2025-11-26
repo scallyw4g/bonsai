@@ -120,6 +120,11 @@ struct window_layout_hashtable_iterator
   window_layout_linked_list_node *Node;
 };
 
+link_internal cs
+CS( window_layout_hashtable_iterator I )
+{
+  return CSz("Element");
+}
 
 
 link_internal window_layout_hashtable_iterator

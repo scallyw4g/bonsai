@@ -316,6 +316,8 @@ AnyValidLayersRemaining(layered_brush *Brush, s32 At)
   RangeIteratorRange(LayerIndex, Brush->LayerCount, At)
   {
     brush_layer *Layer = &Brush->Layers[LayerIndex];
+    if (Layer->Settings.Disabled) continue;
+
     switch (Layer->Settings.Type)
     {
       case BrushLayerType_Brush:

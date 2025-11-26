@@ -1,8 +1,8 @@
 // callsite
-// external/bonsai_stdlib/src/ui/ui.cpp:2533:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2593:0
 
 // def (anonymous)
-// external/bonsai_stdlib/src/ui/ui.cpp:2533:0
+// external/bonsai_stdlib/src/ui/ui.cpp:2593:0
 
 case type_ui_render_command_window_start:
 {
@@ -55,6 +55,12 @@ case type_ui_render_command_untextured_quad_at:
 
 
 
+
+case type_ui_render_command_layout_start:
+{
+  Result.Max = Max(Result.Max, GetAbsoluteDrawBoundsMax(&Command->ui_render_command_layout_start.Layout));
+  Result.Min = Min(Result.Min, GetAbsoluteDrawBoundsMin(&Command->ui_render_command_layout_start.Layout));
+} break;
 
 
 

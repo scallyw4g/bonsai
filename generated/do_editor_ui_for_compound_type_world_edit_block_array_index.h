@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:419:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:331:0
+// src/engine/editor.h:367:0
 struct world_edit_block_array_index;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

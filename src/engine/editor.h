@@ -3,13 +3,27 @@
 enum ui_icon_index
 {
   UiIconIndex_RightChevron,
+  UiIconIndex_RightChevronSmall,
+
+  UiIconIndex_DownArrow,
   UiIconIndex_LeftArrow,
+  UiIconIndex_UpArrow,
+
   UiIconIndex_Check,
+
+  UiIconIndex_Clone,
+  UiIconIndex_CloneOutline,
+
   UiIconIndex_Cross,
-  UiIconIndex_EyeUnfilled,
-  UiIconIndex_EyeFilled,
+  UiIconIndex_CrossCircle,
+
+  UiIconIndex_EyeOutline,
+  UiIconIndex_Eye,
+
   UiIconIndex_List,
   UiIconIndex_Hamburger,
+
+  UiIconIndex_Trash,
 
   UiIconIndex_Count,
 };
@@ -48,8 +62,8 @@ enum ui_reorder_action
 poof(@gen_ui_toolbar)
 {
   UiReorderAction_NoAction    poof(@ui_skip),
-  UiReorderAction_ReorderUp   poof(@ui_display_name(CSz("^"))),
-  UiReorderAction_ReorderDown poof(@ui_display_name(CSz("v"))),
+  UiReorderAction_ReorderUp   poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_UpArrow)),
+  UiReorderAction_ReorderDown poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_DownArrow)),
 };
 
 enum ui_layer_edit_actions
@@ -67,7 +81,7 @@ poof(@gen_ui_toolbar)
 {
   UiBrushLayerAction_NoAction  poof(@ui_skip),
 
-  UiBrushLayerAction_MoveUp,
+  UiBrushLayerAction_MoveUp    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_RightChevron)),
   UiBrushLayerAction_MoveDown,
   UiBrushLayerAction_Duplicate,
   UiBrushLayerAction_Delete,
@@ -136,7 +150,7 @@ poof(
       {
         enum_t.map(enum_v)
         {
-          { CSz("enum_v.name.strip_all_prefix"), {}, UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
+          { UiDisplayType_Text, {{ CSz("enum_v.name.strip_all_prefix"), {} }}, UiId(Window, Cast(void*, Element), Cast(void*, "enum_t.name enum_v.name")), enum_v.name },
         }
       };
 
@@ -212,8 +226,30 @@ poof(
           enum_v.has_tag(ui_skip)?{}
           {
             {
-              enum_v.has_tag(ui_display_name)? {enum_v.tag_value(ui_display_name)}   {CSz("enum_v.name.strip_all_prefix")},
-              enum_v.has_tag(ui_display_name)? {CSz("enum_v.name.strip_all_prefix")} {{}},
+              enum_v.has_tag(ui_display_texture)?
+              {
+                UiDisplayType_Icon,
+                enum_v.tag_value(ui_display_texture),
+              }
+              {
+                UiDisplayType_Text,
+                {{
+                  /// Name
+                  enum_v.has_tag(ui_display_name)?
+                  {
+                    enum_v.tag_value(ui_display_name)
+                  }{
+                    CSz("enum_v.name.strip_all_prefix")
+                  },
+                  /// Tooltip
+                  enum_v.has_tag(ui_display_name)?
+                  {
+                    CSz("enum_v.name.strip_all_prefix")
+                  }{
+                    {}
+                  },
+                }},
+              }
               UiId(
                 Cast(void*, Window),
                 Cast(void*, Element),
@@ -1280,7 +1316,7 @@ poof(do_editor_ui_for_enum(brush_layer_type))
 struct world_edit_brush;
 
 struct brush_settings
-poof(@do_editor_ui @serdes)
+poof(@do_editor_ui @serdes @version(1))
 {
   brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
 
@@ -1318,6 +1354,41 @@ poof(@do_editor_ui @serdes)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
+
+  b32 Disabled;
+};
+
+struct brush_settings_0
+poof(@do_editor_ui @serdes)
+{
+  brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
+
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+
+  world_edit_brush *Brush;
+
+  //
+  // Common across brush types
+  //
+
+  r32 ValueBias = 0.f; poof(@ui_value_range(-1.f,  1.f))
+
+  world_edit_blend_mode_modifier ValueModifier;
+  world_edit_blend_mode          LayerBlendMode;
+  world_edit_color_blend_mode    ColorMode;
+
+  b8 Invert;
+
+  // NOTE(Jesse): This is the relative offset from the base selection, which is
+  // used to inflate or contract the area affected by the brush.
+  //
+  rect3i SelectionModifier;
+
+  v3i BasisOffset; poof(@ui_skip)
+
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 };
 
 link_internal void
@@ -1330,7 +1401,8 @@ poof(gen_constructor(brush_settings))
 #include <generated/gen_constructor_lJ6fXxTn.h>
 
 struct brush_layer
-poof(@do_editor_ui @serdes)
+poof( @do_editor_ui
+      @serdes )
 {
   brush_settings Settings;     poof(@ui_display_name({}))
   brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
@@ -1595,6 +1667,7 @@ poof(@do_editor_ui)
   // indices such that we save space when doing serialize/deserialize;
   world_edit_brush_hashtable  LoadedBrushes;
   world_edit_brush           *CurrentBrush;
+  s32 CurrentBrush_SelectedLayerIndex;
 
   prefab_hashtable Prefabs;
   prefab *SelectedPrefab;
@@ -1808,3 +1881,4 @@ GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
 
 link_internal rtt_framebuffer
 ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32);
+
