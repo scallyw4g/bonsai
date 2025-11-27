@@ -2242,8 +2242,9 @@ DoWorldEditor(engine_resources *Engine)
       PushTableStart(Ui);
       {
 
+        u32 VisibilityAction = (Layer->Flags & WorldEditLayerFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
         u32 ActionBits =
-          (1 << UiEditorAction_Hide)        |
+          (VisibilityAction)                |
           (1 << UiEditorAction_ReorderUp)   |
           (1 << UiEditorAction_ReorderDown) |
           (1 << UiEditorAction_Duplicate)   |
@@ -2279,7 +2280,14 @@ DoWorldEditor(engine_resources *Engine)
         {
           switch (LayerAction.Action)
           {
-            case UiEditorAction_NoAction: {} break;
+            case UiEditorAction_NoAction:
+            {} break;
+
+            case UiEditorAction_Show:
+            case UiEditorAction_Hide:
+            {
+              ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
+            } break;
 
             case UiEditorAction_Expand:
             {
