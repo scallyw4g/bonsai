@@ -23,7 +23,7 @@ struct world_edit_layer_block_array_index
 struct world_edit_layer_block_array
 poof(
   @collection
-  
+   @serdes 
   
 )
 {

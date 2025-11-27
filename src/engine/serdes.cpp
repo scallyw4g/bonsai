@@ -476,6 +476,35 @@ poof(
     {
       type.has_tag(serdes)?
       {
+        type.has_tag(default_marshal)?
+        {
+          link_internal void
+          Marshal( type.name *Stored, type.tag_value(default_marshal) *Live)
+          {
+            default_marshal(type)
+          }
+        }
+      }
+    }
+)
+#include <generated/default_marshal.h>
+
+poof(serdes_struct(world_edit_block_array_index))
+#include <generated/serdes_struct_world_edit_block_array_index.h>
+
+poof(serdes_collection(world_edit, {block_array}))
+#include <generated/serdes_collection_N00ETIJM.h>
+
+poof(serdes_collection(world_edit_block_array_index, {block_array}))
+#include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
+
+
+poof(
+  for_datatypes(struct)
+    func (type)
+    {
+      type.has_tag(serdes)?
+      {
         type.has_tag(collection)?
         {
           /// serdes_collection(type, type.tag_value(collection))
@@ -490,14 +519,5 @@ poof(
 )
 #include <generated/serdes_implementations.h>
 
-poof(serdes_struct(world_edit_block_array_index))
-#include <generated/serdes_struct_world_edit_block_array_index.h>
-
-poof(serdes_collection(world_edit, {block_array}))
-#include <generated/serdes_collection_N00ETIJM.h>
-
-poof(serdes_collection(world_edit_block_array_index, {block_array}))
-#include <generated/serdes_collection_world_edit_block_array_index_block_array.h>
-
-poof(serdes_struct(world_edit_layer))
-#include <generated/serdes_struct_world_edit_layer.h>
+/* poof(serdes_struct(world_edit_layer)) */
+/* #include <generated/serdes_struct_world_edit_layer.h> */
