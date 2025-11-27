@@ -759,7 +759,7 @@ Serialize(u8_cursor_block_array *Bytes, world_edit *BaseElement, umm Count)
 
 
 
-                            Result &= Serialize(Bytes, &Element->Tombstone); // default
+                            Result &= Serialize(Bytes, &Element->Flags); // default
 
 
 
@@ -862,7 +862,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
 
               
   
-  Result &= Deserialize(Bytes, &Element->Tombstone, Memory);
+  Result &= Deserialize(Bytes, &Element->Flags, Memory);
 
 
 

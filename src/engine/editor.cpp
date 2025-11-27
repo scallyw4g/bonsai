@@ -39,9 +39,9 @@ NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_in
   world_edit *Result = {};
   IterateOver(&Editor->Edits, Edit, EditIndex)
   {
-    if (Edit->Tombstone)
+    if (Edit->Flags & WorldEditFlag_Tombstone)
     {
-      Edit->Tombstone = False;
+      UnsetBitfield(u32, Edit->Flags, WorldEditFlag_Tombstone);
       Result = Edit;
       Index = EditIndex;
     }
@@ -1709,7 +1709,7 @@ link_internal void
 ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Edit->Tombstone == False);
+  Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
   Info("Applying Edit(%p) to Octree", Edit);
 
@@ -1800,7 +1800,7 @@ link_internal void
 DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  Assert(Edit->Tombstone == False);
+  Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
 
@@ -1842,7 +1842,7 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 link_internal void
 UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
 {
-  Assert(Edit->Tombstone == False);
+  Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
   DropEditFromOctree(Engine, Edit, TempMemory);
   Edit->Region = Region;
@@ -1914,7 +1914,7 @@ ApplyDiffToEditBuffer(engine_resources *Engine, v3 Diff, world_edit_block_array_
 link_internal void
 DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_index *EditIndex, world_edit_layer *Layer = 0)
 {
-  Assert(Edit->Tombstone == False);
+  Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
   level_editor *Editor = &Engine->Editor;
 
@@ -1932,7 +1932,7 @@ DeleteEdit(engine_resources *Engine, world_edit *Edit, world_edit_block_array_in
   }
 
   *Edit = {};
-   Edit->Tombstone = True;
+  SetBitfield(u32, Edit->Flags, WorldEditFlag_Tombstone);
 }
 
 link_internal world_edit *
@@ -2206,7 +2206,7 @@ DoWorldEditor(engine_resources *Engine)
     b32 CurrentBrushSettingsChanged  = Editor->CurrentBrush && CheckSettingsChanged(&Editor->CurrentBrush->Layered);
     IterateOver(&Editor->Edits, Edit, EditIndex)
     {
-      if (Edit->Tombstone) { continue; }
+      if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
 
       if ( Edit->Dirty ||
            (Edit->Brush == Editor->CurrentBrush && 
@@ -2380,7 +2380,7 @@ DoWorldEditor(engine_resources *Engine)
             IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
               world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-              Assert(Edit->Tombstone == False);
+              Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
               const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
@@ -2609,7 +2609,7 @@ DoWorldEditor(engine_resources *Engine)
         IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
         {
           world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-          Assert(Edit->Tombstone == False);
+          Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
           if (Edit == Editor->HotEdit) continue;
           if (Edit->Selected)          continue;
@@ -2630,7 +2630,7 @@ DoWorldEditor(engine_resources *Engine)
       IterateOver(&Editor->SelectedEditIndices, EditIndex, EditIndexIndex)
       {
         world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-        Assert(Edit->Tombstone == False);
+        Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
 
         auto EditAABB = GetSimSpaceAABB(World, Edit->Region);
@@ -2715,7 +2715,7 @@ ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
 {
   IterateOver(Edits, Edit, EditIndex)
   {
-    if (Edit->Tombstone) { continue; }
+    if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
     ApplyEditToOctree(Engine, Edit, GetTranArena());
   }
 }
@@ -2884,7 +2884,7 @@ DoLevelWindow(engine_resources *Engine)
           Deserialize(&LevelBytes, &DeserEdit, Editor->Memory);
 
           world_edit *FinalEdit = Push(&Editor->Edits, &DeserEdit);
-          if (FinalEdit->Tombstone == False)
+          if (BitfieldNotSet(FinalEdit->Flags, WorldEditFlag_Tombstone))
           {
             if (FinalEdit->Brush)
             {

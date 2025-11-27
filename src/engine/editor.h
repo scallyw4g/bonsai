@@ -1591,6 +1591,14 @@ poof(maybe(world_edit_brush))
 poof(hashtable_get(world_edit_brush, {cs}, {NameBuf}))
 #include <generated/hashtable_get_SlF7m90R.h>
 
+enum world_edit_flag
+{
+  WorldEditFlag_Tombstone = (1<<0),
+  WorldEditFlag_Hidden    = (1<<1),
+  WorldEditFlag_Dirty     = (1<<2),
+  WorldEditFlag_Selected  = (1<<3),
+};
+
 struct world_edit 
 poof(@do_editor_ui @serdes @block_array_IndexOfValue)
 {
@@ -1602,7 +1610,8 @@ poof(@do_editor_ui @serdes @block_array_IndexOfValue)
 
   // TODO(Jese): Pack these into a Flags field
   // {
-    b32 Tombstone;
+    u32 Flags; // world_edit_flag
+    /* b32 Tombstone; */
     b32 Dirty;
 
     // NOTE(Jesse): Need this so we don't have to do an n^2 loop when doing

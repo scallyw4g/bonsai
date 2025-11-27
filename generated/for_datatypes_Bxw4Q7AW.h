@@ -11655,16 +11655,18 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             
             
-            cs MemberName = CSz("Tombstone");
+            cs MemberName = CSz("Flags");
 
-                                                                        auto Member = Cast(b32*, &Element->Tombstone);
+                                                                                                auto Member = Cast(u32*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
+
+
 
 
 
