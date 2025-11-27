@@ -318,7 +318,7 @@ poof(
                               cs  GroupName,
                      enum_t.name *Element,
                              u64  Index = 0,
-                ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+                ui_render_params *ContainerParams     = &DefaultUiRenderParams_Toolbar,
     ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
     {
       /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
@@ -380,7 +380,7 @@ poof(
       Result.Buttons = ButtonBuffer;
       Result.EnumStorage = Cast(u32*, Element);
 
-      DrawButtonGroup(&Result, GroupName);
+      DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
       return Result;
     }
   }

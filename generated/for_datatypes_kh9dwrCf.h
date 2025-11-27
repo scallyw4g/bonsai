@@ -508,7 +508,7 @@ PushToolbar(     renderer_2d *Ui,
   cs  GroupName,
   ui_editor_action *Element,
   u64  Index = 0,
-  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+  ui_render_params *ContainerParams     = &DefaultUiRenderParams_Toolbar,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
@@ -726,7 +726,7 @@ PushToolbar(     renderer_2d *Ui,
   Result.Buttons = ButtonBuffer;
   Result.EnumStorage = Cast(u32*, Element);
 
-  DrawButtonGroup(&Result, GroupName);
+  DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
   return Result;
 }
 
@@ -1180,7 +1180,7 @@ PushToolbar(     renderer_2d *Ui,
   cs  GroupName,
   ui_editor_tool *Element,
   u64  Index = 0,
-  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+  ui_render_params *ContainerParams     = &DefaultUiRenderParams_Toolbar,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
@@ -1243,7 +1243,7 @@ PushToolbar(     renderer_2d *Ui,
   Result.Buttons = ButtonBuffer;
   Result.EnumStorage = Cast(u32*, Element);
 
-  DrawButtonGroup(&Result, GroupName);
+  DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
   return Result;
 }
 
@@ -1553,7 +1553,7 @@ PushToolbar(     renderer_2d *Ui,
   cs  GroupName,
   ui_layer_toolbar_actions *Element,
   u64  Index = 0,
-  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
+  ui_render_params *ContainerParams     = &DefaultUiRenderParams_Toolbar,
   ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
 {
   /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
@@ -1659,7 +1659,7 @@ PushToolbar(     renderer_2d *Ui,
   Result.Buttons = ButtonBuffer;
   Result.EnumStorage = Cast(u32*, Element);
 
-  DrawButtonGroup(&Result, GroupName);
+  DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
   return Result;
 }
 

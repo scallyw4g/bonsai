@@ -969,7 +969,7 @@ struct ui_action_result
 };
 
 link_internal ui_action_result
-DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32 EnabledBits)
+DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32 EnabledBits, v3 Tint = {})
 {
   // Why would we ever call this if we didn't wanna draw anything?
   Assert(EnabledBits);
@@ -999,7 +999,14 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
   Result.Buttons = ButtonBuffer;
   Result.EnumStorage = Cast(u32*, &Action);
 
-  DrawButtonGroup(&Result, {});
+  auto Params = DefaultUiRenderParams_Button;
+  if (LengthSq(Tint) > 0.f)
+  {
+    auto Style = UiStyleFromLightestColor(Tint);
+    Params.FStyle = &Style;
+  }
+
+  DrawButtonGroup(&Result, {}, &Params, &DefaultUiRenderParams_Toolbar);
 
   Assert(IsValid(Action));
 
@@ -1103,20 +1110,16 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
     // Brush toolbar buttons
     //
     {
-      memory_arena *Tran = GetTranArena();
 
-      /* if (LayeredBrush->LayerCount) */
       {
-              u32 IconBits =
-                (1 << UiEditorAction_New)            |
-                (1 << UiEditorAction_Save) |
-                (1 << UiEditorAction_Duplicate)      ;
+        u32 IconBits =
+          (1 << UiEditorAction_New)  |
+          (1 << UiEditorAction_Save) |
+          (1 << UiEditorAction_Duplicate);
 
         ui_id BaseId = UiId(BrushSettingsWindow, Brush, 0, 0);
+
         ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
-        /* ui_editor_action BrushAction = {}; */
-#if 1
-        /* ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction); */
         switch (BrushActionResult.Action)
         {
           case UiEditorAction_NoAction: {} break;
@@ -1137,7 +1140,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
           {
             world_edit_brush Duplicated = *Brush;
 
-            cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', Tran);
+            cs_buffer Pieces = Split( CS(Duplicated.NameBuf), '.', GetTranArena());
 
             if (Pieces.Count > 2)
             {
@@ -1167,28 +1170,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
           } break;
 
           InvalidDefaultCase;
-#if 0
-          case UiBrushAction_Import:
-          {
-            ui_id ImportToggleId = UiId(BrushSettingsWindow, "brush import", 0u);
-            if (ToggleButton(Ui, CSz("Import"), CSz("Import"), ImportToggleId))
-            {
-              PushNewRow(Ui);
-
-              filtered_file_traversal_helper_params HelperParams = {BrushSettingsWindow, 0};
-              maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("brushes"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
-
-              if (ClickedFileNode.Tag)
-              {
-                LoadBrushFromFile(Editor, &ClickedFileNode.Value, Tran);
-                SetToggleButton(Ui, ImportToggleId, False);
-              }
-            }
-          } break;
-#endif
-
         }
-#endif
       }
 
       {
@@ -2254,7 +2236,6 @@ DoWorldEditor(engine_resources *Engine)
         ui_id BaseId = UiId(LayersWindow, Layer, 0, 0);
         ui_action_result LayerAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, ActionBits);
 
-
         s32 IconIndex = (Layer->Flags & WorldEditLayerFlag_Collapsed) ? UiIconIndex_AngleRight : UiIconIndex_AngleDown;
         if (Button(Ui, &Ui->IconTextureArray, IconIndex, UiId(LayersWindow, "layer expand/contract", Layer, 0)))
         {
@@ -2376,7 +2357,11 @@ DoWorldEditor(engine_resources *Engine)
         else
         {
           {
+            b32 LayerIsHidden = (Layer->Flags & WorldEditLayerFlag_Hidden) != 0 ;
+
             world_edit_block_array_index *PrevEditIndex = {};
+
+            v3 EditInstanceTint = LayerIsHidden ? V3(0.5f) : V3(0);
             IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
             {
               world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -2385,7 +2370,7 @@ DoWorldEditor(engine_resources *Engine)
               const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
               u32 VisibilityAction = u32_MAX;
-              if (Layer->Flags & WorldEditLayerFlag_Hidden)
+              if (LayerIsHidden)
               {
                 VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_HideObstructed) ;
               }
@@ -2393,6 +2378,7 @@ DoWorldEditor(engine_resources *Engine)
               {
                 VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
               }
+
               Assert(VisibilityAction != u32_MAX);
 
               u32 IconBits =
@@ -2400,10 +2386,10 @@ DoWorldEditor(engine_resources *Engine)
                 (1 << UiEditorAction_ReorderUp)   |
                 (1 << UiEditorAction_ReorderDown) |
                 (1 << UiEditorAction_Duplicate)   |
-                (1 << UiEditorAction_SetBrush) ;
+                (1 << UiEditorAction_SetBrush);
 
               ui_id BaseId = UiId(LayersWindow, Edit, 0, 0);
-              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits);
+              ui_action_result EditReorderAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, IconBits, EditInstanceTint);
 
               switch(EditReorderAction.Action)
               {
@@ -2508,6 +2494,12 @@ DoWorldEditor(engine_resources *Engine)
               if (EditIsSelected)
               {
                 ButtonParams.FStyle = &DefaultSelectedStyle;
+              }
+
+              if (LayerIsHidden)
+              {
+                auto S = UiStyleFromLightestColor(EditInstanceTint);
+                ButtonParams.FStyle = &S;
               }
 
               // One make up for the expand button
