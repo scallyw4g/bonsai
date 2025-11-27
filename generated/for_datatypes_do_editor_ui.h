@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:781:0
+// src/engine/editor.h:783:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:781:0
+// src/engine/editor.h:783:0
 
 
 
@@ -91,6 +91,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_ren
 struct particle_system;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

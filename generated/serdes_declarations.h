@@ -97,6 +97,7 @@
 
 
 
+
 struct brush_settings_0;
 
 link_internal b32

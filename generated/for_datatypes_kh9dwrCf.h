@@ -60,6 +60,8 @@ IsValid(ui_editor_action Value)
     case UiEditorAction_ExportAsPrefab:
     case UiEditorAction_Save:
     case UiEditorAction_Delete:
+    case UiEditorAction_Expand:
+    case UiEditorAction_Collapse:
     case UiEditorAction_Count:
 
     {
@@ -90,6 +92,8 @@ ToStringPrefixless(ui_editor_action Type)
       case UiEditorAction_ExportAsPrefab: { Result = CSz("ExportAsPrefab"); } break;
       case UiEditorAction_Save: { Result = CSz("Save"); } break;
       case UiEditorAction_Delete: { Result = CSz("Delete"); } break;
+      case UiEditorAction_Expand: { Result = CSz("Expand"); } break;
+      case UiEditorAction_Collapse: { Result = CSz("Collapse"); } break;
       case UiEditorAction_Count: { Result = CSz("Count"); } break;
 
 
@@ -123,6 +127,8 @@ ToString(ui_editor_action Type)
     case UiEditorAction_ExportAsPrefab: { Result = CSz("UiEditorAction_ExportAsPrefab"); } break;
     case UiEditorAction_Save: { Result = CSz("UiEditorAction_Save"); } break;
     case UiEditorAction_Delete: { Result = CSz("UiEditorAction_Delete"); } break;
+    case UiEditorAction_Expand: { Result = CSz("UiEditorAction_Expand"); } break;
+    case UiEditorAction_Collapse: { Result = CSz("UiEditorAction_Collapse"); } break;
     case UiEditorAction_Count: { Result = CSz("UiEditorAction_Count"); } break;
 
 
@@ -148,6 +154,8 @@ UiEditorAction(counted_string S)
   if (StringsMatch(S, CSz("UiEditorAction_ExportAsPrefab"))) { return UiEditorAction_ExportAsPrefab; }
   if (StringsMatch(S, CSz("UiEditorAction_Save"))) { return UiEditorAction_Save; }
   if (StringsMatch(S, CSz("UiEditorAction_Delete"))) { return UiEditorAction_Delete; }
+  if (StringsMatch(S, CSz("UiEditorAction_Expand"))) { return UiEditorAction_Expand; }
+  if (StringsMatch(S, CSz("UiEditorAction_Collapse"))) { return UiEditorAction_Collapse; }
   if (StringsMatch(S, CSz("UiEditorAction_Count"))) { return UiEditorAction_Count; }
 
 
@@ -368,6 +376,46 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_editor_action Value, ui_id BaseId)
     } break;
 
 
+        case UiEditorAction_Expand:
+    {
+      Result =
+      {
+                UiDisplayType_Icon,
+        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleRight,
+        
+        CSz("Expand"),
+
+        UiId(
+          BaseId.WindowBits,
+          BaseId.InteractionBits,
+          UiMaskAndCastPointer("ui_editor_action UiEditorAction_Expand"),
+          UiEditorAction_Expand
+        ),
+        UiEditorAction_Expand,
+      };
+    } break;
+
+
+        case UiEditorAction_Collapse:
+    {
+      Result =
+      {
+                UiDisplayType_Icon,
+        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleDown,
+        
+        CSz("Collapse"),
+
+        UiId(
+          BaseId.WindowBits,
+          BaseId.InteractionBits,
+          UiMaskAndCastPointer("ui_editor_action UiEditorAction_Collapse"),
+          UiEditorAction_Collapse
+        ),
+        UiEditorAction_Collapse,
+      };
+    } break;
+
+
         case UiEditorAction_Count: {} break;
 
 
@@ -406,6 +454,8 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
     { UiDisplayType_Text, {{ CSz("ExportAsPrefab"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_ExportAsPrefab")), UiEditorAction_ExportAsPrefab },
     { UiDisplayType_Text, {{ CSz("Save"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Save")), UiEditorAction_Save },
     { UiDisplayType_Text, {{ CSz("Delete"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Delete")), UiEditorAction_Delete },
+    { UiDisplayType_Text, {{ CSz("Expand"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Expand")), UiEditorAction_Expand },
+    { UiDisplayType_Text, {{ CSz("Collapse"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Collapse")), UiEditorAction_Collapse },
     { UiDisplayType_Text, {{ CSz("Count"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Count")), UiEditorAction_Count },
 
   };
@@ -586,416 +636,37 @@ PushToolbar(     renderer_2d *Ui,
       UiEditorAction_Delete,
     },
 
-    
-
-  };
-
-  ui_toggle_button_handle_buffer ButtonBuffer = {
-    ArrayCount(ButtonHandles),
-    ButtonHandles
-  };
-
-  ui_toggle_button_group Result = {};
-  Result.Ui = Ui;
-  Result.Flags = ui_toggle_button_group_flags(ToggleButtonGroupFlags_TypeClickButton | ExtraFlags);
-  Result.Buttons = ButtonBuffer;
-  Result.EnumStorage = Cast(u32*, Element);
-
-  DrawButtonGroup(&Result, GroupName);
-  return Result;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-link_internal b32
-IsValid(ui_brush_layer_actions Value)
-{
-  b32 Result = False;
-  switch (Value)
-  {
-        case UiBrushLayerAction_NoAction:
-    case UiBrushLayerAction_MoveUp:
-    case UiBrushLayerAction_MoveDown:
-    case UiBrushLayerAction_Duplicate:
-    case UiBrushLayerAction_Delete:
-
-    {
-      Result = True;
-    }
-  }
-  return Result;
-}
-
-
-
-link_internal counted_string
-ToStringPrefixless(ui_brush_layer_actions Type)
-{
-  cs Result = {};
-  if (IsValid(Type))
-  {
-    switch (Type)
-    {
-            case UiBrushLayerAction_NoAction: { Result = CSz("NoAction"); } break;
-      case UiBrushLayerAction_MoveUp: { Result = CSz("MoveUp"); } break;
-      case UiBrushLayerAction_MoveDown: { Result = CSz("MoveDown"); } break;
-      case UiBrushLayerAction_Duplicate: { Result = CSz("Duplicate"); } break;
-      case UiBrushLayerAction_Delete: { Result = CSz("Delete"); } break;
-
-
-      
-    }
-  }
-  else
-  {
-    Result = CSz("(CORRUPT ENUM VALUE)");
-  }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
-  return Result;
-}
-
-link_internal counted_string
-ToString(ui_brush_layer_actions Type)
-{
-  Assert(IsValid(Type));
-
-  counted_string Result = {};
-  switch (Type)
-  {
-        case UiBrushLayerAction_NoAction: { Result = CSz("UiBrushLayerAction_NoAction"); } break;
-    case UiBrushLayerAction_MoveUp: { Result = CSz("UiBrushLayerAction_MoveUp"); } break;
-    case UiBrushLayerAction_MoveDown: { Result = CSz("UiBrushLayerAction_MoveDown"); } break;
-    case UiBrushLayerAction_Duplicate: { Result = CSz("UiBrushLayerAction_Duplicate"); } break;
-    case UiBrushLayerAction_Delete: { Result = CSz("UiBrushLayerAction_Delete"); } break;
-
-
-    
-  }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
-  return Result;
-}
-
-link_internal ui_brush_layer_actions
-UiBrushLayerActions(counted_string S)
-{
-  ui_brush_layer_actions Result = {};
-
-    if (StringsMatch(S, CSz("UiBrushLayerAction_NoAction"))) { return UiBrushLayerAction_NoAction; }
-  if (StringsMatch(S, CSz("UiBrushLayerAction_MoveUp"))) { return UiBrushLayerAction_MoveUp; }
-  if (StringsMatch(S, CSz("UiBrushLayerAction_MoveDown"))) { return UiBrushLayerAction_MoveDown; }
-  if (StringsMatch(S, CSz("UiBrushLayerAction_Duplicate"))) { return UiBrushLayerAction_Duplicate; }
-  if (StringsMatch(S, CSz("UiBrushLayerAction_Delete"))) { return UiBrushLayerAction_Delete; }
-
-
-  return Result;
-}
-
-
-link_internal ui_toggle_button_handle
-ButtonHandleForEnumValue(renderer_2d *Ui, ui_brush_layer_actions Value, ui_id BaseId)
-{
-  Assert(BaseId.ElementBits == 0);
-  Assert(BaseId.HashBits == 0);
-
-  ui_toggle_button_handle Result;
-
-  switch (Value)
-  {
-            case UiBrushLayerAction_NoAction: {} break;
-
-
-        case UiBrushLayerAction_MoveUp:
-    {
-      Result =
-      {
-                UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleRight,
-        
-        CSz("MoveUp"),
-
-        UiId(
-          BaseId.WindowBits,
-          BaseId.InteractionBits,
-          UiMaskAndCastPointer("ui_brush_layer_actions UiBrushLayerAction_MoveUp"),
-          UiBrushLayerAction_MoveUp
-        ),
-        UiBrushLayerAction_MoveUp,
-      };
-    } break;
-
-
-        case UiBrushLayerAction_MoveDown:
-    {
-      Result =
-      {
-                UiDisplayType_Text,
-        {{
-            
-                        CSz("MoveDown")
-,
-          }},
-
-        
-                {}
-,
-
-        UiId(
-          BaseId.WindowBits,
-          BaseId.InteractionBits,
-          UiMaskAndCastPointer("ui_brush_layer_actions UiBrushLayerAction_MoveDown"),
-          UiBrushLayerAction_MoveDown
-        ),
-        UiBrushLayerAction_MoveDown,
-      };
-    } break;
-
-
-        case UiBrushLayerAction_Duplicate:
-    {
-      Result =
-      {
-                UiDisplayType_Text,
-        {{
-            
-                        CSz("Duplicate")
-,
-          }},
-
-        
-                {}
-,
-
-        UiId(
-          BaseId.WindowBits,
-          BaseId.InteractionBits,
-          UiMaskAndCastPointer("ui_brush_layer_actions UiBrushLayerAction_Duplicate"),
-          UiBrushLayerAction_Duplicate
-        ),
-        UiBrushLayerAction_Duplicate,
-      };
-    } break;
-
-
-        case UiBrushLayerAction_Delete:
-    {
-      Result =
-      {
-                UiDisplayType_Text,
-        {{
-            
-                        CSz("Delete")
-,
-          }},
-
-        
-                {}
-,
-
-        UiId(
-          BaseId.WindowBits,
-          BaseId.InteractionBits,
-          UiMaskAndCastPointer("ui_brush_layer_actions UiBrushLayerAction_Delete"),
-          UiBrushLayerAction_Delete
-        ),
-        UiBrushLayerAction_Delete,
-      };
-    } break;
-
-
-
-  }
-  return Result;
-}
-
-
-link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, ui_brush_layer_actions Selection)
-{
-  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
-  SetRadioButton(RadioGroup, ToggleHandle, True);
-  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-link_internal ui_toggle_button_group
-RadioButtonGroup_ui_brush_layer_actions( renderer_2d *Ui,
-  window_layout *Window,
-  cs  GroupName,
-  ui_brush_layer_actions *Element,
-  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
-{
-  ui_toggle_button_handle ButtonHandles[] =
-  {
-        { UiDisplayType_Text, {{ CSz("NoAction"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_NoAction")), UiBrushLayerAction_NoAction },
-    { UiDisplayType_Text, {{ CSz("MoveUp"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp")), UiBrushLayerAction_MoveUp },
-    { UiDisplayType_Text, {{ CSz("MoveDown"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown")), UiBrushLayerAction_MoveDown },
-    { UiDisplayType_Text, {{ CSz("Duplicate"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate")), UiBrushLayerAction_Duplicate },
-    { UiDisplayType_Text, {{ CSz("Delete"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete")), UiBrushLayerAction_Delete },
-
-  };
-
-  ui_toggle_button_handle_buffer ButtonBuffer = {
-    ArrayCount(ButtonHandles),
-    ButtonHandles
-  };
-
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
-  return Result;
-}
-
-
-
-
-link_internal ui_toggle_button_group
-PushToolbar(     renderer_2d *Ui, 
-  window_layout *Window,
-  cs  GroupName,
-  ui_brush_layer_actions *Element,
-  u64  Index = 0,
-  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
-{
-  /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
-
-  ui_toggle_button_handle ButtonHandles[] =
-  {
-        
         {
             UiDisplayType_Icon,
       .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleRight,
       
-      CSz("MoveUp"),
+      CSz("Expand"),
 
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
-        Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveUp"),
+        Cast(void*, "ui_editor_action UiEditorAction_Expand"),
         Cast(void*, Index)
       ),
-      UiBrushLayerAction_MoveUp,
+      UiEditorAction_Expand,
     },
 
         {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("MoveDown")
-,
-        }},
-
+            UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleDown,
       
-            {}
-,
+      CSz("Collapse"),
 
       UiId(
         Cast(void*, Window),
         Cast(void*, Element),
-        Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_MoveDown"),
+        Cast(void*, "ui_editor_action UiEditorAction_Collapse"),
         Cast(void*, Index)
       ),
-      UiBrushLayerAction_MoveDown,
+      UiEditorAction_Collapse,
     },
 
-        {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("Duplicate")
-,
-        }},
-
-      
-            {}
-,
-
-      UiId(
-        Cast(void*, Window),
-        Cast(void*, Element),
-        Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Duplicate"),
-        Cast(void*, Index)
-      ),
-      UiBrushLayerAction_Duplicate,
-    },
-
-        {
-            UiDisplayType_Text,
-      {{
-          
-                    CSz("Delete")
-,
-        }},
-
-      
-            {}
-,
-
-      UiId(
-        Cast(void*, Window),
-        Cast(void*, Element),
-        Cast(void*, "ui_brush_layer_actions UiBrushLayerAction_Delete"),
-        Cast(void*, Index)
-      ),
-      UiBrushLayerAction_Delete,
-    },
-
+    
 
   };
 
@@ -1013,6 +684,61 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName);
   return Result;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1177,199 +903,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
 
 
 
-
-link_internal b32
-IsValid(ui_layer_edit_actions Value)
-{
-  b32 Result = False;
-  switch (Value)
-  {
-        case UiLayerEditAction_NoAction:
-    case UiLayerEditAction_Delete:
-
-    {
-      Result = True;
-    }
-  }
-  return Result;
-}
-
-
-
-link_internal counted_string
-ToStringPrefixless(ui_layer_edit_actions Type)
-{
-  cs Result = {};
-  if (IsValid(Type))
-  {
-    switch (Type)
-    {
-            case UiLayerEditAction_NoAction: { Result = CSz("NoAction"); } break;
-      case UiLayerEditAction_Delete: { Result = CSz("Delete"); } break;
-
-
-      
-    }
-  }
-  else
-  {
-    Result = CSz("(CORRUPT ENUM VALUE)");
-  }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
-  return Result;
-}
-
-link_internal counted_string
-ToString(ui_layer_edit_actions Type)
-{
-  Assert(IsValid(Type));
-
-  counted_string Result = {};
-  switch (Type)
-  {
-        case UiLayerEditAction_NoAction: { Result = CSz("UiLayerEditAction_NoAction"); } break;
-    case UiLayerEditAction_Delete: { Result = CSz("UiLayerEditAction_Delete"); } break;
-
-
-    
-  }
-  /* if (Result.Start == 0) { Info("Could not convert value(%d) to (enum_t.name)", Type); } */
-  return Result;
-}
-
-link_internal ui_layer_edit_actions
-UiLayerEditActions(counted_string S)
-{
-  ui_layer_edit_actions Result = {};
-
-    if (StringsMatch(S, CSz("UiLayerEditAction_NoAction"))) { return UiLayerEditAction_NoAction; }
-  if (StringsMatch(S, CSz("UiLayerEditAction_Delete"))) { return UiLayerEditAction_Delete; }
-
-
-  return Result;
-}
-
-
-link_internal ui_toggle_button_handle
-ButtonHandleForEnumValue(renderer_2d *Ui, ui_layer_edit_actions Value, ui_id BaseId)
-{
-  Assert(BaseId.ElementBits == 0);
-  Assert(BaseId.HashBits == 0);
-
-  ui_toggle_button_handle Result;
-
-  switch (Value)
-  {
-            case UiLayerEditAction_NoAction: {} break;
-
-
-        case UiLayerEditAction_Delete:
-    {
-      Result =
-      {
-                UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
-        
-        CSz("Delete"),
-
-        UiId(
-          BaseId.WindowBits,
-          BaseId.InteractionBits,
-          UiMaskAndCastPointer("ui_layer_edit_actions UiLayerEditAction_Delete"),
-          UiLayerEditAction_Delete
-        ),
-        UiLayerEditAction_Delete,
-      };
-    } break;
-
-
-
-  }
-  return Result;
-}
-
-
-link_internal void
-RadioSelect(ui_toggle_button_group *RadioGroup, ui_layer_edit_actions Selection)
-{
-  ui_toggle_button_handle *ToggleHandle = RadioGroup->Buttons.Start + Selection;
-  SetRadioButton(RadioGroup, ToggleHandle, True);
-  /* Ensure( ToggleRadioButton(RadioGroup, ToggleHandle) ); */
-}
-
-link_internal ui_toggle_button_group
-RadioButtonGroup_ui_layer_edit_actions( renderer_2d *Ui,
-  window_layout *Window,
-  cs  GroupName,
-  ui_layer_edit_actions *Element,
-  ui_render_params *Params     = &DefaultUiRenderParams_Generic,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
-{
-  ui_toggle_button_handle ButtonHandles[] =
-  {
-        { UiDisplayType_Text, {{ CSz("NoAction"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_NoAction")), UiLayerEditAction_NoAction },
-    { UiDisplayType_Text, {{ CSz("Delete"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete")), UiLayerEditAction_Delete },
-
-  };
-
-  ui_toggle_button_handle_buffer ButtonBuffer = {
-    ArrayCount(ButtonHandles),
-    ButtonHandles
-  };
-
-  ui_toggle_button_group Result = DrawButtonGroupForEnum(Ui, &ButtonBuffer, GroupName, Cast(u32*, Element), Params, ui_toggle_button_group_flags(ExtraFlags|ToggleButtonGroupFlags_TypeRadioButton));
-  return Result;
-}
-
-
-
-
-link_internal ui_toggle_button_group
-PushToolbar(     renderer_2d *Ui, 
-  window_layout *Window,
-  cs  GroupName,
-  ui_layer_edit_actions *Element,
-  u64  Index = 0,
-  ui_render_params *Params     = &DefaultUiRenderParams_Toolbar,
-  ui_toggle_button_group_flags  ExtraFlags = ToggleButtonGroupFlags_None)
-{
-  /* auto Result = RadioButtonGroup_(enum_t.name)(Ui, Window, GroupName, Element, Params, ExtraFlags); */
-
-  ui_toggle_button_handle ButtonHandles[] =
-  {
-        
-        {
-            UiDisplayType_Icon,
-      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
-      
-      CSz("Delete"),
-
-      UiId(
-        Cast(void*, Window),
-        Cast(void*, Element),
-        Cast(void*, "ui_layer_edit_actions UiLayerEditAction_Delete"),
-        Cast(void*, Index)
-      ),
-      UiLayerEditAction_Delete,
-    },
-
-
-  };
-
-  ui_toggle_button_handle_buffer ButtonBuffer = {
-    ArrayCount(ButtonHandles),
-    ButtonHandles
-  };
-
-  ui_toggle_button_group Result = {};
-  Result.Ui = Ui;
-  Result.Flags = ui_toggle_button_group_flags(ToggleButtonGroupFlags_TypeClickButton | ExtraFlags);
-  Result.Buttons = ButtonBuffer;
-  Result.EnumStorage = Cast(u32*, Element);
-
-  DrawButtonGroup(&Result, GroupName);
-  return Result;
-}
 
 
 
@@ -1851,10 +1384,16 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_layer_toolbar_actions Value, ui_id 
     {
       Result =
       {
-                UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone,
+                UiDisplayType_Text,
+        {{
+            
+                        CSz("Duplicate")
+,
+          }},
+
         
-        CSz("Duplicate"),
+                {}
+,
 
         UiId(
           BaseId.WindowBits,
@@ -1871,10 +1410,16 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_layer_toolbar_actions Value, ui_id 
     {
       Result =
       {
-                UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport,
+                UiDisplayType_Text,
+        {{
+            
+                        CSz("ExportAsPrefab")
+,
+          }},
+
         
-        CSz("ExportAsPrefab"),
+                {}
+,
 
         UiId(
           BaseId.WindowBits,
@@ -1891,10 +1436,16 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_layer_toolbar_actions Value, ui_id 
     {
       Result =
       {
-                UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
+                UiDisplayType_Text,
+        {{
+            
+                        CSz("Delete")
+,
+          }},
+
         
-        CSz("Delete"),
+                {}
+,
 
         UiId(
           BaseId.WindowBits,
@@ -1987,10 +1538,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Icon,
-      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone,
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Duplicate")
+,
+        }},
+
       
-      CSz("Duplicate"),
+            {}
+,
 
       UiId(
         Cast(void*, Window),
@@ -2002,10 +1559,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Icon,
-      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport,
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("ExportAsPrefab")
+,
+        }},
+
       
-      CSz("ExportAsPrefab"),
+            {}
+,
 
       UiId(
         Cast(void*, Window),
@@ -2017,10 +1580,16 @@ PushToolbar(     renderer_2d *Ui,
     },
 
         {
-            UiDisplayType_Icon,
-      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash,
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Delete")
+,
+        }},
+
       
-      CSz("Delete"),
+            {}
+,
 
       UiId(
         Cast(void*, Window),
