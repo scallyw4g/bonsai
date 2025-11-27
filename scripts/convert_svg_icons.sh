@@ -9,6 +9,6 @@ for FILE in $PNG_IMAGES; do
   echo "Converting $FILE"
 
   Filename="$(basename -- $FILE .svg)"
-  magick -density 300  -background None  $FILE -resize 64x64 ./assets/icons/bmp/$Filename.bmp
+  magick -density 300 -background None $FILE -resize 64x64 -bordercolor None -border 5%x5% ./assets/icons/bmp/$Filename.bmp
 done
 
