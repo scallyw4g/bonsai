@@ -58,6 +58,7 @@ IsValid(ui_editor_action Value)
     case UiEditorAction_New:
     case UiEditorAction_Show:
     case UiEditorAction_Hide:
+    case UiEditorAction_HideObstructed:
     case UiEditorAction_ReorderUp:
     case UiEditorAction_ReorderDown:
     case UiEditorAction_Duplicate:
@@ -90,6 +91,7 @@ ToStringPrefixless(ui_editor_action Type)
       case UiEditorAction_New: { Result = CSz("New"); } break;
       case UiEditorAction_Show: { Result = CSz("Show"); } break;
       case UiEditorAction_Hide: { Result = CSz("Hide"); } break;
+      case UiEditorAction_HideObstructed: { Result = CSz("HideObstructed"); } break;
       case UiEditorAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
       case UiEditorAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
       case UiEditorAction_Duplicate: { Result = CSz("Duplicate"); } break;
@@ -125,6 +127,7 @@ ToString(ui_editor_action Type)
     case UiEditorAction_New: { Result = CSz("UiEditorAction_New"); } break;
     case UiEditorAction_Show: { Result = CSz("UiEditorAction_Show"); } break;
     case UiEditorAction_Hide: { Result = CSz("UiEditorAction_Hide"); } break;
+    case UiEditorAction_HideObstructed: { Result = CSz("UiEditorAction_HideObstructed"); } break;
     case UiEditorAction_ReorderUp: { Result = CSz("UiEditorAction_ReorderUp"); } break;
     case UiEditorAction_ReorderDown: { Result = CSz("UiEditorAction_ReorderDown"); } break;
     case UiEditorAction_Duplicate: { Result = CSz("UiEditorAction_Duplicate"); } break;
@@ -152,6 +155,7 @@ UiEditorAction(counted_string S)
   if (StringsMatch(S, CSz("UiEditorAction_New"))) { return UiEditorAction_New; }
   if (StringsMatch(S, CSz("UiEditorAction_Show"))) { return UiEditorAction_Show; }
   if (StringsMatch(S, CSz("UiEditorAction_Hide"))) { return UiEditorAction_Hide; }
+  if (StringsMatch(S, CSz("UiEditorAction_HideObstructed"))) { return UiEditorAction_HideObstructed; }
   if (StringsMatch(S, CSz("UiEditorAction_ReorderUp"))) { return UiEditorAction_ReorderUp; }
   if (StringsMatch(S, CSz("UiEditorAction_ReorderDown"))) { return UiEditorAction_ReorderDown; }
   if (StringsMatch(S, CSz("UiEditorAction_Duplicate"))) { return UiEditorAction_Duplicate; }
@@ -237,6 +241,26 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_editor_action Value, ui_id BaseId)
           UiEditorAction_Hide
         ),
         UiEditorAction_Hide,
+      };
+    } break;
+
+
+        case UiEditorAction_HideObstructed:
+    {
+      Result =
+      {
+                UiDisplayType_Icon,
+        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_EyeHatched,
+        
+        CSz("HideObstructed"),
+
+        UiId(
+          BaseId.WindowBits,
+          BaseId.InteractionBits,
+          UiMaskAndCastPointer("ui_editor_action UiEditorAction_HideObstructed"),
+          UiEditorAction_HideObstructed
+        ),
+        UiEditorAction_HideObstructed,
       };
     } break;
 
@@ -346,7 +370,7 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_editor_action Value, ui_id BaseId)
       Result =
       {
                 UiDisplayType_Icon,
-        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport,
+        .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Disk,
         
         CSz("Save"),
 
@@ -452,6 +476,7 @@ RadioButtonGroup_ui_editor_action( renderer_2d *Ui,
     { UiDisplayType_Text, {{ CSz("New"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_New")), UiEditorAction_New },
     { UiDisplayType_Text, {{ CSz("Show"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Show")), UiEditorAction_Show },
     { UiDisplayType_Text, {{ CSz("Hide"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Hide")), UiEditorAction_Hide },
+    { UiDisplayType_Text, {{ CSz("HideObstructed"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_HideObstructed")), UiEditorAction_HideObstructed },
     { UiDisplayType_Text, {{ CSz("ReorderUp"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_ReorderUp")), UiEditorAction_ReorderUp },
     { UiDisplayType_Text, {{ CSz("ReorderDown"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_ReorderDown")), UiEditorAction_ReorderDown },
     { UiDisplayType_Text, {{ CSz("Duplicate"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_action UiEditorAction_Duplicate")), UiEditorAction_Duplicate },
@@ -538,6 +563,21 @@ PushToolbar(     renderer_2d *Ui,
 
         {
             UiDisplayType_Icon,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_EyeHatched,
+      
+      CSz("HideObstructed"),
+
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_editor_action UiEditorAction_HideObstructed"),
+        Cast(void*, Index)
+      ),
+      UiEditorAction_HideObstructed,
+    },
+
+        {
+            UiDisplayType_Icon,
       .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowUp,
       
       CSz("ReorderUp"),
@@ -613,7 +653,7 @@ PushToolbar(     renderer_2d *Ui,
 
         {
             UiDisplayType_Icon,
-      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport,
+      .IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Disk,
       
       CSz("Save"),
 

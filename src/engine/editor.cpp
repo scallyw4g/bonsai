@@ -1109,7 +1109,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
       {
               u32 IconBits =
                 (1 << UiEditorAction_New)            |
-                (1 << UiEditorAction_ExportAsPrefab) |
+                (1 << UiEditorAction_Save) |
                 (1 << UiEditorAction_Duplicate)      ;
 
         ui_id BaseId = UiId(BrushSettingsWindow, Brush, 0, 0);
@@ -2384,8 +2384,19 @@ DoWorldEditor(engine_resources *Engine)
 
               const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
+              u32 VisibilityAction = u32_MAX;
+              if (Layer->Flags & WorldEditLayerFlag_Hidden)
+              {
+                VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_HideObstructed) ;
+              }
+              else
+              {
+                VisibilityAction = (Edit->Flags & WorldEditFlag_Hidden) ? (1<<UiEditorAction_Show): (1<<UiEditorAction_Hide) ;
+              }
+              Assert(VisibilityAction != u32_MAX);
+
               u32 IconBits =
-                (1 << UiEditorAction_Show)        |
+                VisibilityAction                  |
                 (1 << UiEditorAction_ReorderUp)   |
                 (1 << UiEditorAction_ReorderDown) |
                 (1 << UiEditorAction_Duplicate)   |
@@ -2401,10 +2412,11 @@ DoWorldEditor(engine_resources *Engine)
                 case UiEditorAction_NoAction: {} break;
 
                 case UiEditorAction_Show:
-                {} break;
-
+                case UiEditorAction_HideObstructed:
                 case UiEditorAction_Hide:
-                {} break;
+                {
+                  ToggleBitfieldValue(Edit->Flags, WorldEditFlag_Hidden);
+                } break;
 
                 case UiEditorAction_SetBrush:
                 {

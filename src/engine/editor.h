@@ -19,6 +19,8 @@ enum ui_icon_index
 
   UiIconIndex_Brush,
 
+  UiIconIndex_Disk,
+
   UiIconIndex_EyeCrossed,
   UiIconIndex_EyeHatched,
   UiIconIndex_Eye,
@@ -104,12 +106,13 @@ poof(@gen_ui_toolbar)
   UiEditorAction_New            poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Add)),
   UiEditorAction_Show           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_EyeOutline)),
   UiEditorAction_Hide           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Eye)),
+  UiEditorAction_HideObstructed poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_EyeHatched)),
   UiEditorAction_ReorderUp      poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowUp)),
   UiEditorAction_ReorderDown    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowDown)),
   UiEditorAction_Duplicate      poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone)),
   UiEditorAction_SetBrush       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Brush)),
   UiEditorAction_ExportAsPrefab poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport)),
-  UiEditorAction_Save           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport)),
+  UiEditorAction_Save           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Disk)),
   UiEditorAction_Delete         poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
   UiEditorAction_Expand         poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleRight)),
   UiEditorAction_Collapse       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleDown)),
