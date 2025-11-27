@@ -962,6 +962,116 @@ DoColorSwatch(renderer_2d *Ui, v2 QuadDim, v3 RGB)
   PushUntexturedQuad(Ui, {}, QuadDim, zDepth_Text, &Style, {} );
 }
 
+
+link_internal ui_editor_action
+DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32 EnabledBits)
+{
+  // Why would we ever call this if we didn't wanna draw anything?
+  Assert(EnabledBits);
+
+  ui_toggle_button_handle ButtonHandles[UiEditorAction_Count];
+
+  u32 ButtonCount = 0;
+  RangeIterator(Action, UiEditorAction_Count)
+  {
+    if ( EnabledBits & (1<<Action) )
+    {
+      ButtonHandles[ButtonCount++] = ButtonHandleForEnumValue(Ui, ui_editor_action(Action), BaseId);
+    }
+  }
+  Assert(ButtonCount == CountBitsSet_Kernighan(EnabledBits));
+
+  ui_toggle_button_handle_buffer ButtonBuffer = {
+    ButtonCount,
+    ButtonHandles
+  };
+
+  ui_editor_action Action = UiEditorAction_NoAction;
+
+  ui_toggle_button_group Result = {};
+  Result.Ui = Ui;
+  Result.Flags = ui_toggle_button_group_flags(ToggleButtonGroupFlags_TypeClickButton | ToggleButtonGroupFlags_NoNewRow);
+  Result.Buttons = ButtonBuffer;
+  Result.EnumStorage = Cast(u32*, &Action);
+
+  DrawButtonGroup(&Result, {});
+
+  Assert(IsValid(Action));
+  return Action;
+
+#if 0
+  {
+    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer hide layer", ThisHash, u32(LayerIndex));
+    s32 IconIndex = *LayerDisabled ? UiIconIndex_EyeOutline : UiIconIndex_Eye ;
+    if (Button(Ui, &Ui->IconTextureArray, IconIndex, ButtonId))
+    {
+      b32 D = *LayerDisabled;
+      *LayerDisabled = !D;
+    }
+  }
+
+  {
+    b32 Enable = LayerIndex != 0;
+    if (Enable)
+    {
+      auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move up", ThisHash, u32(LayerIndex));
+      if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowUp, ButtonId))
+      {
+        b32 ThisState = GetToggleState(Ui, ToggleId);
+        ui_id NextId = ToggleId;
+        NextId.ElementBits -= 1;
+        b32 NextState = GetToggleState(Ui, NextId);
+
+        SetToggleButton(Ui, ToggleId, NextState);
+        SetToggleButton(Ui, NextId, ThisState);
+
+        BrushLayerAction = UiBrushLayerAction_MoveUp;
+        EditLayerIndex = LayerIndex;
+      }
+    }
+    else
+    {
+      PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
+    }
+  }
+
+  {
+    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move down", ThisHash, u32(LayerIndex));
+    b32 Enable = LayerIndex != LayeredBrush->LayerCount-1;
+    if (Enable)
+    {
+      if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowDown, ButtonId))
+      {
+        b32 ThisState = GetToggleState(Ui, ToggleId);
+        ui_id NextId = ToggleId;
+        NextId.ElementBits += 1;
+        b32 NextState = GetToggleState(Ui, NextId);
+
+        SetToggleButton(Ui, ToggleId, NextState);
+        SetToggleButton(Ui, NextId, ThisState);
+
+        BrushLayerAction = UiBrushLayerAction_MoveDown;
+        EditLayerIndex = LayerIndex;
+      }
+    }
+    else
+    {
+      PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
+    }
+  }
+
+  {
+    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer duplicate", ThisHash, u32(LayerIndex));
+    if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Clone, ButtonId))
+    {
+      BrushLayerAction = UiBrushLayerAction_Duplicate;
+      EditLayerIndex = LayerIndex;
+    }
+  }
+#endif
+
+}
+
 link_internal void
 DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_layout *BrushSettingsWindow)
 {
@@ -991,25 +1101,33 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
       /* if (LayeredBrush->LayerCount) */
       {
-        ui_brush_actions BrushAction = {};
-        ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction);
+              u32 IconBits =
+                (1 << UiEditorAction_New)            |
+                (1 << UiEditorAction_ExportAsPrefab) |
+                (1 << UiEditorAction_Duplicate)      ;
+
+        ui_id BaseId = UiId(BrushSettingsWindow, Brush, 0, 0);
+        ui_editor_action BrushAction = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
+        /* ui_editor_action BrushAction = {}; */
+#if 1
+        /* ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushAction); */
         switch (BrushAction)
         {
-          case UiBrushAction_NoAction: {} break;
+          case UiEditorAction_NoAction: {} break;
 
-          case UiBrushAction_New:
+          case UiEditorAction_New:
           {
             world_edit_brush ThisBrush = NewBrush();
             Editor->CurrentBrush = Insert(ThisBrush, &Editor->LoadedBrushes, Editor->Memory);
           } break;
 
-          case UiBrushAction_Save:
+          case UiEditorAction_Save:
           {
             cs BrushFilepath = GetFilenameForBrush(CS(Brush->NameBuf));
             SaveBrush(Brush, BrushFilepath.Start);
           } break;
 
-          case UiBrushAction_Duplicate:
+          case UiEditorAction_Duplicate:
           {
             world_edit_brush Duplicated = *Brush;
 
@@ -1042,6 +1160,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
             Editor->CurrentBrush = Insert(Duplicated, &Editor->LoadedBrushes, Editor->Memory);
           } break;
 
+          InvalidDefaultCase;
 #if 0
           case UiBrushAction_Import:
           {
@@ -1063,6 +1182,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 #endif
 
         }
+#endif
       }
 
       {
@@ -1124,10 +1244,26 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
             ui_id ToggleId = UiId(BrushSettingsWindow, "brush_layer toggle interaction", ThisHash, u32(LayerIndex));
             cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
 
+
+            ui_id BaseId = UiId(BrushSettingsWindow, ThisHash, 0);
+
+            u32 EyeIcon = BrushLayer->Settings.Disabled?  (1<<UiEditorAction_Show) : (1<<UiEditorAction_Hide);
+            u32 IconBits =
+              EyeIcon |
+              (1 << UiEditorAction_ReorderUp)   |
+              (1 << UiEditorAction_ReorderDown) |
+              (1 << UiEditorAction_Duplicate) ;
+
+            ui_editor_action Action = DoEditorActionsButtons(Ui, BrushSettingsWindow, BaseId, IconBits);
+
+            /* switch (Action) */
+            /* { */
+            /* } */
+
+            /* DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, b32 *LayerDisabled) */
+#if 0
             {
               /* ui_toggle_button_group Toolbar = PushToolbar(Ui, BrushSettingsWindow, CSz(""), &BrushLayerAction, u64(LayerIndex), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_DrawVertical); */
-              v3 DefaultTint = V3(1.0f);
-
               {
                 auto ButtonId = UiId(BrushSettingsWindow, "brush_layer hide layer", ThisHash, u32(LayerIndex));
                 s32 IconIndex = BrushLayer->Settings.Disabled ? UiIconIndex_EyeOutline : UiIconIndex_Eye ;
@@ -1142,7 +1278,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
                 if (Enable)
                 {
                   auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move up", ThisHash, u32(LayerIndex));
-                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_UpArrow, ButtonId, DefaultTint))
+                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowUp, ButtonId))
                   {
                     b32 ThisState = GetToggleState(Ui, ToggleId);
                     ui_id NextId = ToggleId;
@@ -1167,7 +1303,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
                 b32 Enable = LayerIndex != LayeredBrush->LayerCount-1;
                 if (Enable)
                 {
-                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_DownArrow, ButtonId))
+                  if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowDown, ButtonId))
                   {
                     b32 ThisState = GetToggleState(Ui, ToggleId);
                     ui_id NextId = ToggleId;
@@ -1189,7 +1325,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
               {
                 auto ButtonId = UiId(BrushSettingsWindow, "brush_layer duplicate", ThisHash, u32(LayerIndex));
-                if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_CloneOutline, ButtonId))
+                if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Clone, ButtonId))
                 {
                   BrushLayerAction = UiBrushLayerAction_Duplicate;
                   EditLayerIndex = LayerIndex;
@@ -1197,6 +1333,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
               }
 
             }
+#endif
 
             /* if (ToggleButton(Ui, FSz("%d %S", LayerIndex, LayerDetails), FSz("%d %S", LayerIndex, LayerDetails), ToggleId)) */
             if (Button(Ui, FSz("%S", LayerDetails), ToggleId))
@@ -2271,14 +2408,52 @@ DoWorldEditor(engine_resources *Engine)
 
               const char *NameBuf = Edit->Brush ? Edit->Brush->NameBuf : "no brush";
 
-              ui_reorder_action EditReorderAction = {};
-              PushToolbar(Ui, &LayersWindow, {}, &EditReorderAction, u64(Edit)^u64(Layer), &DefaultUiRenderParams_Toolbar, ToggleButtonGroupFlags_NoNewRow);
+              u32 IconBits =
+                (1 << UiEditorAction_Show)        |
+                (1 << UiEditorAction_ReorderUp)   |
+                (1 << UiEditorAction_ReorderDown) |
+                (1 << UiEditorAction_Duplicate)   |
+                (1 << UiEditorAction_SetBrush) ;
 
+              ui_id BaseId = UiId(&LayersWindow, Edit, 0, 0);
+              ui_editor_action EditReorderAction = DoEditorActionsButtons(Ui, &LayersWindow, BaseId, IconBits);
+
+              if (EditReorderAction != UiEditorAction_NoAction) { Info("%S", ToString(EditReorderAction)); }
               switch(EditReorderAction)
               {
-                case UiReorderAction_NoAction: break;
+                InvalidCase(UiEditorAction_New);
+                InvalidCase(UiEditorAction_Save);
+                InvalidCase(UiEditorAction_ExportAsPrefab);
+                InvalidCase(UiEditorAction_Delete);
+                InvalidCase(UiEditorAction_Count);
 
-                case UiReorderAction_ReorderUp:
+                case UiEditorAction_NoAction: {} break;
+
+                case UiEditorAction_Show:
+                {} break;
+
+                case UiEditorAction_Hide:
+                {} break;
+
+                case UiEditorAction_SetBrush:
+                {
+                  Assert(Editor->CurrentBrush);
+                  Edit->Brush = Editor->CurrentBrush;
+                  ReapplyEditToOctree(Engine, Edit, GetTranArena());
+                } break;
+
+                case UiEditorAction_Duplicate:
+                {
+                  world_edit_block_array_index DupIndex = {};
+                  auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
+
+                  b32 MultiSelect = Input->Ctrl.Pressed;
+                  SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
+
+                  ApplyEditToOctree(Engine, Duplicated, GetTranArena());
+                } break;
+
+                case UiEditorAction_ReorderUp:
                 {
                   if (PrevEditIndex)
                   {
@@ -2303,7 +2478,7 @@ DoWorldEditor(engine_resources *Engine)
 
                 } break;
 
-                case UiReorderAction_ReorderDown:
+                case UiEditorAction_ReorderDown:
                 {
                   auto NextEditIndexIndex = EditIndexIndex;
                      ++NextEditIndexIndex;
@@ -2379,6 +2554,7 @@ DoWorldEditor(engine_resources *Engine)
               {
                 case UiLayerEditAction_NoAction: {} break;
 
+#if 0
                 case UiLayerEditAction_SetBrush:
                 {
                   Assert(Editor->CurrentBrush);
@@ -2396,6 +2572,7 @@ DoWorldEditor(engine_resources *Engine)
 
                   ApplyEditToOctree(Engine, Duplicated, GetTranArena());
                 } break;
+#endif
 
                 case UiLayerEditAction_Delete:
                 {

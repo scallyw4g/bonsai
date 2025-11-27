@@ -6185,43 +6185,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 
             
             
             
-            cs MemberName = CSz("_Reserved");
-
-                                                                                                auto Member = Cast(u32*, &Element->_Reserved);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("WindowBits");
 
                                                                                                 auto Member = Cast(u32*, &Element->WindowBits);
@@ -6299,6 +6262,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 
             cs MemberName = CSz("ElementBits");
 
                                                                                                 auto Member = Cast(u32*, &Element->ElementBits);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("HashBits");
+
+                                                                                                auto Member = Cast(u32*, &Element->HashBits);
             DoEditorUi(Ui,
               Window,
               Member,

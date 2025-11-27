@@ -2,26 +2,33 @@
 
 enum ui_icon_index
 {
-  UiIconIndex_RightChevron,
-  UiIconIndex_RightChevronSmall,
+  UiIconIndex_AngleDown,
+  UiIconIndex_AngleLeft,
+  UiIconIndex_AngleRight,
+  UiIconIndex_AngleUp,
 
-  UiIconIndex_DownArrow,
-  UiIconIndex_LeftArrow,
-  UiIconIndex_UpArrow,
-
-  UiIconIndex_Check,
+  UiIconIndex_ArrowDown,
+  UiIconIndex_ArrowLeft,
+  UiIconIndex_ArrowRight,
+  UiIconIndex_ArrowUp,
 
   UiIconIndex_Clone,
-  UiIconIndex_CloneOutline,
 
-  UiIconIndex_Cross,
   UiIconIndex_CrossCircle,
+  UiIconIndex_Cross,
 
-  UiIconIndex_EyeOutline,
+  UiIconIndex_Brush,
+
+  UiIconIndex_EyeCrossed,
+  UiIconIndex_EyeHatched,
   UiIconIndex_Eye,
+  UiIconIndex_EyeOutline,
 
-  UiIconIndex_List,
-  UiIconIndex_Hamburger,
+  UiIconIndex_FileExport,
+  UiIconIndex_FileImport,
+
+  UiIconIndex_Add,
+  UiIconIndex_Tombstone,
 
   UiIconIndex_Trash,
 
@@ -40,14 +47,15 @@ poof(@gen_ui_toolbar)
 {
   LayerToolbarActions_NoAction   poof(@ui_skip),
 
-  LayerToolbarActions_Rename          poof(@ui_display_name(CSz("R"))),
-  LayerToolbarActions_Duplicate       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline)),
-  LayerToolbarActions_ExportAsPrefab  poof(@ui_display_name(CSz("P"))),
+  LayerToolbarActions_Rename          poof(@ui_display_name({})),
+  LayerToolbarActions_Duplicate       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone)),
+  LayerToolbarActions_ExportAsPrefab  poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport)),
   LayerToolbarActions_Delete          poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
   //
   // .. ?
 };
 
+#if 0
 enum ui_brush_actions
 poof(@gen_ui_toolbar)
 {
@@ -62,17 +70,18 @@ enum ui_reorder_action
 poof(@gen_ui_toolbar)
 {
   UiReorderAction_NoAction    poof(@ui_skip),
-  UiReorderAction_ReorderUp   poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_UpArrow)),
-  UiReorderAction_ReorderDown poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_DownArrow)),
+  UiReorderAction_Hide        poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Eye)),
+  UiReorderAction_ReorderUp   poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowUp)),
+  UiReorderAction_ReorderDown poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowDown)),
+  UiReorderAction_Duplicate   poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone)),
+  UiReorderAction_SetBrush    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Brush)),
 };
+#endif
 
 enum ui_layer_edit_actions
 poof(@gen_ui_toolbar)
 {
   UiLayerEditAction_NoAction  poof(@ui_skip),
-
-  UiLayerEditAction_SetBrush     poof(@ui_display_name(CSz("S"))),
-  UiLayerEditAction_Duplicate    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_CloneOutline)),
   UiLayerEditAction_Delete       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
 };
 
@@ -81,11 +90,30 @@ poof(@gen_ui_toolbar)
 {
   UiBrushLayerAction_NoAction  poof(@ui_skip),
 
-  UiBrushLayerAction_MoveUp    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_RightChevron)),
+  UiBrushLayerAction_MoveUp    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_AngleRight)),
   UiBrushLayerAction_MoveDown,
   UiBrushLayerAction_Duplicate,
   UiBrushLayerAction_Delete,
 };
+
+
+enum ui_editor_action
+poof(@gen_ui_toolbar)
+{
+  UiEditorAction_NoAction       poof(@ui_skip),
+  UiEditorAction_New            poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Add)),
+  UiEditorAction_Show           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_EyeOutline)),
+  UiEditorAction_Hide           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Eye)),
+  UiEditorAction_ReorderUp      poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowUp)),
+  UiEditorAction_ReorderDown    poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_ArrowDown)),
+  UiEditorAction_Duplicate      poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Clone)),
+  UiEditorAction_SetBrush       poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Brush)),
+  UiEditorAction_ExportAsPrefab poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport)),
+  UiEditorAction_Save           poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_FileExport)),
+  UiEditorAction_Delete         poof(@ui_display_texture(.IconTexture = &Ui->IconTextureArray, .IconId = UiIconIndex_Trash)),
+  UiEditorAction_Count          poof(@ui_skip),
+};
+
 
 //
 // NOTE(Jesse): This is more-or-less duplicated in the face_index enum.  Coalesce them?
@@ -204,8 +232,79 @@ poof(
 )
 
 poof(
+  func gen_ui_toggle_button_handle_from_runtime_value(enum_t)
+  {
+    link_internal ui_toggle_button_handle
+    ButtonHandleForEnumValue(renderer_2d *Ui, enum_t.name Value, ui_id BaseId)
+    {
+      Assert(BaseId.ElementBits == 0);
+      Assert(BaseId.HashBits == 0);
+
+      ui_toggle_button_handle Result;
+
+      switch (Value)
+      {
+        enum_t.map(enum_v)
+        {
+          enum_v.has_tag(ui_skip)?
+          {
+            case enum_v.name: {} break;
+          }
+          {
+            case enum_v.name:
+            {
+              Result =
+              {
+                enum_v.has_tag(ui_display_texture)?
+                {
+                  UiDisplayType_Icon,
+                  enum_v.tag_value(ui_display_texture),
+                  /// Tooltip
+                  CSz("enum_v.name.strip_all_prefix"),
+                }
+                {
+                  UiDisplayType_Text,
+                  {{
+                    /// Name
+                    enum_v.has_tag(ui_display_name)?
+                    {
+                      enum_v.tag_value(ui_display_name)
+                    }{
+                      CSz("enum_v.name.strip_all_prefix")
+                    },
+                  }},
+
+                  /// Tooltip
+                  enum_v.has_tag(ui_display_name)?
+                  {
+                    CSz("enum_v.name.strip_all_prefix")
+                  }{
+                    {}
+                  },
+                }
+                UiId(
+                  BaseId.WindowBits,
+                  BaseId.InteractionBits,
+                  UiMaskAndCastPointer("enum_t.name enum_v.name"),
+                  enum_v.name
+                ),
+                enum_v.name,
+              };
+            } break;
+          }
+
+        }
+      }
+      return Result;
+    }
+  }
+)
+
+poof(
   func toolbar_for_enum(enum_t)
   {
+    gen_ui_toggle_button_handle_from_runtime_value(enum_t)
+
     radio_button_group_for_enum(enum_t)
 
     link_internal ui_toggle_button_group
