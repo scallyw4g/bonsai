@@ -2254,9 +2254,10 @@ DoWorldEditor(engine_resources *Engine)
         ui_action_result LayerAction = DoEditorActionsButtons(Ui, LayersWindow, BaseId, ActionBits);
 
 
-        if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_AngleRight, UiId(LayersWindow, "layer expand/contract", Layer, 0)))
+        s32 IconIndex = (Layer->Flags & WorldEditLayerFlag_Collapsed) ? UiIconIndex_AngleRight : UiIconIndex_AngleDown;
+        if (Button(Ui, &Ui->IconTextureArray, IconIndex, UiId(LayersWindow, "layer expand/contract", Layer, 0)))
         {
-          Info("Expand/Contract");
+          ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Collapsed);
         }
 
         ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
@@ -2355,7 +2356,8 @@ DoWorldEditor(engine_resources *Engine)
       }
       PushTableEnd(Ui);
 
-      if (Layer)
+      if ( Layer &&
+          (Layer->Flags & WorldEditLayerFlag_Collapsed) == 0)
       {
         PushTableStart(Ui);
         if (AtElements(&Layer->EditIndices).Index == 0)
@@ -2532,10 +2534,11 @@ DoWorldEditor(engine_resources *Engine)
           }
         }
         PushTableEnd(Ui);
-        PushNewRow(Ui);
 
         PrevLayer = Layer;
       }
+
+      PushNewRow(Ui);
     }
 
     PushNewRow(Ui);

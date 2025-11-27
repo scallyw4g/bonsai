@@ -1650,7 +1650,7 @@ poof(@serdes @version(1))
   // NOTE(Jesse): Array of indices into the world_edit block array
   world_edit_block_array_index_block_array EditIndices;
 
-  world_edit_layer_flags Flags;
+  u32 Flags; // world_edit_layer_flags
 };
 poof(block_array(world_edit_layer, {128}))
 #include <generated/block_array_world_edit_layer_688735882.h>
@@ -1659,9 +1659,6 @@ struct world_edit_layer_0
 poof(@serdes @default_marshal(world_edit_layer))
 {
   char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
-
-  // NOTE(Jesse): type name is confusing here .. this is an array of indices into
-  // the world_edit block array
   world_edit_block_array_index_block_array EditIndices;
 };
 

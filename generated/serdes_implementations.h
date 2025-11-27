@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:502:0
+// src/engine/serdes.cpp:503:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:502:0
+// src/engine/serdes.cpp:503:0
 
 
 
@@ -1717,7 +1717,9 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_layer *BaseElement, umm Count
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->Flags); // enum
+                            Result &= Serialize(Bytes, &Element->Flags); // default
+
+
 
 
 
@@ -1802,7 +1804,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer *Element, memory_ar
 
 
 
-          Element->Flags = Cast(world_edit_layer_flags, Read_u32(Bytes));
+              
+  
+  Result &= Deserialize(Bytes, &Element->Flags, Memory);
+
+
 
 
 
