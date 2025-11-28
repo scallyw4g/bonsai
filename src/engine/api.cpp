@@ -328,6 +328,34 @@ Bonsai_FrameBegin(engine_resources *Resources)
 
   DoEngineDebug(Resources); // Do Editor/Debug UI
 
+  //
+  // Input processing
+  //
+  // It is important that the input update happens after UI draws, but before interaction processing.
+  // If these happen in this order:
+  //
+  // 1. ui layout
+  // 2. input update
+  // 3. interaction processing
+  //
+  // Then the ui layout will have both the LMB.Clicked flag and Clicked interaction ID set at the same
+  // time, whereas if you do the input update first, you only get the LMB.Clicked flag and no valid
+  // Clicked interaction ID, because the interaction processing happens at the end of the frame (during layout)
+  //
+  {
+    ResetInputForFrameStart(&Plat->Input, &Resources->Hotkeys);
+
+    v2 LastMouseP = Plat->MouseP;
+    while ( ProcessOsMessages(&Resources->Stdlib.Os, Plat) );
+    Plat->MouseDP = LastMouseP - Plat->MouseP;
+    /* Assert(Plat->ScreenDim.x > 0); */
+    /* Assert(Plat->ScreenDim.y > 0); */
+
+    BindHotkeysToInput(&Resources->Hotkeys, &Plat->Input);
+
+    /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
+  }
+
   // We just drew these values, reset for this frame
 #if BONSAI_DEBUG_SYSTEM_API
   GetDebugState()->DrawCallCountLastFrame = 0;

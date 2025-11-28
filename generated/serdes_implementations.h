@@ -438,7 +438,6 @@ Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory)
 
 
 
-
 /* serdes_collection(type) */
 
 

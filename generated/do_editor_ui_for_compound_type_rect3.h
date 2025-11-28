@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:943:0
+// src/engine/editor.h:962:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0

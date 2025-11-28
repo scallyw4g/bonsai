@@ -106,7 +106,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_no
 
 
 
-
+struct interactable;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
@@ -145,9 +147,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
-struct ui_id;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
-; 
 
 
 

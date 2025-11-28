@@ -158,7 +158,6 @@ check_occlusion_query_async_params check_occlusion_query_async_params;
 
 
 
-
 finalize_shit_and_fuckin_do_stuff_async_params finalize_shit_and_fuckin_do_stuff_async_params;
 
 

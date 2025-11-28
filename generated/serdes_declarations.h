@@ -142,7 +142,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 
 
 
-
 struct prefab_hashtable;
 
 link_internal b32

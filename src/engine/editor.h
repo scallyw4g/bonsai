@@ -840,20 +840,39 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
 
   if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
+  ui_id BaseInteraction = UiId(Window, 0, Value, ThisHash);
+  b32 Editing = Ui->CurrentEditorInteraction == BaseInteraction;
+
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
-    PushTableStart(Ui);
-      if (Value)
+    if (Value)
+    {
+      if (Editing)
       {
-        if (Button(Ui, CSz("-"), UiId(Window, "decrement", Value, ThisHash))) { *Value = *Value - 1.f; Result = True; }
+        if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value - 1.f; Result = True; }
           Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
-        if (Button(Ui, CSz("+"), UiId(Window, "increment", Value, ThisHash))) { *Value = *Value + 1.f; Result = True; }
+        if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value + 1.f; Result = True; }
       }
       else
       {
-        PushColumn(Ui, CSz("(null)"));
+        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction)) { Ui->CurrentEditorInteraction = BaseInteraction; }
       }
-    PushTableEnd(Ui);
+    }
+    else
+    {
+      PushColumn(Ui, CSz("(null)"));
+    }
   EndColumn(Ui, Start);
+
+  if (Editing)
+  {
+    if ( (Ui->Input->LMB.Clicked && Result == False) ||
+          Ui->Input->Enter.Clicked )
+    {
+      // We clicked something that wasn't the widget, so overwrite the interaction
+      Ui->CurrentEditorInteraction = {};
+    }
+  }
+
   return Result;
 }
 
