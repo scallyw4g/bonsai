@@ -876,9 +876,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
     {
       if (Editing)
       {
+        // NOTE(Jesse): This table should not be necessary, because of the Column we're wrapped in
+        // I observed v3s being fucked in some situation that I couldn't reproduce, so I commented
+        // out the table for now in the hopes I'll reproduce it, and verify that this is indeed a
+        // bug in the layout code.
+        //
+        /* PushTableStart(Ui); */
         if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value - 1.f; Result = True; }
           Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
         if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value + 1.f; Result = True; }
+        /* PushTableEnd(Ui); */
       }
       else
       {
@@ -897,7 +904,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
           Ui->Input->Enter.Clicked )
     {
       // We clicked something that wasn't the widget, so overwrite the interaction
-      Ui->Active.Id = {};
+      Ui->Active = {};
     }
   }
 
