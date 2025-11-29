@@ -1,11 +1,12 @@
 // callsite
-// src/engine/editor.h:1218:0
+// src/engine/editor.h:1223:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1E3E2BDD);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ValuePositive"), UiId(Window, "enum WorldEdit_ColorBlendMode_ValuePositive", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_ValuePositive;
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("ValueNegative"), UiId(Window, "enum WorldEdit_ColorBlendMode_ValueNegative", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_ValueNegative;
 
 
@@ -36,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Surface"), UiId(Window, "enum WorldEdit_ColorBlendMode_Surface", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_Surface;
 
 
@@ -45,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Always"), UiId(Window, "enum WorldEdit_ColorBlendMode_Always", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_Always;
 
 
@@ -54,6 +59,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Disabled"), UiId(Window, "enum WorldEdit_ColorBlendMode_Disabled", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_Disabled;
 
 
@@ -63,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("FinalBlend"), UiId(Window, "enum WorldEdit_ColorBlendMode_FinalBlend", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = WorldEdit_ColorBlendMode_FinalBlend;
 
 
@@ -75,6 +82,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_color_blend_mode *
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

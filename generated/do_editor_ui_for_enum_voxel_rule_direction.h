@@ -1,11 +1,12 @@
 // callsite
-// src/engine/editor.h:994:0
+// src/engine/editor.h:999:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x77DD4C3);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosX"), UiId(Window, "enum VoxelRuleDir_PosX", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_PosX;
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegX"), UiId(Window, "enum VoxelRuleDir_NegX", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_NegX;
 
 
@@ -36,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosY"), UiId(Window, "enum VoxelRuleDir_PosY", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_PosY;
 
 
@@ -45,6 +49,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegY"), UiId(Window, "enum VoxelRuleDir_NegY", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_NegY;
 
 
@@ -54,6 +59,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("PosZ"), UiId(Window, "enum VoxelRuleDir_PosZ", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_PosZ;
 
 
@@ -63,6 +69,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("NegZ"), UiId(Window, "enum VoxelRuleDir_NegZ", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_NegZ;
 
 
@@ -72,6 +79,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Count"), UiId(Window, "enum VoxelRuleDir_Count", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = VoxelRuleDir_Count;
 
 
@@ -84,6 +92,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel_rule_direction *Element
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

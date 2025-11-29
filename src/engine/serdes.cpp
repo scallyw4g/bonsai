@@ -462,14 +462,6 @@ poof(
 #include <generated/serdes_declarations.h>
 
 
-link_internal void
-Marshal(brush_settings_0 *Stored, brush_settings *Live)
-{
-poof(default_marshal(brush_settings_0))
-#include <generated/default_marshal_c2IlWx8d.h>
-}
-
-
 poof(
   for_datatypes(struct)
     func (type)

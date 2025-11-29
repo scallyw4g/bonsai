@@ -1,11 +1,12 @@
 // callsite
-// src/engine/editor.h:1474:0
+// src/engine/editor.h:1480:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x136838E8);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Noise"), UiId(Window, "enum BrushLayerType_Noise", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = BrushLayerType_Noise;
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Shape"), UiId(Window, "enum BrushLayerType_Shape", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = BrushLayerType_Shape;
 
 
@@ -36,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Brush"), UiId(Window, "enum BrushLayerType_Brush", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = BrushLayerType_Brush;
 
 
@@ -48,6 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer_type *Element, cs
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

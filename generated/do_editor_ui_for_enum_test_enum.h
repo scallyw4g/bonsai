@@ -3,9 +3,10 @@
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3B491E58);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, 
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Foo"), UiId(Window, "enum TestEnum_Foo", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = TestEnum_Foo;
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, 
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Bar"), UiId(Window, "enum TestEnum_Bar", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = TestEnum_Bar;
 
 
@@ -36,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, 
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Baz"), UiId(Window, "enum TestEnum_Baz", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = TestEnum_Baz;
 
 
@@ -48,6 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, test_enum *Element, cs Name, 
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

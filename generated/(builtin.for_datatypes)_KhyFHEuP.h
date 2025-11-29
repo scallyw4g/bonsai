@@ -1,10 +1,8 @@
 // callsite
-// src/engine/editor.h:1734:0
+// src/engine/editor.h:1701:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:1734:0
-
-
+// src/engine/editor.h:1701:0
 
 
 
@@ -821,6 +819,8 @@
 
 
 PrefabSpawnCallback_DefaultPrefabSpawnCallback,
+
+
 
 
 

@@ -411,21 +411,8 @@ poof(
 
 
 
-
-/* poof(do_editor_ui_for_compound_type(brush_layer)) */
-/* #include <generated/do_editor_ui_for_compound_type_brush_layer.h> */
-
-poof(do_editor_ui_for_compound_type(layered_brush))
-#include <generated/do_editor_ui_for_compound_type_layered_brush.h>
-
-poof(do_editor_ui_for_compound_type(world_edit_brush))
-#include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h>
-
-/* poof(do_editor_ui_for_compound_type(world_edit)) */
-/* #include <generated/do_editor_ui_for_compound_type_struct_world_edit.h> */
-
-/* poof(do_editor_ui_for_container(world_edit_ptr_block_array)) */
-/* #include <generated/do_editor_ui_for_compound_type_world_edit_paged_list.h> */
+/* poof(do_editor_ui_for_compound_type(world_edit_brush)) */
+/* #include <generated/do_editor_ui_for_compound_type_struct_world_edit_brush.h> */
 
 poof(do_editor_ui_for_compound_type(world_edit_block_array_index))
 #include <generated/do_editor_ui_for_compound_type_world_edit_block_array_index.h>
@@ -522,7 +509,7 @@ poof(do_editor_ui_for_compound_type(entity_position_info))
 
 
 link_internal void
-DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash);
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
 
 poof(
   for_datatypes(struct)
@@ -929,18 +916,18 @@ NewBrush(world_edit_brush *Brush)
   cs Src = CSz("_untitled.brush");
   CopyString(&Src, &BrushNameBuf);
 
-  brush_layer *Layers =  Brush->Layered.Layers;
+  brush_layer *Layers =  Brush->Layers;
   RangeIterator(LayerIndex, MAX_BRUSH_LAYERS)
   {
     brush_layer *Layer = Layers + LayerIndex;
     Layer->Settings = {};
   }
 
-  Brush->Layered.LayerCount = 1;
+  Brush->LayerCount = 1;
 
   // Initialize PrevSettings so we don't fire a changed event straight away..
   // @prevent_change_event
-  CheckSettingsChanged(&Brush->Layered);
+  CheckSettingsChanged(Brush);
 }
 
 link_internal world_edit_brush
@@ -1022,78 +1009,6 @@ DoEditorActionsButtons(renderer_2d *Ui, window_layout *Window, ui_id BaseId, u32
   Assert(IsValid(Action));
 
   return {Action, Result.ClickedId};
-
-#if 0
-  {
-    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer hide layer", ThisHash, u32(LayerIndex));
-    s32 IconIndex = *LayerDisabled ? UiIconIndex_EyeOutline : UiIconIndex_Eye ;
-    if (Button(Ui, &Ui->IconTextureArray, IconIndex, ButtonId))
-    {
-      b32 D = *LayerDisabled;
-      *LayerDisabled = !D;
-    }
-  }
-
-  {
-    b32 Enable = LayerIndex != 0;
-    if (Enable)
-    {
-      auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move up", ThisHash, u32(LayerIndex));
-      if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowUp, ButtonId))
-      {
-        b32 ThisState = GetToggleState(Ui, ToggleId);
-        ui_id NextId = ToggleId;
-        NextId.ElementBits -= 1;
-        b32 NextState = GetToggleState(Ui, NextId);
-
-        SetToggleButton(Ui, ToggleId, NextState);
-        SetToggleButton(Ui, NextId, ThisState);
-
-        BrushLayerAction = UiBrushLayerAction_MoveUp;
-        EditLayerIndex = LayerIndex;
-      }
-    }
-    else
-    {
-      PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
-    }
-  }
-
-  {
-    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer move down", ThisHash, u32(LayerIndex));
-    b32 Enable = LayerIndex != LayeredBrush->LayerCount-1;
-    if (Enable)
-    {
-      if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_ArrowDown, ButtonId))
-      {
-        b32 ThisState = GetToggleState(Ui, ToggleId);
-        ui_id NextId = ToggleId;
-        NextId.ElementBits += 1;
-        b32 NextState = GetToggleState(Ui, NextId);
-
-        SetToggleButton(Ui, ToggleId, NextState);
-        SetToggleButton(Ui, NextId, ThisState);
-
-        BrushLayerAction = UiBrushLayerAction_MoveDown;
-        EditLayerIndex = LayerIndex;
-      }
-    }
-    else
-    {
-      PushColumn(Ui, CSz(""), &DefaultUiRenderParams_Button);
-    }
-  }
-
-  {
-    auto ButtonId = UiId(BrushSettingsWindow, "brush_layer duplicate", ThisHash, u32(LayerIndex));
-    if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Clone, ButtonId))
-    {
-      BrushLayerAction = UiBrushLayerAction_Duplicate;
-      EditLayerIndex = LayerIndex;
-    }
-  }
-#endif
-
 }
 
 link_internal void
@@ -1107,9 +1022,8 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
   Assert(Brush);
   {
     b32 IsNewBrush = False;
-    layered_brush *LayeredBrush = &Brush->Layered;
     {
-      b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->Layered.LayerCount == 0;
+      b32 BrushUninitialized = Brush->NameBuf[0] == 0 && Brush->LayerCount == 0;
       if (BrushUninitialized)
       {
         NewBrush(Brush);
@@ -1186,10 +1100,10 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
       {
 
-        /* if (LayeredBrush->LayerCount) */
         {
           PushNewRow(Ui);
           PushNewRow(Ui);
+          PushTableStart(Ui);
 
           {
             ui_id TextBoxId = UiId(BrushSettingsWindow, "name_buf_textbox", Brush->NameBuf);
@@ -1197,32 +1111,42 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
             TextBox(Ui, CSz("BrushName"), NameBuf, NameBuf_Len, TextBoxId);
             PushNewRow(Ui);
 
-            DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic);
-            // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set
-            LayeredBrush->LayerCount = Max(LayeredBrush->LayerCount, 1);
-            LayeredBrush->LayerCount = Min(LayeredBrush->LayerCount, MAX_BRUSH_LAYERS);
-            PushNewRow(Ui);
-            PushNewRow(Ui);
-          }
-
-          {
-            DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode,     CSz("Brush Blend Mode"), ThisHash, &DefaultUiRenderParams_Generic);
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->Modifier, CSz("Modifier"), &DefaultUiRenderParams_Generic); */
+            /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->LayerCount, CSz("Layer Count"), ThisHash, &DefaultUiRenderParams_Generic); */
+            /* // Clamp LayerCount to (1,MAX_BRUSH_LAYERS) once it's set */
+            /* Brush->LayerCount = Max(Brush->LayerCount, 1); */
+            /* Brush->LayerCount = Min(Brush->LayerCount, MAX_BRUSH_LAYERS); */
+            /* PushNewRow(Ui); */
             /* PushNewRow(Ui); */
           }
 
           {
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */
-            /* PushNewRow(Ui); */
-            /* PushNewRow(Ui); */
+            if (DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushBlendMode,     CSz("Blend"), ThisHash, &DefaultUiRenderParams_Generic))
+            {
+              /* ReapplyEditsUsingBrush(Engine, Brush); */
+            }
+
+            if (Brush->BrushBlendMode == WorldEdit_Mode_SmoothUnion)
+            {
+              DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing, CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic);
+              {
+                /* ReapplyEditsUsingBrush(Engine, Brush); */
+              }
+            }
+          } PushTableEnd(Ui); { /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->AffectExisting, CSz("Affect World"), ThisHash, &DefaultUiRenderParams_Checkbox); */ /* PushNewRow(Ui); */ /* PushNewRow(Ui); */
 
             PushNewRow(Ui);
-            PushColumn(Ui, CSz(" ----- LAYERS -----"));
+            PushColumn(Ui, FSz(" ----- LAYERS (%d/%d) ", Brush->LayerCount, MAX_BRUSH_LAYERS), &DefaultUiRenderParams_Generic);
+
+            if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Add, UiId(BrushSettingsWindow, "brush layer add", Brush, 0)))
+            {
+              Brush->LayerCount = Min(Brush->LayerCount+1, MAX_BRUSH_LAYERS);
+            }
+
+            PushColumn(Ui, CSz(" -----"), &DefaultUiRenderParams_Generic);
             PushNewRow(Ui);
             PushNewRow(Ui);
 
-            /* DoEditorUi(Ui, BrushSettingsWindow, &LayeredBrush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
+            /* DoEditorUi(Ui, BrushSettingsWindow, &Brush->BrushFollowsCursor,      CSz("BrushFollowsCursor"),      &DefaultUiRenderParams_Checkbox); */
             /* PushNewRow(Ui); */
             /* PushNewRow(Ui); */
           }
@@ -1235,8 +1159,8 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
           PushTableStart(Ui);
 
-          brush_layer *BrushLayers = Brush->Layered.Layers;
-          RangeIterator(LayerIndex, LayeredBrush->LayerCount)
+          brush_layer *BrushLayers = Brush->Layers;
+          RangeIterator(LayerIndex, Brush->LayerCount)
           {
             brush_layer *BrushLayer = BrushLayers + LayerIndex;
 
@@ -1311,9 +1235,9 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
             OPEN_INDENT_FOR_TOGGLEABLE_REGION();
               {
                 if (Editor->CurrentBrush_SelectedLayerIndex >= 0 &&
-                    Editor->CurrentBrush_SelectedLayerIndex <= Editor->CurrentBrush->Layered.LayerCount)
+                    Editor->CurrentBrush_SelectedLayerIndex <= Editor->CurrentBrush->LayerCount)
                 {
-                  auto BrushLayer = Editor->CurrentBrush->Layered.Layers + Editor->CurrentBrush_SelectedLayerIndex;
+                  auto BrushLayer = Editor->CurrentBrush->Layers + Editor->CurrentBrush_SelectedLayerIndex;
                   DoEditorUi(Ui, BrushSettingsWindow, BrushLayer, {}, ThisHash);
                 }
               }
@@ -1333,9 +1257,9 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
           if (BrushLayerAction == UiEditorAction_ReorderDown)
           {
-            if (LayeredBrush->LayerCount)
+            if (Brush->LayerCount)
             {
-              if (EditLayerIndex < LayeredBrush->LayerCount-1)
+              if (EditLayerIndex < Brush->LayerCount-1)
               {
                 brush_layer *BrushLayer = BrushLayers + EditLayerIndex;
                 brush_layer Tmp = BrushLayers[EditLayerIndex+1];
@@ -1347,9 +1271,9 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
           if (BrushLayerAction == UiEditorAction_Duplicate)
           {
-            if (LayeredBrush->LayerCount < MAX_BRUSH_LAYERS)
+            if (Brush->LayerCount < MAX_BRUSH_LAYERS)
             {
-              LayeredBrush->LayerCount += 1;
+              Brush->LayerCount += 1;
 
               // Shuffle layers forward.  This conveniently duplicates the EditLayerIndex
               RangeIteratorReverseRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
@@ -1363,7 +1287,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
           {
             // NOTE(Jesse): Not an `if` because we shouldn't be able to ask to
             // delete a layer if there aren't any to delete!
-            Assert(LayeredBrush->LayerCount > 0);
+            Assert(Brush->LayerCount > 0);
 
             // Shuffle layers backwards, overwriting EditLayerIndex
             RangeIteratorRange(LayerIndex, MAX_BRUSH_LAYERS, EditLayerIndex+1)
@@ -1372,7 +1296,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
               BrushLayers[LayerIndex-1].Settings = BrushLayers[LayerIndex].Settings;
             }
 
-            LayeredBrush->LayerCount -= 1;
+            Brush->LayerCount -= 1;
           }
         }
       }
@@ -1675,7 +1599,7 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
 }
 
 link_internal b32
-CheckSettingsChanged(layered_brush *Brush)
+CheckSettingsChanged(world_edit_brush *Brush)
 {
   b32 Result = False;
   RangeIterator(LayerIndex, Brush->LayerCount)
@@ -1693,7 +1617,7 @@ CheckSettingsChanged(world_edit *Edit)
   b32 Result = False;
   if (Edit->Brush)
   {
-    Result = CheckSettingsChanged(&Edit->Brush->Layered);
+    Result = CheckSettingsChanged(Edit->Brush);
   }
   return Result;
 }
@@ -1848,6 +1772,15 @@ ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Te
   // TODO(Jesse): Is there a better way to do this, or do we even care?
   UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory);
 }
+
+link_internal void
+ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush)
+{
+  NotImplemented;
+  // TODO(Jesse): Is there a better way to do this, or do we even care?
+  /* UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory); */
+}
+
 
 #if 0
 
@@ -2157,7 +2090,7 @@ DoWorldEditor(engine_resources *Engine)
           if (Button(Ui, CS(Brush->NameBuf), UiId(AllBrushesWindow, "brush select", Brush), Style))
           {
             Editor->CurrentBrush = Brush;
-            CheckSettingsChanged(&Brush->Layered); // Prevent firing a change event @prevent_change_event
+            CheckSettingsChanged(Brush); // Prevent firing a change event @prevent_change_event
           }
           PushNewRow(Ui);
         }
@@ -2165,6 +2098,7 @@ DoWorldEditor(engine_resources *Engine)
       PushWindowEnd(Ui, AllBrushesWindow);
 
       window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Details", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
+      /* DoEditorUi(Ui, BrushSettingsWindow, Editor->CurrentBrush, {}, 0); */
       DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
 
       // NOTE(Jesse): Must come after the settings window draws because the
@@ -2196,7 +2130,7 @@ DoWorldEditor(engine_resources *Engine)
   }
 
   {
-    b32 CurrentBrushSettingsChanged  = Editor->CurrentBrush && CheckSettingsChanged(&Editor->CurrentBrush->Layered);
+    b32 CurrentBrushSettingsChanged  = Editor->CurrentBrush && CheckSettingsChanged(Editor->CurrentBrush);
     IterateOver(&Editor->Edits, Edit, EditIndex)
     {
       if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
@@ -2526,7 +2460,7 @@ DoWorldEditor(engine_resources *Engine)
                 if (Edit->Brush)
                 {
                   Editor->CurrentBrush = Edit->Brush;
-                  CheckSettingsChanged(&Edit->Brush->Layered); // Prevent firing a change event @prevent_change_event
+                  CheckSettingsChanged(Edit->Brush); // Prevent firing a change event @prevent_change_event
                 }
               }
 
@@ -2543,14 +2477,6 @@ DoWorldEditor(engine_resources *Engine)
                 DeleteEdit(Engine, Edit, EditIndex, Layer);
               }
               PushNewRow(Ui);
-
-              /* if (EditIsSelected) */
-              /* { */
-              /*   if (DoEditorUi(Ui, LayersWindow, &Edit->Rotation, CSz("Rotation"), 0)) */
-              /*   { */
-              /*     Edit->Dirty = True; */
-              /*   } */
-              /* } */
 
               PrevEditIndex = EditIndex;
             }
@@ -2947,7 +2873,7 @@ DoLevelWindow(engine_resources *Engine)
 }
 
 link_internal void
-DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash)
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
 {
   if (Element->Brush)
   {
@@ -3009,7 +2935,9 @@ BindUniformsForBrush(
     world_edit_blend_mode  BlendMode,
 
     v3 *ChunkRelEditMin,
-    v3 *ChunkRelEditMax
+    v3 *ChunkRelEditMax,
+
+    r32 ColorBlendBias
     )
 {
   BindFramebuffer(Write);
@@ -3043,8 +2971,8 @@ BindUniformsForBrush(
 
   BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
   BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
-  BindUniformByName(Program, "BlendMode",      Layer->Settings.LayerBlendMode);
-  BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueModifier);
+  BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
+  BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc);
   BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
@@ -3056,6 +2984,8 @@ BindUniformsForBrush(
   BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin);
   BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax);
 
+  BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
+
   AssertNoGlErrors;
 }
 
@@ -3063,17 +2993,16 @@ link_internal rtt_framebuffer
 ApplyBrush( world_edit_render_context *WorldEditRC,
                               rect3cp  EditBounds,
                                    v3  ParentRotation,
-                     world_edit_brush *EditBrush,
+                     world_edit_brush *Brush,
                 world_edit_blend_mode  BlendMode,
                           world_chunk *Chunk,
                       rtt_framebuffer *Read,
                       rtt_framebuffer *Write,
                       rtt_framebuffer *Accum,
                                   b32  SeedNoise,
-                                  b32  SeedColor )
+                                  b32  SeedColor,
+                                  r32  ColorBlendBias)
 {
-  layered_brush *Brush = &EditBrush->Layered;
-
   world *World = GetWorld();
 
   RangeIterator(LayerIndex, Brush->LayerCount)
@@ -3122,7 +3051,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
                            BlendMode,
                            &ChunkRelEditMin,
-                           &ChunkRelEditMax
+                           &ChunkRelEditMax,
+                           ColorBlendBias
                          );
     SeedNoise = True;
     SeedColor = True;
@@ -3146,9 +3076,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                                 EditBounds,
                                                 ParentRotation,
                                                 NestedBrush,
-                                                Layer->Settings.LayerBlendMode,
+                                                Layer->Settings.BlendMode,
                                                 Chunk,
-                                                &B0, &B1, Read, False, False);
+                                                &B0, &B1, Read, False, False, NestedBrush->Smoothing.ColorBlend);
 
           // NOTE(Jesse): This is kinda gross, but if we're the last layer we have 
           // to apply the result of the brush back into the accumulation texture
@@ -3160,21 +3090,21 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           {
             world_edit_brush BlendBrush = {};
             BlendBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
-            BlendBrush.Layered.LayerCount = 1;
-            BlendBrush.Layered.Layers[0].Settings.LayerBlendMode = WorldEdit_Mode_Disabled;
-            BlendBrush.Layered.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend;
+            BlendBrush.LayerCount = 1;
+            BlendBrush.Layers[0].Settings.BlendMode = WorldEdit_Mode_Disabled;
+            BlendBrush.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend;
 
 
             Applied = ApplyBrush( WorldEditRC,
                                   EditBounds,
                                   ParentRotation,
                                   &BlendBrush,
-                                  EditBrush->BrushBlendMode,
+                                  Brush->BrushBlendMode,
                                   Chunk,
                                   &Applied,
                                   Read, // Intentionally writing into read here because that's what we return
                                   Accum,
-                                  True, True);
+                                  True, True, ColorBlendBias);
 
             Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B0);
             Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B1);

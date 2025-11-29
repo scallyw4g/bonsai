@@ -1,11 +1,12 @@
 // callsite
-// src/engine/editor.cpp:547:0
+// src/engine/editor.cpp:534:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2D5EDA);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Level"), UiId(Window, "enum EngineDebugViewMode_Level", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_Level == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -41,6 +43,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldEdit"), UiId(Window, "enum EngineDebugViewMode_WorldEdit", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_WorldEdit == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Entities"), UiId(Window, "enum EngineDebugViewMode_Entities", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_Entities == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -87,6 +91,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Assets"), UiId(Window, "enum EngineDebugViewMode_Assets", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_Assets == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -110,6 +115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("WorldChunks"), UiId(Window, "enum EngineDebugViewMode_WorldChunks", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_WorldChunks == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -133,6 +139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Textures"), UiId(Window, "enum EngineDebugViewMode_Textures", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_Textures == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -156,6 +163,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("RenderSettings"), UiId(Window, "enum EngineDebugViewMode_RenderSettings", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_RenderSettings == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -179,6 +187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("EngineDebug"), UiId(Window, "enum EngineDebugViewMode_EngineDebug", Element, ThisHash), Params))
     {
+      Result = True;
             if (EngineDebugViewMode_EngineDebug == engine_debug_view_mode(0))
       {
         *Element = engine_debug_view_mode(0);
@@ -205,6 +214,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

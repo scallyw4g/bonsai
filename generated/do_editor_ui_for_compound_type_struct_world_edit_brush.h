@@ -3,9 +3,10 @@
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0
-struct world_edit_brush;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x2083C45D);
@@ -140,14 +141,51 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
         /* }{} */
 
         {
+           if (Element->BrushBlendMode == WorldEdit_Mode_SmoothUnion) 
+          { 
+            
+            
+            
+            cs MemberName = CSz("ColorBlendBias");
+
+                                                                                                auto Member = Cast(r32*, &Element->ColorBlendBias);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              , -1.f, 1.f );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
           
           { 
             
             
             
-            cs MemberName = CSz("Layered");
+            cs MemberName = CSz("LayerCount");
 
-                                                                                                auto Member = Cast(layered_brush*, &Element->Layered);
+                                                                                                auto Member = Cast(s32*, &Element->LayerCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -159,6 +197,58 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 
 
 
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Layers");
+
+                                                
+
+            if (ToggleButton(Ui,
+                CSz("v Layers[16]"),
+                CSz("> Layers[16]"),
+                UiId(Window, "toggle world_edit_brush brush_layer Layers", Element->Layers, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+                            s32 End = s32(Element->LayerCount);
+              Assert( End < 16 );
+
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi(Ui,
+                  Window,
+                  Element->Layers+ArrayIndex,
+                  FSz("Layers[%d]", ArrayIndex),
+                  ThisHash,
+                  Params);
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
 
 
 

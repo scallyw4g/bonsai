@@ -1,11 +1,12 @@
 // callsite
-// src/engine/editor.h:1040:0
+// src/engine/editor.h:1045:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x56825CE);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Perlin"), UiId(Window, "enum NoiseType_Perlin", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = NoiseType_Perlin;
 
 
@@ -27,6 +29,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Voronoi"), UiId(Window, "enum NoiseType_Voronoi", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = NoiseType_Voronoi;
 
 
@@ -36,6 +39,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("White"), UiId(Window, "enum NoiseType_White", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = NoiseType_White;
 
 
@@ -48,6 +52,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_noise_type *Element, cs Na
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

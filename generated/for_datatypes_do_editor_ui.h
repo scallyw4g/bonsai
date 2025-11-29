@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:814:0
+// src/engine/editor.h:817:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:814:0
+// src/engine/editor.h:817:0
 
 
 
@@ -42,6 +42,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_set
 
 
 
+struct layer_settings;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 struct texture;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -138,9 +141,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 
 
 
-struct brush_settings_0;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings_0 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
-; 
 struct terrain_finalize_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -307,6 +307,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 
 
 
+struct smooth_blend_params;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 struct world_edit;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -427,9 +430,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_edit
 
 
 
-struct brush_settings;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
-; 
 
 
 
@@ -437,7 +437,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_sett
 struct ui_toggle_hashtable;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
+struct world_edit_brush;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 struct game_lights;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -498,7 +500,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Ele
 
 
 
-
+struct world_edit_brush_hashtable;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush_hashtable *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
@@ -731,7 +735,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_upda
 struct v2_static_cursor_16;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 struct noise_layer;

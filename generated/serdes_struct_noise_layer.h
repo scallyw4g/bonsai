@@ -45,13 +45,6 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
 
-                            Result &= Serialize(Bytes, &Element->Power); // default
-
-
-
-
-
-
                             Result &= Serialize(Bytes, &Element->White); // default
 
 
@@ -67,6 +60,13 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
                             Result &= Serialize(Bytes, &Element->Voronoi); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Power); // default
 
 
 
@@ -151,15 +151,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
               
   
-  Result &= Deserialize(Bytes, &Element->Power, Memory);
-
-
-
-
-
-
-              
-  
   Result &= Deserialize(Bytes, &Element->White, Memory);
 
 
@@ -179,6 +170,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
               
   
   Result &= Deserialize(Bytes, &Element->Voronoi, Memory);
+
+
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->Power, Memory);
 
 
 

@@ -310,7 +310,7 @@ DrainHiRenderQueue(engine_resources *Engine)
 }
 
 link_internal b32
-AnyValidLayersRemaining(layered_brush *Brush, s32 At)
+AnyValidLayersRemaining(world_edit_brush *Brush, s32 At)
 {
   b32 HasValidLayer = False;
   RangeIteratorRange(LayerIndex, Brush->LayerCount, At)
@@ -654,7 +654,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                                                           Brush,
                                                           Brush->BrushBlendMode,
                                                           Chunk,
-                                                          Read, Write, Accum, False, False);
+                                                          Read, Write, Accum, False, False, Brush->Smoothing.ColorBlend);
 
                     if (Applied.FBO.ID == Read->FBO.ID)
                     {

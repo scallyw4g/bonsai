@@ -1,12 +1,12 @@
 // callsite
-// src/engine/editor.h:1561:0
+// src/engine/editor.h:1539:0
 
 // def (gen_constructor)
 // external/bonsai_stdlib/src/poof_functions.h:115:0
-link_internal brush_settings
-BrushSettings(  brush_layer_type   Type , noise_layer   Noise , shape_layer   Shape , world_edit_brush *  Brush , r32   ValueBias , world_edit_blend_mode_modifier   ValueModifier , world_edit_blend_mode   LayerBlendMode , world_edit_color_blend_mode   ColorMode , b8   Invert , rect3i   SelectionModifier , v3i   BasisOffset , v3   HSVColor , b32   Disabled  )
+link_internal layer_settings
+LayerSettings(  brush_layer_type   Type , noise_layer   Noise , shape_layer   Shape , world_edit_brush *  Brush , b8   Invert , b8   Normalized , b8 *  Reserved , r32   ValueBias , world_edit_blend_mode_modifier   ValueFunc , world_edit_blend_mode   BlendMode , smooth_blend_params   Smoothing , world_edit_color_blend_mode   ColorMode , v3i   BasisOffset , v3   HSVColor , b32   Disabled  )
 {
-  brush_settings Reuslt = {
+  layer_settings Reuslt = {
             .Type = Type
 
 ,        .Noise = Noise
@@ -15,17 +15,21 @@ BrushSettings(  brush_layer_type   Type , noise_layer   Noise , shape_layer   Sh
 
 ,        .Brush = Brush
 
-,        .ValueBias = ValueBias
-
-,        .ValueModifier = ValueModifier
-
-,        .LayerBlendMode = LayerBlendMode
-
-,        .ColorMode = ColorMode
-
 ,        .Invert = Invert
 
-,        .SelectionModifier = SelectionModifier
+,        .Normalized = Normalized
+
+,        .Reserved = {}
+
+,        .ValueBias = ValueBias
+
+,        .ValueFunc = ValueFunc
+
+,        .BlendMode = BlendMode
+
+,        .Smoothing = Smoothing
+
+,        .ColorMode = ColorMode
 
 ,        .BasisOffset = BasisOffset
 
@@ -41,6 +45,12 @@ BrushSettings(  brush_layer_type   Type , noise_layer   Noise , shape_layer   Sh
   
   
   
+  
+    RangeIterator(Index, s32())
+  {
+    Reuslt.Reserved[Index] = Reserved[Index];
+  }
+
   
   
   

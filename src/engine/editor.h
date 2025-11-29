@@ -697,9 +697,10 @@ poof(
       do_editor_ui_for_radio_enum(enum_t)
     }
     {
-      link_internal void
+      link_internal b32
       DoEditorUi(renderer_2d *Ui, window_layout *Window, enum_t.name *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
       {
+        b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(enum_t.hash));
 
         if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -714,6 +715,7 @@ poof(
             if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
             if (Button(Ui, CSz("value.name.strip_all_prefix"), UiId(Window, "enum value.name", Element, ThisHash), Params))
             {
+              Result = True;
               enum_t.has_tag(bitfield)?
               {
                 if ((value.name) == enum_t.name(0))
@@ -745,6 +747,7 @@ poof(
         {
           PushNewRow(Ui);
         }
+        return Result;
       }
     }
   }
@@ -881,11 +884,11 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
         // out the table for now in the hopes I'll reproduce it, and verify that this is indeed a
         // bug in the layout code.
         //
-        /* PushTableStart(Ui); */
+        PushTableStart(Ui);
         if (Button(Ui, CSz("-"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("decrement"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value - 1.f; Result = True; }
           Result |= DebugSlider(Ui, Window, Value, {}, MinValue, MaxValue);
         if (Button(Ui, CSz("+"), UiId(BaseInteraction.E[0], UiMaskAndCastPointer("increment"), BaseInteraction.E[2], BaseInteraction.E[3]))) { *Value = *Value + 1.f; Result = True; }
-        /* PushTableEnd(Ui); */
+        PushTableEnd(Ui);
       }
       else
       {
@@ -901,6 +904,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
   if (Editing)
   {
     if ( (Ui->Input->LMB.Clicked && Result == False) ||
+          Ui->Input->RMB.Clicked  ||
+          Ui->Input->MMB.Clicked  ||
           Ui->Input->Enter.Clicked )
     {
       // We clicked something that wasn't the widget, so overwrite the interaction
@@ -1418,11 +1423,12 @@ poof(
   )
 {
   ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
-  r32 Power;
 
   white_noise_params   White;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
   perlin_noise_params  Perlin;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
   voronoi_noise_params Voronoi; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
+
+  r32 Power = 1.f;
 };
 
 struct noise_layer_1
@@ -1474,17 +1480,23 @@ poof(string_and_value_tables(brush_layer_type))
 poof(do_editor_ui_for_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_enum_brush_layer_type.h>
 
-struct world_edit_brush;
 
-struct brush_settings
-poof(@do_editor_ui @serdes @version(1))
+struct smooth_blend_params
+poof(@serdes @do_editor_ui)
+{
+  r32 ValueBlend; poof(@ui_value_range(-1.f,  1.f)) 
+  r32 ColorBlend; poof(@ui_value_range(-1.f,  1.f))
+};
+
+struct world_edit_brush;
+struct layer_settings
+poof(@do_editor_ui @serdes)
 {
   brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
 
-  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
-  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+  noise_layer Noise;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
 
-  /* world_edit_brush *Brush; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Brush)) */
   world_edit_brush *Brush;
   poof(
     @ui_display_name({})
@@ -1496,90 +1508,44 @@ poof(@do_editor_ui @serdes @version(1))
   // Common across brush types
   //
 
-  /* f32 Power     = 1.f; poof(@ui_value_range( 0.f, 25.f) @ui_display_condition(HasThresholdModifier(Element))) */
-  /* f32 Threshold = 0.f; poof(@ui_value_range( 0.f,  1.f) @ui_display_condition(HasThresholdModifier(Element))) */
-  r32 ValueBias = 0.f; poof(@ui_value_range(-1.f,  1.f))
-
-  world_edit_blend_mode_modifier ValueModifier;
-  world_edit_blend_mode          LayerBlendMode;
-  world_edit_color_blend_mode    ColorMode;
-
+  // TODO(Jesse): Pack into flags ..
   b8 Invert;
+  b8 Normalized; poof(@ui_skip)  // Should the sample range be put into 0-1?  Currently does nothing.
+  b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
 
-  // NOTE(Jesse): This is the relative offset from the base selection, which is
-  // used to inflate or contract the area affected by the brush.
-  //
-  rect3i SelectionModifier;
+  r32 ValueBias;      poof(@ui_value_range(-1.f,  1.f))
+
+  world_edit_blend_mode_modifier ValueFunc;
+  world_edit_blend_mode          BlendMode;
+
+  smooth_blend_params Smoothing; poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+
+  world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
 
   v3i BasisOffset; poof(@ui_skip)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
 
-  b32 Disabled;
-};
-
-struct brush_settings_0
-poof(@do_editor_ui @serdes)
-{
-  brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
-
-  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
-  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
-
-  world_edit_brush *Brush;
-
-  //
-  // Common across brush types
-  //
-
-  r32 ValueBias = 0.f; poof(@ui_value_range(-1.f,  1.f))
-
-  world_edit_blend_mode_modifier ValueModifier;
-  world_edit_blend_mode          LayerBlendMode;
-  world_edit_color_blend_mode    ColorMode;
-
-  b8 Invert;
-
-  // NOTE(Jesse): This is the relative offset from the base selection, which is
-  // used to inflate or contract the area affected by the brush.
-  //
-  rect3i SelectionModifier;
-
-  v3i BasisOffset; poof(@ui_skip)
-
-  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("HSVColor")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
+  b32 Disabled; poof(@ui_skip)
 };
 
 link_internal void
-DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, brush_settings *Element, umm ParentHash);
+DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
 
-poof(are_equal(brush_settings))
+poof(are_equal(layer_settings))
 #include <generated/are_equal_struct.h>
 
-poof(gen_constructor(brush_settings))
+poof(gen_constructor(layer_settings))
 #include <generated/gen_constructor_lJ6fXxTn.h>
 
 struct brush_layer
-poof( @do_editor_ui
-      @serdes )
+poof( @do_editor_ui @serdes )
 {
-  brush_settings Settings;     poof(@ui_display_name({}))
-  brush_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
+  layer_settings Settings;     poof(@ui_display_name({}))
+  layer_settings PrevSettings; poof(@no_serialize @ui_skip) // Change detection
 };
 
-
-
-// TODO(Jesse): Make this dynamic .. probably ..
-#define MAX_BRUSH_LAYERS 16
-#define BRUSH_PREVIEW_TEXTURE_DIM 256
-struct layered_brush
-poof(@serdes)
-{
-          s32 LayerCount;
-  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
-};
 
 
 
@@ -1599,27 +1565,25 @@ struct asset_brush
 
 
 
+#define NameBuf_Len (256)
 
 
 struct world_edit_brush
-poof(@serdes)
+poof(@do_editor_ui @serdes)
 {
   // NOTE(Jesse): This is so we can just copy the name of the brush in here and
   // not fuck around with allocating a single string when we load these in.
-#define NameBuf_Len (256)
   char NameBuf[NameBuf_Len+1]; poof(@ui_text_box @ui_construct_as(CS))
 
   /* world_edit_shape               Shape; */
   world_edit_blend_mode          BrushBlendMode;
   world_edit_blend_mode_modifier Modifier;
 
-  /* world_edit_brush_type Type; */
-  /* union */
-  /* { */
-  /*   single_brush  Single; */
-  /*   asset_brush   Asset; */
-    layered_brush Layered;
-  /* }; poof(@type_tag(world_edit_brush_type)) */
+  smooth_blend_params Smoothing;
+
+#define MAX_BRUSH_LAYERS 16
+          s32 LayerCount;
+  brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
 };
 
 link_internal umm
@@ -1972,69 +1936,20 @@ TryGetSelectedLayer(level_editor *Editor)
 }
 
 link_internal b32
-HasThresholdModifier(brush_settings *Element)
+HasThresholdModifier(layer_settings *Element)
 {
-  b32 Result = (Element->ValueModifier & WorldEdit_ValueModifier_Threshold);
+  b32 Result = (Element->ValueFunc & WorldEdit_ValueModifier_Threshold);
   return Result;
 }
-
-#if 0
-link_internal r32
-GetPowerFor(world *World, world_edit *Edit, brush_settings *Settings)
-{
-  r32 Result = 0.f;
-  switch (Settings->Type)
-  {
-    case BrushLayerType_Noise:
-    {
-      Result = Settings->Power;
-    } break;
-
-    case BrushLayerType_Shape:
-    {
-      switch (Settings->Shape.Type)
-      {
-        case ShapeType_Rect:
-        {
-          aabb Rect   = GetSimSpaceRect(World, Edit->Region);
-            v3 Dim    = GetDim(Rect);
-               Result = MaxChannel(Dim)/4.f;
-        } break;
-
-        case ShapeType_Sphere:
-        {
-          Result = Settings->Shape.Sphere.Radius;
-        } break;
-
-        case ShapeType_Line:
-        case ShapeType_Cylinder:
-        case ShapeType_Plane:
-        {
-          NotImplemented;
-          Result = 0.f;
-        } break;
-
-        case ShapeType_Torus:
-        {
-          Result = Settings->Shape.Torus.MajorRadius;
-        } break;
-      }
-    } break;
-  }
-
-  return Result;
-}
-#endif
-
 
 link_internal level_editor *
 GetEditor();
 
 link_internal b32
-CheckSettingsChanged(layered_brush *);
+CheckSettingsChanged(world_edit *);
 
 link_internal b32
-CheckSettingsChanged(world_edit *);
+CheckSettingsChanged(world_edit_brush *);
 
 link_internal b32 HardResetEditor(level_editor *Editor);
 
@@ -2043,15 +1958,6 @@ GetHotVoxelForEditMode(engine_resources *Engine, world_edit_blend_mode WorldEdit
 
 link_internal v3
 GetHotVoxelForFlood(engine_resources *Engine, world_edit_blend_mode WorldEditMode, world_edit_blend_mode_modifier Modifier);
-
-/* link_internal void */
-/* ApplyBrushLayer(engine_resources *Engine, brush_layer *Layer, chunk_thumbnail *Preview, world_chunk *DestChunk, v3i SmallestMinOffset); */
-
-link_internal v3i
-GetSmallestMinOffset(layered_brush *LayeredBrush, v3i *LargestLayerDim = 0);
-
-/* link_internal void */
-/* DrawEditorPreview(engine_resources *Engine, shader *Shader); */
 
 link_internal void
 ColorPickerModal(engine_resources *Engine, ui_id ModalId, v3 *HSVDest, b32 ShowColorSwatch = True);
@@ -2066,5 +1972,7 @@ link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
 
 link_internal rtt_framebuffer
-ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32);
+ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32, r32);
 
+link_internal void
+ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);

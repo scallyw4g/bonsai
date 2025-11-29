@@ -1,76 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:503:0
+// src/engine/serdes.cpp:495:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:503:0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// src/engine/serdes.cpp:495:0
 
 
 
@@ -99,11 +31,11 @@
 
 
 link_internal bonsai_type_info
-TypeInfo(brush_settings_0 *Ignored)
+TypeInfo(layer_settings *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("brush_settings_0");
+  Result.Name = CSz("layer_settings");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -118,7 +50,7 @@ TypeInfo(brush_settings_0 *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count)
+Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -131,7 +63,7 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    brush_settings_0 *Element = BaseElement + ElementIndex;
+    layer_settings *Element = BaseElement + ElementIndex;
                         Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
@@ -156,28 +88,6 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
 
 
-                            Result &= Serialize(Bytes, &Element->ValueBias); // default
-
-
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->ValueModifier); // enum
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->LayerBlendMode); // enum
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
-
-
-
-
                             Result &= Serialize(Bytes, &Element->Invert); // default
 
 
@@ -185,9 +95,48 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
 
 
-                            Result &= Serialize(Bytes, &Element->SelectionModifier); // default
+                            Result &= Serialize(Bytes, &Element->Normalized); // default
 
 
+
+
+
+
+                        {
+            umm ThisCount = 2;
+
+      Result &= Serialize(Bytes, Element->Reserved, ThisCount);
+    }
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->ValueBias); // default
+
+
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->ValueFunc); // enum
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->BlendMode); // enum
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Smoothing); // default
+
+
+
+
+
+
+                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
 
 
 
@@ -200,6 +149,13 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
 
                             Result &= Serialize(Bytes, &Element->HSVColor); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Disabled); // default
 
 
 
@@ -234,6 +190,12 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 
         
 
+        
+
+        
+
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -243,26 +205,26 @@ Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement, umm Count
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings_0 *BaseElement)
+Serialize(u8_cursor_block_array *Bytes, layer_settings *BaseElement)
 {
   return Serialize(Bytes, BaseElement, 1);
 }
 
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory);
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, umm Count);
+Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
             Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
@@ -295,30 +257,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 
               
   
-  Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
-
-
-
-
-
-
-          Element->ValueModifier = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
-
-
-
-
-          Element->LayerBlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
-
-
-
-
-          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
-
-
-
-
-              
-  
   Result &= Deserialize(Bytes, &Element->Invert, Memory);
 
 
@@ -328,9 +266,52 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 
               
   
-  Result &= Deserialize(Bytes, &Element->SelectionModifier, Memory);
+  Result &= Deserialize(Bytes, &Element->Normalized, Memory);
 
 
+
+
+
+
+            {
+        umm Count = 2;
+
+    Result &= Deserialize(Bytes, Element->Reserved, Memory, Count);
+  }
+
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
+
+
+
+
+
+
+          Element->ValueFunc = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
+
+
+
+
+          Element->BlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->Smoothing, Memory);
+
+
+
+
+
+
+          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
 
 
 
@@ -349,6 +330,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
   
   Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
 
+
+
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->Disabled, Memory);
 
 
 
@@ -382,6 +372,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
   
   
   
+  
+  
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
@@ -389,7 +382,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings_0 *Element, memory_ar
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
@@ -404,10 +397,78 @@ Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory, u
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings_0 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -702,6 +763,142 @@ Deserialize(u8_cursor *Bytes, prefab *Element, memory_arena *Memory)
 
 
 
+
+
+
+link_internal bonsai_type_info
+TypeInfo(smooth_blend_params *Ignored)
+{
+  bonsai_type_info Result = {};
+
+  Result.Name = CSz("smooth_blend_params");
+  Result.Version =  0 ;
+
+  /* type.map(member) */
+  /* { */
+  /*   { */
+  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
+  /*     Push(&Result.Members, &Member); */
+  /*   } */
+  /* } */
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, smooth_blend_params *BaseElement, umm Count)
+{
+  Assert(Count > 0);
+
+  u64 PointerTrue  = True;
+  u64 PointerFalse = False;
+
+  b32 Result = True;
+
+  
+
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+    smooth_blend_params *Element = BaseElement + ElementIndex;
+                                Result &= Serialize(Bytes, &Element->ValueBlend); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->ColorBlend); // default
+
+
+
+
+
+
+
+
+            
+
+        
+
+
+
+    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
+  }
+
+  return Result;
+}
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, smooth_blend_params *BaseElement)
+{
+  return Serialize(Bytes, BaseElement, 1);
+}
+
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory);
+
+
+
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory)
+{
+  b32 Result = True;
+                
+  
+  Result &= Deserialize(Bytes, &Element->ValueBlend, Memory);
+
+
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->ColorBlend, Memory);
+
+
+
+
+
+
+
+
+    
+  
+
+
+  MAYBE_READ_DEBUG_OBJECT_DELIM();
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count > 0);
+
+  b32 Result = True;
+  RangeIterator_t(umm, ElementIndex, Count)
+  {
+        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
+
+  }
+
+  return Result;
+}
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, smooth_blend_params *Element, memory_arena *Memory)
+{
+  return Deserialize(Bytes, Element, Memory, 1);
+}
 
 
 
@@ -1046,378 +1243,6 @@ Deserialize(u8_cursor *Bytes, world_edit *Element, memory_arena *Memory)
 
 
 
-link_internal bonsai_type_info
-TypeInfo(brush_settings *Ignored)
-{
-  bonsai_type_info Result = {};
-
-  Result.Name = CSz("brush_settings");
-  Result.Version =  1 ;
-
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement, umm Count)
-{
-  Assert(Count > 0);
-
-  u64 PointerTrue  = True;
-  u64 PointerFalse = False;
-
-  b32 Result = True;
-
-    Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber = 1;
-  Serialize(Bytes, &VersionNumber);
-
-
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-    brush_settings *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Noise); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Shape); // default
-
-
-
-
-
-
-                if (Element->Brush) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
-
-
-
-                            Result &= Serialize(Bytes, &Element->ValueBias); // default
-
-
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->ValueModifier); // enum
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->LayerBlendMode); // enum
-
-
-
-
-                    Result &= Serialize(Bytes, (u32*)&Element->ColorMode); // enum
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Invert); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->SelectionModifier); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->BasisOffset); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->HSVColor); // default
-
-
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Disabled); // default
-
-
-
-
-
-
-
-
-            
-
-        
-
-        
-
-                if (Element->Brush) { Result &= Serialize(Bytes, Element->Brush); }
-
-
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-        
-
-
-
-    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
-  }
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, brush_settings *BaseElement)
-{
-  return Serialize(Bytes, BaseElement, 1);
-}
-
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory);
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm Count);
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory);
-
-
-link_internal b32
-DeserializeVersioned(u8_cursor *Bytes, brush_settings *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
-{
-  Assert(TypeInfo->Version <= 1);
-
-  b32 Result = True;
-
-    if (TypeInfo->Version == 0)
-  {
-    brush_settings_0 T0 = {};
-    Result &= Deserialize(Bytes, &T0, Memory);
-    Marshal(&T0, Element);
-  }
-
-
-  if (TypeInfo->Version == 1)
-  {
-    Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
-  }
-
-  return Result;
-}
-
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory)
-{
-  b32 Result = True;
-            Element->Type = Cast(brush_layer_type, Read_u32(Bytes));
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->Noise, Memory);
-
-
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->Shape, Memory);
-
-
-
-
-
-
-        b64 HadBrushPointer = Read_u64(Bytes);
-  Assert(HadBrushPointer < 2); // Should be 0 or 1
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->ValueBias, Memory);
-
-
-
-
-
-
-          Element->ValueModifier = Cast(world_edit_blend_mode_modifier, Read_u32(Bytes));
-
-
-
-
-          Element->LayerBlendMode = Cast(world_edit_blend_mode, Read_u32(Bytes));
-
-
-
-
-          Element->ColorMode = Cast(world_edit_color_blend_mode, Read_u32(Bytes));
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->Invert, Memory);
-
-
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->SelectionModifier, Memory);
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->BasisOffset, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->HSVColor, Memory);
-
-
-
-
-
-
-
-              
-  
-  Result &= Deserialize(Bytes, &Element->Disabled, Memory);
-
-
-
-
-
-
-
-
-    
-  
-  
-      if (HadBrushPointer)
-  {
-        umm Count = 1;
-
-
-    if (Element->Brush == 0)
-    {
-      Element->Brush = Allocate(world_edit_brush, Memory, Count);
-    }
-
-    Result &= Deserialize(Bytes, Element->Brush, Memory, Count);
-  }
-
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory, umm Count)
-{
-  Assert(Count > 0);
-
-  b32 Result = True;
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-        maybe_bonsai_type_info MaybeSerializedType = GetByName(&Global_SerializeTypeTable, CSz("brush_settings"));
-
-    if (MaybeSerializedType.Tag)
-    {
-      u64 OldIgnoredVersionNumber;
-      if (MaybeSerializedType.Value.Version > 0)
-      {
-        Deserialize(Bytes, &OldIgnoredVersionNumber, Memory);
-      }
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &MaybeSerializedType.Value, Memory);
-    }
-    else
-    {
-      bonsai_type_info T0TypeInfo = {};
-      Result &= DeserializeVersioned(Bytes, Element+ElementIndex, &T0TypeInfo, Memory);
-    }
-
-  }
-
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, brush_settings *Element, memory_arena *Memory)
-{
-  return Deserialize(Bytes, Element, Memory, 1);
-}
-
-
-
 
 
 
@@ -1477,8 +1302,26 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
 
-                            Result &= Serialize(Bytes, &Element->Layered); // default
+                            Result &= Serialize(Bytes, &Element->Smoothing); // default
 
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->LayerCount); // default
+
+
+
+
+
+
+                        {
+            // TODO(Jesse): Should this really be a safe cast?
+      umm ThisCount = umm(Element->LayerCount);
+
+      Result &= Serialize(Bytes, Element->Layers, ThisCount);
+    }
 
 
 
@@ -1487,6 +1330,10 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_brush *BaseElement, umm Count
 
 
             
+
+        
+
+        
 
         
 
@@ -1547,8 +1394,28 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
               
   
-  Result &= Deserialize(Bytes, &Element->Layered, Memory);
+  Result &= Deserialize(Bytes, &Element->Smoothing, Memory);
 
+
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
+
+
+
+
+
+
+            {
+        // TODO(Jesse): Should this really be a safe cast?
+    umm Count = umm(Element->LayerCount);
+
+    Result &= Deserialize(Bytes, Element->Layers, Memory, Count);
+  }
 
 
 
@@ -1557,6 +1424,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
     
+  
+  
   
   
   
@@ -2284,148 +2153,6 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 
 
 
-
-
-
-link_internal bonsai_type_info
-TypeInfo(layered_brush *Ignored)
-{
-  bonsai_type_info Result = {};
-
-  Result.Name = CSz("layered_brush");
-  Result.Version =  0 ;
-
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement, umm Count)
-{
-  Assert(Count > 0);
-
-  u64 PointerTrue  = True;
-  u64 PointerFalse = False;
-
-  b32 Result = True;
-
-  
-
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-    layered_brush *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->LayerCount); // default
-
-
-
-
-
-
-                        {
-            // TODO(Jesse): Should this really be a safe cast?
-      umm ThisCount = umm(Element->LayerCount);
-
-      Result &= Serialize(Bytes, Element->Layers, ThisCount);
-    }
-
-
-
-
-
-
-
-            
-
-        
-
-
-
-    MAYBE_WRITE_DEBUG_OBJECT_DELIM();
-  }
-
-  return Result;
-}
-
-link_internal b32
-Serialize(u8_cursor_block_array *Bytes, layered_brush *BaseElement)
-{
-  return Serialize(Bytes, BaseElement, 1);
-}
-
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory);
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory, umm Count);
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory);
-
-
-
-
-link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory)
-{
-  b32 Result = True;
-                
-  
-  Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
-
-
-
-
-
-
-            {
-        // TODO(Jesse): Should this really be a safe cast?
-    umm Count = umm(Element->LayerCount);
-
-    Result &= Deserialize(Bytes, Element->Layers, Memory, Count);
-  }
-
-
-
-
-
-
-
-    
-  
-
-
-  MAYBE_READ_DEBUG_OBJECT_DELIM();
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory, umm Count)
-{
-  Assert(Count > 0);
-
-  b32 Result = True;
-  RangeIterator_t(umm, ElementIndex, Count)
-  {
-        Result &= DeserializeCurrentVersion(Bytes, Element+ElementIndex, Memory);
-
-  }
-
-  return Result;
-}
-
-link_internal b32
-Deserialize(u8_cursor *Bytes, layered_brush *Element, memory_arena *Memory)
-{
-  return Deserialize(Bytes, Element, Memory, 1);
-}
 
 
 

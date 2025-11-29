@@ -875,9 +875,10 @@ SelectionModificationMode(counted_string S)
 
 
 
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x48A2A15);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -890,6 +891,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("None"), UiId(Window, "enum SelectionModificationMode_None", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = SelectionModificationMode_None;
 
 
@@ -899,6 +901,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Initialize"), UiId(Window, "enum SelectionModificationMode_Initialize", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = SelectionModificationMode_Initialize;
 
 
@@ -908,6 +911,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Modify"), UiId(Window, "enum SelectionModificationMode_Modify", Element, ThisHash), Params))
     {
+      Result = True;
             *Element = SelectionModificationMode_Modify;
 
 
@@ -920,6 +924,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_modification_mode *
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

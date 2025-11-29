@@ -156,17 +156,17 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     {
       f32 BaseDiameter = 36.f;
 
-      auto Shape = &Brush->Layered.Layers[0].Settings.Shape;
-      auto Torus = &Brush->Layered.Layers[0].Settings.Shape.Torus;
+      auto Shape = &Brush->Layers[0].Settings.Shape;
+      auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
 
       Torus->MajorRadius = BaseDiameter + Sin(Plat->GameTime)*4.f;
       if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; }
       if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; }
       if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
 
-      Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
-      /* Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */
-      Brush->Layered.Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
+      Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
+      /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */
+      Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
     }
   }
 #endif

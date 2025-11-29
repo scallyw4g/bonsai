@@ -3,9 +3,10 @@
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:693:0
-link_internal void
+link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
+  b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x23F6F95E);
 
   if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
@@ -18,6 +19,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Foo"), UiId(Window, "enum BitfieldEnum_Foo", Element, ThisHash), Params))
     {
+      Result = True;
             if (BitfieldEnum_Foo == bitfield_enum(0))
       {
         *Element = bitfield_enum(0);
@@ -41,6 +43,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Bar"), UiId(Window, "enum BitfieldEnum_Bar", Element, ThisHash), Params))
     {
+      Result = True;
             if (BitfieldEnum_Bar == bitfield_enum(0))
       {
         *Element = bitfield_enum(0);
@@ -64,6 +67,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Baz"), UiId(Window, "enum BitfieldEnum_Baz", Element, ThisHash), Params))
     {
+      Result = True;
             if (BitfieldEnum_Baz == bitfield_enum(0))
       {
         *Element = bitfield_enum(0);
@@ -90,6 +94,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bitfield_enum *Element, cs Na
   {
     PushNewRow(Ui);
   }
+  return Result;
 }
 
 

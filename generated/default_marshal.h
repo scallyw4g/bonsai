@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:474:0
+// src/engine/serdes.cpp:466:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:474:0
+// src/engine/serdes.cpp:466:0
 
 
 
@@ -436,8 +436,6 @@ Marshal( world_edit_layer_0 *Stored, world_edit_layer *Live)
 
 
 }
-
-
 
 
 

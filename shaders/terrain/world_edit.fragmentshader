@@ -88,6 +88,8 @@ uniform       int SampleBlendTex;
 uniform sampler2D BlendTex;
 uniform int BlendTexBlendMode;
 
+uniform f32 ColorBlendBias;
+
 in vec2 UV;
 out vec4 Output;
 
@@ -295,7 +297,7 @@ void BlendSample(
 
     case 3: // WorldEdit_Mode_SmoothUnion
     {
-      Blended = iq_opSmoothUnion(Accumulator, ThisSample, 2.f);
+      Blended = iq_opSmoothUnion(Accumulator, ThisSample, 1.f);
       /* Blended = max(Accumulator, ThisSample); */
       /* tBlend =  (ThisSample/Blended); // (Accumulator-Blended) ; */
       /* tBlend =  (Blended/ThisSample); // (Accumulator-Blended) ; */
@@ -356,13 +358,14 @@ void BlendSample(
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
 #if 1
     {
-      b32 ThisSampleCloserToBlendThanAccumulator = Foo > 0.0f;
+      b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias;
       if (
           /* ThisSample_in > 0.f && */
+          /* Blended > 0.f */
           /* Blended > 0.f && */
           Blended > Accumulator &&
           /* Blended > Accumulator */
-          /* ThisSampleCloserToBlendThanAccumulator && */
+          ThisSampleCloserToBlendThanAccumulator &&
           (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
          )
       {
@@ -375,18 +378,18 @@ void BlendSample(
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
     {
-      b32 ThisSampleCloserToBlendThanAccumulator = Foo > 0.0f;
+      b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias;
       /* ColorValue = V3(0,1,1); */
       if (
           /* ThisSample_in > 0.f */
           /* ThisSample > 0.f */
           /* Blended > 0.f */
           /* Blended > -0.04f && */
-          /* Blended > Accumulator */
+          Blended > Accumulator
           /* Blended > Accumulator && */
           /* Blended >= 0.f && */
           /* Blended > 0.f && */
-          Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator
+          /* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator */
           /* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && */
           /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
          )
