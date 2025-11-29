@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:428:0
+// src/engine/editor.cpp:439:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0
@@ -50,6 +50,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Ele
             cs MemberName = CSz("(anonymous)");
 
                                                                                                 
+                        
+            
+
 
 
 

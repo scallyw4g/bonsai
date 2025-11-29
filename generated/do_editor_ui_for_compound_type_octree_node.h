@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:483:0
+// src/engine/editor.cpp:494:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0
@@ -124,7 +124,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
                                                                         auto Member = Cast(b32*, &Element->Dirty);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox

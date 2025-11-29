@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:517:0
+// src/engine/editor.cpp:528:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:517:0
+// src/engine/editor.cpp:528:0
 
 
 
@@ -559,7 +559,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                                                                         auto Member = Cast(b32*, Element->BravoilMyersOIT);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -594,7 +594,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                                                                         auto Member = Cast(b32*, Element->BravoilMcGuireOIT);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -1064,7 +1064,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                                                                         auto Member = Cast(b32*, Element->UseSsao);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -1099,7 +1099,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                                                                         auto Member = Cast(b32*, Element->UseShadowMapping);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -1134,7 +1134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
                                                                         auto Member = Cast(b32*, Element->UseLightingBloom);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -1611,7 +1611,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, 
                                                                         auto Member = Cast(b32*, &Element->ToggledOn);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -2069,7 +2069,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->IsDepthTexture);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -2177,7 +2177,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Queued);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3469,7 +3469,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Debug_ToggleMenu);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3504,7 +3504,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Debug_ToggleProfiling);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3539,7 +3539,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Debug_TriangulateIncrement);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3574,7 +3574,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Debug_TriangulateDecrement);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3609,7 +3609,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Left);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3644,7 +3644,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Right);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3679,7 +3679,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Forward);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -3714,7 +3714,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u3
                                                                         auto Member = Cast(b32*, &Element->Backward);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -5064,9 +5064,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
             
             
             
-            cs MemberName = CSz("ID");
+            cs MemberName = CSz("Id");
 
-                                                                                                auto Member = Cast(ui_id*, &Element->ID);
+                                                                                                auto Member = Cast(ui_id*, &Element->Id);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7681,42 +7681,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             
             
-            cs MemberName = CSz("CurrentEditorInteraction");
-
-                                                                                                auto Member = Cast(ui_id*, &Element->CurrentEditorInteraction);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("MinimizedWindowBuffer");
 
                                                 
@@ -7770,6 +7734,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             cs MemberName = CSz("HighestWindow");
 
                                                                                                 auto Member = Cast(window_layout*, Element->HighestWindow);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Active");
+
+                                                                                                auto Member = Cast(interactable*, &Element->Active);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7916,7 +7916,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
                                                                         auto Member = Cast(b32*, &Element->RequestedForceCapture);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -11728,7 +11728,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
                                                                         auto Member = Cast(b32*, &Element->Dirty);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -11763,7 +11763,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
                                                                         auto Member = Cast(b32*, &Element->Selected);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -12316,7 +12316,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
                                                                         auto Member = Cast(b32*, &Element->Clicked);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -12351,7 +12351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
                                                                         auto Member = Cast(b32*, &Element->Pressed);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -12386,7 +12386,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event *Element, cs Name
                                                                         auto Member = Cast(b32*, &Element->Released);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -12770,7 +12770,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
                                                                         auto Member = Cast(b32*, &Element->InitialSelect);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13404,7 +13404,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->UseSsao);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13439,7 +13439,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->UseShadowMapping);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13474,7 +13474,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->UseLightingBloom);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13509,7 +13509,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->BravoilMyersOIT);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13544,7 +13544,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->BravoilMcGuireOIT);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13579,7 +13579,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->DrawMajorGrid);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13614,7 +13614,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->DrawMinorGrid);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -13686,7 +13686,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
                                                                         auto Member = Cast(b32*, &Element->DrawCameraGhost);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -14250,7 +14250,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
                                                                         auto Member = Cast(b32*, &Element->Minimized);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -15944,7 +15944,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_settings *Element, cs N
                                                                         auto Member = Cast(b32*, &Element->Disabled);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -20575,7 +20575,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
                                                                         auto Member = Cast(b32*, &Element->HotReloaded);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox

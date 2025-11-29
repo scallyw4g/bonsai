@@ -163,7 +163,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, test_type 
                                                                         auto Member = Cast(b32*, &Element->Boolean);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox

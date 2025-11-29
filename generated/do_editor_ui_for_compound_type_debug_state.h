@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:263:0
+// src/engine/editor.cpp:274:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0
@@ -52,7 +52,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
                                                                         auto Member = Cast(b32*, &Element->Initialized);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -161,7 +161,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
                                                                         auto Member = Cast(b32*, &Element->DebugDoScopeProfiling);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -1315,7 +1315,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
                                                                         auto Member = Cast(b32*, &Element->DisplayDebugMenu);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox

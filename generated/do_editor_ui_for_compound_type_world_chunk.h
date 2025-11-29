@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.cpp:480:0
+// src/engine/editor.cpp:491:0
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:474:0
@@ -235,7 +235,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
                                                                         auto Member = Cast(b32*, &Element->IsOnFreelist);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -343,7 +343,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
                                                                         auto Member = Cast(b32*, &Element->QueryActive);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox
@@ -378,7 +378,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chun
                                                                         auto Member = Cast(b32*, &Element->OcclusionFrames);
             DoEditorUi(Ui,
               Window,
-              Cast(u8*, Member),
+              Cast(b32*, Member),
               MemberName,
               ThisHash,
               &DefaultUiRenderParams_Checkbox

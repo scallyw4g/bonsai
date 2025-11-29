@@ -587,7 +587,7 @@ poof(
                               auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
                               DoEditorUi(Ui,
                                          Window,
-                                         Cast(u8*, Member),
+                                         Cast(b32*, Member),
                                          MemberName,
                                          ThisHash,
                                          &DefaultUiRenderParams_Checkbox
@@ -609,6 +609,34 @@ poof(
                                 }
                                 {
                                   /// Don't display anythinig for unnamed unions
+                                  member.map(union_member)
+                                  {
+                                    union_member.has_tag(ui_union_primal)?
+                                    {
+                                      union_member.name?
+                                      {
+                                        union_member.is_array?
+                                        {
+                                          PushColumn(Ui, CSz("Array union_member.name"));
+                                          PushNewRow(Ui);
+                                        }
+                                        {
+                                          auto UnionMember = Cast((union_member.type)*, union_member.is_pointer?{}{&}Element->(union_member.name));
+                                          cs UnionMemberName = member.has_tag(ui_display_name)? {member.tag_value(ui_display_name)}{CSz("member.name")};
+                                          DoEditorUi(Ui,
+                                                     Window,
+                                                     UnionMember,
+                                                     UnionMemberName,
+                                                     ThisHash,
+                                                     Params
+                                                     union_member.has_tag(ui_value_range)?{, union_member.tag_value(ui_value_range) });
+                                        }
+                                      }
+                                      {
+                                        poof_error { Union members marked with @ui_union_primal have a name }
+                                      }
+                                    }
+                                  }
                                 }
                               }
                               {
@@ -841,7 +869,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
   if (Name.Count) { PushColumn(Ui, Name, &DefaultUiRenderParams_Blank); }
 
   ui_id BaseInteraction = UiId(Window, 0, Value, ThisHash);
-  b32 Editing = Ui->CurrentEditorInteraction == BaseInteraction;
+  b32 Editing = Ui->Active.Id == BaseInteraction;
 
   u32 Start = StartColumn(Ui, &DefaultUiRenderParams_Blank);
     if (Value)
@@ -854,7 +882,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
       }
       else
       {
-        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction)) { Ui->CurrentEditorInteraction = BaseInteraction; }
+        if (Button(Ui, FSz("%.2f", f64(*Value)), BaseInteraction)) { Ui->Active.Id = BaseInteraction; }
       }
     }
     else
@@ -869,7 +897,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, r32 *Value, cs Name, u32 Pare
           Ui->Input->Enter.Clicked )
     {
       // We clicked something that wasn't the widget, so overwrite the interaction
-      Ui->CurrentEditorInteraction = {};
+      Ui->Active.Id = {};
     }
   }
 

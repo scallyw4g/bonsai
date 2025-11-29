@@ -186,6 +186,17 @@ poof(do_editor_ui_for_container(v3_cursor))
 
 
 link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  PushColumn(Ui, CSz("Id"));
+  PushColumn(Ui, FSz("%x", Element->E[0]));
+  PushColumn(Ui, FSz("%x", Element->E[1]));
+  PushColumn(Ui, FSz("%x", Element->E[2]));
+  PushColumn(Ui, FSz("%x", Element->E[3]));
+  PushNewRow(Ui);
+}
+
+link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
 #if 0
