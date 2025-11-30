@@ -91,7 +91,7 @@ vec3 agxEotf(vec3 val) {
   val = agx_mat_inv * val;
 
   // sRGB IEC 61966-2-1 2.2 Exponent Reference EOTF Display
-  //val = pow(val, vec3(2.2));
+  val = pow(val, vec3(2.2));
 
   return val;
 }

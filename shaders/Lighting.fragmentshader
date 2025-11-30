@@ -66,8 +66,8 @@ float BlurredAO = 0.0f;
 float SunIntensity = 1.0f;
 
 // Tuning
-  float gamma = 2.2f;
-  float materialShininess = 2.0f;
+  float gamma = 2.0f;
+  float materialShininess = 5.0f;
 //
 
 

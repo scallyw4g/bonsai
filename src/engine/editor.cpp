@@ -2170,6 +2170,9 @@ DoWorldEditor(engine_resources *Engine)
 
     world_edit_layer *PrevLayer = {};
 
+
+    s32 ReorderLayerIndex = -1;
+    ui_editor_action ReorderAction = {};
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
@@ -2216,6 +2219,10 @@ DoWorldEditor(engine_resources *Engine)
           switch (LayerAction.Action)
           {
             case UiEditorAction_NoAction:
+            {} break;
+
+            case UiEditorAction_ReorderUp:
+            case UiEditorAction_ReorderDown:
             {} break;
 
             case UiEditorAction_Show:
@@ -2497,6 +2504,30 @@ DoWorldEditor(engine_resources *Engine)
       }
 
       PushNewRow(Ui);
+    }
+
+    if (ReorderAction)
+    {
+      Assert( ReorderAction == UiEditorAction_ReorderUp  ||
+              ReorderAction == UiEditorAction_ReorderDown );
+      Assert(ReorderLayerIndex > -1);
+
+      s32 NextLayerIndex = ReorderLayerIndex;
+
+      if (ReorderAction == UiEditorAction_ReorderUp)
+      {
+        NextLayerIndex = Max(0, NextLayerIndex -1);
+      }
+
+      if (ReorderAction == UiEditorAction_ReorderDown)
+      {
+        NextLayerIndex = Min(s32(AtElements(&Editor->Layers).Index-1), s32(NextLayerIndex +1));
+      }
+
+      if (NextLayerIndex != ReorderLayerIndex)
+      {
+        /* Swap(&Editor->Layers, NextLayerIndex, ReorderLayerIndex); */
+      }
     }
 
     PushNewRow(Ui);
@@ -2971,11 +3002,13 @@ DrawBrushButtons(renderer_2d *Ui, window_layout *Window, layer_settings *Element
         Style = &DefaultSelectedStyle;
       }
 
+      PushColumn(Ui, CSz("|"));
       if (Button(Ui, CS(ThisBrush->NameBuf), UiId(Window, "brush select 2", ThisBrush), Style))
       {
         Element->Brush = ThisBrush;
       }
       PushNewRow(Ui);
+
     }
   }
 }
@@ -2988,12 +3021,27 @@ DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Eleme
   if (Element->Brush)
   {
     PushColumn(Ui, CSz("Brush"));
-    ui_id ButtonId = UiId(Element, Element->Brush, Cast(void*,"brush layer brush pick"), Cast(void*, u64(ThisHash)));
-    if (Button(Ui, CS(Element->Brush->NameBuf), ButtonId))
+
+    ui_id ActivateId = UiId(Element, Element->Brush, Cast(void*,"brush layer brush pick"), Cast(void*, u64(ThisHash)));
+    Button(Ui, CS(Element->Brush->NameBuf), ActivateId);
+    PushNewRow(Ui);
+
+    b32 Active = (Ui->Active.Id == ActivateId);
+    if (Active)
     {
       DrawBrushButtons(Ui, Window, Element);
+
+      auto Input = Ui->Input;
+      if (Input->LMB.Clicked || Input->RMB.Clicked || Input->MMB.Clicked || Input->Enter.Clicked)
+      {
+        Ui->Active = {};
+      }
     }
-    PushNewRow(Ui);
+
+    if (Clicked(Ui, ActivateId))
+    {
+      Ui->Active.Id = ActivateId;
+    }
   }
   else
   {
@@ -3001,6 +3049,7 @@ DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Eleme
     DrawBrushButtons(Ui, Window, Element);
     PushNewRow(Ui);
   }
+
 }
 
 link_internal rtt_framebuffer
@@ -3336,12 +3385,14 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
             if (Radius <= 0.f)
             {
-              Radius += EditDimKeys[0].Value/2.f;
+              Radius = Radius + (EditDimKeys[0].Value/2.f);
             }
 
             if (Height <= 0.f)
             {
-              Height += EditDimKeys[2].Value;
+              // NOTE(Jesse): We divide height by two because the height
+              // extends up and down from the middle of the selection.
+              Height = (Height/2.f) + (EditDimKeys[2].Value/2.f);
             }
 
             switch(EditDimKeys[2].Index)
