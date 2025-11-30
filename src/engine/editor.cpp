@@ -174,7 +174,7 @@ poof(string_and_value_tables(visible_region_size))
 poof(do_editor_ui_for_enum(visible_region_size))
 #include <generated/do_editor_ui_for_enum_visible_region_size.h>
 
-poof(do_editor_ui_for_enum(shape_type))
+poof(do_editor_ui_for_enum(brush_shape_type))
 #include <generated/do_editor_ui_for_enum_shape_type.h>
 
 poof(do_editor_ui_for_container(v3_cursor))
@@ -939,15 +939,15 @@ NewBrush()
 }
 
 link_internal cs
-GetLayerUiText(brush_layer *Layer, memory_arena *TempMem)
+GetBrushLayerUiText(layer_settings *Settings, memory_arena *TempMem)
 {
-  cs LayerType = ToStringPrefixless(Layer->Settings.Type);
+  cs LayerType = ToStringPrefixless(Settings->Type);
   cs SubType = {};
-  switch (Layer->Settings.Type)
+  switch (Settings->Type)
   {
-    case BrushLayerType_Brush: { SubType = Layer->Settings.Brush ? CS(Layer->Settings.Brush->NameBuf) : CSz("(null)"); } break;
-    case BrushLayerType_Noise: { SubType = ToStringPrefixless(Layer->Settings.Noise.Type); } break;
-    case BrushLayerType_Shape: { SubType = ToStringPrefixless(Layer->Settings.Shape.Type); } break;
+    case BrushLayerType_Brush: { SubType = Settings->Brush ? CS(Settings->Brush->NameBuf) : CSz("(null)"); } break;
+    case BrushLayerType_Noise: { SubType = ToStringPrefixless(Settings->Noise.Type); } break;
+    case BrushLayerType_Shape: { SubType = ToStringPrefixless(Settings->Shape.Type); } break;
   }
 
   return FSz("%S(%S)", LayerType, SubType);
@@ -1200,8 +1200,8 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
               } break;
             }
 
-            cs LayerDetails = GetLayerUiText(BrushLayer, GetTranArena());
-            if (Button(Ui, FSz("%S", LayerDetails), ToggleId))
+            cs LayerName = GetBrushLayerUiText(&BrushLayer->Settings, GetTranArena());
+            if (Button(Ui, FSz("%S", LayerName), ToggleId))
             {
               Editor->CurrentBrush_SelectedLayerIndex = LayerIndex;
             }
@@ -2873,7 +2873,84 @@ DoLevelWindow(engine_resources *Engine)
 }
 
 link_internal void
-DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
+DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
+{
+  PushColumn(Ui, CSz("Type"));
+
+  ui_id ActivateId = UiId(Window, "brush type select toggle", Element, 0);
+  cs LayerName = GetBrushLayerUiText(Element, GetTranArena());
+  Button(Ui, LayerName, ActivateId);
+  PushNewRow(Ui);
+
+  b32 Active = (Ui->Active.Id == ActivateId);
+  if (Active)
+  {
+    poof(
+      func (brush_noise_type enum_t) @code_fragment
+      {
+        enum_t.map(enum_v)
+        {
+          {
+            PushColumn(Ui, CSz("|"));
+            ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
+            if (Button(Ui, CSz("Noise((enum_v.name.strip_all_prefix))"), ButtonId))
+            {
+              Element->Type = BrushLayerType_Noise;
+              Element->Noise.Type = enum_v.name;
+            }
+            PushNewRow(Ui);
+          }
+        }
+      }
+    )
+#include <generated/anonymous_7E9dQwND.h>
+
+    poof(
+      func (brush_shape_type enum_t) @code_fragment
+      {
+        enum_t.map(enum_v)
+        {
+          {
+            PushColumn(Ui, CSz("|"));
+            ui_id ButtonId = UiId(Window, "brush type select enum_v.name", Element, 0);
+            if (Button(Ui, CSz("Shape((enum_v.name.strip_all_prefix))"), ButtonId))
+            {
+              Element->Type = BrushLayerType_Shape;
+              Element->Shape.Type = enum_v.name;
+            }
+            PushNewRow(Ui);
+          }
+        }
+      }
+    )
+#include <generated/anonymous_PH0rbBE5.h>
+
+    {
+      ui_id ButtonId = UiId(Window, "brush type select brush", Element, 0);
+      PushColumn(Ui, CSz("|"));
+      if (Button(Ui, CSz("Brush"), ButtonId))
+      {
+        Element->Type = BrushLayerType_Brush;
+      }
+    }
+
+    auto Input = Ui->Input;
+    if (Input->LMB.Clicked || Input->RMB.Clicked || Input->MMB.Clicked || Input->Enter.Clicked)
+    {
+      Ui->Active = {};
+    }
+  }
+
+  if (Clicked(Ui, ActivateId))
+  {
+    Ui->Active.Id = ActivateId;
+  }
+
+  PushNewRow(Ui);
+}
+
+link_internal void
+DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
 {
   if (Element->Brush)
   {

@@ -48,6 +48,11 @@
 
 
 
+
+
+
+
+
 link_internal b32
 IsValid(ui_editor_action Value)
 {
@@ -1251,11 +1256,6 @@ PushToolbar(     renderer_2d *Ui,
   DrawButtonGroup(&Result, GroupName, &DefaultUiRenderParams_Button, ContainerParams);
   return Result;
 }
-
-
-
-
-
 
 
 

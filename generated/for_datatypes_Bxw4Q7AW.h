@@ -1917,19 +1917,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             
             
-            cs MemberName = CSz("Brush Type");
+            cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(brush_layer_type*, &Element->Type);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
+                                                            DoBrushTypePicker(Ui, Window, Element, ThisHash);
 
 
 
@@ -2027,7 +2017,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = {};
 
-                                                             DoWorldEditBrushPicker(Ui, Window, Element, ThisHash) ;
+                                                             DoBrushBrushPicker(Ui, Window, Element, ThisHash) ;
 
 
 
@@ -21004,25 +20994,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             
             
-            cs MemberName = CSz("Shape Type");
+            cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(shape_type*, &Element->Type);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
+                        
 
           }
         }
@@ -26136,25 +26110,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             
             
-            cs MemberName = CSz("Noise Type");
+            cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(ui_noise_type*, &Element->Type);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
+                        
 
           }
         }

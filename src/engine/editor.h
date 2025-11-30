@@ -1031,18 +1031,18 @@ struct selection_modification_state
   v3 ClickedP[2];
 };
 
-enum ui_noise_type
+enum brush_noise_type
 {
   NoiseType_Perlin,
   NoiseType_Voronoi,
   NoiseType_White,
 };
 
-poof(string_and_value_tables(ui_noise_type))
+poof(string_and_value_tables(brush_noise_type))
 #include <generated/string_and_value_tables_ui_noise_type.h>
-poof(radio_button_group_for_enum(ui_noise_type));
+poof(radio_button_group_for_enum(brush_noise_type));
 #include <generated/radio_button_group_for_bitfield_enum_ui_noise_type.h>
-poof(do_editor_ui_for_enum(ui_noise_type))
+poof(do_editor_ui_for_enum(brush_noise_type))
 #include <generated/do_editor_ui_for_enum_ui_noise_type.h>
 
 
@@ -1363,7 +1363,7 @@ poof(do_editor_ui_for_compound_type(world_edit_brush_constraints))
 
 
 
-enum shape_type
+enum brush_shape_type
 {
   ShapeType_Rect     = 0,
   ShapeType_Sphere   = 1,
@@ -1376,7 +1376,7 @@ enum shape_type
   // @sdf_shape_step(1): Add shape types here
   //
 };
-poof(string_and_value_tables(shape_type))
+poof(string_and_value_tables(brush_shape_type))
 #include <generated/string_and_value_tables_shape_type.h>
 
 struct shape_layer_advanced_params
@@ -1392,7 +1392,7 @@ poof(@do_editor_ui)
 struct shape_layer
 poof(@do_editor_ui)
 {
-  shape_type Type; poof(@ui_display_name(CSz("Shape Type")))
+  brush_shape_type Type; poof(@ui_skip)
 
   // NOTE(Jesse): Intentionally not a d-union such that you can toggle between
   // them and your parameter selections stay intact.
@@ -1422,7 +1422,7 @@ poof(
     @version(2)
   )
 {
-  ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
+  brush_noise_type Type; poof(@ui_skip)
 
   white_noise_params   White;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
   perlin_noise_params  Perlin;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
@@ -1433,7 +1433,7 @@ poof(
 
 struct noise_layer_1
 {
-  ui_noise_type Type; poof(@ui_display_name(CSz("Noise Type")))
+  brush_noise_type Type; poof(@ui_skip)
 
   white_noise_params   White;   poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
   perlin_noise_params  Perlin;  poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
@@ -1442,7 +1442,7 @@ struct noise_layer_1
 
 struct noise_layer_0
 {
-  ui_noise_type Type;
+  brush_noise_type Type;
 
   perlin_noise_params  Perlin;
   voronoi_noise_params Voronoi;
@@ -1492,16 +1492,16 @@ struct world_edit_brush;
 struct layer_settings
 poof(@do_editor_ui @serdes)
 {
-  brush_layer_type Type; poof(@ui_display_name(CSz("Brush Type")))
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
 
-  noise_layer Noise;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
-  shape_layer Shape;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
 
   world_edit_brush *Brush;
   poof(
     @ui_display_name({})
     @ui_display_condition(Element->Type == BrushLayerType_Brush)
-    @custom_ui( DoWorldEditBrushPicker(Ui, Window, Element, ThisHash) )
+    @custom_ui( DoBrushBrushPicker(Ui, Window, Element, ThisHash) )
   )
 
   //
@@ -1531,7 +1531,10 @@ poof(@do_editor_ui @serdes)
 };
 
 link_internal void
-DoWorldEditBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
+DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
+
+link_internal void
+DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
 
 poof(are_equal(layer_settings))
 #include <generated/are_equal_struct.h>

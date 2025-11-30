@@ -4,7 +4,7 @@
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2131:0
 link_internal b32
-IsValid(shape_type Value)
+IsValid(brush_shape_type Value)
 {
   b32 Result = False;
   switch (Value)
@@ -27,7 +27,7 @@ IsValid(shape_type Value)
 
 
 link_internal counted_string
-ToStringPrefixless(shape_type Type)
+ToStringPrefixless(brush_shape_type Type)
 {
   cs Result = {};
   if (IsValid(Type))
@@ -55,7 +55,7 @@ ToStringPrefixless(shape_type Type)
 }
 
 link_internal counted_string
-ToString(shape_type Type)
+ToString(brush_shape_type Type)
 {
   Assert(IsValid(Type));
 
@@ -77,10 +77,10 @@ ToString(shape_type Type)
   return Result;
 }
 
-link_internal shape_type
-ShapeType(counted_string S)
+link_internal brush_shape_type
+BrushShapeType(counted_string S)
 {
-  shape_type Result = {};
+  brush_shape_type Result = {};
 
     if (StringsMatch(S, CSz("ShapeType_Rect"))) { return ShapeType_Rect; }
   if (StringsMatch(S, CSz("ShapeType_Sphere"))) { return ShapeType_Sphere; }

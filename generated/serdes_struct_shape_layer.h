@@ -149,7 +149,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Type = Cast(shape_type, Read_u32(Bytes));
+            Element->Type = Cast(brush_shape_type, Read_u32(Bytes));
 
 
 

@@ -95,7 +95,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Type = Cast(ui_noise_type, Read_u32(Bytes));
+            Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
 
 
 

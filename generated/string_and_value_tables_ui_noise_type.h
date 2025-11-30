@@ -4,7 +4,7 @@
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2131:0
 link_internal b32
-IsValid(ui_noise_type Value)
+IsValid(brush_noise_type Value)
 {
   b32 Result = False;
   switch (Value)
@@ -23,7 +23,7 @@ IsValid(ui_noise_type Value)
 
 
 link_internal counted_string
-ToStringPrefixless(ui_noise_type Type)
+ToStringPrefixless(brush_noise_type Type)
 {
   cs Result = {};
   if (IsValid(Type))
@@ -47,7 +47,7 @@ ToStringPrefixless(ui_noise_type Type)
 }
 
 link_internal counted_string
-ToString(ui_noise_type Type)
+ToString(brush_noise_type Type)
 {
   Assert(IsValid(Type));
 
@@ -65,10 +65,10 @@ ToString(ui_noise_type Type)
   return Result;
 }
 
-link_internal ui_noise_type
-UiNoiseType(counted_string S)
+link_internal brush_noise_type
+BrushNoiseType(counted_string S)
 {
-  ui_noise_type Result = {};
+  brush_noise_type Result = {};
 
     if (StringsMatch(S, CSz("NoiseType_Perlin"))) { return NoiseType_Perlin; }
   if (StringsMatch(S, CSz("NoiseType_Voronoi"))) { return NoiseType_Voronoi; }
