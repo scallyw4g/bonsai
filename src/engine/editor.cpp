@@ -2223,7 +2223,10 @@ DoWorldEditor(engine_resources *Engine)
 
             case UiEditorAction_ReorderUp:
             case UiEditorAction_ReorderDown:
-            {} break;
+            {
+              ReorderAction = LayerAction.Action;
+              ReorderLayerIndex = s32(LayerIndex.Index);
+            } break;
 
             case UiEditorAction_Show:
             case UiEditorAction_Hide:
@@ -2527,6 +2530,13 @@ DoWorldEditor(engine_resources *Engine)
       if (NextLayerIndex != ReorderLayerIndex)
       {
         /* Swap(&Editor->Layers, NextLayerIndex, ReorderLayerIndex); */
+
+        auto P0 = GetPtr(&Editor->Layers, umm(NextLayerIndex));
+        auto P1 = GetPtr(&Editor->Layers, umm(ReorderLayerIndex));
+
+        auto Tmp = *P0;
+        *P0 = *P1;
+        *P1 = Tmp;
       }
     }
 

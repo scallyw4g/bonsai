@@ -2,7 +2,7 @@
 // src/engine/world.h:98:0
 
 // def (block_array)
-// external/bonsai_stdlib/src/poof_functions.h:2709:0
+// external/bonsai_stdlib/src/poof_functions.h:2724:0
 
 
 
@@ -190,6 +190,21 @@ TryGetPtr( picked_octree_node_block_array *Arr, umm Index)
   auto Result = TryGetPtr(Arr, picked_octree_node_block_array_index{Index});
   return Result;
 }
+
+/* link_internal void */
+/* Swap( (element_t.name)_block_array *Arr, umm I0, umm I1) */
+/* { */
+/*   Assert(I0 < AtElements(Arr).Index); */
+/*   Assert(I1 < AtElements(Arr).Index); */
+
+/*   auto P0 = GetPtr(Arr, I0); */
+/*   auto P1 = GetPtr(Arr, I1); */
+
+/*   auto Tmp = *P0; */
+/*   *P0 = *P1; */
+
+/*   *P1 = Tmp; */
+/* } */
 
 
 
