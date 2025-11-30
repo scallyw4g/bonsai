@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:258:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:474:0
+// src/engine/editor.h:476:0
 struct work_queue_entry;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

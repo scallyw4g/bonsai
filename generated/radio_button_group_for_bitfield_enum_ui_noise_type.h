@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1043:0
+// src/engine/editor.h:1045:0
 
 // def (radio_button_group_for_enum)
-// src/engine/editor.h:219:0
+// src/engine/editor.h:221:0
 link_internal void
 RadioSelect(ui_toggle_button_group *RadioGroup, brush_noise_type Selection)
 {

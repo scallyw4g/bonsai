@@ -523,7 +523,7 @@ void main()
         {
           case 0: // NoiseType_Perlin:
           {
-            InitialSample = value_noise_derivs(NoiseBasis).x;
+            InitialSample = gradient_noise_derivs(NoiseBasis).x;
           } break;
 
           case 1: // NoiseType_Voronoi:

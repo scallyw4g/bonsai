@@ -945,7 +945,7 @@ GetBrushLayerUiText(layer_settings *Settings, memory_arena *TempMem)
   cs SubType = {};
   switch (Settings->Type)
   {
-    case BrushLayerType_Brush: { SubType = Settings->Brush ? CS(Settings->Brush->NameBuf) : CSz("(null)"); } break;
+    case BrushLayerType_Brush: { SubType = Settings->Brush ? CS(Settings->Brush->NameBuf) : CSz("null"); } break;
     case BrushLayerType_Noise: { SubType = ToStringPrefixless(Settings->Noise.Type); } break;
     case BrushLayerType_Shape: { SubType = ToStringPrefixless(Settings->Shape.Type); } break;
   }
@@ -1125,7 +1125,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
               /* ReapplyEditsUsingBrush(Engine, Brush); */
             }
 
-            if (Brush->BrushBlendMode == WorldEdit_Mode_SmoothUnion)
+            /* if (Brush->BrushBlendMode == WorldEdit_Mode_SmoothUnion) */
             {
               DoEditorUi(Ui, BrushSettingsWindow, &Brush->Smoothing, CSz("Smoothing"), ThisHash, &DefaultUiRenderParams_Generic);
               {
@@ -1934,25 +1934,34 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
 }
 
 link_internal void
-SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp P)
+SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
   world_edit_layer *Layer = NewLayer(Editor);
 
-  IterateOver(&Prefab->Edits, StoredEdit, StoredEditIndex)
+  cp MinP = { V3(f32_MAX), V3i(s32_MAX) };
   {
-    world_edit_brush *B = Upsert(*StoredEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
+    IterateOver(&Prefab->Edits, PrefabEdit, StoredEditIndex)
+    {
+      MinP = Min(MinP, PrefabEdit->Region.Min);
+    }
+  }
 
-    world_edit_block_array_index FinalEditIndex;
-    world_edit *FinalEdit = NewEdit(Editor, Layer, &FinalEditIndex);
+  IterateOver(&Prefab->Edits, PrefabEdit, StoredEditIndex)
+  {
+    world_edit_brush *B = Upsert(*PrefabEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
 
-    FinalEdit->Rotation = StoredEdit->Rotation;
+    world_edit *FinalEdit = NewEdit(Editor, Layer);
+
+    FinalEdit->Rotation = PrefabEdit->Rotation;
     FinalEdit->Brush = B;
 
-    cp Dim = GetDim_cp(World, StoredEdit->Region);
-    FinalEdit->Region.Min = P;
-    FinalEdit->Region.Max = P + Dim;
+    cp Dim = GetDim_cp(World, PrefabEdit->Region);
+    cp RelativeOffset = PrefabEdit->Region.Min - MinP;
+
+    FinalEdit->Region.Min = SpawnPoint + RelativeOffset;
+    FinalEdit->Region.Max = SpawnPoint + RelativeOffset + Dim;
     Canonicalize(World, &FinalEdit->Region.Max);
 
     ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
@@ -2932,6 +2941,7 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
       {
         Element->Type = BrushLayerType_Brush;
       }
+      PushNewRow(Ui);
     }
 
     auto Input = Ui->Input;
@@ -2945,40 +2955,51 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
   {
     Ui->Active.Id = ActivateId;
   }
+}
 
-  PushNewRow(Ui);
+link_internal void
+DrawBrushButtons(renderer_2d *Ui, window_layout *Window, layer_settings *Element)
+{
+  auto Editor = GetEditor();
+  IterateOver(&Editor->LoadedBrushes, ThisBrush, BrushIndex)
+  {
+    if (ThisBrush)
+    {
+      ui_style *Style = &DefaultStyle;
+      if (ThisBrush == Editor->CurrentBrush)
+      {
+        Style = &DefaultSelectedStyle;
+      }
+
+      if (Button(Ui, CS(ThisBrush->NameBuf), UiId(Window, "brush select 2", ThisBrush), Style))
+      {
+        Element->Brush = ThisBrush;
+      }
+      PushNewRow(Ui);
+    }
+  }
 }
 
 link_internal void
 DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash)
 {
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(ParentHash));
+
   if (Element->Brush)
   {
-    DoEditorUi(Ui, Window, Element->Brush, CSz("?"), 0);
+    PushColumn(Ui, CSz("Brush"));
+    ui_id ButtonId = UiId(Element, Element->Brush, Cast(void*,"brush layer brush pick"), Cast(void*, u64(ThisHash)));
+    if (Button(Ui, CS(Element->Brush->NameBuf), ButtonId))
+    {
+      DrawBrushButtons(Ui, Window, Element);
+    }
+    PushNewRow(Ui);
   }
   else
   {
     PushColumn(Ui, CSz("(null)"));
+    DrawBrushButtons(Ui, Window, Element);
     PushNewRow(Ui);
-
-    auto Editor = GetEditor();
-    IterateOver(&Editor->LoadedBrushes, ThisBrush, BrushIndex)
-    {
-      if (ThisBrush)
-      {
-        ui_style *Style = &DefaultStyle;
-        if (ThisBrush == Editor->CurrentBrush)
-        {
-          Style = &DefaultSelectedStyle;
-        }
-
-        if (Button(Ui, CS(ThisBrush->NameBuf), UiId(Window, "brush select 2", ThisBrush), Style))
-        {
-          Element->Brush = ThisBrush;
-        }
-        PushNewRow(Ui);
-      }
-    }
   }
 }
 

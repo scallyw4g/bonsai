@@ -1,3 +1,5 @@
+struct world_edit_brush;
+
 /* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
 enum ui_icon_index
@@ -1488,7 +1490,6 @@ poof(@serdes @do_editor_ui)
   r32 ColorBlend; poof(@ui_value_range(-1.f,  1.f))
 };
 
-struct world_edit_brush;
 struct layer_settings
 poof(@do_editor_ui @serdes)
 {
@@ -1518,7 +1519,7 @@ poof(@do_editor_ui @serdes)
   world_edit_blend_mode_modifier ValueFunc;
   world_edit_blend_mode          BlendMode;
 
-  smooth_blend_params Smoothing; poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+  smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
   world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
 

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:812:0
+// src/engine/editor.h:814:0
 
 // def (do_editor_ui_for_primitive_type)
-// src/engine/editor.h:428:0
+// src/engine/editor.h:430:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, s64 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
 {

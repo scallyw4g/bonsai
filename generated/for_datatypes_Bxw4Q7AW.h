@@ -2222,7 +2222,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
         /* }{} */
 
         {
-           if (Element->BlendMode == WorldEdit_Mode_SmoothUnion) 
+          
           { 
             
             
