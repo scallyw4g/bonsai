@@ -2171,8 +2171,9 @@ DoWorldEditor(engine_resources *Engine)
     world_edit_layer *PrevLayer = {};
 
 
-    s32 ReorderLayerIndex = -1;
+    s32 LayerEditIndex = -1;
     ui_editor_action ReorderAction = {};
+    ui_editor_action DeleteAction = {};
     IterateOver(&Editor->Layers, Layer, LayerIndex)
     {
       cs Name = CS(Layer->NameBuf);
@@ -2213,7 +2214,6 @@ DoWorldEditor(engine_resources *Engine)
             MultiSelect = True;
           }
         }
-        PushNewRow(Ui);
 
         {
           switch (LayerAction.Action)
@@ -2225,7 +2225,7 @@ DoWorldEditor(engine_resources *Engine)
             case UiEditorAction_ReorderDown:
             {
               ReorderAction = LayerAction.Action;
-              ReorderLayerIndex = s32(LayerIndex.Index);
+              LayerEditIndex = s32(LayerIndex.Index);
             } break;
 
             case UiEditorAction_Show:
@@ -2283,29 +2283,17 @@ DoWorldEditor(engine_resources *Engine)
               }
             } break;
 
-            case UiEditorAction_Delete:
-            {
-              IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
-              {
-                world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
-                // NOTE(Jesse): We're deleting the layer here so we don't need
-                // to remove the edits one-by-one .. we'll clear the whole thing.
-                DeleteEdit(Engine, Edit, EditIndex);
-              }
-
-              Layer->EditIndices.ElementCount = 0;
-
-              RemoveOrdered(&Editor->Layers, Layer);
-              Layer = 0;
-
-              Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
-              LayerIndex = AtElements(&Editor->Layers);
-            } break;
-
             InvalidDefaultCase;
           }
         }
 
+
+        if (Button(Ui, &Ui->IconTextureArray, UiIconIndex_Trash, UiId(LayersWindow, "layer delete", Layer, 0)))
+        {
+          DeleteAction = UiEditorAction_Delete;
+          LayerEditIndex = s32(LayerIndex.Index);
+        }
+        PushNewRow(Ui);
       }
       PushTableEnd(Ui);
 
@@ -2513,9 +2501,9 @@ DoWorldEditor(engine_resources *Engine)
     {
       Assert( ReorderAction == UiEditorAction_ReorderUp  ||
               ReorderAction == UiEditorAction_ReorderDown );
-      Assert(ReorderLayerIndex > -1);
+      Assert(LayerEditIndex > -1);
 
-      s32 NextLayerIndex = ReorderLayerIndex;
+      s32 NextLayerIndex = LayerEditIndex;
 
       if (ReorderAction == UiEditorAction_ReorderUp)
       {
@@ -2527,17 +2515,35 @@ DoWorldEditor(engine_resources *Engine)
         NextLayerIndex = Min(s32(AtElements(&Editor->Layers).Index-1), s32(NextLayerIndex +1));
       }
 
-      if (NextLayerIndex != ReorderLayerIndex)
+      if (NextLayerIndex != LayerEditIndex)
       {
-        /* Swap(&Editor->Layers, NextLayerIndex, ReorderLayerIndex); */
+        /* Swap(&Editor->Layers, NextLayerIndex, LayerEditIndex); */
 
         auto P0 = GetPtr(&Editor->Layers, umm(NextLayerIndex));
-        auto P1 = GetPtr(&Editor->Layers, umm(ReorderLayerIndex));
+        auto P1 = GetPtr(&Editor->Layers, umm(LayerEditIndex));
 
         auto Tmp = *P0;
         *P0 = *P1;
         *P1 = Tmp;
       }
+    }
+
+    if (DeleteAction)
+    {
+      auto Layer = GetPtr(&Editor->Layers, umm(LayerEditIndex));
+      IterateOver(&Layer->EditIndices, EditIndex, EditIndexIndex)
+      {
+        world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
+        // NOTE(Jesse): We're deleting the layer here so we don't need
+        // to remove the edits one-by-one .. we'll clear the whole thing.
+        DeleteEdit(Engine, Edit, EditIndex);
+      }
+
+      Layer->EditIndices.ElementCount = 0;
+
+      RemoveOrdered(&Editor->Layers, Layer);
+      Editor->SelectedLayerIndex = {INVALID_BLOCK_ARRAY_INDEX};
+      LayerIndex = AtElements(&Editor->Layers);
     }
 
     PushNewRow(Ui);

@@ -46,6 +46,7 @@ poof(@gen_ui_toolbar)
   UiEditorTool_Prefab,
 };
 
+#if 0
 enum ui_layer_toolbar_actions
 poof(@gen_ui_toolbar)
 {
@@ -59,7 +60,6 @@ poof(@gen_ui_toolbar)
   // .. ?
 };
 
-#if 0
 enum ui_brush_actions
 poof(@gen_ui_toolbar)
 {
