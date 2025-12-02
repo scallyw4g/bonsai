@@ -122,10 +122,10 @@ vec3 agxLook(vec3 val) {
     case 5:
     {
       // Punchy
-      f32 p = 1.25;
-      slope = vec3(1.f);
-      power = vec3(p);
-      /* power = vec3(1.15, 1.15, 1.15); */
+      /* f32 p = ; */
+      slope = vec3(1.20f);
+      power = vec3(1.20f);
+      /* power = vec3(1.15, 1.5, 1.15); */
       sat = 1.25;
     } break;
   }

@@ -1226,7 +1226,7 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
           PushTableEnd(Ui);
 
           PushNewRow(Ui);
-          PushColumn(Ui, CSz(" ----- LAYER DETAILS -----"));
+          PushColumn(Ui, CSz(" ----- DETAILS -----"));
           PushNewRow(Ui);
           PushNewRow(Ui);
 
@@ -2232,6 +2232,22 @@ DoWorldEditor(engine_resources *Engine)
             case UiEditorAction_Hide:
             {
               ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Hidden);
+              if (Layer->Flags & WorldEditLayerFlag_Hidden)
+              {
+                IterateOver(&Layer->EditIndices, EditIndex, EII)
+                {
+                  auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+                  DropEditFromOctree(Engine, Edit, GetTranArena());
+                }
+              }
+              else
+              {
+                IterateOver(&Layer->EditIndices, EditIndex, EII)
+                {
+                  auto Edit = GetPtr(&Editor->Edits, *EditIndex);
+                  ApplyEditToOctree(Engine, Edit, GetTranArena());
+                }
+              }
             } break;
 
             case UiEditorAction_Expand:
@@ -3132,6 +3148,7 @@ BindUniformsForBrush(
     BindUniformByName(Program, "RGBColor", &RGBColor);
   }
 
+  BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
   BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
   BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
   BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
@@ -3139,7 +3156,7 @@ BindUniformsForBrush(
   BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
-  /* BindUniformByName(Program, "Power",          Layer->Settings.Power); */
+  BindUniformByName(Program, "Power",          Layer->Settings.Power);
 
   // NOTE(Jesse): Must call bind explicitly because the
   // driver doesn't cache these values otherwise .. it

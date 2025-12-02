@@ -576,6 +576,77 @@ Marshal( world_edit_layer_0 *Stored, world_edit_layer *Live)
 
 
 
+link_internal void
+Marshal( layer_settings_0 *Stored, layer_settings *Live)
+{
+          Live->Type = Stored->Type;
+
+
+
+        Live->Noise = Stored->Noise;
+
+
+
+        Live->Shape = Stored->Shape;
+
+
+
+        Live->Brush = Stored->Brush;
+
+
+
+        Live->Invert = Stored->Invert;
+
+
+
+        Live->Normalized = Stored->Normalized;
+
+
+
+      RangeIterator(Index, 2)
+  {
+        Live->Reserved[Index] = Stored->Reserved[Index];
+
+  }
+
+
+        Live->ValueBias = Stored->ValueBias;
+
+
+
+        Live->ValueFunc = Stored->ValueFunc;
+
+
+
+        Live->BlendMode = Stored->BlendMode;
+
+
+
+        Live->Smoothing = Stored->Smoothing;
+
+
+
+        Live->ColorMode = Stored->ColorMode;
+
+
+
+        Live->BasisOffset = Stored->BasisOffset;
+
+
+
+        Live->HSVColor = Stored->HSVColor;
+
+
+
+        Live->Disabled = Stored->Disabled;
+
+
+
+
+
+}
+
+
 
 
 

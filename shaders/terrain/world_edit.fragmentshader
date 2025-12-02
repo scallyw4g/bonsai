@@ -72,6 +72,7 @@ uniform   v3 Period;
 uniform  f32 Threshold;
 uniform  f32 Power;
 uniform bool Invert;
+uniform bool Normalized;
 
 //
 // Voronoi Params
@@ -524,6 +525,7 @@ void main()
           case 0: // NoiseType_Perlin:
           {
             InitialSample = gradient_noise_derivs(NoiseBasis).x;
+            /* InitialSample = (abs(InitialSample)*-1.f)+ 0.5f; */
           } break;
 
           case 1: // NoiseType_Voronoi:
@@ -536,8 +538,6 @@ void main()
             InitialSample = white_noise(NoiseBasis);
           } break;
         }
-
-        InitialSample *= Power;
 
         break;
       }
@@ -558,12 +558,25 @@ void main()
               BoxR = EditDim;
             }
 
-            v3 Center = EditDim/2.f;
-            v3 p    = (EditRelxyz - Center);
-            v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-            InitialSample = -IQSample;
+            if (Normalized)
+            {
+              v3 Center = V3(0.5f);
+              v3 p    = (EditRelxyz/EditDim)-0.5f;
+              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample = w.w+iq_sdBox(w.xyz, V3(0.5f));
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+              InitialSample = -IQSample;
+
+            }
+            else
+            {
+              v3 Center = EditDim/2.f;
+              v3 p    = (EditRelxyz - Center);
+              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+              InitialSample = -IQSample;
+            }
 
           } break;
 
@@ -578,6 +591,9 @@ void main()
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
             f32 IQSample  = w.w+iq_sdSphere(p, Rad);
             if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+
+            if (Normalized) { IQSample /= Rad; }
+
             InitialSample = -IQSample;
             /* InitialSample = IQSample; */
           } break;
@@ -665,6 +681,12 @@ void main()
       } break;
 
       default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
+    }
+
+
+    if (Power != 0.f)
+    {
+      InitialSample *= Power;
     }
 
 

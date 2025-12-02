@@ -2080,7 +2080,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("Normalized");
 
-                        
+                                                                                                auto Member = Cast(b8*, &Element->Normalized);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
 
           }
         }
@@ -2128,6 +2145,43 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               , -1.f,  1.f );
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Power");
+
+                                                                                                auto Member = Cast(r32*, &Element->Power);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
 
 
 
@@ -25803,6 +25857,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
   }
 
 }
+
 
 
 
