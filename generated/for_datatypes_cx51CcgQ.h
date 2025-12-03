@@ -242,6 +242,7 @@
 
 
 
+
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -967,7 +968,6 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
    auto Result =  InitializeEasingFunctionVisualizerRenderPass( Params->Element , Params->Func );
    if (Params->Result) { *Params->Result = Result; } 
 }
-
 
 
 

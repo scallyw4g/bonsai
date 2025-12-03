@@ -288,6 +288,6 @@ link_internal u16
 MagicaVoxelDefaultPaletteToPackedHSV(u16 MagicaVoxelIndex)
 {
   v3 HSV = MagicaVoxelDefaultPaletteToHSV(MagicaVoxelIndex);
-  u16 Result = PackV3_16b(HSV);
+  u16 Result = PackV3_744b(HSV);
   return Result;
 }

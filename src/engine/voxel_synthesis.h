@@ -124,7 +124,7 @@ AreEqual(voxel_synth_tile *T0, voxel_synth_tile *T1)
 #else
         /* (T0->Voxels[i].Flags&Voxel_Filled) == (T1->Voxels[i].Flags&Voxel_Filled) && */
 #endif
-                     (T0->Voxels[i].RGBColor) == (T1->Voxels[i].RGBColor);
+                     (T0->Voxels[i].PackedHSV) == (T1->Voxels[i].PackedHSV);
 
       if (!Result) break;
     }

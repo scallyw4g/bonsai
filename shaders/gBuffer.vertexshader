@@ -1,7 +1,7 @@
 
 layout(location = VERTEX_POSITION_LAYOUT_LOCATION)    in vec3 vertexPosition_modelspace; // NOTE(Jesse): 8-bit
 layout(location = VERTEX_NORMAL_LAYOUT_LOCATION)      in vec3 vertexNormal_modelspace;
-layout(location = VERTEX_COLOR_LAYOUT_LOCATION)       in uint ColorIndex; // NOTE(Jesse): 16-bit
+layout(location = VERTEX_COLOR_LAYOUT_LOCATION)       in uint ColorIndex;
 layout(location = VERTEX_TRANS_EMISS_LAYOUT_LOCATION) in ivec2 in_TransEmiss; // NOTE(Jesse): 8-bit
 
 out vec3 vertexP_worldspace;
@@ -35,7 +35,7 @@ void main()
   int Emission = in_TransEmiss.y;
 
   /* MaterialColor = texelFetch(ColorPalette, ivec2(ColorIndex, 0), 0).rgb; */
-  MaterialColor = UnpackV3_15b(int(ColorIndex));
+  MaterialColor = HSVtoRGB(UnpackV3_744b(ColorIndex));
   /* MaterialColor = texelFetch(ColorPalette, ivec2(5, 0), 0).rgb; */
   /* MaterialColor = V3(1,0,1); */
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));

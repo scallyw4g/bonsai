@@ -117,7 +117,7 @@ struct voxel
     u32 Data;
     struct
     {
-      u16 RGBColor;
+      u16 PackedHSV;
       u16 Normal;
     };
   };
@@ -135,7 +135,7 @@ b32
 operator==(voxel &V1, voxel &V2)
 {
   /* b32 Result = V1.Transparency == V2.Transparency && V1.RGBColor == V2.RGBColor; */
-  b32 Result = V1.RGBColor == V2.RGBColor;
+  b32 Result = V1.PackedHSV == V2.PackedHSV;
   return Result;
 }
 
@@ -157,7 +157,7 @@ struct boundary_voxel
     this->Offset.y = y;
     this->Offset.z = z;
 
-    this->V.RGBColor = w;
+    this->V.PackedHSV = w;
 
     /* this->V.Flags = Voxel_Empty; */
     /* this->V.Transparency = 0; */
@@ -642,7 +642,8 @@ MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
   RangeIterator(Index, Max)
   {
     Dest[Index] = Src[Index];
-    Dest[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(Src[Index].RGBColor));
+    NotImplemented;
+    /* Dest[Index].PackedHSV = PackV3_744b(MagicaVoxelDefaultPaletteToRGB(Src[Index].PackedHSV)); */
   }
 }
 

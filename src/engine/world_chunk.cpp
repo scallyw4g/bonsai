@@ -1166,7 +1166,7 @@ DrawDebugVoxels( voxel *Voxels,
 
         // TODO(Jesse): This copy could be avoided in multiple ways, and should be.
         /* v3 Color = GetColorData(Voxel->Color); */
-        FillArray(VertexMaterial(Voxel->RGBColor, 0.f, 0.f), Materials, VERTS_PER_FACE);
+        FillArray(VertexMaterial(Voxel->PackedHSV, 0.f, 0.f), Materials, VERTS_PER_FACE);
 
         NotImplemented;
 
@@ -1383,7 +1383,7 @@ DoZStepping(voxel *Voxels, v3i SrcChunkDim, v3i SrcP, voxel_flag Face, u16 RGBCo
 link_inline u16
 GetVoxelColor(s32 Index, voxel *Voxels)
 {
-  return Voxels[Index].RGBColor;
+  return Voxels[Index].PackedHSV;
 }
 
 #if 0
@@ -1538,7 +1538,7 @@ poof(
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
 
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(-1,0,0) * NormalFactor));
@@ -1552,7 +1552,7 @@ poof(
 
             LeftFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1561,7 +1561,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&RightFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(1,0,0) * NormalFactor));
@@ -1575,7 +1575,7 @@ poof(
 
             RightFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1584,7 +1584,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&FrontFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(0,1,0) * NormalFactor));
@@ -1598,7 +1598,7 @@ poof(
 
             FrontFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1607,7 +1607,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&BackFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(0,-1,0) * NormalFactor));
@@ -1621,7 +1621,7 @@ poof(
 
             BackFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1630,7 +1630,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&TopFaces);
             u64 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(0,0,1) * NormalFactor));
@@ -1644,7 +1644,7 @@ poof(
 
             TopFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 
@@ -1653,7 +1653,7 @@ poof(
             u64 This = UnsetLeastSignificantSetBit(&BotFaces);
             u32 xOffset = GetIndexOfSingleSetBit(This);
             v3 P = V3(s32(xOffset), y, z);
-            u16 RGB = Voxels[BaseVoxelOffset+xOffset].RGBColor;
+            u16 HSV = Voxels[BaseVoxelOffset+xOffset].PackedHSV;
 
             u16 PNormal  = Voxels[BaseVoxelOffset+xOffset].Normal;
             v3 Normal    = Normalize((UnpackV3_15b(PNormal)) + (V3(0,0,-1) * NormalFactor));
@@ -1667,7 +1667,7 @@ poof(
 
             BottomFaceVertexData( VertexOffset+P, Dim, DestVerts);
             FillArray(Normal, DestNormals, VERTS_PER_FACE);
-            FillArray(VertexMaterial(RGB, 0.f, 0.f), DestMats, VERTS_PER_FACE);
+            FillArray(VertexMaterial(HSV, 0.f, 0.f), DestMats, VERTS_PER_FACE);
             Dest->At += VERTS_PER_FACE;
           }
 

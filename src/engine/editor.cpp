@@ -1497,7 +1497,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *H
   ui_element_reference SaturationTable = PushTableStart(Ui);
   RangeIterator_t(u8, ColorIndex, Slices)
   {
-    r32 Value = r32(ColorIndex)/r32(Slices);
+    r32 Value = r32(ColorIndex)/r32(Slices-1);
 
     HSV.E[HSVElementIndex] = Value;
     v3 RGB = HSVtoRGB(HSV);
@@ -1537,12 +1537,14 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ u32(u64(HSVDest)));
 
-  u8 FiveBits   = 0b11111;
-  u8 SixBits    = 0b111111;
+  u8 FourBits    = 0b1111;
+  u8 FiveBits    = 0b11111;
+  u8 SixBits     = 0b111111;
+  u8 SevenBits   = 0b1111111;
 
-  u16 HueSlices        = SixBits;
-  u16 SaturationSlices = FiveBits;
-  u16 ValueSlices      = FiveBits;
+  u16 HueSlices        = SevenBits;
+  u16 SaturationSlices = FourBits;
+  u16 ValueSlices      = FourBits;
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
