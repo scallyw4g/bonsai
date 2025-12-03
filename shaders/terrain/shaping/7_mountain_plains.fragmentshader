@@ -1,0 +1,112 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.1f, 0.7f, 0.1f);
+  f32 NoiseValue = 0.f;
+
+  //
+  // -- user code -- 
+  //
+  {
+    v3 Period = V3(150.f);
+    float Amplitude = 300.f;
+    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
+    NoiseValue = StartingZDepth;
+
+    v3 Deriv = v3(0.f);
+    /* f32 warp = 0.f; */
+
+    /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
+    v3 warp = v3(0.f);
+
+    f32 RidgeMask;
+    {
+      v3 xyz = Basis / V3(10000.f, 10000.f, 1000000.f);
+      RidgeMask = ridge_noise(xyz+warp);
+    }
+    RidgeMask = RidgeMask*RidgeMask;
+    RidgeMask = RidgeMask*RidgeMask;
+    RidgeMask = RidgeMask*RidgeMask;
+    /* RidgeMask = RidgeMask*RidgeMask; */
+    /* RidgeMask = RidgeMask*RidgeMask; */
+    /* RidgeMask = RidgeMask*RidgeMask*RidgeMask; */
+    /* RidgeMask = RidgeMask*RidgeMask * 10000.f; */
+    /* NoiseValue += RidgeMask * 1000.f; */
+
+    f32 PowerMask;
+    {
+      v3 xyz = Basis / V3(2000.f, 2000.f, 10000.f);
+      PowerMask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+      PowerMask = PowerMask*PowerMask*PowerMask;
+    }
+
+    f32 MountainMask = 1.f;
+    {
+      /* v3 xyz = Basis / V3(3000.f, 3000.f, 100000.f); */
+      v3 xyz = Basis / V3(8000.f, 8000.f, 100000.f);
+      /* v3 xyz = Basis / V3(10000.f, 10000.f, 100000.f); */
+      /* MountainMask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f; */
+      MountainMask = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f;
+      MountainMask *= MountainMask*1.4f;
+      MountainMask *= MountainMask;
+      /* MountainMask *= MountainMask; */
+      /* MountainMask *= MountainMask; */
+      /* MountainMask *= MountainMask; */
+      /* MountainMask *= MountainMask; */
+      /* MountainMask *= MountainMask; */
+    }
+    /* MountainMask = 1.f; */
+    /* NoiseValue += MountainMask*10000.f; */
+    /* NoiseValue += MountainMask*RidgeMask*PowerMask * 10000.f; */
+    f32 NoiseMask = MountainMask*RidgeMask*PowerMask;
+
+
+    s32 Octaves = 9;
+    /* s32 Octaves = s32(PowerMask); */
+    f32 Terrain = 0.f;
+    while (Octaves > 0)
+    {
+      v3 xyz = Basis / V3(180.f, 180.f, 500.f) / Octaves;
+      /* f32 N = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f; */
+      f32 N = ridge_noise(xyz+warp);
+      /* N = Smoothstep(N); */
+      N = N*N;
+      N = N*N;
+      N = N*N;
+      /* N = N*N*N; */
+      /* N = N*N*N*N; */
+      /* N = N*N*N; */
+      Terrain += (N*800.f*Octaves);
+      --Octaves;
+    }
+
+    NoiseValue += NoiseMask * Terrain;
+
+    NoiseValue -= Basis.z;
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+
+  /* Output = (SolidBit << 15) | PackedColor; */
+}
