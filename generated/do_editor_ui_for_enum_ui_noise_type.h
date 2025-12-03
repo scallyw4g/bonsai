@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1047:0
+// src/engine/editor.h:1048:0
 
 // def (do_editor_ui_for_enum)
 // src/engine/editor.h:695:0
@@ -41,6 +41,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_noise_type *Element, cs
     {
       Result = True;
             *Element = NoiseType_White;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("RectLattice"), UiId(Window, "enum NoiseType_RectLattice", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = NoiseType_RectLattice;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

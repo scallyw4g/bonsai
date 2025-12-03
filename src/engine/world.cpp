@@ -669,7 +669,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-#if 0
+#if 1
   // Penalize nodes who are not in the frustum
   if (IsInFrustum(World, GameCamera, Node) == False)
   {
@@ -687,7 +687,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   }
 #endif
 
-#if 0
+#if 1
   // Penalize nodes who's parent is not in the frustum
   if (Parent)
   {

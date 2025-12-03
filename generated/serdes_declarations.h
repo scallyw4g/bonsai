@@ -1,8 +1,8 @@
 // callsite
-// src/engine/serdes.cpp:453:0
+// src/engine/serdes.cpp:458:0
 
 // def ((builtin.for_datatypes))
-// src/engine/serdes.cpp:453:0
+// src/engine/serdes.cpp:458:0
 
 
 
@@ -595,6 +595,8 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory,
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory);
+
+
 
 
 

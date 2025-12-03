@@ -1,5 +1,5 @@
 // callsite
-// src/engine/editor.h:1045:0
+// src/engine/editor.h:1046:0
 
 // def (radio_button_group_for_enum)
 // src/engine/editor.h:221:0
@@ -24,6 +24,7 @@ RadioButtonGroup_brush_noise_type( renderer_2d *Ui,
         { UiDisplayType_Text, {{ CSz("Perlin"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_noise_type NoiseType_Perlin")), NoiseType_Perlin },
     { UiDisplayType_Text, {{ CSz("Voronoi"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_noise_type NoiseType_Voronoi")), NoiseType_Voronoi },
     { UiDisplayType_Text, {{ CSz("White"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_noise_type NoiseType_White")), NoiseType_White },
+    { UiDisplayType_Text, {{ CSz("RectLattice"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "brush_noise_type NoiseType_RectLattice")), NoiseType_RectLattice },
 
   };
 

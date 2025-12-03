@@ -1038,6 +1038,7 @@ enum brush_noise_type
   NoiseType_Perlin,
   NoiseType_Voronoi,
   NoiseType_White,
+  NoiseType_RectLattice,
 };
 
 poof(string_and_value_tables(brush_noise_type))
@@ -1176,6 +1177,14 @@ struct generic_noise_params
 struct white_noise_params
 poof(@do_editor_ui)
 {
+};
+
+struct rectangular_lattice_params
+poof(@do_editor_ui)
+{
+  r32 Radius = 2.f;
+  f32 Jitter = 0.5f;
+  v3  Period = {{10.f, 10.f, 10.f}}; poof(@ui_value_range(0.1f, 20.f))
 };
 
 
@@ -1421,8 +1430,21 @@ poof(gen_constructor(shape_layer))
 struct noise_layer
 poof(
     @do_editor_ui
-    @version(2)
+    @version(3)
   )
+{
+  brush_noise_type Type; poof(@ui_skip)
+
+  white_noise_params         White;       poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_White))
+  perlin_noise_params        Perlin;      poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Perlin))
+  voronoi_noise_params       Voronoi;     poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_Voronoi))
+  rectangular_lattice_params RectLattice; poof(@ui_display_name({}) @ui_display_condition(Element->Type == NoiseType_RectLattice))
+
+  r32 Power = 1.f;
+};
+
+struct noise_layer_2
+poof( @do_editor_ui )
 {
   brush_noise_type Type; poof(@ui_skip)
 
@@ -1450,6 +1472,13 @@ struct noise_layer_0
   voronoi_noise_params Voronoi;
 };
 
+
+link_internal void
+Marshal(noise_layer_2 *Stored, noise_layer *Live)
+{
+  poof(default_marshal(noise_layer_2))
+#include <generated/default_marshal_JfXWW8JT.h>
+}
 
 link_internal void
 Marshal(noise_layer_1 *Stored, noise_layer *Live)

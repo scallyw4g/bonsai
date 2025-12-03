@@ -1,14 +1,14 @@
 // callsite
-// src/engine/serdes.cpp:418:0
+// src/engine/serdes.cpp:422:0
 
 // def (serdes_struct)
 // src/engine/serdes.h:593:0
 link_internal bonsai_type_info
-TypeInfo(noise_layer_0 *Ignored)
+TypeInfo(noise_layer_2 *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("noise_layer_0");
+  Result.Name = CSz("noise_layer_2");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -23,7 +23,7 @@ TypeInfo(noise_layer_0 *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count)
+Serialize(u8_cursor_block_array *Bytes, noise_layer_2 *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -36,8 +36,15 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count)
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    noise_layer_0 *Element = BaseElement + ElementIndex;
+    noise_layer_2 *Element = BaseElement + ElementIndex;
                         Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->White); // default
+
+
 
 
 
@@ -56,9 +63,20 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count)
 
 
 
+                            Result &= Serialize(Bytes, &Element->Power); // default
+
+
+
+
+
+
 
 
             
+
+        
+
+        
 
         
 
@@ -73,29 +91,38 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement, umm Count)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, noise_layer_0 *BaseElement)
+Serialize(u8_cursor_block_array *Bytes, noise_layer_2 *BaseElement)
 {
   return Serialize(Bytes, BaseElement, 1);
 }
 
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory);
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory, umm Count);
+Deserialize(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory)
 {
   b32 Result = True;
             Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
+
+
+
+
+              
+  
+  Result &= Deserialize(Bytes, &Element->White, Memory);
+
+
 
 
 
@@ -118,9 +145,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena
 
 
 
+              
+  
+  Result &= Deserialize(Bytes, &Element->Power, Memory);
+
+
+
+
+
+
 
 
     
+  
+  
   
   
 
@@ -130,7 +168,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
@@ -145,7 +183,7 @@ Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory, umm 
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, noise_layer_0 *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, noise_layer_2 *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }

@@ -540,6 +540,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *
 
 
 
+struct rectangular_lattice_params;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 struct world_update_op_shape_params_torus;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -576,6 +579,9 @@ struct shape_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
 
+struct noise_layer_2;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 struct untextured_3d_geometry_buffer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)

@@ -408,14 +408,19 @@ poof(serialize_struct(level_header))
 
 poof(serdes_struct(white_noise_params))
 #include <generated/serdes_struct_white_noise_params.h>
+poof(serdes_struct(rectangular_lattice_params))
+#include <generated/serdes_struct_DksCOEUy.h>
 poof(serdes_struct(perlin_noise_params))
 #include <generated/serdes_struct_perlin_noise_params.h>
 poof(serdes_struct(voronoi_noise_params))
 #include <generated/serdes_struct_voronoi_noise_params.h>
+
 poof(serdes_struct(noise_layer_0))
 #include <generated/serdes_struct_noise_layer_0.h>
 poof(serdes_struct(noise_layer_1))
 #include <generated/serdes_struct_NbXeeKVO.h>
+poof(serdes_struct(noise_layer_2))
+#include <generated/serdes_struct_Ie9vPdra.h>
 poof(serdes_struct(noise_layer))
 #include <generated/serdes_struct_noise_layer.h>
 

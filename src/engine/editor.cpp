@@ -3339,6 +3339,14 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
           } break;
 
+          case NoiseType_RectLattice:
+          {
+            auto *RectLattice = &Noise->RectLattice;
+            BindUniformByName(&WorldEditRC->Program, "Squareness", RectLattice->Jitter);
+            BindUniformByName(&WorldEditRC->Program, "Period",    &RectLattice->Period);
+            BindUniformByName(&WorldEditRC->Program, "Radius",     RectLattice->Radius);
+          } break;
+
           case NoiseType_White:
           {} break;
         }

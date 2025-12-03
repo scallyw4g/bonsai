@@ -1,5 +1,5 @@
 // callsite
-// src/engine/serdes.cpp:419:0
+// src/engine/serdes.cpp:424:0
 
 // def (serdes_struct)
 // src/engine/serdes.h:593:0
@@ -9,7 +9,7 @@ TypeInfo(noise_layer *Ignored)
   bonsai_type_info Result = {};
 
   Result.Name = CSz("noise_layer");
-  Result.Version =  2 ;
+  Result.Version =  3 ;
 
   /* type.map(member) */
   /* { */
@@ -33,7 +33,7 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
   b32 Result = True;
 
     Upsert(TypeInfo(BaseElement), &Global_SerializeTypeTable, Global_SerializeTypeTableArena );
-  u64 VersionNumber = 2;
+  u64 VersionNumber = 3;
   Serialize(Bytes, &VersionNumber);
 
 
@@ -66,6 +66,13 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
 
+                            Result &= Serialize(Bytes, &Element->RectLattice); // default
+
+
+
+
+
+
                             Result &= Serialize(Bytes, &Element->Power); // default
 
 
@@ -76,6 +83,8 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
 
 
             
+
+        
 
         
 
@@ -113,7 +122,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 link_internal b32
 DeserializeVersioned(u8_cursor *Bytes, noise_layer *Element, bonsai_type_info *TypeInfo, memory_arena *Memory)
 {
-  Assert(TypeInfo->Version <= 2);
+  Assert(TypeInfo->Version <= 3);
 
   b32 Result = True;
 
@@ -129,9 +138,15 @@ DeserializeVersioned(u8_cursor *Bytes, noise_layer *Element, bonsai_type_info *T
     Result &= Deserialize(Bytes, &T1, Memory);
     Marshal(&T1, Element);
   }
-
-
   if (TypeInfo->Version == 2)
+  {
+    noise_layer_2 T2 = {};
+    Result &= Deserialize(Bytes, &T2, Memory);
+    Marshal(&T2, Element);
+  }
+
+
+  if (TypeInfo->Version == 3)
   {
     Result &= DeserializeCurrentVersion(Bytes, Element, Memory);
   }
@@ -178,6 +193,15 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
               
   
+  Result &= Deserialize(Bytes, &Element->RectLattice, Memory);
+
+
+
+
+
+
+              
+  
   Result &= Deserialize(Bytes, &Element->Power, Memory);
 
 
@@ -188,6 +212,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
     
+  
   
   
   

@@ -1,14 +1,14 @@
 // callsite
-// src/engine/serdes.cpp:438:0
+// src/engine/serdes.cpp:411:0
 
 // def (serdes_struct)
 // src/engine/serdes.h:593:0
 link_internal bonsai_type_info
-TypeInfo(world_update_op_shape_params_cylinder *Ignored)
+TypeInfo(rectangular_lattice_params *Ignored)
 {
   bonsai_type_info Result = {};
 
-  Result.Name = CSz("world_update_op_shape_params_cylinder");
+  Result.Name = CSz("rectangular_lattice_params");
   Result.Version =  0 ;
 
   /* type.map(member) */
@@ -23,7 +23,7 @@ TypeInfo(world_update_op_shape_params_cylinder *Ignored)
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *BaseElement, umm Count)
+Serialize(u8_cursor_block_array *Bytes, rectangular_lattice_params *BaseElement, umm Count)
 {
   Assert(Count > 0);
 
@@ -36,7 +36,7 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 
   RangeIterator_t(umm, ElementIndex, Count)
   {
-    world_update_op_shape_params_cylinder *Element = BaseElement + ElementIndex;
+    rectangular_lattice_params *Element = BaseElement + ElementIndex;
                                 Result &= Serialize(Bytes, &Element->Radius); // default
 
 
@@ -44,7 +44,14 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 
 
 
-                            Result &= Serialize(Bytes, &Element->Height); // default
+                            Result &= Serialize(Bytes, &Element->Jitter); // default
+
+
+
+
+
+
+                            Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
@@ -57,6 +64,8 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 
         
 
+        
+
 
 
     MAYBE_WRITE_DEBUG_OBJECT_DELIM();
@@ -66,26 +75,26 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *B
 }
 
 link_internal b32
-Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_cylinder *BaseElement)
+Serialize(u8_cursor_block_array *Bytes, rectangular_lattice_params *BaseElement)
 {
   return Serialize(Bytes, BaseElement, 1);
 }
 
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory);
+Deserialize(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory);
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count);
+Deserialize(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory, umm Count);
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory);
+DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory);
 
 
 
 
 link_internal b32
-DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
+DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
                 
@@ -99,7 +108,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinde
 
               
   
-  Result &= Deserialize(Bytes, &Element->Height, Memory);
+  Result &= Deserialize(Bytes, &Element->Jitter, Memory);
+
+
+
+
+
+
+                
+  
+  Result &= Deserialize(Bytes, &Element->Period, Memory);
+
 
 
 
@@ -110,6 +129,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinde
 
     
   
+  
 
 
   MAYBE_READ_DEBUG_OBJECT_DELIM();
@@ -117,7 +137,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_cylinde
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory, umm Count)
+Deserialize(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory, umm Count)
 {
   Assert(Count > 0);
 
@@ -132,7 +152,7 @@ Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, me
 }
 
 link_internal b32
-Deserialize(u8_cursor *Bytes, world_update_op_shape_params_cylinder *Element, memory_arena *Memory)
+Deserialize(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }

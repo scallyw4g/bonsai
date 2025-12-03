@@ -33,5 +33,15 @@
   }
   PushNewRow(Ui);
 }
+{
+  PushColumn(Ui, CSz("|"));
+  ui_id ButtonId = UiId(Window, "brush type select NoiseType_RectLattice", Element, 0);
+  if (Button(Ui, CSz("Noise(RectLattice)"), ButtonId))
+  {
+    Element->Type = BrushLayerType_Noise;
+    Element->Noise.Type = NoiseType_RectLattice;
+  }
+  PushNewRow(Ui);
+}
 
 

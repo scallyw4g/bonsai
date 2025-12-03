@@ -259,6 +259,66 @@ float iq_opSmoothIntersection( float d1, float d2, float k )
     // return max(d1, d2) + h*h*0.25/k;
 }
 
+v3 lattice_hash(v3 p, f32 jit)
+{
+  /* return p; */
+  return p + (jit*((hash3f(p))));
+}
+
+f32 rect_lattice( vec3 x, f32 squareness)
+{
+  vec3 p  = floor( x );
+
+  vec3 hp = lattice_hash(p, squareness);
+
+  f32 rad = 0.05f;
+
+  f32 off = 1.0f;
+  f32 ret = 0.f;
+  {
+    vec3 oP = p + v3(off,0,0);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+  {
+    vec3 oP = p + v3(0,off,0);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+  {
+    vec3 oP = p + v3(0,0,off);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+
+  {
+    vec3 oP = p + v3(-off,0,0);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+  {
+    vec3 oP = p + v3(0,-off,0);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+  {
+    vec3 oP = p + v3(0,0,-off);
+    ret = max(ret, iq_sdRoundedLine(x, hp, lattice_hash(oP, squareness), rad )*-1.f);
+  }
+
+  return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Blend Value
 //
 void BlendSample(
@@ -536,6 +596,11 @@ void main()
           case 2: // NoiseType_White:
           {
             InitialSample = white_noise(NoiseBasis);
+          } break;
+
+          case 3: // NoiseType_RectLattice:
+          {
+            InitialSample = rect_lattice(NoiseBasis, Squareness);
           } break;
         }
 
