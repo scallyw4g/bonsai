@@ -17,11 +17,11 @@ void main()
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
   // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.1f, 0.7f, 0.1f);
+  v3 ColorValue = V3(0.01f, 0.15f, 0.01f);
   f32 NoiseValue = 0.f;
 
   //
-  // -- user code -- 
+  // -- user code --
   //
   {
     v3 Period = V3(150.f);
@@ -77,12 +77,12 @@ void main()
     f32 NoiseMask = MountainMask*RidgeMask*PowerMask;
 
 
-    s32 Octaves = 9;
+    s32 Octaves = 3;
     /* s32 Octaves = s32(PowerMask); */
     f32 Terrain = 0.f;
     while (Octaves > 0)
     {
-      v3 xyz = Basis / V3(180.f, 180.f, 500.f) / Octaves;
+      v3 xyz = Basis / (V3(1800.f, 1800.f, 5000.f) * Octaves);
       /* f32 N = (1.f+gradient_noise_derivs(xyz+warp).x)/2.f; */
       f32 N = ridge_noise(xyz+warp);
       /* N = Smoothstep(N); */
@@ -92,7 +92,7 @@ void main()
       /* N = N*N*N; */
       /* N = N*N*N*N; */
       /* N = N*N*N; */
-      Terrain += (N*800.f*Octaves);
+      Terrain += (N*18000.f);
       --Octaves;
     }
 

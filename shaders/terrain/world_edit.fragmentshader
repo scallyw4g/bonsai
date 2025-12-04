@@ -336,6 +336,7 @@ void BlendSample(
     case 0: // WorldEdit_Mode_Union
     {
       Blended = max(Accumulator, ThisSample);
+      if (ThisSample > Accumulator || ThisSample > 0) { ColorValue = ColorSample; }
     } break;
 
     case 1: // WorldEdit_Mode_Intersection
@@ -359,18 +360,13 @@ void BlendSample(
     case 3: // WorldEdit_Mode_SmoothUnion
     {
       Blended = iq_opSmoothUnion(Accumulator, ThisSample, 1.f);
-      /* Blended = max(Accumulator, ThisSample); */
-      /* tBlend =  (ThisSample/Blended); // (Accumulator-Blended) ; */
-      /* tBlend =  (Blended/ThisSample); // (Accumulator-Blended) ; */
-      /* tBlend =  (ThisSample-Blended) / (Accumulator-Blended) ; */
-      /* tBlend =   (Accumulator-Blended) / (ThisSample-Blended) ; */
     } break;
 
-    case 4: // WorldEdit_Mode_Intersection
+    case 4: // WorldEdit_Mode_SmoothIntersection
     {
     } break;
 
-    case 5: // WorldEdit_Mode_Difference
+    case 5: // WorldEdit_Mode_SmoothDifference
     {
     } break;
 
@@ -426,8 +422,8 @@ void BlendSample(
           /* Blended > 0.f && */
           Blended > Accumulator &&
           /* Blended > Accumulator */
-          ThisSampleCloserToBlendThanAccumulator &&
-          (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f)
+          ThisSampleCloserToBlendThanAccumulator
+          /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
          )
       {
         ColorValue = ColorSample; 
@@ -439,25 +435,26 @@ void BlendSample(
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
     {
-      b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias;
-      /* ColorValue = V3(0,1,1); */
-      if (
-          /* ThisSample_in > 0.f */
-          /* ThisSample > 0.f */
-          /* Blended > 0.f */
-          /* Blended > -0.04f && */
-          Blended > Accumulator
-          /* Blended > Accumulator && */
-          /* Blended >= 0.f && */
-          /* Blended > 0.f && */
-          /* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator */
-          /* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && */
-          /* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) */
-         )
-      {
-        /* ColorValue = V3(0,1,1); */
-        ColorValue = ColorSample; 
-      }
+      /* b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias; */
+      /* /1* ColorValue = V3(0,1,1); *1/ */
+      /* if ( */
+      /*     /1* ThisSample_in > 0.f *1/ */
+      /*     ThisSample > 0.f */
+      /*     /1* Blended > 0.f *1/ */
+      /*     /1* Blended > -0.04f && *1/ */
+      /*     /1* Blended > Accumulator *1/ */
+      /*     /1* Blended > Accumulator && *1/ */
+      /*     /1* Blended >= 0.f && *1/ */
+      /*     /1* Blended > 0.f && *1/ */
+      /*     /1* ThisSampleCloserToBlendThanAccumulator *1/ */
+      /*     /1* Blended > Accumulator && ThisSampleCloserToBlendThanAccumulator *1/ */
+      /*     /1* Blended >= Accumulator && ThisSampleCloserToBlendThanAccumulator && *1/ */
+      /*     /1* (ColorSample.r > 0.f || ColorSample.g > 0.f || ColorSample.b > 0.f) *1/ */
+      /*    ) */
+      /* { */
+      /*   /1* ColorValue = V3(0,1,1); *1/ */
+      /*   ColorValue = ColorSample; */ 
+      /* } */
         /* ColorValue = V3(0,1,1); */
     } break;
 
