@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:139:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(vertex_material *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(vertex_material *Ignored)
   Result.Name = CSz("vertex_material");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,21 +37,24 @@ Serialize(u8_cursor_block_array *Bytes, vertex_material *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vertex_material *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->ColorIndex); // default
+                                    Result &= Serialize(Bytes, &Element->ColorIndex); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Transparency); // default
+
+                                Result &= Serialize(Bytes, &Element->Transparency); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Emission); // default
+
+                                Result &= Serialize(Bytes, &Element->Emission); // default
+
 
 
 
@@ -97,7 +100,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->ColorIndex, Memory);
 
@@ -106,7 +109,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Transparency, Memory);
 
@@ -115,9 +119,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Emission, Memory);
+
 
 
 

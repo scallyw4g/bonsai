@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:52:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk_0 *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_chunk_0 *Ignored)
   Result.Name = CSz("world_chunk_0");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -38,26 +38,30 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk_0 *BaseElement, umm Count)
   {
     world_chunk_0 *Element = BaseElement + ElementIndex;
             
-                            Result &= Serialize(Bytes, &Element->Dim); // default
+                                Result &= Serialize(Bytes, &Element->Dim); // default
 
 
 
 
 
 
-                if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-                if (Element->VoxelLighting) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->VoxelLighting) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
 
 
 
         
         
-                            Result &= Serialize(Bytes, &Element->WorldP); // default
+                                Result &= Serialize(Bytes, &Element->WorldP); // default
+
 
 
 
@@ -131,7 +135,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 {
   b32 Result = True;
       
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -141,21 +145,25 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
-        b64 HadVoxelsPointer = Read_u64(Bytes);
+
+          b64 HadVoxelsPointer = Read_u64(Bytes);
   Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
 
 
-        b64 HadVoxelLightingPointer = Read_u64(Bytes);
+
+          b64 HadVoxelLightingPointer = Read_u64(Bytes);
   Assert(HadVoxelLightingPointer < 2); // Should be 0 or 1
 
 
 
+
     
     
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
+
 
 
 

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:30:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(plane *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(plane *Ignored)
   Result.Name = CSz("plane");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,14 +37,16 @@ Serialize(u8_cursor_block_array *Bytes, plane *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     plane *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Normal); // default
+                                    Result &= Serialize(Bytes, &Element->Normal); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->DistanceToOrigin); // default
+
+                                Result &= Serialize(Bytes, &Element->DistanceToOrigin); // default
+
 
 
 
@@ -88,7 +90,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+                    
   
   Result &= Deserialize(Bytes, &Element->Normal, Memory);
 
@@ -98,9 +100,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DistanceToOrigin, Memory);
+
 
 
 

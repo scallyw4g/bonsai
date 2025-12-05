@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:304:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(model *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(model *Ignored)
   Result.Name = CSz("model");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,7 +37,8 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     model *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Vox); // default
+                                    Result &= Serialize(Bytes, &Element->Vox); // default
+
 
 
 
@@ -46,21 +47,24 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count)
 
         
         
-                            Result &= Serialize(Bytes, &Element->TransparentMesh); // default
+                                Result &= Serialize(Bytes, &Element->TransparentMesh); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Animation); // default
+
+                                Result &= Serialize(Bytes, &Element->Animation); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Dim); // default
+
+                                Result &= Serialize(Bytes, &Element->Dim); // default
+
 
 
 
@@ -110,7 +114,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Vox, Memory);
 
@@ -119,9 +123,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
+
     
     
-              
+                
   
   Result &= Deserialize(Bytes, &Element->TransparentMesh, Memory);
 
@@ -130,7 +135,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Animation, Memory);
 
@@ -139,9 +145,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
+
 
 
 

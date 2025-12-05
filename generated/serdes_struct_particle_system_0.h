@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:292:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(particle_system_0 *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(particle_system_0 *Ignored)
   Result.Name = CSz("particle_system_0");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,156 +37,178 @@ Serialize(u8_cursor_block_array *Bytes, particle_system_0 *BaseElement, umm Coun
   RangeIterator_t(umm, ElementIndex, Count)
   {
     particle_system_0 *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Entropy); // default
+                                    Result &= Serialize(Bytes, &Element->Entropy); // default
 
 
 
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->SpawnType); // enum
 
+                        Result &= Serialize(Bytes, (u32*)&Element->SpawnType); // enum
 
 
 
-                            Result &= Serialize(Bytes, &Element->Drag); // default
 
 
+                                Result &= Serialize(Bytes, &Element->Drag); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Lifetime); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->Lifetime); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->EmissionDelay); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->EmissionDelay); // default
 
 
-                            Result &= Serialize(Bytes, &Element->EmissionLifespan); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->EmissionLifespan); // default
 
-                            Result &= Serialize(Bytes, &Element->ActiveParticles); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->LifespanMod); // default
+                                Result &= Serialize(Bytes, &Element->ActiveParticles); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleLifespan); // default
 
+                                Result &= Serialize(Bytes, &Element->LifespanMod); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticlesPerSecond); // default
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleLifespan); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleLightEmission); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticlesPerSecond); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleLightEmission); // default
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleStartingTransparency); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleLightEmissionChance); // default
 
-                            Result &= Serialize(Bytes, &Element->ParticleEndingTransparency); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleStartingDim); // default
+                                Result &= Serialize(Bytes, &Element->ParticleStartingTransparency); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleEndingDim); // default
 
+                                Result &= Serialize(Bytes, &Element->ParticleEndingTransparency); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleTurbMin); // default
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleStartingDim); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ParticleTurbMax); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleEndingDim); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->SpawnRegion); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleTurbMin); // default
 
 
-                            Result &= Serialize(Bytes, &Element->SystemMovementCoefficient); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ParticleTurbMax); // default
 
-                            Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission); // default
 
 
 
 
 
 
-                        {
+                                Result &= Serialize(Bytes, &Element->SpawnRegion); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->SystemMovementCoefficient); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->ElapsedSinceLastEmission); // default
+
+
+
+
+
+
+
+                            {
             umm ThisCount = 6;
 
       Result &= Serialize(Bytes, Element->MCVColors, ThisCount);
     }
+
 
 
 
@@ -271,7 +293,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Entropy, Memory);
 
@@ -280,12 +302,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-          Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
+
+            Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Drag, Memory);
 
@@ -294,7 +318,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
 
@@ -303,7 +328,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
 
@@ -312,7 +338,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
@@ -321,7 +348,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
 
@@ -330,7 +358,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
 
@@ -339,7 +368,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
 
@@ -348,7 +378,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
 
@@ -357,7 +388,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
 
@@ -366,7 +398,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
 
@@ -375,7 +408,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
 
@@ -384,7 +418,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
 
@@ -393,7 +428,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
@@ -403,7 +439,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
 
@@ -412,7 +449,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
@@ -422,7 +460,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
@@ -432,7 +471,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
@@ -441,7 +481,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
 
@@ -450,7 +491,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
 
@@ -459,11 +501,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
-            {
+
+              {
         umm Count = 6;
 
     Result &= Deserialize(Bytes, Element->MCVColors, Memory, Count);
   }
+
 
 
 

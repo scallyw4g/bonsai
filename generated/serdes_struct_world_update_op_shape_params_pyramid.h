@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:444:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_pyramid *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_update_op_shape_params_pyramid *Ignored)
   Result.Name = CSz("world_update_op_shape_params_pyramid");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,7 +37,8 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_pyramid *Ba
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_pyramid *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Height); // default
+                                    Result &= Serialize(Bytes, &Element->Height); // default
+
 
 
 
@@ -79,9 +80,10 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_pyramid *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Height, Memory);
+
 
 
 

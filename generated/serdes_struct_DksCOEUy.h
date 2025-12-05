@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:411:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(rectangular_lattice_params *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(rectangular_lattice_params *Ignored)
   Result.Name = CSz("rectangular_lattice_params");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,21 +37,24 @@ Serialize(u8_cursor_block_array *Bytes, rectangular_lattice_params *BaseElement,
   RangeIterator_t(umm, ElementIndex, Count)
   {
     rectangular_lattice_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Radius); // default
+                                    Result &= Serialize(Bytes, &Element->Radius); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Jitter); // default
+
+                                Result &= Serialize(Bytes, &Element->Jitter); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Period); // default
+
+                                Result &= Serialize(Bytes, &Element->Period); // default
+
 
 
 
@@ -97,7 +100,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Radius, Memory);
 
@@ -106,7 +109,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element,
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Jitter, Memory);
 
@@ -115,9 +119,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element,
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Period, Memory);
+
 
 
 

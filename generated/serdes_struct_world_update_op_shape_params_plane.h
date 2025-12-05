@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:440:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_plane *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_update_op_shape_params_plane *Ignored)
   Result.Name = CSz("world_update_op_shape_params_plane");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,12 +37,14 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_plane *Base
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_plane *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Orientation); // enum
+                            Result &= Serialize(Bytes, (u32*)&Element->Orientation); // enum
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Thickness); // default
+
+                                Result &= Serialize(Bytes, &Element->Thickness); // default
+
 
 
 
@@ -86,14 +88,16 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
+              Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Thickness, Memory);
+
 
 
 

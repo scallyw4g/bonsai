@@ -1769,6 +1769,7 @@ poof(@serdes @default_marshal(world_edit_layer))
 
 
 enum prefab_spawn_callback
+poof(@do_editor_ui)
 {
   PrefabSpawnCallback_None poof(@spawn_callback_skip),
 
@@ -1782,17 +1783,24 @@ enum prefab_spawn_callback
       }
     }
   )
-#include <generated/(builtin.for_datatypes)_KhyFHEuP.h>
+#include <generated/prefab_spawn_callback_enum.h>
 };
+
+poof(string_and_value_tables(prefab_spawn_callback))
+#include <generated/string_and_value_tables_NFs3nfM7.h>
 
 struct prefab
 poof(@serdes @do_editor_ui)
 {
-  cs Name;
+  cs Name; poof(@ui_skip)
   world_edit_paged_list Edits;
 
-  cs SpawnCallbackName;
-  /* prefab_spawn_callback SpawnCallback; */
+  prefab_spawn_callback SpawnCallback;
+  poof(
+    @serdes_as(cs)
+    @serialize_as(ToString)
+    @deserialize_as(PrefabSpawnCallback)
+  )
 };
 
 link_internal b32

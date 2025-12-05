@@ -1,8 +1,8 @@
 // callsite
-// src/engine/work_queue.h:153:0
+// src/engine/editor.h:1777:0
 
 // def ((builtin.for_datatypes))
-// src/engine/work_queue.h:153:0
+// src/engine/editor.h:1777:0
 
 
 
@@ -245,13 +245,7 @@
 
 
 
-struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
-{
-  
-    gen_chunk *GenChunk;
-  octree_node *DestNode;
 
-};
 
 
 
@@ -715,16 +709,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
-struct compile_shader_pair_async_params poof(@async_function_params)
-{
-   b32* Result; 
-    shader *Shader;
-  cs VertShaderPath;
-  cs FragShaderPath;
-  b32 DumpErrors;
-  b32 RegisterForHotReload;
 
-};
 
 
 
@@ -837,6 +822,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
+PrefabSpawnCallback_DefaultPrefabSpawnCallback,
 
 
 
@@ -924,13 +910,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
 
 
 
-struct initialize_easing_function_visualizer_render_pass_async_params poof(@async_function_params)
-{
-   b32* Result; 
-    easing_function_visualizer_render_pass *Element;
-  easing_function *Func;
 
-};
 
 
 
@@ -1134,23 +1114,6 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-struct check_occlusion_query_async_params poof(@async_function_params)
-{
-  
-    world_chunk *Chunk;
-
-};
 
 
 

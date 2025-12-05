@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:383:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(bonsai_type_info *Ignored)
   Result.Name = CSz("bonsai_type_info");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,21 +37,24 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info *BaseElement, umm Count
   RangeIterator_t(umm, ElementIndex, Count)
   {
     bonsai_type_info *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Name); // default
+                                    Result &= Serialize(Bytes, &Element->Name); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Version); // default
+
+                                Result &= Serialize(Bytes, &Element->Version); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SizeOfInBytes); // default
+
+                                Result &= Serialize(Bytes, &Element->SizeOfInBytes); // default
+
 
 
 
@@ -97,7 +100,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Name, Memory);
 
@@ -106,7 +109,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Version, Memory);
 
@@ -115,9 +119,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->SizeOfInBytes, Memory);
+
 
 
 

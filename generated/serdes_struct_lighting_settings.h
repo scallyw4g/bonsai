@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:377:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(lighting_settings *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(lighting_settings *Ignored)
   Result.Name = CSz("lighting_settings");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,112 +37,128 @@ Serialize(u8_cursor_block_array *Bytes, lighting_settings *BaseElement, umm Coun
   RangeIterator_t(umm, ElementIndex, Count)
   {
     lighting_settings *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->AutoDayNightCycle); // default
+                                    Result &= Serialize(Bytes, &Element->AutoDayNightCycle); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->tDaySpeed); // default
 
+                                Result &= Serialize(Bytes, &Element->tDaySpeed); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->tDay); // default
 
 
+                                Result &= Serialize(Bytes, &Element->tDay); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SunP); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->SunP); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->FogPower); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->FogPower); // default
 
 
-                            Result &= Serialize(Bytes, &Element->FogColor); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->FogColor); // default
 
-                            Result &= Serialize(Bytes, &Element->DawnIntensity); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->DawnHSV); // default
+                                Result &= Serialize(Bytes, &Element->DawnIntensity); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SunIntensity); // default
 
+                                Result &= Serialize(Bytes, &Element->DawnHSV); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SunHSV); // default
 
 
+                                Result &= Serialize(Bytes, &Element->SunIntensity); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->DuskIntensity); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->SunHSV); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->DuskColor); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->DuskIntensity); // default
 
 
-                            Result &= Serialize(Bytes, &Element->DuskHSV); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->DuskColor); // default
 
-                            Result &= Serialize(Bytes, &Element->MoonIntensity); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->MoonHSV); // default
+                                Result &= Serialize(Bytes, &Element->DuskHSV); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->CurrentSunColor); // default
+
+                                Result &= Serialize(Bytes, &Element->MoonIntensity); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->MoonHSV); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->CurrentSunColor); // default
+
 
 
 
@@ -214,7 +230,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->AutoDayNightCycle, Memory);
 
@@ -223,7 +239,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->tDaySpeed, Memory);
 
@@ -232,7 +249,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->tDay, Memory);
 
@@ -241,7 +259,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->SunP, Memory);
 
@@ -251,7 +270,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->FogPower, Memory);
 
@@ -260,7 +280,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->FogColor, Memory);
 
@@ -270,7 +291,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DawnIntensity, Memory);
 
@@ -279,7 +301,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->DawnHSV, Memory);
 
@@ -289,7 +312,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->SunIntensity, Memory);
 
@@ -298,7 +322,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->SunHSV, Memory);
 
@@ -308,7 +333,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DuskIntensity, Memory);
 
@@ -317,7 +343,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->DuskColor, Memory);
 
@@ -327,7 +354,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->DuskHSV, Memory);
 
@@ -337,7 +365,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->MoonIntensity, Memory);
 
@@ -346,7 +375,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->MoonHSV, Memory);
 
@@ -356,9 +386,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->CurrentSunColor, Memory);
+
 
 
 

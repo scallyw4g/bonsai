@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:33:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(frustum *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(frustum *Ignored)
   Result.Name = CSz("frustum");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,49 +37,56 @@ Serialize(u8_cursor_block_array *Bytes, frustum *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     frustum *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->farClip); // default
+                                    Result &= Serialize(Bytes, &Element->farClip); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->nearClip); // default
+
+                                Result &= Serialize(Bytes, &Element->nearClip); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->FOV); // default
+
+                                Result &= Serialize(Bytes, &Element->FOV); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Top); // default
+
+                                Result &= Serialize(Bytes, &Element->Top); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Bottom); // default
+
+                                Result &= Serialize(Bytes, &Element->Bottom); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Left); // default
+
+                                Result &= Serialize(Bytes, &Element->Left); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Right); // default
+
+                                Result &= Serialize(Bytes, &Element->Right); // default
+
 
 
 
@@ -133,7 +140,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->farClip, Memory);
 
@@ -142,7 +149,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->nearClip, Memory);
 
@@ -151,7 +159,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->FOV, Memory);
 
@@ -160,7 +169,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Top, Memory);
 
@@ -169,7 +179,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Bottom, Memory);
 
@@ -178,7 +189,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Left, Memory);
 
@@ -187,9 +199,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Right, Memory);
+
 
 
 

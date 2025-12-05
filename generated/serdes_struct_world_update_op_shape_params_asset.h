@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:427:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_asset *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_update_op_shape_params_asset *Ignored)
   Result.Name = CSz("world_update_op_shape_params_asset");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,21 +37,24 @@ Serialize(u8_cursor_block_array *Bytes, world_update_op_shape_params_asset *Base
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_update_op_shape_params_asset *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->AssetId); // default
+                                    Result &= Serialize(Bytes, &Element->AssetId); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ModelIndex); // default
+
+                                Result &= Serialize(Bytes, &Element->ModelIndex); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Origin); // default
+
+                                Result &= Serialize(Bytes, &Element->Origin); // default
+
 
 
 
@@ -97,7 +100,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
 
@@ -106,7 +109,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
 
@@ -115,9 +119,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Origin, Memory);
+
 
 
 

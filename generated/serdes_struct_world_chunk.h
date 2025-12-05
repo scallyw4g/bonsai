@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:63:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_chunk *Ignored)
   Result.Name = CSz("world_chunk");
   Result.Version =  1 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -41,29 +41,34 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
   {
     world_chunk *Element = BaseElement + ElementIndex;
             
-                            Result &= Serialize(Bytes, &Element->Dim); // default
+                                Result &= Serialize(Bytes, &Element->Dim); // default
 
 
 
 
 
 
-                if (Element->Occupancy) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->Occupancy) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-                if (Element->xOccupancyBorder) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->xOccupancyBorder) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-                if (Element->FaceMasks) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->FaceMasks) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
 
-                            Result &= Serialize(Bytes, &Element->IsOnFreelist); // default
+
+                                Result &= Serialize(Bytes, &Element->IsOnFreelist); // default
+
 
 
 
@@ -71,21 +76,24 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
 
 
         
-                            Result &= Serialize(Bytes, &Element->OcclusionQueryId); // default
+                                Result &= Serialize(Bytes, &Element->OcclusionQueryId); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->QueryActive); // default
+
+                                Result &= Serialize(Bytes, &Element->QueryActive); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->OcclusionFrames); // default
+
+                                Result &= Serialize(Bytes, &Element->OcclusionFrames); // default
+
 
 
 
@@ -93,14 +101,16 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
 
 
         
-                            Result &= Serialize(Bytes, &Element->DimInChunks); // default
+                                Result &= Serialize(Bytes, &Element->DimInChunks); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->WorldP); // default
+
+                                Result &= Serialize(Bytes, &Element->WorldP); // default
+
 
 
 
@@ -196,7 +206,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 {
   b32 Result = True;
       
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
 
@@ -206,22 +216,26 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
-        b64 HadOccupancyPointer = Read_u64(Bytes);
+
+          b64 HadOccupancyPointer = Read_u64(Bytes);
   Assert(HadOccupancyPointer < 2); // Should be 0 or 1
 
 
 
-        b64 HadxOccupancyBorderPointer = Read_u64(Bytes);
+
+          b64 HadxOccupancyBorderPointer = Read_u64(Bytes);
   Assert(HadxOccupancyBorderPointer < 2); // Should be 0 or 1
 
 
 
-        b64 HadFaceMasksPointer = Read_u64(Bytes);
+
+          b64 HadFaceMasksPointer = Read_u64(Bytes);
   Assert(HadFaceMasksPointer < 2); // Should be 0 or 1
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->IsOnFreelist, Memory);
 
@@ -230,8 +244,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+
     
-              
+                
   
   Result &= Deserialize(Bytes, &Element->OcclusionQueryId, Memory);
 
@@ -240,7 +255,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->QueryActive, Memory);
 
@@ -249,7 +265,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->OcclusionFrames, Memory);
 
@@ -258,8 +275,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+
     
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->DimInChunks, Memory);
 
@@ -269,9 +287,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
+
 
 
 

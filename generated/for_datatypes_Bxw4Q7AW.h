@@ -8663,24 +8663,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
             
             cs MemberName = CSz("Name");
 
-                                                                                                auto Member = Cast(cs*, &Element->Name);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
+                        
 
           }
         }
@@ -8734,9 +8717,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
             
             
             
-            cs MemberName = CSz("SpawnCallbackName");
+            cs MemberName = CSz("SpawnCallback");
 
-                                                                                                auto Member = Cast(cs*, &Element->SpawnCallbackName);
+                                                                                                auto Member = Cast(prefab_spawn_callback*, &Element->SpawnCallback);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8751,8 +8734,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
 
 
 
-                        PushNewRow(Ui);
-
+            
 
 
           }

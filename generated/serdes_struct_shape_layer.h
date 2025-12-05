@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:452:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(shape_layer *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(shape_layer *Ignored)
   Result.Name = CSz("shape_layer");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,61 +37,70 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     shape_layer *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->Rect); // default
+                            Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
 
-
-                            Result &= Serialize(Bytes, &Element->Sphere); // default
+                                Result &= Serialize(Bytes, &Element->Rect); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Line); // default
+
+                                Result &= Serialize(Bytes, &Element->Sphere); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Cylinder); // default
+
+                                Result &= Serialize(Bytes, &Element->Line); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Plane); // default
+
+                                Result &= Serialize(Bytes, &Element->Cylinder); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Torus); // default
+
+                                Result &= Serialize(Bytes, &Element->Plane); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Pyramid); // default
+
+                                Result &= Serialize(Bytes, &Element->Torus); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Advanced); // default
+
+                                Result &= Serialize(Bytes, &Element->Pyramid); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Advanced); // default
+
 
 
 
@@ -149,12 +158,13 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Type = Cast(brush_shape_type, Read_u32(Bytes));
+              Element->Type = Cast(brush_shape_type, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Rect, Memory);
 
@@ -163,7 +173,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Sphere, Memory);
 
@@ -172,7 +183,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Line, Memory);
 
@@ -181,7 +193,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Cylinder, Memory);
 
@@ -190,7 +203,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Plane, Memory);
 
@@ -199,7 +213,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Torus, Memory);
 
@@ -208,7 +223,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Pyramid, Memory);
 
@@ -217,9 +233,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Advanced, Memory);
+
 
 
 

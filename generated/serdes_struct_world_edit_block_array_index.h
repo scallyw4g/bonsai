@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:489:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(world_edit_block_array_index *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(world_edit_block_array_index *Ignored)
   Result.Name = CSz("world_edit_block_array_index");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,7 +37,8 @@ Serialize(u8_cursor_block_array *Bytes, world_edit_block_array_index *BaseElemen
   RangeIterator_t(umm, ElementIndex, Count)
   {
     world_edit_block_array_index *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Index); // default
+                                    Result &= Serialize(Bytes, &Element->Index); // default
+
 
 
 
@@ -79,9 +80,10 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array_index *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Index, Memory);
+
 
 
 

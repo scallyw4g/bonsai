@@ -160,13 +160,13 @@ poof(
       Result.Name = CSz("type.name");
       Result.Version = type.has_tag(version)? { type.tag_value(version) } { 0 };
 
-      /* type.map(member) */
-      /* { */
-      /*   { */
-      /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-      /*     Push(&Result.Members, &Member); */
-      /*   } */
-      /* } */
+      /// type.map(member)
+      /// {
+      ///   {
+      ///     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)};
+      ///     Push(&Result.Members, &Member);
+      ///   }
+      /// }
 
       return Result;
     }
@@ -197,66 +197,73 @@ poof(
           {
           }
           {
-            member.has_tag(custom_serialize)?
+            member.has_tag(serialize_as)?
             {
-              member.tag_value(custom_serialize)
+              auto Thing = member.tag_value(serialize_as)(Element->(member.name));
+              Result &= Serialize(Bytes, &Thing );
             }
             {
-              member.is_pointer?
+              member.has_tag(custom_serialize)?
               {
-                if (Element->(member.name)) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
-                else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+                member.tag_value(custom_serialize)
               }
               {
-                member.is_enum?
+                member.is_pointer?
                 {
-                  Result &= Serialize(Bytes, (u32*)&Element->(member.name)); // enum
+                  if (Element->(member.name)) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                  else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
                 }
                 {
-                  member.is_array?
+                  member.is_enum?
                   {
-                    {
-                      member.has_tag(array_length)?
-                      {
-                        // TODO(Jesse): Should this really be a safe cast?
-                        umm ThisCount = umm((member.tag_value(array_length)));
-                      }
-                      {
-                        umm ThisCount = member.array;
-                      }
-                      Result &= Serialize(Bytes, Element->(member.name), ThisCount);
-                    }
+                    Result &= Serialize(Bytes, (u32*)&Element->(member.name)); // enum
                   }
                   {
-                    member.name?
+                    member.is_array?
                     {
-                      Result &= Serialize(Bytes, &Element->(member.name)); // default
+                      {
+                        member.has_tag(array_length)?
+                        {
+                          /// TODO(Jesse): Should this really be a safe cast?
+                          umm ThisCount = umm((member.tag_value(array_length)));
+                        }
+                        {
+                          umm ThisCount = member.array;
+                        }
+                        Result &= Serialize(Bytes, Element->(member.name), ThisCount);
+                      }
                     }
                     {
-                      member.is_union?
+                      member.name?
                       {
-                        member.has_tag(type_tag)?
+                        Result &= Serialize(Bytes, &Element->(member.name)); // default
+                      }
+                      {
+                        member.is_union?
                         {
-                          switch ( Element->Type )
+                          member.has_tag(type_tag)?
                           {
-                            @var enum_t member.tag_value(type_tag)
-                            enum_t.map_values(tag_v)
+                            switch ( Element->Type )
                             {
-                              tag_v.has_tag(no_serialize)?
+                              @var enum_t member.tag_value(type_tag)
+                              enum_t.map_values(tag_v)
                               {
-                                case tag_v.name: {} break;
-                              }
-                              {
-                                case tag_v.name:
+                                tag_v.has_tag(no_serialize)?
                                 {
-                                  Result &= Serialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case);
-                                } break;
+                                  case tag_v.name: {} break;
+                                }
+                                {
+                                  case tag_v.name:
+                                  {
+                                    Result &= Serialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case);
+                                  } break;
+                                }
                               }
                             }
                           }
-                        }
-                        {
-                          @poof_error { anonymous union members must have a @type_tag that specifies an enum type }
+                          {
+                            @poof_error { anonymous union members must have a @type_tag that specifies an enum type }
+                          }
                         }
                       }
                     }
@@ -352,75 +359,85 @@ poof(
         {
         }
         {
-          member.has_tag(custom_deserialize)?
+          member.has_tag(deserialize_as)?
           {
-            member.tag_value(custom_deserialize)
+            {
+              member.tag_value(serdes_as) Thing = {};
+              Result &= Deserialize(Bytes, &Thing, Memory);
+              Element->(member.name) = member.tag_value(deserialize_as)(Thing);
+            }
           }
           {
-            member.is_pointer?
+            member.has_tag(custom_deserialize)?
             {
-              b64 Had(member.name)Pointer = Read_u64(Bytes);
-              Assert(Had(member.name)Pointer < 2); // Should be 0 or 1
+              member.tag_value(custom_deserialize)
             }
             {
-              member.is_enum?
+              member.is_pointer?
               {
-                Element->(member.name) = Cast((member.type), Read_u32(Bytes));
+                b64 Had(member.name)Pointer = Read_u64(Bytes);
+                Assert(Had(member.name)Pointer < 2); // Should be 0 or 1
               }
               {
-                member.is_array?
+                member.is_enum?
                 {
-                  {
-                    member.has_tag(array_length)?
-                    {
-                      // TODO(Jesse): Should this really be a safe cast?
-                      umm Count = umm((member.tag_value(array_length)));
-                    }
-                    {
-                      umm Count = member.array;
-                    }
-                    Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
-                  }
+                  Element->(member.name) = Cast((member.type), Read_u32(Bytes));
                 }
                 {
-                  member.is_union?
+                  member.is_array?
                   {
-                    member.name?
+                    {
+                      member.has_tag(array_length)?
+                      {
+                        // TODO(Jesse): Should this really be a safe cast?
+                        umm Count = umm((member.tag_value(array_length)));
+                      }
+                      {
+                        umm Count = member.array;
+                      }
+                      Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
+                    }
+                  }
+                  {
+                    member.is_union?
+                    {
+                      member.name?
+                      {
+                        /// NOTE(Jesse): Unfortunately we can't check for primitives because
+                        /// strings are considered primitive, but need memory to deserialize
+                        Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                      }
+                      {
+                        member.has_tag(type_tag)?
+                        {
+                          switch ( Element->Type )
+                          {
+                            @var enum_t member.tag_value(type_tag)
+                            enum_t.map_values(tag_v)
+                            {
+                              tag_v.has_tag(no_serialize)?
+                              {
+                                case tag_v.name: { SoftError("Deserialized tag value (tag_v.name), which was marked @no_serialize!"); } break;
+                              }
+                              {
+                                case tag_v.name:
+                                {
+                                  Result &= Deserialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case, Memory);
+                                } break;
+                              }
+                            }
+                          }
+                        }
+                        {
+                          @poof_error { anonymous union members must have a @type_tag that specifies an enum (member)(type) }
+                        }
+                      }
+                    }
                     {
                       /// NOTE(Jesse): Unfortunately we can't check for primitives because
                       /// strings are considered primitive, but need memory to deserialize
                       Result &= Deserialize(Bytes, &Element->(member.name), Memory);
                     }
-                    {
-                      member.has_tag(type_tag)?
-                      {
-                        switch ( Element->Type )
-                        {
-                          @var enum_t member.tag_value(type_tag)
-                          enum_t.map_values(tag_v)
-                          {
-                            tag_v.has_tag(no_serialize)?
-                            {
-                              case tag_v.name: { SoftError("Deserialized tag value (tag_v.name), which was marked @no_serialize!"); } break;
-                            }
-                            {
-                              case tag_v.name:
-                              {
-                                Result &= Deserialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case, Memory);
-                              } break;
-                            }
-                          }
-                        }
-                      }
-                      {
-                        @poof_error { anonymous union members must have a @type_tag that specifies an enum (member)(type) }
-                      }
-                    }
-                  }
-                  {
-                    /// NOTE(Jesse): Unfortunately we can't check for primitives because
-                    /// strings are considered primitive, but need memory to deserialize
-                    Result &= Deserialize(Bytes, &Element->(member.name), Memory);
                   }
                 }
               }
@@ -667,6 +684,14 @@ Deserialize(u8_cursor *Bytes, cs *Element, memory_arena *Memory)
   Assert(Bytes->At <= Bytes->End);
   return True;
 }
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, cs *Element, memory_arena *Memory, umm Count)
+{
+  Assert(Count == 1);
+  return Deserialize(Bytes, Element, Memory);
+}
+
 
 
 poof(serdes_primitive({u8 s8 u16 s16 u32 s32 u64 s64 b8 r32 r64}))

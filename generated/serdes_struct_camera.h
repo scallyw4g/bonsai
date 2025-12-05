@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:133:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(camera *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(camera *Ignored)
   Result.Name = CSz("camera");
   Result.Version =  2 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -40,21 +40,24 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     camera *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Frust); // default
+                                    Result &= Serialize(Bytes, &Element->Frust); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->CurrentP); // default
+
+                                Result &= Serialize(Bytes, &Element->CurrentP); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->RenderSpacePosition); // default
+
+                                Result &= Serialize(Bytes, &Element->RenderSpacePosition); // default
+
 
 
 
@@ -65,91 +68,104 @@ Serialize(u8_cursor_block_array *Bytes, camera *BaseElement, umm Count)
         
         
         
-                            Result &= Serialize(Bytes, &Element->TargetPitch); // default
+                                Result &= Serialize(Bytes, &Element->TargetPitch); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->TargetRoll); // default
 
+                                Result &= Serialize(Bytes, &Element->TargetRoll); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->TargetYaw); // default
 
 
+                                Result &= Serialize(Bytes, &Element->TargetYaw); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->TargetDistanceFromTarget); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->TargetDistanceFromTarget); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->Blend); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->Blend); // default
 
 
-                            Result &= Serialize(Bytes, &Element->Speed); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->Speed); // default
 
-                            Result &= Serialize(Bytes, &Element->Front); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Right); // default
+                                Result &= Serialize(Bytes, &Element->Front); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Up); // default
 
+                                Result &= Serialize(Bytes, &Element->Right); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->GhostId); // default
 
 
+                                Result &= Serialize(Bytes, &Element->Up); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ViewProjection); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->GhostId); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->InverseViewMatrix); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ViewProjection); // default
 
 
-                            Result &= Serialize(Bytes, &Element->InverseProjectionMatrix); // default
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->InverseViewMatrix); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->InverseProjectionMatrix); // default
+
 
 
 
@@ -253,7 +269,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Frust, Memory);
 
@@ -262,7 +278,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->CurrentP, Memory);
 
@@ -271,7 +288,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
 
@@ -281,11 +299,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
+
     
     
     
     
-              
+                
   
   Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
 
@@ -294,7 +313,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
 
@@ -303,7 +323,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
 
@@ -312,7 +333,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetDistanceFromTarget, Memory);
 
@@ -321,7 +343,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Blend, Memory);
 
@@ -330,7 +353,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
 
@@ -339,7 +363,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Front, Memory);
 
@@ -349,7 +374,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Right, Memory);
 
@@ -359,7 +385,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Up, Memory);
 
@@ -369,7 +396,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->GhostId, Memory);
 
@@ -378,7 +406,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ViewProjection, Memory);
 
@@ -387,7 +416,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->InverseViewMatrix, Memory);
 
@@ -396,9 +426,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->InverseProjectionMatrix, Memory);
+
 
 
 

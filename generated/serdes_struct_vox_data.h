@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:298:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(vox_data *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(vox_data *Ignored)
   Result.Name = CSz("vox_data");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,8 +37,9 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vox_data *Element = BaseElement + ElementIndex;
-                    if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                        if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
 
 
 
@@ -79,8 +80,9 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
-          b64 HadChunkDataPointer = Read_u64(Bytes);
+            b64 HadChunkDataPointer = Read_u64(Bytes);
   Assert(HadChunkDataPointer < 2); // Should be 0 or 1
+
 
 
 

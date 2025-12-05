@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:47:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(voxel_lighting *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(voxel_lighting *Ignored)
   Result.Name = CSz("voxel_lighting");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,7 +37,8 @@ Serialize(u8_cursor_block_array *Bytes, voxel_lighting *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voxel_lighting *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Emission); // default
+                                    Result &= Serialize(Bytes, &Element->Emission); // default
+
 
 
 
@@ -79,9 +80,10 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voxel_lighting *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Emission, Memory);
+
 
 
 

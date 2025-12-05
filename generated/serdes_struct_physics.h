@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:301:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(physics *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(physics *Ignored)
   Result.Name = CSz("physics");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,35 +37,40 @@ Serialize(u8_cursor_block_array *Bytes, physics *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     physics *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Velocity); // default
+                                    Result &= Serialize(Bytes, &Element->Velocity); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Force); // default
+
+                                Result &= Serialize(Bytes, &Element->Force); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Delta); // default
+
+                                Result &= Serialize(Bytes, &Element->Delta); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Mass); // default
+
+                                Result &= Serialize(Bytes, &Element->Mass); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Speed); // default
+
+                                Result &= Serialize(Bytes, &Element->Speed); // default
+
 
 
 
@@ -115,7 +120,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+                    
   
   Result &= Deserialize(Bytes, &Element->Velocity, Memory);
 
@@ -125,7 +130,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Force, Memory);
 
@@ -135,7 +141,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Delta, Memory);
 
@@ -145,7 +152,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Mass, Memory);
 
@@ -154,9 +162,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Speed, Memory);
+
 
 
 

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:24:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(canonical_position *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(canonical_position *Ignored)
   Result.Name = CSz("canonical_position");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,14 +37,16 @@ Serialize(u8_cursor_block_array *Bytes, canonical_position *BaseElement, umm Cou
   RangeIterator_t(umm, ElementIndex, Count)
   {
     canonical_position *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Offset); // default
+                                    Result &= Serialize(Bytes, &Element->Offset); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->WorldP); // default
+
+                                Result &= Serialize(Bytes, &Element->WorldP); // default
+
 
 
 
@@ -88,7 +90,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, canonical_position *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+                    
   
   Result &= Deserialize(Bytes, &Element->Offset, Memory);
 
@@ -98,9 +100,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, canonical_position *Element, memory_
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->WorldP, Memory);
+
 
 
 

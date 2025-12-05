@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:264:0
 
 // def (serdes_vector)
-// src/engine/serdes.h:601:0
+// src/engine/serdes.h:618:0
 link_internal b32
 Serialize(u8_cursor_block_array *Bytes, Quaternion *Element, umm Count = 1)
 {

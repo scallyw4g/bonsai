@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:380:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(render_settings *Ignored)
   Result.Name = CSz("render_settings");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,145 +37,166 @@ Serialize(u8_cursor_block_array *Bytes, render_settings *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     render_settings *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->UseSsao); // default
+                                    Result &= Serialize(Bytes, &Element->UseSsao); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->UseShadowMapping); // default
 
+                                Result &= Serialize(Bytes, &Element->UseShadowMapping); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->UseLightingBloom); // default
 
 
+                                Result &= Serialize(Bytes, &Element->UseLightingBloom); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->BravoilMyersOIT); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->BravoilMyersOIT); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->BravoilMcGuireOIT); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->BravoilMcGuireOIT); // default
 
 
-                            Result &= Serialize(Bytes, &Element->DrawMajorGrid); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->DrawMajorGrid); // default
 
-                            Result &= Serialize(Bytes, &Element->DrawMinorGrid); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->MajorGridDim); // default
+                                Result &= Serialize(Bytes, &Element->DrawMinorGrid); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->DrawCameraGhost); // default
 
+                                Result &= Serialize(Bytes, &Element->MajorGridDim); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->CameraGhostSize); // default
 
 
+                                Result &= Serialize(Bytes, &Element->DrawCameraGhost); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Ignored); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->CameraGhostSize); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->Headless); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->Ignored); // default
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType); // enum
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->GameCameraFOV); // default
 
+                                Result &= Serialize(Bytes, &Element->Headless); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Lighting); // default
 
 
+                        Result &= Serialize(Bytes, (u32*)&Element->ToneMappingType); // enum
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ApplicationResolution); // default
 
+                                Result &= Serialize(Bytes, &Element->GameCameraFOV); // default
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->ShadowMapResolution); // default
 
 
+                                Result &= Serialize(Bytes, &Element->Lighting); // default
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->LuminanceMapResolution); // default
 
 
 
+                                Result &= Serialize(Bytes, &Element->ApplicationResolution); // default
 
 
 
-                            Result &= Serialize(Bytes, &Element->iApplicationResolution); // default
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->ShadowMapResolution); // default
 
 
-                            Result &= Serialize(Bytes, &Element->iShadowMapResolution); // default
 
 
 
 
 
+                                Result &= Serialize(Bytes, &Element->LuminanceMapResolution); // default
 
-                            Result &= Serialize(Bytes, &Element->iLuminanceMapResolution); // default
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iApplicationResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iShadowMapResolution); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->iLuminanceMapResolution); // default
+
 
 
 
@@ -257,7 +278,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->UseSsao, Memory);
 
@@ -266,7 +287,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->UseShadowMapping, Memory);
 
@@ -275,7 +297,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->UseLightingBloom, Memory);
 
@@ -284,7 +307,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
 
@@ -293,7 +317,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
 
@@ -302,7 +327,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
 
@@ -311,7 +337,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
 
@@ -320,7 +347,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->MajorGridDim, Memory);
 
@@ -329,7 +357,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
 
@@ -338,7 +367,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->CameraGhostSize, Memory);
 
@@ -347,7 +377,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Ignored, Memory);
 
@@ -357,7 +388,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Headless, Memory);
 
@@ -366,12 +398,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-          Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
+
+            Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->GameCameraFOV, Memory);
 
@@ -380,7 +414,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Lighting, Memory);
 
@@ -389,7 +424,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->ApplicationResolution, Memory);
 
@@ -399,7 +435,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
 
@@ -409,7 +446,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
 
@@ -419,7 +457,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->iApplicationResolution, Memory);
 
@@ -429,7 +468,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
 
@@ -439,9 +479,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
+
 
 
 

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:424:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(noise_layer *Ignored)
   Result.Name = CSz("noise_layer");
   Result.Version =  3 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -40,40 +40,46 @@ Serialize(u8_cursor_block_array *Bytes, noise_layer *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     noise_layer *Element = BaseElement + ElementIndex;
-                        Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
-
-
-
-
-                            Result &= Serialize(Bytes, &Element->White); // default
+                            Result &= Serialize(Bytes, (u32*)&Element->Type); // enum
 
 
 
 
 
-
-                            Result &= Serialize(Bytes, &Element->Perlin); // default
+                                Result &= Serialize(Bytes, &Element->White); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Voronoi); // default
+
+                                Result &= Serialize(Bytes, &Element->Perlin); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->RectLattice); // default
+
+                                Result &= Serialize(Bytes, &Element->Voronoi); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Power); // default
+
+                                Result &= Serialize(Bytes, &Element->RectLattice); // default
+
+
+
+
+
+
+
+                                Result &= Serialize(Bytes, &Element->Power); // default
+
 
 
 
@@ -159,12 +165,13 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
+              Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->White, Memory);
 
@@ -173,7 +180,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Perlin, Memory);
 
@@ -182,7 +190,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Voronoi, Memory);
 
@@ -191,7 +200,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->RectLattice, Memory);
 
@@ -200,9 +210,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Power, Memory);
+
 
 
 

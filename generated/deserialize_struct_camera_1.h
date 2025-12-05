@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:74:0
 
 // def (deserialize_struct)
-// src/engine/serdes.h:305:0
+// src/engine/serdes.h:312:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory);
 
@@ -19,7 +19,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Frust, Memory);
 
@@ -28,7 +28,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->CurrentP, Memory);
 
@@ -37,7 +38,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
 
@@ -47,7 +49,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Pitch, Memory);
 
@@ -56,7 +59,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Roll, Memory);
 
@@ -65,7 +69,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Yaw, Memory);
 
@@ -74,7 +79,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
 
@@ -83,7 +89,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
 
@@ -92,7 +99,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
 
@@ -101,7 +109,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Blend, Memory);
 
@@ -110,7 +119,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
 
@@ -119,7 +129,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Front, Memory);
 
@@ -129,7 +140,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Right, Memory);
 
@@ -139,7 +151,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Up, Memory);
 
@@ -149,9 +162,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->GhostId, Memory);
+
 
 
 

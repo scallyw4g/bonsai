@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:366:0
 
 // def (deserialize_struct)
-// src/engine/serdes.h:305:0
+// src/engine/serdes.h:312:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, entity *Element, memory_arena *Memory);
 
@@ -47,7 +47,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Id, Memory);
 
@@ -56,7 +56,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->P, Memory);
 
@@ -65,7 +66,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
 
@@ -75,7 +77,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Scale, Memory);
 
@@ -84,7 +87,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
@@ -94,7 +98,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Physics, Memory);
 
@@ -103,7 +108,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->AssetId, Memory);
 
@@ -112,7 +118,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
 
@@ -121,24 +128,28 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
+
     
     
-        b64 HadEmitterPointer = Read_u64(Bytes);
+          b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
 
 
-          Element->State = Cast(entity_state, Read_u32(Bytes));
+
+            Element->State = Cast(entity_state, Read_u32(Bytes));
 
 
 
 
-          Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
+
+            Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Carrying, Memory);
 
@@ -147,7 +158,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->UserType, Memory);
 
@@ -156,7 +168,9 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity *Element, memory_arena *Memor
 
 
 
-      if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
+
+        if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
+
 
 
 

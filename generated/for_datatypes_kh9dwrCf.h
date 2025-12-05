@@ -1426,6 +1426,49 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
+link_internal b32
+DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_spawn_callback *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
+{
+  b32 Result = False;
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x20C4D66A);
+
+  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
+
+  cs ElementName = ToStringPrefixless(*Element);
+  ui_id ToggleButtonId = UiId(Window, "toggle prefab_spawn_callback", Element, ThisHash);
+  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
+  {
+    PushNewRow(Ui);
+        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("None"), UiId(Window, "enum PrefabSpawnCallback_None", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = PrefabSpawnCallback_None;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("DefaultPrefabSpawnCallback"), UiId(Window, "enum PrefabSpawnCallback_DefaultPrefabSpawnCallback", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = PrefabSpawnCallback_DefaultPrefabSpawnCallback;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+
+  }
+  else
+  {
+    PushNewRow(Ui);
+  }
+  return Result;
+}
+
+
 
 
 

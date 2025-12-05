@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:449:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(shape_layer_advanced_params *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(shape_layer_advanced_params *Ignored)
   Result.Name = CSz("shape_layer_advanced_params");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,35 +37,40 @@ Serialize(u8_cursor_block_array *Bytes, shape_layer_advanced_params *BaseElement
   RangeIterator_t(umm, ElementIndex, Count)
   {
     shape_layer_advanced_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Hollow); // default
+                                    Result &= Serialize(Bytes, &Element->Hollow); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Rounding); // default
+
+                                Result &= Serialize(Bytes, &Element->Rounding); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Stretch); // default
+
+                                Result &= Serialize(Bytes, &Element->Stretch); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Repeat); // default
+
+                                Result &= Serialize(Bytes, &Element->Repeat); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Rotation); // default
+
+                                Result &= Serialize(Bytes, &Element->Rotation); // default
+
 
 
 
@@ -115,7 +120,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Hollow, Memory);
 
@@ -124,7 +129,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Rounding, Memory);
 
@@ -133,7 +139,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Stretch, Memory);
 
@@ -143,7 +150,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Repeat, Memory);
 
@@ -153,9 +161,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer_advanced_params *Element
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->Rotation, Memory);
+
 
 
 

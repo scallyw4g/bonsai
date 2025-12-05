@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:385:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(bonsai_type_info_buffer *Ignored)
   Result.Name = CSz("bonsai_type_info_buffer");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,15 +37,17 @@ Serialize(u8_cursor_block_array *Bytes, bonsai_type_info_buffer *BaseElement, um
   RangeIterator_t(umm, ElementIndex, Count)
   {
     bonsai_type_info_buffer *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Count); // default
+                                    Result &= Serialize(Bytes, &Element->Count); // default
 
 
 
 
 
 
-                if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+
+                    if (Element->Start) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
 
 
 
@@ -88,7 +90,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->Count, Memory);
 
@@ -97,8 +99,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, me
 
 
 
-        b64 HadStartPointer = Read_u64(Bytes);
+
+          b64 HadStartPointer = Read_u64(Bytes);
   Assert(HadStartPointer < 2); // Should be 0 or 1
+
 
 
 

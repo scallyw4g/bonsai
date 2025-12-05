@@ -11,13 +11,13 @@ TypeInfo(level_header *Ignored)
   Result.Name = CSz("level_header");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,61 +37,69 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     level_header *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->LayerCount); // default
+                                    Result &= Serialize(Bytes, &Element->LayerCount); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->EditCount); // default
+
+                                Result &= Serialize(Bytes, &Element->EditCount); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->EntityCount); // default
+
+                                Result &= Serialize(Bytes, &Element->EntityCount); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->SelectedLayerIndex); // default
+
+                                Result &= Serialize(Bytes, &Element->SelectedLayerIndex); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->WorldCenter); // default
+
+                                Result &= Serialize(Bytes, &Element->WorldCenter); // default
 
 
 
 
 
 
-                    Result &= Serialize(Bytes, (u32*)&Element->VisibleRegionSize); // enum
 
-
-
-
-                            Result &= Serialize(Bytes, &Element->Camera); // default
-
+                        Result &= Serialize(Bytes, (u32*)&Element->VisibleRegionSize); // enum
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->RenderSettings); // default
+                                Result &= Serialize(Bytes, &Element->Camera); // default
 
 
 
 
 
 
-                        {
+
+                                Result &= Serialize(Bytes, &Element->RenderSettings); // default
+
+
+
+
+
+
+
+                            {
             umm ThisCount = (256);
 
       Result &= Serialize(Bytes, Element->TerrainShapingShader, ThisCount);
@@ -101,11 +109,13 @@ Serialize(u8_cursor_block_array *Bytes, level_header *BaseElement, umm Count)
 
 
 
-                        {
+
+                            {
             umm ThisCount = (256);
 
       Result &= Serialize(Bytes, Element->TerrainDecorationShader, ThisCount);
     }
+
 
 
 

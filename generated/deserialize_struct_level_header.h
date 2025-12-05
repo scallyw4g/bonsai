@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:388:0
 
 // def (deserialize_struct)
-// src/engine/serdes.h:305:0
+// src/engine/serdes.h:312:0
 link_internal b32
 Deserialize(u8_cursor *Bytes, level_header *Element, memory_arena *Memory);
 
@@ -19,7 +19,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
 
@@ -28,7 +28,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->EditCount, Memory);
 
@@ -37,7 +38,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->EntityCount, Memory);
 
@@ -46,7 +48,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->SelectedLayerIndex, Memory);
 
@@ -55,7 +58,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-                
+
+                  
   
   Result &= Deserialize(Bytes, &Element->WorldCenter, Memory);
 
@@ -65,12 +69,14 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-          Element->VisibleRegionSize = Cast(visible_region_size, Read_u32(Bytes));
+
+            Element->VisibleRegionSize = Cast(visible_region_size, Read_u32(Bytes));
 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Camera, Memory);
 
@@ -79,7 +85,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->RenderSettings, Memory);
 
@@ -88,7 +95,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-            {
+
+              {
         umm Count = (256);
 
     Result &= Deserialize(Bytes, Element->TerrainShapingShader, Memory, Count);
@@ -98,11 +106,13 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
-            {
+
+              {
         umm Count = (256);
 
     Result &= Deserialize(Bytes, Element->TerrainDecorationShader, Memory, Count);
   }
+
 
 
 

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:415:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(voronoi_noise_params *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(voronoi_noise_params *Ignored)
   Result.Name = CSz("voronoi_noise_params");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,21 +37,24 @@ Serialize(u8_cursor_block_array *Bytes, voronoi_noise_params *BaseElement, umm C
   RangeIterator_t(umm, ElementIndex, Count)
   {
     voronoi_noise_params *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->Period); // default
+                                    Result &= Serialize(Bytes, &Element->Period); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Squareness); // default
+
+                                Result &= Serialize(Bytes, &Element->Squareness); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->MaskChance); // default
+
+                                Result &= Serialize(Bytes, &Element->MaskChance); // default
+
 
 
 
@@ -97,7 +100,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+                    
   
   Result &= Deserialize(Bytes, &Element->Period, Memory);
 
@@ -107,7 +110,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Squareness, Memory);
 
@@ -116,9 +120,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->MaskChance, Memory);
+
 
 
 

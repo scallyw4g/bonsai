@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:409:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(white_noise_params *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(white_noise_params *Ignored)
   Result.Name = CSz("white_noise_params");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }

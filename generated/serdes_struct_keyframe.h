@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:267:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:593:0
+// src/engine/serdes.h:610:0
 link_internal bonsai_type_info
 TypeInfo(keyframe *Ignored)
 {
@@ -11,13 +11,13 @@ TypeInfo(keyframe *Ignored)
   Result.Name = CSz("keyframe");
   Result.Version =  0 ;
 
-  /* type.map(member) */
-  /* { */
-  /*   { */
-  /*     member_info Member = {CSz("member.name"), CSz("member.name"), 0x(member.hash)}; */
-  /*     Push(&Result.Members, &Member); */
-  /*   } */
-  /* } */
+  
+  
+  
+  
+  
+  
+  
 
   return Result;
 }
@@ -37,14 +37,16 @@ Serialize(u8_cursor_block_array *Bytes, keyframe *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     keyframe *Element = BaseElement + ElementIndex;
-                                Result &= Serialize(Bytes, &Element->tEnd); // default
+                                    Result &= Serialize(Bytes, &Element->tEnd); // default
 
 
 
 
 
 
-                            Result &= Serialize(Bytes, &Element->Value); // default
+
+                                Result &= Serialize(Bytes, &Element->Value); // default
+
 
 
 
@@ -88,7 +90,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                
+                  
   
   Result &= Deserialize(Bytes, &Element->tEnd, Memory);
 
@@ -97,9 +99,11 @@ DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Mem
 
 
 
-              
+
+                
   
   Result &= Deserialize(Bytes, &Element->Value, Memory);
+
 
 
 
