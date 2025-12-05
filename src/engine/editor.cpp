@@ -2047,7 +2047,7 @@ DoWorldEditor(engine_resources *Engine)
     case UiEditorTool_Prefab:
     {
       {
-         window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
+        window_layout *Window = GetOrCreateWindow(Ui, "All Prefabs", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
         PushWindowStart(Ui, Window);
 
         IterateOver(&Editor->Prefabs, Prefab, PrefabIndex)
@@ -2203,8 +2203,21 @@ DoWorldEditor(engine_resources *Engine)
           ToggleBitfieldValue(Layer->Flags, WorldEditLayerFlag_Collapsed);
         }
 
+        ui_id NameButtonId = UiId(LayersWindow, Layer, Layer);
+
+        if (LClicked(Ui, &NameButtonId))
+        {
+          Info("wooo");
+        }
+
+        if (RClicked(Ui, &NameButtonId))
+        {
+          Info("weee");
+        }
+        /* DoTextEditInteraction(Ui, Layer->NameBuf, NameBufLen, NameButtonId, RClicked(Ui, NameButtonId)); */
+
         ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
-        if (Button(Ui, Name, UiId(LayersWindow, Layer, Layer), Style))
+        if (Button(Ui, Name, NameButtonId, Style))
         {
           Editor->SelectedLayerIndex = LayerIndex;
 

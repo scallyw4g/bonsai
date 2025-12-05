@@ -299,13 +299,14 @@ main( s32 ArgCount, const char ** Args )
       DrainQueue(&Plat->HighPriority, MainThread, GameApi);
       WaitForWorkerThreads(&Plat->HighPriorityWorkerCount);
 
-      EngineApi->Render(EngineResources);
-
-      Assert(FutexIsSignaled(&EngineResources->Graphics.RenderGate) == False);
-
-      DEBUG_FRAME_END(Plat->dt);
-
     EngineApi->FrameEnd(EngineResources);
+
+
+    EngineApi->Render(EngineResources);
+
+    Assert(FutexIsSignaled(&EngineResources->Graphics.RenderGate) == False);
+
+    DEBUG_FRAME_END(Plat->dt);
 
 
     // NOTE(Jesse): We can't hold strings from PlatformTraverseDirectoryTreeUnordered

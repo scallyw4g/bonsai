@@ -84,6 +84,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
 
+#if 1
   {
     window_layout *Window = GetOrCreateWindow(Ui, "GameState");
     PushWindowStart(Ui, Window);
@@ -148,8 +149,9 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushWindowEnd(Ui, &Window);
   }
 
+#endif
 
-#if 1
+#if 0
   IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
   {
     if (StringsMatch(CS(Brush->NameBuf), CSz("rotate.brush")))
