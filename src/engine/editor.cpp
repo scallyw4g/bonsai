@@ -1542,9 +1542,9 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
   u8 SixBits     = 0b111111;
   u8 SevenBits   = 0b1111111;
 
-  u16 HueSlices        = SevenBits;
-  u16 SaturationSlices = FourBits;
-  u16 ValueSlices      = FourBits;
+  u16 HueSlices        = SixBits;
+  u16 SaturationSlices = FiveBits;
+  u16 ValueSlices      = FiveBits;
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
