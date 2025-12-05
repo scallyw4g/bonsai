@@ -1486,7 +1486,7 @@ ColorIndexToV3(u16 ColorIndex)
 
 
 link_internal void
-DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim)
+DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *HSVDest, u32 HSVElementIndex, u32 Slices, v2 WidgetDim, f32 Curve)
 {
   v2 QuadDim = V2(WidgetDim.x/r32(Slices), WidgetDim.y);
   v4 Padding = V4(0);
@@ -1498,6 +1498,7 @@ DoColorPickerSection(renderer_2d *Ui, window_layout *Window, u32 ThisHash, v3 *H
   RangeIterator_t(u8, ColorIndex, Slices)
   {
     r32 Value = r32(ColorIndex)/r32(Slices-1);
+    Value = Powf(Value, Curve);
 
     HSV.E[HSVElementIndex] = Value;
     v3 RGB = HSVtoRGB(HSV);
@@ -1548,9 +1549,9 @@ DoColorPicker(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 ShowColor
 
   v2 ColorPickerSectionDim = V2(256, 30);
 
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim);
-  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 0, HueSlices,        ColorPickerSectionDim, 1.f);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 1, SaturationSlices, ColorPickerSectionDim, 0.5f);
+  DoColorPickerSection(Ui, Window, ThisHash, HSVDest, 2, ValueSlices,      ColorPickerSectionDim, 1.2f);
 
   PushNewRow(Ui);
 
