@@ -2205,19 +2205,10 @@ DoWorldEditor(engine_resources *Engine)
 
         ui_id NameButtonId = UiId(LayersWindow, Layer, Layer);
 
-        if (LClicked(Ui, &NameButtonId))
-        {
-          Info("wooo");
-        }
-
-        if (RClicked(Ui, &NameButtonId))
-        {
-          Info("weee");
-        }
-        /* DoTextEditInteraction(Ui, Layer->NameBuf, NameBufLen, NameButtonId, RClicked(Ui, NameButtonId)); */
+        TextBox(Ui, {}, CS(Layer->NameBuf), NameBuf_Len, NameButtonId);
 
         ui_style *Style = LayerSelected ? &DefaultSelectedStyle : &DefaultStyle;
-        if (Button(Ui, Name, NameButtonId, Style))
+        if (LClicked(Ui, &NameButtonId))
         {
           Editor->SelectedLayerIndex = LayerIndex;
 
