@@ -21,7 +21,10 @@ void main()
   /* v3 Normal = Normalize(V3(1,1,0)); */
 
   uint PackedNormal = PackV3_15b(Normal);
-  uint PackedColor = PackV3_655b(RGBtoHSV(ColorValue));
+  uint PackedColor = PackV3_655b(ColorValue.grb);
+
+  /* if (LengthSq(ColorValue) == 0.f) { SolidBit = 0u; } */
+  /* if (LengthSq(ColorValue) == 0.f) { SolidBit = 0u; } */
 
   Output = (SolidBit << 31) | (PackedNormal << 16) | PackedColor;
 }
