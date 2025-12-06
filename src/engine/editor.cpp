@@ -3268,7 +3268,7 @@ GetOrAllocateTextureFramebufferForWorldEdit(rtt_framebuffer_paged_list *Freelist
 }
 
 link_internal void
-BindUniformsForBrush(
+BindUniformsForBrushLayer(
     shader *Program,
     brush_layer *Layer,
     rtt_framebuffer *Write,
@@ -3283,6 +3283,7 @@ BindUniformsForBrush(
 
     v3 *ChunkRelEditMin,
     v3 *ChunkRelEditMax,
+    v3 *BasisOffset,
 
     r32 ColorBlendBias
     )
@@ -3331,6 +3332,7 @@ BindUniformsForBrush(
   // just reads them whenever it wants through the pointer..
   BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin);
   BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax);
+  BindUniformByName(Program, "BasisOffset", BasisOffset);
 
   BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
 
@@ -3366,8 +3368,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
        v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
        v3 EditRectRad = GetRadius(&SimEditRect);
 
-    v3 ChunkRelEditMin = SimEditRect.Min - SimChunkMin;
-    v3 ChunkRelEditMax = SimEditRect.Max - SimChunkMin;
+    v3 BasisOffset = Layer->Settings.Offset;
+    v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
+    v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
     v3 EditDim = ChunkRelEditMax -  ChunkRelEditMin;
 
     // NOTE(Jesse): Key 0 is the Min, Key 2 is Max
@@ -3386,22 +3389,23 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     BubbleSort_descending(EditDimKeys, 3);
 
 
-    BindUniformsForBrush( &WorldEditRC->Program,
-                           Layer,
-                           Write,
+    BindUniformsForBrushLayer( &WorldEditRC->Program,
+                                Layer,
+                                Write,
 
-                           SeedNoise,
-                           SeedColor,
-                           Read,
+                                SeedNoise,
+                                SeedColor,
+                                Read,
 
-                           SampleBlendTex,
-                           Accum,
+                                SampleBlendTex,
+                                Accum,
 
-                           BlendMode,
-                           &ChunkRelEditMin,
-                           &ChunkRelEditMax,
-                           ColorBlendBias
-                         );
+                                BlendMode,
+                                &ChunkRelEditMin,
+                                &ChunkRelEditMax,
+                                &BasisOffset,
+                                ColorBlendBias
+                              );
     SeedNoise = True;
     SeedColor = True;
 
@@ -3565,7 +3569,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             auto Sphere = &Shape->Sphere;
 
             v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
-            v3 EditRelativeSphereCenter = SimSphereOrigin - SimEditRect.Min;
+            v3 EditRelativeSphereCenter = BasisOffset + (SimSphereOrigin - SimEditRect.Min);
 
             f32 Rad = Sphere->Radius;
             if (Sphere->Radius == 0.f)

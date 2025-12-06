@@ -487,6 +487,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
+struct layer_settings_1;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_1 *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_1 *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
+
+
 
 
 

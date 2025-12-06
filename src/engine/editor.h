@@ -1520,7 +1520,52 @@ poof(@serdes @do_editor_ui)
 };
 
 struct layer_settings
-poof(@do_editor_ui @serdes @version(1))
+poof(@do_editor_ui @serdes @version(2))
+{
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
+
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+
+  world_edit_brush *Brush;
+  poof(
+    @ui_display_name({})
+    @ui_display_condition(Element->Type == BrushLayerType_Brush)
+    @custom_ui( DoBrushBrushPicker(Ui, Window, Element, ThisHash) )
+  )
+
+  //
+  // Common across brush types
+  //
+
+  v3 Offset;
+  v3 Rotation;
+
+  // TODO(Jesse): Pack into flags ..
+  b8 Invert;
+  b8 Normalized;
+  b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+
+  r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
+  r32 Power = 1.f;
+
+  world_edit_blend_mode_modifier ValueFunc;
+  world_edit_blend_mode          BlendMode;
+
+  smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
+
+  world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
+
+  v3i BasisOffset; poof(@ui_skip)
+
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
+
+  b32 Disabled; poof(@ui_skip)
+};
+
+struct layer_settings_1
+poof(@serdes @default_marshal(layer_settings))
 {
   brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
 

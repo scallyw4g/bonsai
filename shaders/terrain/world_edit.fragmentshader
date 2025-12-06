@@ -18,6 +18,7 @@ uniform v3 Axis;
 //
 uniform v3 ChunkRelEditMin;
 uniform v3 ChunkRelEditMax;
+uniform v3 BasisOffset;
 
 
 //
@@ -548,7 +549,7 @@ void main()
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
-  v3 xyz = V3(x,y,z) * ChunkResolution;
+  v3 xyz = (V3(x,y,z)) * ChunkResolution;
 
   mat3 RotMatrix = mat3(RotTransform);
 
@@ -578,7 +579,7 @@ void main()
       case 0: // BrushLayerType_Noise
       {
         /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
-        v3 NoiseBasis = (Basis / Period) ;
+        v3 NoiseBasis =  (Basis+BasisOffset) / Period; 
         switch (NoiseType)
         {
           case 0: // NoiseType_Perlin:
@@ -622,25 +623,20 @@ void main()
               BoxR = EditDim;
             }
 
+            v3 Center = (BasisOffset+EditDim)/2.f;
+            v3 p    = (EditRelxyz - Center);
+
             if (Normalized)
             {
-              v3 Center = V3(0.5f);
-              v3 p    = (EditRelxyz/EditDim)-0.5f;
-              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample = w.w+iq_sdBox(w.xyz, V3(0.5f));
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-              InitialSample = -IQSample;
+              Center /= EditDim;
+              p      /= EditDim;
+              BoxR   /= EditDim;
+            }
 
-            }
-            else
-            {
-              v3 Center = EditDim/2.f;
-              v3 p    = (EditRelxyz - Center);
-              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-              f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
-              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-              InitialSample = -IQSample;
-            }
+            v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            InitialSample = -IQSample;
 
           } break;
 
@@ -651,7 +647,7 @@ void main()
             if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
             Rad -= Hollow;
 
-            v3 p  = (EditRelxyz - EditRelativeSphereCenter);
+            v3 p  = EditRelxyz - (EditRelativeSphereCenter);
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
             f32 IQSample  = w.w+iq_sdSphere(p, Rad);
             if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
@@ -677,8 +673,11 @@ void main()
           // ShapeType_Cylinder
           case 3:
           {
-            v3 p = (EditRelxyz - EditRad);
-            /* v3 c = Axis; */
+            // NOTE(Jesse): I dunno why we have to subtract BasisOffset here when
+            // we add it everywhere else .. but .. that's how the maff works out
+            // I guess.  If we add it, we get the opposite translation as other shapes.
+            // @subtract_basis_offset_instead_of_add
+            v3 p = (EditRelxyz - EditRad) - BasisOffset;
 
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
@@ -704,7 +703,8 @@ void main()
             v3  p = EditRelxyz;
 
             v3  BoxR = EditDim/2.f;
-            p = EditRelxyz;
+            // @subtract_basis_offset_instead_of_add
+            p = EditRelxyz - BasisOffset;
             p   -= BoxR;
 
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
@@ -724,7 +724,7 @@ void main()
             f32  h = Radius > 0.f ? Radius : 1.f;
 
             v3  BoxR = EditDim/(2.f*S);
-            v3  p = EditRelxyz/EditDim;
+            v3  p = (EditRelxyz-BasisOffset)/EditDim;
             p.xy   -= 0.5f;
 
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);

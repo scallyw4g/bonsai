@@ -359,6 +359,81 @@
 
 
 
+link_internal void
+Marshal( layer_settings_1 *Stored, layer_settings *Live)
+{
+          Live->Type = Stored->Type;
+
+
+
+        Live->Noise = Stored->Noise;
+
+
+
+        Live->Shape = Stored->Shape;
+
+
+
+        Live->Brush = Stored->Brush;
+
+
+
+        Live->Invert = Stored->Invert;
+
+
+
+        Live->Normalized = Stored->Normalized;
+
+
+
+      RangeIterator(Index, 2)
+  {
+        Live->Reserved[Index] = Stored->Reserved[Index];
+
+  }
+
+
+        Live->ValueBias = Stored->ValueBias;
+
+
+
+        Live->Power = Stored->Power;
+
+
+
+        Live->ValueFunc = Stored->ValueFunc;
+
+
+
+        Live->BlendMode = Stored->BlendMode;
+
+
+
+        Live->Smoothing = Stored->Smoothing;
+
+
+
+        Live->ColorMode = Stored->ColorMode;
+
+
+
+        Live->BasisOffset = Stored->BasisOffset;
+
+
+
+        Live->HSVColor = Stored->HSVColor;
+
+
+
+        Live->Disabled = Stored->Disabled;
+
+
+
+
+
+}
+
+
 
 
 
