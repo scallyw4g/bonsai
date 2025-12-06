@@ -32,6 +32,32 @@ LoadBrushFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_ar
   FinalizeDeserialization(&Bytes);
 }
 
+link_internal void
+LoadPrefabFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_arena *TempMemory)
+{
+  Assert(FileNode->Type == FileTraversalType_File);
+  cs Filename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, TempMemory);
+
+  u8_cursor Bytes = BeginDeserialization(Filename, TempMemory);
+
+  if (Bytes.Start)
+  {
+    prefab P = {};
+    /* CopyString( FileNode->Name.Start, P.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len))); */
+    P.Name = CopyString(FileNode->Name, &Editor->Heap);
+
+    Editor->SelectedPrefab = Upsert(P, &Editor->Prefabs, &Global_PermMemory);
+
+    if (Deserialize(&Bytes, Editor->SelectedPrefab, &Global_PermMemory) == False)
+    {
+      SoftError("While deserializing prefab (%S).", Filename);
+      *Editor->SelectedPrefab = {};
+    }
+  }
+
+  FinalizeDeserialization(&Bytes);
+}
+
 link_internal world_edit *
 NewEdit(level_editor *Editor, world_edit_layer *Layer, world_edit_block_array_index *IndexOut = 0)
 {
@@ -94,6 +120,7 @@ InitEditor(level_editor *Editor)
 {
   b32 Result = True;
   Editor->Memory = AllocateArena();
+  Editor->Heap = InitHeap(Megabytes(32));
 
   Editor->Layers = WorldEditLayerBlockArray(Editor->Memory);
   Assert(Editor->NextLayerIndex == 0);
@@ -103,15 +130,28 @@ InitEditor(level_editor *Editor)
   Editor->LoadedBrushes = Allocate_world_edit_brush_hashtable(128, Editor->Memory);
   Editor->Prefabs = Allocate_prefab_hashtable(128, Editor->Memory);
 
-  file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("brushes"), GetTranArena());
-
-  IterateOver(&Nodes, Node, NodeIndex)
   {
-    if (Node->Type == FileTraversalType_File)
+    file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("brushes"), GetTranArena());
+    IterateOver(&Nodes, Node, NodeIndex)
     {
-      LoadBrushFromFile(Editor, Node, GetTranArena());
+      if (Node->Type == FileTraversalType_File)
+      {
+        LoadBrushFromFile(Editor, Node, GetTranArena());
+      }
     }
   }
+
+  {
+    file_traversal_node_block_array Nodes = GetLexicographicallySortedListOfFilesInDirectory(CSz("prefabs"), GetTranArena());
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      if (Node->Type == FileTraversalType_File)
+      {
+        LoadPrefabFromFile(Editor, Node, GetTranArena());
+      }
+    }
+  }
+
 
 
 #if 0
@@ -2071,6 +2111,27 @@ DoWorldEditor(engine_resources *Engine)
         PushWindowStart(Ui, Window);
         if (Editor->SelectedPrefab)
         {
+          u32 IconBits =
+            (1 << UiEditorAction_Save);
+
+          ui_id BaseId = UiId(Window, Editor->SelectedPrefab, 0, 0);
+          ui_action_result BrushActionResult = DoEditorActionsButtons(Ui, Window, BaseId, IconBits);
+          switch (BrushActionResult.Action)
+          {
+            case UiEditorAction_NoAction: {} break;
+
+            case UiEditorAction_Save:
+            {
+              auto P = Editor->SelectedPrefab;
+              auto Blocks = BeginSerialization();
+              Serialize(&Blocks, P);
+              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P->Name, CSz(".prefab"), GetTranArena(), 1).Start);
+            } break;
+
+            InvalidDefaultCase;
+          }
+          PushNewRow(Ui);
+
           DoEditorUi(Ui, Window, Editor->SelectedPrefab, Editor->SelectedPrefab->Name, 0);
         }
         PushWindowEnd(Ui, Window);
@@ -2283,7 +2344,7 @@ DoWorldEditor(engine_resources *Engine)
 
               auto Blocks = BeginSerialization();
               Serialize(&Blocks, &P);
-              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P.Name, GetTranArena(), 1).Start);
+              FinalizeSerialization(&Blocks, Concat(CSz("prefabs/"), P.Name, CSz(".prefab"), GetTranArena(), 1).Start);
 
             } break;
 

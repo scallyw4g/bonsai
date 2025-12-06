@@ -1876,6 +1876,7 @@ struct level_editor
 poof(@do_editor_ui)
 {
   memory_arena *Memory;
+  heap_allocator Heap;
 
   ui_editor_tool SelectedTool;
 
