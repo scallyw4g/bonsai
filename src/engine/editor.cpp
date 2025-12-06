@@ -1831,6 +1831,12 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 #endif
 }
 
+//
+// TODO(Jesse): We could check if world chunk positions of GetBoundingBox(Edit)
+// and UpdateBounds are equal, then just mark all the chunks dirty.  Not doing
+// this for now because this is probably fast enough, but if I ever try to
+// optimize this function, that'd be a good place to start.
+//
 link_internal void
 UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp UpdatedBounds, memory_arena *TempMemory)
 {
