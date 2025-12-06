@@ -375,6 +375,7 @@ void BlendSample(
       if (ThisSample > 0.f)
       {
         Blended = Accumulator + ThisSample;
+        if (ThisSample > Accumulator || ThisSample > 0) { ColorValue = ColorSample; }
       }
     } break;
 
@@ -576,7 +577,8 @@ void main()
     {
       case 0: // BrushLayerType_Noise
       {
-        v3 NoiseBasis = Basis / Period;
+        /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
+        v3 NoiseBasis = (Basis / Period) ;
         switch (NoiseType)
         {
           case 0: // NoiseType_Perlin:
@@ -657,7 +659,6 @@ void main()
             if (Normalized) { IQSample /= Rad; }
 
             InitialSample = -IQSample;
-            /* InitialSample = IQSample; */
           } break;
 
           // ShapeType_Line
@@ -677,7 +678,7 @@ void main()
           case 3:
           {
             v3 p = (EditRelxyz - EditRad);
-            v3 c = Axis;
+            /* v3 c = Axis; */
 
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
