@@ -616,7 +616,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
   s32 Jitter = 0; //RandomBetween(-16, &PriorityRNG, 16);
 
   // This makes smaller nodes higher priority
-  s32 IdealListIndex = RatioToListIndex(Node->Resolution.x/World->ChunksPerResolutionStep);
+  s32 IdealListIndex = Min(OCTREE_PRIORITY_QUEUE_LIST_COUNT-1, (OCTREE_PRIORITY_QUEUE_LIST_COUNT/2) + s32(Node->Resolution.x/World->ChunksPerResolutionStep));
 
   /* s32 IdealListIndex = Min(Node->Resolution.x*32, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
   /* s32 IdealListIndex = Min(Node->Resolution.x, OCTREE_PRIORITY_QUEUE_LIST_COUNT-1); */
