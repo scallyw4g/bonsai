@@ -1695,12 +1695,8 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 
     IterateOver(&Nodes, Node, NodeIndex)
     {
+      // @duplicate_node_edit_append_code
       AcquireFutex(&Node->Lock);
-
-      /* auto EditAABB = GetSimSpaceAABB(World, Node); */
-      /* random_series S = {u64(Node)}; */
-      /* v3 BaseColor = RandomV3Unilateral(&S); */
-      /* DEBUG_DrawSimSpaceAABB(Engine, &EditAABB, BaseColor, 1.f); */
 
       {
         // Shouldn't have this edit already attached ..
@@ -1818,6 +1814,7 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 
   IterateOver(&Nodes, Node, NodeIndex)
   {
+    // @duplicate_node_edit_drop_code
     AcquireFutex(&Node->Lock);
     auto Index = Find(&Node->Edits, Edit);
     Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
@@ -1835,22 +1832,78 @@ DropEditFromOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Tem
 }
 
 link_internal void
-UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region, memory_arena *TempMemory)
+UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp UpdatedBounds, memory_arena *TempMemory)
 {
   Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
-  BUG("Need to lock outside these functions!");
-  DropEditFromOctree(Engine, Edit, TempMemory);
-  Edit->Region = Region;
-  ApplyEditToOctree(Engine, Edit, TempMemory);
+  octree_node_ptr_block_array OldNodes = OctreeNodePtrBlockArray(TempMemory);
+  octree_node_ptr_block_array UpdatedNodes = OctreeNodePtrBlockArray(TempMemory);
+
+  auto World = Engine->World;
+
+  rect3cp OldBounds = Edit->Region;
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &OldBounds, &OldNodes);
+
+  GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &UpdatedBounds, &UpdatedNodes);
+
+
+  {
+    IterateOver(&OldNodes, Node, NodeIndex)
+    {
+      rect3cp NodeBounds = GetBoundingBox(World, Node);
+      if (Intersect(World, &NodeBounds, &UpdatedBounds) == False)
+      {
+        // @duplicate_node_edit_drop_code
+        AcquireFutex(&Node->Lock);
+        auto Index = Find(&Node->Edits, Edit);
+        Assert(IsValid(&Index)); // There shouldn't be a node that doesn't contain the edit
+        RemoveUnordered(&Node->Edits, Index);
+
+        // Need to reinitialize chunks that no longer have the edit so that it
+        // doesn't stay intact in chunks that lose it entirely
+        ReleaseFutex(&Node->Lock);
+      }
+      Node->Dirty = True;
+    }
+  }
+
+  {
+    IterateOver(&UpdatedNodes, Node, NodeIndex)
+    {
+      rect3cp NodeBounds = GetBoundingBox(World, Node);
+      if (Intersect(World, &NodeBounds, &OldBounds) == False)
+      {
+        // @duplicate_node_edit_append_code
+        AcquireFutex(&Node->Lock);
+
+        {
+          // Shouldn't have this edit already attached ..
+          world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
+          Assert( IsValid(&Index) == False );
+        }
+
+        if (Node->Edits.Memory == 0)
+        {
+          Node->Edits = WorldEditPtrBlockArray(Engine->Editor.Memory);
+        }
+
+        Push(&Node->Edits, Edit);
+
+        ReleaseFutex(&Node->Lock);
+      }
+      Node->Dirty = True;
+    }
+  }
+
+  Edit->Region = UpdatedBounds;
 }
 
 link_internal void
 ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   // TODO(Jesse): Is there a better way to do this, or do we even care?
-  /* UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory); */
-  MarkOctreeNodesContainingEditDirty(Engine, Edit, TempMemory);
+  UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory);
+  /* MarkOctreeNodesContainingEditDirty(Engine, Edit, TempMemory); */
 }
 
 link_internal void
@@ -2832,15 +2885,15 @@ DoWorldEditor(engine_resources *Engine)
 link_internal void
 DrawLod(engine_resources *Engine, shader *Shader, gpu_mapped_element_buffer *Mesh, r32 DistanceSquared, v3 Basis, Quaternion Rotation, v3 Scale );
 
-link_internal void
-ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits)
-{
-  IterateOver(Edits, Edit, EditIndex)
-  {
-    if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
-    ApplyEditToOctree(Engine, Edit, GetTranArena());
-  }
-}
+/* link_internal void */
+/* ApplyEditBufferToOctree(engine_resources *Engine, world_edit_paged_list *Edits) */
+/* { */
+/*   IterateOver(Edits, Edit, EditIndex) */
+/*   { */
+/*     if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; } */
+/*     ApplyEditToOctree(Engine, Edit, GetTranArena()); */
+/*   } */
+/* } */
 
 link_internal void
 DoLevelWindow(engine_resources *Engine)

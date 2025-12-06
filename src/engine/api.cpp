@@ -112,7 +112,12 @@ Bonsai_FrameBegin(engine_resources *Resources)
     HardResetWorld(Resources);
     AllocateWorld(World, Center, VisibleRegionSize);
 
-    ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits);
+    /* ApplyEditBufferToOctree(Resources, &Resources->Editor.Edits); */
+    IterateOver(&Resources->Editor.Edits, Edit, EditIndex)
+    {
+      if (BitfieldIsSet(Edit->Flags, WorldEditFlag_Tombstone)) { continue; }
+      ApplyEditToOctree(Resources, Edit, GetTranArena());
+    }
     /* HardResetEditor(&Resources->Editor); */
 
 
