@@ -40,6 +40,7 @@ enum octree_node_type
 };
 
 struct octree_node
+poof(@do_editor_ui)
 {
   chunk_flag Flags;
   octree_node_type Type;

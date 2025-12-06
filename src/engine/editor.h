@@ -1543,7 +1543,7 @@ poof(@do_editor_ui @serdes @version(1))
   b8 Normalized;
   b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
 
-  r32 ValueBias;      poof(@ui_value_range(-1.f,  1.f))
+  r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
 
   world_edit_blend_mode_modifier ValueFunc;
@@ -1820,12 +1820,13 @@ poof(hashtable(prefab))
 
 link_internal void
 poof(@prefab_spawn_callback)
-DefaultPrefabSpawnCallback(prefab *Prefab, cp SpawnPoint)
+DefaultPrefabSpawnCallback(prefab *Prefab, cp SpawnPoint, rect3cp PrefabAABB)
 {
+  Info("SpawningPrefab!");
 }
 
 link_internal void
-DispatchPrefabSpawnCallback(prefab_spawn_callback SpawnCallbackType, prefab *Prefab, cp SpawnPoint)
+DispatchPrefabSpawnCallback(prefab_spawn_callback SpawnCallbackType, prefab *Prefab, cp SpawnPoint, rect3cp PrefabAABB)
 {
   switch(SpawnCallbackType)
   {
@@ -1839,7 +1840,7 @@ DispatchPrefabSpawnCallback(prefab_spawn_callback SpawnCallbackType, prefab *Pre
           {
           }
           {
-            case enum_v.name: { enum_v.name.strip_all_prefix.to_capital_case(Prefab, SpawnPoint); } break; 
+            case enum_v.name: { enum_v.name.strip_all_prefix.to_capital_case(Prefab, SpawnPoint, PrefabAABB); } break; 
           }
         }
       }

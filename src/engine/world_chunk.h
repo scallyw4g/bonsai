@@ -316,7 +316,8 @@ poof( block_array_h(entity_ptr, {8}, {}) )
 #include <generated/block_array_entity_ptr_688856411_h.h>
 
 
-struct world_chunk poof(@version(1))
+struct world_chunk
+poof(@version(1) @do_editor_ui)
 {
   // NOTE(Jesse): Since we waste so much space with padding this thing out we
   // can afford to have a next pointer to keep the freelist

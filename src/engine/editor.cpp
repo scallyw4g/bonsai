@@ -515,11 +515,11 @@ poof(do_editor_ui_for_compound_type(entity))
 poof(do_editor_ui_for_container(entity_ptr_block_array))
 #include <generated/do_editor_ui_for_container_entity_ptr_block_array.h>
 
-poof(do_editor_ui_for_compound_type(world_chunk))
-#include <generated/do_editor_ui_for_compound_type_world_chunk.h>
+/* poof(do_editor_ui_for_compound_type(world_chunk)) */
+/* #include <generated/do_editor_ui_for_compound_type_world_chunk.h> */
 
-poof(do_editor_ui_for_compound_type(octree_node))
-#include <generated/do_editor_ui_for_compound_type_octree_node.h>
+/* poof(do_editor_ui_for_compound_type(octree_node)) */
+/* #include <generated/do_editor_ui_for_compound_type_octree_node.h> */
 
 poof(do_editor_ui_for_compound_type(world))
 #include <generated/do_editor_ui_for_compound_type_world.h>
@@ -1686,7 +1686,6 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
     {
       QueryRegion.Min.Offset -= 1.f;
       QueryRegion.Max.Offset += 1.f;
-
       Canonicalize(World, &QueryRegion.Min);
       Canonicalize(World, &QueryRegion.Max);
     }
@@ -1718,6 +1717,42 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
 
       Node->Dirty = True;
       ReleaseFutex(&Node->Lock);
+    }
+  }
+}
+
+link_internal void
+MarkOctreeNodesContainingEditDirty(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
+
+  {
+    octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(TempMemory);
+
+    rect3cp QueryRegion = Edit->Region;
+
+
+    // NOTE(Jesse):
+#if 0
+    {
+      QueryRegion.Min.Offset -= 1.f;
+      QueryRegion.Max.Offset += 1.f;
+      Canonicalize(World, &QueryRegion.Min);
+      Canonicalize(World, &QueryRegion.Max);
+    }
+#endif
+
+    GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &QueryRegion, &Nodes);
+
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      {
+        world_edit_ptr_block_array_index Index = Find(&Node->Edits, Edit);
+        Assert( IsValid(&Index) == True );
+      }
+
+      Node->Dirty = True;
     }
   }
 }
@@ -1804,6 +1839,7 @@ UpdateWorldEditBounds(engine_resources *Engine, world_edit *Edit, rect3cp Region
 {
   Assert( BitfieldNotSet(Edit->Flags, WorldEditFlag_Tombstone) );
 
+  BUG("Need to lock outside these functions!");
   DropEditFromOctree(Engine, Edit, TempMemory);
   Edit->Region = Region;
   ApplyEditToOctree(Engine, Edit, TempMemory);
@@ -1813,7 +1849,8 @@ link_internal void
 ReapplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *TempMemory)
 {
   // TODO(Jesse): Is there a better way to do this, or do we even care?
-  UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory);
+  /* UpdateWorldEditBounds(Engine, Edit, Edit->Region, TempMemory); */
+  MarkOctreeNodesContainingEditDirty(Engine, Edit, TempMemory);
 }
 
 link_internal void
@@ -1984,10 +2021,12 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
   world_edit_layer *Layer = NewLayer(Editor);
 
   cp MinP = { V3(f32_MAX), V3i(s32_MAX) };
+  cp MaxP = { V3(f32_MIN), V3i(s32_MIN) };
   {
     IterateOver(&Prefab->Edits, PrefabEdit, StoredEditIndex)
     {
       MinP = Min(MinP, PrefabEdit->Region.Min);
+      MaxP = Max(MaxP, PrefabEdit->Region.Max);
     }
   }
 
@@ -2000,8 +2039,8 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
     FinalEdit->Rotation = PrefabEdit->Rotation;
     FinalEdit->Brush = B;
 
-    cp Dim = GetDim_cp(World, PrefabEdit->Region);
     cp RelativeOffset = PrefabEdit->Region.Min - MinP;
+    cp Dim = GetDim_cp(World, PrefabEdit->Region);
 
     FinalEdit->Region.Min = SpawnPoint + RelativeOffset;
     FinalEdit->Region.Max = SpawnPoint + RelativeOffset + Dim;
@@ -2009,6 +2048,8 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
 
     ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
   }
+
+  DispatchPrefabSpawnCallback(Prefab->SpawnCallback, Prefab, SpawnPoint, RectMinMax(MinP, MaxP));
 }
 
 link_internal void
@@ -3221,7 +3262,7 @@ BindUniformsForBrush(
   BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
   BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
   BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc);
-  BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
+  /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
   BindUniformByName(Program, "Power",          Layer->Settings.Power);
@@ -3392,6 +3433,10 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power);
         BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
 
+        Quaternion Rotation = FromEuler(RadiansFromDegress(ParentRotation)) * FromEuler(RadiansFromDegress(V3(0)));
+        m4 RotationMatrix = RotateTransform(Rotation);
+        BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
+
         switch (Noise->Type)
         {
           case NoiseType_Perlin:
@@ -3431,7 +3476,6 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
 
         Quaternion Rotation = FromEuler(RadiansFromDegress(ParentRotation)) * FromEuler(RadiansFromDegress(Shape->Advanced.Rotation));
-
         m4 RotationMatrix = RotateTransform(Rotation);
         BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
 

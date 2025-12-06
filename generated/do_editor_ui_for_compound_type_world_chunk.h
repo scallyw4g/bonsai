@@ -3,9 +3,10 @@
 
 // def (do_editor_ui_for_compound_type)
 // src/engine/editor.h:476:0
-struct world_chunk;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
 {
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3331643E);

@@ -98,7 +98,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_s
 
 
 
-
+struct octree_node;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
@@ -428,7 +430,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_edit
 
 
 
-
+struct world_chunk;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
