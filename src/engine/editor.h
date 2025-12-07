@@ -1397,7 +1397,7 @@ poof(@do_editor_ui)
   r32 Rounding;
    v3 Stretch;
    v3 Repeat;
-   v3 Rotation; poof(@ui_value_range(-180.f, 180.f))
+   v3 Rotation; poof(@ui_skip) // NOTE(Jesse): Everyone has this now.
 };
 
 struct shape_layer

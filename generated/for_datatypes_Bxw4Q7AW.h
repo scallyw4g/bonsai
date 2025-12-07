@@ -9955,23 +9955,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
             
             cs MemberName = CSz("Rotation");
 
-                                                                                                auto Member = Cast(v3*, &Element->Rotation);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              , -180.f, 180.f );
-
-
-
-
-
-
-
-            
-
+                        
 
           }
         }

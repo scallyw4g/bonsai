@@ -1681,7 +1681,9 @@ ApplyEditToOctree(engine_resources *Engine, world_edit *Edit, memory_arena *Temp
     rect3cp QueryRegion = Edit->Region;
 
 
-    // NOTE(Jesse):
+    // NOTE(Jesse):This doesn't fix the problem I think it should ..when we erase
+    // blocks right on the border of a chunk we get a hole.  I claim this should
+    // fix it, but for some reason it doesnt..
 #if 0
     {
       QueryRegion.Min.Offset -= 1.f;
@@ -3409,6 +3411,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     SeedNoise = True;
     SeedColor = True;
 
+    Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
+                                  FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
+
     switch (Layer->Settings.Type)
     {
       case BrushLayerType_Brush:
@@ -3496,8 +3501,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power);
         BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
 
-        Quaternion Rotation = FromEuler(RadiansFromDegress(ParentRotation)) * FromEuler(RadiansFromDegress(V3(0)));
-        m4 RotationMatrix = RotateTransform(Rotation);
+        m4 RotationMatrix = RotateTransform(ParentQuaternion);
         BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
 
         switch (Noise->Type)
@@ -3538,8 +3542,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
 
-        Quaternion Rotation = FromEuler(RadiansFromDegress(ParentRotation)) * FromEuler(RadiansFromDegress(Shape->Advanced.Rotation));
-        m4 RotationMatrix = RotateTransform(Rotation);
+        m4 RotationMatrix = RotateTransform(ParentQuaternion);
         BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
 
         switch(Shape->Type)
@@ -3615,7 +3618,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             {
               case 0:
               {
-                Quaternion Q2 = Rotation * FromEuler(RadiansFromDegress(V3(0,0,90)));
+                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
                 m4 Rot2 = RotateTransform(Q2);
                 BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
               } break;
@@ -3627,7 +3630,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
               case 2:
               {
-                Quaternion Q2 = Rotation * FromEuler(RadiansFromDegress(V3(90,0,0)));
+                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
                 m4 Rot2 = RotateTransform(Q2);
                 BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
               } break;
@@ -3739,7 +3742,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               {
                 case 0:
                 {
-                  Quaternion Q2 = Rotation * FromEuler(RadiansFromDegress(V3(0,0,90)));
+                  Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
                   m4 Rot2 = RotateTransform(Q2);
                   BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
                 } break;
@@ -3751,7 +3754,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
                 case 2:
                 {
-                  Quaternion Q2 = Rotation * FromEuler(RadiansFromDegress(V3(90,0,0)));
+                  Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
                   m4 Rot2 = RotateTransform(Q2);
                   BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
                 } break;

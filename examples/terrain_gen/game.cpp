@@ -174,35 +174,85 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
 #if 1
-  IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
   {
-    if (StringsMatch(CS(Brush->NameBuf), CSz("portal.brush")))
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
-      f32 BaseDiameter = 36.f;
-      f32 MinorRad = 3.f;
+      if (StringsMatch(CS(Brush->NameBuf), CSz("portal.brush")))
+      {
+        f32 BaseDiameter = 36.f;
+        f32 MinorRad = 3.f;
 
-      auto Shape = &Brush->Layers[0].Settings.Shape;
-      auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
+        auto Shape = &Brush->Layers[0].Settings.Shape;
+        auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
 
-      f32 t = Mod(Plat->GameTime, PI32*4.f);
-      Torus->MajorRadius = BaseDiameter + Sin(t)*0.5f;
-      Torus->MinorRadius = MinorRad + Sin(t/2.f)*0.5f;
-      /* if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; } */
-      /* if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; } */
-      if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
+        f32 t = Mod(Plat->GameTime, PI32*4.f);
+        Torus->MajorRadius = BaseDiameter + Sin(t)*0.5f;
+        Torus->MinorRadius = MinorRad + Sin(t/2.f)*0.5f;
+        /* if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; } */
+        /* if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; } */
+        if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
 
-      /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f; */
-      Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
+        /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f; */
+        Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
+      }
+    }
+  }
+#endif
+
+#if 1
+  {
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+    {
+      if (StringsMatch(CS(Brush->NameBuf), CSz("portal.1.brush")))
+      {
+        f32 BaseDiameter = 36.f;
+        f32 MinorRad = 3.f;
+
+        auto Shape = &Brush->Layers[0].Settings.Shape;
+        auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
+
+        f32 t = Mod(Plat->GameTime, PI32*4.f);
+        Torus->MajorRadius = BaseDiameter + Sin(t);
+        Torus->MinorRadius = MinorRad + Sin(t/2.f);
+        /* if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; } */
+        /* if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; } */
+        /* if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; } */
+
+        /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f; */
+        /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f; */
+
+        {
+          auto Layer = &Brush->Layers[4].Settings;
+          Layer->Offset.x += Plat->dt*10.f;
+        }
+      }
     }
   }
 #endif
 
 
-  /* maybe_world_edit_brush MB = GetByNameBuf(&Editor->LoadedBrushes, ); */
-  /* if (MB.Tag) */
-  /* { */
-  /*   world_edit_brush *Brush = MB.Brush; */
-  /* } */
+#if 1
+  {
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+    {
+      if (StringsMatch(CS(Brush->NameBuf), CSz("portal.inner.brush")))
+      {
+        /* f32 BaseDiameter = 36.f; */
+        /* f32 MinorRad = 3.f; */
 
+        /* { */
+        /*   auto Layer = &Brush->Layers[4].Settings; */
+        /*   Layer->Offset.x += Plat->dt*10.f; */
+        /* } */
+
+        {
+          auto Layer = &Brush->Layers[5].Settings;
+          /* Layer->Offset.x += Plat->dt*5.f; */
+          Layer->Offset.y += Plat->dt*5.f;
+        }
+      }
+    }
+  }
+#endif
 
 }

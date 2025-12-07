@@ -579,7 +579,7 @@ void main()
       case 0: // BrushLayerType_Noise
       {
         /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
-        v3 NoiseBasis =  (Basis+BasisOffset) / Period; 
+        v3 NoiseBasis =  ((Basis+BasisOffset) / Period) * RotMatrix; 
         switch (NoiseType)
         {
           case 0: // NoiseType_Perlin:
@@ -649,7 +649,7 @@ void main()
 
             v3 p  = EditRelxyz - (EditRelativeSphereCenter);
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample  = w.w+iq_sdSphere(p, Rad);
+            f32 IQSample  = w.w+iq_sdSphere(w.xyz, Rad);
             if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
             if (Normalized) { IQSample /= Rad; }
