@@ -669,8 +669,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
   engine_resources *EngineResources = GetEngineResources();
              world *World           = EngineResources->World;
 
-  auto LoRenderQ = &EngineResources->Stdlib.Plat.LoRenderQ;
-  auto HiRenderQ = &EngineResources->Stdlib.Plat.HiRenderQ;
+              auto *Plat = &EngineResources->Stdlib.Plat;
+  auto LoRenderQ = &Plat->LoRenderQ;
+  auto HiRenderQ = &Plat->HiRenderQ;
 
   tswitch (Entry)
   {
@@ -686,7 +687,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
     } break;
 
     { tmatch(work_queue_entry_init_asset, Entry, Job)
-      InitAsset(Job->Asset, Thread);
+      InitAsset(EngineResources, Job->Asset, Thread);
     } break;
 
     { tmatch(work_queue_entry_sim_particle_system, Entry, Job)
@@ -758,7 +759,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
         /* FinalizeChunkInitialization(SynChunk); */
 
-        s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim);
+        s32 FacesRequired = CountRequiredFacesForMesh_Naieve(SynChunk->FaceMasks, SynChunk->Dim, V3i(0,1,1));
         if (FacesRequired)
         {
           Continued = True;
@@ -811,10 +812,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       Assert(HasGpuMesh( SynChunk) == False);
 
 
-      octree_node               *DestNode     = Job->DestNode;
-      world_chunk               *DestChunk    = DestNode->Chunk;
-
-      Assert(DestNode->Flags & Chunk_Queued);
+      /* octree_node               *DestNode     = Job->DestNode; */
+      /* world_chunk               *DestChunk    = DestNode->Chunk; */
 
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk) == False); */
@@ -829,7 +828,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       // @dest_chunk_can_have_mesh
       /* Assert(HasGpuMesh(DestChunk)       == False); */
 
-      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, DestNode);
+      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Job->DestNode);
     } break;
 
     { tmatch(work_queue_entry_rebuild_mesh, Entry, Job)

@@ -62,3 +62,8 @@ InitializeGameApi(application_api *GameApi, shared_lib GameLib)
 
 link_internal void
 DoDayNightCycle(graphics *Graphics, r32 tDay);
+
+struct gen_chunk;
+struct gen_chunk_freelist;
+link_internal gen_chunk *
+GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks, memory_arena *Memory);

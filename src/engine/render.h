@@ -223,6 +223,7 @@ ProjectionMatrix(camera *Camera, v2 ScreenDim)
 
 
 
+struct asset_thumbnail;
 
 untextured_3d_geometry_buffer
 ReserveBufferSpace(untextured_3d_geometry_buffer* Reservation, u32 ElementsToReserve);
@@ -259,3 +260,6 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode);
 
 link_internal void
 CheckOcclusionQuery(world_chunk *Chunk);
+
+link_internal void
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera = 0);

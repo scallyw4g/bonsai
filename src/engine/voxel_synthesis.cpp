@@ -51,6 +51,8 @@ WriteRulesForAdjacentTile( tile_ruleset_buffer *Rules,
 link_internal voxel_synthesis_result
 BakeVoxelSynthesisRules(const char* InputVox)
 {
+  NotImplemented;
+#if 0
   memory_arena *Memory = AllocateArena(Gigabytes(2));
   DEBUG_REGISTER_NAMED_ARENA(Memory, ThreadLocal_ThreadIndex, "VoxelSynthesisArena");
   heap_allocator Heap = InitHeap(Gigabytes(2));
@@ -250,6 +252,8 @@ BakeVoxelSynthesisRules(const char* InputVox)
 
   return Result;
 
+#endif
+  return {};
 }
 
 link_internal tile_rule

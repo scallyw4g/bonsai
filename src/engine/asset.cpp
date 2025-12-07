@@ -556,26 +556,20 @@ AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
 
 
 link_internal void
-InitAsset(asset *Asset, thread_local_state *Thread)
+InitAsset(engine_resources *Engine, asset *Asset, thread_local_state *Thread)
 {
   Assert(Asset->LoadState == AssetLoadState_Queued);
   /* Asset->LoadState = AssetLoadState_Loading; */
 
   cs Ext = Extension(Asset->Id.FileNode.Name);
 
-  string_builder Builder = {};
-
-  Append(&Builder, Asset->Id.FileNode.Dir);
-  Append(&Builder, CSz("/"));
-  Append(&Builder, Asset->Id.FileNode.Name);
-
-  cs AssetFilepath = Finalize(&Builder, Thread->TempMemory, True);
+  cs AssetFilepath = Concat(Asset->Id.FileNode.Dir, CSz("/"), Asset->Id.FileNode.Name, Thread->TempMemory, 1);
 
   Asset("Started Asset Load (%S)", AssetFilepath);
 
   if ( AreEqual(Ext, CSz("vox")) )
   {
-    maybe_model_buffer Maybe = LoadVoxModels(Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
+    maybe_model_buffer Maybe = LoadVoxModels(Engine, Thread->PermMemory, 0, AssetFilepath.Start, Thread->TempMemory);
 
     if (Maybe.Tag == Maybe_Yes)
     {

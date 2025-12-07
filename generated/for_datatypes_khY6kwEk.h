@@ -241,10 +241,6 @@
 
 
 
-
-
-
-
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
   
@@ -252,7 +248,6 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
   octree_node *DestNode;
 
 };
-
 
 
 
@@ -1143,9 +1138,6 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 
 
-
-
-
 struct check_occlusion_query_async_params poof(@async_function_params)
 {
   
@@ -1717,6 +1709,22 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
+
+
+
+
+
+struct render_to_texture_async_params poof(@async_function_params)
+{
+  
+    engine_resources *Engine;
+  asset_thumbnail *Thumb;
+  gpu_mapped_element_buffer *Src;
+  v3 Offset;
+  camera *Camera;
+
+};
 
 
 

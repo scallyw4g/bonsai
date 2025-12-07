@@ -7,7 +7,6 @@
 
 
 
-
 struct easing_function;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -101,6 +100,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_s
 struct octree_node;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
@@ -327,6 +327,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *
 
 
 
+
 struct easing_function_visualizer_render_pass;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_render_pass *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -393,6 +394,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsa
 
 
 
+
 struct render_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -423,8 +425,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_edit
 
 
 
-
-
+struct gen_chunk;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 
@@ -433,6 +436,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, level_edit
 struct world_chunk;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
@@ -472,11 +476,10 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_nod
 
 
 
+
 struct gen_chunk_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
-
 
 
 
@@ -556,7 +559,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_upda
 struct shader;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 
@@ -761,7 +763,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_laye
 struct lighting_settings;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 struct ui_debug;

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/world_chunk.cpp:4:0
+// src/engine/world_chunk.cpp:7:0
 
 // def (block_array_c)
 // external/bonsai_stdlib/src/poof_functions.h:2502:0

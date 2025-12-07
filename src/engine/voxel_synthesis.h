@@ -208,7 +208,7 @@ struct voxel_synthesis_result
   u32 Errors; // Was the baking successful?
 
   // This is data that gets baked from the input model
-  vox_data VoxData;
+  /* vox_data VoxData; */
   voxel_synth_tile_buffer Tiles;
   tile_ruleset_buffer Rules;
   tile_rule MaxTileEntropy;

@@ -29,7 +29,6 @@
 
 
 
-
 struct layer_settings;
 
 link_internal b32
@@ -46,6 +45,7 @@ Deserialize(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory, umm
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings *Element, memory_arena *Memory);
+
 
 
 
@@ -422,6 +422,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit *Element, memory_arena *M
 
 
 
+
+
 struct world_edit_layer_block_array;
 
 link_internal b32
@@ -503,7 +505,6 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
-
 
 
 
@@ -692,7 +693,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_
 
 
 
-
 struct brush_layer;
 
 link_internal b32
@@ -787,7 +787,6 @@ Deserialize(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_0 *Element, memory_arena *Memory);
-
 
 
 

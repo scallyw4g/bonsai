@@ -324,8 +324,7 @@ main( s32 ArgCount, const char ** Args )
     }
 
     {
-      // Have to call this at least once
-      SplitAndQueueOctreeNodesForInit(EngineResources);
+      s32 ChunksQueued = SplitAndQueueOctreeNodesForInit(EngineResources); // Have to call this at least once
 
       for (;;)
       {
@@ -336,8 +335,8 @@ main( s32 ArgCount, const char ** Args )
 
         if (MSUntilFrameTime > 10)
         {
-          SplitAndQueueOctreeNodesForInit(EngineResources);
-          SleepMs(10);
+          ChunksQueued += SplitAndQueueOctreeNodesForInit(EngineResources);
+          SleepMs(4);
         }
         else
         {
@@ -345,6 +344,7 @@ main( s32 ArgCount, const char ** Args )
           break;
         }
       }
+      /* PushHistogramDataPoint(u64(ChunksQueued)); */
     }
 
     {

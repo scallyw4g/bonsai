@@ -1072,7 +1072,7 @@ DrawOctreeRecursive( engine_resources *Engine,
 
 
 
-link_internal void
+link_internal s32
 SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 {
   TIMED_FUNCTION();
@@ -1183,7 +1183,9 @@ SplitAndQueueOctreeNodesForInit(engine_resources *Engine)
 
 done_queueing_nodes:
 
-  return;
+  /* Info("(%d)", Stats.NewQueues); */
+
+  return Stats.NewQueues;
 }
 
 link_internal void

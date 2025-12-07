@@ -16,6 +16,10 @@
   DoJob(Job);
 } break;
 {
+  tmatch( render_to_texture_async_params, Task, Job );
+  DoJob(Job);
+} break;
+{
   tmatch( compile_shader_pair_async_params, Task, Job );
   DoJob(Job);
 } break;

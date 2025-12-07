@@ -7,16 +7,22 @@ GetOccupancyBit(world_chunk *Chunk, s32 Index)
 }
 
 link_internal void
-SetOccupancyBit(world_chunk *Chunk, s32 Index, s32 BitValue)
+SetOccupancyBit(u64 *Occupancy, s32 Index, s32 BitValue)
 {
   s32 ByteIndex = Index/64;
   s32 BitIndex = Index%64;
 
-  Chunk->Occupancy[ByteIndex] &= ~(u64(1) << BitIndex); // Unconditionally knock out the bit
-  Chunk->Occupancy[ByteIndex] |=  (u64(BitValue) << BitIndex); // Set new value.. 0 just does nothing
+  Occupancy[ByteIndex] &= ~(u64(1) << BitIndex); // Unconditionally knock out the bit
+  Occupancy[ByteIndex] |=  (u64(BitValue) << BitIndex); // Set new value.. 0 just does nothing
 
   /* s32 Test = GetOccupancyBit(Chunk, Index); */
   /* Assert(Test == BitValue); */
+}
+
+link_internal void
+SetOccupancyBit(world_chunk *Chunk, s32 Index, s32 BitValue)
+{
+  SetOccupancyBit(Chunk->Occupancy, Index, BitValue);
 }
 
 link_internal void

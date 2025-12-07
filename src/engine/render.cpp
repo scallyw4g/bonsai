@@ -1192,6 +1192,7 @@ RenderToTexture_world_chunk(engine_resources *Engine, asset_thumbnail *Thumb, wo
 /*   NotImplemented; */
 /* } */
 
+#if 0
 link_internal void
 RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Offset, camera *Camera = 0)
 {
@@ -1211,27 +1212,36 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, 
 {
   RenderToTexture(Engine, Thumb, &Model->Mesh, Offset, Camera);
 }
+#endif
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, untextured_3d_geometry_buffer *Src, v3 Offset, camera *Camera = 0)
+poof(@async @render)
+RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera)
 {
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
   {
     auto RTTGroup = &Engine->RTTGroup;
 
-    // Geometry stuff
-    {
-      MapGpuBuffer(&RTTGroup->GeoBuffer);
-      untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer;
+    /* // Geometry stuff */
+    /* { */
+    /*   MapGpuBuffer(&RTTGroup->GeoBuffer); */
+    /*   untextured_3d_geometry_buffer* Dest = &RTTGroup->GeoBuffer.Buffer; */
+    /*   BufferVertsChecked(Src, Dest, Offset, V3(1.0f)); */
+    /*   FlushBuffersToCard_gpu_mapped_element_buffer(&RTTGroup->GeoBuffer.Handles); */
+    /* } */
 
-      BufferVertsChecked(Src, Dest, Offset, V3(1.0f));
-      FlushBuffersToCard_gpu_mapped_element_buffer(&RTTGroup->GeoBuffer.Handles);
-    }
+    Assert(HasGpuMesh(Src));
+    DrawLod( Engine,
+             &Engine->RTTGroup.Shader,
+             &Src->Handles,
+             {}, {}, V3(1.f));
 
-    GetGL()->Enable(GL_DEPTH_TEST);
-    Draw(RTTGroup->GeoBuffer.Buffer.At);
-    RTTGroup->GeoBuffer.Buffer.At = 0;
+    /* DrawLod(); */
+
+    /* GetGL()->Enable(GL_DEPTH_TEST); */
+    /* Draw(RTTGroup->GeoBuffer.Buffer.At); */
+    /* RTTGroup->GeoBuffer.Buffer.At = 0; */
   }
   else
   {
@@ -1298,7 +1308,7 @@ DrawEntity(              shader *Shader,
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
-        DrawLod(GetEngineResources(), Shader, &Model->Mesh.Handles, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        DrawLod(GetEngineResources(), Shader, &Model->Gen->Mesh.Handles, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
       }
     }
   }
@@ -1773,28 +1783,31 @@ link_internal void
 poof(@async @render)
 FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 {
-  world_chunk *DestChunk = DestNode->Chunk;
   world_chunk *SynChunk = &GenChunk->Chunk;
   Assert(HasGpuMesh(&GenChunk->Mesh) == True);
   Assert(HasGpuMesh( SynChunk)       == False);
 
-  // @dest_chunk_can_have_mesh
-  /* Assert(HasGpuMesh(DestChunk)       == False); */
 
   FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
 
-  auto OldHandles = DestChunk->Handles;
-
-  DestChunk->Handles = GenChunk->Mesh.Handles;
-
-  if (HasGpuMesh(&OldHandles))
+  if (DestNode)
   {
-    DeleteGpuBuffer(&OldHandles);
+    world_chunk *DestChunk = DestNode->Chunk;
+    // @dest_chunk_can_have_mesh
+    /* Assert(HasGpuMesh(DestChunk)       == False); */
+    auto OldHandles = DestChunk->Handles;
+    DestChunk->Handles = GenChunk->Mesh.Handles;
+
+    if (HasGpuMesh(&OldHandles))
+    {
+      DeleteGpuBuffer(&OldHandles);
+    }
+
+    Assert(DestNode->Flags & Chunk_Queued);
+    FinalizeNodeInitializaion(DestNode);
+
+    GenChunk->Mesh = {};
+    Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
   }
-
-  GenChunk->Mesh = {};
-  Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
-
-  FinalizeNodeInitializaion(DestNode);
 }
 

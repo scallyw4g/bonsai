@@ -207,7 +207,8 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
       Assert(GeometryName && GeometryId);
 
       loaded_collada_mesh ColladaMesh = LoadMeshData(&XmlTokens, GeometryId, GetTranArena(), Heap);
-      AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, ColladaMesh.Mesh, __rdtsc());
+      NotImplemented;
+      /* AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, ColladaMesh.Mesh, __rdtsc()); */
       /* Result.Mesh = ColladaMesh.Mesh; */
       Result.Dim = Voxel_Position(ColladaMesh.Dim);
 

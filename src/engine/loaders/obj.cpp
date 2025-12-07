@@ -176,7 +176,8 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   Assert(Mesh->At == Mesh->End);
 
   model Result = {};
-  AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, Mesh, __rdtsc());
+  NotImplemented;
+  /* AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, Mesh, __rdtsc()); */
   Result.Dim = V3i(MaxV-MinV)+1;
 
   return Result;

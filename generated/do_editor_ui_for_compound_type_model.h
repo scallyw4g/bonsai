@@ -47,81 +47,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Ele
             
             
             
-            cs MemberName = CSz("Vox");
+            cs MemberName = CSz("Gen");
 
-                                                                                                auto Member = Cast(vox_data*, &Element->Vox);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Meshes");
-
-                                                                                                auto Member = Cast(lod_element_buffer*, &Element->Meshes);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Mesh");
-
-                                                                                                auto Member = Cast(gpu_mapped_element_buffer*, &Element->Mesh);
+                                                                                                auto Member = Cast(gen_chunk*, Element->Gen);
             DoEditorUi(Ui,
               Window,
               Member,

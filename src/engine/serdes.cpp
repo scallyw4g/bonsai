@@ -295,8 +295,8 @@ poof(serdes_struct(particle_system_0))
 poof(serdes_struct(particle_system))
 #include <generated/serdes_struct_particle_system.h>
 
-poof(serdes_struct(vox_data))
-#include <generated/serdes_struct_vox_data.h>
+/* poof(serdes_struct(vox_data)) */
+/* #include <generated/serdes_struct_vox_data.h> */
 
 poof(serdes_struct(physics))
 #include <generated/serdes_struct_physics.h>

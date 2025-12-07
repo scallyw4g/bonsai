@@ -58,22 +58,27 @@ poof(string_and_value_tables(model_index))
 
 // TODO(Jesse): Remove
 // Used when loading .vox files
-struct vox_data
-{
-  chunk_data *ChunkData;
-};
+/* struct vox_data */
+/* { */
+/*   u32 FilledCount; */
+/*   chunk_data *ChunkData; */
+/*   voxel *Voxels; */
+/* }; */
 
 struct model
 {
-  vox_data Vox;
+  // TODO(Jesse): Do we actually not do this ..?  Do we ever even actually serialize these?
+  gen_chunk *Gen; poof(@no_serialize)
+
+  /* // TODO(Jesse): Delete */
+  /* lod_element_buffer Meshes; poof(@no_serialize) */
+
+/*   gpu_mapped_element_buffer Mesh; poof(@no_serialize) */
 
   // TODO(Jesse): Delete
-  lod_element_buffer Meshes; poof(@no_serialize)
-
-  gpu_mapped_element_buffer Mesh; poof(@no_serialize)
-
   /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;
+
   animation Animation;
   v3i Dim;
 };
@@ -85,8 +90,8 @@ Deserialize(u8_stream *Bytes, gpu_mapped_element_buffer *Element, memory_arena *
   return 0;
 }
 
-poof(block_array(vox_data, {8}))
-#include <generated/block_array_vox_data_688856411.h>
+/* poof(block_array(vox_data, {8})) */
+/* #include <generated/block_array_vox_data_688856411.h> */
 
 poof(buffer_t(model, u64))
 #include <generated/buffer_model.h>

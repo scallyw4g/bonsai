@@ -37,16 +37,7 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     model *Element = BaseElement + ElementIndex;
-                                    Result &= Serialize(Bytes, &Element->Vox); // default
-
-
-
-
-
-
-
-        
-        
+            
                                 Result &= Serialize(Bytes, &Element->TransparentMesh); // default
 
 
@@ -74,9 +65,6 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count)
 
 
             
-
-        
-        
         
 
         
@@ -114,18 +102,7 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Vox, Memory);
-
-
-
-
-
-
-
-    
-    
+      
                 
   
   Result &= Deserialize(Bytes, &Element->TransparentMesh, Memory);
@@ -159,9 +136,8 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-    
-  
-  
+        
+
   
   
   

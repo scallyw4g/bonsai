@@ -359,6 +359,8 @@
 
 
 
+
+
 link_internal void
 Marshal( layer_settings_1 *Stored, layer_settings *Live)
 {
@@ -432,7 +434,6 @@ Marshal( layer_settings_1 *Stored, layer_settings *Live)
 
 
 }
-
 
 
 
@@ -652,7 +653,6 @@ Marshal( world_edit_layer_0 *Stored, world_edit_layer *Live)
 
 
 
-
 link_internal void
 Marshal( layer_settings_0 *Stored, layer_settings *Live)
 {
@@ -722,7 +722,6 @@ Marshal( layer_settings_0 *Stored, layer_settings *Live)
 
 
 }
-
 
 
 

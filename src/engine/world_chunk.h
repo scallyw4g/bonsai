@@ -117,6 +117,7 @@ struct voxel
     u32 Data;
     struct
     {
+      // TODO(Jesse): Rename to PackedGRB
       u16 PackedHSV;
       u16 Normal;
     };
@@ -359,14 +360,20 @@ poof(@version(1) @do_editor_ui)
 };
 
 struct gen_chunk
+poof(@do_editor_ui)
 {
   // TODO(Jesse): Remove somehow ..?
   gen_chunk *Next;
 
+  u32 FilledCount;
   world_chunk  Chunk;
   voxel       *Voxels;
   gpu_mapped_element_buffer Mesh;
 };
+typedef gen_chunk* gen_chunk_ptr;
+poof(block_array_h(gen_chunk_ptr, {32}, {}))
+#include <generated/block_array_h_qpfrCMCO.h>
+
 
 
 // TODO(Jesse, id: 87, tags: speed, cache_friendly): Re-enable this
@@ -511,6 +518,17 @@ IsCanonical( v3i WorldChunkDim, canonical_position CP )
   return Result;
 }
 
+link_internal chunk_data
+ChunkData(gen_chunk *Gen)
+{
+  chunk_data Result = {
+    .Dim = Gen->Chunk.Dim,
+    .Occupancy = Gen->Chunk.Occupancy,
+    .xOccupancyBorder = Gen->Chunk.xOccupancyBorder,
+    .FaceMasks = Gen->Chunk.FaceMasks,
+  };
+  return Result;
+}
 
 poof(buffer(standing_spot))
 #include <generated/buffer_standing_spot.h>

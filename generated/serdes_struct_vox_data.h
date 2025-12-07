@@ -37,7 +37,21 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count)
   RangeIterator_t(umm, ElementIndex, Count)
   {
     vox_data *Element = BaseElement + ElementIndex;
-                        if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+                                    Result &= Serialize(Bytes, &Element->FilledCount); // default
+
+
+
+
+
+
+
+                    if (Element->ChunkData) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
+    else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
+
+
+
+
+                    if (Element->Voxels) { Result &= Write(Bytes, Cast(u8*,  &PointerTrue),  sizeof(PointerTrue)); }
     else                        { Result &= Write(Bytes, Cast(u8*, &PointerFalse), sizeof(PointerFalse)); }
 
 
@@ -45,7 +59,13 @@ Serialize(u8_cursor_block_array *Bytes, vox_data *BaseElement, umm Count)
 
 
 
-                    if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
+            
+
+                if (Element->ChunkData) { Result &= Serialize(Bytes, Element->ChunkData); }
+
+
+
+                if (Element->Voxels) { Result &= Serialize(Bytes, Element->Voxels); }
 
 
 
@@ -80,15 +100,32 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
-            b64 HadChunkDataPointer = Read_u64(Bytes);
+                  
+  
+  Result &= Deserialize(Bytes, &Element->FilledCount, Memory);
+
+
+
+
+
+
+
+          b64 HadChunkDataPointer = Read_u64(Bytes);
   Assert(HadChunkDataPointer < 2); // Should be 0 or 1
 
 
 
 
+          b64 HadVoxelsPointer = Read_u64(Bytes);
+  Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
 
-        if (HadChunkDataPointer)
+
+
+
+
+    
+      if (HadChunkDataPointer)
   {
         umm Count = 1;
 
@@ -99,6 +136,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vox_data *Element, memory_arena *Mem
     }
 
     Result &= Deserialize(Bytes, Element->ChunkData, Memory, Count);
+  }
+
+
+      if (HadVoxelsPointer)
+  {
+        umm Count = 1;
+
+
+    if (Element->Voxels == 0)
+    {
+      Element->Voxels = Allocate(voxel, Memory, Count);
+    }
+
+    Result &= Deserialize(Bytes, Element->Voxels, Memory, Count);
   }
 
 

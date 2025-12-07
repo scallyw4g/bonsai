@@ -189,16 +189,16 @@ enum vox_loader_clip_behavior
 
 global_variable random_series TMP = {54235432543};
 
-link_internal vox_data_block_array
-LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
+link_internal gen_chunk_ptr_block_array
+LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
 {
-  vox_data_block_array Result = VoxDataBlockArray(TempMemory);
+  gen_chunk_ptr_block_array Result = GenChunkPtrBlockArray(TempMemory);
 
   v3i ReportedDim = {};
 
 
   b32 HadPaletteData      = False;
-  v3 TempRGBPalette[256] = {};
+  v3 TempGRBPalette[256] = {};
 
 
 
@@ -208,7 +208,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
   s32_cursor ColorIndexBuffer = S32Cursor(256, TempMemory);
 
-  vox_data Current = {};
+  /* vox_data Current = {}; */
+  gen_chunk *Current = {};
   if (ModelFile->Handle)
   {
     // Ensure we're dealing with a .vox file
@@ -249,7 +250,7 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
             /* v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f); */
-            TempRGBPalette[PaletteIndex] = V3(R,G,B)/255.f;
+            TempGRBPalette[PaletteIndex] = V3(G,R,B)/255.f;
             /* v3 ThisColor = V3(R,G,B); */
 #if 1
 #else
@@ -392,8 +393,8 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
             else
             {
               BUG("Voxel detected outside the dimention it should be in while loading (%s)!", filepath);
+              Leak("Free Current gen_chunk here");
               Error = True;
-              Assert(Current.ChunkData == 0);
               break;
             }
           }
@@ -427,30 +428,47 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
           }
 
 
-          Current.ChunkData = AllocateChunkData(PermMemory, ModelDim);
-          Current.ChunkData->Dim = ModelDim;
+          Current = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64) + V3i(0, 2, 2), V3i(1), PermMemory);
+          chunk_data Chunk = ChunkData(Current);
+          DimIterator(x, y, z, Chunk.Dim)
+          {
+            s32 Index = GetIndex(x, y, z, Chunk.Dim);
+            /* Assert(Current->Voxels[Index].PackedHSV == 0); */
+            Current->Voxels[Index] = {};
+          }
+
+          /* Current.CD = AllocateChunkData(PermMemory, ModelDim); */
+          /* Current.Voxels = Allocate(voxel, TempMemory, Volume(ModelDim)); */
+          /* Current.CD.Dim = ModelDim; */
+
+          // NOTE(Jesse): We only support models up to 64^3 right now
+          Assert(ModelDim < V3i(64));
 
           for( s32 VoxelCacheIndex = 0;
                    VoxelCacheIndex < ActualVoxelCount;
                  ++VoxelCacheIndex)
           {
-            boundary_voxel *Voxel = &LocalVoxelCache[VoxelCacheIndex];
+            boundary_voxel *Voxel = LocalVoxelCache + VoxelCacheIndex;
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
 
-            s32 Index = GetIndex(Voxel->Offset, ModelDim);
-            NotImplemented;
-            /* Current.ChunkData->Voxels[Index] = Voxel->V; */
-            /* Result.ChunkData->VoxelLighting[Index] = VoxelLighting(0xff); */
+            s32 Index = GetIndex(Voxel->Offset, Current->Chunk.Dim);
+            /* s32 Index = GetIndex(Voxel->Offset, ModelDim); */
+
+            Current->Voxels[Index] = Voxel->V;
+            Assert(Voxel->V.PackedHSV < ArrayCount(TempGRBPalette));
+
+            SetOccupancyBit(Current->Chunk.Occupancy, Index, 1);
+
+            Current->FilledCount += 1;
           }
 
           FullBarrier;
 
-          /* Current.ChunkData->Flags = Chunk_VoxelsInitialized; */
+          /* Current.CD.Flags = Chunk_VoxelsInitialized; */
 
-            NotImplemented;
-          /* MarkBoundaryVoxels_MakeExteriorFaces( Current.ChunkData->Occupancy, Current.ChunkData->Voxels, Current.ChunkData->Dim, {}, Current.ChunkData->Dim); */
+          /* MarkBoundaryVoxels_NoExteriorFaces( Current.CD.Occupancy, Current.Voxels, Current.CD.Dim, {}, Current.CD.im); */
 
-          Push(&Result, &Current);
+          Push(&Result, Current);
         } break;
 
         // Transform node chunk
@@ -502,24 +520,30 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
     if (Error == False)
     {
       Assert(bytesRemaining == 0);
-      IterateOver(&Result, VoxData, VoxDataIndex)
+      IterateOver(&Result, Gen, VoxDataIndex)
       {
-        chunk_data *Chunk = VoxData->ChunkData;
-        DimIterator(x, y, z, Chunk->Dim)
+        chunk_data Chunk = ChunkData(Gen);
+        DimIterator(x, y, z, Chunk.Dim)
         {
-          s32 Index = GetIndex(x, y, z, Chunk->Dim);
-          NotImplemented;
-          /* u16 PaletteIndex = Chunk->Voxels[Index].RGBColor; */
-          /* if   (HadPaletteData) */
-          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(TempRGBPalette[PaletteIndex]); } */
-          /* else */
-          /*   { Chunk->Voxels[Index].RGBColor = PackV3_16b(MagicaVoxelDefaultPaletteToRGB(PaletteIndex)); } */
+          s32 Index = GetIndex(x, y, z, Chunk.Dim);
+          u16 PaletteIndex = Gen->Voxels[Index].PackedHSV;
+          Assert(PaletteIndex < ArrayCount(TempGRBPalette)); // Either branch requires this to be true
+
+          if   (HadPaletteData)
+          { 
+            Gen->Voxels[Index].PackedHSV = PackV3_655b(TempGRBPalette[PaletteIndex]);
+          }
+          else
+            {
+              v3 RGB = MagicaVoxelDefaultPaletteToRGB(PaletteIndex);
+              Gen->Voxels[Index].PackedHSV = PackV3_655b(V3(RGB.g, RGB.r, RGB.b)); 
+            }
         }
       }
     }
     else
     {
-      /* Assert(Result.ChunkData == 0); */
+      /* Assert(Result.CD == 0); */
       Assert(False);
     }
 
@@ -538,15 +562,15 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 
     IterateOver(&Result, VoxData, VoxDataIndex)
     {
-      DimIterator(x, y, z, VoxData->ChunkData->Dim)
+      DimIterator(x, y, z, VoxData->CD.Dim)
       {
-        s32 Index = GetIndex(x, y, z, VoxData->ChunkData->Dim);
+        s32 Index = GetIndex(x, y, z, VoxData->CD.Dim);
 
-        u16 IndexBufferIndex = VoxData->ChunkData->Voxels[Index].Color;
+        u16 IndexBufferIndex = VoxData->CD.Voxels[Index].Color;
         Assert(IndexBufferIndex < 256);
 
         s32 ColorIndex = ColorIndexBuffer.Start[IndexBufferIndex];
-        VoxData->ChunkData->Voxels[Index].Color = SafeTruncateToU16(umm(ColorIndex));
+        VoxData->CD.Voxels[Index].Color = SafeTruncateToU16(umm(ColorIndex));
         /* DebugLine("wee %d (%d,%d,%d)", VoxDataIndex, x, y, z ); */
       }
     }
@@ -557,48 +581,74 @@ LoadVoxData(v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *Per
 }
 
 link_internal void
-AllocateAndBuildMesh(vox_data *Vox, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
+PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+  work_queue *RenderQueue
+   , data_type Type   , u32 ElementCount   , gpu_mapped_element_buffer* Dest   , gen_chunk* SynChunk   , octree_node* DestNode  
+);
+
+link_internal void
+AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
 {
-  chunk_data *ChunkData = Vox->ChunkData;
-  DestModel->Dim = ChunkData->Dim;
+  chunk_data CD = ChunkData(Gen);
+  DestModel->Dim = CD.Dim;
 
-  data_type Type = GetMeshDatatypeForDimension(ChunkData->Dim);
-  geo_u3d *TempMesh = AllocateTempMesh(TempMemory, Type);
+#if 1
+  u32 ChunkSum = Gen->FilledCount;
+  if (ChunkSum && ChunkSum < u32(Volume(CD.Dim)))
+  {
+    v3i ChunkDataDim = V3i(64);
+    MakeFaceMasks_NoExteriorFaces(CD.Occupancy,
+                                  CD.FaceMasks,
+                                  Gen->Voxels,
+                                  ChunkDataDim,
+                                  {},
+                                  ChunkDataDim);
 
-  BuildWorldChunkMeshFromMarkedVoxels_Greedy(Vox, TempMesh, 0, TempMemory, DestModel->Dim/-2.f);
+    s32 FacesRequired = CountRequiredFacesForMesh_Naieve(CD.FaceMasks, ChunkDataDim, {});
+    if (FacesRequired)
+    {
+      PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
+          &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh,
+          Gen, 0); // NOTE(Jesse): These should go away once we can specify the next job here..
 
-  engine_resources *Engine = GetEngineResources();
+      /* while (HasGpuMesh(Gen) == False) */
+      /* { */
+      /*   SleepMS(1); */
+      /* } */
 
-  geo_u3d *FinalMesh = GetPermMeshForChunk(&Engine->geo_u3d_MeshFreelist, TempMesh, PermMemory);
-
-  DeepCopy(TempMesh, FinalMesh);
-
-  AtomicReplaceMesh(&DestModel->Meshes, MeshBit_Lod0, FinalMesh, __rdtsc());
+      /* DestModel->Mesh = Gen->Mesh; */
+    }
+    else
+    {
+      Warn("Loaded a model with 0 faces!");
+    }
+  }
+#endif
 }
 
 link_internal maybe_model_buffer
-LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, memory_arena *TempMemory)
+LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, memory_arena *TempMemory)
 {
   TIMED_FUNCTION();
 
   maybe_model_buffer Result =  {};
 
-  vox_data_block_array VoxArray = LoadVoxData(GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
+  gen_chunk_ptr_block_array GChunks = LoadVoxData(Engine, GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
 
-  umm VoxElements = TotalElements(&VoxArray);
+  umm VoxElements = TotalElements(&GChunks);
 
   if (VoxElements)
   {
     Result.Tag = Maybe_Yes;
 
     Result.Value = ModelBuffer(VoxElements, PermMemory);
-    IterateOver(&VoxArray, Vox, VoxIndex)
+    IterateOver(&GChunks, Gen, VoxIndex)
     {
-      if (Vox->ChunkData)
+      if (Gen->Voxels)
       {
         model *Model = &Result.Value.Start[GetIndex(&VoxIndex)];
-        Model->Vox = *Vox;
-        AllocateAndBuildMesh(Vox, Model, TempMemory, PermMemory );
+        Model->Gen = Gen;
+        AllocateAndBuildMesh(&Engine->Stdlib.Plat, Gen, Model, TempMemory, PermMemory );
       }
     }
   }

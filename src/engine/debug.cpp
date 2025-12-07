@@ -153,8 +153,7 @@ link_internal asset_thumbnail*
 AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbnails)
 {
   v2i ThumbnailDim = V2i(256);
-  asset_thumbnail BlankThumb = {};
-  asset_thumbnail *Thumb = Push(AssetThumbnails, &BlankThumb);
+  asset_thumbnail *Thumb = Push(AssetThumbnails);
 
   MakeTexture_RGBA_Async(&Plat->LoRenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
   StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
@@ -167,14 +166,10 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-#if 1
+#if 0
   NotImplemented;
   return {};
 #else
-  // TODO(Jesse): Do we still do this here?
-  NotImplemented;
-  /* SyncGpuBuffersAsync(Engine, Mesh); */
-
   texture *Texture      = &Thumb->Texture;
   camera  *ThumbCamera  = &Thumb->Camera;
 
@@ -194,7 +189,7 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 
   if (Pressed(Ui, &B))
   {
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
+    RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
   }
 
   if (EngineDebug->ResetAssetNodeView)
@@ -205,8 +200,8 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
     v3 CenterpointOffset = Dim/-2.f;
     f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
     Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
-    UpdateGameCamera(World, {}, 0.f, {}, &Thumb->Camera, 0.f);
-    RenderToTexture_Async(&Plat->RenderQ, Engine, Thumb, Mesh, {}, 0);
+    UpdateGameCamera(World, Plat->ScreenDim, {}, 0.f, {}, &Thumb->Camera, 0.f);
+    /* RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0); */
   }
 
   return B;
@@ -256,9 +251,9 @@ link_internal void
 DoAssetWindow(engine_resources *Engine)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  NotImplemented;
+  /* NotImplemented; */
 
-#if 0
+#if 1
   {
     local_persist window_layout Window = WindowLayout("Assets");
 
@@ -320,7 +315,7 @@ DoAssetWindow(engine_resources *Engine)
 #endif
     PushNewRow(Ui);
 
-    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), &DefaultUiRenderParams_Generic);
+    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, CSz("View"), 0, &DefaultUiRenderParams_Generic);
 
     switch (Engine->EngineDebug.AssetWindowViewMode)
     {
@@ -362,7 +357,7 @@ DoAssetWindow(engine_resources *Engine)
           RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
           {
             asset *Asset = Engine->AssetSystem.AssetTable + AssetIndex;
-            DoEditorUi(Ui, &Window, Asset, CS(AssetIndex));
+            DoEditorUi(Ui, &Window, Asset, CS(AssetIndex), 0);
           }
         }
         ReleaseFutex(&Engine->AssetSystem.AssetFutex);
@@ -416,32 +411,27 @@ DoAssetWindow(engine_resources *Engine)
                   if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                   b32 Selected = True;
-                  interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Chunk->Mesh, V3(Chunk->Dim), Selected);
-                  RenderMeshPreviewIntoWorld(Engine, &Chunk->Mesh, V3(Chunk->Dim), Selected);
-
-
+                  NotImplemented;
+                  /* interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Mesh, V3(Chunk->Dim), Selected); */
+                  /* RenderMeshPreviewIntoWorld(Engine, &Chunk->Mesh, V3(Chunk->Dim), Selected); */
                 } break;
 
                 case AssetType_Models:
                 {
                   IterateOver(&Asset->Models, Model, ModelIndex)
                   {
-                    // TODO(Jesse): Do we still do this here?
-                    NotImplemented;
-                    /* SyncGpuBuffersAsync(Engine, &Model->Mesh); */
-
                     asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
                     if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
 
-                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Mesh, V3(Model->Dim), Selected);
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Gen->Mesh, V3(Model->Dim), Selected);
                     if (Pressed(Ui, &B))
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }
 
-                    RenderMeshPreviewIntoWorld(Engine, &Model->Mesh, V3(Model->Dim), Selected);
+                    /* RenderMeshPreviewIntoWorld(Engine, &Model->Mesh, V3(Model->Dim), Selected); */
 
                     if ( (ModelIndex+1) % 4 == 0)
                     {

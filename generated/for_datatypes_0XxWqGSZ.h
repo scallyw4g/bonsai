@@ -17,7 +17,6 @@
 
 
 
-
 struct check_occlusion_query_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
@@ -28,6 +27,7 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
   Result.work_queue_entry_async_function_call.check_occlusion_query_async_params = *Params;
   return Result;
 }
+
 
 
 
@@ -219,6 +219,16 @@ WorkQueueEntryAsyncFunction( initialize_easing_function_visualizer_render_pass_a
 
 
 
+struct render_to_texture_async_params;
+link_internal work_queue_entry
+WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
+{
+  work_queue_entry Result = {};
+  Result.Type = type_work_queue_entry_async_function_call;
+  Result.work_queue_entry_async_function_call.Type = type_render_to_texture_async_params;
+  Result.work_queue_entry_async_function_call.render_to_texture_async_params = *Params;
+  return Result;
+}
 
 
 
@@ -573,7 +583,6 @@ WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
-
 
 
 

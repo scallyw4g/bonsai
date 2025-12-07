@@ -472,8 +472,8 @@ poof(do_editor_ui_for_compound_type(voxel_lighting))
 poof(do_editor_ui_for_compound_type(chunk_data))
 #include <generated/do_editor_ui_for_compound_type_chunk_data.h>
 
-poof(do_editor_ui_for_compound_type(vox_data))
-#include <generated/do_editor_ui_for_compound_type_vox_data.h>
+/* poof(do_editor_ui_for_compound_type(vox_data)) */
+/* #include <generated/do_editor_ui_for_compound_type_vox_data.h> */
 
 poof(do_editor_ui_for_compound_type(gpu_element_buffer_handles))
 #include <generated/do_editor_ui_for_compound_type_gpu_element_buffer_handles.h>

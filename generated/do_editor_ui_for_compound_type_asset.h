@@ -195,7 +195,18 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
             cs MemberName = CSz("(anonymous)");
 
                                                                                                 
-                        
+                                                            auto UnionMember = Cast(model_buffer*, &Element->Models);
+            cs UnionMemberName = CSz("(anonymous)");
+            DoEditorUi(Ui,
+              Window,
+              UnionMember,
+              UnionMemberName,
+              ThisHash,
+              Params
+              );
+
+
+
             
 
 

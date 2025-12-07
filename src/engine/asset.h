@@ -181,7 +181,7 @@ struct asset
   asset_type Type;
   union
   {
-    model_buffer Models;
+    model_buffer Models; poof(@ui_union_primal)
      world_chunk Chunk;
   };
 };
@@ -211,7 +211,7 @@ GetAssetFilenameFor(counted_string AssetPath, world_position WorldP, memory_aren
 }
 
 link_internal maybe_model_buffer
-LoadVoxModels(memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
+LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator *Heap, char const *filepath, memory_arena *TempMemory);
 
 link_inline maybe_v3i
 GetDimForAssetModel(asset *Asset, u32 ModelIndex)
@@ -263,10 +263,10 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
 
       Result.Tag = Maybe_Yes;
       Result.Value = {
-        .Dim           = Asset->Chunk.Dim,
-        .Occupancy     = Asset->Chunk.Occupancy,
-        .xOccupancyBorder    = Asset->Chunk.xOccupancyBorder,
-        .FaceMasks     = Asset->Chunk.FaceMasks,
+        .Dim               = Asset->Chunk.Dim,
+        .Occupancy         = Asset->Chunk.Occupancy,
+        .xOccupancyBorder  = Asset->Chunk.xOccupancyBorder,
+        .FaceMasks         = Asset->Chunk.FaceMasks,
         /* .Flags         = Asset->Chunk.Flags, */
         /* .Voxels        = Asset->Chunk.Voxels, */
         /* .VoxelLighting = Asset->Chunk.VoxelLighting, */
@@ -278,7 +278,7 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
       if (model *Model = GetPtr(&Asset->Models, ModelIndex))
       {
         Result.Tag = Maybe_Yes;
-        Result.Value = *Model->Vox.ChunkData;
+        Result.Value = ChunkData(Model->Gen);
       }
       else
       {
