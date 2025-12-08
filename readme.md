@@ -91,7 +91,7 @@ for your platform of your choice (as long as your platform of choice is Windows 
 * 1D, 2D and 3D noise library
 * Terrain derivitives available in second-stage terrain "decoration"
 
-![banner](screenshots/ridgeline.png)
+![banner](screenshots/keyhole.png)
 
 ## Editing
 
@@ -122,9 +122,12 @@ for your platform of your choice (as long as your platform of choice is Windows 
 
 ![banner](screenshots/3_skele.png)
 
+![banner](screenshots/ridgeline.png)
+
 ![banner](screenshots/grass.png)
 
 ![banner](screenshots/8_skele.png)
+
 
 # Wishlist
 
