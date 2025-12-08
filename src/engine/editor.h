@@ -44,6 +44,7 @@ poof(@gen_ui_toolbar)
 {
   UiEditorTool_Brush,
   UiEditorTool_Prefab,
+  UiEditorTool_Entity,
 };
 
 #if 0
@@ -1921,8 +1922,9 @@ struct selection_region poof(@do_editor_ui)
 struct level_editor
 poof(@do_editor_ui)
 {
-  memory_arena *Memory;
-  heap_allocator Heap;
+  // TODO(Jesse): Heap doesn't get reset on hard/soft reset.. how do we handle that?
+  heap_allocator  Heap;
+    memory_arena *Memory;
 
   ui_editor_tool SelectedTool;
 

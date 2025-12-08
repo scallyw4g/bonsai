@@ -1302,7 +1302,7 @@ DrawEntity(              shader *Shader,
         }
 
         // TODO(Jesse): Do we still do this here?
-        NotImplemented;
+        /* NotImplemented; */
         /* SyncGpuBuffersImmediate(GetEngineResources(), &Model->Mesh); */
         AssertNoGlErrors;
 

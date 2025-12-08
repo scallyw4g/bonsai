@@ -2113,6 +2113,289 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
   DispatchPrefabSpawnCallback(Prefab->SpawnCallback, Prefab, SpawnPoint, RectMinMax(MinP, MaxP));
 }
 
+link_internal b32
+FilterFilenamesByLoadableAssetExtensions(file_traversal_node *Node)
+{
+  b32 Result  = EndsWith(Node->Name, CSz(".vox"));
+      Result |= EndsWith(Node->Name, CSz(".chunk"));
+  return Result;
+}
+
+link_internal asset_thumbnail*
+AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbnails)
+{
+  v2i ThumbnailDim = V2i(256);
+  asset_thumbnail *Thumb = Push(AssetThumbnails);
+
+  MakeTexture_RGBA_Async(&Plat->LoRenderQ, &Thumb->Texture, ThumbnailDim, (u32*)0, CSz("Thumbnail"));
+  StandardCamera(&Thumb->Camera, 10000.0f, 100.0f, 0.f);
+
+  return Thumb;
+}
+
+link_internal interactable_handle
+RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+#if 0
+  NotImplemented;
+  return {};
+#else
+  texture *Texture      = &Thumb->Texture;
+  camera  *ThumbCamera  = &Thumb->Camera;
+
+  interactable_handle B = InteractWithThumbnailTexture(Engine, Ui, Window, "asset_texture_viewport", Thumb);
+
+  if (Hover(Ui, &B))
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR, V4(8.f), zDepth_Background);
+  }
+
+  if (Selected)
+  {
+    PushRelativeBorder(Ui, V2(Texture->Dim)*V2(-1.f, 1.f), UI_WINDOW_BEZEL_DEFAULT_COLOR*1.8f, V4(2.f));
+  }
+
+  PushForceAdvance(Ui, V2(8, 0));
+
+  if (Pressed(Ui, &B))
+  {
+    /* if (Mesh->Handles.Mapped == False) */
+    {
+      RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
+    }
+  }
+
+  if (EngineDebug->ResetAssetNodeView)
+  {
+    Window->Scroll = {};
+    Window->CachedScroll = {};
+
+    v3 CenterpointOffset = Dim/-2.f;
+    f32 SmallObjectCorrectionFactor = 350.f/Length(CenterpointOffset);
+    Thumb->Camera.DistanceFromTarget = LengthSq(CenterpointOffset)*0.50f + SmallObjectCorrectionFactor;
+    UpdateGameCamera(World, Plat->ScreenDim, {}, 0.f, {}, &Thumb->Camera, 0.f);
+    /* RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0); */
+  }
+
+  return B;
+
+#endif
+}
+
+
+link_internal void
+DoAssetWindow(engine_resources *Engine)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  /* NotImplemented; */
+
+#if 1
+  {
+    local_persist window_layout Window = WindowLayout("Assets");
+
+    PushWindowStart(Ui, &Window);
+
+#if 0
+    if (SelectionComplete(Editor->SelectionClicks))
+    {
+      if (Button(Ui, CSz("New From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+      {
+        if (window_layout *Modal = ModalWindowStart(Ui, "New Asset", UiId(&Window, "NewAssetModal", 0u)))
+        {
+          char Buf[512];
+          TextBox(Ui, CSz("Asset Name"), CS(Buf, 512), 512, UiId(Modal, "AssetNameButton", 0u));
+          PushWindowEnd(Ui, Modal);
+        }
+      }
+      PushNewRow(Ui);
+    }
+#endif
+
+#if 0
+    if (Button(Ui, CSz("New Asset From Selection"), UiId(&Window, "NewFromSelectionButton", 0u)))
+    {
+      Engine->Editor.NewAssetFromSelection = True;
+    }
+
+    PushNewRow(Ui);
+
+    if (Engine->Editor.NewAssetFromSelection)
+    {
+      TextBox(Ui, CSz("Asset Name"), CS(Engine->Editor.NewAssetFromSelectionFilename, 512), 512, UiId(&Window, "AssetNameButton", 0u));
+      PushNewRow(Ui);
+
+      if (Button(Ui, CSz("Save"), UiId(&Window, "Save Button", 0u)))
+      {
+        cs NewAssetFromSelectionFilename = CS(Engine->Editor.NewAssetFromSelectionFilename);
+        Engine->Editor.NewAssetFromSelection = False;
+
+        world_chunk SaveChunk = GatherVoxelsOverlappingArea(Engine, Editor->Selection.Region, GetTranArena());
+
+        cs SaveName = {};
+        if (EndsWith(NewAssetFromSelectionFilename, CSz(".chunk")))
+        {
+          SaveName = NewAssetFromSelectionFilename;
+        }
+        else
+        {
+          SaveName = Concat(NewAssetFromSelectionFilename, CSz(".chunk"), GetTranArena());
+        }
+
+        u8_cursor_block_array Bytes = {};
+
+        Serialize(&Bytes, &SaveChunk);
+        WriteToFile(Concat(CSz("models/"), SaveName, GetTranArena()), &Bytes);
+        /* SerializeChunk(&SaveChunk, Concat(CSz("models/"), SaveName, GetTranArena())); */
+      }
+    }
+#endif
+    PushNewRow(Ui);
+
+    DoEditorUi(Ui, &Window, &Engine->EngineDebug.AssetWindowViewMode, {}, 0, &DefaultUiRenderParams_Generic);
+
+    switch (Engine->EngineDebug.AssetWindowViewMode)
+    {
+      case AssetWindowViewMode_AssetFiles:
+      {
+        render_settings *Settings = &Graphics->Settings;
+        filtered_file_traversal_helper_params HelperParams = {&Window, FilterFilenamesByLoadableAssetExtensions};
+        maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("models"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+        if (ClickedFileNode.Tag)
+        {
+          EngineDebug->ResetAssetNodeView = True;
+          maybe_asset_ptr MaybeAsset = GetOrAllocateAsset(Engine, &ClickedFileNode.Value);
+
+          if (MaybeAsset.Tag)
+          {
+            asset *Asset = MaybeAsset.Value;
+
+            EngineDebug->SelectedAsset = Asset->Id;
+
+            // We allocated a new asset, better load it
+            if (Asset->LoadState == AssetLoadState_Allocated )
+            {
+              QueueAssetForLoad(&Plat->LowPriority, Asset);
+            }
+          }
+          else
+          {
+            SoftError("Unable to allocate asset to select!");
+          }
+        }
+
+      } break;
+
+      case AssetWindowViewMode_AssetTable:
+      {
+        AcquireFutex(&Engine->AssetSystem.AssetFutex);
+        {
+          RangeIterator(AssetIndex, ASSET_TABLE_COUNT)
+          {
+            asset *Asset = Engine->AssetSystem.AssetTable + AssetIndex;
+            DoEditorUi(Ui, &Window, Asset, CS(AssetIndex), 0);
+          }
+        }
+        ReleaseFutex(&Engine->AssetSystem.AssetFutex);
+
+      } break;
+    }
+
+    PushWindowEnd(Ui, &Window);
+  }
+
+  if (IsValid(&EngineDebug->SelectedAsset))
+  {
+    local_persist window_layout AssetViewWindow =
+      WindowLayout("Asset View", window_layout_flags(WindowLayoutFlag_Align_Right));
+    PushWindowStart(Ui, &AssetViewWindow);
+
+    PushTableStart(Ui);
+
+      Assert(EngineDebug->SelectedAsset.FileNode.Type);
+      {
+        asset *Asset = GetAndLockAssetSync(Engine, &EngineDebug->SelectedAsset);
+
+        Assert(Asset);
+        {
+          /* asset *Asset = MaybeAsset.Value; */
+
+          PushColumn(Ui, Asset->Id.FileNode.Name);
+          PushNewRow(Ui);
+          switch (Asset->LoadState)
+          {
+            case AssetLoadState_Unloaded:
+            case AssetLoadState_Allocated:
+            case AssetLoadState_Queued:
+            case AssetLoadState_Error:
+            {
+              PushColumn(Ui, ToString(Asset->LoadState));
+            } break;
+
+            case AssetLoadState_Loaded:
+            {
+              switch (Asset->Type)
+              {
+                InvalidCase(AssetType_Undefined);
+
+                case AssetType_WorldChunk:
+                {
+                  render_to_texture_group *RTTGroup = &Engine->RTTGroup;
+
+                  world_chunk *Chunk = &Asset->Chunk;
+
+                  asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, 0);
+                  if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
+
+                  b32 Selected = True;
+                  NotImplemented;
+                  /* interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Mesh, V3(Chunk->Dim), Selected); */
+                  /* RenderMeshPreviewIntoWorld(Engine, &Chunk->Mesh, V3(Chunk->Dim), Selected); */
+                } break;
+
+                case AssetType_Models:
+                {
+                  IterateOver(&Asset->Models, Model, ModelIndex)
+                  {
+                    asset_thumbnail *Thumb = TryGetPtr(&Editor->AssetThumbnails, ModelIndex);
+                    if (Thumb == 0) { Thumb = AllocateAssetThumbnail(Plat, &Editor->AssetThumbnails); }
+
+                    b32 Selected = ModelIndex == EngineDebug->ModelIndex;
+
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Gen->Mesh, V3(Model->Dim), Selected);
+                    if (Pressed(Ui, &B))
+                    {
+                      EngineDebug->ModelIndex = ModelIndex;
+                    }
+
+                    /* RenderMeshPreviewIntoWorld(Engine, &Model->Mesh, V3(Model->Dim), Selected); */
+
+                    if ( (ModelIndex+1) % 4 == 0)
+                    {
+                      PushNewRow(Ui);
+                      PushForceAdvance(Ui, V2(0, 8));
+                    }
+                  }
+                } break;
+              }
+
+              if (EngineDebug->ResetAssetNodeView) { EngineDebug->ResetAssetNodeView = False; }
+            } break;
+
+          }
+        }
+
+        UnlockAsset(Engine, Asset);
+      }
+    PushTableEnd(Ui);
+
+    PushWindowEnd(Ui, &AssetViewWindow);
+  }
+#endif
+}
+
 link_internal void
 DoWorldEditor(engine_resources *Engine)
 {
@@ -2186,6 +2469,27 @@ DoWorldEditor(engine_resources *Engine)
   //
   switch (Editor->SelectedTool)
   {
+    case UiEditorTool_Entity:
+    {
+      DoAssetWindow(Engine);
+
+      if ( IsValid(&EngineDebug->SelectedAsset) )
+      {
+        if (Input->LMB.Clicked && Engine->MousedOverVoxel.Tag)
+        {
+          cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
+
+          entity_id Id = GetFreeEntity(EntityTable);
+          entity *E = GetEntity(EntityTable, Id);
+          SpawnEntity(E);
+
+          E->AssetId = EngineDebug->SelectedAsset;
+          E->P = ClickedP;
+        }
+      }
+
+    } break;
+
     case UiEditorTool_Prefab:
     {
       {

@@ -1012,6 +1012,7 @@ IsValid(ui_editor_tool Value)
   {
         case UiEditorTool_Brush:
     case UiEditorTool_Prefab:
+    case UiEditorTool_Entity:
 
     {
       Result = True;
@@ -1032,6 +1033,7 @@ ToStringPrefixless(ui_editor_tool Type)
     {
             case UiEditorTool_Brush: { Result = CSz("Brush"); } break;
       case UiEditorTool_Prefab: { Result = CSz("Prefab"); } break;
+      case UiEditorTool_Entity: { Result = CSz("Entity"); } break;
 
 
       
@@ -1055,6 +1057,7 @@ ToString(ui_editor_tool Type)
   {
         case UiEditorTool_Brush: { Result = CSz("UiEditorTool_Brush"); } break;
     case UiEditorTool_Prefab: { Result = CSz("UiEditorTool_Prefab"); } break;
+    case UiEditorTool_Entity: { Result = CSz("UiEditorTool_Entity"); } break;
 
 
     
@@ -1070,6 +1073,7 @@ UiEditorTool(counted_string S)
 
     if (StringsMatch(S, CSz("UiEditorTool_Brush"))) { return UiEditorTool_Brush; }
   if (StringsMatch(S, CSz("UiEditorTool_Prefab"))) { return UiEditorTool_Prefab; }
+  if (StringsMatch(S, CSz("UiEditorTool_Entity"))) { return UiEditorTool_Entity; }
 
 
   return Result;
@@ -1138,6 +1142,32 @@ ButtonHandleForEnumValue(renderer_2d *Ui, ui_editor_tool Value, ui_id BaseId)
     } break;
 
 
+        case UiEditorTool_Entity:
+    {
+      Result =
+      {
+                UiDisplayType_Text,
+        {{
+            
+                        CSz("Entity")
+,
+          }},
+
+        
+                {}
+,
+
+        UiId(
+          BaseId.WindowBits,
+          BaseId.InteractionBits,
+          UiMaskAndCastPointer("ui_editor_tool UiEditorTool_Entity"),
+          UiEditorTool_Entity
+        ),
+        UiEditorTool_Entity,
+      };
+    } break;
+
+
 
   }
   return Result;
@@ -1164,6 +1194,7 @@ RadioButtonGroup_ui_editor_tool( renderer_2d *Ui,
   {
         { UiDisplayType_Text, {{ CSz("Brush"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Brush")), UiEditorTool_Brush },
     { UiDisplayType_Text, {{ CSz("Prefab"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Prefab")), UiEditorTool_Prefab },
+    { UiDisplayType_Text, {{ CSz("Entity"), }}, {}, UiId(Window, Cast(void*, Element), Cast(void*, "ui_editor_tool UiEditorTool_Entity")), UiEditorTool_Entity },
 
   };
 
@@ -1232,6 +1263,27 @@ PushToolbar(     renderer_2d *Ui,
         Cast(void*, Index)
       ),
       UiEditorTool_Prefab,
+    },
+
+        {
+            UiDisplayType_Text,
+      {{
+          
+                    CSz("Entity")
+,
+        }},
+
+      
+            {}
+,
+
+      UiId(
+        Cast(void*, Window),
+        Cast(void*, Element),
+        Cast(void*, "ui_editor_tool UiEditorTool_Entity"),
+        Cast(void*, Index)
+      ),
+      UiEditorTool_Entity,
     },
 
 

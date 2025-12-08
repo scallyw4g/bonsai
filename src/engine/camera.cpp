@@ -50,8 +50,8 @@ UpdateGameCamera( world *World,
   Camera->TargetDistanceFromTarget = ClampMax(Camera->TargetDistanceFromTarget, Camera->Frust.farClip);
 
   // TODO(Jesse): Remove?
-  if (Camera->DistanceFromTarget < 0.1f) { Camera->DistanceFromTarget = 0.1f; }
-  if (Camera->TargetDistanceFromTarget < 0.1f) { Camera->TargetDistanceFromTarget = 0.1f; }
+  if (Camera->DistanceFromTarget < 1.0f) { Camera->DistanceFromTarget = 1.0f; }
+  if (Camera->TargetDistanceFromTarget < 1.0f) { Camera->TargetDistanceFromTarget = 1.0f; }
 
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);

@@ -150,6 +150,13 @@ struct asset_id
   file_traversal_node FileNode;
 };
 
+link_internal b32
+IsValid(asset_id *Id)
+{
+  b32 Result = (Id->FileNode.Type != FileTraversalType_None);
+  return Result;
+}
+
 poof(maybe(asset_id))
 #include <generated/maybe_asset_id.h>
 

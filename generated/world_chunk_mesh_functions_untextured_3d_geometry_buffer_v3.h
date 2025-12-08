@@ -19,8 +19,8 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( voxel *Voxels,
   // entity models about 0 and rotation works properly.
   v3  VertexOffset = {})
 {
-  /* HISTOGRAM_FUNCTION(); */
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
+  /* TIMED_FUNCTION(); */
 
   Assert(SrcChunkMin == V3i(0));
   Assert(SrcChunkMax == V3i(0));

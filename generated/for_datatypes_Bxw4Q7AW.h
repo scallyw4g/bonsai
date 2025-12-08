@@ -15563,9 +15563,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             
             
-            cs MemberName = CSz("Memory");
+            cs MemberName = CSz("Heap");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                auto Member = Cast(heap_allocator*, &Element->Heap);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15599,9 +15599,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             
             
-            cs MemberName = CSz("Heap");
+            cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(heap_allocator*, &Element->Heap);
+                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,

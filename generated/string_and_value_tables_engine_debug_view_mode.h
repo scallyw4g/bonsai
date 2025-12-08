@@ -12,7 +12,6 @@ IsValid(engine_debug_view_mode Value)
         case EngineDebugViewMode_Level:
     case EngineDebugViewMode_WorldEdit:
     case EngineDebugViewMode_Entities:
-    case EngineDebugViewMode_Assets:
     case EngineDebugViewMode_WorldChunks:
     case EngineDebugViewMode_Textures:
     case EngineDebugViewMode_RenderSettings:
@@ -38,7 +37,6 @@ ToStringPrefixless(engine_debug_view_mode Type)
             case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
       case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
       case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
-      case EngineDebugViewMode_Assets: { Result = CSz("Assets"); } break;
       case EngineDebugViewMode_WorldChunks: { Result = CSz("WorldChunks"); } break;
       case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
       case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
@@ -96,7 +94,6 @@ ToString(engine_debug_view_mode Type)
         case EngineDebugViewMode_Level: { Result = CSz("EngineDebugViewMode_Level"); } break;
     case EngineDebugViewMode_WorldEdit: { Result = CSz("EngineDebugViewMode_WorldEdit"); } break;
     case EngineDebugViewMode_Entities: { Result = CSz("EngineDebugViewMode_Entities"); } break;
-    case EngineDebugViewMode_Assets: { Result = CSz("EngineDebugViewMode_Assets"); } break;
     case EngineDebugViewMode_WorldChunks: { Result = CSz("EngineDebugViewMode_WorldChunks"); } break;
     case EngineDebugViewMode_Textures: { Result = CSz("EngineDebugViewMode_Textures"); } break;
     case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
@@ -133,7 +130,6 @@ EngineDebugViewMode(counted_string S)
     if (StringsMatch(S, CSz("EngineDebugViewMode_Level"))) { return EngineDebugViewMode_Level; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_WorldEdit"))) { return EngineDebugViewMode_WorldEdit; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_Entities"))) { return EngineDebugViewMode_Entities; }
-  if (StringsMatch(S, CSz("EngineDebugViewMode_Assets"))) { return EngineDebugViewMode_Assets; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_WorldChunks"))) { return EngineDebugViewMode_WorldChunks; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_Textures"))) { return EngineDebugViewMode_Textures; }
   if (StringsMatch(S, CSz("EngineDebugViewMode_RenderSettings"))) { return EngineDebugViewMode_RenderSettings; }

@@ -78,7 +78,7 @@ poof(@do_editor_ui)
   engine_debug EngineDebug;
   level_editor Editor;
 
-  maybe_picked_voxel MousedOverVoxel;
+  maybe_picked_voxel  MousedOverVoxel;
   maybe_standing_spot ClosestStandingSpotToCursor;
 
   maybe_entity_ptr HoverEntity;

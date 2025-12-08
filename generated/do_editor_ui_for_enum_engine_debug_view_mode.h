@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:574:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:695:0
+// src/engine/editor.h:696:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
@@ -81,30 +81,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug_view_mode *Eleme
         else
         {
           *Element = engine_debug_view_mode(*Element|EngineDebugViewMode_Entities);
-        }
-      }
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Assets"), UiId(Window, "enum EngineDebugViewMode_Assets", Element, ThisHash), Params))
-    {
-      Result = True;
-            if (EngineDebugViewMode_Assets == engine_debug_view_mode(0))
-      {
-        *Element = engine_debug_view_mode(0);
-      }
-      else
-      {
-        if ((*Element & EngineDebugViewMode_Assets) == EngineDebugViewMode_Assets)
-        {
-          *Element = engine_debug_view_mode(*Element&~EngineDebugViewMode_Assets);
-        }
-        else
-        {
-          *Element = engine_debug_view_mode(*Element|EngineDebugViewMode_Assets);
         }
       }
 
