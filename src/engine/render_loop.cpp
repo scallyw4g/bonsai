@@ -435,6 +435,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
 
             AllocateGpuBuffer_gpu_mapped_element_buffer(&Command->Dest->Handles, Command->Type, Command->ElementCount);
+            /* SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Handles) */
             MapGpuBuffer(Command->Dest);
             Assert(HasGpuMesh(Command->Dest));
 

@@ -250,6 +250,9 @@ link_internal void
 SetupVertexAttribsFor_u3d_geo_element_buffer(gpu_element_buffer_handles *Handles);
 
 link_internal void
+SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Handles);
+
+link_internal void
 DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles);
 
 link_internal void

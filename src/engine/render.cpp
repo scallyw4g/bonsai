@@ -878,8 +878,8 @@ DrawGpuBufferImmediate(gpu_element_buffer_handles *Handles, u32 Count)
 
   GL->BindVertexArray(Handles->VAO);
   /* SetupVertexAttribsFor_u3d_geo_element_buffer(Handles); */
-  Draw(Count);
-  GL->BindBuffer(GL_ARRAY_BUFFER, 0);
+  Draw(Count); AssertNoGlErrors;
+  GL->BindBuffer(GL_ARRAY_BUFFER, 0); AssertNoGlErrors;
 }
 
 link_internal void
@@ -1232,6 +1232,8 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_ele
     /* } */
 
     Assert(HasGpuMesh(Src));
+
+    Info("Draw(%d)", Src->Handles.ElementCount);
     DrawLod( Engine,
              &Engine->RTTGroup.Shader,
              &Src->Handles,

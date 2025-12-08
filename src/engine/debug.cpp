@@ -189,7 +189,10 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 
   if (Pressed(Ui, &B))
   {
-    RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
+    /* if (Mesh->Handles.Mapped == False) */
+    {
+      RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
+    }
   }
 
   if (EngineDebug->ResetAssetNodeView)

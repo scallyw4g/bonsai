@@ -13,7 +13,8 @@ uniform sampler2D ColorPalette;
 
 void main()
 {
-  Color = texelFetch(ColorPalette, ivec2(ColorIndex, 0), 0);
+  Color = V4(UnpackV3_655b(ColorIndex).grb, 1);
+  /* Color = V4(1,0,0,1); //texelFetch(ColorPalette, ivec2(ColorIndex, 0), 0); */
   Normal = vertexNormal_modelspace;
   gl_Position =  ViewProjection * ModelMatrix * vec4(vertexPosition_modelspace, 1);
 }
