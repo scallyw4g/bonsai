@@ -1560,7 +1560,12 @@ poof(@do_editor_ui @serdes @version(2))
   v3i BasisOffset; poof(@ui_skip)
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
-  v3 HSVColor = DEFAULT_HSV_COLOR;  poof(@custom_ui(PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)))
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  poof(
+    @custom_ui(
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)
+    )
+  )
 
   b32 Disabled; poof(@ui_skip)
 };

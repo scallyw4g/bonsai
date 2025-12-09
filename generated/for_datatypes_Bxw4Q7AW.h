@@ -2430,7 +2430,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("HSVColor");
 
-                                                            PushColumn(Ui, CSz("Color")); DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash);
+                                                            
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)
+    ;
 
 
 

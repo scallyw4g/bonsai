@@ -1630,6 +1630,7 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
     }
     else
     {
+      PushColumn(Ui, CSz("Color"));
       ui_style BStyle = UiStyleFromLightestColor(HSVtoRGB(*HSVDest));
       ToggleButtonStart(Ui, InteractionId, &BStyle); //, Padding, AlignFlags);
         v2 Dim = V2(25);
@@ -3855,20 +3856,16 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           {
             auto Rect = &Shape->Rect;
 
-            v3 Dim = Rect->Dim;
+            v3 RectDim = Rect->Dim;
             RangeIterator(Index, 3)
             {
-              if (Dim.E[Index] == 0)
+              if (RectDim.E[Index] <= 0.f)
               {
-                Dim.E[Index] = EditDim.E[Index];
-              }
-
-              if (Dim.E[Index] < 0)
-              {
-                Dim.E[Index] = EditDim.E[Index] + Dim.E[Index];
+                RectDim.E[Index] = EditDim.E[Index] + RectDim.E[Index];
+                if (Layer->Settings.Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
               }
             }
-            BindUniformByName(&WorldEditRC->Program, "RectDim", &Dim);
+            BindUniformByName(&WorldEditRC->Program, "RectDim", &RectDim);
           } break;
 
           case ShapeType_Sphere:
@@ -3876,17 +3873,13 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             auto Sphere = &Shape->Sphere;
 
             v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
-            v3 EditRelativeSphereCenter = BasisOffset + (SimSphereOrigin - SimEditRect.Min);
+            v3 EditRelativeSphereCenter = (SimSphereOrigin - SimEditRect.Min);
 
             f32 Rad = Sphere->Radius;
-            if (Sphere->Radius == 0.f)
-            {
-              Rad = (MinChannel(EditDim)/2.f);
-            }
-
-            if (Sphere->Radius < 0.f)
+            if (Sphere->Radius <= 0.f)
             {
               Rad = (MinChannel(EditDim)/2.f) + Sphere->Radius;
+              if (Layer->Settings.Normalized) { Rad /= (MinChannel(EditDim)); }
             }
 
             BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
@@ -3940,8 +3933,6 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               } break;
 
             }
-
-
 
             BindUniformByName(&WorldEditRC->Program, "Radius", Radius);
             BindUniformByName(&WorldEditRC->Program, "Height", Height);

@@ -376,7 +376,7 @@ void BlendSample(
       if (ThisSample > 0.f)
       {
         Blended = Accumulator + ThisSample;
-        if (ThisSample > Accumulator || ThisSample > 0) { ColorValue = ColorSample; }
+        if (Accumulator <= 0 && Blended > 0) { ColorValue = ColorSample; }
       }
     } break;
 
@@ -614,27 +614,17 @@ void main()
           // ShapeType_Rect
           case 0:
           {
-            v3 BoxR = RectDim/2.f;
-            if (length(BoxR) > 0.f)
-            {
-            }
-            else
-            {
-              BoxR = EditDim;
-            }
+            v3 RectRad = RectDim/2.f;
+            v3 Center  = (EditDim)/2.f;
+            v3 p       = (EditRelxyz - Center);
 
-            v3 Center = (BasisOffset+EditDim)/2.f;
-            v3 p    = (EditRelxyz - Center);
+            if (Normalized) { p/=EditDim; Center/=EditDim; }
 
-            if (Normalized)
-            {
-              Center /= EditDim;
-              p      /= EditDim;
-              BoxR   /= EditDim;
-            }
+            Center += BasisOffset;
+            p += BasisOffset;
 
             v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample = w.w+iq_sdBox(w.xyz, BoxR);
+            f32 IQSample = w.w+iq_sdBox(w.xyz, RectRad);
             if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
             InitialSample = -IQSample;
 
@@ -643,16 +633,15 @@ void main()
           // ShapeType_Sphere
           case 1:
           {
-            f32 Rad = Radius;
-            if (Rad <= 0.f) { Rad = min(min(EditRad.x, EditRad.y), EditRad.z); }
-            Rad -= Hollow;
+            f32 r = (Radius - Hollow);
 
             v3 p  = EditRelxyz - (EditRelativeSphereCenter);
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample  = w.w+iq_sdSphere(w.xyz, Rad);
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+            if (Normalized) { p /= EditDim; }
+            p += BasisOffset;
 
-            if (Normalized) { IQSample /= Rad; }
+            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+            f32 IQSample  = w.w+iq_sdSphere(w.xyz, r);
+            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
 
             InitialSample = -IQSample;
           } break;
@@ -673,15 +662,21 @@ void main()
           // ShapeType_Cylinder
           case 3:
           {
+            f32 h = Height;
+            f32 r = Radius;
+
+            v3 p = (EditRelxyz - EditRad);
+            if (Normalized) { p /= EditDim; }
+
             // NOTE(Jesse): I dunno why we have to subtract BasisOffset here when
             // we add it everywhere else .. but .. that's how the maff works out
             // I guess.  If we add it, we get the opposite translation as other shapes.
             // @subtract_basis_offset_instead_of_add
-            v3 p = (EditRelxyz - EditRad) - BasisOffset;
+            p -= BasisOffset;
 
             v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
 
-            f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, Height, Radius);
+            f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, h, r);
             if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
             InitialSample = -IQSample;
           } break;
