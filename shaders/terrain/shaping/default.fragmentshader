@@ -23,7 +23,7 @@ void main()
 
   // NOTE(Jesse): We subtract the Z value of the current voxel so we get
   // lower values as we go higher in Z.  This produces a flat-ish plane.
-  f32 NoiseValue = -Basis.z;
+  f32 NoiseValue = 1000.f-Basis.z;
 
   //
   // -- user code --
@@ -32,7 +32,6 @@ void main()
   {
     ColorValue -= 0.01f*White;
 
-    NoiseValue += DEFAULT_FLOOR_HEIGHT;
 
     // Subtle, rolling hills
     {
@@ -57,7 +56,7 @@ void main()
       f32 BladeColorWhite = (0.5f+white_noise(V3(xyz.xy, 0.f)))/2.f;
       f32 BladeWhite = Clamp01(-0.7f+white_noise(V3(xyz.xy, 1.f)));
 
-      v3 BladeColor = V3(0.1f, 0.22f, 0.03f);
+      v3 BladeColor = V3(0.2f, 0.22f, 0.03f);
       BladeColor.r = 0.03f+(BladeColor.r*BladeColorWhite);
 
       v3 GroundColor = V3(0.01f, 0.2f, 0.03f);

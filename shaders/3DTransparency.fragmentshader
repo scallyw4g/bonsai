@@ -46,11 +46,6 @@ float Eq9(float LinearDepth, float Alpha)
 }
 
 
-float Cube(float A)
-{
-  return A*A*A;
-}
-
 // Eq11
 float RandomFuncFromPaper(float FragDepth)
 {
