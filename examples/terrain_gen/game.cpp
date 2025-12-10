@@ -27,25 +27,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
-
-
-  v3i VisibleRegion = V3i(VisibleRegionSize);
-  f32 DistanceFromTarget = 50000.f;
-  f32 FarClip = 5000000.f;
-  StandardCamera(Graphics->Camera, FarClip, DistanceFromTarget);
+  SnapCameraToCenterOfWorld(Engine, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   *GameState = {};
-
-  Camera->GhostId = GetFreeEntity(EntityTable);
-  entity *CameraGhost = GetEntity(EntityTable, Camera->GhostId);
-
-  CameraGhost->P.WorldP = VisibleRegion/2;
-  CameraGhost->P.WorldP.z = (10000/64) + 3;
-  /* CameraGhost->P.WorldP.z = 0; */
-  CameraGhost->Behavior = entity_behavior_flags(CameraGhost->Behavior|EntityBehaviorFlags_DefatulCameraGhostBehavior|EntityBehaviorFlags_WorldCenter);
-  SpawnEntity(CameraGhost);
-
 
   GameState->VisibleRegionSize = &World->VisibleRegionSize;
 

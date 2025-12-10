@@ -23,5 +23,5 @@ OPT="-O2"
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 
 # ./make.sh BuildAll BundleRelease
-# ./make.sh BundleRelease
+./make.sh BundleRelease
 
