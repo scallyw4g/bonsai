@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:996:0
+// src/engine/editor.h:1006:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:696:0
+// src/engine/editor.h:706:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, data_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {

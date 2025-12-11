@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1020:0
+// src/engine/editor.h:1030:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:477:0
+// src/engine/editor.h:487:0
 struct maybe_ray;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, maybe_ray *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

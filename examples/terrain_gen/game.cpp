@@ -27,12 +27,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
-  SnapCameraToCenterOfWorld(Engine, VisibleRegionSize);
+  SnapCameraToCenterOfWorld(Resources, VisibleRegionSize);
 
   GameState = Allocate(game_state, Resources->GameMemory, 1);
-  *GameState = {};
-
-  GameState->VisibleRegionSize = &World->VisibleRegionSize;
+  *GameState = {}; GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
 #if 0
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;

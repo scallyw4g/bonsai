@@ -1,5 +1,15 @@
 struct world_edit_brush;
 
+enum brush_window_mode
+poof(@do_editor_ui)
+{
+  BrushWindowMode_Details,
+  BrushWindowMode_Select,
+};
+
+poof(string_and_value_tables(brush_window_mode))
+#include <generated/string_and_value_tables_KDuC2974.h>
+
 /* #define EDITOR_DEFAULT_SELECTION_THICKNESS (0.15f) */
 
 enum ui_icon_index
@@ -1932,6 +1942,7 @@ poof(@do_editor_ui)
     memory_arena *Memory;
 
   ui_editor_tool SelectedTool;
+  brush_window_mode BrushWindowMode;
 
   selection_region Selection;
 

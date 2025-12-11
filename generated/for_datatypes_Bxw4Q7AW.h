@@ -15673,6 +15673,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             
             
+            cs MemberName = CSz("BrushWindowMode");
+
+                                                                                                auto Member = Cast(brush_window_mode*, &Element->BrushWindowMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Selection");
 
                                                                                                 auto Member = Cast(selection_region*, &Element->Selection);

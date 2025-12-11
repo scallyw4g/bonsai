@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-OPT="-O2"
+# OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
@@ -23,5 +23,5 @@ OPT="-O2"
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 
 # ./make.sh BuildAll BundleRelease
-./make.sh BundleRelease
+# ./make.sh BundleRelease
 

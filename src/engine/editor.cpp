@@ -1058,7 +1058,6 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(u64(BrushSettingsWindow)));
 
-  PushWindowStart(Ui, BrushSettingsWindow);
   Assert(Brush);
   {
     b32 IsNewBrush = False;
@@ -1343,7 +1342,6 @@ DoBrushDetailsWindow(engine_resources *Engine, world_edit_brush *Brush, window_l
 
     }
   }
-  PushWindowEnd(Ui, BrushSettingsWindow);
 }
 
 link_internal aabb_intersect_result
@@ -2554,32 +2552,67 @@ DoWorldEditor(engine_resources *Engine)
 
     case UiEditorTool_Brush:
     {
-      window_layout *AllBrushesWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
-      PushWindowStart(Ui, AllBrushesWindow);
+      window_layout *BrushWindow = GetOrCreateWindow(Ui, "All Brushes", WindowLayoutFlag_Align_BottomRight | WindowLayoutFlag_Default);
+      PushWindowStart(Ui, BrushWindow);
 
-      IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+      DoEditorUi(Ui, BrushWindow, &Editor->BrushWindowMode, {}, 0);
+
+      switch (Editor->BrushWindowMode)
       {
-        if (Brush)
+        case BrushWindowMode_Details:
         {
-          ui_style *Style = &DefaultStyle;
-          if (Brush == Editor->CurrentBrush)
+          DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushWindow);
+        } break;
+
+        case BrushWindowMode_Select:
+        {
+          u32 SortKeyCount = 0;
           {
-            Style = &DefaultSelectedStyle;
+            IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+            {
+              ++SortKeyCount;
+            }
           }
 
-          if (Button(Ui, CS(Brush->NameBuf), UiId(AllBrushesWindow, "brush select", Brush), Style))
+          sort_key_string *Keys = Allocate(sort_key_string, GetTranArena(), SortKeyCount);
+
           {
-            Editor->CurrentBrush = Brush;
-            CheckSettingsChanged(Brush); // Prevent firing a change event @prevent_change_event
+            u32 Index = 0;
+            IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+            {
+              Keys[Index].Value = CS(Brush->NameBuf);
+              Keys[Index].Index = u64(Brush);
+              Index++;
+            }
           }
-          PushNewRow(Ui);
-        }
+
+          BubbleSort(Keys, SortKeyCount);
+
+          RangeIterator_t(u32, KeyIndex, SortKeyCount)
+          {
+            auto *Brush = Cast(world_edit_brush*, Keys[KeyIndex].Index);
+            if (Brush)
+            {
+              ui_style *Style = &DefaultStyle;
+              if (Brush == Editor->CurrentBrush)
+              {
+                Style = &DefaultSelectedStyle;
+              }
+
+              if (Button(Ui, CS(Brush->NameBuf), UiId(BrushWindow, "brush select", Brush), Style))
+              {
+                Editor->CurrentBrush = Brush;
+                CheckSettingsChanged(Brush); // Prevent firing a change event @prevent_change_event
+              }
+              PushNewRow(Ui);
+            }
+          }
+        } break;
       }
-      PushWindowEnd(Ui, AllBrushesWindow);
 
-      window_layout *BrushSettingsWindow = GetOrCreateWindow(Ui, "Brush Details", WindowLayoutFlag_Align_Right | WindowLayoutFlag_Default);
-      /* DoEditorUi(Ui, BrushSettingsWindow, Editor->CurrentBrush, {}, 0); */
-      DoBrushDetailsWindow(Engine, Editor->CurrentBrush, BrushSettingsWindow);
+      PushWindowEnd(Ui, BrushWindow);
+
+
 
       // NOTE(Jesse): Must come after the settings window draws because the
       // settings window detects and initializes new brushes
