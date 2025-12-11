@@ -1,3 +1,8 @@
+* 2.0.0-alpha
+
+This is a major version change that entiled major rewrites of many core
+systems.  
+
 * 1.6.2
 
 - Change color from a 16-bit palette index to 16-bit HSV encoded color

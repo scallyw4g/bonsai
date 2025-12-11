@@ -1,7 +1,6 @@
 struct world_edit_brush;
 
 enum brush_window_mode
-poof(@do_editor_ui)
 {
   BrushWindowMode_Details,
   BrushWindowMode_Select,
@@ -1059,6 +1058,8 @@ poof(radio_button_group_for_enum(brush_noise_type));
 poof(do_editor_ui_for_enum(brush_noise_type))
 #include <generated/do_editor_ui_for_enum_ui_noise_type.h>
 
+poof(do_editor_ui_for_radio_enum(brush_window_mode))
+#include <generated/do_editor_ui_for_radio_enum_4eSAAu9p.h>
 
 
 

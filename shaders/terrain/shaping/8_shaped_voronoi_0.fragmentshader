@@ -132,8 +132,6 @@ v4 noise(vec2 uv)
     return Result;
 }
 
-dafdas
-
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
