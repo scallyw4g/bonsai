@@ -1,7 +1,47 @@
 * 2.0.0-alpha
 
-This is a major version change that entiled major rewrites of many core
-systems.  
+This is a major version change that encloses major rewrites of many core
+systems.  Being an alpha release comes with the caveat that several core
+engine systems are broken and in the process of being ported or having bugs
+ferretted out.  See `Future Work` at the end of this Changelog entry
+
+Notable feature improvements are as follows.
+
+- Terrain Generation now happens on the GPU
+	This was a pretty big change.  I was initially motivated by performance,
+	however the real value of the feature is in having terrain gen in regular
+	glsl shaders.  More info and instructions for operating the terrain
+	generation pipeline is available in docs/
+
+- Editing now happens on the GPU
+	Following terrain generation, editing also had to be ported to work on the
+	GPU.  This is not necessarily for performance or usability, but for
+	maintainability.  I did not want to maintain a GPU terrain generation
+	pipeline, and a CPU editing pipeline.  
+
+	The editor capabilities have also been significantly upgraded.
+	Comprehensive documentation for the editor is WIP, but what's been started
+	can be found in docs/
+
+- World storage is octree-based
+	As a more robust answer to LoD, the world is now stored hierarchically as an
+	octree.  This unlocks huge view distances for a stable, linear cost in
+	performance.
+
+- Many smaller improvements, optimizations and fixes
+	This update is way too large to address every change; it took many months,
+	hundreds of commits and and tens of thousands of lines changed.
+
+- Future work
+	Several systems remain broken or unstable in the wake of this large change.
+	Notable systems include:
+
+	* Asset Loaders
+	* Collision Detector
+	* Shadow Mapping
+	* Transparent and Emissive materials
+
+	These systems are slated to be finished in priority order as listed here.
 
 * 1.6.2
 
