@@ -6,9 +6,9 @@
 link_internal counted_string
 Concat( cs S0, cs S1,  memory_arena* Memory, umm ExtraChars = 0)
 {
-  umm TotalLength =  S0.Count +  S1.Count +  0;
+  umm TotalLength =   S0.Count +  S1.Count +  ExtraChars ;
   counted_string Result = {
-    .Count = TotalLength + ExtraChars,
+    .Count = TotalLength,
     .Start = AllocateProtection(char, Memory, TotalLength, False),
   };
 

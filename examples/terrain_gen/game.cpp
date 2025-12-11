@@ -98,8 +98,14 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           b32 Selected = Contains(Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename, FileNode->Name);
           if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
           {
+            cs *ShaderName = &Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename;
+            if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
+            {
+              HeapDeallocate(Heap, (void*)ShaderName->Start);
+            }
+            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, Heap);
+
             // Force engine to reload new shader
-            Resources->Graphics.TerrainShapingRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
             Resources->Graphics.TerrainShapingRC.Program.FragmentTimeModifiedWhenLoaded = 0;
           }
           PushNewRow(Ui);
@@ -121,8 +127,15 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           b32 Selected = Contains(Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename, FileNode->Name);
           if (Button(Ui, FileNode->Name, UiId(&Window, "shader file name", I++), Selected))
           {
+            cs *ShaderName = &Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename;
+            if (IsHeapAllocated(Heap, (void*)ShaderName->Start))
+            {
+              HeapDeallocate(Heap, (void*)ShaderName->Start);
+            }
+            *ShaderName = Concat(FileNode->Dir, CSz("/"), FileNode->Name, Heap);
+
             // Force engine to reload new shader
-            Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena());
+            /* Resources->Graphics.TerrainDecorationRC.Program.FragSourceFilename = Concat(FileNode->Dir, CSz("/"), FileNode->Name, GetTranArena()); */
             Resources->Graphics.TerrainDecorationRC.Program.FragmentTimeModifiedWhenLoaded = 0;
           }
           PushNewRow(Ui);

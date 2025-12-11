@@ -1468,49 +1468,6 @@ PushToolbar(     renderer_2d *Ui,
 
 
 
-link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_window_mode *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
-{
-  b32 Result = False;
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3A563E3B);
-
-  if (Name.Count) { PushColumn(Ui, CS(Name), &DefaultUiRenderParams_Column); }
-
-  cs ElementName = ToStringPrefixless(*Element);
-  ui_id ToggleButtonId = UiId(Window, "toggle brush_window_mode", Element, ThisHash);
-  if (ToggleButton(Ui, ElementName, ElementName, ToggleButtonId, Params))
-  {
-    PushNewRow(Ui);
-        if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Details"), UiId(Window, "enum BrushWindowMode_Details", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = BrushWindowMode_Details;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
-    if (Button(Ui, CSz("Select"), UiId(Window, "enum BrushWindowMode_Select", Element, ThisHash), Params))
-    {
-      Result = True;
-            *Element = BrushWindowMode_Select;
-
-
-      SetToggleButton(Ui, ToggleButtonId, False);
-    }
-    PushNewRow(Ui);
-
-  }
-  else
-  {
-    PushNewRow(Ui);
-  }
-  return Result;
-}
-
-
 
 
 

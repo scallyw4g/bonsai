@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:539:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:487:0
+// src/engine/editor.h:486:0
 struct asset;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
