@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
@@ -9,11 +9,11 @@
 
 # ./make.sh RunTests
 
-./make.sh $OPT                                                 \
-  BuildSingleExample examples/terrain_gen                      \
-  BuildExecutables                                             \
-  BuildSingleExample examples/project_and_level_picker         \
-  BuildSingleExample examples/blank_project                    \
+# ./make.sh $OPT                                                 \
+#   BuildSingleExample examples/terrain_gen                      \
+#   BuildExecutables                                             \
+#   BuildSingleExample examples/project_and_level_picker         \
+#   BuildSingleExample examples/blank_project                    \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/transparency                     \
@@ -22,6 +22,6 @@
 
   # BuildSingleExample examples/tools/voxel_synthesis_rule_baker \
 
-# ./make.sh BuildAll BundleRelease
-# ./make.sh BundleRelease
+./make.sh BuildAll BundleRelease
+./make.sh BundleRelease
 

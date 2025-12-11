@@ -355,7 +355,7 @@ function RunPoof
   WaitForTrackedPids
   sync
 
-  [ -d tmp ] && rmdir tmp
+  [ -d tmp ] && rm -Rf tmp
 }
 
 
