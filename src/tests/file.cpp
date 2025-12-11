@@ -13,8 +13,6 @@ main(s32 ArgCount, const char** Args)
   memory_arena _Memory = {};
   memory_arena* Memory = &_Memory;
 
-  SetThreadLocal_ThreadIndex(0);
-
   counted_string Contents = ReadEntireFileIntoString(CS(TEST_FIXTURES_PATH "/read_file_test"), Memory);
   DebugLine("%u", Contents.Count);
   TestThat(Contents.Count == 11);

@@ -31,7 +31,6 @@ main(s32 ArgCount, const char** Args)
 
   memory_arena BootstrapArena = {};
   engine_resources Engine = {};
-  Global_EngineResources = &Engine;
   Ensure( InitializeBonsaiStdlib( BonsaiInit_InitDebugSystem,
                                   {},
                                   &Engine.Stdlib,

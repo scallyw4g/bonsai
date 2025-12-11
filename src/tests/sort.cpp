@@ -24,8 +24,6 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("Sort", ArgCount, Args);
 
-  SetThreadLocal_ThreadIndex(0);
-
   {
     u64 SortKeyIndex = 0;
     sort_key Keys[] = 

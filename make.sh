@@ -128,6 +128,7 @@ function BuildDebugOnlyTests
 
 function BuildTests
 {
+  rm -Rf bin/tests/ && mkdir bin/tests
   echo ""
   ColorizeTitle "Tests"
   for executable in $TESTS_TO_BUILD; do
@@ -361,19 +362,20 @@ function RunPoof
 
   # $TESTS/chunk.cpp
   # $TESTS/ui_command_buffer.cpp
-  # $TESTS/m4.cpp
   # $TESTS/colladaloader.cpp
-  # $TESTS/test_bitmap.cpp
-  # $TESTS/bonsai_string.cpp
-  # $TESTS/objloader.cpp
   # $TESTS/callgraph.cpp
-  # $TESTS/heap_allocation.cpp
-  # $TESTS/rng.cpp
-  # $TESTS/file.cpp
-  # $TESTS/sort.cpp
   # $TESTS/perlin_perf.cpp
+
 TESTS_TO_BUILD="
   $TESTS/containers/block_array.cpp
+  $TESTS/m4.cpp
+  $TESTS/test_bitmap.cpp
+  $TESTS/bonsai_string.cpp
+  $TESTS/objloader.cpp
+  $TESTS/heap_allocation.cpp
+  $TESTS/rng.cpp
+  $TESTS/file.cpp
+  $TESTS/sort.cpp
 "
 
 SetBuildAllFlags() {

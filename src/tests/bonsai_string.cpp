@@ -578,7 +578,8 @@ main(s32 ArgCount, const char** Args)
   char_cursor TempCursor_ = {
     .Start = TempBuffer,
     .At = TempBuffer,
-    .End = TempBuffer + TEMP_BUFFER_SIZE
+    .End = TempBuffer + TEMP_BUFFER_SIZE,
+    {}
   };
 
   char_cursor* TempCursor = &TempCursor_;

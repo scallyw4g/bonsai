@@ -54,11 +54,7 @@ main(s32 ArgCount, const char** Args)
 {
   TestSuiteBegin("ui_command_buffer", ArgCount, Args);
 
-  SetThreadLocal_ThreadIndex(0);
-
-  // NOTE(Jesse): Sorry for this...
   engine_resources Engine = {};
-  Global_EngineResources = &Engine;
 
   memory_arena Arena = {};
   heap_allocator Heap = InitHeap(Megabytes(128));
