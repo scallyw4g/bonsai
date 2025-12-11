@@ -178,14 +178,6 @@ v4 noise( v2 uv )
 
 
 
-f32 ClampPositive(f32 Value)
-{
-  return Value < 0.f ? 0.f : Value;
-}
-
-
-
-
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
@@ -218,7 +210,6 @@ void main()
       v4 N = noise(xyz.xy);
 
       N.w *= -1.f;
-      /* N.w = ClampPositive(N.w); */
 
       N.w = (N.w/2.f)+0.5f;
 

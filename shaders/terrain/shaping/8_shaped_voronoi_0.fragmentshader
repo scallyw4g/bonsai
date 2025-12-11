@@ -132,14 +132,7 @@ v4 noise(vec2 uv)
     return Result;
 }
 
-
-f32 ClampPositive(f32 Value)
-{
-  return Value < 0.f ? 0.f : Value;
-}
-
-
-
+dafdas
 
 void main()
 {

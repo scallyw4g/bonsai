@@ -160,14 +160,6 @@ vec4 noise( vec2 uv )
 
 
 
-f32 ClampPositive(f32 Value)
-{
-  return Value < 0.f ? 0.f : Value;
-}
-
-
-
-
 void main()
 {
   f32 x = floor(gl_FragCoord.x);
