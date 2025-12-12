@@ -16,19 +16,6 @@ jobs:
     - name: Checkout submodules
       run: git submodule update --init --recursive
     - name: Install Deps
-      run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang-15
-    - name: Build
-      run: ./make.sh
-    - name: Test
-      run: ./make.sh RunTests
-
-  build-and-release-ubuntu-20:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Checkout submodules
-      run: git submodule update --init --recursive
-    - name: Install Deps
       run: sudo apt update && sudo apt install freeglut3-dev libx11-dev clang
     - name: Build
       run: ./make.sh
@@ -47,6 +34,7 @@ jobs:
           LICENSE
           CHANGELOG.txt
 
+  
   build-and-release-windows:
     runs-on: windows-latest
     steps:
