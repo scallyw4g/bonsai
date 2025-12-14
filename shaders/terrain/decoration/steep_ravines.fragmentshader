@@ -33,10 +33,14 @@ void main()
     // Put random junk here
     f32 CosTheta = Dot(NormalValue, Normalize(V3(0,0,1)));
 
-    v4 Cliffs = DoCliffs(Basis, NormalValue, ColorValue, 0.3f);
+    v4 Cliffs = DoCliffs(Basis, NormalValue, ColorValue, 0.10f);
     ColorValue = Cliffs.rgb;
-    f32 CliffContrib = 1.0f;
-    NoiseValue += Cliffs.w * CliffContrib;
+    NoiseValue += Cliffs.w;
+
+    /* Cliffs = DoCliffs(Basis, NormalValue, ColorValue, 0.3f); */
+    /* ColorValue = Cliffs.rgb; */
+    /* NoiseValue += Cliffs.w; */
+
 
     v4 Grass = DoGrass(Basis, NoiseValue, NormalValue, ColorValue);
     NoiseValue += Grass.w;

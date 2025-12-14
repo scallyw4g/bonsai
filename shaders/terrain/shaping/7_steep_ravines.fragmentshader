@@ -13,71 +13,48 @@ void main()
   f32 z = floor(gl_FragCoord.y / 68);
   f32 y = floor(gl_FragCoord.y - (z*68));
 
+
   v3 Offset = V3(0);
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
-  // NOTE(Jesse): Set these in the -- user code -- section
-  v3 ColorValue = V3(0.1f, 0.7f, 0.1f);
-  f32 NoiseValue = 0.f;
 
-  //
-  // -- user code -- 
-  //
+  v3 ColorValue = V3(0.1f);
+
+  f32 NoiseValue = 500.f-Basis.z;
+
+#if 1
+  ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
+
+  f32 White = white_noise(v3(x,y,z));
+  ColorValue -= 0.01f*White;
+#endif
+
+#if 1
   {
-    v3 Period = V3(800.f);
-    float Amplitude = 800.f;
-    /* f32 StartingZDepth = 10000; */
-    f32 StartingZDepth = DEFAULT_FLOOR_HEIGHT;
-    /* f32 StartingZDepth = 0; */
-    NoiseValue = StartingZDepth;
-
-    v3 Deriv = v3(0.f);
-    /* f32 warp = 0.f; */
-
-    /* v3 warp = v3(gradient_noise_derivs(Basis).x); */
-    v3 warp = v3(0.f);
-
-    {
-      v3 xyz = Basis / (12000.f);
-      /* v3 N = voronoi_noise(xyz+warp); */
-      f32 Mask = (gradient_noise_derivs(Basis/20000.f).x+1.f)/2.f;
-          /* Mask = RemapSample(Mask, SampleRemapCurvePoints, SampleRemapCurvePointCount ); */
-      f32 N = ridge_noise(xyz+warp)*Mask;
-      /* NoiseValue += RemapSample((N+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f; */
-      NoiseValue += N * 20000.f;
-    }
-
-    /* { */
-    /*   v3 xyz = Basis / (15000.f); */
-    /*   /1* v3 N = voronoi_noise(xyz+warp); *1/ */
-    /*   v4 N = gradient_noise_derivs(xyz+warp); */
-    /*   NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * 10000.f; */
-    /*   /1* NoiseValue += N.x * 20000.f; *1/ */
-    /* } */
-
-    /* { */
-    /*   v3 xyz = Basis / (Period); */
-    /*   v4 N = gradient_noise_derivs(xyz+warp); */
-    /*   NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount ) * Amplitude; */
-    /* } */
-
-    /* s32 Octaves = 4; */
-    /* f32 B = 0.f; */
-    /* for (s32 Octave = 1; Octave <= Octaves; ++Octave) */
-    /* { */
-    /*   v3 xyz = Basis / (Period/Octave); */
-    /*   f32 N = billow_noise(xyz+warp); */
-    /*   B = max(N, B); */
-    /*   /1* NoiseValue += RemapSample((N.x+1.f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount )*(Amplitude/Octave); *1/ */
-    /* } */
-    /* NoiseValue += B * Amplitude; */
-
-    v3 Up = V3(0, 0, 1);
-
-    NoiseValue -= Basis.z;
-    /* NoiseValue = StartingZDepth; */
-
+    v3 Period = V3(80.f);
+    float Amplitude = 40.f;
+    v3 xyz = Basis / Period;
+    v4 gn = gradient_noise_derivs(xyz);
+    NoiseValue += gn.x * Amplitude;
   }
+#endif
+
+
+#if 1
+  {
+    v3 Period = V3(180.f, 180.f, 300.f);
+    float Amplitude = 300.f;
+    v3 xyz = Basis / Period;
+
+    f32 f = Square(gradient_noise_derivs(xyz).x);
+    /* f32 f = gradient_noise_derivs(xyz).x; */
+    /* f32 f = gradient_noise_derivs(V3(xyz.xy,0.f)).x; */
+    f = RemapSample((1.f+f)/2.f, SampleRemapCurvePoints, SampleRemapCurvePointCount);
+
+    NoiseValue += f * Amplitude;
+  }
+#endif
+
 
   //
   // -- end user code --
@@ -85,6 +62,4 @@ void main()
 
   Output.rgb = ColorValue;
   Output.a = NoiseValue;
-
-  /* Output = (SolidBit << 15) | PackedColor; */
 }

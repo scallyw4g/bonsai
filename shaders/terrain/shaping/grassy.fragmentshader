@@ -1,0 +1,81 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+
+  // NOTE(Jesse): Set these in the -- user code -- section
+  v3 ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
+
+  // NOTE(Jesse): We subtract the Z value of the current voxel so we get
+  // lower values as we go higher in Z.  This produces a flat-ish plane.
+  f32 NoiseValue = 1000.f-Basis.z;
+
+  //
+  // -- user code --
+  //
+  f32 White = white_noise(v3(x,y,z));
+  {
+    ColorValue -= 0.01f*White;
+
+
+    // Subtle, rolling hills
+    {
+      v3 Period = V3(1200.f);
+      float Amplitude = 1000.f;
+
+      v3 xyz = Basis / Period;
+      v4 gn = gradient_noise_derivs(xyz);
+
+      NoiseValue += Cube(gn.x) * Amplitude;
+    }
+
+    // Grassy Patches
+    {
+      v3 Period = V3(20.f);
+      float Amplitude = 25.f;
+
+      v3 xyz = Basis / Period;
+      v4 gn = gradient_noise_derivs(xyz);
+      f32 GrassMask = ClampPositive(gn.x);
+
+      f32 BladeColorWhite = (0.5f+white_noise(V3(xyz.xy, 0.f)))/2.f;
+      f32 BladeWhite = Clamp01(-0.7f+white_noise(V3(xyz.xy, 1.f)));
+
+      v3 BladeColor = V3(0.2f, 0.22f, 0.03f);
+      BladeColor.r = 0.03f+(BladeColor.r*BladeColorWhite);
+
+      v3 GroundColor = V3(0.01f, 0.2f, 0.03f);
+
+      ColorValue = Lerp(ColorValue, GroundColor, GrassMask);
+      if (NoiseValue <= 0.f && GrassMask > 0.1f && BladeWhite > 0.1f)
+      {
+        ColorValue = Lerp(ColorValue, BladeColor, Clamp01(sign(BladeColorWhite)));
+      }
+
+      NoiseValue += (BladeWhite * GrassMask * Amplitude);
+    }
+
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}
