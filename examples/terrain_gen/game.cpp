@@ -4,6 +4,8 @@
 
 #include "game.h"
 
+static entity *TestEntity;
+static gen_chunk *Gen;
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
@@ -13,6 +15,8 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
+
+  auto Engine = Resources;
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
@@ -32,7 +36,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   *GameState = {}; GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
-#if 0
+#if 1
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
 
@@ -50,6 +54,91 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
 #endif
 
+
+#if 1
+    entity *Entity = GetEntity(EntityTable, GetFreeEntity(EntityTable));
+    TestEntity = Entity;
+
+    Entity->P = GetCameraGhost(Engine)->P;
+
+    file_traversal_node Dummy = 
+    {
+      FileTraversalType_File,
+      CSz("dir"),
+      CSz("dummy_name"),
+    };
+
+    maybe_asset_ptr MaybeAsset = GetOrAllocateAsset(Engine, &Dummy);
+
+    if (MaybeAsset.Tag)
+    {
+      asset *Asset = MaybeAsset.Value;
+      Entity->AssetId = Asset->Id;
+
+      // TODO(Jesse): Free this somehow? @unclear_if_model_buffer_memory_is_released
+      Asset->Models = ModelBuffer(1, Engine->GameMemory);
+
+      Gen = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64) + V3i(0, 2, 2), V3i(1), Engine->GameMemory);
+
+
+#if 1
+    v3 rayPos = {};
+    v3 rayDir = Normalize(V3(0.5f,1.f,1.f));
+
+    // https://www.shadertoy.com/view/4dX3zl
+    v3i mapPos = V3i(Floor(rayPos + 0.));
+
+    v3 deltaDist = Abs(V3(Length(rayDir)) / rayDir);
+    v3i rayStep = V3i(GetSign(rayDir));
+    v3 sideDist = (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5) * deltaDist;
+    v3i mask = {};
+    while (true)
+    {
+      v3 yzx = V3(sideDist.y, sideDist.z, sideDist.x);
+      v3 zxy = V3(sideDist.z, sideDist.x, sideDist.y);
+
+      mask.x = sideDist.x <= Min(yzx.x, zxy.x);
+      mask.y = sideDist.y <= Min(yzx.y, zxy.y);
+      mask.z = sideDist.z <= Min(yzx.z, zxy.z);
+
+      //All components of mask are false except for the corresponding largest component
+      //of sideDist, which is the axis along which the ray should be incremented.
+
+      sideDist += V3(mask) * deltaDist;
+      mapPos += V3i(V3(mask)) * rayStep;
+
+      if (mapPos.x >= 64) break;
+      if (mapPos.y >= 64) break;
+      if (mapPos.z >= 64) break;
+
+      s32 Index = GetIndex(mapPos, V3i(64));
+      SetOccupancyBit(&Gen->Chunk, Index, 1);
+      ++Gen->FilledCount;
+    }
+#else
+      random_series Entropy = {5432643754854};
+      RangeIterator(Index, 64*64)
+      {
+        u64 Mask = u64(RandomU32(&Entropy)) | (u64(RandomU32(&Entropy)) << 31);
+        SetOccupancyMask(&Gen->Chunk, Index, Mask);
+        Gen->FilledCount += CountBitsSet_Kernighan(Mask);
+      }
+#endif
+
+      model *Model = Get(&Asset->Models, 0);
+      Model->Gen = Gen;
+      AllocateAndBuildMesh(&Engine->Stdlib.Plat, Gen, Model, GetTranArena(), Engine->GameMemory );
+
+      SpawnEntity(Entity);
+    }
+    else
+    {
+      SoftError("Spawning procedural entity");
+    }
+
+
+#endif
+
   return GameState;
 }
 
@@ -59,6 +148,8 @@ poof(do_editor_ui_for_compound_type(game_state))
 
 BONSAI_API_MAIN_THREAD_CALLBACK()
 {
+  engine_resources *Engine = Resources;
+
   Assert(ThreadLocal_ThreadIndex == 0);
 
   TIMED_FUNCTION();
@@ -66,6 +157,28 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 
   f32 dt = Plat->dt;
   f32 Speed = 80.f;
+
+
+  {
+
+    local_persist b32 FirstFrame = True;
+
+    if (FirstFrame)
+    {
+      FirstFrame=False;
+      SleepMs(1000);
+    }
+    {
+      Assert(HasGpuMesh(&Gen->Mesh));
+      Assert(Gen->Mesh.Handles.Mapped == False);
+
+      asset *Asset = GetAssetPtr(Engine, &TestEntity->AssetId, Engine->FrameIndex).Value;
+      Assert(Asset);
+
+      Asset->LoadState = AssetLoadState_Loaded;
+      Asset->Type = AssetType_Models;
+    }
+  }
 
 #if 1
   {
@@ -75,12 +188,12 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
     PushWindowEnd(Ui, Window);
   }
 
-  /* { */
-  /*   window_layout *Window = GetOrCreateWindow(Ui, "Easing Window"); */
-  /*   PushWindowStart(Ui, Window); */
-  /*   PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP); */
-  /*   PushWindowEnd(Ui, Window); */
-  /* } */
+  {
+    window_layout *Window = GetOrCreateWindow(Ui, "Easing Window");
+    PushWindowStart(Ui, Window);
+    PushUntexturedQuad(Ui, V2(0), V2(256), zDepth_Text, 0, {}, UiElementLayoutFlag_Default, UseRenderPass_easing_function_visualizer_render_pass, &GameState->EasingFunctionVisRP);
+    PushWindowEnd(Ui, Window);
+  }
 
   {
     global_variable window_layout Window = WindowLayout("Terrain Shaping Shader", WindowLayoutFlag_Align_Right);
@@ -169,7 +282,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-#if 1
+#if 0
   {
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
@@ -195,7 +308,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-#if 1
+#if 0
   {
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
@@ -227,7 +340,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
 #endif
 
 
-#if 1
+#if 0
   {
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {

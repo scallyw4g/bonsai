@@ -70,13 +70,6 @@ struct model
   // TODO(Jesse): Do we actually not do this ..?  Do we ever even actually serialize these?
   gen_chunk *Gen; poof(@no_serialize)
 
-  /* // TODO(Jesse): Delete */
-  /* lod_element_buffer Meshes; poof(@no_serialize) */
-
-/*   gpu_mapped_element_buffer Mesh; poof(@no_serialize) */
-
-  // TODO(Jesse): Delete
-  /* untextured_3d_geometry_buffer Mesh; */
   untextured_3d_geometry_buffer TransparentMesh;
 
   animation Animation;

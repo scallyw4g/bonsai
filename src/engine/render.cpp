@@ -1523,7 +1523,7 @@ CheckOcclusionQuery(world_chunk *Chunk)
       if (FragmentsWritten == 0)
       {
         local_persist random_series OcclusionEntropy = {43654747355143};
-        /* Chunk->OcclusionFrames = RandomBetween(0u, &OcclusionEntropy, 20u); */
+        Chunk->OcclusionFrames = RandomBetween(0u, &OcclusionEntropy, 20u);
         /* Info("Occluded"); */
       }
       else

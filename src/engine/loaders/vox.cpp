@@ -610,13 +610,6 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
       PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
           &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh,
           Gen, 0); // NOTE(Jesse): These should go away once we can specify the next job here..
-
-      /* while (HasGpuMesh(Gen) == False) */
-      /* { */
-      /*   SleepMS(1); */
-      /* } */
-
-      /* DestModel->Mesh = Gen->Mesh; */
     }
     else
     {
@@ -641,7 +634,9 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
   {
     Result.Tag = Maybe_Yes;
 
+    // TODO(Jesse): Do the models ever get freed? @unclear_if_model_buffer_memory_is_released
     Result.Value = ModelBuffer(VoxElements, PermMemory);
+
     IterateOver(&GChunks, Gen, VoxIndex)
     {
       if (Gen->Voxels)

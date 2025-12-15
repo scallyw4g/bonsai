@@ -14,9 +14,6 @@ SetOccupancyBit(u64 *Occupancy, s32 Index, s32 BitValue)
 
   Occupancy[ByteIndex] &= ~(u64(1) << BitIndex); // Unconditionally knock out the bit
   Occupancy[ByteIndex] |=  (u64(BitValue) << BitIndex); // Set new value.. 0 just does nothing
-
-  /* s32 Test = GetOccupancyBit(Chunk, Index); */
-  /* Assert(Test == BitValue); */
 }
 
 link_internal void
