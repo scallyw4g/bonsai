@@ -6,6 +6,14 @@ enum voxel_occupancy
 };
 
 
+link_internal u64
+GetOccupancyMask(u64 *Occupancy, s32 Index)
+{
+  s32 MaskIndex = Index/64;
+  u64 Result = Occupancy[MaskIndex];
+  return Result;
+}
+
 link_internal s32
 GetOccupancyBit(u64 *Occupancy, s32 Index)
 {

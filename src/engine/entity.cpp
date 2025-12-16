@@ -909,9 +909,47 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
 }
 
 collision_event
-GetCollision(entity *Entity, octree_node *Node)
+GetCollision(cp EntityP, u64 *EntityOccupancy, octree_node *Node)
 {
+  TIMED_FUNCTION();
+
   collision_event Result = {};
+
+  s32 xShift = s32(EntityP.Offset.x);
+  s32 yStart = s32(EntityP.Offset.y);
+  s32 zStart = s32(EntityP.Offset.z);
+
+  s32 zEntIndex = 0;
+  for (s32 zIndex = zStart; zIndex < 64; ++zIndex)
+  {
+
+    s32 yEntIndex = 0;
+    for (s32 yIndex = yStart; yIndex < 64; ++yIndex)
+    {
+      s32 WorldOccIndex = GetIndex(yIndex, zIndex, V2i(64));
+      u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex);
+
+      s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(64));
+      u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex);
+
+      u64 Collision = WorldOcc & EntityOcc;
+
+      if (Collision)
+      {
+        u32 xOffset = GetIndexOfNthSetBit(Collision, 1);
+        Result.FrameIndex = 1;
+        Result.Count = 1;
+        Result.MinP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
+        Result.MaxP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
+
+        return Result;
+      }
+
+      ++yEntIndex;
+    }
+
+    ++zEntIndex;
+  }
   return Result;
 }
 
@@ -942,6 +980,13 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(GetTranArena());
   rect3cp Region = RectMinMax(Start,End);
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
+
+  asset *Asset = GetAssetPtr(GetEngineResources(), &Entity->AssetId).Value;
+  Assert(Asset);
+
+  model *Model = GetModel(Asset, &Entity->AssetId, Entity->ModelIndex);
+  Assert(Model);
+
 
   // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
@@ -995,10 +1040,21 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
       IterateOver(&Nodes, Node, NodeIndex)
       {
         if (Node->Resolution > V3i(1)) continue;
-        Result = GetCollision(Entity, Node);
+        if (Node->Chunk)
+        {
+          Result = GetCollision(Entity->P, Model->Gen->Chunk.Occupancy, Node);
+          if (Result.Count)
+          {
+            Entity->P.Offset -= V3(step);
+            Canonicalize(World, &Entity->P);
+
+            auto InvMask = V3(Abs(mask-1.f));
+            Entity->Physics.Velocity *= InvMask;
+            Entity->Physics.Delta *= InvMask;
+            return Result;
+          }
+        }
       }
-
-
 
       /* s32 Index = GetIndex(mapPos, V3i(64)); */
       /* SetOccupancyBit(&Gen->Chunk, Index, 1); */
