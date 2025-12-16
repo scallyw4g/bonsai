@@ -56,7 +56,7 @@ main(s32 ArgCount, const char** Args)
     FillBitmap(0xFFFFFFFF, &Bitmap);
 
     {
-      b32 Wrote = WriteBitmapToDisk(&Bitmap, "white.bmp");
+      b32 Wrote = WriteBitmapToDisk(&Bitmap, "test.bmp");
       TestThat(Wrote);
     }
 
