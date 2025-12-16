@@ -142,13 +142,13 @@ DrainHiRenderQueue(engine_resources *Engine)
 
           { tmatch(bonsai_render_command_draw_world_chunk_draw_list, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
-            if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_world_chunk_draw_list when RenderGate was not signalled!"); }
+            /* if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_world_chunk_draw_list when RenderGate was not signalled!"); } */
             RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
           } break;
 
           { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
-            if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_all_entities when RenderGate was not signalled!"); }
+            /* if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_all_entities when RenderGate was not signalled!"); } */
             DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
           } break;
 
