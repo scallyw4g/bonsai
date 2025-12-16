@@ -289,6 +289,9 @@ link_internal world_chunk_ptr_buffer
 GatherChunksOverlappingArea(world *World, rect3cp Region, memory_arena *Memory);
 
 link_internal void
+GatherOctreeNodesOverlapping_Recursive(world *World, octree_node *Current, rect3cp *Region, octree_node_ptr_block_array *Result);
+
+link_internal void
 InitOctreeNode(world *World,  octree_node *Node, v3i WorldP, v3i DimInChunks, world_edit_ptr_paged_list *PotentialEdits);
 
 link_internal world *
