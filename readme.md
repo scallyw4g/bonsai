@@ -59,12 +59,15 @@ for your platform of your choice (as long as your platform of choice is Windows 
 # Reviews from Random Denizens of the Internet
 
 :small_orange_diamond: like, dude. straigth up magic. this is like, hundreds of millions of blocks, and it runs great.
+
 :star: :star: :star: :star: :star:
 
 :small_orange_diamond: Oh that's lowkey fucking genius actually
+
 :star: :star: :star: :star: :star:
 
 :small_orange_diamond: This person totally nailed it. Bravo
+
 :star: :star: :star: :star: :star:
 
 
