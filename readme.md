@@ -19,14 +19,13 @@ Bonsai terrain generation is fully procedural, and user configurable.  Terrain
 is generated on the GPU using regular glsl shaders.  Anything you can do in a
 shader, you can do in a Bonsai terrain generator.
 
-### 2.0.0-prealpha Note
+### 2.0.0-alpha Note
 
-The current version is 2.0.0-prealpha-rc0, which can be found by joining the
-[Discord](https://discord.gg/kmRpgXBh75).  This version is a large rewrite of
-several core systems, including the world generation, editor and parts of the
-renderer.
+The engine has recently undergone a large rewrite of many core systems,
+including the world generator and editor.  This rewrite is still in the process
+of being finalized and releases will be marked with `alpha` until core systems
+are completely ported and considered stable.
 
-In its current state, the engine is effectively a terrain generator and editor.
 For details on remaing work, see [Roadmap to v2.0.0](https://github.com/scallyw4g/bonsai/issues/82).
 
 ![banner](screenshots/two_doors.png)
@@ -56,6 +55,18 @@ for your platform of your choice (as long as your platform of choice is Windows 
 
 
 ![banner](screenshots/orks.png)
+
+# Reviews from Random Denizens of the Internet
+
+:small_orange_diamond: like, dude. straigth up magic. this is like, hundreds of millions of blocks, and it runs great.
+:star: :star: :star: :star: :star:
+
+:small_orange_diamond: Oh that's lowkey fucking genius actually
+:star: :star: :star: :star: :star:
+
+:small_orange_diamond: This person totally nailed it. Bravo
+:star: :star: :star: :star: :star:
+
 
 # Feature Sets
 
