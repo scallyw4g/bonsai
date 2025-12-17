@@ -642,6 +642,7 @@ GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChun
     AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
   }
 
+  Assert(Result->Dim == Dim);
   return Result;
 }
 
@@ -659,6 +660,7 @@ GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks
 
   Assert(HasGpuMesh(&Result->Mesh) == False);
   Assert(HasGpuMesh(&Result->Chunk) == False);
+  Assert(Result->Chunk.Dim == Dim);
 
   return Result;
 }

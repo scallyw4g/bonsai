@@ -989,8 +989,8 @@ MakeFaceMasks_NoExteriorFaces(  u64 *Occupancy,
   v3i InnerDim = MaxDim-MinDim;
 
   Assert(MinDim == V3i(0));
-  Assert(MaxDim ==V3i(64, 64, 64));
-  Assert(SrcChunkDim == V3i(64, 64, 64));
+  Assert(MaxDim ==V3i(64, 66, 66));
+  Assert(SrcChunkDim == V3i(64, 66, 66));
 
   s32 Result = 0;
   for ( s32 z = 1; z < SrcChunkDim.z-1; ++z )
@@ -1067,20 +1067,11 @@ MakeFaceMasks_NoExteriorFaces(  u64 *Occupancy,
       u64 RightBit = ((RightYRow >> (y-1)) & 1) << 63;
       u64 LeftBit  = ((LeftYRow  >> (y-1)) & 1);
 
-      /* u64 RightBit = 1llu << 63; */
-      /* u64 LeftBit = 1; */
-
-      /* u64 RightBit = 0; */
-      /* u64 LeftBit = 0; */
-
       u64   Bits = Occupancy[OccupancyIndex];
       u64  yBits = Occupancy[OccupancyIndex+1];
       u64 nyBits = Occupancy[OccupancyIndex-1];
       u64  zBits = Occupancy[OccupancyIndex+SrcChunkDim.z];
       u64 nzBits = Occupancy[OccupancyIndex-SrcChunkDim.z];
-
-      /* u64 RightFaces = ( RightBit | (Bits>>1) ) & ~Bits; */
-      /* u64 LeftFaces  = ( LeftBit  | (Bits<<1) ) & ~Bits; */
 
       // @register_ordering_looks_backwards
       u64 RightFaces = ( Bits ) & ~(RightBit | (Bits>>1));
@@ -1559,7 +1550,7 @@ poof(
                                                                 // entity models about 0 and rotation works properly.
                                                                 vert_t.name  VertexOffset = {})
     {
-      HISTOGRAM_FUNCTION();
+      /* HISTOGRAM_FUNCTION(); */
       /* TIMED_FUNCTION(); */
 
       Assert(SrcChunkMin == V3i(0));
@@ -1768,10 +1759,10 @@ CountRequiredFacesForMesh_Naieve( u64 *FaceMasks,
 
 
   s32 Result = 0;
-  for ( s32 zBlock = SrcChunkOffset.z; zBlock < SrcChunkDim.z; ++zBlock )
+  for ( s32 zBlock = SrcChunkOffset.z; zBlock < SrcChunkDim.z-SrcChunkOffset.z; ++zBlock )
   {
     s32 z = zBlock;
-    for ( s32 yBlock = SrcChunkOffset.y; yBlock < SrcChunkDim.y; ++yBlock )
+    for ( s32 yBlock = SrcChunkOffset.y; yBlock < SrcChunkDim.y-SrcChunkOffset.y; ++yBlock )
     {
       s32 y = yBlock;
       s32 OccupancyIndex = GetIndex(yBlock, zBlock, SrcChunkDim.yz);

@@ -190,7 +190,16 @@ enum vox_loader_clip_behavior
 global_variable random_series TMP = {54235432543};
 
 link_internal gen_chunk_ptr_block_array
-LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *TempMemory, memory_arena *PermMemory, heap_allocator *Heap, const char *filepath, vox_loader_clip_behavior ClipBehavior, v3i HalfApronMin = {}, v3i HalfApronMax = {}, v3i ModDim = {})
+LoadVoxData( engine_resources *Engine,
+              v3_cursor *ColorPalette,
+              memory_arena *TempMemory,
+              memory_arena *PermMemory,
+              heap_allocator *Heap,
+              const char *filepath,
+              vox_loader_clip_behavior ClipBehavior,
+              v3i HalfApronMin = {},
+              v3i HalfApronMax = {},
+              v3i ModDim = {})
 {
   gen_chunk_ptr_block_array Result = GenChunkPtrBlockArray(TempMemory);
 
@@ -237,9 +246,6 @@ LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *Tem
           Assert(ChunkContentBytes == 256*4);
           Assert(ChildChunkCount == 0);
 
-          /* Result.Palette = (v4*)HeapAllocate(Heap, 256); */
-          /* Palette = Allocate(v3, PermMemory, 256); */
-
           for ( s32 PaletteIndex = 0;
                     PaletteIndex < 256;
                   ++PaletteIndex )
@@ -249,66 +255,9 @@ LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *Tem
             u8 B = ReadChar(ModelFile, &bytesRemaining);
             u8 A = ReadChar(ModelFile, &bytesRemaining);
 
-            /* v3 ThisColor = RGBtoHSV(V3(R,G,B)/255.f); */
             TempGRBPalette[PaletteIndex] = V3(G,R,B)/255.f;
-            /* v3 ThisColor = V3(R,G,B); */
-#if 1
-#else
-            s32 Found = -1;
-            {
-              IterateOver(ColorPalette, QueryColor, QueryColorIndex)
-              {
-                if (WithinTolerance(0.015f, ThisColor, *QueryColor))
-                {
-                  Found = s32(QueryColorIndex); 
-                  v3 PaletteColor = GetPaletteData(u32(Found));
-                  Assert(PaletteColor == *QueryColor);
-                  Assert(WithinTolerance(0.015f, ThisColor, PaletteColor));
-                  break;
-                }
-              }
-            }
-
-            if (Found == -1)
-            {
-              s32 NewColorIndex = s32(AtElements(ColorPalette));
-              Assert(NewColorIndex >= 0);
-
-              Push(ColorPalette, ThisColor);
-
-              {
-                v3 *Last = LastElement(ColorPalette);
-                Assert(*Last == ThisColor);
-              }
-
-              Push(&ColorIndexBuffer, NewColorIndex);
-
-              {
-                s32 *I = LastElement(&ColorIndexBuffer);
-                Assert(*I == NewColorIndex);
-                Assert(*I == LastIndex(ColorPalette));
-              }
-            }
-            else
-            {
-              Assert(Found >= 0);
-              s32 *Index = Push(&ColorIndexBuffer, Found);
-
-              {
-                Assert(*Index == Found);
-                v3 QueryColor = GetPaletteData(u32(Found));
-                Assert(WithinTolerance(0.015f, ThisColor, QueryColor));
-              }
-            }
-#endif
-
-            /* Global_ColorPalette[PaletteIndex].r = R; */
-            /* Global_ColorPalette[PaletteIndex].g = G; */
-            /* Global_ColorPalette[PaletteIndex].b = B; */
-            /* Current.Palette[PaletteIndex].a = A; */
           }
 
-          /* Global_ColorPaletteAt += 256; */
           Info("ColorPalette->At %d", AtElements(ColorPalette));
         } break;
 
@@ -388,7 +337,6 @@ LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *Tem
               minZ = Min(TestP.z, minZ);
 
               LocalVoxelCache[VoxelCacheIndex] = boundary_voxel(TestP.x, TestP.y, TestP.z, Color);
-              /* SetFlag(&LocalVoxelCache[VoxelCacheIndex], Voxel_Filled); */
             }
             else
             {
@@ -428,25 +376,21 @@ LoadVoxData(engine_resources *Engine, v3_cursor *ColorPalette, memory_arena *Tem
           }
 
 
-          Current = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64) + V3i(0, 2, 2), V3i(1), PermMemory);
+          Current = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64, 66, 66), V3i(1), PermMemory);
+
           chunk_data Chunk = ChunkData(Current);
           DimIterator(x, y, z, Chunk.Dim)
           {
             s32 Index = GetIndex(x, y, z, Chunk.Dim);
-            /* Assert(Current->Voxels[Index].PackedHSV == 0); */
             Current->Voxels[Index] = {};
           }
-
-          /* Current.CD = AllocateChunkData(PermMemory, ModelDim); */
-          /* Current.Voxels = Allocate(voxel, TempMemory, Volume(ModelDim)); */
-          /* Current.CD.Dim = ModelDim; */
 
           // NOTE(Jesse): We only support models up to 64^3 right now
           Assert(ModelDim < V3i(64));
 
           for( s32 VoxelCacheIndex = 0;
                    VoxelCacheIndex < ActualVoxelCount;
-                 ++VoxelCacheIndex)
+                 ++VoxelCacheIndex )
           {
             boundary_voxel *Voxel = LocalVoxelCache + VoxelCacheIndex;
             Voxel->Offset = Voxel->Offset - Min + HalfApronMin;
@@ -592,19 +536,20 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
   chunk_data CD = ChunkData(Gen);
   DestModel->Dim = CD.Dim;
 
+  Assert(CD.Dim == V3i(64,66,66));
+
 #if 1
   u32 ChunkSum = Gen->FilledCount;
   if (ChunkSum && ChunkSum < u32(Volume(CD.Dim)))
   {
-    v3i ChunkDataDim = V3i(64);
     MakeFaceMasks_NoExteriorFaces(CD.Occupancy,
                                   CD.FaceMasks,
                                   Gen->Voxels,
-                                  ChunkDataDim,
+                                  CD.Dim,
                                   {},
-                                  ChunkDataDim);
+                                  CD.Dim);
 
-    s32 FacesRequired = CountRequiredFacesForMesh_Naieve(CD.FaceMasks, ChunkDataDim, {});
+    s32 FacesRequired = CountRequiredFacesForMesh_Naieve(CD.FaceMasks, CD.Dim, V3i(0,1,1));
     if (FacesRequired)
     {
       PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
@@ -626,7 +571,7 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
 
   maybe_model_buffer Result =  {};
 
-  gen_chunk_ptr_block_array GChunks = LoadVoxData(Engine, GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_ClipToVoxels);
+  gen_chunk_ptr_block_array GChunks = LoadVoxData(Engine, GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_NoClipping, V3i(1));
 
   umm VoxElements = TotalElements(&GChunks);
 

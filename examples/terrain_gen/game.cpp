@@ -4,8 +4,8 @@
 
 #include "game.h"
 
-static entity *TestEntity;
-static gen_chunk *Gen;
+/* static entity *TestEntity; */
+/* static gen_chunk *Gen; */
 
 BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 {
@@ -55,7 +55,7 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 #endif
 
 
-#if 1
+#if 0
     entity *Entity = GetEntity(EntityTable, GetFreeEntity(EntityTable));
     TestEntity = Entity;
 
@@ -135,9 +135,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
     {
       SoftError("Spawning procedural entity");
     }
-
-
 #endif
+
 
   return GameState;
 }
@@ -159,6 +158,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   f32 Speed = 80.f;
 
 
+#if 0
   {
 
     local_persist b32 FirstFrame = True;
@@ -179,6 +179,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       Asset->Type = AssetType_Models;
     }
   }
+#endif
 
 #if 1
   {
@@ -358,6 +359,37 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
           auto Layer = &Brush->Layers[5].Settings;
           /* Layer->Offset.x += Plat->dt*5.f; */
           Layer->Offset.y += Plat->dt*5.f;
+        }
+      }
+    }
+  }
+#endif
+
+#if 1
+  {
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+    {
+      if (Contains(CS(Brush->NameBuf), CSz("blood.inner")))
+      {
+        f32 ySpeed = Plat->dt*0.5f;
+        f32 zSpeed = Plat->dt*5.f;
+        {
+          auto Layer = &Brush->Layers[0].Settings;
+          /* Layer->Offset.x += Plat->dt*5.f; */
+          Layer->Offset.y += ySpeed;
+          Layer->Offset.z += zSpeed;
+        }
+
+        {
+          auto Layer = &Brush->Layers[1].Settings;
+          /* Layer->Offset.x += Plat->dt*5.f; */
+          Layer->Offset.y += ySpeed;
+          Layer->Offset.z += zSpeed;
+        }
+        {
+          auto Layer = &Brush->Layers[2].Settings;
+          Layer->Offset.y += ySpeed;
+          Layer->Offset.z += zSpeed;
         }
       }
     }

@@ -63,7 +63,7 @@ float BlurredAO = 0.0f;
 /* float SunIntensity = 0.005f; */
 /* float SunIntensity = 0.05f; */
 /* float SunIntensity = 0.5f; */
-float SunIntensity = 1.0f;
+float SunIntensity = 2.5f;
 
 // Tuning
   float gamma = 2.0f;

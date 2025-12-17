@@ -1,8 +1,8 @@
 // callsite
-// src/engine/world_chunk.cpp:1742:0
+// src/engine/world_chunk.cpp:1733:0
 
 // def (world_chunk_mesh_functions)
-// src/engine/world_chunk.cpp:1544:0
+// src/engine/world_chunk.cpp:1535:0
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( voxel *Voxels,
   u64 *FaceMasks,
@@ -19,7 +19,7 @@ BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3( voxel *Voxels,
   // entity models about 0 and rotation works properly.
   v3  VertexOffset = {})
 {
-  HISTOGRAM_FUNCTION();
+  /* HISTOGRAM_FUNCTION(); */
   /* TIMED_FUNCTION(); */
 
   Assert(SrcChunkMin == V3i(0));

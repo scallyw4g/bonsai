@@ -86,6 +86,7 @@ poof(@do_editor_ui)
   render_to_texture_group RTTGroup;
 
   gen_chunk_freelist GenChunkFreelist;
+  // world_chunk_freelist WorldChunkFreelist;
 };
 
 

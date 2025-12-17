@@ -265,3 +265,6 @@ DropEntityFromPreviouslyOccupiedChunks(world *World, entity *Entity, memory_aren
 
 link_internal void
 InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory);
+
+inline b32
+Intersect(world *World, rect3cp *First, rect3cp *Second);

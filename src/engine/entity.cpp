@@ -911,7 +911,7 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
 collision_event
 GetCollision(cp EntityP, u64 *EntityOccupancy, octree_node *Node)
 {
-  TIMED_FUNCTION();
+  HISTOGRAM_FUNCTION();
 
   collision_event Result = {};
 
@@ -974,11 +974,19 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   v3 Remaining = Abs(GrossDelta);
 
 
-  cp Start = Entity->P;
-  cp End = Canonicalize(World, Start + GrossDelta);
+  cp SrcMin = Entity->P;
+  cp SrcMax = Canonicalize(World, Entity->P + V3(64));
+
+  cp DestMin = Canonicalize(World, SrcMin + GrossDelta);
+  cp DestMax = Canonicalize(World, SrcMax + GrossDelta);
+
+
+
+  cp MinP = Min(SrcMin, DestMin);
+  cp MaxP = Max(SrcMax, DestMax);
 
   octree_node_ptr_block_array Nodes = OctreeNodePtrBlockArray(GetTranArena());
-  rect3cp Region = RectMinMax(Start,End);
+  rect3cp Region = RectMinMax(MinP, MaxP);
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
 
   asset *Asset = GetAssetPtr(GetEngineResources(), &Entity->AssetId).Value;
@@ -987,6 +995,18 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   model *Model = GetModel(Asset, &Entity->AssetId, Entity->ModelIndex);
   Assert(Model);
 
+
+#if 1
+  {
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      if (Node->Resolution > V3i(1)) continue;
+
+      Info("Colliding Against (%d,%d,%d)", Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
+    }
+    Info("--");
+  }
+#endif
 
   // NOTE(Jesse): Don't move the entity if it's already stuck in the world
   if (C.Count)
@@ -1042,16 +1062,23 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
         if (Node->Resolution > V3i(1)) continue;
         if (Node->Chunk)
         {
-          Result = GetCollision(Entity->P, Model->Gen->Chunk.Occupancy, Node);
-          if (Result.Count)
+          auto NodeAABB = GetBoundingBox(World, Node);
+          cp EP0 = Canonicalize(World, Entity->P);
+          cp EP1 = Canonicalize(World, Entity->P + V3(64));
+          rect3cp ERect = RectMinMax(EP0, EP1);
+          if (Intersect(World, &ERect, &NodeAABB))
           {
-            Entity->P.Offset -= V3(step);
-            Canonicalize(World, &Entity->P);
+            Result = GetCollision(Entity->P, Model->Gen->Chunk.Occupancy, Node);
+            if (Result.Count)
+            {
+              Entity->P.Offset -= V3(step);
+              Canonicalize(World, &Entity->P);
 
-            auto InvMask = V3(Abs(mask-1.f));
-            Entity->Physics.Velocity *= InvMask;
-            Entity->Physics.Delta *= InvMask;
-            return Result;
+              auto InvMask = V3(Abs(mask-1.f));
+              Entity->Physics.Velocity *= InvMask;
+              Entity->Physics.Delta *= InvMask;
+              return Result;
+            }
           }
         }
       }
