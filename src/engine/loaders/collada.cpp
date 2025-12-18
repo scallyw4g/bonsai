@@ -210,7 +210,7 @@ LoadCollada(memory_arena *Memory, heap_allocator *Heap, const char * FilePath)
       NotImplemented;
       /* AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, ColladaMesh.Mesh, __rdtsc()); */
       /* Result.Mesh = ColladaMesh.Mesh; */
-      Result.Dim = Voxel_Position(ColladaMesh.Dim);
+      /* Result.Dim = Voxel_Position(ColladaMesh.Dim); */
 
       xml_tag* xKeyframeTimeTag = 0;
       xml_tag* yKeyframeTimeTag = 0;

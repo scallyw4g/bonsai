@@ -375,14 +375,15 @@ LoadVoxData( engine_resources *Engine,
             Assert(ModelDim % ModDim == V3i(0));
           }
 
-
           Current = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64, 66, 66), V3i(1), PermMemory);
 
+          Current->Chunk.CollisionVolume = ModelDim;
+
           chunk_data Chunk = ChunkData(Current);
-          DimIterator(x, y, z, Chunk.Dim)
+          DimIterator(x, y, z, V3i(64))
           {
-            s32 Index = GetIndex(x, y, z, Chunk.Dim);
-            Current->Voxels[Index/64] = {};
+            s32 Index = GetIndex(x, y, z, V3i(64));
+            Current->Voxels[Index] = {};
             Chunk.Occupancy[Index] = {};
             Chunk.FaceMasks[Index] = {};
           }
@@ -405,7 +406,7 @@ LoadVoxData( engine_resources *Engine,
 
             SetOccupancyBit(Current->Chunk.Occupancy, Index, 1);
 
-            Current->FilledCount += 1;
+            Current->Chunk.FilledCount += 1;
           }
 
           FullBarrier;
@@ -536,13 +537,13 @@ link_internal void
 AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
 {
   chunk_data CD = ChunkData(Gen);
-  DestModel->Dim = CD.Dim;
+  DestModel->Gen->Chunk.Dim = CD.Dim;
 
   Assert(CD.Dim == V3i(64,66,66));
 
 #if 1
-  u32 ChunkSum = Gen->FilledCount;
-  if (ChunkSum && ChunkSum < u32(Volume(CD.Dim)))
+  s32 ChunkSum = Gen->Chunk.FilledCount;
+  if (ChunkSum && ChunkSum < Volume(CD.Dim))
   {
     MakeFaceMasks_NoExteriorFaces(CD.Occupancy,
                                   CD.FaceMasks,
@@ -573,7 +574,12 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
 
   maybe_model_buffer Result =  {};
 
-  gen_chunk_ptr_block_array GChunks = LoadVoxData(Engine, GetColorPalette(), TempMemory, PermMemory, Heap, filepath, VoxLoaderClipBehavior_NoClipping, V3i(1));
+  gen_chunk_ptr_block_array GChunks = LoadVoxData( Engine,
+                                                   GetColorPalette(),
+                                                   TempMemory, PermMemory, Heap,
+                                                   filepath,
+                                                   VoxLoaderClipBehavior_NoClipping,
+                                                   V3i(1) );
 
   umm VoxElements = TotalElements(&GChunks);
 

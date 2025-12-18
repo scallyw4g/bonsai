@@ -16307,43 +16307,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             
             
-            cs MemberName = CSz("FilledCount");
-
-                                                                                                auto Member = Cast(u32*, &Element->FilledCount);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
             cs MemberName = CSz("Chunk");
 
                                                                                                 auto Member = Cast(world_chunk*, &Element->Chunk);
@@ -16513,6 +16476,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             cs MemberName = CSz("Next");
 
                                                                                                 auto Member = Cast(world_chunk*, Element->Next);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CollisionVolume");
+
+                                                                                                auto Member = Cast(v3i*, &Element->CollisionVolume);
             DoEditorUi(Ui,
               Window,
               Member,

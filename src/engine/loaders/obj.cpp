@@ -178,7 +178,7 @@ LoadObj(memory_arena *PermMem, heap_allocator *Heap, const char * FilePath)
   model Result = {};
   NotImplemented;
   /* AtomicReplaceMesh(&Result.Meshes, MeshBit_Lod0, Mesh, __rdtsc()); */
-  Result.Dim = V3i(MaxV-MinV)+1;
+  /* Result.Dim = V3i(MaxV-MinV)+1; */
 
   return Result;
 }

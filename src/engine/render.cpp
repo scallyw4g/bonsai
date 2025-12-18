@@ -1298,7 +1298,7 @@ DrawEntity(              shader *Shader,
         if (Entity->Behavior & EntityBehaviorFlags_FitCollisionVolumeToModel)
         {
           Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_FitCollisionVolumeToModel);
-          Entity->_CollisionVolumeRadius = Model->Dim/2.f;
+          Entity->_CollisionVolumeRadius = Model->Gen->Chunk.CollisionVolume/2.f;
         }
 
         // TODO(Jesse): Do we still do this here?
@@ -1306,7 +1306,8 @@ DrawEntity(              shader *Shader,
         /* SyncGpuBuffersImmediate(GetEngineResources(), &Model->Mesh); */
         AssertNoGlErrors;
 
-        v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Dim)/2.f);
+        /* v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f); */
+        v3 Offset = {}; //AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 

@@ -241,7 +241,7 @@ GetDimForAssetModel(asset *Asset, u32 ModelIndex)
       if (model *Model = GetPtr(&Asset->Models, ModelIndex))
       {
         Result.Tag = Maybe_Yes;
-        Result.Value = Model->Dim;
+        Result.Value = Model->Gen->Chunk.CollisionVolume;
       }
       else
       {

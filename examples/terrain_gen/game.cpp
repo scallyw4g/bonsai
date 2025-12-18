@@ -372,7 +372,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
       if (Contains(CS(Brush->NameBuf), CSz("blood.inner")))
       {
         f32 ySpeed = Plat->dt*0.5f;
-        f32 zSpeed = Plat->dt*5.f;
+        f32 zSpeed = Plat->dt*9.f;
         {
           auto Layer = &Brush->Layers[0].Settings;
           /* Layer->Offset.x += Plat->dt*5.f; */

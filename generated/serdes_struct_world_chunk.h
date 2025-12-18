@@ -41,6 +41,14 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
   {
     world_chunk *Element = BaseElement + ElementIndex;
             
+                                Result &= Serialize(Bytes, &Element->CollisionVolume); // default
+
+
+
+
+
+
+
                                 Result &= Serialize(Bytes, &Element->Dim); // default
 
 
@@ -122,6 +130,8 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
 
 
             
+        
+
         
 
                 if (Element->Occupancy) { Result &= Serialize(Bytes, Element->Occupancy); }
@@ -206,6 +216,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 {
   b32 Result = True;
       
+                  
+  
+  Result &= Deserialize(Bytes, &Element->CollisionVolume, Memory);
+
+
+
+
+
+
+
+
                   
   
   Result &= Deserialize(Bytes, &Element->Dim, Memory);
@@ -305,6 +326,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
         
 
+  
   
       if (HadOccupancyPointer)
   {

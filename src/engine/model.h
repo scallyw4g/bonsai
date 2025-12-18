@@ -73,7 +73,6 @@ struct model
   untextured_3d_geometry_buffer TransparentMesh;
 
   animation Animation;
-  v3i Dim;
 };
 
 link_internal b32

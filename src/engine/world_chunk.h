@@ -324,6 +324,9 @@ poof(@version(1) @do_editor_ui)
   // can afford to have a next pointer to keep the freelist
   world_chunk *Next;                  poof(@no_serialize)
 
+  // NOTE(Jesse): Only currently used during model loading
+  v3i CollisionVolume;
+
   // chunk_data {
           /* chunk_flag  Flags;          poof(@no_serialize) */
                  v3i  Dim;            // could/should be compressed?
@@ -350,9 +353,11 @@ poof(@version(1) @do_editor_ui)
   v3i DimInChunks;
   /* v3i Resolution; */
 
+
   v3i WorldP = INVALID_WORLD_CHUNK_POSITION;
 
   s32 FilledCount;            poof(@no_serialize)
+
 
   // NOTE(Jesse): This is a list of all entities overlapping this chunk to be
   // considered for collision detection.
@@ -365,7 +370,7 @@ poof(@do_editor_ui)
   // TODO(Jesse): Remove somehow ..?
   gen_chunk *Next;
 
-  u32 FilledCount;
+
   world_chunk  Chunk;
   voxel       *Voxels;
   gpu_mapped_element_buffer Mesh;

@@ -54,19 +54,9 @@ Serialize(u8_cursor_block_array *Bytes, model *BaseElement, umm Count)
 
 
 
-                                Result &= Serialize(Bytes, &Element->Dim); // default
-
-
-
-
-
-
-
 
 
             
-        
-
         
 
         
@@ -123,22 +113,10 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Dim, Memory);
-
-
-
-
-
-
-
-
 
 
         
 
-  
   
   
 

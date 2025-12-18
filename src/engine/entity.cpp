@@ -919,25 +919,40 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
 
   v3 NodeToEntity = GetSimSpaceP(GetWorld(), EntityP) - GetSimSpaceP(GetWorld(), Node->WorldP);
 
-  s32 xShift = s32(NodeToEntity.x);
+  s32 xShift = 1+ s32(NodeToEntity.x);
   s32 yStart = s32(NodeToEntity.y);
   s32 zStart = s32(NodeToEntity.z);
 
   Assert(Node->Chunk->Dim == V3i(64));
   Assert(EntityChunk->Dim == V3i(64,66,66));
 
-  s32 zEntIndex = 1;
+  s32 zEntIndex = 0;
   for (s32 zIndex = zStart; zIndex < 64; ++zIndex)
   {
 
-    s32 yEntIndex = 1;
+    s32 yEntIndex = 0;
     for (s32 yIndex = yStart; yIndex < 64; ++yIndex)
     {
       s32 WorldOccIndex = GetIndex(yIndex, zIndex, V2i(64));
-      u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex);
+      /* u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex); */
+      u64 WorldOcc = Node->Chunk->Occupancy[WorldOccIndex];
+
+      // @register_ordering_looks_backwards
+      if (xShift > 0)
+      {
+        WorldOcc = WorldOcc << Abs(xShift);
+      }
+
+      // @register_ordering_looks_backwards
+      if (xShift < 0)
+      {
+        WorldOcc = WorldOcc >> Abs(xShift);
+      }
+
 
       s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(66, 66));
-      u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex);
+      /* u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex); */
+      u64 EntityOcc = EntityOccupancy[EntityOccIndex];
 
       u64 Collision = WorldOcc & EntityOcc;
 
