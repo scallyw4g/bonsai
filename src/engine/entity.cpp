@@ -909,27 +909,34 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
 }
 
 collision_event
-GetCollision(cp EntityP, u64 *EntityOccupancy, octree_node *Node)
+GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
 {
   HISTOGRAM_FUNCTION();
 
+  u64 *EntityOccupancy = EntityChunk->Occupancy;
+
   collision_event Result = {};
 
-  s32 xShift = s32(EntityP.Offset.x);
-  s32 yStart = s32(EntityP.Offset.y);
-  s32 zStart = s32(EntityP.Offset.z);
+  v3 NodeToEntity = GetSimSpaceP(GetWorld(), EntityP) - GetSimSpaceP(GetWorld(), Node->WorldP);
 
-  s32 zEntIndex = 0;
+  s32 xShift = s32(NodeToEntity.x);
+  s32 yStart = s32(NodeToEntity.y);
+  s32 zStart = s32(NodeToEntity.z);
+
+  Assert(Node->Chunk->Dim == V3i(64));
+  Assert(EntityChunk->Dim == V3i(64,66,66));
+
+  s32 zEntIndex = 1;
   for (s32 zIndex = zStart; zIndex < 64; ++zIndex)
   {
 
-    s32 yEntIndex = 0;
+    s32 yEntIndex = 1;
     for (s32 yIndex = yStart; yIndex < 64; ++yIndex)
     {
       s32 WorldOccIndex = GetIndex(yIndex, zIndex, V2i(64));
       u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex);
 
-      s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(64));
+      s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(66, 66));
       u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex);
 
       u64 Collision = WorldOcc & EntityOcc;
@@ -1068,7 +1075,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
           rect3cp ERect = RectMinMax(EP0, EP1);
           if (Intersect(World, &ERect, &NodeAABB))
           {
-            Result = GetCollision(Entity->P, Model->Gen->Chunk.Occupancy, Node);
+            Result = GetCollision(Entity->P, &Model->Gen->Chunk, Node);
             if (Result.Count)
             {
               Entity->P.Offset -= V3(step);

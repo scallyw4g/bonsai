@@ -1785,9 +1785,8 @@ link_internal void
 poof(@async @render)
 FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 {
-  world_chunk *SynChunk = &GenChunk->Chunk;
-  Assert(HasGpuMesh(&GenChunk->Mesh) == True);
-  Assert(HasGpuMesh( SynChunk)       == False);
+  Assert(HasGpuMesh(&GenChunk->Mesh)  == True);
+  Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
 
   FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
@@ -1799,6 +1798,19 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
     /* Assert(HasGpuMesh(DestChunk)       == False); */
     auto OldHandles = DestChunk->Handles;
     DestChunk->Handles = GenChunk->Mesh.Handles;
+
+    Assert(GenChunk->Chunk.Dim == V3i(64,66,66));
+    Assert(DestChunk->Dim == V3i(64));
+
+    RangeIterator(zIndex, 64)
+    RangeIterator(yIndex, 64)
+    {
+      s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+      s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+      Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
+    }
+
 
     if (HasGpuMesh(&OldHandles))
     {

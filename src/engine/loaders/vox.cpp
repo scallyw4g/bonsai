@@ -382,7 +382,9 @@ LoadVoxData( engine_resources *Engine,
           DimIterator(x, y, z, Chunk.Dim)
           {
             s32 Index = GetIndex(x, y, z, Chunk.Dim);
-            Current->Voxels[Index] = {};
+            Current->Voxels[Index/64] = {};
+            Chunk.Occupancy[Index] = {};
+            Chunk.FaceMasks[Index] = {};
           }
 
           // NOTE(Jesse): We only support models up to 64^3 right now

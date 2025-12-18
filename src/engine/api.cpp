@@ -641,6 +641,9 @@ GetOrAllocate(world_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChun
   {
     AllocateWorldChunk(Result, WorldP, Dim, DimInChunks, Memory);
   }
+  else
+  {
+  }
 
   Assert(Result->Dim == Dim);
   return Result;
@@ -755,6 +758,16 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
           u64 Occ = SynChunk->Occupancy[(y+1) + ((z+1)*66)];
           DestChunk->Occupancy[y + (z*64)] = Occ;
           DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+        }
+
+
+        RangeIterator(zIndex, 64)
+        RangeIterator(yIndex, 64)
+        {
+          s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+          s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+          Assert(DestChunk->Occupancy[DstIndex] == GenChunk->Chunk.Occupancy[SrcIndex]);
         }
 
         Assert(DestChunk->FilledCount <= s32(Volume(DestChunk->Dim)));
