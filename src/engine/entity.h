@@ -268,3 +268,6 @@ InsertEntityIntoChunks(world *World, entity *Entity, memory_arena *TempMemory);
 
 inline b32
 Intersect(world *World, rect3cp *First, rect3cp *Second);
+
+link_internal v3
+GetSimSpaceP(world *World, entity *Entity);

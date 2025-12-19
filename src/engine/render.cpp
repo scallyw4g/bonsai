@@ -1129,6 +1129,10 @@ DrawLod( engine_resources *Engine,
 
   if (HasGpuMesh(Handles))
   {
+    if (Scale.x <= 0.f) Scale.x = 1.f;
+    if (Scale.y <= 0.f) Scale.y = 1.f;
+    if (Scale.z <= 0.f) Scale.z = 1.f;
+
     m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rotation);
     TryBindUniform(Shader, "ModelMatrix", &ModelMatrix);
 
@@ -1307,7 +1311,7 @@ DrawEntity(              shader *Shader,
         AssertNoGlErrors;
 
         /* v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f); */
-        v3 Offset = {}; //AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f);
+        v3 Offset = V3(0.5f);
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 

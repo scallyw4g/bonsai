@@ -313,7 +313,10 @@ DoEngineDebug(engine_resources *Engine)
       PushTableStart(Ui);
 
       auto Button = ToggleButtonStart(Ui, UiId(&TexturesWindow, u64(Texture), u64(0)));
-        PushColumn(Ui, FSz("(%u) %S (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture), UiElementAlignmentFlag_LeftAlign); PushNewRow(Ui);
+        PushColumn(Ui,
+            FSz("(%u) %.*s (%dx%d) Slices(%u) Channels(%u) IsDepthTexture(%b)", Texture->ID, Texture->DebugName.Count, Texture->DebugName.Start, Texture->Dim.x, Texture->Dim.y, Texture->Slices, Texture->Channels, Texture->IsDepthTexture),
+            UiElementAlignmentFlag_LeftAlign);
+        PushNewRow(Ui);
       ToggleButtonEnd(Ui);
 
       if (ToggledOn(Ui, &Button)) { Dim = V2(Texture->Dim) * 8.f; }

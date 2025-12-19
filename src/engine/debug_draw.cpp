@@ -124,8 +124,11 @@ DEBUG_DrawSimSpaceVectorAt(engine_resources *Engine, v3 SimP, v3 Vector, v3 RGBC
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_LINE);
 
-  v3 Offset = GetRenderP(Engine, SimSpaceToCanonical(World, SimP));
-  DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, RGBColor, Thickness );
+  if (Mesh.Type)
+  {
+    v3 Offset = GetRenderP(Engine, SimSpaceToCanonical(World, SimP));
+    DEBUG_DrawLine(&Mesh, Offset, Vector + Offset, RGBColor, Thickness );
+  }
 }
 
 inline void
@@ -237,6 +240,13 @@ DEBUG_DrawAABB(untextured_3d_geometry_buffer *Mesh, v3 MinP, v3 MaxP, v3 RGBColo
 #endif
 }
 
+link_internal v3
+SimSpaceToRenderSpace(world *World, v3 SimP, camera *Camera)
+{
+  v3 Result = GetRenderP(World->ChunkDim, SimSpaceToCanonical(World, SimP), Camera);
+  return Result;
+}
+
 link_internal void
 DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, v3 RGBColor, r32 Thickness = DEFAULT_LINE_THICKNESS )
 {
@@ -246,7 +256,10 @@ DEBUG_DrawSimSpaceAABB(engine_resources *Engine, v3 MinP, v3 MaxP, v3 RGBColor, 
   v3 P1 = GetRenderP(World->ChunkDim, SimSpaceToCanonical(World, MaxP), Camera);
 
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&Mesh, P0, P1, RGBColor, Thickness);
+  if (Mesh.Type)
+  {
+    DEBUG_DrawAABB(&Mesh, P0, P1, RGBColor, Thickness);
+  }
 }
 
 void
@@ -262,7 +275,10 @@ DEBUG_DrawAABB(engine_resources *Engine, v3 MinP, v3 MaxP, v3 RGBColor, r32 Thic
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawAABB(&Mesh, MinP, MaxP, RGBColor, Thickness);
+  if (Mesh.Type)
+  {
+    DEBUG_DrawAABB(&Mesh, MinP, MaxP, RGBColor, Thickness);
+  }
 }
 
 link_internal void
@@ -300,7 +316,10 @@ DEBUG_HighlightVoxel(engine_resources *Engine, cp P, v3 RGBColor, r32 Thickness 
 {
   UNPACK_ENGINE_RESOURCES(Engine);
   untextured_3d_geometry_buffer Mesh = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_HighlightVoxel( &Mesh, World, Camera, P, RGBColor, Thickness );
+  if (Mesh.Type)
+  {
+    DEBUG_HighlightVoxel( &Mesh, World, Camera, P, RGBColor, Thickness );
+  }
 
 }
 
@@ -348,7 +367,10 @@ DEBUG_HighlightChunk(world_chunk *Chunk, v3 RGBColor, r32 Thickness = DEFAULT_LI
 {
   UNPACK_ENGINE_RESOURCES(GetEngineResources());
   auto Buf = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_AABB);
-  DEBUG_DrawChunkAABB( &Buf, Graphics, Chunk, World->ChunkDim, RGBColor, Thickness);
+  if (Buf.Type)
+  {
+    DEBUG_DrawChunkAABB( &Buf, Graphics, Chunk, World->ChunkDim, RGBColor, Thickness);
+  }
 }
 
 link_internal void

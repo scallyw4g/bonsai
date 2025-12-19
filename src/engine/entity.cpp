@@ -908,6 +908,50 @@ UpdateEntityP(world* World, entity *Entity, v3 Delta)
   Canonicalize(World, &Entity->P);
 }
 
+link_internal void
+DEBUG_DrawSimVoxel_MinDim(v3 SimP, v3 Dim, v3 RGBColor)
+{
+  engine_resources *Engine = GetEngineResources();
+  UNPACK_ENGINE_RESOURCES(Engine);
+
+  untextured_3d_geometry_buffer Dest = ReserveBufferSpace(&GpuMap->Buffer, VERTS_PER_VOXEL);
+
+  v3 RenderP = SimSpaceToRenderSpace(World, SimP, Camera);
+  DrawVoxel_MinDim(&Dest, RenderP, RGBColor, Dim);
+}
+
+link_internal void
+DebugDrawAllCollisionPoints(world_chunk *Chunk, v3 SimSpaceP)
+{
+  Assert(Chunk->Dim.x == 64);
+
+  RangeIterator(zIndex, Chunk->Dim.z)
+  RangeIterator(yIndex, Chunk->Dim.y)
+  {
+    s32 OccIndex = GetIndex(yIndex, zIndex, Chunk->Dim.yz);
+    u64 Occupancy = Chunk->Occupancy[OccIndex];
+
+    u64 Face = 
+    Chunk->FaceMasks[(OccIndex*6)+0] |
+    Chunk->FaceMasks[(OccIndex*6)+1] |
+    Chunk->FaceMasks[(OccIndex*6)+2] |
+    Chunk->FaceMasks[(OccIndex*6)+3] |
+    Chunk->FaceMasks[(OccIndex*6)+4] |
+    Chunk->FaceMasks[(OccIndex*6)+5];
+
+    RangeIterator(xIndex, Chunk->Dim.x)
+    {
+      u64 Bit = (1ull<<xIndex);
+      if ( (Face & Bit) )
+      {
+        Assert((Occupancy & Bit));
+        /* DEBUG_DrawSimVoxel_MinDim(SimSpaceP + V3(xIndex, yIndex, zIndex), V3(1.1f), V3(1,0,0)); */
+        DEBUG_HighlightVoxel(GetEngineResources(), SimSpaceP + V3(xIndex, yIndex, zIndex), V3(1,0,0));
+      }
+    }
+  }
+}
+
 collision_event
 GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
 {
@@ -917,42 +961,71 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
 
   collision_event Result = {};
 
-  v3 NodeToEntity = GetSimSpaceP(GetWorld(), EntityP) - GetSimSpaceP(GetWorld(), Node->WorldP);
+  auto World = GetWorld();
+  v3 SimEntityP = GetSimSpaceP(World, EntityP);
+  v3 SimNodeP = GetSimSpaceP(World, Node->WorldP);
+  v3 NodeToEntity = SimEntityP - SimNodeP;
 
-  s32 xShift = 1+ s32(NodeToEntity.x);
-  s32 yStart = s32(NodeToEntity.y);
-  s32 zStart = s32(NodeToEntity.z);
+  /* Assert(NodeToEntity == EntityP.Offset); */
+  /* Assert(NodeToEntity >= V3(0.f)); */
+
+  s32 xWorldShift = ClampPositive(s32(NodeToEntity.x));
+  s32 yWorldStart = ClampPositive(s32(NodeToEntity.y));
+  s32 zWorldStart = ClampPositive(s32(NodeToEntity.z));
+
+  s32 xEntityShift = 0;
+  s32 yEntityStart = 0;
+  s32 zEntityStart = 0;
+
+  if (EntityP.WorldP != Node->WorldP)
+  {
+    /* xEntityShift = 64-(s32((ClampNegative(s32(NodeToEntity.x))))%64); */
+    /* yEntityStart = 66-(s32(Abs(ClampNegative(s32(NodeToEntity.y))))%66); */
+    /* zEntityStart = 66-(s32(Abs(ClampNegative(s32(NodeToEntity.z))))%66); */
+    xEntityShift = (s32((ClampNegative(s32(NodeToEntity.x)))));
+    yEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.y)))));
+    zEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.z)))));
+  }
+
 
   Assert(Node->Chunk->Dim == V3i(64));
   Assert(EntityChunk->Dim == V3i(64,66,66));
 
-  s32 zEntIndex = 0;
-  for (s32 zIndex = zStart; zIndex < 64; ++zIndex)
+  s32 zEntIndex = zEntityStart;
+  for (s32 zIndex = zWorldStart; zIndex < 64; ++zIndex)
   {
 
-    s32 yEntIndex = 0;
-    for (s32 yIndex = yStart; yIndex < 64; ++yIndex)
+    s32 yEntIndex = yEntityStart;
+    for (s32 yIndex = yWorldStart; yIndex < 64; ++yIndex)
     {
       s32 WorldOccIndex = GetIndex(yIndex, zIndex, V2i(64));
       /* u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex); */
       u64 WorldOcc = Node->Chunk->Occupancy[WorldOccIndex];
 
       // @register_ordering_looks_backwards
-      if (xShift > 0)
+      if (xWorldShift < 0)
       {
-        WorldOcc = WorldOcc << Abs(xShift);
+        WorldOcc = WorldOcc << Abs(xWorldShift);
       }
 
       // @register_ordering_looks_backwards
-      if (xShift < 0)
+      if (xWorldShift > 0)
       {
-        WorldOcc = WorldOcc >> Abs(xShift);
+        WorldOcc = WorldOcc >> Abs(xWorldShift);
       }
+
 
 
       s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(66, 66));
       /* u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex); */
       u64 EntityOcc = EntityOccupancy[EntityOccIndex];
+
+      // @register_ordering_looks_backwards
+      Assert (xEntityShift <= 0);
+      {
+        EntityOcc = EntityOcc >> Abs(xEntityShift);
+      }
+
 
       u64 Collision = WorldOcc & EntityOcc;
 
@@ -964,7 +1037,9 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
         Result.MinP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
         Result.MaxP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
 
-        return Result;
+        DEBUG_HighlightVoxel(GetEngineResources(),  GetSimSpaceP(World, Result.MinP), V3(1,0,1));
+
+        /* return Result; */
       }
 
       ++yEntIndex;
@@ -972,6 +1047,7 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
 
     ++zEntIndex;
   }
+
   return Result;
 }
 
@@ -1012,18 +1088,27 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
 
   asset *Asset = GetAssetPtr(GetEngineResources(), &Entity->AssetId).Value;
-  Assert(Asset);
+  if (Asset == 0) return Result;
+
+  if (Asset->LoadState != AssetLoadState_Loaded) return Result;
 
   model *Model = GetModel(Asset, &Entity->AssetId, Entity->ModelIndex);
-  Assert(Model);
+  if (Model == 0) return Result;
 
+  world_chunk *EntityChunk = &Model->Gen->Chunk;
 
-#if 1
+  Assert(EntityChunk->Dim.z == 66);
+  Assert(EntityChunk->Dim.y == 66);
+  Assert(EntityChunk->Dim.x == 64);
+
+  v3 EntitySimP = GetSimSpaceP(GetWorld(), Entity);
+  DebugDrawAllCollisionPoints(EntityChunk, EntitySimP);
+
+#if 0
   {
     IterateOver(&Nodes, Node, NodeIndex)
     {
       if (Node->Resolution > V3i(1)) continue;
-
       Info("Colliding Against (%d,%d,%d)", Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
     }
     Info("--");
@@ -1089,10 +1174,16 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
           cp EP1 = Canonicalize(World, Entity->P + V3(64));
           rect3cp ERect = RectMinMax(EP0, EP1);
           if (Intersect(World, &ERect, &NodeAABB))
+          /* if (Entity->P.WorldP == Node->WorldP) */
           {
+            Info("Colliding Against (%d,%d,%d)", Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
             Result = GetCollision(Entity->P, &Model->Gen->Chunk, Node);
+
             if (Result.Count)
             {
+              /* v3 NodeSimP = GetSimSpaceP(GetWorld(), Node->WorldP); */
+              /* DebugDrawAllCollisionPoints(Node->Chunk, NodeSimP); */
+
               Entity->P.Offset -= V3(step);
               Canonicalize(World, &Entity->P);
 
@@ -1104,6 +1195,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
           }
         }
       }
+      Info("---");
 
       /* s32 Index = GetIndex(mapPos, V3i(64)); */
       /* SetOccupancyBit(&Gen->Chunk, Index, 1); */

@@ -755,9 +755,17 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         RangeIterator(z, 64)
         RangeIterator(y, 64)
         {
-          u64 Occ = SynChunk->Occupancy[(y+1) + ((z+1)*66)];
-          DestChunk->Occupancy[y + (z*64)] = Occ;
+          s32 OI = (y+1) + ((z+1)*66);
+          u64 Occ = SynChunk->Occupancy[OI];
           DestChunk->FilledCount += CountBitsSet_Kernighan(Occ);
+
+          DestChunk->Occupancy[y + (z*64)] = Occ;
+          DestChunk->FaceMasks[(y + (z*64))+0] = SynChunk->FaceMasks[OI+0];
+          DestChunk->FaceMasks[(y + (z*64))+1] = SynChunk->FaceMasks[OI+1];
+          DestChunk->FaceMasks[(y + (z*64))+2] = SynChunk->FaceMasks[OI+2];
+          DestChunk->FaceMasks[(y + (z*64))+3] = SynChunk->FaceMasks[OI+3];
+          DestChunk->FaceMasks[(y + (z*64))+4] = SynChunk->FaceMasks[OI+4];
+          DestChunk->FaceMasks[(y + (z*64))+5] = SynChunk->FaceMasks[OI+5];
         }
 
 

@@ -365,7 +365,7 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   }
 #endif
 
-#if 1
+#if 0
   {
     IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
     {
@@ -388,6 +388,39 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
         }
         {
           auto Layer = &Brush->Layers[2].Settings;
+          Layer->Offset.y += ySpeed;
+          Layer->Offset.z += zSpeed;
+        }
+      }
+    }
+  }
+#endif
+
+#if 1
+  {
+    IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+    {
+      if (Contains(CS(Brush->NameBuf), CSz("water")))
+      {
+        f32 ySpeed = Plat->dt*0.5f;
+        f32 xSpeed = Plat->dt*0.5f;
+        f32 zSpeed = 0;
+        /* { */
+        /*   auto Layer = &Brush->Layers[0].Settings; */
+        /*   /1* Layer->Offset.x += Plat->dt*5.f; *1/ */
+        /*   Layer->Offset.y += ySpeed; */
+        /*   Layer->Offset.z += zSpeed; */
+        /* } */
+
+        /* { */
+        /*   auto Layer = &Brush->Layers[1].Settings; */
+        /*   /1* Layer->Offset.x += Plat->dt*5.f; *1/ */
+        /*   Layer->Offset.y += ySpeed; */
+        /*   Layer->Offset.z += zSpeed; */
+        /* } */
+        {
+          auto Layer = &Brush->Layers[2].Settings;
+          Layer->Offset.x += xSpeed;
           Layer->Offset.y += ySpeed;
           Layer->Offset.z += zSpeed;
         }

@@ -526,7 +526,7 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   Result->SkyColor = V3(0.001f, 0.001f, 0.35f);
 
-  AllocateGpuBuffer(&Result->ImmediateGeometry, DataType_v3, (u32)Megabytes(1));
+  AllocateGpuBuffer(&Result->ImmediateGeometry, DataType_v3, (u32)Megabytes(8));
   /* AllocateGpuBuffer(Result->GpuBuffers + 1, DataType_v3, (u32)Megabytes(1)); */
 
   g_buffer_render_group *gBuffer = CreateGbuffer(GraphicsMemory);

@@ -1319,7 +1319,7 @@ SnapCameraToCenterOfWorld(engine_resources *Engine, visible_region_size VisibleR
   }
 
   Ghost->P.WorldP = VisibleRegion/2;
-  Ghost->P.WorldP.z = (10000/64) + 3;
+  /* Ghost->P.WorldP.z = (10000/64) + 3; */
   /* Ghost->P.WorldP.z = 0; */
 }
 
