@@ -953,7 +953,7 @@ DebugDrawAllCollisionPoints(world_chunk *Chunk, v3 SimSpaceP)
 }
 
 collision_event
-GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
+GetCollision(cp EntityP, v3 SimCenterOfMass, world_chunk *EntityChunk, octree_node *Node)
 {
   HISTOGRAM_FUNCTION();
 
@@ -966,25 +966,26 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
   v3 SimNodeP = GetSimSpaceP(World, Node->WorldP);
   v3 NodeToEntity = SimEntityP - SimNodeP;
 
-  /* Assert(NodeToEntity == EntityP.Offset); */
-  /* Assert(NodeToEntity >= V3(0.f)); */
-
   s32 xWorldShift = ClampPositive(s32(NodeToEntity.x));
   s32 yWorldStart = ClampPositive(s32(NodeToEntity.y));
   s32 zWorldStart = ClampPositive(s32(NodeToEntity.z));
 
-  s32 xEntityShift = 0;
+  s32 xEntityShift = -1;
+  /* s32 yEntityStart = 1; */
+  /* s32 zEntityStart = 1; */
+
+  /* s32 xEntityShift = 0; */
   s32 yEntityStart = 0;
   s32 zEntityStart = 0;
 
   if (EntityP.WorldP != Node->WorldP)
   {
-    /* xEntityShift = 64-(s32((ClampNegative(s32(NodeToEntity.x))))%64); */
-    /* yEntityStart = 66-(s32(Abs(ClampNegative(s32(NodeToEntity.y))))%66); */
-    /* zEntityStart = 66-(s32(Abs(ClampNegative(s32(NodeToEntity.z))))%66); */
-    xEntityShift = (s32((ClampNegative(s32(NodeToEntity.x)))));
-    yEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.y)))));
-    zEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.z)))));
+    xEntityShift += (s32(    ClampNegative(s32(NodeToEntity.x))));
+    yEntityStart += (s32(Abs(ClampNegative(s32(NodeToEntity.y)))));
+    zEntityStart += (s32(Abs(ClampNegative(s32(NodeToEntity.z)))));
+    /* xEntityShift = (s32(    ClampNegative(s32(NodeToEntity.x)))); */
+    /* yEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.y))))); */
+    /* zEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.z))))); */
   }
 
 
@@ -999,62 +1000,66 @@ GetCollision(cp EntityP, world_chunk *EntityChunk, octree_node *Node)
     for (s32 yIndex = yWorldStart; yIndex < 64; ++yIndex)
     {
       s32 WorldOccIndex = GetIndex(yIndex, zIndex, V2i(64));
-      /* u64 WorldOcc = GetOccupancyMask(Node->Chunk->Occupancy, WorldOccIndex); */
       u64 WorldOcc = Node->Chunk->Occupancy[WorldOccIndex];
 
       // @register_ordering_looks_backwards
-      if (xWorldShift < 0)
-      {
-        WorldOcc = WorldOcc << Abs(xWorldShift);
-      }
-
-      // @register_ordering_looks_backwards
-      if (xWorldShift > 0)
-      {
-        WorldOcc = WorldOcc >> Abs(xWorldShift);
-      }
-
-
+      Assert(xWorldShift >= 0);
+      WorldOcc = WorldOcc >> Abs(xWorldShift);
 
       s32 EntityOccIndex = GetIndex(yEntIndex, zEntIndex, V2i(66, 66));
-      /* u64 EntityOcc = GetOccupancyMask(EntityOccupancy, EntityOccIndex); */
       u64 EntityOcc = EntityOccupancy[EntityOccIndex];
 
       // @register_ordering_looks_backwards
       Assert (xEntityShift <= 0);
-      {
-        EntityOcc = EntityOcc >> Abs(xEntityShift);
-      }
-
+      EntityOcc = EntityOcc >> Abs(xEntityShift);
 
       u64 Collision = WorldOcc & EntityOcc;
-
-      if (Collision)
+      while (Collision)
       {
         u32 xOffset = GetIndexOfNthSetBit(Collision, 1);
-        Result.FrameIndex = 1;
-        Result.Count = 1;
-        Result.MinP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
-        Result.MaxP = Canonical_Position(V3(s32(xOffset), yIndex, zIndex), Node->WorldP );
+        UnsetLeastSignificantSetBit(&Collision);
 
-        DEBUG_HighlightVoxel(GetEngineResources(),  GetSimSpaceP(World, Result.MinP), V3(1,0,1));
+        v3 Offset = V3(xWorldShift + s32(xOffset), yIndex, zIndex);
+        cp P = Canonical_Position(Offset, Node->WorldP );
+
+        Result.Count ++;
+        Result.MinP = Min(Result.MinP, P);
+        Result.MaxP = Max(Result.MaxP, P);
+
+        v3 SimVoxP = SimNodeP+Offset;
+        Result.Normal += Normalize(SimCenterOfMass - SimVoxP);
+
+        /* if (GetEngineDebug()->PickedNode == Node) */
+        {
+          DEBUG_HighlightVoxel(GetEngineResources(),  SimVoxP, V3(1,0,1));
+        }
 
         /* return Result; */
       }
 
       ++yEntIndex;
+
+      if (yEntIndex > 63) break;
     }
 
     ++zEntIndex;
+    if (zEntIndex > 63) break;
   }
 
+  Result.Normal = Normalize(Result.Normal);
+
+  if (Result.Count) { Result.FrameIndex = 1; }
   return Result;
 }
 
 link_internal collision_event
-MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
+MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 {
   TIMED_FUNCTION();
+
+  v3 InitialMovementSign = GetSign(GrossDelta);
+
+  collision_event Result = {};
 
   /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
 
@@ -1062,7 +1067,6 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
 
 
   v3 CollisionVolumeInit = Entity->_CollisionVolumeRadius*2.0f;
-  collision_event Result = {};
   collision_event C      = {}; //GetCollision(World, Entity->P, CollisionVolumeInit);
                                // TODO(Jesse): Should we still do this? ^
 
@@ -1088,14 +1092,18 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   GatherOctreeNodesOverlapping_Recursive(World, &World->Root, &Region, &Nodes);
 
   asset *Asset = GetAssetPtr(GetEngineResources(), &Entity->AssetId).Value;
-  if (Asset == 0) return Result;
+  if (Asset == 0) return {};
 
-  if (Asset->LoadState != AssetLoadState_Loaded) return Result;
+  if (Asset->LoadState != AssetLoadState_Loaded) return {};
 
   model *Model = GetModel(Asset, &Entity->AssetId, Entity->ModelIndex);
-  if (Model == 0) return Result;
+  if (Model == 0) return {};
+
 
   world_chunk *EntityChunk = &Model->Gen->Chunk;
+
+  s32 EntityFilledCount = EntityChunk->FilledCount;
+  Assert(EntityFilledCount > 0);
 
   Assert(EntityChunk->Dim.z == 66);
   Assert(EntityChunk->Dim.y == 66);
@@ -1120,7 +1128,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
   { 
     Entity->Physics.Velocity = {};
     Entity->Physics.Delta = {};
-    Result = C;
+    /* Result = C; */
   }
   else
   {
@@ -1134,8 +1142,7 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
     v3 deltaDist = Abs( SafeDivideValue(V3(Length(rayDir)), rayDir, V3(f32_MAX)) );
     v3i rayStep = V3i(GetSign(rayDir));
 
-    v3 sideDist_ = (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5);
-    v3 sideDist = sideDist_ * deltaDist;
+    v3 sideDist = deltaDist * (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5);
 
     v3i mask = {};
 
@@ -1161,9 +1168,17 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
       if (mapPos.y >= 64) break;
       if (mapPos.z >= 64) break;
 
+      if (mapPos.x <= -64) break;
+      if (mapPos.y <= -64) break;
+      if (mapPos.z <= -64) break;
+
+
       Entity->P.Offset += V3(step);
       Canonicalize(World, &Entity->P);
 
+      v3 CollisionNormal = {};
+      Result.Count = 0;
+      Result.Normal = {};
       IterateOver(&Nodes, Node, NodeIndex)
       {
         if (Node->Resolution > V3i(1)) continue;
@@ -1176,31 +1191,61 @@ MoveEntityInWorld(world* World, entity *Entity, v3 GrossDelta)
           if (Intersect(World, &ERect, &NodeAABB))
           /* if (Entity->P.WorldP == Node->WorldP) */
           {
-            Info("Colliding Against (%d,%d,%d)", Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
-            Result = GetCollision(Entity->P, &Model->Gen->Chunk, Node);
+            collision_event InnerC = GetCollision(Entity->P, EntitySimP+Entity->_CollisionVolumeRadius, &Model->Gen->Chunk, Node);
 
-            if (Result.Count)
+            if (InnerC.Count)
             {
+              Info("Collided (%d) Against (%d,%d,%d)", InnerC.Count, Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
               /* v3 NodeSimP = GetSimSpaceP(GetWorld(), Node->WorldP); */
               /* DebugDrawAllCollisionPoints(Node->Chunk, NodeSimP); */
 
               Entity->P.Offset -= V3(step);
               Canonicalize(World, &Entity->P);
 
-              auto InvMask = V3(Abs(mask-1.f));
-              Entity->Physics.Velocity *= InvMask;
-              Entity->Physics.Delta *= InvMask;
-              return Result;
+              Result.Normal += InnerC.Normal;
+              Result.Count += InnerC.Count;
+
+              Assert(EntityFilledCount >= s32(Result.Count) );
+              if (EntityFilledCount < s32(Result.Count) )
+              {
+                /* SoftError("Too many collisions (%d)", Result.Count-EntityFilledCount); */
+              }
             }
           }
         }
       }
-      Info("---");
 
-      /* s32 Index = GetIndex(mapPos, V3i(64)); */
-      /* SetOccupancyBit(&Gen->Chunk, Index, 1); */
-      /* ++Gen->FilledCount; */
+      if (Result.Count)
+      {
+        Result.Normal = Normalize(Result.Normal);
+
+        Assert(
+            Length(Result.Normal) > 0.9f &&
+            Length(Result.Normal) < 1.1f
+            );
+
+
+        /* Assert(EntityFilledCount >= s32(Result.Count) ); */
+        r32 Ratio = ( f32(Result.Count) / r32(EntityFilledCount) );
+        r32 InvRatio = 1.f-Ratio;
+
+        Ratio = Clamp01(Ratio);
+        InvRatio = Clamp01(InvRatio);
+
+
+        /* v3 Sign = GetSign(Remaining); */
+        Remaining *= InvRatio;
+        Entity->Physics.Velocity *= InvRatio;
+        /* Entity->Physics.Velocity += Result.Normal * Ratio; */
+
+        /* if (GetSign(Remaining.x) != GetSign(InitialMovementSign.x)) { Remaining.x = 0.f; } */
+        /* if (GetSign(Remaining.y) != GetSign(InitialMovementSign.y)) { Remaining.y = 0.f; } */
+        /* if (GetSign(Remaining.z) != GetSign(InitialMovementSign.z)) { Remaining.z = 0.f; } */
+      }
+
+      Info("---");
     }
+
 
 
 #if 0
@@ -1804,7 +1849,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
     if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
     if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
     {
-      collision_event C = MoveEntityInWorld(World, Entity, Entity->Physics.Delta);
+      collision_event C = MoveEntityInWorld(World, dt, Entity, Entity->Physics.Delta);
       if (C.Count)
       {
         /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */

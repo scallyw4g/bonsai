@@ -45,6 +45,7 @@ struct collision_event
   u32 Count;
   cp MinP;
   cp MaxP;
+  v3 Normal;
 };
 
 struct entity_position_info

@@ -18,7 +18,8 @@ void main()
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
 
-  f32 NoiseValue = 500.f-Basis.z;
+  /* f32 NoiseValue = 500.f-Basis.z; */
+  f32 NoiseValue = 3500.f-Basis.z;
 
   v3 ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
 

@@ -36,6 +36,8 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   GameState = Allocate(game_state, Resources->GameMemory, 1);
   *GameState = {}; GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
+  Camera->DistanceFromTarget = 100.f;
+
 #if 1
   easing_function *EasingFunction = &Graphics->TerrainShapingRC.ReshapeFunc;
   GameState->EasingFunction = EasingFunction;
