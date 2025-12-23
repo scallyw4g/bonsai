@@ -1,8 +1,8 @@
 // callsite
-// src/engine/world_chunk.cpp:1736:0
+// src/engine/world_chunk.cpp:1748:0
 
 // def (world_chunk_mesh_functions)
-// src/engine/world_chunk.cpp:1535:0
+// src/engine/world_chunk.cpp:1547:0
 link_internal void
 BuildWorldChunkMeshFromMarkedVoxels_Naieve_v3_u8( voxel *Voxels,
   u64 *FaceMasks,

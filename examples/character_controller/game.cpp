@@ -66,7 +66,6 @@ BONSAI_API_MAIN_THREAD_CALLBACK()
   /* f32 dt = Plat->dt; */
   /* f32 Speed = 80.f; */
 
-
 #if 0
   {
     window_layout *Window = GetOrCreateWindow(Ui, "GameState");

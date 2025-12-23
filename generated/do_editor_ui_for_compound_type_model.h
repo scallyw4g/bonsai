@@ -47,9 +47,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, model *Ele
             
             
             
-            cs MemberName = CSz("Gen");
+            cs MemberName = CSz("Node");
 
-                                                                                                auto Member = Cast(gen_chunk*, Element->Gen);
+                                                                                                auto Member = Cast(octree_node*, Element->Node);
             DoEditorUi(Ui,
               Window,
               Member,

@@ -68,7 +68,9 @@ poof(string_and_value_tables(model_index))
 struct model
 {
   // TODO(Jesse): Do we actually not do this ..?  Do we ever even actually serialize these?
-  gen_chunk *Gen; poof(@no_serialize)
+  /* gen_chunk *Gen; poof(@no_serialize) */
+
+  octree_node *Node; poof(@no_serialize) // NOTE(Jesse): Didn't feel like figuring out how to get this working
 
   untextured_3d_geometry_buffer TransparentMesh;
 

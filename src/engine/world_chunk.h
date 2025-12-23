@@ -524,6 +524,8 @@ IsCanonical( v3i WorldChunkDim, canonical_position CP )
 }
 
 link_internal chunk_data
+ChunkData(octree_node *Node);
+link_internal chunk_data
 ChunkData(gen_chunk *Gen)
 {
   chunk_data Result = {

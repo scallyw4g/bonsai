@@ -1,3 +1,15 @@
+link_internal chunk_data
+ChunkData(octree_node *Node)
+{
+  chunk_data Result = {
+    .Dim = Node->Chunk->Dim,
+    .Occupancy = Node->Chunk->Occupancy,
+    .xOccupancyBorder = Node->Chunk->xOccupancyBorder,
+    .FaceMasks = Node->Chunk->FaceMasks,
+  };
+  return Result;
+}
+
 poof( block_array_c(entity_ptr, {8}) )
 #include <generated/block_array_c_entity_ptr_688856411_struct_struct_struct.h>
 

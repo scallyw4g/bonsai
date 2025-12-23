@@ -2363,8 +2363,9 @@ DoAssetWindow(engine_resources *Engine)
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
 
-                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Gen->Mesh, V3(Model->Gen->Chunk.CollisionVolume), Selected);
-                    if (Pressed(Ui, &B))
+                    NotImplemented;
+                    /* interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Node->Mesh, V3(Model->Gen->Chunk.CollisionVolume), Selected); */
+                    /* if (Pressed(Ui, &B)) */
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }

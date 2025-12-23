@@ -1,3 +1,5 @@
+global_variable r32 GameUnitsPerMeter = 5.f;
+
 struct physics
 poof(@do_editor_ui)
 {

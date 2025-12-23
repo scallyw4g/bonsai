@@ -379,14 +379,14 @@ LoadVoxData( engine_resources *Engine,
 
           Current->Chunk.CollisionVolume = ModelDim;
 
-          chunk_data Chunk = ChunkData(Current);
-          DimIterator(x, y, z, V3i(64))
-          {
-            s32 Index = GetIndex(x, y, z, V3i(64));
-            Current->Voxels[Index] = {};
-            Chunk.Occupancy[Index] = {};
-            Chunk.FaceMasks[Index] = {};
-          }
+          /* chunk_data Chunk = ChunkData(Current); */
+          /* DimIterator(x, y, z, V3i(64)) */
+          /* { */
+          /*   s32 Index = GetIndex(x, y, z, V3i(64)); */
+          /*   Current->Voxels[Index] = {}; */
+          /*   Chunk.Occupancy[Index] = {}; */
+          /*   Chunk.FaceMasks[Index] = {}; */
+          /* } */
 
           // NOTE(Jesse): We only support models up to 64^3 right now
           Assert(ModelDim < V3i(64));
@@ -537,9 +537,8 @@ link_internal void
 AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_arena *TempMemory, memory_arena *PermMemory)
 {
   chunk_data CD = ChunkData(Gen);
-  DestModel->Gen->Chunk.Dim = CD.Dim;
-
-  Assert(CD.Dim == V3i(64,66,66));
+  /* Assert(DestModel->Node->Chunk->Dim == CD.Dim); */
+  /* Assert(CD.Dim == V3i(64,64,64)); */
 
 #if 1
   s32 ChunkSum = Gen->Chunk.FilledCount;
@@ -557,7 +556,7 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
     {
       PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
           &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh,
-          Gen, 0); // NOTE(Jesse): These should go away once we can specify the next job here..
+          Gen, DestModel->Node); // NOTE(Jesse): These should go away once we can specify the next job here..
     }
     else
     {
@@ -590,13 +589,32 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
     // TODO(Jesse): Do the models ever get freed? @unclear_if_model_buffer_memory_is_released
     Result.Value = ModelBuffer(VoxElements, PermMemory);
 
-    IterateOver(&GChunks, Gen, VoxIndex)
+    IterateOver(&GChunks, GenChunk, VoxIndex)
     {
-      if (Gen->Voxels)
+      if (GenChunk->Voxels)
       {
         model *Model = &Result.Value.Start[GetIndex(&VoxIndex)];
-        Model->Gen = Gen;
-        AllocateAndBuildMesh(&Engine->Stdlib.Plat, Gen, Model, TempMemory, PermMemory );
+        /* Model->Gen = GenChunk; */
+        Model->Node = Allocate(octree_node, PermMemory, 1);
+        Model->Node->Chunk = AllocateWorldChunk({}, V3i(64), V3i(1,1,1), PermMemory);
+
+        {
+          auto DestChunk = Model->Node->Chunk;
+          RangeIterator(zIndex, 64)
+          RangeIterator(yIndex, 64)
+          {
+            s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
+            s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+
+            DestChunk->Occupancy[DstIndex] = GenChunk->Chunk.Occupancy[SrcIndex];
+          }
+
+          DestChunk->FilledCount = GenChunk->Chunk.FilledCount;
+        }
+
+        Model->Node->Flags = Chunk_Queued;
+
+        AllocateAndBuildMesh(&Engine->Stdlib.Plat, GenChunk, Model, TempMemory, PermMemory );
       }
     }
   }

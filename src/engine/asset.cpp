@@ -868,3 +868,36 @@ NewAssetForGeneratedModel(engine_resources *Engine, model *Model)
   return Result;
 }
 #endif
+
+link_inline maybe_v3i
+GetDimForAssetModel(asset *Asset, u32 ModelIndex)
+{
+  maybe_v3i Result = {};
+  switch (Asset->Type)
+  {
+    InvalidCase(AssetType_Undefined);
+
+    case AssetType_WorldChunk:
+    {
+      if (ModelIndex != 0) { Warn("Requested Dim for ModelIndex(%d) on an asset with Type(AssetType_WorldChunk), ignoring ModelIndex", ModelIndex); }
+
+      Result.Tag = Maybe_Yes;
+      Result.Value = Asset->Chunk.Dim;
+    } break;
+
+    case AssetType_Models:
+    {
+      if (model *Model = GetPtr(&Asset->Models, ModelIndex))
+      {
+        Result.Tag = Maybe_Yes;
+        Result.Value = Model->Node->Chunk->CollisionVolume;
+      }
+      else
+      {
+        Warn("Asset did not have a ModelIndex(%d) model!", ModelIndex);
+      }
+    } break;
+  }
+
+  return Result;
+}

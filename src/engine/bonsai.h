@@ -251,6 +251,21 @@ link_internal void
 ClearWorldChunk( world_chunk *Chunk )
 {
   Assert(HasGpuMesh(Chunk) == False);
+
+  RangeIterator(zIndex, Chunk->Dim.z)
+  RangeIterator(yIndex, Chunk->Dim.y)
+  {
+    s32 Index = GetIndex(yIndex, zIndex, Chunk->Dim.yz);
+    Chunk->Occupancy[Index] = {};
+
+    Chunk->FaceMasks[(Index*6)+0] = {};
+    Chunk->FaceMasks[(Index*6)+1] = {};
+    Chunk->FaceMasks[(Index*6)+2] = {};
+    Chunk->FaceMasks[(Index*6)+3] = {};
+    Chunk->FaceMasks[(Index*6)+4] = {};
+    Chunk->FaceMasks[(Index*6)+5] = {};
+  }
+
 #if 0
   *Chunk = {};
 #else
@@ -270,7 +285,6 @@ ClearWorldChunk( world_chunk *Chunk )
 
   Chunk->QueryActive = {};
   Chunk->OcclusionFrames = {};
-
 #endif
 }
 

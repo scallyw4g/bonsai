@@ -1302,7 +1302,7 @@ DrawEntity(              shader *Shader,
         if (Entity->Behavior & EntityBehaviorFlags_FitCollisionVolumeToModel)
         {
           Entity->Behavior = entity_behavior_flags(Entity->Behavior & ~EntityBehaviorFlags_FitCollisionVolumeToModel);
-          Entity->_CollisionVolumeRadius = Model->Gen->Chunk.CollisionVolume/2.f;
+          Entity->_CollisionVolumeRadius = Model->Node->Chunk->CollisionVolume/2.f;
         }
 
         // TODO(Jesse): Do we still do this here?
@@ -1315,7 +1315,11 @@ DrawEntity(              shader *Shader,
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
-        DrawLod(GetEngineResources(), Shader, &Model->Gen->Mesh.Handles, Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        auto Handles = &Model->Node->Chunk->Handles;
+        if ( Handles->Mapped == False )
+        {
+          DrawLod(GetEngineResources(), Shader, Handles,  Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
+        }
       }
     }
   }
@@ -1796,7 +1800,8 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 
   FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
 
-  if (DestNode)
+  Assert(DestNode);
+
   {
     world_chunk *DestChunk = DestNode->Chunk;
     // @dest_chunk_can_have_mesh

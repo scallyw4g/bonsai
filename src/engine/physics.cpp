@@ -1,9 +1,7 @@
 
-global_variable r32 GameUnitsToMeters = 6.f;
-
 // TODO(Jesse): Make this per-game
 global_variable v3
-Global_WorldGravity = V3(0.0f, 0.0f, -9.8f) * GameUnitsToMeters;
+Global_WorldGravity = V3(0.0f, 0.0f, -9.8f) * GameUnitsPerMeter;
 
 inline void
 PhysicsUpdate(physics *Physics, r32 dt, b32 ApplyGravity = True)
