@@ -10,5 +10,5 @@ poof(@do_editor_ui)
   /* v3 Drag; */
   r32 Mass;
 
-  r32 Speed;
+  r32 Speed = 1.f;
 };

@@ -28,17 +28,16 @@ void main()
 
   {
     v3 Period = V3(300.f);
-    float Amplitude = 40.f;
+    float Amplitude = 0.f;
     v3 xyz = Basis / Period;
     v4 gn = gradient_noise_derivs(xyz);
     NoiseValue += gn.x * Amplitude;
   }
 
   {
-    v4 Grass = DoGrass(Basis, NoiseValue, V3(0,0,1), ColorValue);
-
-    ColorValue  = Grass.rgb;
-    NoiseValue += Grass.w;
+    /* v4 Grass = DoGrass(Basis, NoiseValue, V3(0,0,1), ColorValue); */
+    /* ColorValue  = Grass.rgb; */
+    /* NoiseValue += Grass.w; */
   }
 
   //

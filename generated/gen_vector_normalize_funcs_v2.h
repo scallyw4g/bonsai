@@ -6,7 +6,7 @@
 inline v2
 Normalize( v2 Vec, r32 Length)
 {
-  if (Length == 0.f) return {};
+  if (Length < 0.00001f) return {};
   v2 Result = Vec/Length;
   return Result;
 }

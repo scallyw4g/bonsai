@@ -377,7 +377,7 @@ LoadVoxData( engine_resources *Engine,
 
           Current = GetOrAllocate(&Engine->GenChunkFreelist, {}, V3i(64, 66, 66), V3i(1), PermMemory);
 
-          Current->Chunk.CollisionVolume = ModelDim;
+          Current->Chunk.CollisionVolume = ModelDim - V3(HalfApronMin-HalfApronMax);
 
           /* chunk_data Chunk = ChunkData(Current); */
           /* DimIterator(x, y, z, V3i(64)) */
@@ -404,7 +404,7 @@ LoadVoxData( engine_resources *Engine,
             Current->Voxels[Index] = Voxel->V;
             Assert(Voxel->V.PackedHSV < ArrayCount(TempGRBPalette));
 
-            SetOccupancyBit(Current->Chunk.Occupancy, Index, 1);
+            SetOccupancyBit(Current->Chunk.Occupancy, Current->Chunk.Dim, Voxel->Offset, 1);
 
             Current->Chunk.FilledCount += 1;
           }
@@ -578,7 +578,7 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
                                                    TempMemory, PermMemory, Heap,
                                                    filepath,
                                                    VoxLoaderClipBehavior_NoClipping,
-                                                   V3i(1) );
+                                                   V3i(0,1,1) );
 
   umm VoxElements = TotalElements(&GChunks);
 
@@ -603,13 +603,14 @@ LoadVoxModels(engine_resources *Engine, memory_arena *PermMemory, heap_allocator
           RangeIterator(zIndex, 64)
           RangeIterator(yIndex, 64)
           {
-            s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
             s32 SrcIndex = GetIndex(yIndex+1, zIndex+1, V2i(66));
+            s32 DstIndex = GetIndex(yIndex, zIndex, V2i(64));
 
             DestChunk->Occupancy[DstIndex] = GenChunk->Chunk.Occupancy[SrcIndex];
           }
 
           DestChunk->FilledCount = GenChunk->Chunk.FilledCount;
+          DestChunk->CollisionVolume = GenChunk->Chunk.CollisionVolume;
         }
 
         Model->Node->Flags = Chunk_Queued;

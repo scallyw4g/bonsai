@@ -386,6 +386,8 @@ link_internal entity *
 AllocateEntity(memory_arena *Memory)
 {
   entity *Entity = Allocate(entity, Memory, 1);
+  
+  *Entity = {}; // Set defaults
 
   // TODO(Jesse)(wtf): WTF?
   Entity->Emitter = Allocate(particle_system, Memory, 1);
@@ -954,18 +956,22 @@ DebugDrawAllCollisionPoints(world_chunk *Chunk, v3 SimSpaceP)
 }
 
 collision_event
-GetCollision(cp EntityP, v3 SimCenterOfMass, world_chunk *EntityChunk, octree_node *Node)
+GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityChunk, octree_node *Node)
 {
   HISTOGRAM_FUNCTION();
+
 
   u64 *EntityOccupancy = EntityChunk->Occupancy;
 
   collision_event Result = {};
 
   auto World = GetWorld();
-  v3 SimEntityP = GetSimSpaceP(World, EntityP);
+  /* v3 EntitySimP = GetSimSpaceP(World, EntityP); */
   v3 SimNodeP = GetSimSpaceP(World, Node->WorldP);
-  v3 NodeToEntity = SimEntityP - SimNodeP;
+  v3 NodeToEntity = EntitySimP - SimNodeP;
+
+  v3 EntityCenterOfMass = EntitySimP + CollisionRadius;
+  v3 NodeRelativeEntityCenterOfMass = EntityCenterOfMass - SimNodeP;
 
   s32 xWorldShift = ClampPositive(s32(NodeToEntity.x));
   s32 yWorldStart = ClampPositive(s32(NodeToEntity.y));
@@ -1029,12 +1035,12 @@ GetCollision(cp EntityP, v3 SimCenterOfMass, world_chunk *EntityChunk, octree_no
         Result.MinP = Min(Result.MinP, P);
         Result.MaxP = Max(Result.MaxP, P);
 
-        v3 SimVoxP = SimNodeP+Offset;
-        Result.Normal += Normalize(SimCenterOfMass - SimVoxP);
+        v3 SimVoxCenter = SimNodeP+Offset+Fract(EntitySimP) + 0.5f;
+        Result.Normal += Normalize(NodeRelativeEntityCenterOfMass - SimVoxCenter);
 
         /* if (GetEngineDebug()->PickedNode == Node) */
         {
-          DEBUG_HighlightVoxel(GetEngineResources(),  SimVoxP, V3(1,0,1));
+          DEBUG_HighlightVoxel(GetEngineResources(),  SimVoxCenter-0.5f, V3(1,0,1));
         }
 
         /* return Result; */
@@ -1062,7 +1068,8 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
   auto Engine = GetEngineResources();
 
-  collision_event Result = {};
+
+
 
   /* DebugLine("GrossDelta (%f %f %f)", GrossDelta.x, GrossDelta.y, GrossDelta.z); */
 
@@ -1103,10 +1110,43 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
   model *Model = GetModel(Asset, &Entity->AssetId, Entity->ModelIndex);
   if (Model == 0) return {};
 
-
   world_chunk *EntityChunk = Model->Node->Chunk;
 
-  s32 EntityFilledCount = EntityChunk->FilledCount;
+  /* v3 EntitySimP = Floor(GetSimSpaceP(GetWorld(), Entity)); */
+  v3 EntitySimP = GetSimSpaceP(GetWorld(), Entity);
+
+  DebugDrawAllCollisionPoints(EntityChunk, EntitySimP);
+  collision_event Result = {};
+
+#if 0
+  {
+    IterateOver(&Nodes, Node, NodeIndex)
+    {
+      if (Node->Resolution > V3i(1)) continue;
+      if (Node->Chunk)
+      {
+        auto NodeAABB = GetBoundingBox(World, Node);
+        cp EP0 = Canonicalize(World, Entity->P);
+        cp EP1 = Canonicalize(World, Entity->P + V3(64));
+        rect3cp ERect = RectMinMax(EP0, EP1);
+        if (Intersect(World, &ERect, &NodeAABB))
+        /* if (Entity->P.WorldP == Node->WorldP) */
+        {
+          collision_event InnerC = GetCollision(Entity->P, EntitySimP, Entity->_CollisionVolumeRadius, Model->Node->Chunk, Node);
+
+          if (InnerC.Count)
+          {
+            Result.Normal += InnerC.Normal;
+            Result.Count += InnerC.Count;
+          }
+        }
+      }
+    }
+  }
+#endif
+
+
+  u32 EntityFilledCount = u32(EntityChunk->FilledCount);
   u32 Half = u32(EntityFilledCount+1)/2;
   Assert(EntityFilledCount > 0);
   Assert(Half > 0);
@@ -1114,9 +1154,6 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
   Assert(EntityChunk->Dim.z == 64);
   Assert(EntityChunk->Dim.y == 64);
   Assert(EntityChunk->Dim.x == 64);
-
-  v3 EntitySimP = GetSimSpaceP(GetWorld(), Entity);
-  DebugDrawAllCollisionPoints(EntityChunk, EntitySimP);
 
 #if 0
   {
@@ -1152,8 +1189,8 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
     v3i mask = {};
 
-    /* v3i Remaining = GrossDelta; */
-    while (Remaining.x > 0.f || Remaining.y > 0.f || Remaining.z > 0.f)
+    f32 Eps = 0.0001f;
+    while (Remaining > V3(Eps))
     {
       v3 yzx = V3(sideDist.y, sideDist.z, sideDist.x);
       v3 zxy = V3(sideDist.z, sideDist.x, sideDist.y);
@@ -1168,27 +1205,22 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
       sideDist += V3(mask) * deltaDist;
 
-      v3 step = Min(Remaining, Abs(V3(mask * rayStep)));
+      v3 step = Min(V3(Remaining), Abs(V3(mask * rayStep)));
+      /* v3 step = Min(V3(1.f), Abs(Remaining*V3(mask*rayStep)) ); */
 
-      Assert(step.x != 0 || step.y != 0 || step.z != 0);
+      if (step.x == 0 && step.y == 0 && step.z == 0) continue;
 
       Remaining -= step;
 
-      Assert(Remaining.x >= 0.f);
-      Assert(Remaining.y >= 0.f);
-      Assert(Remaining.z >= 0.f);
-      /* if (GetSign(Remaining.x) != GetSign(InitialMovementSign.x)) { Remaining.x = 0.f; step.x = 0.f; } */
-      /* if (GetSign(Remaining.y) != GetSign(InitialMovementSign.y)) { Remaining.y = 0.f; step.y = 0.f; } */
-      /* if (GetSign(Remaining.z) != GetSign(InitialMovementSign.z)) { Remaining.z = 0.f; step.z = 0.f; } */
+      Assert(Remaining >= V3(Eps));
 
       // Have to multiply by raystep because we knocked out the sign with Abs,
       // so we can Min with remaning, which is Abs'd
       Entity->P.Offset += V3(step*rayStep);
       Canonicalize(World, &Entity->P);
+      /* EntitySimP = Floor(GetSimSpaceP(GetWorld(), Entity)); */
+      EntitySimP = GetSimSpaceP(GetWorld(), Entity);
 
-      v3 CollisionNormal = {};
-      Result.Count = 0;
-      Result.Normal = {};
       IterateOver(&Nodes, Node, NodeIndex)
       {
         if (Node->Resolution > V3i(1)) continue;
@@ -1201,19 +1233,24 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
           if (Intersect(World, &ERect, &NodeAABB))
           /* if (Entity->P.WorldP == Node->WorldP) */
           {
-            collision_event InnerC = GetCollision(Entity->P, EntitySimP+Entity->_CollisionVolumeRadius, Model->Node->Chunk, Node);
+            collision_event InnerC = GetCollision(Entity->P, EntitySimP, Entity->_CollisionVolumeRadius, Model->Node->Chunk, Node);
 
             if (InnerC.Count)
             {
               Info("Collided (%d) Against (%d,%d,%d)", InnerC.Count, Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
-              /* v3 NodeSimP = GetSimSpaceP(GetWorld(), Node->WorldP); */
-              /* DebugDrawAllCollisionPoints(Node->Chunk, NodeSimP); */
+
+              Assert(InnerC.Count <= EntityFilledCount);
+
+              // This doesn't hold true for collision volumes that are
+              // asymmetric, but for now I'm leaving it in
+              /* if (InnerC.Count == EntityFilledCount) { Assert(InnerC.Normal == V3(0.f)); } */
+
 
               Result.Normal += InnerC.Normal;
               Result.Count += InnerC.Count;
 
               /* Assert(EntityFilledCount >= s32(Result.Count) ); */
-              if (EntityFilledCount < s32(Result.Count) )
+              if (EntityFilledCount < Result.Count )
               {
                 /* SoftError("Too many collisions (%d)", Result.Count-EntityFilledCount); */
               }
@@ -1222,46 +1259,136 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
         }
       }
 
-      if (Result.Count >= Half)
+      Result.Normal = Normalize(Result.Normal);
+
+      /* if (Result.Count >= EntityFilledCount) */
+      if (Result.Count > 0)
       {
-        Entity->P.Offset -= V3(step);
-        Canonicalize(World, &Entity->P);
 
-        Remaining = {};
+        if (Result.Count >= EntityFilledCount)
+        {
+          Entity->P.Offset -= V3(step*rayStep);
+          Canonicalize(World, &Entity->P);
+          /* Remaining += Length(step*rayStep); */
+        }
+
+        Result.Count = Min(EntityFilledCount, Result.Count);
+
+        r32 CollisionRatio = ( f32(Result.Count) / r32(EntityFilledCount) );
+        Result.Ratio = CollisionRatio;
+
+        r32 InvRatio = 1.f-CollisionRatio;
+
+        // CollisionRatio is 1.f when we collide with the entire volume
+        //       InvRatio is 1.f when we collide with nothing
+        CollisionRatio = Clamp01(CollisionRatio);
+        InvRatio = Clamp01(InvRatio);
+
+        // Damping factor starts to take effect when we collide with more than 40%
+        // of the volume
+        /* f32 DampingFactor = 1.f-Clamp01(CollisionRatio-0.4f); */
+        /* f32 DampingFactor = 0.98f*Clamp01(0.5f+InvRatio); */
+        /* f32 DampingFactor = Clamp01(0.5f+InvRatio); */
+        /* f32 DampingFactor = Clamp01(InvRatio); */
+        /* f32 DampingFactor = 1.f; */
+        f32 DampingFactor = 0.95f;
+
+
+        v3 StartingVelocity = Entity->Physics.Velocity;
+
+        v3 VelocityDir = Normalize(Entity->Physics.Velocity);
+        f32 VelocityMag = Length(Entity->Physics.Velocity);
+
+        if (VelocityMag > Eps)
+        {
+          /* v3 Reflected = Reflect(Result.Normal, VelocityDir); */
+          /* v3 Corrected = Reflected; */
+
+          /* v3 Corrected = Result.Normal * VelocityDir; */
+
+          f32 Restitution = 0.9f;
+          v3 Dir = VelocityDir;
+          v3 Corrected;
+          f32 d = Dot(Result.Normal, Dir);
+
+          Assert(d <= 1.001f);
+          Assert(d >= -1.001f);
+          if (d < -0.95f)
+          {
+            Corrected = VelocityDir * -Restitution;
+            VelocityDir = VelocityDir * -Restitution;
+          }
+          else if (d > 0.95f)
+          {
+            Corrected = VelocityDir;
+          }
+          else
+          {
+#if 0
+            Assert(d < 0.95f);
+            v3 Bitangent = Cross(Result.Normal, Dir);
+            v3 Tangent = Cross(Bitangent, Result.Normal);
+            /* Corrected = -1.f*Reflect(VelocityDir, Tangent); */
+            /* Corrected = Restitution*Reflect(VelocityDir, Result.Normal); */
+            Corrected = -Restitution*Reflect(VelocityDir, Tangent);
+
+            DEBUG_DrawSimSpaceVectorAt(Engine, EntitySimP, Tangent*50.f, V3(0,0,1), 0.5f);
+            DEBUG_DrawSimSpaceVectorAt(Engine, EntitySimP, Bitangent*50.f, V3(0,1,0), 0.25f);
+#else
+          Corrected = Normalize(VelocityDir + Result.Normal);
+#endif
+          }
+
+
+          DEBUG_DrawSimSpaceVectorAt(Engine, EntitySimP, Corrected*50.f, V3(1,0,0), 0.1f);
+          DEBUG_DrawSimSpaceVectorAt(Engine, EntitySimP, VelocityDir*50.f, V3(0,0,1), 0.1f);
+
+          Entity->Physics.Velocity = Lerp(CollisionRatio, VelocityDir, Corrected);
+          /* Entity->Physics.Velocity = Lerp(CollisionRatio, Normalize(Reflected), Normalize(Entity->Physics.Velocity)); */
+
+          // NOTE(Jesse): To avoid this Normalize, we need to do Slerp above, which I
+          // believe would be more expensive.  Maybe we can avoid it in a different way.
+          Entity->Physics.Velocity = Normalize(Entity->Physics.Velocity);
+
+          // Recompute ray
+          {
+            rayPos = Entity->P.Offset;
+            rayDir = Entity->Physics.Velocity;
+
+            // https://www.shadertoy.com/view/4dX3zl
+            mapPos = V3i(Floor(rayPos + 0.));
+
+            deltaDist = Abs( SafeDivideValue(V3(Length(rayDir)), rayDir, V3(f32_MAX)) );
+            rayStep = V3i(GetSign(rayDir));
+
+            sideDist = deltaDist * (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5);
+          }
+
+          Entity->Physics.Velocity *= VelocityMag;
+
+          f32 Magnitude2 = Length(Entity->Physics.Velocity);
+          f32 OnePercent = VelocityMag * 0.01f;
+          Assert( WithinTolerance(Magnitude2, VelocityMag, OnePercent));
+
+          Entity->Physics.Velocity *= DampingFactor;
+        }
+
       }
-
-      Info("---");
     }
 
+
+    Info("--- Collision Loop Total (%d)", Result.Count);
 
     Result.Normal = Normalize(Result.Normal);
     DEBUG_DrawSimSpaceVectorAt(Engine, EntitySimP, Result.Normal*50.f, V3(1,0,0), 1.f);
 
-    if (Result.Count >= Half)
-    {
-      Entity->Physics.Velocity *= Result.Normal * -0.75f;
-    }
 
-    {
-      Assert(EntityFilledCount >= s32(Result.Count) );
-
-      r32 Ratio = ( f32(Result.Count) / r32(EntityFilledCount) );
-      r32 InvRatio = 1.f-Ratio;
-
-      Ratio = Clamp01(Ratio);
-      InvRatio = Clamp01(InvRatio);
-
-
-      /* v3 Sign = GetSign(Remaining); */
-      /* Remaining *= InvRatio; */
-      /* Entity->Physics.Velocity *= InvRatio; */
-      Entity->Physics.Velocity += Result.Normal*Ratio;
-    }
   }
 
-  Entity->P = Canonicalize(WorldChunkDim, Entity->P);
+  Assert(IsCanonical(World, Entity->P));
+  /* Entity->P = Canonicalize(WorldChunkDim, Entity->P); */
 
-  collision_event AssertCollision = GetCollision(World, Entity);
+  /* collision_event AssertCollision = GetCollision(World, Entity); */
   /* Assert(AssertCollision.Count == 0); */
 
   // Entites that aren't moving can still be positioned outside the world if
@@ -1729,7 +1856,7 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
           if (Input->Q.Pressed) { Offset.z -= 1.f; }
 
           Offset = Normalize(Offset);
-          Entity->Physics.Velocity += 10.f*Offset*GameUnitsPerMeter;
+          Entity->Physics.Velocity += Offset*Entity->Physics.Speed;
         }
 
       }
@@ -1738,14 +1865,15 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
     if (Entity->Behavior & EntityBehaviorFlags_WorldCenter) { World->Center = Entity->P.WorldP; }
 
     b32 ApplyGravity = ((Entity->Behavior & EntityBehaviorFlags_Gravity) == EntityBehaviorFlags_Gravity);
-    PhysicsUpdate(&Entity->Physics, dt, ApplyGravity);
+
+    PhysicsUpdate(&Entity->Physics, Entity->LastResolvedCollision.Ratio, dt, ApplyGravity);
 
     // NOTE(Jesse): This assert isn't strictly necessary, but we don't support only colliding against entities and not the world at the moment
     if (Entity->Behavior & EntityBehaviorFlags_EntityCollision) { Assert(Entity->Behavior & EntityBehaviorFlags_WorldCollision); }
     if (Entity->Behavior & EntityBehaviorFlags_WorldCollision)
     {
       collision_event C = MoveEntityInWorld(World, dt, Entity, Entity->Physics.Delta);
-      if (C.Count)
+      /* if (C.Count) */
       {
         /* Info("Entity (%p) Id(%u) Collided w/ world!", Entity, Entity->Id); */
         Entity->LastResolvedCollision = C;

@@ -46,6 +46,7 @@ struct collision_event
   cp MinP;
   cp MaxP;
   v3 Normal;
+  r32 Ratio;
 };
 
 struct entity_position_info

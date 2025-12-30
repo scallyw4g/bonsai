@@ -7,19 +7,26 @@ GetOccupancyBit(world_chunk *Chunk, s32 Index)
 }
 
 link_internal void
-SetOccupancyBit(u64 *Occupancy, s32 Index, s32 BitValue)
+SetOccupancyBit(u64 *Occupancy, v3i Dim, v3i VoxelP, s32 BitValue)
 {
-  s32 ByteIndex = Index/64;
-  s32 BitIndex = Index%64;
+  Assert(VoxelP.x < Dim.x);
+  Assert(VoxelP.y < Dim.y);
+  Assert(VoxelP.z < Dim.z);
 
-  Occupancy[ByteIndex] &= ~(u64(1) << BitIndex); // Unconditionally knock out the bit
-  Occupancy[ByteIndex] |=  (u64(BitValue) << BitIndex); // Set new value.. 0 just does nothing
+  s32 yOff = VoxelP.y;
+  s32 zOff = VoxelP.z * Dim.y;
+
+  s32 u64Index = yOff + zOff;
+  s32 BitIndex = VoxelP.x;
+
+  Occupancy[u64Index] &= ~(u64(1) << BitIndex); // Unconditionally knock out the bit
+  Occupancy[u64Index] |=  (u64(BitValue) << BitIndex); // Set new value.. 0 just does nothing
 }
 
 link_internal void
-SetOccupancyBit(world_chunk *Chunk, s32 Index, s32 BitValue)
+SetOccupancyBit(world_chunk *Chunk, v3i VoxelP, s32 BitValue)
 {
-  SetOccupancyBit(Chunk->Occupancy, Index, BitValue);
+  SetOccupancyBit(Chunk->Occupancy, Chunk->Dim, VoxelP, BitValue);
 }
 
 link_internal void
