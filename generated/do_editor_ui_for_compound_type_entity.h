@@ -83,9 +83,19 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity *El
             
             
             
-            cs MemberName = CSz("P");
+            cs MemberName = CSz("");
 
-                                                            DoEditorUi_entity_P(Ui, Window, Element, CSz("cp P"), ThisHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+                                                                                                auto Member = Cast(cp*, &Element->P);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
 
 
 
