@@ -35,9 +35,9 @@ void main()
   }
 
   {
-    /* v4 Grass = DoGrass(Basis, NoiseValue, V3(0,0,1), ColorValue); */
-    /* ColorValue  = Grass.rgb; */
-    /* NoiseValue += Grass.w; */
+    v4 Grass = DoGrass(Basis, NoiseValue, V3(0,0,1), ColorValue);
+    ColorValue  = Grass.rgb;
+    NoiseValue += Grass.w;
   }
 
   //

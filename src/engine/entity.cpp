@@ -949,7 +949,7 @@ DebugDrawAllCollisionPoints(world_chunk *Chunk, v3 SimSpaceP)
       {
         Assert((Occupancy & Bit));
         /* DEBUG_DrawSimVoxel_MinDim(SimSpaceP + V3(xIndex, yIndex, zIndex), V3(1.1f), V3(1,0,0)); */
-        DEBUG_HighlightVoxel(GetEngineResources(), SimSpaceP + V3(xIndex, yIndex, zIndex), V3(1,0,0));
+        DEBUG_HighlightVoxel(GetEngineResources(), SimSpaceP + V3(xIndex, yIndex, zIndex), V3(1,0,0), 0.05f);
       }
     }
   }
@@ -989,9 +989,6 @@ GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityC
     xEntityShift += (s32(    ClampNegative(s32(Floorf(NodeToEntity.x)))));
     yEntityStart += (s32(Abs(ClampNegative(s32(Floorf(NodeToEntity.y))))));
     zEntityStart += (s32(Abs(ClampNegative(s32(Floorf(NodeToEntity.z))))));
-    /* xEntityShift = (s32(    ClampNegative(s32(NodeToEntity.x)))); */
-    /* yEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.y))))); */
-    /* zEntityStart = (s32(Abs(ClampNegative(s32(NodeToEntity.z))))); */
   }
 
 
@@ -1041,7 +1038,7 @@ GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityC
 
         /* if (GetEngineDebug()->PickedNode == Node) */
         {
-          DEBUG_HighlightVoxel(GetEngineResources(),  NodeRelativeVoxCenter-0.5f, V3(1,0,1));
+          DEBUG_HighlightVoxel(GetEngineResources(),  NodeSimP+Offset, V3(1,0,1), 0.055f);
         }
 
         /* return Result; */
@@ -1060,6 +1057,33 @@ GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityC
 
   if (Result.Count) { Result.FrameIndex = 1; }
   return Result;
+}
+
+
+
+v3i stepMask(v3 sideDist) {
+    v3i mask, b1, b2;
+
+    v3 yzx = V3(sideDist.y, sideDist.z, sideDist.x);
+    v3 zxy = V3(sideDist.z, sideDist.x, sideDist.y);
+
+    b1.E[0] = sideDist.E[0] < yzx.E[0];
+    b1.E[1] = sideDist.E[1] < yzx.E[1];
+    b1.E[2] = sideDist.E[2] < yzx.E[2];
+
+    b2.E[0] = sideDist.E[0] <= zxy.E[0];
+    b2.E[1] = sideDist.E[1] <= zxy.E[1];
+    b2.E[2] = sideDist.E[2] <= zxy.E[2];
+
+    /* v3i b2 = sideDist.xyz <= sideDist.zxy; */
+    mask.z = b1.z && b2.z;
+    mask.x = b1.x && b2.x;
+    mask.y = b1.y && b2.y;
+
+    if(mask.x == 0 && mask.y == 0 && mask.z == 0) // Thank you Spalmer
+        mask.z = 1;
+
+    return mask;
 }
 
 link_internal collision_event
@@ -1182,35 +1206,42 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
     // https://www.shadertoy.com/view/4dX3zl
     v3i mapPos = V3i(Floor(rayPos + 0.));
+    /* f32 RayLen = Length(rayDir); */
 
-    v3 deltaDist = Abs( SafeDivideValue(V3(Length(rayDir)), rayDir, V3(f32_MAX)) );
-    v3i rayStep = V3i(GetSign(rayDir));
+    v3 raySign = GetSign(rayDir);
+    v3 deltaDist = Abs( SafeDivideValue(V3(1.f), rayDir, V3(f32_MAX)) );
+    /* v3i raySign = V3i(raySign); */
 
-    v3 sideDist = deltaDist * (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5);
+    v3 sideDist = ((V3(mapPos)-rayPos) + 0.5 + GetSign(rayDir) * 0.5) * deltaDist;
+    /* v3 sideDist = deltaDist * (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5); */
 
-    v3i mask = {};
+    v3i mask = stepMask(Abs(sideDist));
 
     f32 Eps = 0.0001f;
     b32 Continue = Remaining.x >= Eps ||
                    Remaining.y >= Eps ||
                    Remaining.z >= Eps;
+
     while (Continue)
     {
-      v3 yzx = V3(sideDist.y, sideDist.z, sideDist.x);
-      v3 zxy = V3(sideDist.z, sideDist.x, sideDist.y);
+      /* v3 yzx = V3(sideDist.y, sideDist.z, sideDist.x); */
+      /* v3 zxy = V3(sideDist.z, sideDist.x, sideDist.y); */
 
       // All components of mask are false except for the corresponding largest component
       // of sideDist, which is the axis along which the ray should be incremented.
-      mask.x = sideDist.x <= Min(yzx.x, zxy.x);
-      mask.y = sideDist.y <= Min(yzx.y, zxy.y);
-      mask.z = sideDist.z <= Min(yzx.z, zxy.z);
+      /* mask.x = sideDist.x <= Min(yzx.x, zxy.x); */
+      /* mask.y = sideDist.y <= Min(yzx.y, zxy.y); */
+      /* mask.z = sideDist.z <= Min(yzx.z, zxy.z); */
 
       Assert(mask.x != 0 || mask.y != 0 || mask.z != 0);
 
-      sideDist += V3(mask) * deltaDist;
+      mask      = stepMask(Abs(sideDist));
 
-      v3 step = Min(V3(Remaining), Abs(V3(mask * rayStep)));
-      /* v3 step = Min(V3(1.f), Abs(Remaining*V3(mask*rayStep)) ); */
+      v3 step = Min(V3(Remaining), Abs(V3(mask * raySign)));
+      /* v3 step = Min(V3(1.f), Abs(Remaining*V3(mask*raySign)) ); */
+
+      mapPos   += mask * raySign;
+      sideDist += V3(mask) * raySign * deltaDist;
 
       if (step.x == 0 && step.y == 0 && step.z == 0) continue;
 
@@ -1220,7 +1251,7 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
       // Have to multiply by raystep because we knocked out the sign with Abs,
       // so we can Min with remaning, which is Abs'd
-      Entity->P.Offset += V3(step*rayStep);
+      Entity->P.Offset += V3(step*raySign);
       Canonicalize(World, &Entity->P);
       /* EntitySimP = Floor(GetSimSpaceP(GetWorld(), Entity)); */
       EntitySimP = GetSimSpaceP(GetWorld(), Entity);
@@ -1247,7 +1278,7 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
               // This doesn't hold true for collision volumes that are
               // asymmetric, but for now I'm leaving it in
-              /* if (InnerC.Count == EntityFilledCount) { Assert(InnerC.Normal == V3(0.f)); } */
+              if (InnerC.Count == EntityFilledCount) { Assert(InnerC.Normal == V3(0.f)); }
 
 
               ThisStepCollision.Normal += InnerC.Normal;
@@ -1267,11 +1298,30 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 
       if (ThisStepCollision.Count)
       {
-        // Knock out the current axis of travel
-        Remaining = Remaining * (1.f-step);
-        Entity->Physics.Velocity = Entity->Physics.Velocity * (1.f-step);
+        // If we were moving in the negative direction, we want to add one and floor
+        //                          positive          , we just want to floor
+        v3 FixupMask = V3(Abs(ClampNegative(raySign*mask)));
 
-        Entity->P.Offset -= V3(step*rayStep);
+        if (mask.E[0] != 0) {
+          Entity->P.Offset.E[0] += FixupMask.E[0];
+          Entity->P.Offset.E[0] = Floorf(Entity->P.Offset.E[0]);
+          Assert(mask.E[1] == 0 && mask.E[2] == 0);
+        }
+        if (mask.E[1] != 0) {
+          Entity->P.Offset.E[1] += FixupMask.E[1];
+          Entity->P.Offset.E[1] = Floorf(Entity->P.Offset.E[1]);
+          Assert(mask.E[0] == 0 && mask.E[2] == 0);
+        }
+        if (mask.E[2] != 0) {
+          Entity->P.Offset.E[2] += FixupMask.E[2];
+          Entity->P.Offset.E[2] = Floorf(Entity->P.Offset.E[2]);
+          Assert(mask.E[0] == 0 && mask.E[1] == 0);
+        }
+
+        // Knock out the current axis of travel
+        Remaining = Remaining * (1.f-mask);
+        Entity->Physics.Velocity = Entity->Physics.Velocity * (1.f-mask);
+
         Canonicalize(World, &Entity->P);
         EntitySimP = GetSimSpaceP(GetWorld(), Entity);
       }
@@ -1285,9 +1335,9 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
 #if 0
         if (Result.Count >= EntityFilledCount)
         {
-          Entity->P.Offset -= V3(step*rayStep);
+          Entity->P.Offset -= V3(step*raySign);
           Canonicalize(World, &Entity->P);
-          /* Remaining += Length(step*rayStep); */
+          /* Remaining += Length(step*raySign); */
         }
 
         Result.Count = Min(EntityFilledCount, Result.Count);
@@ -1376,7 +1426,7 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
             mapPos = V3i(Floor(rayPos + 0.));
 
             deltaDist = Abs( SafeDivideValue(V3(Length(rayDir)), rayDir, V3(f32_MAX)) );
-            rayStep = V3i(GetSign(rayDir));
+            raySign = V3i(GetSign(rayDir));
 
             sideDist = deltaDist * (GetSign(rayDir) * (V3(mapPos) - rayPos) + (GetSign(rayDir) * 0.5) + 0.5);
           }

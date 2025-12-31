@@ -1311,7 +1311,8 @@ DrawEntity(              shader *Shader,
         AssertNoGlErrors;
 
         /* v3 Offset = AnimationOffset + Entity->Scale*(V3(Model->Gen->Chunk.CollisionVolume)/2.f); */
-        v3 Offset = V3(0.5f);
+        v3 Offset = V3(0.f);
+        /* v3 Offset = V3(0.5f); */
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
