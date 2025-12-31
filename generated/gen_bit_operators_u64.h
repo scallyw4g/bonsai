@@ -47,7 +47,7 @@ GetIndexOfNthSetBit(u64 Target, u64 NBit)
   u32 Hits = 0;
   for (u32 BitIndex = 0; BitIndex < TypeWidth; ++BitIndex)
   {
-    if (Target & (1<<BitIndex))
+    if (Target & (1llu<<BitIndex))
     {
       ++Hits;
     }
