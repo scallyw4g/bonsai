@@ -956,7 +956,7 @@ DebugDrawAllCollisionPoints(world_chunk *Chunk, v3 SimSpaceP)
 }
 
 collision_event
-GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityChunk, octree_node *Node)
+GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityChunk, octree_node *Node, v3 step)
 {
   HISTOGRAM_FUNCTION();
 
@@ -1061,8 +1061,10 @@ GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityC
           Result.MaxP = Max(Result.MaxP, P);
 
           v3 NodeRelativeVoxCenter = Offset+Fract(EntityP.Offset) + 0.5f;
-          v3 This = NodeRelativeEntityCenterOfMass - NodeRelativeVoxCenter;
-          v3 nThis = Normalize(This);
+          /* v3 This = NodeRelativeEntityCenterOfMass - NodeRelativeVoxCenter; */
+          /* v3 nThis = Normalize(This); */
+          v3 nThis = Normalize(step);
+          Assert(LengthSq(step) > 0.f);
           Result.Normal += nThis;
 
           /* if (GetEngineDebug()->PickedNode == Node) */
@@ -1098,8 +1100,10 @@ GetCollision(cp EntityP, v3 EntitySimP, v3 CollisionRadius, world_chunk *EntityC
           Result.MaxP = Max(Result.MaxP, P);
 
           v3 NodeRelativeVoxCenter = Offset+Fract(EntityP.Offset) + 0.5f;
-          v3 This = NodeRelativeEntityCenterOfMass - NodeRelativeVoxCenter;
-          v3 nThis = Normalize(This);
+          /* v3 This = NodeRelativeEntityCenterOfMass - NodeRelativeVoxCenter; */
+          /* v3 nThis = Normalize(This); */
+          v3 nThis = Normalize(step);
+          Assert(LengthSq(step) > 0.f);
           Result.Normal += nThis;
 
           /* if (GetEngineDebug()->PickedNode == Node) */
@@ -1341,7 +1345,7 @@ MoveEntityInWorld(world* World, r32 Dt, entity *Entity, v3 GrossDelta)
           if (Intersect(World, &ERect, &NodeAABB))
           /* if (Entity->P.WorldP == Node->WorldP) */
           {
-            collision_event InnerC = GetCollision(Entity->P, EntitySimP, Entity->_CollisionVolumeRadius, Model->Node->Chunk, Node);
+            collision_event InnerC = GetCollision(Entity->P, EntitySimP, Entity->_CollisionVolumeRadius, Model->Node->Chunk, Node, step);
             if (InnerC.Count)
             {
               Info("Collided (%d) Against (%d,%d,%d)", InnerC.Count, Node->WorldP.x, Node->WorldP.y, Node->WorldP.z );
