@@ -1269,7 +1269,7 @@ DrawDebugVoxels( voxel *Voxels,
     }
   }
 
-  DestGeometry->Timestamp = __rdtsc();
+  DestGeometry->Timestamp = GetCycleCount();
 }
 
 link_internal b32
@@ -1539,7 +1539,7 @@ BuildWorldChunkMesh_DebugVoxels( voxel *Voxels,
 
   Assert(TmpIndex == TmpVol);
 
-  DestGeometry->Timestamp = __rdtsc();
+  DestGeometry->Timestamp = GetCycleCount();
 }
 #endif
 
@@ -1903,7 +1903,7 @@ BuildWorldChunkMesh_Direct( voxel *Voxels,
     }
   }
 
-  DestGeometry->Timestamp = __rdtsc();
+  DestGeometry->Timestamp = GetCycleCount();
 }
 #endif
 

@@ -181,7 +181,7 @@ DeserializeMesh(native_file *File, world_chunk_file_header_v2 *Header, untexture
   Assert(NormalElementSize == (u32)sizeof(v3));
   ReadBytesIntoBuffer(File, (u8*)Result->Normals,  NormalElementSize*TotalElements);
 
-  Result->Timestamp = __rdtsc();
+  Result->Timestamp = GetCycleCount();
 
   return Result;
 }
@@ -223,7 +223,7 @@ DeserializeMesh(u8_cursor *File, world_chunk_file_header *Header, untextured_3d_
   Assert(NormalElementSize == (u32)sizeof(v3));
   ReadBytesIntoBuffer(File, (u8*)Result->Normals,  NormalElementSize*TotalElements);
 
-  Result->Timestamp = __rdtsc();
+  Result->Timestamp = GetCycleCount();
 
   return Result;
 }

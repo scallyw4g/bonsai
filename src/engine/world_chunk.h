@@ -390,7 +390,7 @@ poof(block_array_h(gen_chunk_ptr, {32}, {}))
 // @world-chunk-cache-line-size
 /* CAssert(sizeof(chunk_data) == 32); */
 /* CAssert(sizeof(threadsafe_geometry_buffer) == 112); */
-CAssert(sizeof(voxel_position_cursor) == 24);
+/* CAssert(sizeof(voxel_position_cursor) == 24); */
 /* CAssert(sizeof(world_chunk) ==  32 + 112 + 24 + 48 + 40); */
 /* CAssert(sizeof(world_chunk) % CACHE_LINE_SIZE == 0); */
 

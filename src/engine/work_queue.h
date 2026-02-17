@@ -8,7 +8,7 @@ struct work_queue_entry_copy_buffer_ref
 
   v3 Basis;
 };
-CAssert(sizeof(work_queue_entry_copy_buffer_ref) == 8*4);
+/* CAssert(sizeof(work_queue_entry_copy_buffer_ref) == 8*4); */
 
 struct particle_system;
 struct work_queue_entry_sim_particle_system

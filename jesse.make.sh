@@ -7,14 +7,17 @@
 
 # ./make.sh $OPT BuildAll
 
+
 # ./make.sh RunTests
+
+# ./make.sh BuildWithEMCC
 
 ./make.sh $OPT                                                 \
   BuildSingleExample examples/terrain_gen                      \
   BuildExecutables                                             \
-  BuildSingleExample examples/project_and_level_picker         \
-  BuildSingleExample examples/blank_project                    \
-  BuildSingleExample examples/character_controller             \
+#   BuildSingleExample examples/project_and_level_picker         \
+#   BuildSingleExample examples/blank_project                    \
+#   BuildSingleExample examples/character_controller             \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/transparency                     \

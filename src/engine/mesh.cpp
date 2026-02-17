@@ -186,13 +186,13 @@ poof(
     link_internal void
     DeallocateMeshes((container_t.name) *Buf, tiered_mesh_freelist* MeshFreelist)
     {
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
-      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); }
-      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, __rdtsc()) )        { DeallocateMesh(Mesh, MeshFreelist); } */
-      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, __rdtsc()) ) { DeallocateMesh(Mesh, MeshFreelist); } */
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod0,   0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod1,   0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod2,   0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod3,   0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Lod4,   0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); }
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Debug, 0, GetCycleCount()) )        { DeallocateMesh(Mesh, MeshFreelist); } */
+      /* if ( auto Mesh = AtomicReplaceMesh(Buf, MeshBit_Transparency, 0, GetCycleCount()) ) { DeallocateMesh(Mesh, MeshFreelist); } */
 
       Buf->MeshMask = 0;
     }

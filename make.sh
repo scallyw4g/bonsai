@@ -209,16 +209,20 @@ function BuildWithClang
 }
 
 function BuildWithEMCC {
-  which emcc > /dev/null 2&> 1
+  echo "-----------"
+  emcc.bat
+  echo "-----------"
+
+  emcc.bat -v > /dev/null 2>&1
   [ $? -ne 0 ] && echo -e "$Error Please install emcc" && exit 1
 
-  emcc                       \
+  emcc.bat                   \
     -s WASM=1                \
     -s LLD_REPORT_UNDEFINED  \
     -s FULL_ES3=1            \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=1          \
-    -s DEMANGLE_SUPPORT=1    \
+    -s USE_PTHREADS=1        \
     -std=c++17               \
     -Wno-c99-designator      \
     -Wno-reorder-init-list   \
@@ -229,12 +233,18 @@ function BuildWithEMCC {
     --source-map-base /      \
     --emrun                  \
     -msse                    \
+    -msse2                   \
     -msimd128                \
     -DEMCC=1                 \
+    -DBONSAI_EMCC=1          \
     -DWASM=1                 \
+    -DBONSAI_NO_AVX=1        \
     $BONSAI_INTERNAL         \
+    -I .                     \
     -I src                   \
     -I examples              \
+    -I external              \
+    -pthread                 \
     src/game_loader.cpp      \
     -o bin/wasm/platform.html
 
@@ -443,7 +453,7 @@ while (( "$#" )); do
     ;;
 
     "BuildWithEMCC")
-      BuildWithEMCC=1
+      EMCC=1
     ;;
 
     "BuildSingleExample")

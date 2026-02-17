@@ -305,6 +305,7 @@ poof(
   }
 )
 
+#ifndef BONSAI_EMCC
 poof(copy_vertex_buffer(v3_u8, v3_u8, u8))
 #include <generated/copy_vertex_buffer_v3_u8_v3_u8.h>
 poof(copy_vertex_buffer(v3_u8, v3, u8))
@@ -323,6 +324,7 @@ poof(copy_normal_buffer(v3, v3))
 poof(copy_normal_buffer(v3, v3_u8))
 #include <generated/copy_normal_buffer_v3_v3_u8.h>
 
+#endif // emcc
 
 link_inline void
 CopyMaterialBuffer(vertex_material *Dest, vertex_material *Src, u32 NumVerts)
@@ -615,10 +617,12 @@ BufferVertsChecked(
     Quaternion Rot = Quaternion()
   );
 
+#ifndef BONSAI_EMCC
 poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3))
 #include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_f32.h>
 poof(checked_vertex_buffering_functions(untextured_3d_geometry_buffer, v3_u8))
 #include <generated/checked_vertex_buffering_functions_untextured_3d_geometry_buffer_v3_u8.h>
+#endif
 
 //
 // Generic Scale and Offset
