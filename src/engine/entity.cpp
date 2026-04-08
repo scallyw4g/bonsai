@@ -1994,14 +1994,17 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
         if (UiCapturedMouseInput(Ui) == False)
         {
           f32 CameraSpeed = Camera->Speed * (Camera->DistanceFromTarget * Camera->Blend/100.f);
-          v3 Offset = GetCameraRelativeInput(Hotkeys, Camera);
-          Offset.z = 0; // Constrain to XY plane
+          v3 OffsetDir = GetCameraRelativeInput(Hotkeys, Camera);
+          OffsetDir.z = 0; // Constrain to XY plane
 
-          if (Input->E.Pressed) { Offset.z += 1.f; }
-          if (Input->Q.Pressed) { Offset.z -= 1.f; }
+          if (Input->E.Pressed) { OffsetDir.z += 1.f; }
+          if (Input->Q.Pressed) { OffsetDir.z -= 1.f; }
 
-          Offset = Normalize(Offset);
-          Entity->Physics.Velocity += Offset*Entity->Physics.Speed;
+          OffsetDir = Normalize(OffsetDir);
+
+          /* Entity->Physics.Velocity += OffsetDir*Entity->Physics.Speed; */
+          Entity->P.Offset += OffsetDir*CameraSpeed;
+          Canonicalize(World, &Entity->P);
         }
 
       }

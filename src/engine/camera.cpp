@@ -7,7 +7,7 @@ UpdateCameraP(world *World, cp TargetViewP, camera *Camera)
 link_inline v2
 GetMouseDelta(platform *Plat)
 {
-  r32 DPToWorldModifier = -0.001f;
+  r32 DPToWorldModifier = 0.001f;
   /* r32 DPToWorldModifier = 0.f; */
   v2 Result = Plat->MouseDP * DPToWorldModifier;
   return Result;
@@ -27,7 +27,7 @@ UpdateGameCamera( world *World,
   // TODO(Jesse): Make these vary by DistanceFromTarget, such that the mouse feels the same amount of sensitive zoomed in as out.
   Camera->TargetYaw += MouseDelta.x;
   Camera->TargetPitch += MouseDelta.y;
-  Camera->TargetPitch = ClampBetween(0.0, Camera->TargetPitch, PI32);
+  Camera->TargetPitch = ClampBetween(-0.49f*PI32, Camera->TargetPitch, 0.49f*PI32);
 
   r32 t = 1.f;
   if (Camera->Blend > 0.f && Dt > 0.f)
@@ -53,9 +53,15 @@ UpdateGameCamera( world *World,
   if (Camera->DistanceFromTarget < 1.0f) { Camera->DistanceFromTarget = 1.0f; }
   if (Camera->TargetDistanceFromTarget < 1.0f) { Camera->TargetDistanceFromTarget = 1.0f; }
 
+#if 0
   r32 Px = Sin(Camera->Yaw);
   r32 Py = Cos(Camera->Yaw);
   r32 Pz = Cos(Camera->Pitch);
+#else
+  r32 Px = Cos(Camera->Pitch)*Cos(Camera->Yaw);
+  r32 Py = Cos(Camera->Pitch)*Sin(Camera->Yaw);
+  r32 Pz = Sin(Camera->Pitch);
+#endif
 
   Camera->Front = Normalize(V3(Px, Py, Pz));
 

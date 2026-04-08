@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-# OPT="-O2"
+OPT="-O2"
 
 ./make.sh RunPoof
 [ $? -ne 0 ] && exit 1
@@ -13,11 +13,12 @@
 # ./make.sh BuildWithEMCC
 
 ./make.sh $OPT                                                 \
-  BuildSingleExample examples/terrain_gen                      \
+  BuildSingleExample examples/asset_editor                     \
   BuildExecutables                                             \
-  BuildSingleExample examples/project_and_level_picker         \
-  BuildSingleExample examples/blank_project                    \
-  BuildSingleExample examples/character_controller             \
+  # BuildSingleExample examples/terrain_gen                      \
+  # BuildSingleExample examples/project_and_level_picker         \
+  # BuildSingleExample examples/blank_project                    \
+  # BuildSingleExample examples/character_controller             \
   # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/transparency                     \
