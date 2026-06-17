@@ -173,6 +173,7 @@ enum asset_type
   AssetType_Undefined,
 
   AssetType_Models,
+  AssetType_Texture,
   AssetType_WorldChunk,
 };
 
@@ -190,6 +191,7 @@ struct asset
   {
     model_buffer Models; poof(@ui_union_primal)
      world_chunk Chunk;
+         texture Texture;
   };
 };
 
@@ -227,6 +229,7 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
   switch (Asset->Type)
   {
     InvalidCase(AssetType_Undefined);
+    InvalidCase(AssetType_Texture );
 
     case AssetType_WorldChunk:
     {
@@ -267,3 +270,8 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
 link_inline maybe_v3i
 GetDimForAssetModel(asset *Asset, u32 ModelIndex);
 
+link_internal maybe_asset_ptr
+GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0);
+
+link_internal maybe_asset_ptr
+GetOrAllocateAsset(engine_resources *Engine, cs AssetFilePath, u64 FrameIndex = 0);

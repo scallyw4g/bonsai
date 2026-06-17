@@ -340,6 +340,8 @@ DrainLoRenderQueue(engine_resources *Engine)
 {
   /* TIMED_FUNCTION(); */
 
+  thread_local_state *Thread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
   UNPACK_ENGINE_RESOURCES(Engine);
   Assert(EntityTable);
 
@@ -358,7 +360,6 @@ DrainLoRenderQueue(engine_resources *Engine)
       case type_work_queue_entry_init_world_chunk:
       case type_work_queue_entry_copy_buffer_set:
       case type_work_queue_entry_copy_buffer_ref:
-      case type_work_queue_entry_init_asset:
       /* case type_work_queue_entry_update_world_region: */
       case type_work_queue_entry_rebuild_mesh:
       case type_work_queue_entry_finalize_noise_values:
@@ -369,6 +370,10 @@ DrainLoRenderQueue(engine_resources *Engine)
         InvalidCodePath();
       } break;
 
+
+      { tmatch(work_queue_entry_init_asset, Job, RPC)
+        InitAsset(Engine, RPC->Asset, Thread);
+      } break;
 
       { tmatch(work_queue_entry_async_function_call, Job, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */

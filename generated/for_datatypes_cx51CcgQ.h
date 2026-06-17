@@ -243,6 +243,7 @@
 
 
 
+
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -727,6 +728,7 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
@@ -748,6 +750,7 @@ DoJob(compile_shader_pair_async_params *Params)
    auto Result =  CompileShaderPair( Params->Shader , Params->VertShaderPath , Params->FragShaderPath , Params->DumpErrors , Params->RegisterForHotReload );
    if (Params->Result) { *Params->Result = Result; } 
 }
+
 
 
 
@@ -1801,6 +1804,7 @@ DoJob(render_to_texture_async_params *Params)
    RenderToTexture( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:829:0
+// src/engine/editor.h:827:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:829:0
+// src/engine/editor.h:827:0
 
 
 
@@ -183,6 +183,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab_has
 struct renderer_2d;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

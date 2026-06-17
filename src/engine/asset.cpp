@@ -439,6 +439,7 @@ FreeAsset(engine_resources *Engine, asset *Asset)
       FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
     } break;
 
+    case AssetType_Texture:
     case AssetType_WorldChunk:
     {
       NotImplemented;
@@ -555,6 +556,18 @@ AllocateAsset(engine_resources *Engine, u64 FrameIndex = 0)
 }
 
 
+link_internal file_traversal_node
+FileNodeFromPath(cs Path)
+{
+  file_traversal_node Result =
+  {
+    FileTraversalType_File,
+    Dirname(Path),
+    Basename(Path),
+  };
+  return Result;
+}
+
 link_internal void
 InitAsset(engine_resources *Engine, asset *Asset, thread_local_state *Thread)
 {
@@ -582,6 +595,14 @@ InitAsset(engine_resources *Engine, asset *Asset, thread_local_state *Thread)
     {
       Asset->LoadState = AssetLoadState_Error;
     }
+  }
+  else if ( AreEqual(Ext, CSz("bmp")) )
+  {
+    Asset->Type = AssetType_Texture;
+
+    LoadBitmap(AssetFilepath.Start, Thread->PermMemory, &Asset->Texture, 0);
+
+    Asset->LoadState = AssetLoadState_Loaded;
   }
   else if ( AreEqual(Ext, CSz("obj")) )
   {
@@ -625,7 +646,7 @@ InitAsset(engine_resources *Engine, asset *Asset, thread_local_state *Thread)
 }
 
 link_internal maybe_asset_ptr
-GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
+GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex /* = 0 */)
 {
   asset *Asset  = 0;
 
@@ -664,6 +685,15 @@ GetOrAllocateAsset(engine_resources *Engine, file_traversal_node *FileNode, u64 
 
   return Result;
 }
+
+link_internal maybe_asset_ptr
+GetOrAllocateAsset(engine_resources *Engine, cs AssetFilePath, u64 FrameIndex /* = 0 */)
+{
+  file_traversal_node Node = FileNodeFromPath(AssetFilePath);
+  maybe_asset_ptr Result = GetOrAllocateAsset(Engine, &Node, FrameIndex);
+  return Result;
+}
+
 
 link_internal asset_id
 GetOrAllocateAssetId(engine_resources *Engine, file_traversal_node *FileNode, u64 FrameIndex = 0)
@@ -876,6 +906,7 @@ GetDimForAssetModel(asset *Asset, u32 ModelIndex)
   switch (Asset->Type)
   {
     InvalidCase(AssetType_Undefined);
+    InvalidCase(AssetType_Texture);
 
     case AssetType_WorldChunk:
     {

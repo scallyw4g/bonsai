@@ -137,6 +137,90 @@
 
 
 
+link_internal void
+Marshal( layer_settings_2 *Stored, layer_settings *Live)
+{
+          Live->Type = Stored->Type;
+
+
+
+        Live->Noise = Stored->Noise;
+
+
+
+        Live->Shape = Stored->Shape;
+
+
+
+        Live->Brush = Stored->Brush;
+
+
+
+        Live->Offset = Stored->Offset;
+
+
+
+        Live->Rotation = Stored->Rotation;
+
+
+
+        Live->Invert = Stored->Invert;
+
+
+
+        Live->Normalized = Stored->Normalized;
+
+
+
+        Live->Reserved0 = Stored->Reserved0;
+
+
+
+        Live->Reserved1 = Stored->Reserved1;
+
+
+
+        Live->ValueBias = Stored->ValueBias;
+
+
+
+        Live->Power = Stored->Power;
+
+
+
+        Live->ValueFunc = Stored->ValueFunc;
+
+
+
+        Live->BlendMode = Stored->BlendMode;
+
+
+
+        Live->Smoothing = Stored->Smoothing;
+
+
+
+        Live->BasisOffset = Stored->BasisOffset;
+
+
+
+        Live->ColorMode = Stored->ColorMode;
+
+
+
+        Live->HSVColor = Stored->HSVColor;
+
+
+
+        Live->Disabled = Stored->Disabled;
+
+
+
+
+
+}
+
+
 
 
 
@@ -388,11 +472,12 @@ Marshal( layer_settings_1 *Stored, layer_settings *Live)
 
 
 
-      RangeIterator(Index, 2)
-  {
-        Live->Reserved[Index] = Stored->Reserved[Index];
+        Live->Reserved0 = Stored->Reserved0;
 
-  }
+
+
+        Live->Reserved1 = Stored->Reserved1;
+
 
 
         Live->ValueBias = Stored->ValueBias;
@@ -680,11 +765,12 @@ Marshal( layer_settings_0 *Stored, layer_settings *Live)
 
 
 
-      RangeIterator(Index, 2)
-  {
-        Live->Reserved[Index] = Stored->Reserved[Index];
+        Live->Reserved0 = Stored->Reserved0;
 
-  }
+
+
+        Live->Reserved1 = Stored->Reserved1;
+
 
 
         Live->ValueBias = Stored->ValueBias;

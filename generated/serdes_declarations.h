@@ -169,6 +169,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, prefab_hashtable *Element, memory_ar
 
 
 
+struct layer_settings_2;
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_2 *BaseElement);
+
+link_internal b32
+Serialize(u8_cursor_block_array *Bytes, layer_settings_2 *BaseElement, umm Count);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_2 *Element, memory_arena *Memory);
+
+link_internal b32
+Deserialize(u8_cursor *Bytes, layer_settings_2 *Element, memory_arena *Memory, umm Count);
+
+link_internal b32
+DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_2 *Element, memory_arena *Memory);
+
+
 
 
 

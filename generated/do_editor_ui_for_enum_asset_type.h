@@ -2,7 +2,7 @@
 // src/engine/editor.cpp:536:0
 
 // def (do_editor_ui_for_enum)
-// src/engine/editor.h:705:0
+// src/engine/editor.h:703:0
 link_internal b32
 DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic)
 {
@@ -31,6 +31,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name,
     {
       Result = True;
             *Element = AssetType_Models;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Texture"), UiId(Window, "enum AssetType_Texture", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = AssetType_Texture;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

@@ -2186,7 +2186,27 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             
             
-            cs MemberName = CSz("Reserved");
+            cs MemberName = CSz("Reserved0");
+
+                        
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Reserved1");
 
                         
 
@@ -2388,7 +2408,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             
             
-            cs MemberName = CSz("ColorMode");
+            cs MemberName = CSz("BasisOffset");
 
                         
 
@@ -2408,9 +2428,51 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             
             
-            cs MemberName = CSz("BasisOffset");
+            cs MemberName = CSz("ColorMode");
 
-                        
+                                                                                                auto Member = Cast(world_edit_color_mode*, &Element->ColorMode);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ColorTextureFilePath");
+
+                                                            PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash);
+
+
+
+
+            
+
 
           }
         }
@@ -8698,6 +8760,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             
             
+            cs MemberName = CSz("Strings");
+
+                                                                                                auto Member = Cast(heap_allocator*, &Element->Strings);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("DebugColors");
 
                                                 
@@ -8789,6 +8887,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
   }
 
 }
+
 
 
 

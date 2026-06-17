@@ -167,6 +167,7 @@ WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( finalize_shit_and_fuckin_do_stuff_async_params *Params )

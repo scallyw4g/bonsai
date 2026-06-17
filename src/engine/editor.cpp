@@ -2116,6 +2116,7 @@ link_internal b32
 FilterFilenamesByLoadableAssetExtensions(file_traversal_node *Node)
 {
   b32 Result  = EndsWith(Node->Name, CSz(".vox"));
+      Result |= EndsWith(Node->Name, CSz(".bmp"));
       Result |= EndsWith(Node->Name, CSz(".chunk"));
   return Result;
 }
@@ -2338,6 +2339,7 @@ DoAssetWindow(engine_resources *Engine)
               switch (Asset->Type)
               {
                 InvalidCase(AssetType_Undefined);
+                InvalidCase(AssetType_Texture);
 
                 case AssetType_WorldChunk:
                 {
@@ -3530,6 +3532,44 @@ DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Elemen
 }
 
 link_internal void
+PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Result, umm ParentHash)
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(u32(ParentHash ^ umm(Result)));
+
+  PushColumn(Ui, CSz("ColorTexture"));
+
+  ui_id Interaction = UiId(Window, "texture filename picker", Result, ThisHash);
+  cs Name = Result->Name.Start ? Result->Name : CSz("(null)");
+  if (ToggleButton(Ui, Name, Name, Interaction, &DefaultStyle))
+  {
+    PushNewRow(Ui);
+
+    filtered_file_traversal_helper_params HelperParams = {Window, FilterFilenamesByLoadableAssetExtensions};
+    maybe_file_traversal_node ClickedFileNode = PlatformTraverseDirectoryTreeUnordered(CSz("assets/terrain_textures"), EngineDrawFileNodesFilteredHelper, u64(&HelperParams) );
+
+    if (ClickedFileNode.Tag)
+    {
+      SetToggleButton(Ui, Interaction, False);
+
+      MaybeDeallocate(&Ui->Strings, Cast(void*, Result->Dir.Start));
+      MaybeDeallocate(&Ui->Strings, Cast(void*, Result->Name.Start));
+
+      Result->Type = FileTraversalType_File;
+      Result->Dir = CopyString(ClickedFileNode.Value.Dir, &Ui->Strings);
+      Result->Name = CopyString(ClickedFileNode.Value.Name, &Ui->Strings);
+
+      engine_resources *Engine = GetEngineResources();
+      asset *A = GetOrAllocateAsset(Engine, &ClickedFileNode.Value).Value;
+      if (A && A->LoadState == AssetLoadState_Allocated)
+      {
+        QueueAssetForLoad(&Engine->Stdlib.Plat.LoRenderQ, A);
+      }
+    }
+  }
+
+}
+
+link_internal void
 DrawBrushButtons(renderer_2d *Ui, window_layout *Window, layer_settings *Element)
 {
   auto Editor = GetEditor();
@@ -3656,6 +3696,22 @@ BindUniformsForBrushLayer(
   {
     v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
     BindUniformByName(Program, "RGBColor", &RGBColor);
+
+    if (Layer->Settings.ColorTextureFilePath.Type == FileTraversalType_File)
+    {
+      engine_resources *Engine = GetEngineResources();
+      asset *Asset = GetOrAllocateAsset(Engine, &Layer->Settings.ColorTextureFilePath).Value;
+      if (Asset && Asset->LoadState == AssetLoadState_Loaded)
+      {
+        Assert(Asset->Type == AssetType_Texture);
+        BindUniformByName(Program, "SampleColorTex", 1);
+        BindUniformByName(Program, "ColorTex", &Asset->Texture, 3);
+      }
+      else
+      {
+        BUG("ColorTex asset has been deallocated, we should properly handle this case");
+      }
+    }
   }
 
   BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
@@ -3788,7 +3844,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             BlendBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
             BlendBrush.LayerCount = 1;
             BlendBrush.Layers[0].Settings.BlendMode = WorldEdit_Mode_Disabled;
-            BlendBrush.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend;
+            /* BlendBrush.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend; */
 
 
             Applied = ApplyBrush( WorldEditRC,

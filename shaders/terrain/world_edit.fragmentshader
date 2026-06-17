@@ -68,7 +68,6 @@ uniform f32 MinorRadius;
 // Noise params
 //
 uniform  int NoiseType;
-uniform   v3 RGBColor;
 uniform   v3 Period;
 uniform  f32 Threshold;
 uniform  f32 Power;
@@ -88,7 +87,11 @@ uniform sampler2D InputTex;
 
 uniform       int SampleBlendTex;
 uniform sampler2D BlendTex;
-uniform int BlendTexBlendMode;
+uniform       int BlendTexBlendMode;
+
+uniform       int SampleColorTex;
+uniform sampler2D ColorTex;
+uniform        v3 RGBColor;
 
 uniform f32 ColorBlendBias;
 
@@ -526,7 +529,7 @@ void main()
    v3 ColorAccumulator = DefaultValue.rgb;
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
-   v3 ColorSample = RGBColor;
+
 
   if (SeedColorValueFromInput > 0 || SeedNoiseValueFromInput > 0)
   {
@@ -551,6 +554,10 @@ void main()
   f32 y = floor(gl_FragCoord.y - (z*66));
   v3 xyz = (V3(x,y,z)) * ChunkResolution;
 
+
+   
+
+
   mat3 RotMatrix = mat3(RotTransform);
 
   // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
@@ -572,7 +579,54 @@ void main()
 
 
     f32 InitialSample = 0.f;
+    v3 ColorSample = V3(0);
+   if (SampleColorTex > 0)
+   {
+     f32 compress = 1.0f;
+     /* int compress = 20; */
+     /* int compress = 10; */
+     /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
+     /* ColorSample += texelFetch(ColorTex, ivec2(z,y), 0).rgb; */
+     /* ColorSample += texelFetch(ColorTex, ivec2(x,z), 0).rgb; */
+     /* ColorSample /= 3.f; */
 
+     // "p" point apply texture to
+     // "n" normal at "p"
+     // "k" controls the sharpness of the blending in the
+     //     transitions areas.
+     // "s" texture sampler
+     /* vec4 boxmap( in sampler2D s, in vec3 p, in vec3 n, in float k ) */
+#if 1
+     {
+         // project+fetch
+       /* vec4 x = texture( s, p.yz ); */
+       /* vec4 y = texture( s, p.zx ); */
+       /* vec4 z = texture( s, p.xy ); */
+       v3 xC = texture(ColorTex, (vec2(x,y)*compress)/66).rgb;
+       v3 yC = texture(ColorTex, vec2(z,y)*compress/66).rgb;
+       v3 zC = texture(ColorTex, vec2(x,z)*compress/66).rgb;
+
+     /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
+       /* ColorSample = xColor; */
+
+       /* v3 RectRad = RectDim/2.f; */
+       /* v3 Center  = (EditDim)/2.f; */
+       /* v3 p       = (EditRelxyz - Center); */
+       /* v3 n = p-Center; */
+       v3 n  = normalize(EditRelxyz - (EditRelativeSphereCenter));
+
+       f32 k = 1.f;
+
+       vec3 m = pow( abs(n), vec3(k) );
+       ColorSample = (xC*m.x + yC*m.y + zC*m.z) / (m.x + m.y + m.z);
+       /* ColorSample = abs(n); */
+    }
+#endif
+   }
+   else
+   {
+     ColorSample = RGBColor;
+   }
     s32 Octaves = 1;
     switch (BrushType)
     {

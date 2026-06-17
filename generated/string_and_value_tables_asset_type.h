@@ -11,6 +11,7 @@ IsValid(asset_type Value)
   {
         case AssetType_Undefined:
     case AssetType_Models:
+    case AssetType_Texture:
     case AssetType_WorldChunk:
 
     {
@@ -32,6 +33,7 @@ ToStringPrefixless(asset_type Type)
     {
             case AssetType_Undefined: { Result = CSz("Undefined"); } break;
       case AssetType_Models: { Result = CSz("Models"); } break;
+      case AssetType_Texture: { Result = CSz("Texture"); } break;
       case AssetType_WorldChunk: { Result = CSz("WorldChunk"); } break;
 
 
@@ -56,6 +58,7 @@ ToString(asset_type Type)
   {
         case AssetType_Undefined: { Result = CSz("AssetType_Undefined"); } break;
     case AssetType_Models: { Result = CSz("AssetType_Models"); } break;
+    case AssetType_Texture: { Result = CSz("AssetType_Texture"); } break;
     case AssetType_WorldChunk: { Result = CSz("AssetType_WorldChunk"); } break;
 
 
@@ -72,6 +75,7 @@ AssetType(counted_string S)
 
     if (StringsMatch(S, CSz("AssetType_Undefined"))) { return AssetType_Undefined; }
   if (StringsMatch(S, CSz("AssetType_Models"))) { return AssetType_Models; }
+  if (StringsMatch(S, CSz("AssetType_Texture"))) { return AssetType_Texture; }
   if (StringsMatch(S, CSz("AssetType_WorldChunk"))) { return AssetType_WorldChunk; }
 
 

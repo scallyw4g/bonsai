@@ -1,5 +1,3 @@
-struct world_edit_brush;
-
 enum brush_window_mode
 {
   BrushWindowMode_Details,
@@ -1124,22 +1122,11 @@ enum world_edit_blend_mode
   WorldEdit_Mode_Disabled,    // Useful for turning the layer off
 };
 
-enum world_edit_color_blend_mode
+enum world_edit_color_mode
 {
-  WorldEdit_ColorBlendMode_ValuePositive,
-  WorldEdit_ColorBlendMode_ValueNegative,
-
-  WorldEdit_ColorBlendMode_Surface,
-  WorldEdit_ColorBlendMode_Always,
-
-  // TODO(Jesse): Put back in?
-  /* WorldEdit_ColorBlendMode_Additive, */
-  /* WorldEdit_ColorBlendMode_Subtractive, */
-  /* WorldEdit_ColorBlendMode_Multiply, */
-  /* WorldEdit_ColorBlendMode_Divide, */
-
-  WorldEdit_ColorBlendMode_Disabled, // Useful for turning the layer off
-  WorldEdit_ColorBlendMode_FinalBlend,
+  WorldEditColorMode_Color,
+  WorldEditColorMode_Texture,
+  WorldEditColorMode_TintedTexture,
 };
 
 enum world_edit_blend_mode_modifier poof(@bitfield)
@@ -1241,10 +1228,11 @@ poof(string_and_value_tables(world_edit_blend_mode))
 poof(do_editor_ui_for_enum(world_edit_blend_mode))
 #include <generated/do_editor_ui_for_enum_QKyV0TwP.h>
 
-poof(string_and_value_tables(world_edit_color_blend_mode))
-#include <generated/string_and_value_tables_world_edit_color_blend_mode.h>
-poof(do_editor_ui_for_enum(world_edit_color_blend_mode))
-#include <generated/do_editor_ui_for_radio_enum_world_edit_color_blend_mode.h>
+poof(string_and_value_tables(world_edit_color_mode))
+#include <generated/string_and_value_tables_world_edit_color_mode.h>
+
+poof(do_editor_ui_for_enum(world_edit_color_mode))
+#include <generated/do_editor_ui_for_radio_enum_world_edit_color_mode.h>
 
 
 poof(do_editor_ui_for_radio_enum(world_edit_tool))
@@ -1434,6 +1422,9 @@ poof(@do_editor_ui)
   shape_layer_advanced_params Advanced;
 };
 
+poof(are_equal(shape_layer))
+#include <generated/are_equal_BFlq8vRY.h>
+
 poof(gen_constructor(shape_layer))
 #include <generated/gen_constructor_SMWhmUr7.h>
 
@@ -1454,6 +1445,8 @@ poof(
 
   r32 Power = 1.f;
 };
+poof(are_equal(noise_layer))
+#include <generated/are_equal_1Tn5wK6B.h>
 
 struct noise_layer_2
 poof( @do_editor_ui )
@@ -1523,6 +1516,8 @@ poof(string_and_value_tables(brush_layer_type))
 poof(do_editor_ui_for_enum(brush_layer_type))
 #include <generated/do_editor_ui_for_enum_brush_layer_type.h>
 
+link_internal b32
+AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2);
 
 struct smooth_blend_params
 poof(@serdes @do_editor_ui)
@@ -1531,8 +1526,11 @@ poof(@serdes @do_editor_ui)
   r32 ColorBlend; poof(@ui_value_range(-1.f,  1.f))
 };
 
+poof(are_equal(smooth_blend_params))
+#include <generated/are_equal_KVFHSyb0.h>
+
 struct layer_settings
-poof(@do_editor_ui @serdes @version(2))
+poof(@do_editor_ui @serdes @version(3))
 {
   brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
 
@@ -1556,7 +1554,8 @@ poof(@do_editor_ui @serdes @version(2))
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
   b8 Normalized;
-  b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -1566,9 +1565,61 @@ poof(@do_editor_ui @serdes @version(2))
 
   smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
-  world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
+  v3i BasisOffset; poof(@ui_skip)
+
+  world_edit_color_mode ColorMode;
+
+  file_traversal_node ColorTextureFilePath; poof(@custom_ui(PickColorTextureFilePath(Ui, Window, &Element->ColorTextureFilePath, ThisHash)))
+  // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
+  v3 HSVColor = DEFAULT_HSV_COLOR;
+  poof(
+    @custom_ui(
+      DoColorPickerToggle(Ui, Window, &Element->HSVColor, False, ThisHash)
+    )
+  )
+
+  b32 Disabled; poof(@ui_skip)
+};
+
+struct layer_settings_2
+poof(@serdes @default_marshal(layer_settings))
+{
+  brush_layer_type Type; poof(@custom_ui(DoBrushTypePicker(Ui, Window, Element, ThisHash)))
+
+  noise_layer Noise; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Noise))
+  shape_layer Shape; poof(@ui_display_name({}) @ui_display_condition(Element->Type == BrushLayerType_Shape))
+
+  world_edit_brush *Brush;
+  poof(
+    @ui_display_name({})
+    @ui_display_condition(Element->Type == BrushLayerType_Brush)
+    @custom_ui( DoBrushBrushPicker(Ui, Window, Element, ThisHash) )
+  )
+
+  //
+  // Common across brush types
+  //
+
+  v3 Offset;
+  v3 Rotation;
+
+  // TODO(Jesse): Pack into flags ..
+  b8 Invert;
+  b8 Normalized;
+  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+
+  r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
+  r32 Power = 1.f;
+
+  world_edit_blend_mode_modifier ValueFunc;
+  world_edit_blend_mode          BlendMode;
+
+  smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
   v3i BasisOffset; poof(@ui_skip)
+
+  world_edit_color_mode ColorMode;
 
   // NOTE(Jesse): The color picker operates in HSV, so we need this to be HSV for now
   v3 HSVColor = DEFAULT_HSV_COLOR;
@@ -1603,7 +1654,8 @@ poof(@serdes @default_marshal(layer_settings))
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
   b8 Normalized;
-  b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
 
   r32 ValueBias;  poof(@ui_value_range(-1.f,  1.f))
   r32 Power = 1.f;
@@ -1613,7 +1665,7 @@ poof(@serdes @default_marshal(layer_settings))
 
   smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
-  world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
+  world_edit_color_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
 
   v3i BasisOffset; poof(@ui_skip)
 
@@ -1645,7 +1697,8 @@ poof(@serdes @default_marshal(layer_settings))
   // TODO(Jesse): Pack into flags ..
   b8 Invert;
   b8 Normalized;
-  b8 Reserved[2]; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved0; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
+  b8 Reserved1; poof(@ui_skip) // NOTE(Jesse): Might as well be able to use the padding in the future..
 
   r32 ValueBias;      poof(@ui_value_range(-1.f,  1.f))
 
@@ -1654,7 +1707,7 @@ poof(@serdes @default_marshal(layer_settings))
 
   smooth_blend_params Smoothing; // poof(@ui_display_condition(Element->BlendMode == WorldEdit_Mode_SmoothUnion))
 
-  world_edit_color_blend_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
+  world_edit_color_mode    ColorMode; poof(@ui_skip) // NOTE(Jesse): This is unused
 
   v3i BasisOffset; poof(@ui_skip)
 
@@ -1669,6 +1722,10 @@ DoBrushBrushPicker(renderer_2d *Ui, window_layout *Window, layer_settings *Eleme
 
 link_internal void
 DoBrushTypePicker(renderer_2d *Ui, window_layout *Window, layer_settings *Element, umm ParentHash);
+
+link_internal void
+PickColorTextureFilePath(renderer_2d *Ui, window_layout *Window, file_traversal_node *Dest, umm ParentHash);
+
 
 poof(are_equal(layer_settings))
 #include <generated/are_equal_struct.h>
@@ -1723,6 +1780,7 @@ poof(@do_editor_ui @serdes)
   brush_layer Layers[MAX_BRUSH_LAYERS]; poof(@array_length(Element->LayerCount))
 };
 
+
 link_internal umm
 Hash(world_edit_brush *Brush)
 {
@@ -1736,9 +1794,6 @@ AreEqual(world_edit_brush *Thing1, world_edit_brush *Thing2)
   b32 Result = StringsMatch(Thing1->NameBuf, Thing2->NameBuf);
   return Result;
 }
-
-/* poof(are_equal(world_edit_brush)) */
-/* #include <generated/are_equal_world_edit_brush.h> */
 
 poof(hashtable(world_edit_brush))
 #include <generated/hashtable_world_edit_brush.h>
