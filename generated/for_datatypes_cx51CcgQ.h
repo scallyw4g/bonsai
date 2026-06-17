@@ -1783,6 +1783,7 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
+
 link_internal void
 RenderToTexture_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
 {
@@ -1804,7 +1805,6 @@ DoJob(render_to_texture_async_params *Params)
    RenderToTexture( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
-
 
 
 

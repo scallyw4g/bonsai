@@ -47,10 +47,11 @@ link_internal engine_resources *GetEngineResources();
 #include <engine/entity.h>
 
 #include <engine/world_update.h>
+#include <engine/hotkeys.h>
 #include <engine/settings.h>
 #include <engine/render/shadow_map.h>
 #include <engine/graphics.h>
-#include <engine/resources.h>
+#include <engine/engine_resources.h>
 
 #include <engine/work_queue.h>
 #include <engine/triangle.h>

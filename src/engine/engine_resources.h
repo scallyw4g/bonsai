@@ -47,7 +47,7 @@ poof(@do_editor_ui)
   renderer_2d Ui;
 
   // Engine
-  hotkeys     Hotkeys;
+  // hotkeys     Hotkeys;   NOTE(Jesse): Moved to engine_settings when started loading from file
   maybe_ray   MaybeMouseRay;
   world      *World;
   game_state *GameState;
@@ -156,7 +156,7 @@ GetCameraGhost(engine_resources *Engine)
   game_state                *GameState     =  Res->GameState;            \
   heap_allocator            *Heap          = &Res->Heap;                 \
   entity                   **EntityTable   =  Res->EntityTable;          \
-  hotkeys                   *Hotkeys       = &Res->Hotkeys;              \
+  hotkey_settings           *Hotkeys       = &Res->Settings.Hotkeys;     \
   engine_debug              *EngineDebug   = &Res->EngineDebug;          \
   tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist; \
   input                     *Input         = &Res->Stdlib.Plat.Input;    \

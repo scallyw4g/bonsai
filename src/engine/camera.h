@@ -112,31 +112,6 @@ struct camera_0
 
 #define DEFAULT_CAMERA_BLENDING (18.f)
 
-inline v3
-GetCameraRelativeInput(hotkeys *Hotkeys, camera *Camera)
-{
-  v3 Right = -1.0f*Camera->Right;
-  v3 Forward = Camera->Front;
-
-  v3 UpdateDir = V3(0,0,0);
-
-  if ( Hotkeys->Forward )
-    UpdateDir += Forward;
-
-  if ( Hotkeys->Backward )
-    UpdateDir -= Forward;
-
-  if ( Hotkeys->Right )
-    UpdateDir += Right;
-
-  if ( Hotkeys->Left )
-    UpdateDir -= Right;
-
-  UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
-
-  return UpdateDir;
-}
-
 inline r32
 DistanceToPlane(plane *Plane, v3 P)
 {

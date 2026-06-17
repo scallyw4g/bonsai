@@ -1844,6 +1844,42 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
           }
         }
       }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Hotkeys");
+
+                                                                                                auto Member = Cast(hotkey_settings*, &Element->Hotkeys);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
 
       if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
       if (Name.Count) { PushTableEnd(Ui); }
@@ -4090,339 +4126,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
 
 }
 
-
-
-
-
-
-link_internal void
-DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u32 ParentHash, ui_render_params *Params)
-
-{
-  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x1A16B0BB);
-
-  if (Element)
-  {
-    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
-    // not drawing the toggl-y thing if we just want to dump the members.
-    b32 DrawChildren = True;
-    b32 DidToggle = False;
-    if (Name.Count)
-    {
-      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle hotkeys", Element, ThisHash), Params))
-      {
-        DidToggle = True;
-        PushNewRow(Ui);
-      }
-      else
-      {
-        DrawChildren = False;
-      }
-    }
-
-    if (DrawChildren)
-    {
-      if (Name.Count) { PushTableStart(Ui); }
-
-      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
-            {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Debug_ToggleMenu");
-
-                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleMenu);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Debug_ToggleProfiling");
-
-                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleProfiling);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Debug_TriangulateIncrement");
-
-                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateIncrement);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Debug_TriangulateDecrement");
-
-                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateDecrement);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Left");
-
-                                                                        auto Member = Cast(b32*, &Element->Left);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Right");
-
-                                                                        auto Member = Cast(b32*, &Element->Right);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Forward");
-
-                                                                        auto Member = Cast(b32*, &Element->Forward);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Backward");
-
-                                                                        auto Member = Cast(b32*, &Element->Backward);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
-
-
-          }
-        }
-      }
-
-      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
-      if (Name.Count) { PushTableEnd(Ui); }
-    }
-    else
-    {
-      PushNewRow(Ui);
-    }
-
-  }
-  else
-  {
-    PushColumn(Ui, Name, Params);
-    PushColumn(Ui, CSz("(null)"), Params);
-    PushNewRow(Ui);
-  }
-
-}
 
 
 
@@ -6980,6 +6683,339 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
 
 
+
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x3603B192);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle hotkey_settings", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Debug_ToggleMenu");
+
+                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleMenu);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Debug_ToggleProfiling");
+
+                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleProfiling);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Debug_TriangulateIncrement");
+
+                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateIncrement);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Debug_TriangulateDecrement");
+
+                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateDecrement);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Left");
+
+                                                                        auto Member = Cast(b32*, &Element->Left);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Right");
+
+                                                                        auto Member = Cast(b32*, &Element->Right);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Forward");
+
+                                                                        auto Member = Cast(b32*, &Element->Forward);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Backward");
+
+                                                                        auto Member = Cast(b32*, &Element->Backward);
+            DoEditorUi(Ui,
+              Window,
+              Cast(b32*, Member),
+              MemberName,
+              ThisHash,
+              &DefaultUiRenderParams_Checkbox
+              );
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -25994,42 +26030,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             cs MemberName = CSz("Ui");
 
                                                                                                 auto Member = Cast(renderer_2d*, &Element->Ui);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-            
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Hotkeys");
-
-                                                                                                auto Member = Cast(hotkeys*, &Element->Hotkeys);
             DoEditorUi(Ui,
               Window,
               Member,

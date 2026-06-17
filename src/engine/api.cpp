@@ -452,7 +452,7 @@ Bonsai_FrameEnd(engine_resources *Engine)
   // Clicked interaction ID, because the interaction processing happens at the end of the frame (during layout)
   //
   {
-    ResetInputForFrameStart(&Plat->Input, &Engine->Hotkeys);
+    ResetInputForFrameStart(&Plat->Input);
 
     v2 LastMouseP = Plat->MouseP;
     while ( ProcessOsMessages(&Engine->Stdlib.Os, Plat) );
@@ -460,7 +460,7 @@ Bonsai_FrameEnd(engine_resources *Engine)
     /* Assert(Plat->ScreenDim.x > 0); */
     /* Assert(Plat->ScreenDim.y > 0); */
 
-    BindHotkeysToInput(&Engine->Hotkeys, &Plat->Input);
+    MarshallInputToHotkeys(&Plat->Input, &Engine->Settings.Hotkeys);
 
     /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
   }

@@ -46,6 +46,7 @@ struct engine_settings
 poof(@do_editor_ui)
 {
   graphics_settings Graphics;
+  hotkey_settings Hotkeys;
 };
 
 link_internal v2i

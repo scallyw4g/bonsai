@@ -238,7 +238,7 @@ main( s32 ArgCount, const char ** Args )
       }
     }
 
-    DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Hotkeys.Debug_ToggleMenu, EngineResources->Hotkeys.Debug_ToggleProfiling);
+    DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Settings.Hotkeys.Debug_ToggleMenu, EngineResources->Settings.Hotkeys.Debug_ToggleProfiling);
 
 #if !EMCC
     if ( FileIsNew(GameLibName, &LastGameLibTime) )

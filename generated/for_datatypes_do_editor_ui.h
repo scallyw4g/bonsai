@@ -79,9 +79,6 @@ struct platform;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
 
-struct hotkeys;
-link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkeys *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
-; 
 struct shadow_render_group;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -161,6 +158,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_fi
 
 
 
+struct hotkey_settings;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 struct camera;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
