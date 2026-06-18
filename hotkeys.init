@@ -1,0 +1,10 @@
+//
+// NOTE(Jesse): Hotkey bindings.  Names are divined directly from the member
+// names in `struct hotkey_settings` and `struct input` in hotkeys.h and
+// input.h, respectively
+//
+
+hotkey Forward  = W
+hotkey Left     = A
+hotkey Backward = S
+hotkey Right    = D

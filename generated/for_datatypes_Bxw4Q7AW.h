@@ -6873,21 +6873,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Left");
 
-                                                                        auto Member = Cast(b32*, &Element->Left);
+                                                                                                auto Member = Cast(hotkey*, &Element->Left);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
+
+            
 
 
           }
@@ -6908,21 +6909,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Right");
 
-                                                                        auto Member = Cast(b32*, &Element->Right);
+                                                                                                auto Member = Cast(hotkey*, &Element->Right);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
+
+            
 
 
           }
@@ -6943,21 +6945,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Forward");
 
-                                                                        auto Member = Cast(b32*, &Element->Forward);
+                                                                                                auto Member = Cast(hotkey*, &Element->Forward);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
+
+            
 
 
           }
@@ -6978,14 +6981,52 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Backward");
 
-                                                                        auto Member = Cast(b32*, &Element->Backward);
+                                                                                                auto Member = Cast(hotkey*, &Element->Backward);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ScrollDelta");
+
+                                                                                                auto Member = Cast(s32*, &Element->ScrollDelta);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
 
 
 
@@ -22291,6 +22332,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
   }
 
 }
+
 
 
 

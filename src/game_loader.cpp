@@ -147,6 +147,7 @@ main( s32 ArgCount, const char ** Args )
   {
     temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
     EngineResources->Settings = ParseEngineSettings(CSz("settings.init"), &BootstrapArena);
+    ParseEngineHotkeys(CSz("hotkeys.init"), &EngineResources->Settings.Hotkeys, &EngineResources->Stdlib.Plat.Input, &BootstrapArena);
   }
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));

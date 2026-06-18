@@ -361,16 +361,16 @@ GetCameraRelativeInput(hotkey_settings *Hotkeys, camera *Camera)
 
   v3 UpdateDir = V3(0,0,0);
 
-  if ( Hotkeys->Forward )
+  if ( Hotkeys->Forward.State->Pressed )
     UpdateDir += Forward;
 
-  if ( Hotkeys->Backward )
+  if ( Hotkeys->Backward.State->Pressed )
     UpdateDir -= Forward;
 
-  if ( Hotkeys->Right )
+  if ( Hotkeys->Right.State->Pressed )
     UpdateDir += Right;
 
-  if ( Hotkeys->Left )
+  if ( Hotkeys->Left.State->Pressed )
     UpdateDir -= Right;
 
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));
