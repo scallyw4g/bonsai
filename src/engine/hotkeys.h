@@ -33,10 +33,6 @@ poof(@do_editor_ui)
   input_event *Secondary;
   input_event *Tertiary;
 
-  input_event *Ctrl;
-  input_event *Alt;
-  input_event *Shift;
-
   zoom_type ZoomType;
   input_event *Zoom;
 

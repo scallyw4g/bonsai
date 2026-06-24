@@ -75,24 +75,6 @@ if (StringsMatch(CSz("Tertiary"), Name))
   Result = &Hotkeys->Tertiary;
 }
 
-if (StringsMatch(CSz("Ctrl"), Name))
-{
-  Assert(Result == 0);
-  Result = &Hotkeys->Ctrl;
-}
-
-if (StringsMatch(CSz("Alt"), Name))
-{
-  Assert(Result == 0);
-  Result = &Hotkeys->Alt;
-}
-
-if (StringsMatch(CSz("Shift"), Name))
-{
-  Assert(Result == 0);
-  Result = &Hotkeys->Shift;
-}
-
 
 if (StringsMatch(CSz("Zoom"), Name))
 {

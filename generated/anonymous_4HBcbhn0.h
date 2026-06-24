@@ -111,33 +111,6 @@ if (Hotkeys->Tertiary == 0)
 
 
 
-if (Hotkeys->Ctrl == 0)
-{
-  SoftError("Hotkey (Ctrl) remains unbound!");
-  Hotkeys->Ctrl = &NullInputEvent;
-  Result = False;
-}
-
-
-
-if (Hotkeys->Alt == 0)
-{
-  SoftError("Hotkey (Alt) remains unbound!");
-  Hotkeys->Alt = &NullInputEvent;
-  Result = False;
-}
-
-
-
-if (Hotkeys->Shift == 0)
-{
-  SoftError("Hotkey (Shift) remains unbound!");
-  Hotkeys->Shift = &NullInputEvent;
-  Result = False;
-}
-
-
-
 
 
 

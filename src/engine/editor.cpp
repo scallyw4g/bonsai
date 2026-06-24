@@ -1458,14 +1458,13 @@ EditWorldSelection(engine_resources *Engine)
           face_index Face = AABBTest.Face;
           if (Face)
           {
-            /* b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         || */
-            /*                     ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  || */
-            /*                     ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) || */
-            /*                     ChordPressed(&Hotkeys->TranslateSelection_Linear)        || */
-            /*                     ChordPressed(&Hotkeys->TranslateSelection_Planar); */
+            b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         ||
+                                ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  ||
+                                ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) ||
+                                ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
+                                ChordPressed(&Hotkeys->TranslateSelection_Planar);
 
-            if ( Hotkeys->Primary->Clicked &&
-                (Hotkeys->Shift->Pressed || Hotkeys->Alt->Pressed) )
+            if ( Hotkeys->Primary->Clicked && ModInProgress )
             {
               v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
               Editor->Selection.ModState.ClickedFace = Face;

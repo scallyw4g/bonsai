@@ -62,16 +62,6 @@ hotkey Down     = Q
 hotkey Zoom = Z
 
 //
-// Accelerators
-// TODO(Jesse): Remove these?
-//
-
-hotkey Ctrl  = Ctrl
-hotkey Alt   = Alt
-hotkey Shift = Shift
-
-
-//
 // Editor Hotkeys
 //
 

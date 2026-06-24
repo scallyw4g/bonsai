@@ -19,9 +19,6 @@
 
 
 
-
-
-
 if (StringsMatch(CSz("CenterCamera"), Name))
 {
   Assert(Result == 0);
