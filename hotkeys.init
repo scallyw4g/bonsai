@@ -66,9 +66,9 @@ hotkey Zoom = Z
 // TODO(Jesse): Remove these?
 //
 
-// hotkey Ctrl  = Ctrl
-// hotkey Alt   = Alt
-// hotkey Shift = Shift
+hotkey Ctrl  = Ctrl
+hotkey Alt   = Alt
+hotkey Shift = Shift
 
 
 //

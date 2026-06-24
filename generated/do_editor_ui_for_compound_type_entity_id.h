@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:508:0
+// src/engine/editor.cpp:514:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct entity_id;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
             
             cs MemberName = CSz("Index");
 
-                                                                                                auto Member = Cast(u32*, &Element->Index);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Index);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
               ThisHash,
               Params
               );
+
 
 
 
@@ -86,7 +88,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
             
             cs MemberName = CSz("Generation");
 
-                                                                                                auto Member = Cast(u32*, &Element->Generation);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Generation);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -94,6 +97,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_id 
               ThisHash,
               Params
               );
+
 
 
 

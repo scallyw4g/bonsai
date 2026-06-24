@@ -1,10 +1,16 @@
 // callsite
-// src/engine/editor.h:983:0
+// src/engine/editor.h:1026:0
 
 // def (do_editor_ui_for_vector_type)
 // src/engine/editor.h:401:0
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v4i *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60E2);
@@ -31,7 +37,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4i *Value, cs Name, u32 Pare
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v4 *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F1413);
@@ -58,7 +70,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v4 *Value, cs Name, u32 Paren
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v3i *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F60AD);
@@ -84,7 +102,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3i *Value, cs Name, u32 Pare
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v3 *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13DE);
@@ -110,7 +134,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v3 *Value, cs Name, u32 Paren
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v2i *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F6078);
@@ -135,7 +165,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2i *Value, cs Name, u32 Pare
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  v2 *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F13A9);
@@ -160,7 +196,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2 *Value, cs Name, u32 Paren
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  Quaternion *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x42A58E4);
@@ -187,7 +229,13 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, Quaternion *Value, cs Name, u
   return Result;
 }
 link_internal b32
-DoEditorUi(renderer_2d *Ui, window_layout *Window, m4 *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+DoEditorUi( renderer_2d *Ui,
+  window_layout *Window,
+  m4 *Value,
+  cs Name,
+  u32 ParentHash,
+  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
 {
   b32 Result = False;
   u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x290F140A);

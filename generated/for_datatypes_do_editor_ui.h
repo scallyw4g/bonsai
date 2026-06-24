@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:827:0
+// src/engine/editor.h:870:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.h:827:0
+// src/engine/editor.h:870:0
 
 
 
@@ -262,7 +262,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 struct physics;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
+struct hotkey_chord;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 
 

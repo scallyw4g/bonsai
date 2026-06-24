@@ -8,9 +8,10 @@ enum zoom_type
 };
 
 struct hotkey_chord
+poof(@do_editor_ui)
 {
   u32 EventCount;
-  input_event **Events;
+  input_event **Events; poof(@array_length(Element->EventCount))
 };
 
 struct hotkey_settings
@@ -82,16 +83,27 @@ GetOrthographicInputs(hotkey_settings *Hotkeys)
 link_internal b32
 ChordPressed(hotkey_chord *Chord)
 {
-  b32 Result = False;
-  NotImplemented;
+  b32 Result = Chord->EventCount > 0;
+  RangeIterator_t(u32, EventIndex, Chord->EventCount)
+  {
+    Result &= Chord->Events[EventIndex]->Pressed;
+  }
+
   return Result;
 }
   
 link_internal b32
 ChordClicked(hotkey_chord *Chord)
 {
-  b32 Result = False;
-  NotImplemented;
+  b32 AllPressed = True;
+  b32 AnyClicked = False;
+  RangeIterator_t(u32, EventIndex, Chord->EventCount)
+  {
+    AllPressed &= Chord->Events[EventIndex]->Pressed;
+    AnyClicked |= Chord->Events[EventIndex]->Clicked;
+  }
+
+  b32 Result = AllPressed && AnyClicked;
   return Result;
 }
   

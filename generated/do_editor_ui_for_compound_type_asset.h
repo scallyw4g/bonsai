@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:539:0
+// src/engine/editor.cpp:545:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct asset;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
             
             cs MemberName = CSz("LoadState");
 
-                                                                                                auto Member = Cast(asset_load_state*, &Element->LoadState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_load_state*, &Element->LoadState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -85,7 +87,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
             
             cs MemberName = CSz("Id");
 
-                                                                                                auto Member = Cast(asset_id*, &Element->Id);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_id*, &Element->Id);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +96,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -121,7 +125,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
             
             cs MemberName = CSz("LRUFrameIndex");
 
-                                                                                                auto Member = Cast(u64*, &Element->LRUFrameIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->LRUFrameIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -129,6 +134,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -158,7 +164,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(asset_type*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -166,6 +173,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset *Ele
               ThisHash,
               Params
               );
+
 
 
 

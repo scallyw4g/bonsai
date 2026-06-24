@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:481:0
+// src/engine/editor.cpp:487:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct gpu_mapped_element_buffer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped
             
             cs MemberName = CSz("Handles");
 
-                                                                                                auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped
               ThisHash,
               Params
               );
+
 
 
 
@@ -85,7 +87,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped
             
             cs MemberName = CSz("Buffer");
 
-                                                                                                auto Member = Cast(untextured_3d_geometry_buffer*, &Element->Buffer);
+                                                                                                // Regular struct member
+                        auto Member = Cast(untextured_3d_geometry_buffer*, &Element->Buffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +96,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_mapped
               ThisHash,
               Params
               );
+
 
 
 

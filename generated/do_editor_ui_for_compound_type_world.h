@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:524:0
+// src/engine/editor.cpp:530:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct world;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -85,7 +85,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("VisibleRegionSize");
 
-                                                                                                auto Member = Cast(visible_region_size*, &Element->VisibleRegionSize);
+                                                                                                // Regular struct member
+                        auto Member = Cast(visible_region_size*, &Element->VisibleRegionSize);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +94,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -121,7 +123,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("Root");
 
-                                                                                                auto Member = Cast(octree_node*, &Element->Root);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node*, &Element->Root);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -129,6 +132,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -157,7 +161,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("OctreeMemory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->OctreeMemory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->OctreeMemory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -165,6 +170,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -193,7 +199,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("OctreeNodeFreelist");
 
-                                                                                                auto Member = Cast(octree_node_freelist*, &Element->OctreeNodeFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_freelist*, &Element->OctreeNodeFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -201,6 +208,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -229,7 +237,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("OctreeNodeDeferFreelist");
 
-                                                                                                auto Member = Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_freelist*, &Element->OctreeNodeDeferFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -237,6 +246,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -265,7 +275,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("MaxOctreeNodesToQueuePerFrame");
 
-                                                                                                auto Member = Cast(s32*, &Element->MaxOctreeNodesToQueuePerFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->MaxOctreeNodesToQueuePerFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -273,6 +284,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -302,7 +314,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("ChunksPerResolutionStep");
 
-                                                                                                auto Member = Cast(s32*, &Element->ChunksPerResolutionStep);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->ChunksPerResolutionStep);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -310,6 +323,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -379,7 +393,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("FreeChunkCount");
 
-                                                                                                auto Member = Cast(s32*, &Element->FreeChunkCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->FreeChunkCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -387,6 +402,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -416,7 +432,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("TotalChunksAllocated");
 
-                                                                                                auto Member = Cast(s32*, &Element->TotalChunksAllocated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->TotalChunksAllocated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -424,6 +441,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 
@@ -453,7 +471,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
             
             cs MemberName = CSz("TotalGenChunksAllocated");
 
-                                                                                                auto Member = Cast(s32*, &Element->TotalGenChunksAllocated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->TotalGenChunksAllocated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -461,6 +480,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world *Ele
               ThisHash,
               Params
               );
+
 
 
 

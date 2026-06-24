@@ -403,7 +403,13 @@ poof(
     type_list.map(type)
     {
       link_internal b32
-      DoEditorUi(renderer_2d *Ui, window_layout *Window, type.name *Value, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Generic, EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS)
+      DoEditorUi( renderer_2d *Ui,
+                  window_layout *Window,
+                  type.name *Value,
+                  cs Name,
+                  u32 ParentHash,
+                  ui_render_params *Params = &DefaultUiRenderParams_Generic,
+                  EDITOR_UI_VALUE_RANGE_PROTO_DEFAULTS )
       {
         b32 Result = False;
         u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x(type.hash));
@@ -551,6 +557,7 @@ poof(
                         {
                           member.has_tag(ui_display_name)? {poof_error(ui_display_name tag is incompatible with array members )}
 
+                          // NOTE(Jesse): Copypasta @array_display_code
                           if (ToggleButton(Ui,
                                 CSz("v member.name[member.array]"),
                                 CSz("> member.name[member.array]"),
@@ -654,14 +661,50 @@ poof(
                                 {
                                 }
                                 {
-                                  auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
-                                  DoEditorUi(Ui,
-                                             Window,
-                                             Member,
-                                             MemberName,
-                                             ThisHash,
-                                             Params
-                                             member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                                  // Regular struct member
+                                  member.has_tag(array_length)?
+                                  {
+
+                                    // NOTE(Jesse): Copypasta @array_display_code
+                                    if (ToggleButton(Ui,
+                                          FSz("v member.name[%d]", member.tag_value(array_length)),
+                                          FSz("> member.name[%d]", member.tag_value(array_length)),
+                                          UiId(Window, "toggle type.name member.type member.name", Element->(member.name), ThisHash),
+                                          Params ))
+                                    {
+                                      OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+                                        PushNewRow(Ui);
+                                        s32 End = s32((member.tag_value(array_length)));
+                                        RangeIterator(ArrayIndex, End)
+                                        {
+                                          member.has_tag(custom_ui)?
+                                          {
+                                            member.tag_value(custom_ui);
+                                          }
+                                          {
+                                            DoEditorUi( Ui,
+                                                        Window,
+                                                        Element->(member.name)+ArrayIndex,
+                                                        FSz("member.name[%d]", ArrayIndex),
+                                                        ThisHash,
+                                                        Params );
+                                          }
+                                          member.is_primitive?  { PushNewRow(Ui); }
+                                        }
+                                      CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+                                    }
+                                    PushNewRow(Ui);
+                                  }
+                                  {
+                                    auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name));
+                                    DoEditorUi(Ui,
+                                               Window,
+                                               Member,
+                                               MemberName,
+                                               ThisHash,
+                                               Params
+                                               member.has_tag(ui_value_range)?{, member.tag_value(ui_value_range) });
+                                  }
                                 }
                               }
                             }
@@ -2106,22 +2149,22 @@ ComputeSelectionMode(hotkey_settings *Hotkeys)
   {
     SelectionMode = SelectionMode_ResizeAllAxies;
   }
-  if ( ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies) )
+  else if ( ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies) )
   /* else if ( Hotkeys->Shift->Pressed && Hotkeys->Ctrl->Pressed) */
   {
     SelectionMode = SelectionMode_ResizeBothLinearAxies;
   }
-  if ( ChordPressed(&Hotkeys->TranslateSelection_Linear) )
+  else if ( ChordPressed(&Hotkeys->TranslateSelection_Linear) )
   /* else if (Hotkeys->Alt->Pressed && Hotkeys->Ctrl->Pressed) */
   {
     SelectionMode = SelectionMode_TranslateLinear;
   }
-  if ( ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) )
+  else if ( ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) )
   /* else if (Hotkeys->Shift->Pressed) */
   {
     SelectionMode = SelectionMode_ResizeSingleLinearAxis;
   }
-  if ( ChordPressed(&Hotkeys->TranslateSelection_Planar) )
+  else if ( ChordPressed(&Hotkeys->TranslateSelection_Planar) )
   /* else if (Hotkeys->Alt->Pressed) */
   {
     SelectionMode =  SelectionMode_TranslatePlanar;

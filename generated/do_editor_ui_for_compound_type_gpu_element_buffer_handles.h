@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:478:0
+// src/engine/editor.cpp:484:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct gpu_element_buffer_handles;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_element_buffer_handles *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("VAO");
 
-                                                                                                auto Member = Cast(u32*, &Element->VAO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->VAO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -88,6 +90,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Handles[3]"),
                 CSz("> Handles[3]"),
@@ -137,7 +140,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("ElementCount");
 
-                                                                                                auto Member = Cast(u32*, &Element->ElementCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ElementCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -145,6 +149,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -174,7 +179,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("ElementType");
 
-                                                                                                auto Member = Cast(data_type*, &Element->ElementType);
+                                                                                                // Regular struct member
+                        auto Member = Cast(data_type*, &Element->ElementType);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -182,6 +188,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -210,7 +217,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("Mapped");
 
-                                                                                                auto Member = Cast(b8*, &Element->Mapped);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Mapped);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -218,6 +226,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -247,7 +256,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("Pad");
 
-                                                                                                auto Member = Cast(b8*, &Element->Pad);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Pad);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -255,6 +265,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -284,7 +295,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
             
             cs MemberName = CSz("Flags");
 
-                                                                                                auto Member = Cast(u16*, &Element->Flags);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -292,6 +304,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_elemen
               ThisHash,
               Params
               );
+
 
 
 

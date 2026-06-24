@@ -219,7 +219,7 @@ UpdateGameCamera( world *World,
       Assert(Hotkeys->ZoomType == ZoomType_ClutchDrag);
       if (Hotkeys->Zoom->Pressed)
       {
-        CameraZoomDelta = MouseDelta.y;
+        CameraZoomDelta = -1.f*MouseDelta.y;
       }
     }
   }

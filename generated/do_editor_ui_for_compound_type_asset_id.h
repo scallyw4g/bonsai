@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:531:0
+// src/engine/editor.cpp:537:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct asset_id;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
             
             cs MemberName = CSz("Index");
 
-                                                                                                auto Member = Cast(u16*, &Element->Index);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->Index);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
               ThisHash,
               Params
               );
+
 
 
 
@@ -86,7 +88,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
             
             cs MemberName = CSz("FileNode");
 
-                                                                                                auto Member = Cast(file_traversal_node*, &Element->FileNode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(file_traversal_node*, &Element->FileNode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -94,6 +97,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_id *
               ThisHash,
               Params
               );
+
 
 
 

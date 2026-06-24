@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:457:0
+// src/engine/editor.cpp:463:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct world_edit_block_array_index;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_block_array_index *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
             
             cs MemberName = CSz("Index");
 
-                                                                                                auto Member = Cast(umm*, &Element->Index);
+                                                                                                // Regular struct member
+                        auto Member = Cast(umm*, &Element->Index);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
               ThisHash,
               Params
               );
+
 
 
 

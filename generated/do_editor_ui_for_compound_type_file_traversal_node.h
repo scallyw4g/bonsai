@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:496:0
+// src/engine/editor.cpp:502:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct file_traversal_node;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_traversal_node *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(file_traversal_type*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(file_traversal_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
               ThisHash,
               Params
               );
+
 
 
 
@@ -85,7 +87,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
             
             cs MemberName = CSz("Dir");
 
-                                                                                                auto Member = Cast(cs*, &Element->Dir);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->Dir);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +96,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
               ThisHash,
               Params
               );
+
 
 
 
@@ -122,7 +126,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
             
             cs MemberName = CSz("Name");
 
-                                                                                                auto Member = Cast(cs*, &Element->Name);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->Name);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -130,6 +135,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, file_trave
               ThisHash,
               Params
               );
+
 
 
 

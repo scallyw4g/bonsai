@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:314:0
+// src/engine/editor.cpp:320:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct debug_state;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_state *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -84,7 +84,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("UIType");
 
-                                                                                                auto Member = Cast(u32*, &Element->UIType);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->UIType);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -92,6 +93,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -121,7 +123,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("BytesBufferedToCard");
 
-                                                                                                auto Member = Cast(u64*, &Element->BytesBufferedToCard);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->BytesBufferedToCard);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -129,6 +132,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -193,7 +197,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("NumScopes");
 
-                                                                                                auto Member = Cast(u64*, &Element->NumScopes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->NumScopes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -201,6 +206,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -230,7 +236,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("DrawCallCountLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->DrawCallCountLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->DrawCallCountLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -238,6 +245,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -267,7 +275,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("VertexCountLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->VertexCountLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->VertexCountLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -275,6 +284,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1060,7 +1070,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("PickedChunk");
 
-                                                                                                auto Member = Cast(picked_world_chunk*, Element->PickedChunk);
+                                                                                                // Regular struct member
+                        auto Member = Cast(picked_world_chunk*, Element->PickedChunk);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1068,6 +1079,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1096,7 +1108,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("HoverChunk");
 
-                                                                                                auto Member = Cast(picked_world_chunk*, Element->HoverChunk);
+                                                                                                // Regular struct member
+                        auto Member = Cast(picked_world_chunk*, Element->HoverChunk);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1104,6 +1117,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1132,7 +1146,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("ThreadStates");
 
-                                                                                                auto Member = Cast(debug_thread_state*, Element->ThreadStates);
+                                                                                                // Regular struct member
+                        auto Member = Cast(debug_thread_state*, Element->ThreadStates);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1140,6 +1155,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1168,7 +1184,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("MetaTableNameStringsArena");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->MetaTableNameStringsArena);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->MetaTableNameStringsArena);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1176,6 +1193,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1204,7 +1222,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("UiGroup");
 
-                                                                                                auto Member = Cast(renderer_2d*, Element->UiGroup);
+                                                                                                // Regular struct member
+                        auto Member = Cast(renderer_2d*, Element->UiGroup);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1212,6 +1231,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1240,7 +1260,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("LineMesh");
 
-                                                                                                auto Member = Cast(untextured_3d_geometry_buffer*, &Element->LineMesh);
+                                                                                                // Regular struct member
+                        auto Member = Cast(untextured_3d_geometry_buffer*, &Element->LineMesh);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1248,6 +1269,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1276,7 +1298,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("SelectedArenas");
 
-                                                                                                auto Member = Cast(selected_arenas*, Element->SelectedArenas);
+                                                                                                // Regular struct member
+                        auto Member = Cast(selected_arenas*, Element->SelectedArenas);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1284,6 +1307,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1347,7 +1371,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("HotFunction");
 
-                                                                                                auto Member = Cast(debug_profile_scope*, Element->HotFunction);
+                                                                                                // Regular struct member
+                        auto Member = Cast(debug_profile_scope*, Element->HotFunction);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1355,6 +1380,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1383,7 +1409,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("HistogramSamples");
 
-                                                                                                auto Member = Cast(u64_cursor*, &Element->HistogramSamples);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64_cursor*, &Element->HistogramSamples);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1391,6 +1418,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1419,7 +1447,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("HistogramFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->HistogramFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->HistogramFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1427,6 +1456,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1455,7 +1485,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("FreeScopeSentinel");
 
-                                                                                                auto Member = Cast(debug_profile_scope*, &Element->FreeScopeSentinel);
+                                                                                                // Regular struct member
+                        auto Member = Cast(debug_profile_scope*, &Element->FreeScopeSentinel);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1463,6 +1494,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1491,7 +1523,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("MinCycles");
 
-                                                                                                auto Member = Cast(umm*, &Element->MinCycles);
+                                                                                                // Regular struct member
+                        auto Member = Cast(umm*, &Element->MinCycles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1499,6 +1532,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1528,7 +1562,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("MaxCycles");
 
-                                                                                                auto Member = Cast(umm*, &Element->MaxCycles);
+                                                                                                // Regular struct member
+                        auto Member = Cast(umm*, &Element->MaxCycles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1536,6 +1571,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1567,6 +1603,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Frames[(128)]"),
                 CSz("> Frames[(128)]"),
@@ -1615,7 +1652,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("ReadScopeIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->ReadScopeIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ReadScopeIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1623,6 +1661,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1652,7 +1691,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
             
             cs MemberName = CSz("FreeScopeCount");
 
-                                                                                                auto Member = Cast(s32*, &Element->FreeScopeCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->FreeScopeCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1660,6 +1700,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
               ThisHash,
               Params
               );
+
 
 
 
@@ -1691,6 +1732,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v RegisteredMemoryArenas[(1024)]"),
                 CSz("> RegisteredMemoryArenas[(1024)]"),
@@ -1741,6 +1783,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, debug_stat
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v TrackedDrawCalls[(4096)]"),
                 CSz("> TrackedDrawCalls[(4096)]"),

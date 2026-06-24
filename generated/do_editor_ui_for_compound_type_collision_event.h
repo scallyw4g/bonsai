@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:542:0
+// src/engine/editor.cpp:548:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct collision_event;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_event *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
             
             cs MemberName = CSz("FrameIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->FrameIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->FrameIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               ThisHash,
               Params
               );
+
 
 
 
@@ -86,7 +88,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
             
             cs MemberName = CSz("Count");
 
-                                                                                                auto Member = Cast(u32*, &Element->Count);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Count);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -94,6 +97,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               ThisHash,
               Params
               );
+
 
 
 
@@ -123,7 +127,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
             
             cs MemberName = CSz("MinP");
 
-                                                                                                auto Member = Cast(cp*, &Element->MinP);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->MinP);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -131,6 +136,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               ThisHash,
               Params
               );
+
 
 
 
@@ -159,7 +165,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
             
             cs MemberName = CSz("MaxP");
 
-                                                                                                auto Member = Cast(cp*, &Element->MaxP);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->MaxP);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -167,6 +174,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               ThisHash,
               Params
               );
+
 
 
 
@@ -231,7 +239,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
             
             cs MemberName = CSz("Ratio");
 
-                                                                                                auto Member = Cast(r32*, &Element->Ratio);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Ratio);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -239,6 +248,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, collision_
               ThisHash,
               Params
               );
+
 
 
 

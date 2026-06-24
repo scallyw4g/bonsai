@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:555:0
+// src/engine/editor.cpp:561:0
 
 // def ((builtin.for_datatypes))
-// src/engine/editor.cpp:555:0
+// src/engine/editor.cpp:561:0
 
 
 
@@ -54,7 +54,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
             
             cs MemberName = CSz("Name");
 
-                                                                                                auto Member = Cast(cs*, &Element->Name);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->Name);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -62,6 +63,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -91,7 +93,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
             
             cs MemberName = CSz("Points");
 
-                                                                                                auto Member = Cast(v2_static_cursor_16*, &Element->Points);
+                                                                                                // Regular struct member
+                        auto Member = Cast(v2_static_cursor_16*, &Element->Points);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -99,6 +102,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -181,7 +185,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -189,6 +194,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -219,6 +225,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[26]"),
                 CSz("> Uniforms[26]"),
@@ -267,7 +274,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("FBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->FBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->FBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -275,6 +283,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -303,7 +312,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("gColor");
 
-                                                                                                auto Member = Cast(texture*, Element->gColor);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->gColor);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -311,6 +321,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -339,7 +350,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("gNormal");
 
-                                                                                                auto Member = Cast(texture*, Element->gNormal);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->gNormal);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -347,6 +359,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -375,7 +388,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("gDepth");
 
-                                                                                                auto Member = Cast(texture*, Element->gDepth);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->gDepth);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -383,6 +397,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -411,7 +426,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("shadowMap");
 
-                                                                                                auto Member = Cast(texture*, Element->shadowMap);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->shadowMap);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -419,6 +435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -447,7 +464,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("Ssao");
 
-                                                                                                auto Member = Cast(texture*, Element->Ssao);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->Ssao);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -455,6 +473,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -483,7 +502,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("TransparencyAccumTex");
 
-                                                                                                auto Member = Cast(texture*, Element->TransparencyAccumTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->TransparencyAccumTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -491,6 +511,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -519,7 +540,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("TransparencyCountTex");
 
-                                                                                                auto Member = Cast(texture*, Element->TransparencyCountTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->TransparencyCountTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -527,6 +549,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -625,7 +648,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("InverseViewMatrix");
 
-                                                                                                auto Member = Cast(m4*, Element->InverseViewMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, Element->InverseViewMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -633,6 +657,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -661,7 +686,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("InverseProjectionMatrix");
 
-                                                                                                auto Member = Cast(m4*, Element->InverseProjectionMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, Element->InverseProjectionMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -669,6 +695,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -697,7 +724,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("ShadowMVP");
 
-                                                                                                auto Member = Cast(m4*, Element->ShadowMVP);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, Element->ShadowMVP);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -705,6 +733,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -733,7 +762,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("LightColors");
 
-                                                                                                auto Member = Cast(texture*, Element->LightColors);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->LightColors);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -741,6 +771,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -769,7 +800,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("LightPositions");
 
-                                                                                                auto Member = Cast(texture*, Element->LightPositions);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->LightPositions);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -777,6 +809,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -805,7 +838,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("LightIndexToUV");
 
-                                                                                                auto Member = Cast(f32*, Element->LightIndexToUV);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, Element->LightIndexToUV);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -813,6 +847,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -842,7 +877,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("LightCount");
 
-                                                                                                auto Member = Cast(s32*, Element->LightCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, Element->LightCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -850,6 +886,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -879,7 +916,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("Camera");
 
-                                                                                                auto Member = Cast(camera*, Element->Camera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(camera*, Element->Camera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -887,6 +925,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -1023,7 +1062,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("FogPower");
 
-                                                                                                auto Member = Cast(f32*, Element->FogPower);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, Element->FogPower);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1031,6 +1071,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -1237,7 +1278,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("LuminanceTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->LuminanceTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->LuminanceTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1245,6 +1287,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -1273,7 +1316,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
             
             cs MemberName = CSz("Lights");
 
-                                                                                                auto Member = Cast(game_lights*, &Element->Lights);
+                                                                                                // Regular struct member
+                        auto Member = Cast(game_lights*, &Element->Lights);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1281,6 +1325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -1364,7 +1409,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
             
             cs MemberName = CSz("BytesSolidGeoLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->BytesSolidGeoLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->BytesSolidGeoLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1372,6 +1418,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1401,7 +1448,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
             
             cs MemberName = CSz("BytesTransGeoLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->BytesTransGeoLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->BytesTransGeoLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1409,6 +1457,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1438,7 +1487,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
             
             cs MemberName = CSz("VertsDrawnLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->VertsDrawnLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->VertsDrawnLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1446,6 +1496,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1475,7 +1526,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawCallsLastFrame");
 
-                                                                                                auto Member = Cast(u32*, &Element->DrawCallsLastFrame);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->DrawCallsLastFrame);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1483,6 +1535,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1696,7 +1749,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
             
             cs MemberName = CSz("SignalValue");
 
-                                                                                                auto Member = Cast(u32*, &Element->SignalValue);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->SignalValue);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1704,6 +1758,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1733,7 +1788,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
             
             cs MemberName = CSz("ThreadsWaiting");
 
-                                                                                                auto Member = Cast(u32*, &Element->ThreadsWaiting);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ThreadsWaiting);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1741,6 +1797,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_futex *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -1823,7 +1880,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
             
             cs MemberName = CSz("Graphics");
 
-                                                                                                auto Member = Cast(graphics_settings*, &Element->Graphics);
+                                                                                                // Regular struct member
+                        auto Member = Cast(graphics_settings*, &Element->Graphics);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1831,6 +1889,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -1859,7 +1918,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
             
             cs MemberName = CSz("Hotkeys");
 
-                                                                                                auto Member = Cast(hotkey_settings*, &Element->Hotkeys);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_settings*, &Element->Hotkeys);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1867,6 +1927,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -1980,7 +2041,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(noise_layer*, &Element->Noise);
+                                                                                                // Regular struct member
+                        auto Member = Cast(noise_layer*, &Element->Noise);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -1988,6 +2050,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2016,7 +2079,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(shape_layer*, &Element->Shape);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shape_layer*, &Element->Shape);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2024,6 +2088,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2150,7 +2215,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("Invert");
 
-                                                                                                auto Member = Cast(b8*, &Element->Invert);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Invert);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2158,6 +2224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2187,7 +2254,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("Normalized");
 
-                                                                                                auto Member = Cast(b8*, &Element->Normalized);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->Normalized);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2195,6 +2263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2264,7 +2333,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("ValueBias");
 
-                                                                                                auto Member = Cast(r32*, &Element->ValueBias);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ValueBias);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2272,6 +2342,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               , -1.f,  1.f );
+
 
 
 
@@ -2301,7 +2372,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("Power");
 
-                                                                                                auto Member = Cast(r32*, &Element->Power);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Power);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2309,6 +2381,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2338,7 +2411,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("ValueFunc");
 
-                                                                                                auto Member = Cast(world_edit_blend_mode_modifier*, &Element->ValueFunc);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_blend_mode_modifier*, &Element->ValueFunc);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2346,6 +2420,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2374,7 +2449,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("BlendMode");
 
-                                                                                                auto Member = Cast(world_edit_blend_mode*, &Element->BlendMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_blend_mode*, &Element->BlendMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2382,6 +2458,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2410,7 +2487,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("Smoothing");
 
-                                                                                                auto Member = Cast(smooth_blend_params*, &Element->Smoothing);
+                                                                                                // Regular struct member
+                        auto Member = Cast(smooth_blend_params*, &Element->Smoothing);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2418,6 +2496,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2466,7 +2545,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
             
             cs MemberName = CSz("ColorMode");
 
-                                                                                                auto Member = Cast(world_edit_color_mode*, &Element->ColorMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_color_mode*, &Element->ColorMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2474,6 +2554,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, layer_settings *Element, cs N
               ThisHash,
               Params
               );
+
 
 
 
@@ -2629,7 +2710,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
             
             cs MemberName = CSz("ID");
 
-                                                                                                auto Member = Cast(u32*, &Element->ID);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ID);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2637,6 +2719,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -2702,7 +2785,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
             
             cs MemberName = CSz("Slices");
 
-                                                                                                auto Member = Cast(u32*, &Element->Slices);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Slices);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2710,6 +2794,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -2739,7 +2824,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
             
             cs MemberName = CSz("Channels");
 
-                                                                                                auto Member = Cast(u32*, &Element->Channels);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Channels);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2747,6 +2833,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -2811,7 +2898,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
             
             cs MemberName = CSz("Format");
 
-                                                                                                auto Member = Cast(texture_storage_format*, &Element->Format);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture_storage_format*, &Element->Format);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2819,6 +2907,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -2847,7 +2936,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
             
             cs MemberName = CSz("DebugName");
 
-                                                                                                auto Member = Cast(cs*, &Element->DebugName);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->DebugName);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2855,6 +2945,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, texture *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -2972,7 +3063,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
             
             cs MemberName = CSz("Texture");
 
-                                                                                                auto Member = Cast(texture*, &Element->Texture);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->Texture);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -2980,6 +3072,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -3008,7 +3101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
             
             cs MemberName = CSz("Camera");
 
-                                                                                                auto Member = Cast(camera*, &Element->Camera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(camera*, &Element->Camera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3016,6 +3110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_thumbnail *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -3098,7 +3193,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Radius");
 
-                                                                                                auto Member = Cast(r32*, &Element->Radius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Radius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3106,6 +3202,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -3135,7 +3232,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Height");
 
-                                                                                                auto Member = Cast(r32*, &Element->Height);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Height);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3143,6 +3241,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -3233,7 +3332,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
             
             cs MemberName = CSz("ColorIndex");
 
-                                                                                                auto Member = Cast(u16*, &Element->ColorIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u16*, &Element->ColorIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3241,6 +3341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -3270,7 +3371,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
             
             cs MemberName = CSz("Transparency");
 
-                                                                                                auto Member = Cast(u8*, &Element->Transparency);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u8*, &Element->Transparency);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3278,6 +3380,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -3307,7 +3410,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
             
             cs MemberName = CSz("Emission");
 
-                                                                                                auto Member = Cast(u8*, &Element->Emission);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u8*, &Element->Emission);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3315,6 +3419,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, vertex_material *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -3543,7 +3648,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("LowPriority");
 
-                                                                                                auto Member = Cast(work_queue*, &Element->LowPriority);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue*, &Element->LowPriority);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3551,6 +3657,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3579,7 +3686,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("HighPriority");
 
-                                                                                                auto Member = Cast(work_queue*, &Element->HighPriority);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue*, &Element->HighPriority);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3587,6 +3695,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3615,7 +3724,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("LoRenderQ");
 
-                                                                                                auto Member = Cast(work_queue*, &Element->LoRenderQ);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue*, &Element->LoRenderQ);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3623,6 +3733,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3651,7 +3762,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("HiRenderQ");
 
-                                                                                                auto Member = Cast(work_queue*, &Element->HiRenderQ);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue*, &Element->HiRenderQ);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3659,6 +3771,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3687,7 +3800,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("HighPriorityWorkerCount");
 
-                                                                                                auto Member = Cast(u32*, &Element->HighPriorityWorkerCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->HighPriorityWorkerCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3695,6 +3809,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3724,7 +3839,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("HighPriorityModeFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->HighPriorityModeFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->HighPriorityModeFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3732,6 +3848,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3760,7 +3877,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("WorkerThreadsSuspendFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->WorkerThreadsSuspendFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3768,6 +3886,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3796,7 +3915,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("WorkerThreadsExitFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->WorkerThreadsExitFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3804,6 +3924,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3904,7 +4025,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3912,6 +4034,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3940,7 +4063,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("GameTime");
 
-                                                                                                auto Member = Cast(r32*, &Element->GameTime);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->GameTime);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3948,6 +4072,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -3977,7 +4102,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("dt");
 
-                                                                                                auto Member = Cast(r32*, &Element->dt);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->dt);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -3985,6 +4111,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -4050,7 +4177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("Input");
 
-                                                                                                auto Member = Cast(input*, &Element->Input);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input*, &Element->Input);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4058,6 +4186,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -4086,7 +4215,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             cs MemberName = CSz("ServerState");
 
-                                                                                                auto Member = Cast(server_state*, Element->ServerState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(server_state*, Element->ServerState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4094,6 +4224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -4176,7 +4307,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
             
             cs MemberName = CSz("FramebufferName");
 
-                                                                                                auto Member = Cast(u32*, &Element->FramebufferName);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->FramebufferName);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4184,6 +4316,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               ThisHash,
               Params
               );
+
 
 
 
@@ -4213,7 +4346,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
             
             cs MemberName = CSz("ShadowMap");
 
-                                                                                                auto Member = Cast(texture*, &Element->ShadowMap);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->ShadowMap);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4221,6 +4355,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               ThisHash,
               Params
               );
+
 
 
 
@@ -4249,7 +4384,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
             
             cs MemberName = CSz("Shader");
 
-                                                                                                auto Member = Cast(shadow_map_shader*, &Element->Shader);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shadow_map_shader*, &Element->Shader);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4257,6 +4393,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_render_group *Element,
               ThisHash,
               Params
               );
+
 
 
 
@@ -4343,7 +4480,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("Entropy");
 
-                                                                                                auto Member = Cast(random_series*, &Element->Entropy);
+                                                                                                // Regular struct member
+                        auto Member = Cast(random_series*, &Element->Entropy);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4351,6 +4489,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4379,7 +4518,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("SpawnType");
 
-                                                                                                auto Member = Cast(particle_spawn_type*, &Element->SpawnType);
+                                                                                                // Regular struct member
+                        auto Member = Cast(particle_spawn_type*, &Element->SpawnType);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4387,6 +4527,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4415,7 +4556,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("Drag");
 
-                                                                                                auto Member = Cast(r32*, &Element->Drag);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Drag);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4423,6 +4565,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4452,7 +4595,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("Lifetime");
 
-                                                                                                auto Member = Cast(r32*, &Element->Lifetime);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Lifetime);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4460,6 +4604,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4489,7 +4634,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("EmissionDelay");
 
-                                                                                                auto Member = Cast(r32*, &Element->EmissionDelay);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->EmissionDelay);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4497,6 +4643,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4526,7 +4673,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("EmissionLifespan");
 
-                                                                                                auto Member = Cast(r32*, &Element->EmissionLifespan);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->EmissionLifespan);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4534,6 +4682,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4563,7 +4712,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ActiveParticles");
 
-                                                                                                auto Member = Cast(u32*, &Element->ActiveParticles);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ActiveParticles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4571,6 +4721,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4600,7 +4751,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("LifespanMod");
 
-                                                                                                auto Member = Cast(r32*, &Element->LifespanMod);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->LifespanMod);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4608,6 +4760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4637,7 +4790,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleLifespan");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticleLifespan);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticleLifespan);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4645,6 +4799,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4674,7 +4829,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticlesPerSecond");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticlesPerSecond);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticlesPerSecond);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4682,6 +4838,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4711,7 +4868,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleLightEmission");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticleLightEmission);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticleLightEmission);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4719,6 +4877,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4748,7 +4907,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleLightEmissionChance");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticleLightEmissionChance);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticleLightEmissionChance);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4756,6 +4916,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4785,7 +4946,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleStartingTransparency");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticleStartingTransparency);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticleStartingTransparency);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4793,6 +4955,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4822,7 +4985,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleEndingTransparency");
 
-                                                                                                auto Member = Cast(r32*, &Element->ParticleEndingTransparency);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ParticleEndingTransparency);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4830,6 +4994,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -4895,7 +5060,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ParticleEndingDim");
 
-                                                                                                auto Member = Cast(f32*, &Element->ParticleEndingDim);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->ParticleEndingDim);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -4903,6 +5069,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -5004,7 +5171,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("SpawnRegion");
 
-                                                                                                auto Member = Cast(aabb*, &Element->SpawnRegion);
+                                                                                                // Regular struct member
+                        auto Member = Cast(aabb*, &Element->SpawnRegion);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5012,6 +5180,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -5040,7 +5209,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("SystemMovementCoefficient");
 
-                                                                                                auto Member = Cast(r32*, &Element->SystemMovementCoefficient);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->SystemMovementCoefficient);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5048,6 +5218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -5077,7 +5248,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
             
             cs MemberName = CSz("ElapsedSinceLastEmission");
 
-                                                                                                auto Member = Cast(r32*, &Element->ElapsedSinceLastEmission);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ElapsedSinceLastEmission);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5085,6 +5257,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -5116,6 +5289,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v PackedHSVColors[6]"),
                 CSz("> PackedHSVColors[6]"),
@@ -5167,6 +5341,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle_system *Element, cs 
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Particles[(4096)]"),
                 CSz("> Particles[(4096)]"),
@@ -5272,7 +5447,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Flags");
 
-                                                                                                auto Member = Cast(chunk_flag*, &Element->Flags);
+                                                                                                // Regular struct member
+                        auto Member = Cast(chunk_flag*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5280,6 +5456,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5308,7 +5485,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(octree_node_type*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5316,6 +5494,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5451,7 +5630,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Chunk");
 
-                                                                                                auto Member = Cast(world_chunk*, Element->Chunk);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_chunk*, Element->Chunk);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5459,6 +5639,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5489,6 +5670,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Children[8]"),
                 CSz("> Children[8]"),
@@ -5532,7 +5714,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Next");
 
-                                                                                                auto Member = Cast(octree_node*, Element->Next);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node*, Element->Next);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5540,6 +5723,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5568,7 +5752,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Edits");
 
-                                                                                                auto Member = Cast(world_edit_ptr_block_array*, &Element->Edits);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_ptr_block_array*, &Element->Edits);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5576,6 +5761,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5604,7 +5790,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
             
             cs MemberName = CSz("Lock");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->Lock);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->Lock);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5612,6 +5799,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -5733,7 +5921,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
             
             cs MemberName = CSz("Squareness");
 
-                                                                                                auto Member = Cast(r32*, &Element->Squareness);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Squareness);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5741,6 +5930,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -5770,7 +5960,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
             
             cs MemberName = CSz("MaskChance");
 
-                                                                                                auto Member = Cast(r32*, &Element->MaskChance);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->MaskChance);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5778,6 +5969,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, voronoi_noise_params *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -5972,7 +6164,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
             
             cs MemberName = CSz("Window");
 
-                                                                                                auto Member = Cast(window_layout*, Element->Window);
+                                                                                                // Regular struct member
+                        auto Member = Cast(window_layout*, Element->Window);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -5980,6 +6173,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, interactable *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -6103,7 +6297,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6111,6 +6306,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               ThisHash,
               Params
               );
+
 
 
 
@@ -6141,6 +6337,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[4]"),
                 CSz("> Uniforms[4]"),
@@ -6189,7 +6386,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
             
             cs MemberName = CSz("DestTex");
 
-                                                                                                auto Member = Cast(texture*, Element->DestTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->DestTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6197,6 +6395,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               ThisHash,
               Params
               );
+
 
 
 
@@ -6225,7 +6424,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
             
             cs MemberName = CSz("DestFBO");
 
-                                                                                                auto Member = Cast(framebuffer*, Element->DestFBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, Element->DestFBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6233,6 +6433,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               ThisHash,
               Params
               );
+
 
 
 
@@ -6261,7 +6462,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
             
             cs MemberName = CSz("DerivsTex");
 
-                                                                                                auto Member = Cast(texture*, Element->DerivsTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, Element->DerivsTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6269,6 +6471,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
               ThisHash,
               Params
               );
+
 
 
 
@@ -6470,7 +6673,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6478,6 +6682,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               ThisHash,
               Params
               );
+
 
 
 
@@ -6508,6 +6713,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[1]"),
                 CSz("> Uniforms[1]"),
@@ -6556,7 +6762,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
             
             cs MemberName = CSz("DestTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->DestTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->DestTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6564,6 +6771,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               ThisHash,
               Params
               );
+
 
 
 
@@ -6592,7 +6800,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
             
             cs MemberName = CSz("FBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->FBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->FBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6600,6 +6809,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               ThisHash,
               Params
               );
+
 
 
 
@@ -6628,7 +6838,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
             
             cs MemberName = CSz("Ignored");
 
-                                                                                                auto Member = Cast(u32*, &Element->Ignored);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Ignored);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6636,6 +6847,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_conte
               ThisHash,
               Params
               );
+
 
 
 
@@ -6733,7 +6945,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Debug_ToggleMenu");
 
-                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleMenu);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Debug_ToggleMenu);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6741,6 +6954,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6769,7 +6983,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Debug_ToggleProfiling");
 
-                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleProfiling);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Debug_ToggleProfiling);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6777,6 +6992,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6805,7 +7021,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Debug_ToggleCamera");
 
-                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleCamera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Debug_ToggleCamera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6813,6 +7030,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6841,7 +7059,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Left");
 
-                                                                                                auto Member = Cast(input_event*, Element->Left);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Left);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6849,6 +7068,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6877,7 +7097,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Right");
 
-                                                                                                auto Member = Cast(input_event*, Element->Right);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Right);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6885,6 +7106,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6913,7 +7135,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Forward");
 
-                                                                                                auto Member = Cast(input_event*, Element->Forward);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Forward);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6921,6 +7144,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6949,7 +7173,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Backward");
 
-                                                                                                auto Member = Cast(input_event*, Element->Backward);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Backward);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6957,6 +7182,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -6985,7 +7211,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Up");
 
-                                                                                                auto Member = Cast(input_event*, Element->Up);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Up);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6993,6 +7220,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7021,7 +7249,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Down");
 
-                                                                                                auto Member = Cast(input_event*, Element->Down);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Down);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7029,6 +7258,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7057,7 +7287,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Primary");
 
-                                                                                                auto Member = Cast(input_event*, Element->Primary);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Primary);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7065,6 +7296,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7093,7 +7325,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Secondary");
 
-                                                                                                auto Member = Cast(input_event*, Element->Secondary);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Secondary);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7101,6 +7334,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7129,7 +7363,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Tertiary");
 
-                                                                                                auto Member = Cast(input_event*, Element->Tertiary);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Tertiary);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7137,6 +7372,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7165,7 +7401,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Ctrl");
 
-                                                                                                auto Member = Cast(input_event*, Element->Ctrl);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Ctrl);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7173,6 +7410,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7201,7 +7439,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Alt");
 
-                                                                                                auto Member = Cast(input_event*, Element->Alt);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Alt);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7209,6 +7448,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7237,7 +7477,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Shift");
 
-                                                                                                auto Member = Cast(input_event*, Element->Shift);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Shift);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7245,6 +7486,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7273,7 +7515,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("ZoomType");
 
-                                                                                                auto Member = Cast(zoom_type*, &Element->ZoomType);
+                                                                                                // Regular struct member
+                        auto Member = Cast(zoom_type*, &Element->ZoomType);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7281,6 +7524,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7309,7 +7553,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Zoom");
 
-                                                                                                auto Member = Cast(input_event*, Element->Zoom);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->Zoom);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7317,6 +7562,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7345,7 +7591,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("DeleteEntity");
 
-                                                                                                auto Member = Cast(input_event*, Element->DeleteEntity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->DeleteEntity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7353,6 +7600,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7381,7 +7629,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("MultiSelect");
 
-                                                                                                auto Member = Cast(input_event*, Element->MultiSelect);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, Element->MultiSelect);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7389,6 +7638,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7417,7 +7667,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("CenterCamera");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->CenterCamera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->CenterCamera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7425,6 +7676,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7453,7 +7705,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("NewSelection");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->NewSelection);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->NewSelection);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7461,6 +7714,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7489,7 +7743,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("ResizeSelection_AllAxies");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_AllAxies);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_AllAxies);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7497,6 +7752,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7525,7 +7781,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("ResizeSelection_BothLinearAxies");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_BothLinearAxies);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_BothLinearAxies);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7533,6 +7790,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7561,7 +7819,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("ResizeSelection_SingleLinearAxis");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_SingleLinearAxis);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_SingleLinearAxis);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7569,6 +7828,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7597,7 +7857,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("TranslateSelection_Linear");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Linear);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Linear);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7605,6 +7866,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7633,7 +7895,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("TranslateSelection_Planar");
 
-                                                                                                auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Planar);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Planar);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7641,6 +7904,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -7723,7 +7987,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Frust");
 
-                                                                                                auto Member = Cast(frustum*, &Element->Frust);
+                                                                                                // Regular struct member
+                        auto Member = Cast(frustum*, &Element->Frust);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7731,6 +7996,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7759,7 +8025,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("CurrentP");
 
-                                                                                                auto Member = Cast(cp*, &Element->CurrentP);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->CurrentP);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7767,6 +8034,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7831,7 +8099,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Pitch");
 
-                                                                                                auto Member = Cast(r32*, &Element->Pitch);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Pitch);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7839,6 +8108,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7868,7 +8138,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Roll");
 
-                                                                                                auto Member = Cast(r32*, &Element->Roll);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Roll);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7876,6 +8147,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7905,7 +8177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Yaw");
 
-                                                                                                auto Member = Cast(r32*, &Element->Yaw);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Yaw);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7913,6 +8186,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7942,7 +8216,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("DistanceFromTarget");
 
-                                                                                                auto Member = Cast(r32*, &Element->DistanceFromTarget);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->DistanceFromTarget);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7950,6 +8225,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -7979,7 +8255,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("TargetPitch");
 
-                                                                                                auto Member = Cast(r32*, &Element->TargetPitch);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->TargetPitch);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7987,6 +8264,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8016,7 +8294,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("TargetRoll");
 
-                                                                                                auto Member = Cast(r32*, &Element->TargetRoll);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->TargetRoll);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8024,6 +8303,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8053,7 +8333,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("TargetYaw");
 
-                                                                                                auto Member = Cast(r32*, &Element->TargetYaw);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->TargetYaw);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8061,6 +8342,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8090,7 +8372,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("TargetDistanceFromTarget");
 
-                                                                                                auto Member = Cast(r32*, &Element->TargetDistanceFromTarget);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->TargetDistanceFromTarget);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8098,6 +8381,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8127,7 +8411,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Blend");
 
-                                                                                                auto Member = Cast(r32*, &Element->Blend);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Blend);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8135,6 +8420,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8164,7 +8450,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("Speed");
 
-                                                                                                auto Member = Cast(r32*, &Element->Speed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Speed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8172,6 +8459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8309,7 +8597,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("GhostId");
 
-                                                                                                auto Member = Cast(entity_id*, &Element->GhostId);
+                                                                                                // Regular struct member
+                        auto Member = Cast(entity_id*, &Element->GhostId);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8317,6 +8606,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8345,7 +8635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("ViewProjection");
 
-                                                                                                auto Member = Cast(m4*, &Element->ViewProjection);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->ViewProjection);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8353,6 +8644,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8381,7 +8673,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("InverseViewMatrix");
 
-                                                                                                auto Member = Cast(m4*, &Element->InverseViewMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->InverseViewMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8389,6 +8682,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8417,7 +8711,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
             
             cs MemberName = CSz("InverseProjectionMatrix");
 
-                                                                                                auto Member = Cast(m4*, &Element->InverseProjectionMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->InverseProjectionMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8425,6 +8720,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, camera *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -8577,7 +8873,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("TextGroup");
 
-                                                                                                auto Member = Cast(render_buffers_2d*, Element->TextGroup);
+                                                                                                // Regular struct member
+                        auto Member = Cast(render_buffers_2d*, Element->TextGroup);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8585,6 +8882,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8613,7 +8911,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("SolidQuadGeometryBuffer");
 
-                                                                                                auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer);
+                                                                                                // Regular struct member
+                        auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->SolidQuadGeometryBuffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8621,6 +8920,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8649,7 +8949,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("TexturedQuadRenderPass");
 
-                                                                                                auto Member = Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass);
+                                                                                                // Regular struct member
+                        auto Member = Cast(textured_quad_render_pass*, &Element->TexturedQuadRenderPass);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8657,6 +8958,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8685,7 +8987,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("CustomQuadGeometryBuffer");
 
-                                                                                                auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer);
+                                                                                                // Regular struct member
+                        auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->CustomQuadGeometryBuffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8693,6 +8996,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8721,7 +9025,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("SpriteTextureArray");
 
-                                                                                                auto Member = Cast(texture*, &Element->SpriteTextureArray);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->SpriteTextureArray);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8729,6 +9034,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8757,7 +9063,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("IconTextureArray");
 
-                                                                                                auto Member = Cast(texture*, &Element->IconTextureArray);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->IconTextureArray);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8765,6 +9072,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8901,7 +9209,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Input");
 
-                                                                                                auto Member = Cast(input*, Element->Input);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input*, Element->Input);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8909,6 +9218,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8937,7 +9247,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("ToggleTable");
 
-                                                                                                auto Member = Cast(ui_toggle_hashtable*, &Element->ToggleTable);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ui_toggle_hashtable*, &Element->ToggleTable);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8945,6 +9256,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -8973,7 +9285,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("WindowTable");
 
-                                                                                                auto Member = Cast(window_layout_hashtable*, &Element->WindowTable);
+                                                                                                // Regular struct member
+                        auto Member = Cast(window_layout_hashtable*, &Element->WindowTable);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -8981,6 +9294,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9011,6 +9325,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v MinimizedWindowBuffer[64]"),
                 CSz("> MinimizedWindowBuffer[64]"),
@@ -9059,7 +9374,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("HighestWindow");
 
-                                                                                                auto Member = Cast(window_layout*, Element->HighestWindow);
+                                                                                                // Regular struct member
+                        auto Member = Cast(window_layout*, Element->HighestWindow);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9067,6 +9383,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9095,7 +9412,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Active");
 
-                                                                                                auto Member = Cast(interactable*, &Element->Active);
+                                                                                                // Regular struct member
+                        auto Member = Cast(interactable*, &Element->Active);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9103,6 +9421,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9131,7 +9450,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Hover");
 
-                                                                                                auto Member = Cast(interactable*, &Element->Hover);
+                                                                                                // Regular struct member
+                        auto Member = Cast(interactable*, &Element->Hover);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9139,6 +9459,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9167,7 +9488,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Clicked");
 
-                                                                                                auto Member = Cast(interactable*, &Element->Clicked);
+                                                                                                // Regular struct member
+                        auto Member = Cast(interactable*, &Element->Clicked);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9175,6 +9497,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9203,7 +9526,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Pressed");
 
-                                                                                                auto Member = Cast(interactable*, &Element->Pressed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(interactable*, &Element->Pressed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9211,6 +9535,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9274,7 +9599,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("TextEdit");
 
-                                                                                                auto Member = Cast(text_box_edit_state*, &Element->TextEdit);
+                                                                                                // Regular struct member
+                        auto Member = Cast(text_box_edit_state*, &Element->TextEdit);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9282,6 +9608,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9310,7 +9637,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("CommandBuffer");
 
-                                                                                                auto Member = Cast(ui_render_command_buffer*, Element->CommandBuffer);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ui_render_command_buffer*, Element->CommandBuffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9318,6 +9646,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9346,7 +9675,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("RenderCommandArena");
 
-                                                                                                auto Member = Cast(memory_arena*, &Element->RenderCommandArena);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, &Element->RenderCommandArena);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9354,6 +9684,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9382,7 +9713,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("UiToggleArena");
 
-                                                                                                auto Member = Cast(memory_arena*, &Element->UiToggleArena);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, &Element->UiToggleArena);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9390,6 +9722,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9418,7 +9751,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("WindowTableArena");
 
-                                                                                                auto Member = Cast(memory_arena*, &Element->WindowTableArena);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, &Element->WindowTableArena);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9426,6 +9760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9454,7 +9789,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("Strings");
 
-                                                                                                auto Member = Cast(heap_allocator*, &Element->Strings);
+                                                                                                // Regular struct member
+                        auto Member = Cast(heap_allocator*, &Element->Strings);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9462,6 +9798,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9492,6 +9829,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v DebugColors[128]"),
                 CSz("> DebugColors[128]"),
@@ -9540,7 +9878,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
             
             cs MemberName = CSz("ColorPalette");
 
-                                                                                                auto Member = Cast(v3_cursor*, Element->ColorPalette);
+                                                                                                // Regular struct member
+                        auto Member = Cast(v3_cursor*, Element->ColorPalette);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9548,6 +9887,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, renderer_2d *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -9639,7 +9979,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("farClip");
 
-                                                                                                auto Member = Cast(f32*, &Element->farClip);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->farClip);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9647,6 +9988,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9676,7 +10018,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("nearClip");
 
-                                                                                                auto Member = Cast(f32*, &Element->nearClip);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->nearClip);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9684,6 +10027,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9713,7 +10057,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("FOV");
 
-                                                                                                auto Member = Cast(f32*, &Element->FOV);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->FOV);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9721,6 +10066,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9750,7 +10096,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("Top");
 
-                                                                                                auto Member = Cast(plane*, &Element->Top);
+                                                                                                // Regular struct member
+                        auto Member = Cast(plane*, &Element->Top);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9758,6 +10105,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9786,7 +10134,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("Bottom");
 
-                                                                                                auto Member = Cast(plane*, &Element->Bottom);
+                                                                                                // Regular struct member
+                        auto Member = Cast(plane*, &Element->Bottom);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9794,6 +10143,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9822,7 +10172,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("Left");
 
-                                                                                                auto Member = Cast(plane*, &Element->Left);
+                                                                                                // Regular struct member
+                        auto Member = Cast(plane*, &Element->Left);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9830,6 +10181,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9858,7 +10210,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
             
             cs MemberName = CSz("Right");
 
-                                                                                                auto Member = Cast(plane*, &Element->Right);
+                                                                                                // Regular struct member
+                        auto Member = Cast(plane*, &Element->Right);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9866,6 +10219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, frustum *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -9968,7 +10322,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
             
             cs MemberName = CSz("Edits");
 
-                                                                                                auto Member = Cast(world_edit_paged_list*, &Element->Edits);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_paged_list*, &Element->Edits);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -9976,6 +10331,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -10004,7 +10360,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
             
             cs MemberName = CSz("SpawnCallback");
 
-                                                                                                auto Member = Cast(prefab_spawn_callback*, &Element->SpawnCallback);
+                                                                                                // Regular struct member
+                        auto Member = Cast(prefab_spawn_callback*, &Element->SpawnCallback);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10012,6 +10369,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, prefab *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -10131,7 +10489,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
             
             cs MemberName = CSz("DistanceToOrigin");
 
-                                                                                                auto Member = Cast(f32*, &Element->DistanceToOrigin);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->DistanceToOrigin);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10139,6 +10498,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, plane *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -10230,7 +10590,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10238,6 +10599,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               ThisHash,
               Params
               );
+
 
 
 
@@ -10268,6 +10630,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[4]"),
                 CSz("> Uniforms[4]"),
@@ -10318,6 +10681,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Framebuffers[3]"),
                 CSz("> Framebuffers[3]"),
@@ -10474,7 +10838,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(s32*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10482,6 +10847,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               ThisHash,
               Params
               );
+
 
 
 
@@ -10511,7 +10877,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
             
             cs MemberName = CSz("BrushTextureFramebufferFreelist");
 
-                                                                                                auto Member = Cast(rtt_framebuffer_paged_list*, &Element->BrushTextureFramebufferFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(rtt_framebuffer_paged_list*, &Element->BrushTextureFramebufferFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10519,6 +10886,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_render_context *El
               ThisHash,
               Params
               );
+
 
 
 
@@ -10602,7 +10970,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
             
             cs MemberName = CSz("Hollow");
 
-                                                                                                auto Member = Cast(r32*, &Element->Hollow);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Hollow);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10610,6 +10979,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               ThisHash,
               Params
               );
+
 
 
 
@@ -10639,7 +11009,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
             
             cs MemberName = CSz("Rounding");
 
-                                                                                                auto Member = Cast(r32*, &Element->Rounding);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Rounding);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10647,6 +11018,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *
               ThisHash,
               Params
               );
+
 
 
 
@@ -10844,7 +11216,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Radius");
 
-                                                                                                auto Member = Cast(f32*, &Element->Radius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->Radius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10852,6 +11225,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -10937,7 +11311,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
             
             cs MemberName = CSz("Resolution");
 
-                                                                                                auto Member = Cast(resolution_setting*, &Element->Resolution);
+                                                                                                // Regular struct member
+                        auto Member = Cast(resolution_setting*, &Element->Resolution);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10945,6 +11320,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -10973,7 +11349,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
             
             cs MemberName = CSz("ShadowQuality");
 
-                                                                                                auto Member = Cast(shadow_quality_setting*, &Element->ShadowQuality);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shadow_quality_setting*, &Element->ShadowQuality);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -10981,6 +11358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -11009,7 +11387,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
             
             cs MemberName = CSz("LightingQuality");
 
-                                                                                                auto Member = Cast(lighting_quality_setting*, &Element->LightingQuality);
+                                                                                                // Regular struct member
+                        auto Member = Cast(lighting_quality_setting*, &Element->LightingQuality);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11017,6 +11396,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -11045,7 +11425,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
             
             cs MemberName = CSz("ShaderLanguage");
 
-                                                                                                auto Member = Cast(shader_language_setting*, &Element->ShaderLanguage);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader_language_setting*, &Element->ShaderLanguage);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11053,6 +11434,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -11081,7 +11463,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
             
             cs MemberName = CSz("WindowStartingSize");
 
-                                                                                                auto Member = Cast(resolution_setting*, &Element->WindowStartingSize);
+                                                                                                // Regular struct member
+                        auto Member = Cast(resolution_setting*, &Element->WindowStartingSize);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11089,6 +11472,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -11174,7 +11558,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Initialized");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->Initialized);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->Initialized);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11182,6 +11567,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11210,7 +11596,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("RenderGate");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->RenderGate);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->RenderGate);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11218,6 +11605,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11246,7 +11634,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Settings");
 
-                                                                                                auto Member = Cast(render_settings*, &Element->Settings);
+                                                                                                // Regular struct member
+                        auto Member = Cast(render_settings*, &Element->Settings);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11254,6 +11643,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11282,7 +11672,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("PrevSettings");
 
-                                                                                                auto Member = Cast(render_settings*, &Element->PrevSettings);
+                                                                                                // Regular struct member
+                        auto Member = Cast(render_settings*, &Element->PrevSettings);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11290,6 +11681,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11426,7 +11818,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("GameCamera");
 
-                                                                                                auto Member = Cast(camera*, &Element->GameCamera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(camera*, &Element->GameCamera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11434,6 +11827,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11462,7 +11856,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("DebugCamera");
 
-                                                                                                auto Member = Cast(camera*, &Element->DebugCamera);
+                                                                                                // Regular struct member
+                        auto Member = Cast(camera*, &Element->DebugCamera);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11470,6 +11865,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11518,7 +11914,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Exposure");
 
-                                                                                                auto Member = Cast(r32*, &Element->Exposure);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Exposure);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11526,6 +11923,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11555,7 +11953,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("MainDrawList");
 
-                                                                                                auto Member = Cast(octree_node_ptr_paged_list*, &Element->MainDrawList);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_ptr_paged_list*, &Element->MainDrawList);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11563,6 +11962,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11591,7 +11991,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("ShadowMapDrawList");
 
-                                                                                                auto Member = Cast(octree_node_ptr_paged_list*, &Element->ShadowMapDrawList);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node_ptr_paged_list*, &Element->ShadowMapDrawList);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11599,6 +12000,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11699,7 +12101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("gBuffer");
 
-                                                                                                auto Member = Cast(g_buffer_render_group*, Element->gBuffer);
+                                                                                                // Regular struct member
+                        auto Member = Cast(g_buffer_render_group*, Element->gBuffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11707,6 +12110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11735,7 +12139,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("AoGroup");
 
-                                                                                                auto Member = Cast(ao_render_group*, Element->AoGroup);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ao_render_group*, Element->AoGroup);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11743,6 +12148,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11771,7 +12177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("SG");
 
-                                                                                                auto Member = Cast(shadow_render_group*, Element->SG);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shadow_render_group*, Element->SG);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11779,6 +12186,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11827,7 +12235,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("ColorPaletteTexture");
 
-                                                                                                auto Member = Cast(texture*, &Element->ColorPaletteTexture);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->ColorPaletteTexture);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11835,6 +12244,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11863,7 +12273,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Transparency");
 
-                                                                                                auto Member = Cast(transparency_render_group*, &Element->Transparency);
+                                                                                                // Regular struct member
+                        auto Member = Cast(transparency_render_group*, &Element->Transparency);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11871,6 +12282,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11899,7 +12311,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Lighting");
 
-                                                                                                auto Member = Cast(lighting_render_group*, &Element->Lighting);
+                                                                                                // Regular struct member
+                        auto Member = Cast(lighting_render_group*, &Element->Lighting);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11907,6 +12320,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11935,7 +12349,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Bloom");
 
-                                                                                                auto Member = Cast(bloom_render_group*, &Element->Bloom);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bloom_render_group*, &Element->Bloom);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11943,6 +12358,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -11971,7 +12387,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Gaussian");
 
-                                                                                                auto Member = Cast(gaussian_render_group*, &Element->Gaussian);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gaussian_render_group*, &Element->Gaussian);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -11979,6 +12396,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12007,7 +12425,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("CompositeGroup");
 
-                                                                                                auto Member = Cast(composite_render_group*, &Element->CompositeGroup);
+                                                                                                // Regular struct member
+                        auto Member = Cast(composite_render_group*, &Element->CompositeGroup);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12015,6 +12434,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12043,7 +12463,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("TerrainShapingRC");
 
-                                                                                                auto Member = Cast(terrain_shaping_render_context*, &Element->TerrainShapingRC);
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_shaping_render_context*, &Element->TerrainShapingRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12051,6 +12472,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12079,7 +12501,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("TerrainDecorationRC");
 
-                                                                                                auto Member = Cast(terrain_decoration_render_context*, &Element->TerrainDecorationRC);
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_decoration_render_context*, &Element->TerrainDecorationRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12087,6 +12510,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12115,7 +12539,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("TerrainDerivsRC");
 
-                                                                                                auto Member = Cast(terrain_derivs_render_context*, &Element->TerrainDerivsRC);
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_derivs_render_context*, &Element->TerrainDerivsRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12123,6 +12548,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12151,7 +12577,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("TerrainFinalizeRC");
 
-                                                                                                auto Member = Cast(terrain_finalize_render_context*, &Element->TerrainFinalizeRC);
+                                                                                                // Regular struct member
+                        auto Member = Cast(terrain_finalize_render_context*, &Element->TerrainFinalizeRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12159,6 +12586,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12187,7 +12615,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("WorldEditRC");
 
-                                                                                                auto Member = Cast(world_edit_render_context*, &Element->WorldEditRC);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_render_context*, &Element->WorldEditRC);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12195,6 +12624,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12223,7 +12653,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("NoiseFinalizeJobsPending");
 
-                                                                                                auto Member = Cast(u32*, &Element->NoiseFinalizeJobsPending);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->NoiseFinalizeJobsPending);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12231,6 +12662,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12260,7 +12692,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("TotalChunkJobsActive");
 
-                                                                                                auto Member = Cast(u32*, &Element->TotalChunkJobsActive);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->TotalChunkJobsActive);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12268,6 +12701,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12297,7 +12731,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("NoiseReadbackJobs");
 
-                                                                                                auto Member = Cast(dummy_work_queue_entry_build_chunk_mesh_block_array*, &Element->NoiseReadbackJobs);
+                                                                                                // Regular struct member
+                        auto Member = Cast(dummy_work_queue_entry_build_chunk_mesh_block_array*, &Element->NoiseReadbackJobs);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12305,6 +12740,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12333,7 +12769,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("ImmediateGeometry");
 
-                                                                                                auto Member = Cast(triple_buffered_gpu_mapped_element_buffer*, &Element->ImmediateGeometry);
+                                                                                                // Regular struct member
+                        auto Member = Cast(triple_buffered_gpu_mapped_element_buffer*, &Element->ImmediateGeometry);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12341,6 +12778,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12369,7 +12807,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("GpuTimers");
 
-                                                                                                auto Member = Cast(gpu_timer_block_array*, &Element->GpuTimers);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_timer_block_array*, &Element->GpuTimers);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12377,6 +12816,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12405,7 +12845,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12413,6 +12854,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -12734,7 +13176,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
             
             cs MemberName = CSz("Mass");
 
-                                                                                                auto Member = Cast(r32*, &Element->Mass);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Mass);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12742,6 +13185,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -12771,7 +13215,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
             
             cs MemberName = CSz("Speed");
 
-                                                                                                auto Member = Cast(r32*, &Element->Speed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Speed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12779,6 +13224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
               ThisHash,
               Params
               );
+
 
 
 
@@ -12812,6 +13258,152 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
 
 }
 
+
+
+
+
+link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Name, u32 ParentHash, ui_render_params *Params)
+
+{
+  u32 ThisHash = ChrisWellonsIntegerHash_lowbias32(ParentHash ^ 0x341B827D);
+
+  if (Element)
+  {
+    // NOTE(Jesse): This is wacky as fuck, but it's a pretty easy way to support
+    // not drawing the toggl-y thing if we just want to dump the members.
+    b32 DrawChildren = True;
+    b32 DidToggle = False;
+    if (Name.Count)
+    {
+      if (ToggleButton(Ui, FSz("v %S", Name), FSz("> %S", Name), UiId(Window, "toggle hotkey_chord", Element, ThisHash), Params))
+      {
+        DidToggle = True;
+        PushNewRow(Ui);
+      }
+      else
+      {
+        DrawChildren = False;
+      }
+    }
+
+    if (DrawChildren)
+    {
+      if (Name.Count) { PushTableStart(Ui); }
+
+      if (DidToggle) { OPEN_INDENT_FOR_TOGGLEABLE_REGION(); }
+            {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("EventCount");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->EventCount);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Events");
+
+                                                                                                // Regular struct member
+            
+            // NOTE(Jesse): Copypasta @array_display_code
+            if (ToggleButton(Ui,
+                FSz("v Events[%d]", Element->EventCount),
+                FSz("> Events[%d]", Element->EventCount),
+                UiId(Window, "toggle hotkey_chord input_event Events", Element->Events, ThisHash),
+                Params ))
+            {
+              OPEN_INDENT_FOR_TOGGLEABLE_REGION();
+              PushNewRow(Ui);
+              s32 End = s32(Element->EventCount);
+              RangeIterator(ArrayIndex, End)
+              {
+                                DoEditorUi( Ui,
+                  Window,
+                  Element->Events+ArrayIndex,
+                  FSz("Events[%d]", ArrayIndex),
+                  ThisHash,
+                  Params );
+
+                
+              }
+              CLOSE_INDENT_FOR_TOGGLEABLE_REGION();
+            }
+            PushNewRow(Ui);
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+
+      if (DidToggle) { CLOSE_INDENT_FOR_TOGGLEABLE_REGION(); }
+      if (Name.Count) { PushTableEnd(Ui); }
+    }
+    else
+    {
+      PushNewRow(Ui);
+    }
+
+  }
+  else
+  {
+    PushColumn(Ui, Name, Params);
+    PushColumn(Ui, CSz("(null)"), Params);
+    PushNewRow(Ui);
+  }
+
+}
 
 
 
@@ -12910,7 +13502,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
             
             cs MemberName = CSz("ValueBlend");
 
-                                                                                                auto Member = Cast(r32*, &Element->ValueBlend);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ValueBlend);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12918,6 +13511,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               ThisHash,
               Params
               , -1.f,  1.f );
+
 
 
 
@@ -12947,7 +13541,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
             
             cs MemberName = CSz("ColorBlend");
 
-                                                                                                auto Member = Cast(r32*, &Element->ColorBlend);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->ColorBlend);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -12955,6 +13550,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element,
               ThisHash,
               Params
               , -1.f,  1.f );
+
 
 
 
@@ -13037,7 +13633,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             cs MemberName = CSz("Region");
 
-                                                                                                auto Member = Cast(rect3cp*, &Element->Region);
+                                                                                                // Regular struct member
+                        auto Member = Cast(rect3cp*, &Element->Region);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13045,6 +13642,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -13073,7 +13671,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             cs MemberName = CSz("Brush");
 
-                                                                                                auto Member = Cast(world_edit_brush*, Element->Brush);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_brush*, Element->Brush);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13081,6 +13680,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -13145,7 +13745,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             cs MemberName = CSz("Flags");
 
-                                                                                                auto Member = Cast(u32*, &Element->Flags);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13153,6 +13754,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -13252,7 +13854,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
             
             cs MemberName = CSz("Ordinal");
 
-                                                                                                auto Member = Cast(u32*, &Element->Ordinal);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Ordinal);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13260,6 +13863,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -13418,7 +14022,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
             
             cs MemberName = CSz("Color");
 
-                                                                                                auto Member = Cast(u8*, &Element->Color);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u8*, &Element->Color);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13426,6 +14031,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -13455,7 +14061,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
             
             cs MemberName = CSz("IsLight");
 
-                                                                                                auto Member = Cast(b8*, &Element->IsLight);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->IsLight);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13463,6 +14070,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -13492,7 +14100,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
             
             cs MemberName = CSz("RemainingLifespan");
 
-                                                                                                auto Member = Cast(r32*, &Element->RemainingLifespan);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->RemainingLifespan);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13500,6 +14109,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, particle *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -13588,7 +14198,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13596,6 +14207,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               ThisHash,
               Params
               );
+
 
 
 
@@ -13626,6 +14238,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[2]"),
                 CSz("> Uniforms[2]"),
@@ -13674,7 +14287,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
             
             cs MemberName = CSz("Func");
 
-                                                                                                auto Member = Cast(easing_function*, Element->Func);
+                                                                                                // Regular struct member
+                        auto Member = Cast(easing_function*, Element->Func);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13682,6 +14296,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function_visualizer_re
               ThisHash,
               Params
               );
+
 
 
 
@@ -13938,7 +14553,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Orientation");
 
-                                                                                                auto Member = Cast(shape_axis*, &Element->Orientation);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shape_axis*, &Element->Orientation);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13946,6 +14562,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -13974,7 +14591,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Thickness");
 
-                                                                                                auto Member = Cast(f32*, &Element->Thickness);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->Thickness);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -13982,6 +14600,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -14080,7 +14699,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
             
             cs MemberName = CSz("Clicks");
 
-                                                                                                auto Member = Cast(u32*, &Element->Clicks);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->Clicks);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14088,6 +14708,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -14117,7 +14738,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
             
             cs MemberName = CSz("Base");
 
-                                                                                                auto Member = Cast(cp*, &Element->Base);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->Base);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14125,6 +14747,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -14153,7 +14776,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
             
             cs MemberName = CSz("Region");
 
-                                                                                                auto Member = Cast(rect3cp*, &Element->Region);
+                                                                                                // Regular struct member
+                        auto Member = Cast(rect3cp*, &Element->Region);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14161,6 +14785,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -14260,7 +14885,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
             
             cs MemberName = CSz("ModMode");
 
-                                                                                                auto Member = Cast(selection_modification_mode*, &Element->ModMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(selection_modification_mode*, &Element->ModMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14268,6 +14894,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -14296,7 +14923,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
             
             cs MemberName = CSz("ModState");
 
-                                                                                                auto Member = Cast(selection_modification_state*, &Element->ModState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(selection_modification_state*, &Element->ModState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14304,6 +14932,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, selection_region *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -14392,7 +15021,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14400,6 +15030,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -14430,6 +15061,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[4]"),
                 CSz("> Uniforms[4]"),
@@ -14478,7 +15110,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
             
             cs MemberName = CSz("ModelMatrix");
 
-                                                                                                auto Member = Cast(m4*, &Element->ModelMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->ModelMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14486,6 +15119,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -14514,7 +15148,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
             
             cs MemberName = CSz("ViewProjection");
 
-                                                                                                auto Member = Cast(m4*, &Element->ViewProjection);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->ViewProjection);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14522,6 +15157,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shadow_map_shader *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -14675,7 +15311,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14683,6 +15320,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -14713,6 +15351,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[1]"),
                 CSz("> Uniforms[1]"),
@@ -14761,7 +15400,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
             
             cs MemberName = CSz("FilterRadius");
 
-                                                                                                auto Member = Cast(f32*, Element->FilterRadius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, Element->FilterRadius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -14769,6 +15409,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_upsample_shader *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -15105,7 +15746,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
             
             cs MemberName = CSz("MajorGridDim");
 
-                                                                                                auto Member = Cast(r32*, &Element->MajorGridDim);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->MajorGridDim);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15113,6 +15755,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               ThisHash,
               Params
               , 0, 32 );
+
 
 
 
@@ -15177,7 +15820,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
             
             cs MemberName = CSz("CameraGhostSize");
 
-                                                                                                auto Member = Cast(r32*, &Element->CameraGhostSize);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->CameraGhostSize);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15185,6 +15829,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               ThisHash,
               Params
               , 1, 100 );
+
 
 
 
@@ -15254,7 +15899,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
             
             cs MemberName = CSz("ToneMappingType");
 
-                                                                                                auto Member = Cast(tone_mapping_type*, &Element->ToneMappingType);
+                                                                                                // Regular struct member
+                        auto Member = Cast(tone_mapping_type*, &Element->ToneMappingType);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15262,6 +15908,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -15290,7 +15937,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
             
             cs MemberName = CSz("GameCameraFOV");
 
-                                                                                                auto Member = Cast(f32*, &Element->GameCameraFOV);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->GameCameraFOV);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15298,6 +15946,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               ThisHash,
               Params
               , 5, 250 );
+
 
 
 
@@ -15327,7 +15976,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
             
             cs MemberName = CSz("Lighting");
 
-                                                                                                auto Member = Cast(lighting_settings*, &Element->Lighting);
+                                                                                                // Regular struct member
+                        auto Member = Cast(lighting_settings*, &Element->Lighting);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15335,6 +15985,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_settings *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -15669,7 +16320,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("Title");
 
-                                                                                                auto Member = Cast(cs*, &Element->Title);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->Title);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15677,6 +16329,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -15741,7 +16394,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("MinimizeIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->MinimizeIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->MinimizeIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15749,6 +16403,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -15778,7 +16433,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("Flags");
 
-                                                                                                auto Member = Cast(s32*, &Element->Flags);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->Flags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15786,6 +16442,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -15923,7 +16580,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("CachedFlags");
 
-                                                                                                auto Member = Cast(s32*, &Element->CachedFlags);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->CachedFlags);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -15931,6 +16589,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16068,7 +16727,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("InteractionStackIndex");
 
-                                                                                                auto Member = Cast(u64*, &Element->InteractionStackIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->InteractionStackIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16076,6 +16736,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16105,7 +16766,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("zBackground");
 
-                                                                                                auto Member = Cast(r32*, &Element->zBackground);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->zBackground);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16113,6 +16775,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16142,7 +16805,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("zText");
 
-                                                                                                auto Member = Cast(r32*, &Element->zText);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->zText);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16150,6 +16814,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16179,7 +16844,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("zBorder");
 
-                                                                                                auto Member = Cast(r32*, &Element->zBorder);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->zBorder);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16187,6 +16853,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16216,7 +16883,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("zTitleBar");
 
-                                                                                                auto Member = Cast(r32*, &Element->zTitleBar);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->zTitleBar);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16224,6 +16892,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16253,7 +16922,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
             
             cs MemberName = CSz("NextHotWindow");
 
-                                                                                                auto Member = Cast(window_layout*, Element->NextHotWindow);
+                                                                                                // Regular struct member
+                        auto Member = Cast(window_layout*, Element->NextHotWindow);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16261,6 +16931,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, window_layout *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -16359,7 +17030,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Heap");
 
-                                                                                                auto Member = Cast(heap_allocator*, &Element->Heap);
+                                                                                                // Regular struct member
+                        auto Member = Cast(heap_allocator*, &Element->Heap);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16367,6 +17039,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16395,7 +17068,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16403,6 +17077,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16431,7 +17106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("SelectedTool");
 
-                                                                                                auto Member = Cast(ui_editor_tool*, &Element->SelectedTool);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ui_editor_tool*, &Element->SelectedTool);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16439,6 +17115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16467,7 +17144,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("BrushWindowMode");
 
-                                                                                                auto Member = Cast(brush_window_mode*, &Element->BrushWindowMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(brush_window_mode*, &Element->BrushWindowMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16475,6 +17153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16503,7 +17182,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Selection");
 
-                                                                                                auto Member = Cast(selection_region*, &Element->Selection);
+                                                                                                // Regular struct member
+                        auto Member = Cast(selection_region*, &Element->Selection);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16511,6 +17191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16539,7 +17220,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("AssetThumbnails");
 
-                                                                                                auto Member = Cast(asset_thumbnail_block_array*, &Element->AssetThumbnails);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_thumbnail_block_array*, &Element->AssetThumbnails);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16547,6 +17229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16575,7 +17258,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("NextLayerIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->NextLayerIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->NextLayerIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16583,6 +17267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16612,7 +17297,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Layers");
 
-                                                                                                auto Member = Cast(world_edit_layer_block_array*, &Element->Layers);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_layer_block_array*, &Element->Layers);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16620,6 +17306,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16648,7 +17335,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("SelectedLayerIndex");
 
-                                                                                                auto Member = Cast(world_edit_layer_block_array_index*, &Element->SelectedLayerIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_layer_block_array_index*, &Element->SelectedLayerIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16656,6 +17344,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16684,7 +17373,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Edits");
 
-                                                                                                auto Member = Cast(world_edit_block_array*, &Element->Edits);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_block_array*, &Element->Edits);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16692,6 +17382,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16720,7 +17411,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("SelectedEditIndices");
 
-                                                                                                auto Member = Cast(world_edit_block_array_index_block_array*, &Element->SelectedEditIndices);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_block_array_index_block_array*, &Element->SelectedEditIndices);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16728,6 +17420,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16756,7 +17449,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("HotEdit");
 
-                                                                                                auto Member = Cast(world_edit*, Element->HotEdit);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit*, Element->HotEdit);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16764,6 +17458,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16792,7 +17487,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("HotEditIndex");
 
-                                                                                                auto Member = Cast(world_edit_block_array_index*, &Element->HotEditIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_block_array_index*, &Element->HotEditIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16800,6 +17496,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16828,7 +17525,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("LoadedBrushes");
 
-                                                                                                auto Member = Cast(world_edit_brush_hashtable*, &Element->LoadedBrushes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_brush_hashtable*, &Element->LoadedBrushes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16836,6 +17534,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16864,7 +17563,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("CurrentBrush");
 
-                                                                                                auto Member = Cast(world_edit_brush*, Element->CurrentBrush);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_brush*, Element->CurrentBrush);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16872,6 +17572,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16900,7 +17601,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("CurrentBrush_SelectedLayerIndex");
 
-                                                                                                auto Member = Cast(s32*, &Element->CurrentBrush_SelectedLayerIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->CurrentBrush_SelectedLayerIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16908,6 +17610,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16937,7 +17640,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("Prefabs");
 
-                                                                                                auto Member = Cast(prefab_hashtable*, &Element->Prefabs);
+                                                                                                // Regular struct member
+                        auto Member = Cast(prefab_hashtable*, &Element->Prefabs);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16945,6 +17649,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -16973,7 +17678,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
             
             cs MemberName = CSz("SelectedPrefab");
 
-                                                                                                auto Member = Cast(prefab*, Element->SelectedPrefab);
+                                                                                                // Regular struct member
+                        auto Member = Cast(prefab*, Element->SelectedPrefab);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -16981,6 +17687,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, level_editor *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -17065,7 +17772,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             cs MemberName = CSz("Next");
 
-                                                                                                auto Member = Cast(gen_chunk*, Element->Next);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gen_chunk*, Element->Next);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17073,6 +17781,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -17101,7 +17810,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             cs MemberName = CSz("Chunk");
 
-                                                                                                auto Member = Cast(world_chunk*, &Element->Chunk);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_chunk*, &Element->Chunk);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17109,6 +17819,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -17137,7 +17848,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             cs MemberName = CSz("Voxels");
 
-                                                                                                auto Member = Cast(voxel*, Element->Voxels);
+                                                                                                // Regular struct member
+                        auto Member = Cast(voxel*, Element->Voxels);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17145,6 +17857,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -17173,7 +17886,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             cs MemberName = CSz("Mesh");
 
-                                                                                                auto Member = Cast(gpu_mapped_element_buffer*, &Element->Mesh);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_mapped_element_buffer*, &Element->Mesh);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17181,6 +17895,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -17267,7 +17982,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("Next");
 
-                                                                                                auto Member = Cast(world_chunk*, Element->Next);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_chunk*, Element->Next);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17275,6 +17991,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17375,7 +18092,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("Occupancy");
 
-                                                                                                auto Member = Cast(u64*, Element->Occupancy);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->Occupancy);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17383,6 +18101,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17412,7 +18131,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("xOccupancyBorder");
 
-                                                                                                auto Member = Cast(u64*, Element->xOccupancyBorder);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->xOccupancyBorder);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17420,6 +18140,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17449,7 +18170,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("FaceMasks");
 
-                                                                                                auto Member = Cast(u64*, Element->FaceMasks);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->FaceMasks);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17457,6 +18179,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17521,7 +18244,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("Handles");
 
-                                                                                                auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17529,6 +18253,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17557,7 +18282,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("OcclusionQueryId");
 
-                                                                                                auto Member = Cast(u32*, &Element->OcclusionQueryId);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->OcclusionQueryId);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17565,6 +18291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17664,7 +18391,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("StandingSpots");
 
-                                                                                                auto Member = Cast(voxel_position_cursor*, &Element->StandingSpots);
+                                                                                                // Regular struct member
+                        auto Member = Cast(voxel_position_cursor*, &Element->StandingSpots);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17672,6 +18400,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17772,7 +18501,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("FilledCount");
 
-                                                                                                auto Member = Cast(s32*, &Element->FilledCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->FilledCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17780,6 +18510,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17809,7 +18540,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             cs MemberName = CSz("Entities");
 
-                                                                                                auto Member = Cast(entity_ptr_block_array*, &Element->Entities);
+                                                                                                // Regular struct member
+                        auto Member = Cast(entity_ptr_block_array*, &Element->Entities);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17817,6 +18549,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -17961,7 +18694,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             
             cs MemberName = CSz("BrushBlendMode");
 
-                                                                                                auto Member = Cast(world_edit_blend_mode*, &Element->BrushBlendMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_blend_mode*, &Element->BrushBlendMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -17969,6 +18703,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -17997,7 +18732,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             
             cs MemberName = CSz("Modifier");
 
-                                                                                                auto Member = Cast(world_edit_blend_mode_modifier*, &Element->Modifier);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_edit_blend_mode_modifier*, &Element->Modifier);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18005,6 +18741,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -18033,7 +18770,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             
             cs MemberName = CSz("Smoothing");
 
-                                                                                                auto Member = Cast(smooth_blend_params*, &Element->Smoothing);
+                                                                                                // Regular struct member
+                        auto Member = Cast(smooth_blend_params*, &Element->Smoothing);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18041,6 +18779,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -18069,7 +18808,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
             
             cs MemberName = CSz("LayerCount");
 
-                                                                                                auto Member = Cast(s32*, &Element->LayerCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->LayerCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18077,6 +18817,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -18108,6 +18849,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit_brush *Element, cs
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Layers[16]"),
                 CSz("> Layers[16]"),
@@ -18210,7 +18952,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
             
             cs MemberName = CSz("ColorTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->ColorTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->ColorTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18218,6 +18961,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -18246,7 +18990,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
             
             cs MemberName = CSz("PositionTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->PositionTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->PositionTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18254,6 +18999,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -18282,7 +19028,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
             
             cs MemberName = CSz("IndexToUV");
 
-                                                                                                auto Member = Cast(r32*, &Element->IndexToUV);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->IndexToUV);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18290,6 +19037,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -18319,7 +19067,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
             
             cs MemberName = CSz("Count");
 
-                                                                                                auto Member = Cast(s32*, &Element->Count);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->Count);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18327,6 +19076,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -18356,7 +19106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
             
             cs MemberName = CSz("Lights");
 
-                                                                                                auto Member = Cast(light*, Element->Lights);
+                                                                                                // Regular struct member
+                        auto Member = Cast(light*, Element->Lights);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18364,6 +19115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, game_lights *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -18458,7 +19210,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
             
             cs MemberName = CSz("First");
 
-                                                                                                auto Member = Cast(octree_node*, Element->First);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node*, Element->First);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18466,6 +19219,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -18494,7 +19248,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18502,6 +19257,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -18530,7 +19286,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
             
             cs MemberName = CSz("Lock");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->Lock);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->Lock);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18538,6 +19295,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -18566,7 +19324,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
             
             cs MemberName = CSz("ElementsAllocated");
 
-                                                                                                auto Member = Cast(u32*, &Element->ElementsAllocated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ElementsAllocated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18574,6 +19333,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -18666,7 +19426,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
             
             cs MemberName = CSz("First");
 
-                                                                                                auto Member = Cast(gen_chunk*, Element->First);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gen_chunk*, Element->First);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18674,6 +19435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -18702,7 +19464,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18710,6 +19473,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -18738,7 +19502,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
             
             cs MemberName = CSz("Lock");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->Lock);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->Lock);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18746,6 +19511,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -18774,7 +19540,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
             
             cs MemberName = CSz("ElementsAllocated");
 
-                                                                                                auto Member = Cast(u32*, &Element->ElementsAllocated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ElementsAllocated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18782,6 +19549,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -18941,7 +19709,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             
             cs MemberName = CSz("NextBlockSize");
 
-                                                                                                auto Member = Cast(umm*, &Element->NextBlockSize);
+                                                                                                // Regular struct member
+                        auto Member = Cast(umm*, &Element->NextBlockSize);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18949,6 +19718,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -18978,7 +19748,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             
             cs MemberName = CSz("Prev");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Prev);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Prev);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18986,6 +19757,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -19014,7 +19786,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
             
             cs MemberName = CSz("DebugFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->DebugFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->DebugFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19022,6 +19795,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -19108,7 +19882,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
             
             cs MemberName = CSz("DebugTextureArray");
 
-                                                                                                auto Member = Cast(texture*, &Element->DebugTextureArray);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->DebugTextureArray);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19116,6 +19891,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -19144,7 +19920,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
             
             cs MemberName = CSz("TextTextureUniform");
 
-                                                                                                auto Member = Cast(s32*, &Element->TextTextureUniform);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->TextTextureUniform);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19152,6 +19929,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -19181,7 +19959,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
             
             cs MemberName = CSz("UiShader");
 
-                                                                                                auto Member = Cast(shader*, &Element->UiShader);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->UiShader);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19189,6 +19968,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -19217,7 +19997,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
             
             cs MemberName = CSz("Buf");
 
-                                                                                                auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->Buf);
+                                                                                                // Regular struct member
+                        auto Member = Cast(triple_buffered_gpu_mapped_ui_buffer*, &Element->Buf);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19225,6 +20006,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_buffers_2d *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -19310,7 +20092,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Enter");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Enter);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Enter);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19318,6 +20101,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19346,7 +20130,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Escape");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Escape);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Escape);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19354,6 +20139,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19382,7 +20168,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Alt");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Alt);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Alt);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19390,6 +20177,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19418,7 +20206,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Ctrl");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Ctrl);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Ctrl);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19426,6 +20215,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19454,7 +20244,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Shift");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Shift);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Shift);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19462,6 +20253,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19490,7 +20282,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Backspace");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Backspace);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Backspace);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19498,6 +20291,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19526,7 +20320,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Delete");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Delete);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Delete);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19534,6 +20329,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19562,7 +20358,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F12");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F12);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F12);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19570,6 +20367,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19598,7 +20396,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F11");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F11);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F11);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19606,6 +20405,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19634,7 +20434,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F10");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F10);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F10);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19642,6 +20443,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19670,7 +20472,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F9");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F9);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F9);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19678,6 +20481,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19706,7 +20510,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F8");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F8);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F8);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19714,6 +20519,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19742,7 +20548,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F7");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F7);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F7);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19750,6 +20557,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19778,7 +20586,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F6");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F6);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F6);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19786,6 +20595,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19814,7 +20624,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F5");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F5);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F5);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19822,6 +20633,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19850,7 +20662,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F4");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F4);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F4);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19858,6 +20671,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19886,7 +20700,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F3");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F3);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F3);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19894,6 +20709,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19922,7 +20738,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F2");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F2);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F2);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19930,6 +20747,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19958,7 +20776,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F1");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F1);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F1);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -19966,6 +20785,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -19994,7 +20814,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Dot");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Dot);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Dot);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20002,6 +20823,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20030,7 +20852,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Minus");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Minus);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Minus);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20038,6 +20861,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20066,7 +20890,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("FSlash");
 
-                                                                                                auto Member = Cast(input_event*, &Element->FSlash);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->FSlash);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20074,6 +20899,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20102,7 +20928,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Space");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Space);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Space);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20110,6 +20937,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20138,7 +20966,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N0");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N0);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N0);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20146,6 +20975,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20174,7 +21004,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N1");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N1);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N1);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20182,6 +21013,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20210,7 +21042,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N2");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N2);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N2);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20218,6 +21051,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20246,7 +21080,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N3");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N3);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N3);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20254,6 +21089,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20282,7 +21118,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N4");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N4);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N4);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20290,6 +21127,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20318,7 +21156,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N5");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N5);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N5);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20326,6 +21165,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20354,7 +21194,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N6");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N6);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N6);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20362,6 +21203,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20390,7 +21232,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N7");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N7);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N7);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20398,6 +21241,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20426,7 +21270,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N8");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N8);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N8);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20434,6 +21279,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20462,7 +21308,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N9");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N9);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N9);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20470,6 +21317,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20498,7 +21346,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("A");
 
-                                                                                                auto Member = Cast(input_event*, &Element->A);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->A);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20506,6 +21355,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20534,7 +21384,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("B");
 
-                                                                                                auto Member = Cast(input_event*, &Element->B);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->B);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20542,6 +21393,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20570,7 +21422,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("C");
 
-                                                                                                auto Member = Cast(input_event*, &Element->C);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->C);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20578,6 +21431,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20606,7 +21460,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("D");
 
-                                                                                                auto Member = Cast(input_event*, &Element->D);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->D);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20614,6 +21469,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20642,7 +21498,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("E");
 
-                                                                                                auto Member = Cast(input_event*, &Element->E);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->E);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20650,6 +21507,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20678,7 +21536,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("F");
 
-                                                                                                auto Member = Cast(input_event*, &Element->F);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->F);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20686,6 +21545,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20714,7 +21574,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("G");
 
-                                                                                                auto Member = Cast(input_event*, &Element->G);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->G);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20722,6 +21583,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20750,7 +21612,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("H");
 
-                                                                                                auto Member = Cast(input_event*, &Element->H);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->H);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20758,6 +21621,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20786,7 +21650,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("I");
 
-                                                                                                auto Member = Cast(input_event*, &Element->I);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->I);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20794,6 +21659,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20822,7 +21688,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("J");
 
-                                                                                                auto Member = Cast(input_event*, &Element->J);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->J);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20830,6 +21697,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20858,7 +21726,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("K");
 
-                                                                                                auto Member = Cast(input_event*, &Element->K);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->K);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20866,6 +21735,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20894,7 +21764,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("L");
 
-                                                                                                auto Member = Cast(input_event*, &Element->L);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->L);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20902,6 +21773,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20930,7 +21802,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("M");
 
-                                                                                                auto Member = Cast(input_event*, &Element->M);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->M);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20938,6 +21811,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -20966,7 +21840,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("N");
 
-                                                                                                auto Member = Cast(input_event*, &Element->N);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->N);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -20974,6 +21849,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21002,7 +21878,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("O");
 
-                                                                                                auto Member = Cast(input_event*, &Element->O);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->O);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21010,6 +21887,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21038,7 +21916,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("P");
 
-                                                                                                auto Member = Cast(input_event*, &Element->P);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->P);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21046,6 +21925,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21074,7 +21954,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Q");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Q);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Q);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21082,6 +21963,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21110,7 +21992,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("R");
 
-                                                                                                auto Member = Cast(input_event*, &Element->R);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->R);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21118,6 +22001,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21146,7 +22030,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("S");
 
-                                                                                                auto Member = Cast(input_event*, &Element->S);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->S);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21154,6 +22039,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21182,7 +22068,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("T");
 
-                                                                                                auto Member = Cast(input_event*, &Element->T);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->T);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21190,6 +22077,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21218,7 +22106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("U");
 
-                                                                                                auto Member = Cast(input_event*, &Element->U);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->U);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21226,6 +22115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21254,7 +22144,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("V");
 
-                                                                                                auto Member = Cast(input_event*, &Element->V);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->V);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21262,6 +22153,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21290,7 +22182,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("W");
 
-                                                                                                auto Member = Cast(input_event*, &Element->W);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->W);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21298,6 +22191,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21326,7 +22220,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("X");
 
-                                                                                                auto Member = Cast(input_event*, &Element->X);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->X);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21334,6 +22229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21362,7 +22258,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Y");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Y);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Y);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21370,6 +22267,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21398,7 +22296,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("Z");
 
-                                                                                                auto Member = Cast(input_event*, &Element->Z);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->Z);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21406,6 +22305,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21434,7 +22334,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("RMB");
 
-                                                                                                auto Member = Cast(input_event*, &Element->RMB);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->RMB);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21442,6 +22343,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21470,7 +22372,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("LMB");
 
-                                                                                                auto Member = Cast(input_event*, &Element->LMB);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->LMB);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21478,6 +22381,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21506,7 +22410,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("MMB");
 
-                                                                                                auto Member = Cast(input_event*, &Element->MMB);
+                                                                                                // Regular struct member
+                        auto Member = Cast(input_event*, &Element->MMB);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21514,6 +22419,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21542,7 +22448,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
             
             cs MemberName = CSz("MouseWheelDelta");
 
-                                                                                                auto Member = Cast(s32*, &Element->MouseWheelDelta);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s32*, &Element->MouseWheelDelta);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21550,6 +22457,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, input *Element, cs Name, u32 
               ThisHash,
               Params
               );
+
 
 
 
@@ -21672,7 +22580,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("Os");
 
-                                                                                                auto Member = Cast(os*, &Element->Os);
+                                                                                                // Regular struct member
+                        auto Member = Cast(os*, &Element->Os);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21680,6 +22589,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21708,7 +22618,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("Plat");
 
-                                                                                                auto Member = Cast(platform*, &Element->Plat);
+                                                                                                // Regular struct member
+                        auto Member = Cast(platform*, &Element->Plat);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21716,6 +22627,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21744,7 +22656,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("AppApi");
 
-                                                                                                auto Member = Cast(application_api*, &Element->AppApi);
+                                                                                                // Regular struct member
+                        auto Member = Cast(application_api*, &Element->AppApi);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21752,6 +22665,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21780,7 +22694,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("GL");
 
-                                                                                                auto Member = Cast(opengl*, &Element->GL);
+                                                                                                // Regular struct member
+                        auto Member = Cast(opengl*, &Element->GL);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21788,6 +22703,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21816,7 +22732,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("ThreadStates");
 
-                                                                                                auto Member = Cast(thread_local_state*, Element->ThreadStates);
+                                                                                                // Regular struct member
+                        auto Member = Cast(thread_local_state*, Element->ThreadStates);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21824,6 +22741,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21852,7 +22770,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("DefaultThreadState");
 
-                                                                                                auto Member = Cast(thread_local_state*, &Element->DefaultThreadState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(thread_local_state*, &Element->DefaultThreadState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21860,6 +22779,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21888,7 +22808,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("ShaderHeaderFile");
 
-                                                                                                auto Member = Cast(hot_reloadable_file*, &Element->ShaderHeaderFile);
+                                                                                                // Regular struct member
+                        auto Member = Cast(hot_reloadable_file*, &Element->ShaderHeaderFile);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21896,6 +22817,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21924,7 +22846,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("ShaderHeaderCode");
 
-                                                                                                auto Member = Cast(ansi_stream*, &Element->ShaderHeaderCode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ansi_stream*, &Element->ShaderHeaderCode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21932,6 +22855,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21960,7 +22884,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("AllTextures");
 
-                                                                                                auto Member = Cast(texture_block_array*, &Element->AllTextures);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture_block_array*, &Element->AllTextures);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -21968,6 +22893,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -21996,7 +22922,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("AllShaders");
 
-                                                                                                auto Member = Cast(shader_ptr_block_array*, &Element->AllShaders);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader_ptr_block_array*, &Element->AllShaders);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22004,6 +22931,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -22032,7 +22960,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
             
             cs MemberName = CSz("DebugState");
 
-                                                                                                auto Member = Cast(debug_state*, &Element->DebugState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(debug_state*, &Element->DebugState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22040,6 +22969,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bonsai_stdlib *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -22127,7 +23057,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
             
             cs MemberName = CSz("Chunk");
 
-                                                                                                auto Member = Cast(world_chunk*, &Element->Chunk);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_chunk*, &Element->Chunk);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22135,6 +23066,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -22163,7 +23095,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
             
             cs MemberName = CSz("Thumbnail");
 
-                                                                                                auto Member = Cast(asset_thumbnail*, &Element->Thumbnail);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_thumbnail*, &Element->Thumbnail);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22171,6 +23104,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_thumbnail *Element, cs 
               ThisHash,
               Params
               );
+
 
 
 
@@ -22264,7 +23198,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
             
             cs MemberName = CSz("tEnd");
 
-                                                                                                auto Member = Cast(r32*, &Element->tEnd);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->tEnd);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22272,6 +23207,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -22301,7 +23237,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
             
             cs MemberName = CSz("Value");
 
-                                                                                                auto Member = Cast(r32*, &Element->Value);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Value);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22309,6 +23246,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -22397,7 +23335,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
             
             cs MemberName = CSz("Radius");
 
-                                                                                                auto Member = Cast(r32*, &Element->Radius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Radius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22405,6 +23344,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               ThisHash,
               Params
               );
+
 
 
 
@@ -22434,7 +23374,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
             
             cs MemberName = CSz("Jitter");
 
-                                                                                                auto Member = Cast(f32*, &Element->Jitter);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->Jitter);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22442,6 +23383,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
               ThisHash,
               Params
               );
+
 
 
 
@@ -22560,7 +23502,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("MajorRadius");
 
-                                                                                                auto Member = Cast(f32*, &Element->MajorRadius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->MajorRadius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22568,6 +23511,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -22597,7 +23541,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("MinorRadius");
 
-                                                                                                auto Member = Cast(f32*, &Element->MinorRadius);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->MinorRadius);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22605,6 +23550,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -22689,7 +23635,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("ID");
 
-                                                                                                auto Member = Cast(u32*, &Element->ID);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ID);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22697,6 +23644,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -22726,7 +23674,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("Uniforms");
 
-                                                                                                auto Member = Cast(shader_uniform_buffer*, &Element->Uniforms);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader_uniform_buffer*, &Element->Uniforms);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22734,6 +23683,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -22762,7 +23712,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("VertexSourceFilename");
 
-                                                                                                auto Member = Cast(cs*, &Element->VertexSourceFilename);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->VertexSourceFilename);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22770,6 +23721,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -22799,7 +23751,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("FragSourceFilename");
 
-                                                                                                auto Member = Cast(cs*, &Element->FragSourceFilename);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cs*, &Element->FragSourceFilename);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22807,6 +23760,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -22836,7 +23790,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("VertexTimeModifiedWhenLoaded");
 
-                                                                                                auto Member = Cast(s64*, &Element->VertexTimeModifiedWhenLoaded);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s64*, &Element->VertexTimeModifiedWhenLoaded);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22844,6 +23799,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -22873,7 +23829,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
             
             cs MemberName = CSz("FragmentTimeModifiedWhenLoaded");
 
-                                                                                                auto Member = Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded);
+                                                                                                // Regular struct member
+                        auto Member = Cast(s64*, &Element->FragmentTimeModifiedWhenLoaded);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -22881,6 +23838,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
               ThisHash,
               Params
               );
+
 
 
 
@@ -23014,7 +23972,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("t");
 
-                                                                                                auto Member = Cast(r32*, &Element->t);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->t);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23022,6 +23981,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23051,7 +24011,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("tEnd");
 
-                                                                                                auto Member = Cast(r32*, &Element->tEnd);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->tEnd);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23059,6 +24020,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23088,7 +24050,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("xKeyframeCount");
 
-                                                                                                auto Member = Cast(u32*, &Element->xKeyframeCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->xKeyframeCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23096,6 +24059,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23125,7 +24089,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("xKeyframes");
 
-                                                                                                auto Member = Cast(keyframe*, Element->xKeyframes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(keyframe*, Element->xKeyframes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23133,6 +24098,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23161,7 +24127,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("yKeyframeCount");
 
-                                                                                                auto Member = Cast(u32*, &Element->yKeyframeCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->yKeyframeCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23169,6 +24136,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23198,7 +24166,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("yKeyframes");
 
-                                                                                                auto Member = Cast(keyframe*, Element->yKeyframes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(keyframe*, Element->yKeyframes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23206,6 +24175,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23234,7 +24204,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("zKeyframeCount");
 
-                                                                                                auto Member = Cast(u32*, &Element->zKeyframeCount);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->zKeyframeCount);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23242,6 +24213,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23271,7 +24243,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
             
             cs MemberName = CSz("zKeyframes");
 
-                                                                                                auto Member = Cast(keyframe*, Element->zKeyframes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(keyframe*, Element->zKeyframes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23279,6 +24252,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, animation *Element, cs Name, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -23384,7 +24358,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_rect*, &Element->Rect);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_rect*, &Element->Rect);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23392,6 +24367,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23420,7 +24396,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_sphere*, &Element->Sphere);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_sphere*, &Element->Sphere);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23428,6 +24405,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23456,7 +24434,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_line*, &Element->Line);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_line*, &Element->Line);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23464,6 +24443,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23492,7 +24472,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_cylinder*, &Element->Cylinder);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_cylinder*, &Element->Cylinder);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23500,6 +24481,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23528,7 +24510,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_plane*, &Element->Plane);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_plane*, &Element->Plane);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23536,6 +24519,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23564,7 +24548,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_torus*, &Element->Torus);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_torus*, &Element->Torus);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23572,6 +24557,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23600,7 +24586,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(world_update_op_shape_params_pyramid*, &Element->Pyramid);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_update_op_shape_params_pyramid*, &Element->Pyramid);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23608,6 +24595,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23636,7 +24624,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
             
             cs MemberName = CSz("Advanced");
 
-                                                                                                auto Member = Cast(shape_layer_advanced_params*, &Element->Advanced);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shape_layer_advanced_params*, &Element->Advanced);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23644,6 +24633,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -23746,7 +24736,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(white_noise_params*, &Element->White);
+                                                                                                // Regular struct member
+                        auto Member = Cast(white_noise_params*, &Element->White);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23754,6 +24745,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -23782,7 +24774,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(perlin_noise_params*, &Element->Perlin);
+                                                                                                // Regular struct member
+                        auto Member = Cast(perlin_noise_params*, &Element->Perlin);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23790,6 +24783,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -23818,7 +24812,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(voronoi_noise_params*, &Element->Voronoi);
+                                                                                                // Regular struct member
+                        auto Member = Cast(voronoi_noise_params*, &Element->Voronoi);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23826,6 +24821,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -23854,7 +24850,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
             
             cs MemberName = CSz("Power");
 
-                                                                                                auto Member = Cast(r32*, &Element->Power);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Power);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23862,6 +24859,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer_2 *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -23945,7 +24943,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(data_type*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(data_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -23953,6 +24952,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24001,7 +25001,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Verts");
 
-                                                                                                auto Member = Cast(void *, Element->Verts);
+                                                                                                // Regular struct member
+                        auto Member = Cast(void *, Element->Verts);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24009,6 +25010,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24038,7 +25040,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Normals");
 
-                                                                                                auto Member = Cast(void *, Element->Normals);
+                                                                                                // Regular struct member
+                        auto Member = Cast(void *, Element->Normals);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24046,6 +25049,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24075,7 +25079,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Mat");
 
-                                                                                                auto Member = Cast(vertex_material*, Element->Mat);
+                                                                                                // Regular struct member
+                        auto Member = Cast(vertex_material*, Element->Mat);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24083,6 +25088,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24111,7 +25117,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("End");
 
-                                                                                                auto Member = Cast(u32*, &Element->End);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->End);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24119,6 +25126,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24148,7 +25156,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("At");
 
-                                                                                                auto Member = Cast(u32*, &Element->At);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->At);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24156,6 +25165,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24185,7 +25195,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Parent");
 
-                                                                                                auto Member = Cast(untextured_3d_geometry_buffer*, Element->Parent);
+                                                                                                // Regular struct member
+                        auto Member = Cast(untextured_3d_geometry_buffer*, Element->Parent);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24193,6 +25204,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24221,7 +25233,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("BufferNeedsToGrow");
 
-                                                                                                auto Member = Cast(u32*, &Element->BufferNeedsToGrow);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->BufferNeedsToGrow);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24229,6 +25242,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24258,7 +25272,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
             
             cs MemberName = CSz("Timestamp");
 
-                                                                                                auto Member = Cast(u64*, &Element->Timestamp);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->Timestamp);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24266,6 +25281,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, untextured_3d_geometry_buffer
               ThisHash,
               Params
               );
+
 
 
 
@@ -24350,7 +25366,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             cs MemberName = CSz("EnqueueFutex");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->EnqueueFutex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->EnqueueFutex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24358,6 +25375,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -24386,7 +25404,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             cs MemberName = CSz("EnqueueIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->EnqueueIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->EnqueueIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24394,6 +25413,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -24423,7 +25443,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             cs MemberName = CSz("DequeueIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->DequeueIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->DequeueIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24431,6 +25452,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -24460,7 +25482,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
             
             cs MemberName = CSz("Entries");
 
-                                                                                                auto Member = Cast(work_queue_entry*, Element->Entries);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_entry*, Element->Entries);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24468,6 +25491,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue *Element, cs Name,
               ThisHash,
               Params
               );
+
 
 
 
@@ -24550,7 +25574,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
             
             cs MemberName = CSz("BlurFBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->BlurFBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->BlurFBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24558,6 +25583,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -24586,7 +25612,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
             
             cs MemberName = CSz("Tex");
 
-                                                                                                auto Member = Cast(texture*, &Element->Tex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->Tex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24594,6 +25621,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -24624,6 +25652,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v MipChain[(3)]"),
                 CSz("> MipChain[(3)]"),
@@ -24672,7 +25701,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
             
             cs MemberName = CSz("DownsampleShader");
 
-                                                                                                auto Member = Cast(bloom_downsample_shader*, &Element->DownsampleShader);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bloom_downsample_shader*, &Element->DownsampleShader);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24680,6 +25710,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -24708,7 +25739,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
             
             cs MemberName = CSz("UpsampleShader");
 
-                                                                                                auto Member = Cast(bloom_upsample_shader*, &Element->UpsampleShader);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bloom_upsample_shader*, &Element->UpsampleShader);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24716,6 +25748,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
               ThisHash,
               Params
               );
+
 
 
 
@@ -24799,7 +25832,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24807,6 +25841,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               ThisHash,
               Params
               );
+
 
 
 
@@ -24837,6 +25872,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[1]"),
                 CSz("> Uniforms[1]"),
@@ -24885,7 +25921,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
             
             cs MemberName = CSz("DestTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->DestTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->DestTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24893,6 +25930,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               ThisHash,
               Params
               );
+
 
 
 
@@ -24921,7 +25959,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
             
             cs MemberName = CSz("DestFBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->DestFBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->DestFBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -24929,6 +25968,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
               ThisHash,
               Params
               );
+
 
 
 
@@ -25062,7 +26102,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25070,6 +26111,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25098,7 +26140,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("ViewMode");
 
-                                                                                                auto Member = Cast(engine_debug_view_mode*, &Element->ViewMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(engine_debug_view_mode*, &Element->ViewMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25106,6 +26149,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25134,7 +26178,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("PickedChunks");
 
-                                                                                                auto Member = Cast(picked_world_chunk_static_buffer*, &Element->PickedChunks);
+                                                                                                // Regular struct member
+                        auto Member = Cast(picked_world_chunk_static_buffer*, &Element->PickedChunks);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25142,6 +26187,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25170,7 +26216,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("Textures");
 
-                                                                                                auto Member = Cast(texture_ptr_block_array*, &Element->Textures);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture_ptr_block_array*, &Element->Textures);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25178,6 +26225,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25206,7 +26254,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("UiDebug");
 
-                                                                                                auto Member = Cast(ui_debug*, &Element->UiDebug);
+                                                                                                // Regular struct member
+                        auto Member = Cast(ui_debug*, &Element->UiDebug);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25214,6 +26263,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25242,7 +26292,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("Render");
 
-                                                                                                auto Member = Cast(render_debug*, &Element->Render);
+                                                                                                // Regular struct member
+                        auto Member = Cast(render_debug*, &Element->Render);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25250,6 +26301,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25278,7 +26330,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawEntityCollisionVolumes");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawEntityCollisionVolumes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawEntityCollisionVolumes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25286,6 +26339,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25315,7 +26369,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawWorldAxies");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawWorldAxies);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawWorldAxies);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25323,6 +26378,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25352,7 +26408,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("TriggerRuntimeBreak");
 
-                                                                                                auto Member = Cast(b8*, &Element->TriggerRuntimeBreak);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->TriggerRuntimeBreak);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25360,6 +26417,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25389,7 +26447,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("ResetAssetNodeView");
 
-                                                                                                auto Member = Cast(b8*, &Element->ResetAssetNodeView);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->ResetAssetNodeView);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25397,6 +26456,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25426,7 +26486,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawBranchNodesWithMeshes");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawBranchNodesWithMeshes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawBranchNodesWithMeshes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25434,6 +26495,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25463,7 +26525,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawBranchNodes");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawBranchNodes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawBranchNodes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25471,6 +26534,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25500,7 +26564,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawLeafNodes");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawLeafNodes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawLeafNodes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25508,6 +26573,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25537,7 +26603,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawNodesWithChunks");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawNodesWithChunks);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawNodesWithChunks);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25545,6 +26612,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25574,7 +26642,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawQueuedNodes");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawQueuedNodes);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawQueuedNodes);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25582,6 +26651,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25611,7 +26681,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("MarkChunkBorderVoxels");
 
-                                                                                                auto Member = Cast(b8*, &Element->MarkChunkBorderVoxels);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->MarkChunkBorderVoxels);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25619,6 +26690,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25648,7 +26720,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("DrawGameCameraLocation");
 
-                                                                                                auto Member = Cast(b8*, &Element->DrawGameCameraLocation);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DrawGameCameraLocation);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25656,6 +26729,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25685,7 +26759,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("ChunkGenTimeElapsedMS");
 
-                                                                                                auto Member = Cast(r64*, &Element->ChunkGenTimeElapsedMS);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r64*, &Element->ChunkGenTimeElapsedMS);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25693,6 +26768,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25722,7 +26798,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("CellsGenerated");
 
-                                                                                                auto Member = Cast(u64*, &Element->CellsGenerated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->CellsGenerated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25730,6 +26807,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25759,7 +26837,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("ChunkGenCyclesElapsed");
 
-                                                                                                auto Member = Cast(r64*, &Element->ChunkGenCyclesElapsed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r64*, &Element->ChunkGenCyclesElapsed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25767,6 +26846,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25796,7 +26876,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("PickedChunkState");
 
-                                                                                                auto Member = Cast(u8*, &Element->PickedChunkState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u8*, &Element->PickedChunkState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25804,6 +26885,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25833,7 +26915,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("PickedNode");
 
-                                                                                                auto Member = Cast(octree_node*, Element->PickedNode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node*, Element->PickedNode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25841,6 +26924,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25869,7 +26953,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("AssetWindowViewMode");
 
-                                                                                                auto Member = Cast(asset_window_view_mode*, &Element->AssetWindowViewMode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_window_view_mode*, &Element->AssetWindowViewMode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25877,6 +26962,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25905,7 +26991,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("SelectedAsset");
 
-                                                                                                auto Member = Cast(asset_id*, &Element->SelectedAsset);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_id*, &Element->SelectedAsset);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25913,6 +27000,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25941,7 +27029,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("ModelIndex");
 
-                                                                                                auto Member = Cast(u64*, &Element->ModelIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->ModelIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25949,6 +27038,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -25978,7 +27068,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("SelectedEntity");
 
-                                                                                                auto Member = Cast(entity_id*, &Element->SelectedEntity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(entity_id*, &Element->SelectedEntity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -25986,6 +27077,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -26014,7 +27106,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("OctreeDrawDepth");
 
-                                                                                                auto Member = Cast(u32*, &Element->OctreeDrawDepth);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->OctreeDrawDepth);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26022,6 +27115,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -26051,7 +27145,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
             
             cs MemberName = CSz("SelectedNode");
 
-                                                                                                auto Member = Cast(octree_node*, Element->SelectedNode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(octree_node*, Element->SelectedNode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26059,6 +27154,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Nam
               ThisHash,
               Params
               );
+
 
 
 
@@ -26140,7 +27236,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26148,6 +27245,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
               ThisHash,
               Params
               );
+
 
 
 
@@ -26178,6 +27276,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_downsample_shader *Elem
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[1]"),
                 CSz("> Uniforms[1]"),
@@ -26327,7 +27426,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(layer_settings*, &Element->Settings);
+                                                                                                // Regular struct member
+                        auto Member = Cast(layer_settings*, &Element->Settings);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26335,6 +27435,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -26451,7 +27552,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
             
             cs MemberName = CSz("Seed");
 
-                                                                                                auto Member = Cast(u64*, &Element->Seed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, &Element->Seed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26459,6 +27561,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, random_series *Element, cs Na
               ThisHash,
               Params
               );
+
 
 
 
@@ -26542,7 +27645,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("ReadyToStartMainLoop");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->ReadyToStartMainLoop);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->ReadyToStartMainLoop);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26550,6 +27654,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26578,7 +27683,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Stdlib");
 
-                                                                                                auto Member = Cast(bonsai_stdlib*, &Element->Stdlib);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_stdlib*, &Element->Stdlib);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26586,6 +27692,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26614,7 +27721,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("EngineApi");
 
-                                                                                                auto Member = Cast(engine_api*, &Element->EngineApi);
+                                                                                                // Regular struct member
+                        auto Member = Cast(engine_api*, &Element->EngineApi);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26622,6 +27730,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26650,7 +27759,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Settings");
 
-                                                                                                auto Member = Cast(engine_settings*, &Element->Settings);
+                                                                                                // Regular struct member
+                        auto Member = Cast(engine_settings*, &Element->Settings);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26658,6 +27768,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26686,7 +27797,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Ui");
 
-                                                                                                auto Member = Cast(renderer_2d*, &Element->Ui);
+                                                                                                // Regular struct member
+                        auto Member = Cast(renderer_2d*, &Element->Ui);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26694,6 +27806,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26722,7 +27835,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("MaybeMouseRay");
 
-                                                                                                auto Member = Cast(maybe_ray*, &Element->MaybeMouseRay);
+                                                                                                // Regular struct member
+                        auto Member = Cast(maybe_ray*, &Element->MaybeMouseRay);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26730,6 +27844,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26758,7 +27873,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("World");
 
-                                                                                                auto Member = Cast(world*, Element->World);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world*, Element->World);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26766,6 +27882,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26794,7 +27911,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("GameState");
 
-                                                                                                auto Member = Cast(game_state*, Element->GameState);
+                                                                                                // Regular struct member
+                        auto Member = Cast(game_state*, Element->GameState);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26802,6 +27920,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26830,7 +27949,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Graphics");
 
-                                                                                                auto Member = Cast(graphics*, &Element->Graphics);
+                                                                                                // Regular struct member
+                        auto Member = Cast(graphics*, &Element->Graphics);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26838,6 +27958,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26866,7 +27987,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("RequestedGameLibReloadNode");
 
-                                                                                                auto Member = Cast(file_traversal_node*, &Element->RequestedGameLibReloadNode);
+                                                                                                // Regular struct member
+                        auto Member = Cast(file_traversal_node*, &Element->RequestedGameLibReloadNode);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26874,6 +27996,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26902,7 +28025,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("RequestedGameLibReloadBehavior");
 
-                                                                                                auto Member = Cast(game_lib_reload_behavior*, &Element->RequestedGameLibReloadBehavior);
+                                                                                                // Regular struct member
+                        auto Member = Cast(game_lib_reload_behavior*, &Element->RequestedGameLibReloadBehavior);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26910,6 +28034,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26938,7 +28063,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Heap");
 
-                                                                                                auto Member = Cast(heap_allocator*, &Element->Heap);
+                                                                                                // Regular struct member
+                        auto Member = Cast(heap_allocator*, &Element->Heap);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26946,6 +28072,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -26974,7 +28101,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("GameMemory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->GameMemory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->GameMemory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -26982,6 +28110,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27010,7 +28139,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("WorldUpdateMemory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->WorldUpdateMemory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->WorldUpdateMemory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27018,6 +28148,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27046,7 +28177,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("EntityTable");
 
-                                                                                                auto Member = Cast(entity*, Element->EntityTable);
+                                                                                                // Regular struct member
+                        auto Member = Cast(entity*, Element->EntityTable);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27054,6 +28186,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27082,7 +28215,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("AssetSystem");
 
-                                                                                                auto Member = Cast(asset_system*, &Element->AssetSystem);
+                                                                                                // Regular struct member
+                        auto Member = Cast(asset_system*, &Element->AssetSystem);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27090,6 +28224,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27118,7 +28253,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("FrameIndex");
 
-                                                                                                auto Member = Cast(u32*, &Element->FrameIndex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->FrameIndex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27126,6 +28262,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27155,7 +28292,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("geo_u3d_MeshFreelist");
 
-                                                                                                auto Member = Cast(tiered_mesh_freelist*, &Element->geo_u3d_MeshFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(tiered_mesh_freelist*, &Element->geo_u3d_MeshFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27163,6 +28301,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27191,7 +28330,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("world_chunk_MeshFreelist");
 
-                                                                                                auto Member = Cast(tiered_mesh_freelist*, &Element->world_chunk_MeshFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(tiered_mesh_freelist*, &Element->world_chunk_MeshFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27199,6 +28339,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27227,7 +28368,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("EngineDebug");
 
-                                                                                                auto Member = Cast(engine_debug*, &Element->EngineDebug);
+                                                                                                // Regular struct member
+                        auto Member = Cast(engine_debug*, &Element->EngineDebug);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27235,6 +28377,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27263,7 +28406,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("Editor");
 
-                                                                                                auto Member = Cast(level_editor*, &Element->Editor);
+                                                                                                // Regular struct member
+                        auto Member = Cast(level_editor*, &Element->Editor);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27271,6 +28415,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27299,7 +28444,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("MousedOverVoxel");
 
-                                                                                                auto Member = Cast(maybe_picked_voxel*, &Element->MousedOverVoxel);
+                                                                                                // Regular struct member
+                        auto Member = Cast(maybe_picked_voxel*, &Element->MousedOverVoxel);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27307,6 +28453,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27335,7 +28482,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("ClosestStandingSpotToCursor");
 
-                                                                                                auto Member = Cast(maybe_standing_spot*, &Element->ClosestStandingSpotToCursor);
+                                                                                                // Regular struct member
+                        auto Member = Cast(maybe_standing_spot*, &Element->ClosestStandingSpotToCursor);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27343,6 +28491,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27371,7 +28520,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("HoverEntity");
 
-                                                                                                auto Member = Cast(maybe_entity_ptr*, &Element->HoverEntity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(maybe_entity_ptr*, &Element->HoverEntity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27379,6 +28529,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27407,7 +28558,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("RTTGroup");
 
-                                                                                                auto Member = Cast(render_to_texture_group*, &Element->RTTGroup);
+                                                                                                // Regular struct member
+                        auto Member = Cast(render_to_texture_group*, &Element->RTTGroup);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27415,6 +28567,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27443,7 +28596,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             cs MemberName = CSz("GenChunkFreelist");
 
-                                                                                                auto Member = Cast(gen_chunk_freelist*, &Element->GenChunkFreelist);
+                                                                                                // Regular struct member
+                        auto Member = Cast(gen_chunk_freelist*, &Element->GenChunkFreelist);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27451,6 +28605,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
               ThisHash,
               Params
               );
+
 
 
 
@@ -27544,6 +28699,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Start[3]"),
                 CSz("> Start[3]"),
@@ -27593,7 +28749,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
             
             cs MemberName = CSz("At");
 
-                                                                                                auto Member = Cast(u32*, &Element->At);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->At);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27601,6 +28758,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor
               ThisHash,
               Params
               );
+
 
 
 
@@ -27739,7 +28897,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("FBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->FBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->FBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27747,6 +28906,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27775,7 +28935,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("Textures");
 
-                                                                                                auto Member = Cast(g_buffer_textures*, &Element->Textures);
+                                                                                                // Regular struct member
+                        auto Member = Cast(g_buffer_textures*, &Element->Textures);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27783,6 +28944,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27811,7 +28973,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("gBufferShader");
 
-                                                                                                auto Member = Cast(shader*, &Element->gBufferShader);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->gBufferShader);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27819,6 +28982,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27847,7 +29011,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("InverseViewMatrix");
 
-                                                                                                auto Member = Cast(m4*, &Element->InverseViewMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->InverseViewMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27855,6 +29020,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27883,7 +29049,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("InverseProjectionMatrix");
 
-                                                                                                auto Member = Cast(m4*, &Element->InverseProjectionMatrix);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->InverseProjectionMatrix);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27891,6 +29058,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27919,7 +29087,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("ViewProjection");
 
-                                                                                                auto Member = Cast(m4*, &Element->ViewProjection);
+                                                                                                // Regular struct member
+                        auto Member = Cast(m4*, &Element->ViewProjection);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27927,6 +29096,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -27955,7 +29125,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
             
             cs MemberName = CSz("GlTimerObject");
 
-                                                                                                auto Member = Cast(u32*, &Element->GlTimerObject);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->GlTimerObject);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -27963,6 +29134,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_render_group *Elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -28048,7 +29220,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             cs MemberName = CSz("Program");
 
-                                                                                                auto Member = Cast(shader*, &Element->Program);
+                                                                                                // Regular struct member
+                        auto Member = Cast(shader*, &Element->Program);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28056,6 +29229,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               ThisHash,
               Params
               );
+
 
 
 
@@ -28086,6 +29260,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Uniforms[5]"),
                 CSz("> Uniforms[5]"),
@@ -28134,7 +29309,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             cs MemberName = CSz("DestTex");
 
-                                                                                                auto Member = Cast(texture*, &Element->DestTex);
+                                                                                                // Regular struct member
+                        auto Member = Cast(texture*, &Element->DestTex);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28142,6 +29318,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               ThisHash,
               Params
               );
+
 
 
 
@@ -28170,7 +29347,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             cs MemberName = CSz("DestFBO");
 
-                                                                                                auto Member = Cast(framebuffer*, &Element->DestFBO);
+                                                                                                // Regular struct member
+                        auto Member = Cast(framebuffer*, &Element->DestFBO);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28178,6 +29356,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               ThisHash,
               Params
               );
+
 
 
 
@@ -28314,7 +29493,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
             
             cs MemberName = CSz("ReshapeFunc");
 
-                                                                                                auto Member = Cast(easing_function*, &Element->ReshapeFunc);
+                                                                                                // Regular struct member
+                        auto Member = Cast(easing_function*, &Element->ReshapeFunc);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28322,6 +29502,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
               ThisHash,
               Params
               );
+
 
 
 
@@ -28430,7 +29611,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
             
             cs MemberName = CSz("Height");
 
-                                                                                                auto Member = Cast(f32*, &Element->Height);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->Height);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28438,6 +29620,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_
               ThisHash,
               Params
               );
+
 
 
 
@@ -28522,6 +29705,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Start[16]"),
                 CSz("> Start[16]"),
@@ -28571,7 +29755,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
             
             cs MemberName = CSz("At");
 
-                                                                                                auto Member = Cast(u32*, &Element->At);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->At);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28579,6 +29764,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, v2_static_cursor_16 *Element,
               ThisHash,
               Params
               );
+
 
 
 
@@ -28683,7 +29869,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(white_noise_params*, &Element->White);
+                                                                                                // Regular struct member
+                        auto Member = Cast(white_noise_params*, &Element->White);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28691,6 +29878,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -28719,7 +29907,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(perlin_noise_params*, &Element->Perlin);
+                                                                                                // Regular struct member
+                        auto Member = Cast(perlin_noise_params*, &Element->Perlin);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28727,6 +29916,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -28755,7 +29945,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(voronoi_noise_params*, &Element->Voronoi);
+                                                                                                // Regular struct member
+                        auto Member = Cast(voronoi_noise_params*, &Element->Voronoi);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28763,6 +29954,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -28791,7 +29983,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = {};
 
-                                                                                                auto Member = Cast(rectangular_lattice_params*, &Element->RectLattice);
+                                                                                                // Regular struct member
+                        auto Member = Cast(rectangular_lattice_params*, &Element->RectLattice);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28799,6 +29992,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -28827,7 +30021,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
             
             cs MemberName = CSz("Power");
 
-                                                                                                auto Member = Cast(r32*, &Element->Power);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Power);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28835,6 +30030,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, noise_layer *Element, cs Name
               ThisHash,
               Params
               );
+
 
 
 
@@ -28923,7 +30119,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("AutoDayNightCycle");
 
-                                                                                                auto Member = Cast(b8*, &Element->AutoDayNightCycle);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->AutoDayNightCycle);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28931,6 +30128,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -28960,7 +30158,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("tDaySpeed");
 
-                                                                                                auto Member = Cast(r32*, &Element->tDaySpeed);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->tDaySpeed);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -28968,6 +30167,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , 1.f, 30.f );
+
 
 
 
@@ -28997,7 +30197,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("tDay");
 
-                                                                                                auto Member = Cast(r32*, &Element->tDay);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->tDay);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29005,6 +30206,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , -PI32, PI32 );
+
 
 
 
@@ -29054,7 +30256,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("FogPower");
 
-                                                                                                auto Member = Cast(r32*, &Element->FogPower);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->FogPower);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29062,6 +30265,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               );
+
 
 
 
@@ -29117,7 +30321,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("DawnIntensity");
 
-                                                                                                auto Member = Cast(f32*, &Element->DawnIntensity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->DawnIntensity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29125,6 +30330,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , 0.f, 3.f );
+
 
 
 
@@ -29180,7 +30386,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("SunIntensity");
 
-                                                                                                auto Member = Cast(f32*, &Element->SunIntensity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->SunIntensity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29188,6 +30395,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , 0.f, 3.f );
+
 
 
 
@@ -29243,7 +30451,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("DuskIntensity");
 
-                                                                                                auto Member = Cast(f32*, &Element->DuskIntensity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->DuskIntensity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29251,6 +30460,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , 0.f, 3.f );
+
 
 
 
@@ -29342,7 +30552,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
             
             cs MemberName = CSz("MoonIntensity");
 
-                                                                                                auto Member = Cast(f32*, &Element->MoonIntensity);
+                                                                                                // Regular struct member
+                        auto Member = Cast(f32*, &Element->MoonIntensity);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29350,6 +30561,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, lighting_settings *Element, c
               ThisHash,
               Params
               , 0.f, 3.f );
+
 
 
 
@@ -29496,7 +30708,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("OutlineUiValues");
 
-                                                                                                auto Member = Cast(b8*, &Element->OutlineUiValues);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->OutlineUiValues);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29504,6 +30717,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29533,7 +30747,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("OutlineUiButtons");
 
-                                                                                                auto Member = Cast(b8*, &Element->OutlineUiButtons);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->OutlineUiButtons);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29541,6 +30756,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29570,7 +30786,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("OutlineUiTables");
 
-                                                                                                auto Member = Cast(b8*, &Element->OutlineUiTables);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->OutlineUiTables);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29578,6 +30795,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29607,7 +30825,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("OutlineUiTableColumns");
 
-                                                                                                auto Member = Cast(b8*, &Element->OutlineUiTableColumns);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->OutlineUiTableColumns);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29615,6 +30834,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29644,7 +30864,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("DebugBreakOnElementClick");
 
-                                                                                                auto Member = Cast(b8*, &Element->DebugBreakOnElementClick);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DebugBreakOnElementClick);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29652,6 +30873,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29681,7 +30903,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("DebugBreakUiCommand");
 
-                                                                                                auto Member = Cast(b8*, &Element->DebugBreakUiCommand);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->DebugBreakUiCommand);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29689,6 +30912,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29718,7 +30942,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
             
             cs MemberName = CSz("LogClickEvents");
 
-                                                                                                auto Member = Cast(b8*, &Element->LogClickEvents);
+                                                                                                // Regular struct member
+                        auto Member = Cast(b8*, &Element->LogClickEvents);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29726,6 +30951,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_debug *Element, cs Name, u
               ThisHash,
               Params
               );
+
 
 
 
@@ -29809,7 +31035,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
             
             cs MemberName = CSz("First");
 
-                                                                                                auto Member = Cast(world_chunk*, Element->First);
+                                                                                                // Regular struct member
+                        auto Member = Cast(world_chunk*, Element->First);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29817,6 +31044,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -29845,7 +31073,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
             
             cs MemberName = CSz("Memory");
 
-                                                                                                auto Member = Cast(memory_arena*, Element->Memory);
+                                                                                                // Regular struct member
+                        auto Member = Cast(memory_arena*, Element->Memory);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29853,6 +31082,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -29881,7 +31111,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
             
             cs MemberName = CSz("Lock");
 
-                                                                                                auto Member = Cast(bonsai_futex*, &Element->Lock);
+                                                                                                // Regular struct member
+                        auto Member = Cast(bonsai_futex*, &Element->Lock);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29889,6 +31120,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 
@@ -29917,7 +31149,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
             
             cs MemberName = CSz("ElementsAllocated");
 
-                                                                                                auto Member = Cast(u32*, &Element->ElementsAllocated);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->ElementsAllocated);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -29925,6 +31158,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk_freelist *Element
               ThisHash,
               Params
               );
+
 
 
 

@@ -237,6 +237,12 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_id *Element, cs Name, u32 
 }
 
 link_internal void
+DoEditorUi(renderer_2d *Ui, window_layout *Window, input_event **Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
+{
+  DoEditorUi(Ui, Window, *Element, Name, ParentHash, EDITOR_UI_FUNCTION_INSTANCE_NAMES);
+}
+
+link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_uniform *Element, cs Name, u32 ParentHash, EDITOR_UI_FUNCTION_PROTO_DEFAULTS)
 {
 #if 0

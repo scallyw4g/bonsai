@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.h:1018:0
+// src/engine/editor.h:1061:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct rect3cp;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *E
             
             cs MemberName = CSz("Min");
 
-                                                                                                auto Member = Cast(cp*, &Element->Min);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->Min);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *E
               ThisHash,
               Params
               );
+
 
 
 
@@ -85,7 +87,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *E
             
             cs MemberName = CSz("Max");
 
-                                                                                                auto Member = Cast(cp*, &Element->Max);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->Max);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +96,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rect3cp *E
               ThisHash,
               Params
               );
+
 
 
 

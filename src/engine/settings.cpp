@@ -147,7 +147,6 @@ ParseEngineHotkeys(cs SettingsFile, hotkey_settings *Hotkeys, input *Input, heap
 
   while (TokensRemain(Parser))
   {
-
     if (OptionalToken(Parser, CToken(CSz("hotkey"))))
     {
       c_token *TSettingName = RequireTokenPointer(Parser, CTokenType_Identifier);

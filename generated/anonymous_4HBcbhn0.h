@@ -1,8 +1,8 @@
 // callsite
-// src/engine/settings.cpp:246:0
+// src/engine/settings.cpp:245:0
 
 // def (anonymous)
-// src/engine/settings.cpp:246:0
+// src/engine/settings.cpp:245:0
 if (Hotkeys->Debug_ToggleMenu == 0)
 {
   SoftError("Hotkey (Debug_ToggleMenu) remains unbound!");

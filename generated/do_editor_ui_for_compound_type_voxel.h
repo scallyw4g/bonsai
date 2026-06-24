@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:466:0
+// src/engine/editor.cpp:472:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct voxel;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, voxel *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 

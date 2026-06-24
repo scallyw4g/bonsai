@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:472:0
+// src/engine/editor.cpp:478:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct chunk_data;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -85,7 +85,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
             
             cs MemberName = CSz("Occupancy");
 
-                                                                                                auto Member = Cast(u64*, Element->Occupancy);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->Occupancy);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -93,6 +94,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
               ThisHash,
               Params
               );
+
 
 
 
@@ -122,7 +124,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
             
             cs MemberName = CSz("xOccupancyBorder");
 
-                                                                                                auto Member = Cast(u64*, Element->xOccupancyBorder);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->xOccupancyBorder);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -130,6 +133,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
               ThisHash,
               Params
               );
+
 
 
 
@@ -159,7 +163,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
             
             cs MemberName = CSz("FaceMasks");
 
-                                                                                                auto Member = Cast(u64*, Element->FaceMasks);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u64*, Element->FaceMasks);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -167,6 +172,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_data
               ThisHash,
               Params
               );
+
 
 
 

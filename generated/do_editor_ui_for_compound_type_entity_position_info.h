@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:545:0
+// src/engine/editor.cpp:551:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct entity_position_info;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_position_info *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_pos
             
             cs MemberName = CSz("P");
 
-                                                                                                auto Member = Cast(cp*, &Element->P);
+                                                                                                // Regular struct member
+                        auto Member = Cast(cp*, &Element->P);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_pos
               ThisHash,
               Params
               );
+
 
 
 
@@ -121,7 +123,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_pos
             
             cs MemberName = CSz("Scale");
 
-                                                                                                auto Member = Cast(r32*, &Element->Scale);
+                                                                                                // Regular struct member
+                        auto Member = Cast(r32*, &Element->Scale);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -129,6 +132,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, entity_pos
               ThisHash,
               Params
               );
+
 
 
 

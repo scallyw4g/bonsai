@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:484:0
+// src/engine/editor.cpp:490:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct lod_element_buffer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_element_buffer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
             
             cs MemberName = CSz("MeshMask");
 
-                                                                                                auto Member = Cast(u32*, &Element->MeshMask);
+                                                                                                // Regular struct member
+                        auto Member = Cast(u32*, &Element->MeshMask);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
               ThisHash,
               Params
               );
+
 
 
 
@@ -88,6 +90,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v GpuBufferHandles[MeshIndex_Count]"),
                 CSz("> GpuBufferHandles[MeshIndex_Count]"),
@@ -138,6 +141,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v E[MeshIndex_Count]"),
                 CSz("> E[MeshIndex_Count]"),
@@ -188,6 +192,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, lod_elemen
 
                                                 
 
+            // NOTE(Jesse): Copypasta @array_display_code
             if (ToggleButton(Ui,
                 CSz("v Locks[MeshIndex_Count]"),
                 CSz("> Locks[MeshIndex_Count]"),

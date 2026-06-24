@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:298:0
+// src/engine/editor.cpp:304:0
 
 // def (do_editor_ui_for_compound_type)
-// src/engine/editor.h:484:0
+// src/engine/editor.h:490:0
 struct work_queue_entry;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue_entry *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 
@@ -49,7 +49,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
             
             cs MemberName = CSz("Type");
 
-                                                                                                auto Member = Cast(work_queue_entry_type*, &Element->Type);
+                                                                                                // Regular struct member
+                        auto Member = Cast(work_queue_entry_type*, &Element->Type);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -57,6 +58,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, work_queue
               ThisHash,
               Params
               );
+
 
 
 
