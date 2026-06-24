@@ -34,7 +34,7 @@ DoEntityWindow(engine_resources *Engine)
         Assert(Spawned(Entity));
         DrawEntityCollisionVolume(Entity, &GpuMap->Buffer, Graphics, World->ChunkDim, RGB_YELLOW);
 
-        if (Input->LMB.Clicked)
+        if (Hotkeys->Primary->Clicked)
         {
           EngineDebug->SelectedEntity = Entity->Id;
         }
@@ -109,7 +109,7 @@ DoEntityWindow(engine_resources *Engine)
 #endif
   }
 
-  if (Input->Delete.Clicked && Engine->HoverEntity.Tag) { Unspawn(Engine->HoverEntity.Value); }
+  if (Hotkeys->DeleteEntity->Clicked && Engine->HoverEntity.Tag) { Unspawn(Engine->HoverEntity.Value); }
 }
 
 link_internal void
@@ -283,7 +283,7 @@ DoEngineDebug(engine_resources *Engine)
         if (Engine->MousedOverVoxel.Tag)
         {
           EngineDebug->PickedNode = Engine->MousedOverVoxel.Value.Chunks[PickedVoxel_FirstFilled].Node;
-          if (Input->LMB.Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
+          if (Hotkeys->Primary->Clicked) { EngineDebug->PickedChunkState = PickedChunkState_None; }
         }
       }
 

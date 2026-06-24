@@ -59,8 +59,60 @@ ParseEngineSettings(cs SettingsFile, memory_arena *Memory = 0)
 }
 
 
+link_internal hotkey_chord *
+ResolveNameToChordPointer(cs Name, hotkey_settings *Hotkeys)
+{
+  hotkey_chord *Result = 0;
+
+  poof(
+    func (hotkey_settings Settings) @code_fragment
+    {
+      Settings.map_members(Member)
+      {
+        Member.is_type(hotkey_chord)?
+        {
+          if (StringsMatch(CSz("Member.name"), Name))
+          {
+            Assert(Result == 0);
+            Result = &Hotkeys->Member.name;
+          }
+        }
+      }
+    }
+  )
+#include <generated/anonymous_c6TERWvE.h>
+
+  return Result;
+}
+
+link_internal input_event **
+ResolveNameToHotkeySlot(cs Name, hotkey_settings *Hotkeys)
+{
+  input_event **Result = 0;
+
+  poof(
+    func (hotkey_settings Settings) @code_fragment
+    {
+      Settings.map_members(Member)
+      {
+        Member.is_type(input_event)?
+        {
+          if (StringsMatch(CSz("Member.name"), Name))
+          {
+            Assert(Result == 0);
+            Result = &Hotkeys->Member.name;
+          }
+        }
+      }
+    }
+  )
+#include <generated/anonymous_6ENTWvLh.h>
+
+  return Result;
+}
+
 link_internal input_event *
-ResolveHotkeyNameToInputPointer(cs InputMemberQuery, input *Input)
+ResolveNameToInputPointer(cs Name, input *Input)
 {
   input_event *Result = 0;
 
@@ -71,7 +123,7 @@ ResolveHotkeyNameToInputPointer(cs InputMemberQuery, input *Input)
       {
         InputMember.is_type(input_event)?
         {
-          if (StringsMatch(CSz("InputMember.name"), InputMemberQuery))
+          if (StringsMatch(CSz("InputMember.name"), Name))
           {
             Assert(Result == 0);
             Result = &Input->InputMember.name;
@@ -82,66 +134,110 @@ ResolveHotkeyNameToInputPointer(cs InputMemberQuery, input *Input)
   )
 #include <generated/anonymous_HTSkPniD.h>
 
-  if (Result == 0)
-  {
-    SoftError("(%S) not a valid input member name, hotkey not bound.", InputMemberQuery);
-  }
-
   return Result;
 }
 
 link_internal b32
-ParseEngineHotkeys(cs SettingsFile, hotkey_settings *Hotkeys, input *Input, memory_arena *Memory = 0)
+ParseEngineHotkeys(cs SettingsFile, hotkey_settings *Hotkeys, input *Input, heap_allocator *Heap, memory_arena *Memory = 0)
 {
   b32 Result = True;
 
   if (Memory == 0) { Memory = GetTranArena(); }
   parser *Parser = ParserForFile(0, SettingsFile, TokenCursorSource_RootFile, Memory);
 
-  poof(
-    func (hotkey_settings tHotkeys) @code_fragment
+  while (TokensRemain(Parser))
+  {
+
+    if (OptionalToken(Parser, CToken(CSz("hotkey"))))
     {
-      tHotkeys.map_members(InputMember)
+      c_token *TSettingName = RequireTokenPointer(Parser, CTokenType_Identifier);
+      RequireToken(Parser, CTokenType_Equals);
+      c_token *TSettingValue = RequireTokenPointer(Parser, CTokenType_Identifier);
+
+      input_event **HotkeySlot = ResolveNameToHotkeySlot(TSettingName->Value, Hotkeys);
+      input_event  *HotkeyBinding = ResolveNameToInputPointer(TSettingValue->Value, Input);
+
+      if ( StringsMatch(TSettingName->Value, CSz("Zoom")) &&
+           StringsMatch(TSettingValue->Value, CSz("Scrollwheel")) )
       {
-        InputMember.is_type(hotkey)?
+        Assert(HotkeyBinding == 0);
+        HotkeyBinding = &NullInputEvent;
+        Hotkeys->ZoomType = ZoomType_Scrollwheel;
+      }
+
+      if (HotkeySlot && HotkeyBinding)
+      {
+        if (*HotkeySlot == 0)
         {
-          Hotkeys->(InputMember.name).State = &NullInputEvent;
+          *HotkeySlot = HotkeyBinding;
+        }
+        else
+        {
+          SoftError("Hotkey (%S) already bound! Not rebinding.", TSettingValue->Value);
+          Result = False;
+        }
+      }
+      else
+      {
+        if (HotkeySlot == 0)
+        {
+          SoftError("(%S) is an invalid hotkey name", TSettingName->Value);
+          Result = False;
+        }
+
+        if (HotkeyBinding == 0)
+        {
+          SoftError("(%S) is an invalid hotkey value", TSettingValue->Value);
+          Result = False;
         }
       }
     }
-  )
-#include <generated/anonymous_rj3Fqbrr.h>
+    else if (OptionalToken(Parser, CToken(CSz("chord"))))
+    {
+      c_token *TSettingName = RequireTokenPointer(Parser, CTokenType_Identifier);
+      RequireToken(Parser, CTokenType_Equals);
 
-  while (TokensRemain(Parser))
-  {
-    RequireToken(Parser, CToken(CSz("hotkey")));
-    c_token *TSettingName = RequireTokenPointer(Parser, CTokenType_Identifier);
-    RequireToken(Parser, CTokenType_Equals);
-    c_token *TSettingValue = RequireTokenPointer(Parser, CTokenType_Identifier);
-
-    b32 BindingSuccess = False;
-    poof(
-      func (hotkey_settings tHotkeys) @code_fragment
+      hotkey_chord *Chord = ResolveNameToChordPointer(TSettingName->Value, Hotkeys);
+      if (Chord)
       {
-        tHotkeys.map_members(InputMember)
+        Chord->EventCount = CountTokensBeforeNext(Parser, CTokenType_Identifier, CTokenType_Newline);
+        Chord->Events = Cast(input_event**, HeapAllocate(Heap, sizeof(input_event*)*Chord->EventCount));
+
+        RangeIterator_t(u32, ValueIndex, Chord->EventCount)
         {
-          InputMember.is_type(hotkey)?
+          c_token *TSettingValue = PopTokenPointer(Parser);
+          if (TSettingValue->Type == CTokenType_Identifier)
           {
-            if (StringsMatch(CSz("InputMember.name"), TSettingName->Value))
+            input_event *Hotkey = ResolveNameToInputPointer(TSettingValue->Value, Input);
+            if (Hotkey)
             {
-              Assert(BindingSuccess == False);
-              Hotkeys->(InputMember.name).State = ResolveHotkeyNameToInputPointer(TSettingValue->Value, Input);
-              BindingSuccess = True;
+              Chord->Events[ValueIndex] = Hotkey;
             }
+            else
+            {
+              SoftError("(%S) is an invalid hotkey value", TSettingValue->Value);
+              Chord->Events[ValueIndex] = &NullInputEvent;
+              Result = False;
+            }
+          }
+          else
+          {
+            SoftError("(%S) is an invalid hotkey value", TSettingValue->Value);
+            Chord->Events[ValueIndex] = &NullInputEvent;
+            Result = False;
           }
         }
       }
-    )
-#include <generated/anonymous_T13QDCor.h>
+      else
+      {
+        SoftError("(%S) is an invalid chord name", TSettingName->Value);
+        Result = False;
+      }
 
-    if (BindingSuccess == False)
+    }
+    else
     {
-      SoftError("Unknown Hotkey (%S)", TSettingName->Value);
+      SoftError("Unknown keyword (%S)", PopToken(Parser).Value);
       Result = False;
     }
   }
@@ -149,13 +245,23 @@ ParseEngineHotkeys(cs SettingsFile, hotkey_settings *Hotkeys, input *Input, memo
   poof(
     func (hotkey_settings tHotkeys) @code_fragment
     {
-      tHotkeys.map_members(InputMember)
+      tHotkeys.map_members(HotkeyMember)
       {
-        InputMember.is_type(hotkey)?
+        HotkeyMember.is_type(input_event)?
         {
-          if (Hotkeys->(InputMember.name).State == &NullInputEvent)
+          if (Hotkeys->(HotkeyMember.name) == 0)
           {
-            SoftError("Hotkey ((InputMember.name)) remains unbound!");
+            SoftError("Hotkey ((HotkeyMember.name)) remains unbound!");
+            Hotkeys->(HotkeyMember.name) = &NullInputEvent;
+            Result = False;
+          }
+        }
+
+        HotkeyMember.is_type(hotkey_chord)?
+        {
+          if (Hotkeys->(HotkeyMember.name).EventCount == 0)
+          {
+            SoftError("Chord ((HotkeyMember.name)) remains unbound!");
             Result = False;
           }
         }

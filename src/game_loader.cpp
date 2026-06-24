@@ -147,7 +147,6 @@ main( s32 ArgCount, const char ** Args )
   {
     temp_memory_handle TempHandle = BeginTemporaryMemory(&BootstrapArena);
     EngineResources->Settings = ParseEngineSettings(CSz("settings.init"), &BootstrapArena);
-    ParseEngineHotkeys(CSz("hotkeys.init"), &EngineResources->Settings.Hotkeys, &EngineResources->Stdlib.Plat.Input, &BootstrapArena);
   }
 
   EngineResources->Stdlib.Plat.ScreenDim = V2(SettingToValue(EngineResources->Settings.Graphics.WindowStartingSize));
@@ -173,6 +172,8 @@ main( s32 ArgCount, const char ** Args )
 
   Ensure( EngineApi->OnLibraryLoad(EngineResources) );
   Ensure( Bonsai_Init(EngineResources) ); // <-- EngineResources now initialized
+
+  ParseEngineHotkeys(CSz("hotkeys.init"), &EngineResources->Settings.Hotkeys, &EngineResources->Stdlib.Plat.Input, &EngineResources->Heap);
 
 #if BONSAI_DEBUG_SYSTEM_API
   GetDebugState()->SetRenderer(&EngineResources->Ui);
@@ -239,7 +240,10 @@ main( s32 ArgCount, const char ** Args )
       }
     }
 
-    DEBUG_FRAME_BEGIN(&EngineResources->Ui, Plat->dt, EngineResources->Settings.Hotkeys.Debug_ToggleMenu, EngineResources->Settings.Hotkeys.Debug_ToggleProfiling);
+    DEBUG_FRAME_BEGIN(&EngineResources->Ui,
+        Plat->dt,
+        EngineResources->Settings.Hotkeys.Debug_ToggleMenu->Clicked,
+        EngineResources->Settings.Hotkeys.Debug_ToggleProfiling->Clicked);
 
 #if !EMCC
     if ( FileIsNew(GameLibName, &LastGameLibTime) )

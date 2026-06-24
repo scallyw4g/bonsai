@@ -159,8 +159,8 @@ GetCameraGhost(engine_resources *Engine)
   hotkey_settings           *Hotkeys       = &Res->Settings.Hotkeys;     \
   engine_debug              *EngineDebug   = &Res->EngineDebug;          \
   tiered_mesh_freelist      *MeshFreelist  = &Res->geo_u3d_MeshFreelist; \
-  input                     *Input         = &Res->Stdlib.Plat.Input;    \
   level_editor              *Editor        = &Res->Editor;
+  /* input                     *Input         = &Res->Stdlib.Plat.Input;    \ */
 
 #define UNPACK_GRAPHICS_RESOURCES(Res)                              \
   graphics                  *Graphics      = &Res->Graphics;        \

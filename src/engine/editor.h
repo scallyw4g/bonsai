@@ -2092,7 +2092,7 @@ ComputeShapeAxisFromEditDim(v3 Dim)
 }
 
 link_internal world_edit_selection_mode
-ComputeSelectionMode(input *Input)
+ComputeSelectionMode(hotkey_settings *Hotkeys)
 {
   world_edit_selection_mode SelectionMode = {};
 
@@ -2101,23 +2101,28 @@ ComputeSelectionMode(input *Input)
   // Alt   is move
   // Shift is resize
   //
-  if (Input->Shift.Pressed && Input->Ctrl.Pressed && Input->Alt.Pressed)
+  if ( ChordPressed(&Hotkeys->ResizeSelection_AllAxies) )
+  /* if (Hotkeys->Shift->Pressed && Hotkeys->Ctrl->Pressed && Hotkeys->Alt->Pressed) */
   {
     SelectionMode = SelectionMode_ResizeAllAxies;
   }
-  else if (Input->Shift.Pressed && Input->Ctrl.Pressed)
+  if ( ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies) )
+  /* else if ( Hotkeys->Shift->Pressed && Hotkeys->Ctrl->Pressed) */
   {
     SelectionMode = SelectionMode_ResizeBothLinearAxies;
   }
-  else if (Input->Alt.Pressed && Input->Ctrl.Pressed)
+  if ( ChordPressed(&Hotkeys->TranslateSelection_Linear) )
+  /* else if (Hotkeys->Alt->Pressed && Hotkeys->Ctrl->Pressed) */
   {
     SelectionMode = SelectionMode_TranslateLinear;
   }
-  else if (Input->Shift.Pressed)
+  if ( ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) )
+  /* else if (Hotkeys->Shift->Pressed) */
   {
     SelectionMode = SelectionMode_ResizeSingleLinearAxis;
   }
-  else if (Input->Alt.Pressed)
+  if ( ChordPressed(&Hotkeys->TranslateSelection_Planar) )
+  /* else if (Hotkeys->Alt->Pressed) */
   {
     SelectionMode =  SelectionMode_TranslatePlanar;
   }

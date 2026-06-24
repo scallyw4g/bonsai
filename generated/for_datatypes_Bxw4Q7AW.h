@@ -6733,21 +6733,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Debug_ToggleMenu");
 
-                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleMenu);
+                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleMenu);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
+
+            
 
 
           }
@@ -6768,21 +6769,22 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Debug_ToggleProfiling");
 
-                                                                        auto Member = Cast(b32*, &Element->Debug_ToggleProfiling);
+                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleProfiling);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
+
+            
 
 
           }
@@ -6801,58 +6803,24 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             
             
-            cs MemberName = CSz("Debug_TriangulateIncrement");
+            cs MemberName = CSz("Debug_ToggleCamera");
 
-                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateIncrement);
+                                                                                                auto Member = Cast(input_event*, Element->Debug_ToggleCamera);
             DoEditorUi(Ui,
               Window,
-              Cast(b32*, Member),
+              Member,
               MemberName,
               ThisHash,
-              &DefaultUiRenderParams_Checkbox
+              Params
               );
 
 
 
 
 
-                        PushNewRow(Ui);
 
 
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
             
-            
-            
-            cs MemberName = CSz("Debug_TriangulateDecrement");
-
-                                                                        auto Member = Cast(b32*, &Element->Debug_TriangulateDecrement);
-            DoEditorUi(Ui,
-              Window,
-              Cast(b32*, Member),
-              MemberName,
-              ThisHash,
-              &DefaultUiRenderParams_Checkbox
-              );
-
-
-
-
-
-                        PushNewRow(Ui);
-
 
 
           }
@@ -6873,7 +6841,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Left");
 
-                                                                                                auto Member = Cast(hotkey*, &Element->Left);
+                                                                                                auto Member = Cast(input_event*, Element->Left);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6909,7 +6877,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Right");
 
-                                                                                                auto Member = Cast(hotkey*, &Element->Right);
+                                                                                                auto Member = Cast(input_event*, Element->Right);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6945,7 +6913,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Forward");
 
-                                                                                                auto Member = Cast(hotkey*, &Element->Forward);
+                                                                                                auto Member = Cast(input_event*, Element->Forward);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -6981,7 +6949,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             cs MemberName = CSz("Backward");
 
-                                                                                                auto Member = Cast(hotkey*, &Element->Backward);
+                                                                                                auto Member = Cast(input_event*, Element->Backward);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7015,9 +6983,9 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
             
             
             
-            cs MemberName = CSz("ScrollDelta");
+            cs MemberName = CSz("Up");
 
-                                                                                                auto Member = Cast(s32*, &Element->ScrollDelta);
+                                                                                                auto Member = Cast(input_event*, Element->Up);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -7032,8 +7000,655 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_settings *Element, cs 
 
 
 
-                        PushNewRow(Ui);
+            
 
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Down");
+
+                                                                                                auto Member = Cast(input_event*, Element->Down);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Primary");
+
+                                                                                                auto Member = Cast(input_event*, Element->Primary);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Secondary");
+
+                                                                                                auto Member = Cast(input_event*, Element->Secondary);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Tertiary");
+
+                                                                                                auto Member = Cast(input_event*, Element->Tertiary);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Ctrl");
+
+                                                                                                auto Member = Cast(input_event*, Element->Ctrl);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Alt");
+
+                                                                                                auto Member = Cast(input_event*, Element->Alt);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Shift");
+
+                                                                                                auto Member = Cast(input_event*, Element->Shift);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ZoomType");
+
+                                                                                                auto Member = Cast(zoom_type*, &Element->ZoomType);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("Zoom");
+
+                                                                                                auto Member = Cast(input_event*, Element->Zoom);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("DeleteEntity");
+
+                                                                                                auto Member = Cast(input_event*, Element->DeleteEntity);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("MultiSelect");
+
+                                                                                                auto Member = Cast(input_event*, Element->MultiSelect);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("CenterCamera");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->CenterCamera);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("NewSelection");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->NewSelection);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ResizeSelection_AllAxies");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_AllAxies);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ResizeSelection_BothLinearAxies");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_BothLinearAxies);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("ResizeSelection_SingleLinearAxis");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->ResizeSelection_SingleLinearAxis);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TranslateSelection_Linear");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Linear);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
+            cs MemberName = CSz("TranslateSelection_Planar");
+
+                                                                                                auto Member = Cast(hotkey_chord*, &Element->TranslateSelection_Planar);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+            
 
 
           }
@@ -12196,6 +12811,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *Element, cs Name, u3
   }
 
 }
+
 
 
 
@@ -22332,7 +22948,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
   }
 
 }
-
 
 
 

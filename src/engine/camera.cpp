@@ -189,30 +189,39 @@ SetCameraTarget(v3 Target, camera *Camera)
 link_internal void
 UpdateGameCamera( world *World,
                   v2 MouseDelta,
-                  input *Input,
+                  r32 MouseWheelDelta,
+                  hotkey_settings *Hotkeys,
                   canonical_position NewTarget,
                   camera *Camera,
                   r32 Dt,
                   b32 DoPositionDelta,
                   b32 DoZoomDelta )
 {
+  Assert(Hotkeys);
+
   engine_resources *Engine = GetEngineResources();
 
   v2 UpdateMouseDelta = {};
   f32 CameraZoomDelta = {};
-  if (Input) // TODO(Jesse): Assert here ..?
+  if (DoPositionDelta)
   {
-    if (DoPositionDelta)
-    {
-      UpdateMouseDelta = Input->RMB.Pressed ? MouseDelta : V2(0);
-    }
+    UpdateMouseDelta = Hotkeys->Secondary->Pressed ? MouseDelta : V2(0);
+  }
 
-    if (DoZoomDelta)
+  if (DoZoomDelta)
+  {
+    if (Hotkeys->ZoomType == ZoomType_Scrollwheel)
     {
-      CameraZoomDelta = -1.f*Input->MouseWheelDelta/500.f;
-      /* if (Input->RMB.Pressed) { CameraZoomDelta += MouseDelta.y; } */
+      CameraZoomDelta = -1.f*MouseWheelDelta/500.f;
     }
-
+    else
+    {
+      Assert(Hotkeys->ZoomType == ZoomType_ClutchDrag);
+      if (Hotkeys->Zoom->Pressed)
+      {
+        CameraZoomDelta = MouseDelta.y;
+      }
+    }
   }
 
   UpdateGameCamera(World, Engine->Stdlib.Plat.ScreenDim, UpdateMouseDelta, CameraZoomDelta, NewTarget, Camera, Dt);
@@ -361,16 +370,16 @@ GetCameraRelativeInput(hotkey_settings *Hotkeys, camera *Camera)
 
   v3 UpdateDir = V3(0,0,0);
 
-  if ( Hotkeys->Forward.State->Pressed )
+  if ( Hotkeys->Forward->Pressed )
     UpdateDir += Forward;
 
-  if ( Hotkeys->Backward.State->Pressed )
+  if ( Hotkeys->Backward->Pressed )
     UpdateDir -= Forward;
 
-  if ( Hotkeys->Right.State->Pressed )
+  if ( Hotkeys->Right->Pressed )
     UpdateDir += Right;
 
-  if ( Hotkeys->Left.State->Pressed )
+  if ( Hotkeys->Left->Pressed )
     UpdateDir -= Right;
 
   UpdateDir = Normalize(UpdateDir, Length(UpdateDir));

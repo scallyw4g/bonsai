@@ -188,7 +188,7 @@ Bonsai_FrameBegin(engine_resources *Resources)
   b32 DoZoomDelta = UiHoveredMouseInput(Ui) == False;
 
   v2 MouseDelta = GetMouseDelta(Plat);
-  UpdateGameCamera(World, MouseDelta, &Plat->Input, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
+  UpdateGameCamera(World, MouseDelta, Plat->Input.MouseWheelDelta, &Resources->Settings.Hotkeys, CameraTargetP, Camera, Plat->dt, DoPositionDelta, DoZoomDelta);
   // }
 
 
@@ -460,8 +460,6 @@ Bonsai_FrameEnd(engine_resources *Engine)
     /* Assert(Plat->ScreenDim.x > 0); */
     /* Assert(Plat->ScreenDim.y > 0); */
 
-    MarshallInputToHotkeys(&Plat->Input, &Engine->Settings.Hotkeys);
-
     /* if (Input->F12.Pressed) { EngineDebug->TriggerRuntimeBreak = True; } */
   }
 
@@ -482,7 +480,7 @@ Bonsai_Simulate(engine_resources *Resources)
 
   UnsignalFutex(&Resources->Stdlib.Plat.HighPriorityModeFutex);
 
-  if (Input->F4.Clicked)
+  if (Hotkeys->Debug_ToggleCamera->Clicked)
   {
     if (Graphics->Camera == &Graphics->GameCamera)
     {

@@ -1997,8 +1997,8 @@ SimulateEntity(engine_resources *Resources, entity *Entity, r32 dt, v3i VisibleR
           v3 OffsetDir = GetCameraRelativeInput(Hotkeys, Camera);
           OffsetDir.z = 0; // Constrain to XY plane
 
-          if (Input->E.Pressed) { OffsetDir.z += 1.f; }
-          if (Input->Q.Pressed) { OffsetDir.z -= 1.f; }
+          if (Hotkeys->Up->Pressed) { OffsetDir.z += 1.f; }
+          if (Hotkeys->Down->Pressed) { OffsetDir.z -= 1.f; }
 
           OffsetDir = Normalize(OffsetDir);
 

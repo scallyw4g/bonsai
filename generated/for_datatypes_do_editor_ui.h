@@ -310,6 +310,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, physics *E
 
 
 
+
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -560,7 +561,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_upda
 struct shader;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 

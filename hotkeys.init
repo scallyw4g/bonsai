@@ -1,10 +1,100 @@
 //
-// NOTE(Jesse): Hotkey bindings.  Names are divined directly from the member
-// names in `struct hotkey_settings` and `struct input` in hotkeys.h and
-// input.h, respectively
+// Hotkey bindings.  Hotkey names and input values are divined directly from
+// the member names in `struct hotkey_settings` and `struct input` in hotkeys.h
+// and input.h, respectively
 //
+// A `hotkey` is a single key mapping, usually triggered on the clicked state
+//
+// A `chord` is a compound hotkey consisting of one or more keystrokes.
+//
+// Chords can act as any input event type (clicked, pressed), which is
+// determined by the code that reads the hotkey at runtime.  This behavior
+// cannot be modified at this time.
+// 
+// Chords that are triggered on the clicked state fire on *the first* frame that
+// all keys are depressed.
+
+// Chords that are triggered on the pressed state fire on *every* frame that
+// all keys are depressed.
+// 
+// The chord parser handles escaped newlines, and is terminated by a newline,
+// so you can do:
+//
+// chord Whatever = A \
+//                  B \
+//                  C
+//
+// If your little heart likes that kind of thing. <3
+//
+
+
+//
+// --------------------------- Hotkeys Start -----------------------------------
+//
+
+
+//
+// Standard Controls & Interaction hotkeys
+//
+// These are the controls used in the editor.  UI interactions are hard-coded
+// to use mouse buttons and keystrokes directly, meaning they cannot be
+// modified.  I have no real plans to change this, unless the UI hotkeys become
+// more complex; they're very simplistic at the moment.
+
+hotkey Primary   = LMB
+hotkey Secondary = RMB
+hotkey Tertiary  = MMB
 
 hotkey Forward  = W
 hotkey Left     = A
 hotkey Backward = S
 hotkey Right    = D
+
+hotkey Up       = E
+hotkey Down     = Q
+
+// Scrollwheel is a special value that doesn't correspond to an input
+// keystroke.  It is only valid on the Zoom hotkey, and tells the engine to use
+// the scrollwheel delta for camera zoom.  Using any other input member here is
+// also valid, and acts as a clutch; you press and hold the key while dragging
+// the mouse vertically to zoom.
+//
+hotkey Zoom = Z
+
+//
+// Accelerators
+// TODO(Jesse): Remove these?
+//
+
+// hotkey Ctrl  = Ctrl
+// hotkey Alt   = Alt
+// hotkey Shift = Shift
+
+
+//
+// Editor Hotkeys
+//
+
+hotkey DeleteEntity = Delete
+hotkey MultiSelect = Ctrl
+
+chord CenterCamera = Ctrl G
+
+chord NewSelection = Ctrl S
+
+chord TranslateSelection_Planar        = Alt
+chord TranslateSelection_Linear        = Alt Ctrl
+
+chord ResizeSelection_SingleLinearAxis = Shift
+chord ResizeSelection_BothLinearAxies  = Shift Ctrl
+chord ResizeSelection_AllAxies         = Shift Ctrl Alt
+
+
+//
+// Debug Hotkeys
+//
+
+hotkey Debug_ToggleMenu       = F1
+hotkey Debug_ToggleProfiling  = F2
+hotkey Debug_ToggleCamera     = F4
+

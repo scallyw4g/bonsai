@@ -1,375 +1,375 @@
 // callsite
-// src/engine/settings.cpp:68:0
+// src/engine/settings.cpp:120:0
 
 // def (anonymous)
-// src/engine/settings.cpp:68:0
-if (StringsMatch(CSz("Enter"), InputMemberQuery))
+// src/engine/settings.cpp:120:0
+if (StringsMatch(CSz("Enter"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Enter;
 }
 
-if (StringsMatch(CSz("Escape"), InputMemberQuery))
+if (StringsMatch(CSz("Escape"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Escape;
 }
 
-if (StringsMatch(CSz("Alt"), InputMemberQuery))
+if (StringsMatch(CSz("Alt"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Alt;
 }
 
-if (StringsMatch(CSz("Ctrl"), InputMemberQuery))
+if (StringsMatch(CSz("Ctrl"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Ctrl;
 }
 
-if (StringsMatch(CSz("Shift"), InputMemberQuery))
+if (StringsMatch(CSz("Shift"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Shift;
 }
 
-if (StringsMatch(CSz("Backspace"), InputMemberQuery))
+if (StringsMatch(CSz("Backspace"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Backspace;
 }
 
-if (StringsMatch(CSz("Delete"), InputMemberQuery))
+if (StringsMatch(CSz("Delete"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Delete;
 }
 
-if (StringsMatch(CSz("F12"), InputMemberQuery))
+if (StringsMatch(CSz("F12"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F12;
 }
 
-if (StringsMatch(CSz("F11"), InputMemberQuery))
+if (StringsMatch(CSz("F11"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F11;
 }
 
-if (StringsMatch(CSz("F10"), InputMemberQuery))
+if (StringsMatch(CSz("F10"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F10;
 }
 
-if (StringsMatch(CSz("F9"), InputMemberQuery))
+if (StringsMatch(CSz("F9"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F9;
 }
 
-if (StringsMatch(CSz("F8"), InputMemberQuery))
+if (StringsMatch(CSz("F8"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F8;
 }
 
-if (StringsMatch(CSz("F7"), InputMemberQuery))
+if (StringsMatch(CSz("F7"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F7;
 }
 
-if (StringsMatch(CSz("F6"), InputMemberQuery))
+if (StringsMatch(CSz("F6"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F6;
 }
 
-if (StringsMatch(CSz("F5"), InputMemberQuery))
+if (StringsMatch(CSz("F5"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F5;
 }
 
-if (StringsMatch(CSz("F4"), InputMemberQuery))
+if (StringsMatch(CSz("F4"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F4;
 }
 
-if (StringsMatch(CSz("F3"), InputMemberQuery))
+if (StringsMatch(CSz("F3"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F3;
 }
 
-if (StringsMatch(CSz("F2"), InputMemberQuery))
+if (StringsMatch(CSz("F2"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F2;
 }
 
-if (StringsMatch(CSz("F1"), InputMemberQuery))
+if (StringsMatch(CSz("F1"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F1;
 }
 
-if (StringsMatch(CSz("Dot"), InputMemberQuery))
+if (StringsMatch(CSz("Dot"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Dot;
 }
 
-if (StringsMatch(CSz("Minus"), InputMemberQuery))
+if (StringsMatch(CSz("Minus"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Minus;
 }
 
-if (StringsMatch(CSz("FSlash"), InputMemberQuery))
+if (StringsMatch(CSz("FSlash"), Name))
 {
   Assert(Result == 0);
   Result = &Input->FSlash;
 }
 
-if (StringsMatch(CSz("Space"), InputMemberQuery))
+if (StringsMatch(CSz("Space"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Space;
 }
 
-if (StringsMatch(CSz("N0"), InputMemberQuery))
+if (StringsMatch(CSz("N0"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N0;
 }
 
-if (StringsMatch(CSz("N1"), InputMemberQuery))
+if (StringsMatch(CSz("N1"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N1;
 }
 
-if (StringsMatch(CSz("N2"), InputMemberQuery))
+if (StringsMatch(CSz("N2"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N2;
 }
 
-if (StringsMatch(CSz("N3"), InputMemberQuery))
+if (StringsMatch(CSz("N3"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N3;
 }
 
-if (StringsMatch(CSz("N4"), InputMemberQuery))
+if (StringsMatch(CSz("N4"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N4;
 }
 
-if (StringsMatch(CSz("N5"), InputMemberQuery))
+if (StringsMatch(CSz("N5"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N5;
 }
 
-if (StringsMatch(CSz("N6"), InputMemberQuery))
+if (StringsMatch(CSz("N6"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N6;
 }
 
-if (StringsMatch(CSz("N7"), InputMemberQuery))
+if (StringsMatch(CSz("N7"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N7;
 }
 
-if (StringsMatch(CSz("N8"), InputMemberQuery))
+if (StringsMatch(CSz("N8"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N8;
 }
 
-if (StringsMatch(CSz("N9"), InputMemberQuery))
+if (StringsMatch(CSz("N9"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N9;
 }
 
-if (StringsMatch(CSz("A"), InputMemberQuery))
+if (StringsMatch(CSz("A"), Name))
 {
   Assert(Result == 0);
   Result = &Input->A;
 }
 
-if (StringsMatch(CSz("B"), InputMemberQuery))
+if (StringsMatch(CSz("B"), Name))
 {
   Assert(Result == 0);
   Result = &Input->B;
 }
 
-if (StringsMatch(CSz("C"), InputMemberQuery))
+if (StringsMatch(CSz("C"), Name))
 {
   Assert(Result == 0);
   Result = &Input->C;
 }
 
-if (StringsMatch(CSz("D"), InputMemberQuery))
+if (StringsMatch(CSz("D"), Name))
 {
   Assert(Result == 0);
   Result = &Input->D;
 }
 
-if (StringsMatch(CSz("E"), InputMemberQuery))
+if (StringsMatch(CSz("E"), Name))
 {
   Assert(Result == 0);
   Result = &Input->E;
 }
 
-if (StringsMatch(CSz("F"), InputMemberQuery))
+if (StringsMatch(CSz("F"), Name))
 {
   Assert(Result == 0);
   Result = &Input->F;
 }
 
-if (StringsMatch(CSz("G"), InputMemberQuery))
+if (StringsMatch(CSz("G"), Name))
 {
   Assert(Result == 0);
   Result = &Input->G;
 }
 
-if (StringsMatch(CSz("H"), InputMemberQuery))
+if (StringsMatch(CSz("H"), Name))
 {
   Assert(Result == 0);
   Result = &Input->H;
 }
 
-if (StringsMatch(CSz("I"), InputMemberQuery))
+if (StringsMatch(CSz("I"), Name))
 {
   Assert(Result == 0);
   Result = &Input->I;
 }
 
-if (StringsMatch(CSz("J"), InputMemberQuery))
+if (StringsMatch(CSz("J"), Name))
 {
   Assert(Result == 0);
   Result = &Input->J;
 }
 
-if (StringsMatch(CSz("K"), InputMemberQuery))
+if (StringsMatch(CSz("K"), Name))
 {
   Assert(Result == 0);
   Result = &Input->K;
 }
 
-if (StringsMatch(CSz("L"), InputMemberQuery))
+if (StringsMatch(CSz("L"), Name))
 {
   Assert(Result == 0);
   Result = &Input->L;
 }
 
-if (StringsMatch(CSz("M"), InputMemberQuery))
+if (StringsMatch(CSz("M"), Name))
 {
   Assert(Result == 0);
   Result = &Input->M;
 }
 
-if (StringsMatch(CSz("N"), InputMemberQuery))
+if (StringsMatch(CSz("N"), Name))
 {
   Assert(Result == 0);
   Result = &Input->N;
 }
 
-if (StringsMatch(CSz("O"), InputMemberQuery))
+if (StringsMatch(CSz("O"), Name))
 {
   Assert(Result == 0);
   Result = &Input->O;
 }
 
-if (StringsMatch(CSz("P"), InputMemberQuery))
+if (StringsMatch(CSz("P"), Name))
 {
   Assert(Result == 0);
   Result = &Input->P;
 }
 
-if (StringsMatch(CSz("Q"), InputMemberQuery))
+if (StringsMatch(CSz("Q"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Q;
 }
 
-if (StringsMatch(CSz("R"), InputMemberQuery))
+if (StringsMatch(CSz("R"), Name))
 {
   Assert(Result == 0);
   Result = &Input->R;
 }
 
-if (StringsMatch(CSz("S"), InputMemberQuery))
+if (StringsMatch(CSz("S"), Name))
 {
   Assert(Result == 0);
   Result = &Input->S;
 }
 
-if (StringsMatch(CSz("T"), InputMemberQuery))
+if (StringsMatch(CSz("T"), Name))
 {
   Assert(Result == 0);
   Result = &Input->T;
 }
 
-if (StringsMatch(CSz("U"), InputMemberQuery))
+if (StringsMatch(CSz("U"), Name))
 {
   Assert(Result == 0);
   Result = &Input->U;
 }
 
-if (StringsMatch(CSz("V"), InputMemberQuery))
+if (StringsMatch(CSz("V"), Name))
 {
   Assert(Result == 0);
   Result = &Input->V;
 }
 
-if (StringsMatch(CSz("W"), InputMemberQuery))
+if (StringsMatch(CSz("W"), Name))
 {
   Assert(Result == 0);
   Result = &Input->W;
 }
 
-if (StringsMatch(CSz("X"), InputMemberQuery))
+if (StringsMatch(CSz("X"), Name))
 {
   Assert(Result == 0);
   Result = &Input->X;
 }
 
-if (StringsMatch(CSz("Y"), InputMemberQuery))
+if (StringsMatch(CSz("Y"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Y;
 }
 
-if (StringsMatch(CSz("Z"), InputMemberQuery))
+if (StringsMatch(CSz("Z"), Name))
 {
   Assert(Result == 0);
   Result = &Input->Z;
 }
 
-if (StringsMatch(CSz("RMB"), InputMemberQuery))
+if (StringsMatch(CSz("RMB"), Name))
 {
   Assert(Result == 0);
   Result = &Input->RMB;
 }
 
-if (StringsMatch(CSz("LMB"), InputMemberQuery))
+if (StringsMatch(CSz("LMB"), Name))
 {
   Assert(Result == 0);
   Result = &Input->LMB;
 }
 
-if (StringsMatch(CSz("MMB"), InputMemberQuery))
+if (StringsMatch(CSz("MMB"), Name))
 {
   Assert(Result == 0);
   Result = &Input->MMB;

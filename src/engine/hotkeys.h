@@ -1,26 +1,56 @@
 
-struct hotkey
+global_variable input_event NullInputEvent;
+
+enum zoom_type
 {
-  input_event *State;
+  ZoomType_ClutchDrag,
+  ZoomType_Scrollwheel,
 };
 
-global_variable input_event NullInputEvent;
+struct hotkey_chord
+{
+  u32 EventCount;
+  input_event **Events;
+};
 
 struct hotkey_settings
 poof(@do_editor_ui)
 {
-  b32 Debug_ToggleMenu;
-  b32 Debug_ToggleProfiling;
+  input_event *Debug_ToggleMenu;
+  input_event *Debug_ToggleProfiling;
+  input_event *Debug_ToggleCamera;
 
-  b32 Debug_TriangulateIncrement;
-  b32 Debug_TriangulateDecrement;
+  input_event *Left;
+  input_event *Right;
+  input_event *Forward;
+  input_event *Backward;
 
-  hotkey Left;
-  hotkey Right;
-  hotkey Forward;
-  hotkey Backward;
+  input_event *Up;
+  input_event *Down;
 
-  s32 ScrollDelta;
+  input_event *Primary;
+  input_event *Secondary;
+  input_event *Tertiary;
+
+  input_event *Ctrl;
+  input_event *Alt;
+  input_event *Shift;
+
+  zoom_type ZoomType;
+  input_event *Zoom;
+
+
+  input_event *DeleteEntity;
+  input_event *MultiSelect;
+
+  hotkey_chord CenterCamera;
+  hotkey_chord NewSelection;
+
+  hotkey_chord ResizeSelection_AllAxies;
+  hotkey_chord ResizeSelection_BothLinearAxies;
+  hotkey_chord ResizeSelection_SingleLinearAxis;
+  hotkey_chord TranslateSelection_Linear;
+  hotkey_chord TranslateSelection_Planar;
 };
 
 inline v3
@@ -31,16 +61,16 @@ GetOrthographicInputs(hotkey_settings *Hotkeys)
 
   v3 UpdateDir = V3(0,0,0);
 
-  if ( Hotkeys->Forward.State->Pressed )
+  if ( Hotkeys->Forward->Pressed )
     UpdateDir += Forward;
 
-  if ( Hotkeys->Backward.State->Pressed )
+  if ( Hotkeys->Backward->Pressed )
     UpdateDir -= Forward;
 
-  if ( Hotkeys->Right.State->Pressed )
+  if ( Hotkeys->Right->Pressed )
     UpdateDir += Right;
 
-  if ( Hotkeys->Left.State->Pressed )
+  if ( Hotkeys->Left->Pressed )
     UpdateDir -= Right;
 
   UpdateDir = Normalize(UpdateDir);
@@ -48,12 +78,20 @@ GetOrthographicInputs(hotkey_settings *Hotkeys)
   return UpdateDir;
 }
 
-link_internal void
-MarshallInputToHotkeys(input *Input, hotkey_settings *Hotkeys)
-{
-#if BONSAI_INTERNAL
-  if (Input->F1.Clicked) { Hotkeys->Debug_ToggleMenu         = True; }
-  if (Input->F2.Clicked) { Hotkeys->Debug_ToggleProfiling    = True; }
-#endif
-}
 
+link_internal b32
+ChordPressed(hotkey_chord *Chord)
+{
+  b32 Result = False;
+  NotImplemented;
+  return Result;
+}
+  
+link_internal b32
+ChordClicked(hotkey_chord *Chord)
+{
+  b32 Result = False;
+  NotImplemented;
+  return Result;
+}
+  

@@ -757,7 +757,7 @@ HighlightFace(engine_resources *Engine, face_index Face, aabb SelectionAABB, r32
 link_internal void
 UpdateSelectionStateForFrame( ray *MouseRay,
     camera *Camera,
-    input *Input,
+    hotkey_settings *Hotkeys,
         world_edit_selection_mode  SelectionMode,
      selection_modification_state *SelectionState)
 {
@@ -788,7 +788,7 @@ UpdateSelectionStateForFrame( ray *MouseRay,
   {
     v3 PlaneIntersect = MouseRay->Origin + (MouseRay->Dir*tRay);
     /* DEBUG_HighlightVoxel(Engine, PlaneIntersect, RED); */
-    if (Input->LMB.Pressed)
+    if (Hotkeys->Primary->Pressed)
     {
       SelectionState->ClickedP[1] = PlaneIntersect;
     }
@@ -1405,7 +1405,7 @@ EditWorldSelection(engine_resources *Engine)
 
       // Update Clicks and initial position
       //
-      if (Input->LMB.Clicked)
+      if (Hotkeys->Primary->Clicked)
       {
         switch (Editor->Selection.Clicks)
         {
@@ -1452,7 +1452,14 @@ EditWorldSelection(engine_resources *Engine)
           face_index Face = AABBTest.Face;
           if (Face)
           {
-            if ( Input->LMB.Clicked && (Input->Shift.Pressed || Input->Alt.Pressed) )
+            /* b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         || */
+            /*                     ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  || */
+            /*                     ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) || */
+            /*                     ChordPressed(&Hotkeys->TranslateSelection_Linear)        || */
+            /*                     ChordPressed(&Hotkeys->TranslateSelection_Planar); */
+
+            if ( Hotkeys->Primary->Clicked &&
+                (Hotkeys->Shift->Pressed || Hotkeys->Alt->Pressed) )
             {
               v3 PlaneBaseP = Ray.Origin + (AABBTest.t*Ray.Dir);
               Editor->Selection.ModState.ClickedFace = Face;
@@ -1465,13 +1472,13 @@ EditWorldSelection(engine_resources *Engine)
           //
           if (Editor->Selection.ModState.ClickedFace)
           {
-            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+            world_edit_selection_mode SelectionMode = ComputeSelectionMode(Hotkeys);
             if (SelectionMode) // We could have started a selection edit and released the accelerator key
             {
-              UpdateSelectionStateForFrame( &Ray, Camera, Input, SelectionMode, &Editor->Selection.ModState );
+              UpdateSelectionStateForFrame( &Ray, Camera, Hotkeys, SelectionMode, &Editor->Selection.ModState );
               v3 UpdateVector = {};
               ModifiedSelection = DoSelectonModification(Engine, &Ray, SelectionMode, &Editor->Selection.ModState, SelectionAABB, &UpdateVector);
-              if (Input->LMB.Pressed == False)
+              if (Hotkeys->Primary->Pressed == False)
               {
                 // If we actually changed the selection region
                 rect3cp ProposedSelection = SimSpaceToCanonical(World, &ModifiedSelection);
@@ -2066,6 +2073,8 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
   {
     DeselectAllEdits(Editor);
     Push(SelectedEditIndices, &EditIndex);
+
+    Assert(Edit->Selected == False);
     Edit->Selected = True;
   }
 
@@ -2429,10 +2438,10 @@ DoWorldEditor(engine_resources *Engine)
   //
 
 
-  if (Input->Shift.Pressed || Input->Alt.Pressed) { Ui->RequestedForceCapture = True; }
-
-  if (Input->Ctrl.Pressed && Input->G.Clicked)
+  if ( ChordClicked(&Hotkeys->CenterCamera) )
   {
+    Ui->RequestedForceCapture = True;
+
     if (AtElements(&Editor->SelectedEditIndices).Index)
     {
       if (entity *Ghost = GetCameraGhost(Engine))
@@ -2442,8 +2451,10 @@ DoWorldEditor(engine_resources *Engine)
     }
   }
 
-  if (Input->Ctrl.Pressed && Input->S.Clicked)
+  if ( ChordClicked(&Hotkeys->NewSelection) )
   {
+    Ui->RequestedForceCapture = True;
+
     world_edit_layer *Layer = TryGetSelectedLayer(Editor);
     if (Layer == 0)  { Layer = NewLayer(Editor); }
 
@@ -2477,7 +2488,7 @@ DoWorldEditor(engine_resources *Engine)
 
       if ( IsValid(&EngineDebug->SelectedAsset) )
       {
-        if (Input->LMB.Clicked && Engine->MousedOverVoxel.Tag)
+        if (Hotkeys->Primary->Clicked && Engine->MousedOverVoxel.Tag)
         {
           cp ClickedP = Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty];
 
@@ -2547,7 +2558,7 @@ DoWorldEditor(engine_resources *Engine)
 
       if ( Editor->SelectedPrefab &&
            Engine->MousedOverVoxel.Tag && 
-           Input->LMB.Clicked )
+           Hotkeys->Primary->Clicked )
       {
         SpawnPrefabInstance(Engine, Editor->SelectedPrefab, Engine->MousedOverVoxel.Value.Picks[PickedVoxel_LastEmpty]);
       }
@@ -2635,7 +2646,7 @@ DoWorldEditor(engine_resources *Engine)
         if (LengthSq(Editor->Selection.Diff) > 0.f)
         {
           Info("Applying diff to edit buffer");
-          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Input);
+          world_edit_selection_mode SelectionMode = ComputeSelectionMode(Hotkeys);
           Assert(SelectionMode);
           ApplyDiffToEditBuffer(Engine, Editor->Selection.Diff, &Editor->SelectedEditIndices, SelectionMode);
           Editor->Selection.ModState.ClickedFace = FaceIndex_None;
@@ -2716,8 +2727,8 @@ DoWorldEditor(engine_resources *Engine)
         {
           Editor->SelectedLayerIndex = LayerIndex;
 
-          // NOTE(Jesse): Clear the list if we didn't have ctrl pressed
-          b32 MultiSelect = Input->Ctrl.Pressed;
+          // NOTE(Jesse): Clear the list if we didn't want to multi-select
+          b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
           IterateOver(&Layer->EditIndices, EditIndex, EII)
           {
             auto Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -2796,7 +2807,7 @@ DoWorldEditor(engine_resources *Engine)
               auto SrcLayer = Layer;
               auto DstLayer = NewLayer(Editor);
 
-              b32 MultiSelect = Input->Ctrl.Pressed;
+              b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
               IterateOver(&SrcLayer->EditIndices, EditIndex, EditIndexIndex)
               {
                 world_edit *Edit = GetPtr(&Editor->Edits, *EditIndex);
@@ -2895,7 +2906,7 @@ DoWorldEditor(engine_resources *Engine)
                   world_edit_block_array_index DupIndex = {};
                   auto *Duplicated = DuplicateEdit(Editor, Layer, Edit, &DupIndex);
 
-                  b32 MultiSelect = Input->Ctrl.Pressed;
+                  b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
                   SelectEdit(Editor, Duplicated, DupIndex, MultiSelect);
 
                   ApplyEditToOctree(Engine, Duplicated, GetTranArena());
@@ -2988,7 +2999,7 @@ DoWorldEditor(engine_resources *Engine)
               if (Clicked(Ui, &EditSelectButton))
               {
                 // NOTE(Jesse): We do SelectEdit on the HotEdit later
-                /* SelectEdit(Editor, Edit, *EditIndex, Input->Ctrl.Pressed); */
+                /* SelectEdit(Editor, Edit, *EditIndex, Input->Ctrl->Pressed); */
 
                 Editor->SelectedLayerIndex = LayerIndex;
                 if (Edit->Brush)
@@ -3096,7 +3107,11 @@ DoWorldEditor(engine_resources *Engine)
     f32 SelectionThicknessMod    = 3.0f;
 
 
-    b32 ShiftOrAltPressed = Input->Shift.Pressed | Input->Alt.Pressed;
+    b32 ModInProgress = ChordPressed(&Hotkeys->ResizeSelection_AllAxies)         ||
+                        ChordPressed(&Hotkeys->ResizeSelection_BothLinearAxies)  ||
+                        ChordPressed(&Hotkeys->ResizeSelection_SingleLinearAxis) ||
+                        ChordPressed(&Hotkeys->TranslateSelection_Linear)        ||
+                        ChordPressed(&Hotkeys->TranslateSelection_Planar);
 
     // Selection region
     //
@@ -3105,7 +3120,7 @@ DoWorldEditor(engine_resources *Engine)
       aabb FinalSelectionAABB = GetSimSpaceRect(World, Editor->Selection.Region);
       r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&FinalSelectionAABB)) );
 
-      if (Face && ShiftOrAltPressed)
+      if (Face && ModInProgress)
       {
         /* r32 InsetWidth = 0.25f; */
         r32 InsetWidth  = 0.f;
@@ -3162,7 +3177,7 @@ DoWorldEditor(engine_resources *Engine)
         v3 BaseColor = RandomV3Unilateral(&S);
 
         r32 BaseThicc = GetSelectionThicknessForDistance( Distance(CameraSimP, GetCenter(&EditAABB)) );
-        if (Face && ShiftOrAltPressed)
+        if (Face && ModInProgress)
         {
           /* r32 InsetWidth = 0.25f; */
           r32 InsetWidth  = 0.f;
@@ -3183,15 +3198,12 @@ DoWorldEditor(engine_resources *Engine)
     //
     if (Editor->HotEdit)
     {
-      if ( Input->Shift.Pressed  == False &&
-           Input->Alt.Pressed    == False &&
+      if ( Hotkeys->Primary->Clicked &&
+           ModInProgress == False    &&
            Editor->Selection.ModMode != SelectionModificationMode_Initialize )
       {
-        if (Input->LMB.Clicked)
-        {
-          b32 MultiSelect = Input->Ctrl.Pressed;
-          SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
-        }
+        b32 MultiSelect = Hotkeys->MultiSelect->Pressed;
+        SelectEdit(Editor, Editor->HotEdit, Editor->HotEditIndex, MultiSelect);
       }
 
       auto EditAABB = GetSimSpaceAABB(World, Editor->HotEdit->Region);
