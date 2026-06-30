@@ -8,9 +8,6 @@ struct canonical_position
 
 typedef canonical_position cp;
 
-
-
-
 inline canonical_position
 Canonical_Position(s32 I)
 {
@@ -46,6 +43,7 @@ Canonical_Position(voxel_position Offset, world_position WorldP )
   Result.WorldP = WorldP;
   return Result;
 }
+
 
 // NOTE : The maximum bound is non-inclusive; 0 is part of the chunk
 // while the furthest point in x,y or z is the next chunk
@@ -121,6 +119,41 @@ Canonical_Position(chunk_dimension WorldChunkDim, voxel_position Offset, world_p
   return Result;
 }
 
+inline cp
+CP()
+{
+  return Canonical_Position();
+}
+
+inline cp
+CP(s32 I)
+{
+  return Canonical_Position(I);
+}
+
+inline cp
+CP(v3 Offset, world_position WorldP)
+{
+  return Canonical_Position(Offset, WorldP);
+}
+
+inline cp
+CP(voxel_position Offset, world_position WorldP)
+{
+  return Canonical_Position(Offset, WorldP);
+}
+
+inline cp
+CP(chunk_dimension WorldChunkDim, v3 Offset, world_position WorldP)
+{
+  return Canonical_Position(WorldChunkDim, Offset, WorldP);
+}
+
+inline cp
+CP(chunk_dimension WorldChunkDim, voxel_position Offset, world_position WorldP)
+{
+  return Canonical_Position(WorldChunkDim, Offset, WorldP);
+}
 #if 0
 // NOTE(Jesse): I'm not really sure how these functions should actually work,
 // but it's definitely not like this.
@@ -314,6 +347,13 @@ link_internal rect3cp
 RectMinDim(v3i WorldChunkDim, cp Min, v3 Dim)
 {
   rect3cp Result = { Min, Canonicalize(WorldChunkDim, Min+Dim) };
+  return Result;
+}
+
+link_internal rect3cp
+Rect3CPMinDim(cp Min, cp Dim)
+{
+  rect3cp Result = { Min, Min + Dim };
   return Result;
 }
 
