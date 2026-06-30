@@ -31,6 +31,8 @@ InitEngineResources(engine_resources *Engine)
   memory_arena *WorldAndEntityArena = AllocateArena(Megabytes(256));
   DEBUG_REGISTER_ARENA(WorldAndEntityArena, 0);
 
+  Engine->ChunkCompletionCallbacks.Memory = WorldAndEntityArena;
+
   Engine->GameMemory = AllocateArena();
   Engine->WorldUpdateMemory = AllocateArena();
 

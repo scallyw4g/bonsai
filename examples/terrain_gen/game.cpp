@@ -12,11 +12,64 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
   SetThreadLocal_ThreadIndex(Thread->Index);
 }
 
+debug_global random_series SpawnerRNG = {6253765347};
+
+b32
+TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, octree_node *Node)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  /* Info("Spawn Callback!"); */
+  b32 Result = False;
+
+  world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_edits"));
+
+  if (Node->Resolution == V3i(1) )
+  {
+    if (RandomUnilateral(&SpawnerRNG) > 0.95f)
+    {
+      IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
+      {
+        if (StringsMatch(CS(Brush->NameBuf), CSz("foliage.perlin.brush")))
+        {
+          v3 Dim = V3(15);
+          rect3cp Region = Rect3CPMinDim( CP(Node->WorldP, V3(32)), CP(V3i(0), V3(Dim)) );
+          /* SpawnBrushInstance(Engine, Node->WorldP, Dim); */
+          SpawnBrushInstance(Engine, Layer, Brush, Region, {});
+
+          f32 BaseDiameter = 36.f;
+
+          auto Shape = &Brush->Layers[0].Settings.Shape;
+          auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
+
+          Torus->MajorRadius = BaseDiameter + Sin(Plat->GameTime)*4.f;
+          if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; }
+          if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; }
+          if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
+
+          Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
+          /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */
+          Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
+        }
+      }
+
+      Info("Spawn!");
+    }
+  }
+
+  return Result;
+}
+
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
   auto Engine = Resources;
+
+  // NOTE(Jesse): For some reason you have to use a temporary here .. not sure
+  // if that's a compiler bug or some random C++ minutae.  If you don't use a
+  // temporary it fails to find the correct Push overload
+  chunk_completion_callback Callback = TestSpawnerCallback;
+  Push(&Engine->ChunkCompletionCallbacks, &Callback);
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
@@ -25,10 +78,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   canonical_position CameraTargetP = {};
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
+  auto VisibleRegionSize = VisibleRegionSize_256;
   /* auto VisibleRegionSize = VisibleRegionSize_1k; */
-  /* auto VisibleRegionSize = VisibleRegionSize_8192; */
+  /* auto VisibleRegionSize = VisibleRegionSize_8k; */
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
-  auto VisibleRegionSize = VisibleRegionSize_32k;
+  /* auto VisibleRegionSize = VisibleRegionSize_32k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);

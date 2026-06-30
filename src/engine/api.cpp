@@ -732,10 +732,12 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       if ( (Node->Flags & Chunk_SpawnTriggersRun) == 0)
       {
         SetFlag(&Node->Flags, Chunk_SpawnTriggersRun);
+
+        b32 SpawnedStuff = False;
         IterateOver(&EngineResources->ChunkCompletionCallbacks, CP, CompletionCallbackIndex)
         {
           chunk_completion_callback Callback = *CP;
-          Callback(EngineResources, NoiseDim, NoiseValues, Node);
+          SpawnedStuff |= Callback(EngineResources, NoiseDim, NoiseValues, Node);
         }
       }
 
@@ -839,8 +841,8 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       gen_chunk                 *GenChunk      =  Job->GenChunk;
       world_chunk               *SynChunk      = &GenChunk->Chunk;
 
-      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
-      Assert(HasGpuMesh( SynChunk) == False);
+      Assert( HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert( HasGpuMesh(SynChunk) == False);
 
 
       /* octree_node               *DestNode     = Job->DestNode; */

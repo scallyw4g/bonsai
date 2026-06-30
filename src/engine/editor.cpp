@@ -115,6 +115,11 @@ NewLayer(level_editor *Editor)
   return Result;
 }
 
+link_internal world_edit_layer *
+GetOrCreateLayer(level_editor *Editor)
+{
+}
+
 link_internal b32
 InitEditor(level_editor *Editor)
 {
@@ -2088,6 +2093,23 @@ SelectEdit(level_editor *Editor, world_edit *Edit, world_edit_block_array_index 
 }
 
 link_internal void
+SpawnBrushInstance(engine_resources *Engine, world_edit_layer *Layer, world_edit_brush *Brush_in, rect3cp Region, v3 Rotation)
+{
+  UNPACK_ENGINE_RESOURCES(Engine);
+  world_edit_brush *Brush = Upsert(*Brush_in, &Editor->LoadedBrushes, Editor->Memory);
+
+  world_edit *Edit = NewEdit(Editor, Layer);
+
+  Edit->Rotation = Rotation;
+  Edit->Brush = Brush;
+
+  Canonicalize(World, &Region.Max);
+  Canonicalize(World, &Region.Max);
+
+  ApplyEditToOctree(Engine, Edit, GetTranArena());
+}
+
+link_internal void
 SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
@@ -2106,21 +2128,25 @@ SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
 
   IterateOver(&Prefab->Edits, PrefabEdit, StoredEditIndex)
   {
-    world_edit_brush *B = Upsert(*PrefabEdit->Brush, &Editor->LoadedBrushes, Editor->Memory);
 
-    world_edit *FinalEdit = NewEdit(Editor, Layer);
+#if 1
+    /* world_edit_brush *B = Upsert(*PrefabEdit->Brush, &Editor->LoadedBrushes, Editor->Memory); */
+    /* world_edit *FinalEdit = NewEdit(Editor, Layer); */
 
-    FinalEdit->Rotation = PrefabEdit->Rotation;
-    FinalEdit->Brush = B;
+    /* FinalEdit->Rotation = PrefabEdit->Rotation; */
+    /* FinalEdit->Brush = B; */
 
     cp RelativeOffset = PrefabEdit->Region.Min - MinP;
     cp Dim = GetDim_cp(World, PrefabEdit->Region);
 
-    FinalEdit->Region.Min = SpawnPoint + RelativeOffset;
-    FinalEdit->Region.Max = SpawnPoint + RelativeOffset + Dim;
-    Canonicalize(World, &FinalEdit->Region.Max);
+    rect3cp Region = {};
+    Region.Min = SpawnPoint + RelativeOffset;
+    Region.Max = SpawnPoint + RelativeOffset + Dim;
 
-    ApplyEditToOctree(Engine, FinalEdit, GetTranArena());
+    SpawnBrushInstance(Engine, Layer, PrefabEdit->Brush, Region, PrefabEdit->Rotation);
+    /* ApplyEditToOctree(Engine, FinalEdit, GetTranArena()); */
+#else
+#endif
   }
 
   DispatchPrefabSpawnCallback(Prefab->SpawnCallback, Prefab, SpawnPoint, RectMinMax(MinP, MaxP));
