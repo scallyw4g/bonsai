@@ -137,6 +137,7 @@
 
 
 
+
 link_internal void
 Marshal( layer_settings_2 *Stored, layer_settings *Live)
 {
@@ -598,6 +599,9 @@ Marshal( world_edit_layer_0 *Stored, world_edit_layer *Live)
 
 
 }
+
+
+
 
 
 

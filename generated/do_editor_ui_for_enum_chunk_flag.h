@@ -160,6 +160,30 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, chunk_flag *Element, cs Name,
       SetToggleButton(Ui, ToggleButtonId, False);
     }
     PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("SpawnTriggersRun"), UiId(Window, "enum Chunk_SpawnTriggersRun", Element, ThisHash), Params))
+    {
+      Result = True;
+            if (Chunk_SpawnTriggersRun == chunk_flag(0))
+      {
+        *Element = chunk_flag(0);
+      }
+      else
+      {
+        if ((*Element & Chunk_SpawnTriggersRun) == Chunk_SpawnTriggersRun)
+        {
+          *Element = chunk_flag(*Element&~Chunk_SpawnTriggersRun);
+        }
+        else
+        {
+          *Element = chunk_flag(*Element|Chunk_SpawnTriggersRun);
+        }
+      }
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
 
   }
   else

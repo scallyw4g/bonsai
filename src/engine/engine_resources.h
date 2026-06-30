@@ -1,9 +1,12 @@
 
+struct engine_resources;
 struct debug_state;
 struct game_state;
 
-struct world;
 struct heap_allocator;
+
+struct world;
+struct octree_node;
 struct entity;
 
 typedef entity* entity_ptr;
@@ -32,6 +35,12 @@ struct asset_system
   heap_allocator AssetMemory;
 
 };
+
+
+typedef b32 (*chunk_completion_callback)(engine_resources*, v3i, u32*, octree_node*);
+
+poof( block_array(chunk_completion_callback, {32}) )
+#include <generated/block_array_gVtYSKYs.h>
 
 struct engine_resources
 poof(@do_editor_ui)
@@ -87,6 +96,8 @@ poof(@do_editor_ui)
 
   gen_chunk_freelist GenChunkFreelist;
   // world_chunk_freelist WorldChunkFreelist;
+
+  chunk_completion_callback_paged_list ChunkCompletionCallbacks;
 };
 
 

@@ -1,5 +1,5 @@
 // callsite
-// src/engine/world_chunk.h:82:0
+// src/engine/world_chunk.h:85:0
 
 // def (string_and_value_tables)
 // external/bonsai_stdlib/src/poof_functions.h:2131:0
@@ -15,6 +15,7 @@ IsValid(chunk_flag Value)
     case Chunk_Garbage:
     case Chunk_Deallocate:
     case Chunk_Freelist:
+    case Chunk_SpawnTriggersRun:
 
     {
       Result = True;
@@ -39,6 +40,7 @@ ToStringPrefixless(chunk_flag Type)
       case Chunk_Garbage: { Result = CSz("Garbage"); } break;
       case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
       case Chunk_Freelist: { Result = CSz("Freelist"); } break;
+      case Chunk_SpawnTriggersRun: { Result = CSz("SpawnTriggersRun"); } break;
 
 
             // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -95,6 +97,7 @@ ToString(chunk_flag Type)
     case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
     case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
     case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
+    case Chunk_SpawnTriggersRun: { Result = CSz("Chunk_SpawnTriggersRun"); } break;
 
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -130,6 +133,7 @@ ChunkFlag(counted_string S)
   if (StringsMatch(S, CSz("Chunk_Garbage"))) { return Chunk_Garbage; }
   if (StringsMatch(S, CSz("Chunk_Deallocate"))) { return Chunk_Deallocate; }
   if (StringsMatch(S, CSz("Chunk_Freelist"))) { return Chunk_Freelist; }
+  if (StringsMatch(S, CSz("Chunk_SpawnTriggersRun"))) { return Chunk_SpawnTriggersRun; }
 
 
   return Result;

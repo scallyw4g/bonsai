@@ -729,6 +729,16 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       v3i SrcToDest = {};
       s64 zMin = 0;
 
+      if ( (Node->Flags & Chunk_SpawnTriggersRun) == 0)
+      {
+        SetFlag(&Node->Flags, Chunk_SpawnTriggersRun);
+        IterateOver(&EngineResources->ChunkCompletionCallbacks, CP, CompletionCallbackIndex)
+        {
+          chunk_completion_callback Callback = *CP;
+          Callback(EngineResources, NoiseDim, NoiseValues, Node);
+        }
+      }
+
       u32 ChunkSum = FinalizeOccupancyMasksFromNoiseValues(SynChunk, Voxels, WorldBasis, NoiseDim, NoiseValues, SrcToDest, zMin);
 
       b32 Continued = False;

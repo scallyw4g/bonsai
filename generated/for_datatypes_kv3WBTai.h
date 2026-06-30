@@ -159,6 +159,7 @@ type_check_occlusion_query_async_params,
 
 
 
+
 type_finalize_shit_and_fuckin_do_stuff_async_params,
 
 
@@ -539,7 +540,10 @@ type_render_to_texture_async_params,
 
 
 
+
+
 type_compile_shader_pair_async_params,
+
 
 
 

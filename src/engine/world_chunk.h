@@ -77,6 +77,9 @@ enum chunk_flag poof(@bitfield)
 
   // TODO(Jesse): Remove this .. probably .. nocheckin
   Chunk_Freelist          = 1 << 5,
+
+  // Has this chunk already run through spawn triggers after initial generation?
+  Chunk_SpawnTriggersRun  = 1 << 6,
 };
 
 poof(string_and_value_tables(chunk_flag))

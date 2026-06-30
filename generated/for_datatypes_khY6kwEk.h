@@ -244,6 +244,7 @@
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
   
@@ -251,6 +252,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
   octree_node *DestNode;
 
 };
+
 
 
 
