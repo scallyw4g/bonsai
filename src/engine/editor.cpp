@@ -116,8 +116,30 @@ NewLayer(level_editor *Editor)
 }
 
 link_internal world_edit_layer *
-GetOrCreateLayer(level_editor *Editor)
+GetOrCreateLayer(level_editor *Editor, cs Name)
 {
+  world_edit_layer *Result = 0;
+
+  IterateOver(&Editor->Layers, Layer, LayerIndex)
+  {
+    cs ExistingName = CS(Layer->NameBuf);
+    if (StringsMatch(ExistingName, Name))
+    {
+      Result = Layer;
+      break;
+    }
+  }
+
+  if (Result == 0)
+  {
+    Result = NewLayer(Editor);
+    umm NameCount = Min(Name.Count, umm(NameBuf_Len));
+    CopyString(Name.Start, Result->NameBuf, NameCount);
+    Result->NameBuf[NameCount] = 0;
+  }
+
+  Assert(Result);
+  return Result;
 }
 
 link_internal b32
@@ -2102,6 +2124,7 @@ SpawnBrushInstance(engine_resources *Engine, world_edit_layer *Layer, world_edit
 
   Edit->Rotation = Rotation;
   Edit->Brush = Brush;
+  Edit->Region = Region;
 
   Canonicalize(World, &Region.Max);
   Canonicalize(World, &Region.Max);

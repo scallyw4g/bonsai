@@ -2179,6 +2179,9 @@ GetSelectionThicknessForDistance(f32 Distance)
 }
 
 link_internal world_edit_layer *
+GetOrCreateLayer(level_editor *Editor, cs Name);
+
+link_internal world_edit_layer *
 TryGetSelectedLayer(level_editor *Editor)
 {
   world_edit_layer *Result = TryGetPtr(&Editor->Layers, Editor->SelectedLayerIndex);
