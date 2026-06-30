@@ -18,37 +18,21 @@ b32
 TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, octree_node *Node)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
-  /* Info("Spawn Callback!"); */
   b32 Result = False;
 
   world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_edits"));
 
   if (Node->Resolution == V3i(1) )
   {
-    if (RandomUnilateral(&SpawnerRNG) > 0.95f)
+    if (RandomUnilateral(&SpawnerRNG) > 0.99f)
     {
       IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
       {
         if (StringsMatch(CS(Brush->NameBuf), CSz("foliage.perlin.brush")))
         {
-          v3 Dim = V3(15);
-          rect3cp Region = Rect3CPMinDim( CP(Node->WorldP, V3(32)), CP(V3i(0), V3(Dim)) );
-          /* SpawnBrushInstance(Engine, Node->WorldP, Dim); */
+          v3 Dim = V3(64);
+          rect3cp Region = Rect3CPMinDim( CP(V3(32), Node->WorldP), CP(V3(Dim), V3i(0)) );
           SpawnBrushInstance(Engine, Layer, Brush, Region, {});
-
-          f32 BaseDiameter = 36.f;
-
-          auto Shape = &Brush->Layers[0].Settings.Shape;
-          auto Torus = &Brush->Layers[0].Settings.Shape.Torus;
-
-          Torus->MajorRadius = BaseDiameter + Sin(Plat->GameTime)*4.f;
-          if (Shape->Advanced.Rotation.x > 360.f)  { Shape->Advanced.Rotation.x -= 360.f; }
-          if (Shape->Advanced.Rotation.y > 360.f)  { Shape->Advanced.Rotation.y -= 360.f; }
-          if (Shape->Advanced.Rotation.z > 360.f)  { Shape->Advanced.Rotation.z -= 360.f; }
-
-          Brush->Layers[0].Settings.Shape.Advanced.Rotation.x += Plat->dt*10.f;
-          /* Brush->Layers[0].Settings.Shape.Advanced.Rotation.y += Plat->dt*30.f; */
-          Brush->Layers[0].Settings.Shape.Advanced.Rotation.z += Plat->dt*30.f;
         }
       }
 
