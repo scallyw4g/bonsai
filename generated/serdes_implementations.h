@@ -3103,6 +3103,7 @@ Deserialize(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_arena *Memory)
 
 
 
+
 link_internal bonsai_type_info
 TypeInfo(brush_layer *Ignored)
 {
@@ -3223,6 +3224,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory)
 {
   return Deserialize(Bytes, Element, Memory, 1);
 }
+
 
 
 

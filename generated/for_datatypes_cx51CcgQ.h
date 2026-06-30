@@ -245,6 +245,7 @@
 
 
 
+
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -1811,6 +1812,7 @@ DoJob(render_to_texture_async_params *Params)
    RenderToTexture( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

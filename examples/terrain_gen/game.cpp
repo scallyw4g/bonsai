@@ -20,8 +20,9 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
   UNPACK_ENGINE_RESOURCES(Engine);
   b32 Result = False;
 
-  world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_edits"));
+  world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_prefabs"));
 
+#if 0
   if (Node->Resolution == V3i(1) )
   {
     if (RandomUnilateral(&SpawnerRNG) > 0.99f)
@@ -39,6 +40,21 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
       Info("Spawn!");
     }
   }
+#else
+  if (Node->Resolution == V3i(1) )
+  {
+    if (RandomUnilateral(&SpawnerRNG) > 0.99f)
+    {
+      prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("layer_1")).Value;
+      if (SpawnPrefab)
+      {
+        cp SpawnPoint = CP(V3(32), Node->WorldP);
+        SpawnPrefabInstance(Engine, SpawnPrefab, SpawnPoint, Layer);
+        Info("Spawn!");
+      }
+    }
+  }
+#endif
 
   return Result;
 }

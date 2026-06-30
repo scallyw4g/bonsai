@@ -2133,11 +2133,14 @@ SpawnBrushInstance(engine_resources *Engine, world_edit_layer *Layer, world_edit
 }
 
 link_internal void
-SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint)
+SpawnPrefabInstance(engine_resources *Engine, prefab *Prefab, cp SpawnPoint, world_edit_layer *Layer = 0)
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  world_edit_layer *Layer = NewLayer(Editor);
+  if (Layer == 0)
+  {
+    Layer = NewLayer(Editor);
+  }
 
   cp MinP = { V3(f32_MAX), V3i(s32_MAX) };
   cp MaxP = { V3(f32_MIN), V3i(s32_MIN) };

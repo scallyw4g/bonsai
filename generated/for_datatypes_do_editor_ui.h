@@ -628,6 +628,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 
 
 
+
 struct engine_debug;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_debug *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -685,6 +686,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_res
 struct rtt_framebuffer_static_cursor_3;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rtt_framebuffer_static_cursor_3 *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 

@@ -1975,8 +1975,16 @@ Hash(prefab *E0)
   return Hash(E0->Name);
 }
 
+typedef prefab* prefab_ptr;
+
 poof(hashtable(prefab))
 #include <generated/hashtable_pIp3Bn6L.h>
+
+poof(maybe(prefab_ptr))
+#include <generated/maybe_DaH3weGX.h>
+
+poof(hashtable_get_ptr(prefab, {cs}, {Name}))
+#include <generated/hashtable_get_vHOiFOmh.h>
 
 link_internal void
 poof(@prefab_spawn_callback)

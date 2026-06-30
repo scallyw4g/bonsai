@@ -714,6 +714,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_layer_0 *Element, memory_
 
 
 
+
 struct brush_layer;
 
 link_internal b32
@@ -730,6 +731,7 @@ Deserialize(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory, umm Co
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, brush_layer *Element, memory_arena *Memory);
+
 
 
 
