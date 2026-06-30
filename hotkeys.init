@@ -10,13 +10,13 @@
 // Chords can act as any input event type (clicked, pressed), which is
 // determined by the code that reads the hotkey at runtime.  This behavior
 // cannot be modified at this time.
-// 
+//
 // Chords that are triggered on the clicked state fire on *the first* frame that
 // all keys are depressed.
 
 // Chords that are triggered on the pressed state fire on *every* frame that
 // all keys are depressed.
-// 
+//
 // The chord parser handles escaped newlines, and is terminated by a newline,
 // so you can do:
 //
@@ -38,8 +38,8 @@
 //
 // These are the controls used in the editor.  UI interactions are hard-coded
 // to use mouse buttons and keystrokes directly, meaning they cannot be
-// modified.  I have no real plans to change this, unless the UI hotkeys become
-// more complex; they're very simplistic at the moment.
+// modified.  I have no real plans to change this, unless I start adding hotkey
+// shortcuts for UI interactions, which sounds plausbile for the future.
 
 hotkey Primary   = LMB
 hotkey Secondary = RMB
@@ -50,10 +50,10 @@ hotkey Left     = A
 hotkey Backward = S
 hotkey Right    = D
 
-hotkey Up       = E
 hotkey Down     = Q
+hotkey Up       = E
 
-// Scrollwheel is a special value that doesn't correspond to an input
+// `Scrollwheel` is a special value that doesn't correspond to an input
 // keystroke.  It is only valid on the Zoom hotkey, and tells the engine to use
 // the scrollwheel delta for camera zoom.  Using any other input member here is
 // also valid, and acts as a clutch; you press and hold the key while dragging

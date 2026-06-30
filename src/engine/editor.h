@@ -2141,8 +2141,6 @@ ComputeSelectionMode(hotkey_settings *Hotkeys)
 
   // Intentionally an el-if chain from most specific, to least.  What's the alternative?
   //
-  // Alt   is move
-  // Shift is resize
   //
   if ( ChordPressed(&Hotkeys->ResizeSelection_AllAxies) )
   /* if (Hotkeys->Shift->Pressed && Hotkeys->Ctrl->Pressed && Hotkeys->Alt->Pressed) */

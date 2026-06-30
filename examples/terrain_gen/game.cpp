@@ -25,9 +25,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   canonical_position CameraTargetP = {};
 
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
-  auto VisibleRegionSize = VisibleRegionSize_1k;
+  /* auto VisibleRegionSize = VisibleRegionSize_1k; */
   /* auto VisibleRegionSize = VisibleRegionSize_8192; */
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
+  auto VisibleRegionSize = VisibleRegionSize_32k;
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   /* auto VisibleRegionSize = VisibleRegionSize_64k; */
   AllocateWorld(World, WorldCenter, VisibleRegionSize);
