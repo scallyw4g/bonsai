@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:63:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk *Ignored)
 {
@@ -215,10 +215,20 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *Memory)
 {
   b32 Result = True;
-      
+  b32 ThisMember;
+
+    ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_chunk *Next on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->CollisionVolume, Memory);
+  ThisMember = Deserialize(Bytes, &Element->CollisionVolume, Memory);
 
 
 
@@ -227,9 +237,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i CollisionVolume on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Dim, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Dim, Memory);
 
 
 
@@ -238,27 +255,55 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i Dim on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadOccupancyPointer = Read_u64(Bytes);
   Assert(HadOccupancyPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 *Occupancy on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadxOccupancyBorderPointer = Read_u64(Bytes);
   Assert(HadxOccupancyBorderPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 *xOccupancyBorder on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadFaceMasksPointer = Read_u64(Bytes);
   Assert(HadFaceMasksPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 *FaceMasks on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->IsOnFreelist, Memory);
+  ThisMember = Deserialize(Bytes, &Element->IsOnFreelist, Memory);
 
 
 
@@ -266,10 +311,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 IsOnFreelist on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing gpu_element_buffer_handles Handles on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->OcclusionQueryId, Memory);
+  ThisMember = Deserialize(Bytes, &Element->OcclusionQueryId, Memory);
 
 
 
@@ -277,9 +336,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 OcclusionQueryId on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->QueryActive, Memory);
+  ThisMember = Deserialize(Bytes, &Element->QueryActive, Memory);
 
 
 
@@ -287,9 +353,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 QueryActive on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->OcclusionFrames, Memory);
+  ThisMember = Deserialize(Bytes, &Element->OcclusionFrames, Memory);
 
 
 
@@ -297,10 +370,24 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 OcclusionFrames on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing voxel_position_cursor StandingSpots on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->DimInChunks, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DimInChunks, Memory);
 
 
 
@@ -309,9 +396,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i DimInChunks on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->WorldP, Memory);
+  ThisMember = Deserialize(Bytes, &Element->WorldP, Memory);
 
 
 
@@ -320,8 +414,28 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i WorldP on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing s32 FilledCount on world_chunk");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_ptr_block_array Entities on world_chunk");
+  }
+  Result &= ThisMember;
 
 
         

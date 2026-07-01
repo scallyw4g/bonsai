@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:440:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_plane *Ignored)
 {
@@ -88,15 +88,25 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Orientation = Cast(shape_axis, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing shape_axis Orientation on world_update_op_shape_params_plane");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Thickness, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Thickness, Memory);
 
 
 
@@ -104,6 +114,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_plane *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 Thickness on world_update_op_shape_params_plane");
+  }
+  Result &= ThisMember;
 
 
     

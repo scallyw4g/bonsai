@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:377:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(lighting_settings *Ignored)
 {
@@ -230,19 +230,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->AutoDayNightCycle, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->tDaySpeed, Memory);
+  ThisMember = Deserialize(Bytes, &Element->AutoDayNightCycle, Memory);
 
 
 
@@ -250,9 +243,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b8 AutoDayNightCycle on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->tDay, Memory);
+  ThisMember = Deserialize(Bytes, &Element->tDaySpeed, Memory);
 
 
 
@@ -260,20 +260,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                  
-  
-  Result &= Deserialize(Bytes, &Element->SunP, Memory);
-
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 tDaySpeed on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->FogPower, Memory);
+  ThisMember = Deserialize(Bytes, &Element->tDay, Memory);
 
 
 
@@ -281,9 +277,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 tDay on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->FogColor, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SunP, Memory);
 
 
 
@@ -292,9 +295,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 SunP on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->DawnIntensity, Memory);
+  ThisMember = Deserialize(Bytes, &Element->FogPower, Memory);
 
 
 
@@ -302,9 +312,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 FogPower on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->DawnHSV, Memory);
+  ThisMember = Deserialize(Bytes, &Element->FogColor, Memory);
 
 
 
@@ -313,9 +330,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 FogColor on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->SunIntensity, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DawnIntensity, Memory);
 
 
 
@@ -323,9 +347,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 DawnIntensity on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->SunHSV, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DawnHSV, Memory);
 
 
 
@@ -334,9 +365,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 DawnHSV on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->DuskIntensity, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SunIntensity, Memory);
 
 
 
@@ -344,9 +382,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 SunIntensity on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->DuskColor, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SunHSV, Memory);
 
 
 
@@ -355,20 +400,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
-                  
-  
-  Result &= Deserialize(Bytes, &Element->DuskHSV, Memory);
-
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 SunHSV on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->MoonIntensity, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DuskIntensity, Memory);
 
 
 
@@ -376,9 +417,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 DuskIntensity on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->MoonHSV, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DuskColor, Memory);
 
 
 
@@ -387,9 +435,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 DuskColor on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->CurrentSunColor, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DuskHSV, Memory);
 
 
 
@@ -398,6 +453,65 @@ DeserializeCurrentVersion(u8_cursor *Bytes, lighting_settings *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 DuskHSV on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->MoonIntensity, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 MoonIntensity on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->MoonHSV, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 MoonHSV on lighting_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->CurrentSunColor, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 CurrentSunColor on lighting_settings");
+  }
+  Result &= ThisMember;
 
 
     

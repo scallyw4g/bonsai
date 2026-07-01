@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:432:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_rect *Ignored)
 {
@@ -80,9 +80,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                    
+  b32 ThisMember;
+
+    ThisMember = 3;
+                  
   
-  Result &= Deserialize(Bytes, &Element->Dim, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Dim, Memory);
 
 
 
@@ -91,6 +94,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_rect *E
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Dim on world_update_op_shape_params_rect");
+  }
+  Result &= ThisMember;
 
 
     

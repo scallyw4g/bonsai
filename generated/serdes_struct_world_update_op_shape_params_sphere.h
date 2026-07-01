@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:434:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_sphere *Ignored)
 {
@@ -90,19 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Location, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Location, Memory);
 
 
 
@@ -110,6 +103,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_sphere 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp Location on world_update_op_shape_params_sphere");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Radius, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 Radius on world_update_op_shape_params_sphere");
+  }
+  Result &= ThisMember;
 
 
     

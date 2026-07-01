@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:292:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(particle_system_0 *Ignored)
 {
@@ -293,9 +293,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
   
-  Result &= Deserialize(Bytes, &Element->Entropy, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Entropy, Memory);
 
 
 
@@ -303,15 +306,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing random_series Entropy on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
             Element->SpawnType = Cast(particle_spawn_type, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing particle_spawn_type SpawnType on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Drag, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Drag, Memory);
 
 
 
@@ -319,9 +336,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Drag on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Lifetime, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Lifetime, Memory);
 
 
 
@@ -329,9 +353,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Lifetime on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->EmissionDelay, Memory);
+  ThisMember = Deserialize(Bytes, &Element->EmissionDelay, Memory);
 
 
 
@@ -339,9 +370,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 EmissionDelay on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->EmissionLifespan, Memory);
+  ThisMember = Deserialize(Bytes, &Element->EmissionLifespan, Memory);
 
 
 
@@ -349,9 +387,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 EmissionLifespan on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ActiveParticles, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ActiveParticles, Memory);
 
 
 
@@ -359,9 +404,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 ActiveParticles on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->LifespanMod, Memory);
+  ThisMember = Deserialize(Bytes, &Element->LifespanMod, Memory);
 
 
 
@@ -369,9 +421,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 LifespanMod on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleLifespan, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleLifespan, Memory);
 
 
 
@@ -379,9 +438,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticleLifespan on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticlesPerSecond, Memory);
 
 
 
@@ -389,9 +455,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticlesPerSecond on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleLightEmission, Memory);
 
 
 
@@ -399,9 +472,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticleLightEmission on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleLightEmissionChance, Memory);
 
 
 
@@ -409,9 +489,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticleLightEmissionChance on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleStartingTransparency, Memory);
 
 
 
@@ -419,9 +506,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticleStartingTransparency on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleEndingTransparency, Memory);
 
 
 
@@ -429,9 +523,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ParticleEndingTransparency on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleStartingDim, Memory);
 
 
 
@@ -440,9 +541,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 ParticleStartingDim on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleEndingDim, Memory);
 
 
 
@@ -450,9 +558,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 ParticleEndingDim on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleTurbMin, Memory);
 
 
 
@@ -461,9 +576,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 ParticleTurbMin on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ParticleTurbMax, Memory);
 
 
 
@@ -472,9 +594,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 ParticleTurbMax on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->SpawnRegion, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SpawnRegion, Memory);
 
 
 
@@ -482,9 +611,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing aabb SpawnRegion on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SystemMovementCoefficient, Memory);
 
 
 
@@ -492,9 +628,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 SystemMovementCoefficient on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ElapsedSinceLastEmission, Memory);
 
 
 
@@ -502,10 +645,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 ElapsedSinceLastEmission on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
               {
         umm Count = 6;
 
-    Result &= Deserialize(Bytes, Element->MCVColors, Memory, Count);
+    ThisMember = Deserialize(Bytes, Element->MCVColors, Memory, Count);
   }
 
 
@@ -513,7 +663,20 @@ DeserializeCurrentVersion(u8_cursor *Bytes, particle_system_0 *Element, memory_a
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u8 MCVColors on particle_system_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing particle Particles on particle_system_0");
+  }
+  Result &= ThisMember;
 
 
     

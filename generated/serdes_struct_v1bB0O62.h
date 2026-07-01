@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:27:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(m4 *Ignored)
 {
@@ -83,10 +83,13 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, m4 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                {
+  b32 ThisMember;
+
+    ThisMember = 3;
+              {
         umm Count = 4;
 
-    Result &= Deserialize(Bytes, Element->E, Memory, Count);
+    ThisMember = Deserialize(Bytes, Element->E, Memory, Count);
   }
 
 
@@ -94,6 +97,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, m4 *Element, memory_arena *Memory)
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v4 E on m4");
+  }
+  Result &= ThisMember;
 
 
     

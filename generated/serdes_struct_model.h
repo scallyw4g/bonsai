@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:304:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(model *Ignored)
 {
@@ -92,10 +92,20 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory)
 {
   b32 Result = True;
-      
+  b32 ThisMember;
+
+    ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing octree_node *Node on model");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->TransparentMesh, Memory);
+  ThisMember = Deserialize(Bytes, &Element->TransparentMesh, Memory);
 
 
 
@@ -103,9 +113,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing untextured_3d_geometry_buffer TransparentMesh on model");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Animation, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Animation, Memory);
 
 
 
@@ -113,6 +130,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, model *Element, memory_arena *Memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing animation Animation on model");
+  }
+  Result &= ThisMember;
 
 
         

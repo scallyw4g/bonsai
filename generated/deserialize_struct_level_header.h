@@ -19,49 +19,80 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->LayerCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 LayerCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->EditCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 EditCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->EntityCount, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 EntityCount on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->SelectedLayerIndex, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 SelectedLayerIndex on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->LayerCount, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->EditCount, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->EntityCount, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->SelectedLayerIndex, Memory);
-
-
-
-
-
-
-
-                  
-  
-  Result &= Deserialize(Bytes, &Element->WorldCenter, Memory);
+  ThisMember = Deserialize(Bytes, &Element->WorldCenter, Memory);
 
 
 
@@ -70,15 +101,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i WorldCenter on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
             Element->VisibleRegionSize = Cast(visible_region_size, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing visible_region_size VisibleRegionSize on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Camera, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Camera, Memory);
 
 
 
@@ -86,9 +131,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing camera Camera on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->RenderSettings, Memory);
+  ThisMember = Deserialize(Bytes, &Element->RenderSettings, Memory);
 
 
 
@@ -96,10 +148,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing render_settings RenderSettings on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
               {
         umm Count = (256);
 
-    Result &= Deserialize(Bytes, Element->TerrainShapingShader, Memory, Count);
+    ThisMember = Deserialize(Bytes, Element->TerrainShapingShader, Memory, Count);
   }
 
 
@@ -107,10 +166,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing char  TerrainShapingShader on level_header");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
               {
         umm Count = (256);
 
-    Result &= Deserialize(Bytes, Element->TerrainDecorationShader, Memory, Count);
+    ThisMember = Deserialize(Bytes, Element->TerrainDecorationShader, Memory, Count);
   }
 
 
@@ -118,6 +184,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, level_header *Element, memory_arena 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing char  TerrainDecorationShader on level_header");
+  }
+  Result &= ThisMember;
 
 
     

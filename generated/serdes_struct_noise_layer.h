@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:424:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(noise_layer *Ignored)
 {
@@ -165,15 +165,25 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Type = Cast(brush_noise_type, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing brush_noise_type Type on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->White, Memory);
+  ThisMember = Deserialize(Bytes, &Element->White, Memory);
 
 
 
@@ -181,9 +191,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing white_noise_params White on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Perlin, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Perlin, Memory);
 
 
 
@@ -191,9 +208,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing perlin_noise_params Perlin on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Voronoi, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Voronoi, Memory);
 
 
 
@@ -201,9 +225,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing voronoi_noise_params Voronoi on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->RectLattice, Memory);
+  ThisMember = Deserialize(Bytes, &Element->RectLattice, Memory);
 
 
 
@@ -211,9 +242,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing rectangular_lattice_params RectLattice on noise_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Power, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Power, Memory);
 
 
 
@@ -221,6 +259,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, noise_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Power on noise_layer");
+  }
+  Result &= ThisMember;
 
 
     

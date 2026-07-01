@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:307:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(file_traversal_node *Ignored)
 {
@@ -98,15 +98,25 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              Element->Type = Cast(file_traversal_type, Read_u32(Bytes));
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Type = Cast(file_traversal_type, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing file_traversal_type Type on file_traversal_node");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Dir, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Dir, Memory);
 
 
 
@@ -114,9 +124,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cs Dir on file_traversal_node");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Name, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Name, Memory);
 
 
 
@@ -124,6 +141,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, file_traversal_node *Element, memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cs Name on file_traversal_node");
+  }
+  Result &= ThisMember;
 
 
     

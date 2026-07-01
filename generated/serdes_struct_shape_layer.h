@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:452:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(shape_layer *Ignored)
 {
@@ -158,15 +158,25 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-              Element->Type = Cast(brush_shape_type, Read_u32(Bytes));
+  b32 ThisMember;
+
+    ThisMember = 3;
+            Element->Type = Cast(brush_shape_type, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing brush_shape_type Type on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Rect, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Rect, Memory);
 
 
 
@@ -174,9 +184,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_rect Rect on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Sphere, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Sphere, Memory);
 
 
 
@@ -184,9 +201,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_sphere Sphere on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Line, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Line, Memory);
 
 
 
@@ -194,9 +218,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_line Line on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Cylinder, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Cylinder, Memory);
 
 
 
@@ -204,9 +235,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_cylinder Cylinder on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Plane, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Plane, Memory);
 
 
 
@@ -214,9 +252,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_plane Plane on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Torus, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Torus, Memory);
 
 
 
@@ -224,9 +269,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_torus Torus on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Pyramid, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Pyramid, Memory);
 
 
 
@@ -234,9 +286,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_update_op_shape_params_pyramid Pyramid on shape_layer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Advanced, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Advanced, Memory);
 
 
 
@@ -244,6 +303,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, shape_layer *Element, memory_arena *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing shape_layer_advanced_params Advanced on shape_layer");
+  }
+  Result &= ThisMember;
 
 
     

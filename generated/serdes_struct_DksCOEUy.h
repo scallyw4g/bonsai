@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:411:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(rectangular_lattice_params *Ignored)
 {
@@ -100,19 +100,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Radius, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Jitter, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Radius, Memory);
 
 
 
@@ -120,9 +113,33 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element,
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Radius on rectangular_lattice_params");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Jitter, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 Jitter on rectangular_lattice_params");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Period, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Period, Memory);
 
 
 
@@ -131,6 +148,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rectangular_lattice_params *Element,
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Period on rectangular_lattice_params");
+  }
+  Result &= ThisMember;
 
 
     

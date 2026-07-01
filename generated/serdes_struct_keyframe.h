@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:267:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(keyframe *Ignored)
 {
@@ -90,19 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->tEnd, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Value, Memory);
+  ThisMember = Deserialize(Bytes, &Element->tEnd, Memory);
 
 
 
@@ -110,6 +103,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, keyframe *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 tEnd on keyframe");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Value, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Value on keyframe");
+  }
+  Result &= ThisMember;
 
 
     

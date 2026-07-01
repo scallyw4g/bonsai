@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:301:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(physics *Ignored)
 {
@@ -120,20 +120,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                    
-  
-  Result &= Deserialize(Bytes, &Element->Velocity, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
-
+    ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Force, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Velocity, Memory);
 
 
 
@@ -142,9 +134,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Velocity on physics");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Delta, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Force, Memory);
 
 
 
@@ -153,9 +152,34 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Force on physics");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                  
+  
+  ThisMember = Deserialize(Bytes, &Element->Delta, Memory);
+
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Delta on physics");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Mass, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Mass, Memory);
 
 
 
@@ -163,9 +187,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Mass on physics");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Speed, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Speed, Memory);
 
 
 
@@ -173,6 +204,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, physics *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Speed on physics");
+  }
+  Result &= ThisMember;
 
 
     

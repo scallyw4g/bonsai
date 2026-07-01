@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:383:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info *Ignored)
 {
@@ -100,19 +100,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Name, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Version, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Name, Memory);
 
 
 
@@ -120,9 +113,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cs Name on bonsai_type_info");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->SizeOfInBytes, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Version, Memory);
 
 
 
@@ -130,6 +130,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info *Element, memory_ar
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 Version on bonsai_type_info");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->SizeOfInBytes, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 SizeOfInBytes on bonsai_type_info");
+  }
+  Result &= ThisMember;
 
 
     

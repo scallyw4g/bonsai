@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:442:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_torus *Ignored)
 {
@@ -90,19 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_torus *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->MajorRadius, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->MinorRadius, Memory);
+  ThisMember = Deserialize(Bytes, &Element->MajorRadius, Memory);
 
 
 
@@ -110,6 +103,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_torus *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 MajorRadius on world_update_op_shape_params_torus");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->MinorRadius, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 MinorRadius on world_update_op_shape_params_torus");
+  }
+  Result &= ThisMember;
 
 
     

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:429:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_chunk_data *Ignored)
 {
@@ -90,19 +90,29 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_chunk_data *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Data, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing chunk_data Data on world_update_op_shape_params_chunk_data");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Data, Memory);
-
-
-
-
-
-
-
-                  
-  
-  Result &= Deserialize(Bytes, &Element->SimSpaceOrigin, Memory);
+  ThisMember = Deserialize(Bytes, &Element->SimSpaceOrigin, Memory);
 
 
 
@@ -111,6 +121,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_chunk_d
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 SimSpaceOrigin on world_update_op_shape_params_chunk_data");
+  }
+  Result &= ThisMember;
 
 
     

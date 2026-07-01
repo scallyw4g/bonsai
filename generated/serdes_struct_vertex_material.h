@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:139:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(vertex_material *Ignored)
 {
@@ -100,19 +100,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->ColorIndex, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Transparency, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ColorIndex, Memory);
 
 
 
@@ -120,9 +113,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u16 ColorIndex on vertex_material");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Emission, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Transparency, Memory);
 
 
 
@@ -130,6 +130,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, vertex_material *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u8 Transparency on vertex_material");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Emission, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u8 Emission on vertex_material");
+  }
+  Result &= ThisMember;
 
 
     

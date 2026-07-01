@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:52:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_chunk_0 *Ignored)
 {
@@ -134,10 +134,20 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
-      
+  b32 ThisMember;
+
+    ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing world_chunk *Next on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Dim, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Dim, Memory);
 
 
 
@@ -146,23 +156,58 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i Dim on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadVoxelsPointer = Read_u64(Bytes);
   Assert(HadVoxelsPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing voxel *Voxels on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadVoxelLightingPointer = Read_u64(Bytes);
   Assert(HadVoxelLightingPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing voxel_lighting *VoxelLighting on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing lod_element_buffer Meshes on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing voxel_position_cursor StandingSpots on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->WorldP, Memory);
+  ThisMember = Deserialize(Bytes, &Element->WorldP, Memory);
 
 
 
@@ -171,15 +216,84 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk_0 *Element, memory_arena
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3i WorldP on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing s32 FilledCount on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawBoundingVoxels on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing s32 PointsToLeaveRemaining on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 TriCount on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing s32 EdgeBoundaryVoxelCount on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 _Pad0 on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_ptr_block_array Entities on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing s32 DEBUG_OwnedByThread on world_chunk_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u8 _Pad1 on world_chunk_0");
+  }
+  Result &= ThisMember;
 
 
         

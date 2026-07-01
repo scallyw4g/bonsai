@@ -19,9 +19,46 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Frust, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing frustum Frust on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->CurrentP, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp CurrentP on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Frust, Memory);
+  ThisMember = Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
 
 
 
@@ -29,9 +66,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 RenderSpacePosition on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->CurrentP, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Pitch, Memory);
 
 
 
@@ -39,9 +84,135 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Pitch on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Roll, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Roll on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Yaw, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Yaw on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->TargetPitch, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 TargetPitch on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->TargetRoll, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 TargetRoll on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->TargetYaw, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 TargetYaw on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Blend, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Blend on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 DistanceFromTarget on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->RenderSpacePosition, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Front, Memory);
 
 
 
@@ -50,89 +221,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                
-  
-  Result &= Deserialize(Bytes, &Element->Pitch, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->Roll, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->Yaw, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->TargetPitch, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->TargetRoll, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->TargetYaw, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->Blend, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->DistanceFromTarget, Memory);
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Front on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Front, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Right, Memory);
 
 
 
@@ -141,9 +239,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Right on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Right, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Up, Memory);
 
 
 
@@ -152,20 +257,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Up, Memory);
-
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Up on camera_1");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->GhostId, Memory);
+  ThisMember = Deserialize(Bytes, &Element->GhostId, Memory);
 
 
 
@@ -173,6 +274,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, camera_1 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_id GhostId on camera_1");
+  }
+  Result &= ThisMember;
 
 
     

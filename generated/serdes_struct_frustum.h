@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:33:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(frustum *Ignored)
 {
@@ -140,19 +140,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->farClip, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->nearClip, Memory);
+  ThisMember = Deserialize(Bytes, &Element->farClip, Memory);
 
 
 
@@ -160,9 +153,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 farClip on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->FOV, Memory);
+  ThisMember = Deserialize(Bytes, &Element->nearClip, Memory);
 
 
 
@@ -170,9 +170,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 nearClip on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Top, Memory);
+  ThisMember = Deserialize(Bytes, &Element->FOV, Memory);
 
 
 
@@ -180,9 +187,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 FOV on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Bottom, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Top, Memory);
 
 
 
@@ -190,9 +204,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing plane Top on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Left, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Bottom, Memory);
 
 
 
@@ -200,9 +221,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing plane Bottom on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Right, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Left, Memory);
 
 
 
@@ -210,6 +238,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, frustum *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing plane Left on frustum");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Right, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing plane Right on frustum");
+  }
+  Result &= ThisMember;
 
 
     

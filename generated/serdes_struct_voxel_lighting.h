@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:47:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(voxel_lighting *Ignored)
 {
@@ -80,9 +80,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voxel_lighting *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
   
-  Result &= Deserialize(Bytes, &Element->Emission, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Emission, Memory);
 
 
 
@@ -90,6 +93,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voxel_lighting *Element, memory_aren
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u8 Emission on voxel_lighting");
+  }
+  Result &= ThisMember;
 
 
     

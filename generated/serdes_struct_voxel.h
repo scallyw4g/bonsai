@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:41:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(voxel *Ignored)
 {
@@ -72,7 +72,16 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voxel *Element, memory_arena *Memory)
 {
   b32 Result = True;
-      
+  b32 ThisMember;
+
+    ThisMember = 3;
+    
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing (anonymous) on voxel");
+  }
+  Result &= ThisMember;
 
 
     

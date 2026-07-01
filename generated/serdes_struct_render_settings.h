@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:380:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(render_settings *Ignored)
 {
@@ -278,9 +278,182 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseSsao, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseSsao on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseShadowMapping, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseShadowMapping on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->UseLightingBloom, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 UseLightingBloom on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 BravoilMyersOIT on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 BravoilMcGuireOIT on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawMajorGrid on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawMinorGrid on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->MajorGridDim, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 MajorGridDim on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 DrawCameraGhost on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->CameraGhostSize, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 CameraGhostSize on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->UseSsao, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Ignored, Memory);
 
 
 
@@ -288,9 +461,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Ignored on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->UseShadowMapping, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Headless, Memory);
 
 
 
@@ -298,116 +479,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
-                
-  
-  Result &= Deserialize(Bytes, &Element->UseLightingBloom, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->BravoilMyersOIT, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->BravoilMcGuireOIT, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->DrawMajorGrid, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->DrawMinorGrid, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->MajorGridDim, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->DrawCameraGhost, Memory);
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->CameraGhostSize, Memory);
-
-
-
-
-
-
-
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Ignored, Memory);
-
-
-
-
-
-
-
-
-                
-  
-  Result &= Deserialize(Bytes, &Element->Headless, Memory);
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing b32 Headless on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
             Element->ToneMappingType = Cast(tone_mapping_type, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing tone_mapping_type ToneMappingType on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->GameCameraFOV, Memory);
+  ThisMember = Deserialize(Bytes, &Element->GameCameraFOV, Memory);
 
 
 
@@ -415,9 +509,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 GameCameraFOV on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Lighting, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Lighting, Memory);
 
 
 
@@ -425,9 +526,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing lighting_settings Lighting on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->ApplicationResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ApplicationResolution, Memory);
 
 
 
@@ -436,9 +544,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 ApplicationResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ShadowMapResolution, Memory);
 
 
 
@@ -447,9 +562,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 ShadowMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->LuminanceMapResolution, Memory);
 
 
 
@@ -458,9 +580,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2 LuminanceMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->iApplicationResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->iApplicationResolution, Memory);
 
 
 
@@ -469,9 +598,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iApplicationResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->iShadowMapResolution, Memory);
 
 
 
@@ -480,9 +616,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iShadowMapResolution on render_settings");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
+  ThisMember = Deserialize(Bytes, &Element->iLuminanceMapResolution, Memory);
 
 
 
@@ -491,6 +634,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, render_settings *Element, memory_are
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v2i iLuminanceMapResolution on render_settings");
+  }
+  Result &= ThisMember;
 
 
     

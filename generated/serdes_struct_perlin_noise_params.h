@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:413:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(perlin_noise_params *Ignored)
 {
@@ -80,9 +80,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, perlin_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                    
+  b32 ThisMember;
+
+    ThisMember = 3;
+                  
   
-  Result &= Deserialize(Bytes, &Element->Period, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Period, Memory);
 
 
 
@@ -91,6 +94,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, perlin_noise_params *Element, memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Period on perlin_noise_params");
+  }
+  Result &= ThisMember;
 
 
     

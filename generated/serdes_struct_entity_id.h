@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:70:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(entity_id *Ignored)
 {
@@ -90,19 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, entity_id *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Index, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Generation, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Index, Memory);
 
 
 
@@ -110,6 +103,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_id *Element, memory_arena *Me
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 Index on entity_id");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Generation, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u32 Generation on entity_id");
+  }
+  Result &= ThisMember;
 
 
     

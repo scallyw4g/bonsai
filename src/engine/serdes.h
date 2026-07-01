@@ -353,8 +353,11 @@ poof(
     DeserializeCurrentVersion(u8_cursor *Bytes, (type.name) *Element, memory_arena *Memory)
     {
       b32 Result = True;
+      b32 ThisMember;
+
       type.map(member)
       {
+        ThisMember = 3;
         member.has_tag(no_serialize)?
         {
         }
@@ -395,7 +398,7 @@ poof(
                       {
                         umm Count = member.array;
                       }
-                      Result &= Deserialize(Bytes, Element->(member.name), Memory, Count);
+                      ThisMember = Deserialize(Bytes, Element->(member.name), Memory, Count);
                     }
                   }
                   {
@@ -405,7 +408,7 @@ poof(
                       {
                         /// NOTE(Jesse): Unfortunately we can't check for primitives because
                         /// strings are considered primitive, but need memory to deserialize
-                        Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                        ThisMember = Deserialize(Bytes, &Element->(member.name), Memory);
                       }
                       {
                         member.has_tag(type_tag)?
@@ -422,7 +425,7 @@ poof(
                               {
                                 case tag_v.name:
                                 {
-                                  Result &= Deserialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case, Memory);
+                                  ThisMember = Deserialize(Bytes, &Element->tag_v.name.strip_all_prefix.to_capital_case, Memory);
                                 } break;
                               }
                             }
@@ -436,7 +439,7 @@ poof(
                     {
                       /// NOTE(Jesse): Unfortunately we can't check for primitives because
                       /// strings are considered primitive, but need memory to deserialize
-                      Result &= Deserialize(Bytes, &Element->(member.name), Memory);
+                      ThisMember = Deserialize(Bytes, &Element->(member.name), Memory);
                     }
                   }
                 }
@@ -444,6 +447,12 @@ poof(
             }
           }
         }
+        /* Assert(ThisMember != 3); */
+        if (ThisMember == False)
+        {
+          SoftError("Deserializing (member) on (type)");
+        }
+        Result &= ThisMember;
       }
 
       type.map(member)

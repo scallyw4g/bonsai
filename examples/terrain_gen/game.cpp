@@ -45,7 +45,7 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
   {
     if (RandomUnilateral(&SpawnerRNG) > 0.99f)
     {
-      prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("layer_1")).Value;
+      prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("simple_tree.prefab")).Value;
       if (SpawnPrefab)
       {
         cp SpawnPoint = CP(V3(32), Node->WorldP);

@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:409:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(white_noise_params *Ignored)
 {
@@ -70,6 +70,8 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, white_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
   
 
   

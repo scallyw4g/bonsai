@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:363:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(entity_0 *Ignored)
 {
@@ -196,9 +196,46 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Memory)
 {
   b32 Result = True;
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Id, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_id Id on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->P, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp P on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->Id, Memory);
+  ThisMember = Deserialize(Bytes, &Element->EulerAngles, Memory);
 
 
 
@@ -206,9 +243,17 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 EulerAngles on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->P, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Scale, Memory);
 
 
 
@@ -216,9 +261,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Scale on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                   
   
-  Result &= Deserialize(Bytes, &Element->EulerAngles, Memory);
+  ThisMember = Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
 
 
 
@@ -227,9 +279,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 _CollisionVolumeRadius on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Scale, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Physics, Memory);
 
 
 
@@ -237,20 +296,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
-                  
-  
-  Result &= Deserialize(Bytes, &Element->_CollisionVolumeRadius, Memory);
-
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing physics Physics on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Physics, Memory);
+  ThisMember = Deserialize(Bytes, &Element->AssetId, Memory);
 
 
 
@@ -258,9 +313,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing asset_id AssetId on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->AssetId, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ModelIndex, Memory);
 
 
 
@@ -268,39 +330,71 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
-                
-  
-  Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
-
-
-
-
-
-
-
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 ModelIndex on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing collision_event LastResolvedCollision on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
     
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_position_info LastResolvedPosInfo on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadEmitterPointer = Read_u64(Bytes);
   Assert(HadEmitterPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing particle_system *Emitter on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
             Element->State = Cast(entity_state, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_state State on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
             Element->Behavior = Cast(entity_behavior_flags, Read_u32(Bytes));
 
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing entity_behavior_flags Behavior on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->UserType, Memory);
+  ThisMember = Deserialize(Bytes, &Element->UserType, Memory);
 
 
 
@@ -308,10 +402,23 @@ DeserializeCurrentVersion(u8_cursor *Bytes, entity_0 *Element, memory_arena *Mem
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 UserType on entity_0");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
         if (EntityUserDataDeserialize) {Result &= EntityUserDataDeserialize(Bytes, &Element->UserType, &Element->UserData, Memory);}
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 UserData on entity_0");
+  }
+  Result &= ThisMember;
 
 
     

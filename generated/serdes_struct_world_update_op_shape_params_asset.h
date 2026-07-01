@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:427:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_asset *Ignored)
 {
@@ -100,19 +100,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->AssetId, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->ModelIndex, Memory);
+  ThisMember = Deserialize(Bytes, &Element->AssetId, Memory);
 
 
 
@@ -120,9 +113,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing asset_id AssetId on world_update_op_shape_params_asset");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Origin, Memory);
+  ThisMember = Deserialize(Bytes, &Element->ModelIndex, Memory);
 
 
 
@@ -130,6 +130,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_asset *
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing u64 ModelIndex on world_update_op_shape_params_asset");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Origin, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp Origin on world_update_op_shape_params_asset");
+  }
+  Result &= ThisMember;
 
 
     

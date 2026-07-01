@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:415:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(voronoi_noise_params *Ignored)
 {
@@ -100,9 +100,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                    
+  b32 ThisMember;
+
+    ThisMember = 3;
+                  
   
-  Result &= Deserialize(Bytes, &Element->Period, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Period, Memory);
 
 
 
@@ -111,9 +114,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Period on voronoi_noise_params");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Squareness, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Squareness, Memory);
 
 
 
@@ -121,9 +131,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 Squareness on voronoi_noise_params");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->MaskChance, Memory);
+  ThisMember = Deserialize(Bytes, &Element->MaskChance, Memory);
 
 
 
@@ -131,6 +148,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, voronoi_noise_params *Element, memor
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing r32 MaskChance on voronoi_noise_params");
+  }
+  Result &= ThisMember;
 
 
     

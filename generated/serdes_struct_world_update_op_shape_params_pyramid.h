@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:444:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_update_op_shape_params_pyramid *Ignored)
 {
@@ -80,9 +80,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_pyramid *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
   
-  Result &= Deserialize(Bytes, &Element->Height, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Height, Memory);
 
 
 
@@ -90,6 +93,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_update_op_shape_params_pyramid
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 Height on world_update_op_shape_params_pyramid");
+  }
+  Result &= ThisMember;
 
 
     

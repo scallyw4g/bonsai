@@ -42,17 +42,24 @@ LoadPrefabFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_a
 
   if (Bytes.Start)
   {
-    prefab P = {};
-    /* CopyString( FileNode->Name.Start, P.NameBuf, Min(umm(FileNode->Name.Count), umm(NameBuf_Len))); */
-    P.Name = CopyString(FileNode->Name, &Editor->Heap);
-
-    Editor->SelectedPrefab = Upsert(P, &Editor->Prefabs, &Global_PermMemory);
+    { // TODO(Jesse): We should make an operation
+      prefab P = {};
+      P.Name = CopyString(FileNode->Name, &Editor->Heap);
+      Editor->SelectedPrefab = Upsert(P, &Editor->Prefabs, &Global_PermMemory);
+    }
 
     if (Deserialize(&Bytes, Editor->SelectedPrefab, &Global_PermMemory) == False)
     {
       SoftError("While deserializing prefab (%S).", Filename);
       *Editor->SelectedPrefab = {};
     }
+    else
+    {
+      Info("Prefab (%S) Deserialized", Editor->SelectedPrefab->Name);
+    }
+
+    Editor->SelectedPrefab->Name = CopyString(FileNode->Name, &Editor->Heap);
+    Info("Prefab (%S) renamed", Editor->SelectedPrefab->Name);
   }
 
   FinalizeDeserialization(&Bytes);

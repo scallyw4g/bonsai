@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:279:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(rect3cp *Ignored)
 {
@@ -90,19 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
-  
-  Result &= Deserialize(Bytes, &Element->Min, Memory);
+  b32 ThisMember;
 
-
-
-
-
-
-
+    ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->Max, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Min, Memory);
 
 
 
@@ -110,6 +103,29 @@ DeserializeCurrentVersion(u8_cursor *Bytes, rect3cp *Element, memory_arena *Memo
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp Min on rect3cp");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
+                
+  
+  ThisMember = Deserialize(Bytes, &Element->Max, Memory);
+
+
+
+
+
+
+
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing cp Max on rect3cp");
+  }
+  Result &= ThisMember;
 
 
     

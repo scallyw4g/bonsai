@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:385:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(bonsai_type_info_buffer *Ignored)
 {
@@ -90,9 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
   
-  Result &= Deserialize(Bytes, &Element->Count, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Count, Memory);
 
 
 
@@ -100,12 +103,25 @@ DeserializeCurrentVersion(u8_cursor *Bytes, bonsai_type_info_buffer *Element, me
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing umm Count on bonsai_type_info_buffer");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
           b64 HadStartPointer = Read_u64(Bytes);
   Assert(HadStartPointer < 2); // Should be 0 or 1
 
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing bonsai_type_info *Start on bonsai_type_info_buffer");
+  }
+  Result &= ThisMember;
 
 
     

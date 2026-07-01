@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:489:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(world_edit_block_array_index *Ignored)
 {
@@ -80,9 +80,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array_index *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                  
+  b32 ThisMember;
+
+    ThisMember = 3;
+                
   
-  Result &= Deserialize(Bytes, &Element->Index, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Index, Memory);
 
 
 
@@ -90,6 +93,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array_index *Elemen
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing umm Index on world_edit_block_array_index");
+  }
+  Result &= ThisMember;
 
 
     

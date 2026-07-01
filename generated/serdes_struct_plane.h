@@ -2,7 +2,7 @@
 // src/engine/serdes.cpp:30:0
 
 // def (serdes_struct)
-// src/engine/serdes.h:610:0
+// src/engine/serdes.h:619:0
 link_internal bonsai_type_info
 TypeInfo(plane *Ignored)
 {
@@ -90,9 +90,12 @@ link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory)
 {
   b32 Result = True;
-                    
+  b32 ThisMember;
+
+    ThisMember = 3;
+                  
   
-  Result &= Deserialize(Bytes, &Element->Normal, Memory);
+  ThisMember = Deserialize(Bytes, &Element->Normal, Memory);
 
 
 
@@ -101,9 +104,16 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing v3 Normal on plane");
+  }
+  Result &= ThisMember;
+  ThisMember = 3;
                 
   
-  Result &= Deserialize(Bytes, &Element->DistanceToOrigin, Memory);
+  ThisMember = Deserialize(Bytes, &Element->DistanceToOrigin, Memory);
 
 
 
@@ -111,6 +121,12 @@ DeserializeCurrentVersion(u8_cursor *Bytes, plane *Element, memory_arena *Memory
 
 
 
+  /* Assert(ThisMember != 3); */
+  if (ThisMember == False)
+  {
+    SoftError("Deserializing f32 DistanceToOrigin on plane");
+  }
+  Result &= ThisMember;
 
 
     
