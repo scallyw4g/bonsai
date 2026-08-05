@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:246:0
+// src/engine/editor.cpp:247:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2131:0
+// external/bonsai_stdlib/src/poof_functions.h:2138:0
 link_internal b32
 IsValid(visible_region_size Value)
 {

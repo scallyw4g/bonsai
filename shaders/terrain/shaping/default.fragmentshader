@@ -18,7 +18,7 @@ void main()
   v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
 
 
-  f32 NoiseValue = 100.f-Basis.z;
+  f32 NoiseValue = 1000.f-Basis.z;
   /* f32 NoiseValue = 500.f-Basis.z; */
   /* f32 NoiseValue = 3500.f-Basis.z; */
 

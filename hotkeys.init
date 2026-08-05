@@ -59,7 +59,7 @@ hotkey Up       = E
 // also valid, and acts as a clutch; you press and hold the key while dragging
 // the mouse vertically to zoom.
 //
-hotkey Zoom = Z
+hotkey Zoom = Scrollwheel
 
 //
 // Editor Hotkeys

@@ -2,7 +2,7 @@
 // src/engine/world.h:81:0
 
 // def (generate_stack)
-// external/bonsai_stdlib/src/poof_functions.h:1472:0
+// external/bonsai_stdlib/src/poof_functions.h:1479:0
 struct octree_node_ptr_stack
 {
   octree_node_ptr *Start;

@@ -2,7 +2,7 @@
 // src/engine/asset.h:203:0
 
 // def (buffer)
-// external/bonsai_stdlib/src/poof_functions.h:1463:0
+// external/bonsai_stdlib/src/poof_functions.h:1470:0
 struct asset_buffer
 {
   umm Count;

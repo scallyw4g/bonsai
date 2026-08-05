@@ -1,8 +1,8 @@
 // callsite
-// src/engine/editor.cpp:379:0
+// src/engine/editor.cpp:380:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2131:0
+// external/bonsai_stdlib/src/poof_functions.h:2138:0
 link_internal b32
 IsValid(engine_debug_view_mode Value)
 {

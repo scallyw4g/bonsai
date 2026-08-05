@@ -42,7 +42,8 @@ LoadPrefabFromFile(level_editor *Editor, file_traversal_node *FileNode, memory_a
 
   if (Bytes.Start)
   {
-    { // TODO(Jesse): We should make an operation
+    { // TODO(Jesse): We should make an operation that does a blank insert or
+      // returns a pointer to the existing key
       prefab P = {};
       P.Name = CopyString(FileNode->Name, &Editor->Heap);
       Editor->SelectedPrefab = Upsert(P, &Editor->Prefabs, &Global_PermMemory);

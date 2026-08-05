@@ -2,7 +2,7 @@
 // src/engine/world_chunk.h:465:0
 
 // def (buffer)
-// external/bonsai_stdlib/src/poof_functions.h:1463:0
+// external/bonsai_stdlib/src/poof_functions.h:1470:0
 struct world_chunk_ptr_buffer
 {
   umm Count;
