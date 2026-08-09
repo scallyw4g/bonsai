@@ -1708,68 +1708,71 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
   u32 DrawCommandsAt = 0;
   DrawArraysIndirectCommand *DrawCommands = Allocate(DrawArraysIndirectCommand, GetTranArena(), DrawList->ElementCount);
 
-  RangeIterator_t(u32, KeyIndex, DrawList->ElementCount)
   {
-    sort_key_f32 *Key = Keys + KeyIndex;
-    octree_node *Node = Cast(octree_node *, Key->Index);
-
-    world_chunk *Chunk = Node->Chunk;
-    Assert(Chunk);
-
-    // In case gpu meshes got deallocated after the chunk was added to the draw list
-    if (HasGpuMesh(Chunk))
+    TIMED_NAMED_BLOCK(BuildDrawCommandList);
+    RangeIterator_t(u32, KeyIndex, DrawList->ElementCount)
     {
-      if (Chunk->OcclusionFrames) { Chunk->OcclusionFrames--; continue; }
+      sort_key_f32 *Key = Keys + KeyIndex;
+      octree_node *Node = Cast(octree_node *, Key->Index);
 
-      /* v3 Offset = V3(Node->Resolution); */
-      /* v3 Offset = V3(Node->Resolution*0.5f); */
-      /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
-      v3 Offset = {};
-      v3 Basis = Offset;
-      if (Camera)
-      {
-        Basis += GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
-      }
-      else
-      {
-        Basis += GetSimSpaceP(World, Chunk->WorldP);
-      }
+      world_chunk *Chunk = Node->Chunk;
+      Assert(Chunk);
 
-      if (Camera)
+      // In case gpu meshes got deallocated after the chunk was added to the draw list
+      if (HasGpuMesh(Chunk))
       {
-        auto GL = GetGL();
-        if (Chunk->OcclusionQueryId == 0)
+        if (Chunk->OcclusionFrames) { Chunk->OcclusionFrames--; continue; }
+
+        /* v3 Offset = V3(Node->Resolution); */
+        /* v3 Offset = V3(Node->Resolution*0.5f); */
+        /* v3 Offset = -1.f*V3(Node->Resolution*0.5f); */
+        v3 Offset = {};
+        v3 Basis = Offset;
+        if (Camera)
         {
-          GL->GenQueries(1, &Chunk->OcclusionQueryId);
-          Assert(Chunk->OcclusionQueryId);
-        }
-
-        if (Chunk->QueryActive == False)
-        {
-          /* InvalidCodePath(); */
-#if 1
-          Chunk->QueryActive = True;
-
-          /* GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId); */
-          /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-          /* GL->EndQuery(GL_SAMPLES_PASSED); */
-
-          DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
-          BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
-#endif
+          Basis += GetRenderP(World->ChunkDim, Chunk->WorldP, Camera);
         }
         else
         {
-          /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
-          DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
-          BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+          Basis += GetSimSpaceP(World, Chunk->WorldP);
         }
 
-        /* CheckOcclusionQuery(Chunk); */
+        if (Camera)
+        {
+          auto GL = GetGL();
+          if (Chunk->OcclusionQueryId == 0)
+          {
+            GL->GenQueries(1, &Chunk->OcclusionQueryId);
+            Assert(Chunk->OcclusionQueryId);
+          }
+
+          if (Chunk->QueryActive == False)
+          {
+            /* InvalidCodePath(); */
+#if 1
+            Chunk->QueryActive = True;
+
+            /* GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId); */
+            /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+            /* GL->EndQuery(GL_SAMPLES_PASSED); */
+
+            /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+            BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+#endif
+          }
+          else
+          {
+            /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+            /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+            BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+          }
+
+          /* CheckOcclusionQuery(Chunk); */
+        }
+
+
+        AssertNoGlErrors;
       }
-
-
-      AssertNoGlErrors;
     }
   }
 
@@ -1784,15 +1787,18 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
     {
       GL->GenBuffers(1, &HeapIndirectDrawBuffer);
     }
+
     GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, HeapIndirectDrawBuffer);
-        AssertNoGlErrors;
+    AssertNoGlErrors;
+
     GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW);
-        AssertNoGlErrors;
+    AssertNoGlErrors;
 
     GL->BindVertexArray(Engine->Graphics.GpuHeap.Storage.Handles.VAO);
+    AssertNoGlErrors;
 
     GL->DrawArraysIndirect(GL_TRIANGLES, 0);
-        AssertNoGlErrors;
+    AssertNoGlErrors;
   }
 }
 

@@ -1,11 +1,12 @@
 // callsite
-// external/bonsai_stdlib/src/sort.h:108:0
+// external/bonsai_stdlib/src/sort.cpp:1:0
 
 // def (bubble_sort)
 // external/bonsai_stdlib/src/sort.h:39:0
 link_internal void
 BubbleSort(sort_key *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -37,6 +38,7 @@ BubbleSort(sort_key *Keys, u32 Count)
 link_internal void
 BubbleSort_descending(sort_key *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -67,6 +69,7 @@ BubbleSort_descending(sort_key *Keys, u32 Count)
 link_internal void
 BubbleSort(sort_key_f64 *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -98,6 +101,7 @@ BubbleSort(sort_key_f64 *Keys, u32 Count)
 link_internal void
 BubbleSort_descending(sort_key_f64 *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -128,6 +132,7 @@ BubbleSort_descending(sort_key_f64 *Keys, u32 Count)
 link_internal void
 BubbleSort(sort_key_f32 *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -159,6 +164,7 @@ BubbleSort(sort_key_f32 *Keys, u32 Count)
 link_internal void
 BubbleSort_descending(sort_key_f32 *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -189,6 +195,7 @@ BubbleSort_descending(sort_key_f32 *Keys, u32 Count)
 link_internal void
 BubbleSort(sort_key_string *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
@@ -220,6 +227,7 @@ BubbleSort(sort_key_string *Keys, u32 Count)
 link_internal void
 BubbleSort_descending(sort_key_string *Keys, u32 Count)
 {
+  TIMED_FUNCTION();
   for (u32 Ignored = 0;
     Ignored < Count;
     ++Ignored)
