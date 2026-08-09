@@ -785,6 +785,8 @@ GraphicsInit(graphics *Result, engine_settings *EngineSettings, memory_arena *Gr
 
   AssertNoGlErrors;
 
+  Result->GpuHeap = InitGpuHeap(Gigabytes(4), GraphicsMemory, False);
+
   Result->SG = SG;
   Result->AoGroup = AoGroup;
   Result->gBuffer = gBuffer;

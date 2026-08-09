@@ -245,6 +245,8 @@
 
 
 
+
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
   
@@ -252,6 +254,10 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
   octree_node *DestNode;
 
 };
+
+
+
+
 
 
 
@@ -730,6 +736,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -1736,6 +1743,15 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
+
+
+
+
+
+
+
+
+
 struct render_to_texture_async_params poof(@async_function_params)
 {
   
@@ -1746,6 +1762,8 @@ struct render_to_texture_async_params poof(@async_function_params)
   camera *Camera;
 
 };
+
+
 
 
 

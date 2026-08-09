@@ -662,7 +662,8 @@ BufferVertsChecked(
       } break;
     }
 
-    Dest->At += Src->At;
+    // NOTE(Jesse): The paths we call into do this already
+    /* Dest->At += Src->At; */
   }
   else
   {

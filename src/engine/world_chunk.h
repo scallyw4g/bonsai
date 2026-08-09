@@ -343,6 +343,7 @@ poof(@version(1) @do_editor_ui)
   b32 IsOnFreelist;
 
   gpu_element_buffer_handles Handles; poof(@no_serialize)
+  gpu_heap_allocation Mesh; poof(@no_serialize)
 
 
   u32 OcclusionQueryId;

@@ -1579,6 +1579,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, render_debug *Element, cs Nam
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -11914,6 +11915,44 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, graphics *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("GpuHeap");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_heap_allocator*, &Element->GpuHeap);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("MinClipP_worldspace");
 
                                                                                                 auto Member = Cast(v3*, &Element->MinClipP_worldspace);
@@ -18167,6 +18206,44 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
             
             
             
+            cs MemberName = CSz("Mesh");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(gpu_heap_allocation*, &Element->Mesh);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("OcclusionQueryId");
 
                                                                                                 // Regular struct member
@@ -19469,6 +19546,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_freelist *Element, 
   }
 
 }
+
 
 
 
@@ -29464,6 +29542,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_contex
   }
 
 }
+
 
 
 

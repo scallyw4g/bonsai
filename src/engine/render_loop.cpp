@@ -37,6 +37,7 @@ DrainHiRenderQueue(engine_resources *Engine)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
+            AssertNoGlErrors;
       } break;
 
       { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
@@ -144,17 +145,20 @@ DrainHiRenderQueue(engine_resources *Engine)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_world_chunk_draw_list);
             /* if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_world_chunk_draw_list when RenderGate was not signalled!"); } */
             RenderDrawList(Engine, Command->DrawList, Command->Shader, Command->Camera);
+            AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_draw_all_entities, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_draw_all_entities);
             /* if (FutexIsSignaled(&Graphics->RenderGate) == False) { SoftError("Called bonsai_render_command_draw_all_entities when RenderGate was not signalled!"); } */
             DrawEntities(Command->Shader, EntityTable, &GpuMap->Buffer, 0, Graphics, World, Plat->dt);
+            AssertNoGlErrors;
           } break;
 
 
           { tmatch(bonsai_render_command_initialize_noise_buffer, RenderCommand, _Command)
             InvalidCodePath();
+            AssertNoGlErrors;
           } break;
 
 
@@ -283,25 +287,31 @@ DrainHiRenderQueue(engine_resources *Engine)
                 }
               }
             }
+            AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_init, RenderCommand, Command)
             InvalidCodePath();
+            AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_start, RenderCommand, Command)
             InvalidCodePath();
+            AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_end, RenderCommand, Command)
             InvalidCodePath();
+            AssertNoGlErrors;
           } break;
 
           { tmatch(bonsai_render_command_gl_timer_read_value_and_histogram, RenderCommand, Command)
             InvalidCodePath();
+            AssertNoGlErrors;
           } break;
 
         }
+            AssertNoGlErrors;
       } break;
     }
 
@@ -373,12 +383,14 @@ DrainLoRenderQueue(engine_resources *Engine)
 
       { tmatch(work_queue_entry_init_asset, Job, RPC)
         InitAsset(Engine, RPC->Asset, Thread);
+            AssertNoGlErrors;
       } break;
 
       { tmatch(work_queue_entry_async_function_call, Job, RPC)
         /* RenderInfo("%S", ToString(RPC->Type)); */
         TIMED_NAMED_BLOCK(work_queue_entry_async_function_call);
         DispatchAsyncFunctionCall(RPC);
+            AssertNoGlErrors;
       } break;
 
       { tmatch(work_queue_entry__bonsai_render_command, Job, RenderCommand)
@@ -446,6 +458,8 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             /* Assert(Command->DestNode->Flags & Chunk_Queued); */
             Assert(Command->SynChunk);
+
+            Command->DestNode->Chunk->Mesh = GpuHeapAllocate(&Graphics->GpuHeap, Command->ElementCount);
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));
@@ -727,6 +741,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
             s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
+#if 0
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
               u32 PBO;
@@ -746,6 +761,7 @@ DrainLoRenderQueue(engine_resources *Engine)
               dummy_work_queue_entry_build_chunk_mesh Readback = { {PBO,Fence}, NoiseDim, Node};
               Push(&Graphics->NoiseReadbackJobs, &Readback);
             }
+#endif
           } break;
 
 
@@ -796,6 +812,7 @@ DrainLoRenderQueue(engine_resources *Engine)
           } break;
 
         }
+            AssertNoGlErrors;
       } break;
     }
 

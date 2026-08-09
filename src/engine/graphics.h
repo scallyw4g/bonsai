@@ -209,6 +209,8 @@ poof(@do_editor_ui)
   octree_node_ptr_paged_list MainDrawList;
   octree_node_ptr_paged_list ShadowMapDrawList;
 
+  gpu_heap_allocator GpuHeap;
+
   // NOTE(Jesse): This is a stencil region for cutting out the selection region
   // such that we can reneder an appropriate temporary mesh in the case that
   // our selected brush removes world geometry.

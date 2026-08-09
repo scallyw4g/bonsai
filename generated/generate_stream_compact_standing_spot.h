@@ -1,5 +1,5 @@
 // callsite
-// src/engine/world_chunk.h:549:0
+// src/engine/world_chunk.h:550:0
 
 // def (generate_stream_compact)
 // external/bonsai_stdlib/src/poof_functions.h:2096:0

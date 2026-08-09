@@ -17,6 +17,7 @@
 
 
 
+
 struct check_occlusion_query_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( check_occlusion_query_async_params *Params )
@@ -579,6 +580,7 @@ WorkQueueEntryAsyncFunction( render_to_texture_async_params *Params )
 
 
 
+
 struct compile_shader_pair_async_params;
 link_internal work_queue_entry
 WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
@@ -589,6 +591,7 @@ WorkQueueEntryAsyncFunction( compile_shader_pair_async_params *Params )
   Result.work_queue_entry_async_function_call.compile_shader_pair_async_params = *Params;
   return Result;
 }
+
 
 
 

@@ -25,6 +25,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_deb
 
 
 
+
 struct ui_toggle;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -490,6 +491,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_
 
 
 
+
 struct memory_arena;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -726,6 +728,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, g_buffer_r
 struct terrain_shaping_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_shaping_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
