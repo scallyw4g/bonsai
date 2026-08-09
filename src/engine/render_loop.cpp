@@ -741,7 +741,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             s32 NoiseElementCount = s32(Volume(CurrentAccumulationTexture->Dim));
             s32 NoiseByteCount = NoiseElementCount*s32(sizeof(u32));
 
-#if 0
+#if 1
             {
               TIMED_NAMED_BLOCK(GenPboAndInitTransfer);
               u32 PBO;

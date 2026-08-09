@@ -127,6 +127,13 @@ GetEngineDebug()
   return Result;
 }
 
+link_internal graphics *
+GetGraphics()
+{
+  auto Result = &GetEngineResources()->Graphics;
+  return Result;
+}
+
 link_internal world *
 GetWorld()
 {

@@ -930,18 +930,31 @@ SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_all
   AssertNoGlErrors;
 }
 
+
 link_internal void
-DrawGpuHeapAllocationIndirect(engine_resources *Engine, shader *Shader, gpu_heap_allocator *GpuHeap, gpu_heap_allocation *Allocation, v3 Basis)
+BufferIndirectDrawCommand(DrawArraysIndirectCommand *DrawCommands,
+                                                u32  DrawCommandsAt,
+                                gpu_heap_allocation *Allocation,
+                                        world_chunk *Chunk,
+                                                 v3  Basis,
+                                         Quaternion  Rotation,
+                                                 v3  Scale)
+{
+
+  DrawCommands[DrawCommandsAt] = { Allocation->Data.End, 1, u32(Allocation->BaseOffsetInElements), 0 };
+}
+
+link_internal void
+DrawGpuHeapAllocationIndirect(engine_resources *Engine, shader *Shader, gpu_heap_allocator *GpuHeap, gpu_heap_allocation *Allocation, v3 Basis, Quaternion Rot, v3 Scale)
 {
   Assert(Engine);
   Assert(Shader);
   Assert(GpuHeap);
   Assert(Allocation);
-  if (Allocation->Data.At == 0) { return; }
 
   UNPACK_ENGINE_RESOURCES(Engine);
 
-  m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(1.f)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
+  m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, Scale*GLOBAL_RENDER_SCALE_FACTOR, Rot);
   Ensure(TryBindUniform(Shader, "ModelMatrix", &ModelMatrix));
 
   m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
@@ -952,6 +965,7 @@ DrawGpuHeapAllocationIndirect(engine_resources *Engine, shader *Shader, gpu_heap
   /* SetupVertexAttribsFor_gpu_heap_allocation(GpuHeap, Allocation); */
   GL->BindVertexArray(GpuHeap->Storage.Handles.VAO);
 
+#if 1
   static u32 HeapIndirectDrawBuffer = 0;
   if (HeapIndirectDrawBuffer == 0)
   {
@@ -965,7 +979,7 @@ DrawGpuHeapAllocationIndirect(engine_resources *Engine, shader *Shader, gpu_heap
     GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, HeapIndirectDrawBuffer);
   }
 
-  DrawArraysIndirectCommand Cmd = { Allocation->Data.At, 1, 0, 0 };
+  DrawArraysIndirectCommand Cmd = { Allocation->Data.End, 1, u32(Allocation->BaseOffsetInElements), 0 };
   GL->BufferData(GL_DRAW_INDIRECT_BUFFER, Cast(GLsizeiptr, sizeof(Cmd)), &Cmd, GL_DYNAMIC_DRAW);
   AssertNoGlErrors;
 
@@ -975,6 +989,11 @@ DrawGpuHeapAllocationIndirect(engine_resources *Engine, shader *Shader, gpu_heap
   GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
   AssertNoGlErrors;
 
+#else
+
+  GL->DrawArrays(GL_TRIANGLES, s32(Allocation->BaseOffsetInElements), s32(Allocation->Data.End));
+
+#endif
 }
 
 link_internal void
@@ -1660,6 +1679,9 @@ CheckOcclusionQuery(world_chunk *Chunk)
 link_internal void
 RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
+  // TODO(Jesse): Turn this into an assert; there's no reason to have a draw command with an empty draw list!
+  if (DrawList->ElementCount == 0) return;
+
   world *World = Engine->World;;
 
   sort_key_f32 *Keys = Allocate(sort_key_f32, GetTranArena(), DrawList->ElementCount);
@@ -1681,6 +1703,10 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
   {
     BubbleSort_descending(Keys, DrawList->ElementCount);
   }
+
+
+  u32 DrawCommandsAt = 0;
+  DrawArraysIndirectCommand *DrawCommands = Allocate(DrawArraysIndirectCommand, GetTranArena(), DrawList->ElementCount);
 
   RangeIterator_t(u32, KeyIndex, DrawList->ElementCount)
   {
@@ -1720,18 +1746,23 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 
         if (Chunk->QueryActive == False)
         {
+          /* InvalidCodePath(); */
+#if 1
           Chunk->QueryActive = True;
 
-          GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId);
-          DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
-          GL->EndQuery(GL_SAMPLES_PASSED);
+          /* GL->BeginQuery(GL_SAMPLES_PASSED, Chunk->OcclusionQueryId); */
+          /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+          /* GL->EndQuery(GL_SAMPLES_PASSED); */
 
-          /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis); */
+          DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+          BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+#endif
         }
         else
         {
-          DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
-          /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis); */
+          /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+          DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks));
+          BufferIndirectDrawCommand(DrawCommands, DrawCommandsAt++, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
         }
 
         /* CheckOcclusionQuery(Chunk); */
@@ -1740,6 +1771,28 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 
       AssertNoGlErrors;
     }
+  }
+
+  if (DrawCommandsAt)
+  {
+    auto GL = GetGL();
+    static u32 HeapIndirectDrawBuffer = 0;
+
+    u32 RequiredIndirectDrawBufferSize = Cast(GLsizeiptr, sizeof(DrawArraysIndirectCommand))*DrawCommandsAt;
+
+    if (HeapIndirectDrawBuffer == 0)
+    {
+      GL->GenBuffers(1, &HeapIndirectDrawBuffer);
+    }
+    GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, HeapIndirectDrawBuffer);
+        AssertNoGlErrors;
+    GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW);
+        AssertNoGlErrors;
+
+    GL->BindVertexArray(Engine->Graphics.GpuHeap.Storage.Handles.VAO);
+
+    GL->DrawArraysIndirect(GL_TRIANGLES, 0);
+        AssertNoGlErrors;
   }
 }
 
@@ -1916,9 +1969,25 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
   Assert(HasGpuMesh(&GenChunk->Mesh)  == True);
   Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
-  /* CopyElements(&GenChunk->Mesh.Buffer, &DestNode->Chunk->Mesh); */
-  BufferVertsChecked(&GenChunk->Mesh.Buffer, &DestNode->Chunk->Mesh.Data);
-  DestNode->Chunk->Mesh.Data.Type = DataType_v3_u8;
+  auto GL = GetGL();
+  auto Graphics = GetGraphics();
+
+  s64 v3u8Offset = s64(DestNode->Chunk->Mesh.BaseOffsetInElements*sizeof(v3_u8));
+  s64 v3u8Size = s64(GenChunk->Mesh.Buffer.At*sizeof(v3_u8));
+
+  Assert(DestNode->Chunk->Mesh.Data.End == GenChunk->Mesh.Buffer.At);
+
+  s64 matlOffset = s64(DestNode->Chunk->Mesh.BaseOffsetInElements*sizeof(matl));
+  s64 matlSize = s64(GenChunk->Mesh.Buffer.At*sizeof(matl));
+
+  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
+  GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Mesh.Buffer.Verts);
+
+  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
+  GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Mesh.Buffer.Normals);
+
+  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
+  GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Mesh.Buffer.Mat);
 
   FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
 

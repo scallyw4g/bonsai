@@ -726,6 +726,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -736,6 +737,7 @@ struct compile_shader_pair_async_params poof(@async_function_params)
   b32 RegisterForHotReload;
 
 };
+
 
 
 
@@ -1762,6 +1764,7 @@ struct render_to_texture_async_params poof(@async_function_params)
   camera *Camera;
 
 };
+
 
 
 
