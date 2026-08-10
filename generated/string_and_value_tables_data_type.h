@@ -2,16 +2,19 @@
 // src/engine/editor.h:1044:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(data_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case DataType_Undefinded:
-    case DataType_v3:
-    case DataType_v3_u8:
+            case DataType_Undefinded:
+
+        case DataType_v3:
+
+        case DataType_v3_u8:
+
 
     {
       Result = True;
@@ -30,9 +33,12 @@ ToStringPrefixless(data_type Type)
   {
     switch (Type)
     {
-            case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
-      case DataType_v3: { Result = CSz("v3"); } break;
-      case DataType_v3_u8: { Result = CSz("u8"); } break;
+                  case DataType_Undefinded: { Result = CSz("Undefinded"); } break;
+
+            case DataType_v3: { Result = CSz("v3"); } break;
+
+            case DataType_v3_u8: { Result = CSz("u8"); } break;
+
 
 
       
@@ -54,9 +60,12 @@ ToString(data_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case DataType_Undefinded: { Result = CSz("DataType_Undefinded"); } break;
-    case DataType_v3: { Result = CSz("DataType_v3"); } break;
-    case DataType_v3_u8: { Result = CSz("DataType_v3_u8"); } break;
+            case DataType_Undefinded: { Result = CSz("DataType_Undefinded"); } break;
+
+        case DataType_v3: { Result = CSz("DataType_v3"); } break;
+
+        case DataType_v3_u8: { Result = CSz("DataType_v3_u8"); } break;
+
 
 
     

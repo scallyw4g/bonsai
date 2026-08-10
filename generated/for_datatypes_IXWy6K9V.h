@@ -9,6 +9,7 @@
 
 
 
+
 link_internal b32
 poof()
 InitializeLightingRenderGroup
@@ -810,6 +811,8 @@ UseShader( lighting_render_group *Element )
 
 
 
+
+
 link_internal b32
 poof()
 InitializeTerrainDecorationRenderContext
@@ -1477,6 +1480,7 @@ UseShader( world_edit_render_context *Element )
 
 
 
+
 link_internal b32
 poof(@async @render)
 InitializeEasingFunctionVisualizerRenderPass
@@ -1955,6 +1959,7 @@ UseShader( bloom_upsample_shader *Element )
 {
   UseRenderPass_bloom_upsample_shader(Element);
 }
+
 
 
 

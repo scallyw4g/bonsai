@@ -2,20 +2,27 @@
 // src/engine/editor.h:153:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(voxel_rule_direction Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case VoxelRuleDir_PosX:
-    case VoxelRuleDir_NegX:
-    case VoxelRuleDir_PosY:
-    case VoxelRuleDir_NegY:
-    case VoxelRuleDir_PosZ:
-    case VoxelRuleDir_NegZ:
-    case VoxelRuleDir_Count:
+            case VoxelRuleDir_PosX:
+
+        case VoxelRuleDir_NegX:
+
+        case VoxelRuleDir_PosY:
+
+        case VoxelRuleDir_NegY:
+
+        case VoxelRuleDir_PosZ:
+
+        case VoxelRuleDir_NegZ:
+
+        case VoxelRuleDir_Count:
+
 
     {
       Result = True;
@@ -34,13 +41,20 @@ ToStringPrefixless(voxel_rule_direction Type)
   {
     switch (Type)
     {
-            case VoxelRuleDir_PosX: { Result = CSz("PosX"); } break;
-      case VoxelRuleDir_NegX: { Result = CSz("NegX"); } break;
-      case VoxelRuleDir_PosY: { Result = CSz("PosY"); } break;
-      case VoxelRuleDir_NegY: { Result = CSz("NegY"); } break;
-      case VoxelRuleDir_PosZ: { Result = CSz("PosZ"); } break;
-      case VoxelRuleDir_NegZ: { Result = CSz("NegZ"); } break;
-      case VoxelRuleDir_Count: { Result = CSz("Count"); } break;
+                  case VoxelRuleDir_PosX: { Result = CSz("PosX"); } break;
+
+            case VoxelRuleDir_NegX: { Result = CSz("NegX"); } break;
+
+            case VoxelRuleDir_PosY: { Result = CSz("PosY"); } break;
+
+            case VoxelRuleDir_NegY: { Result = CSz("NegY"); } break;
+
+            case VoxelRuleDir_PosZ: { Result = CSz("PosZ"); } break;
+
+            case VoxelRuleDir_NegZ: { Result = CSz("NegZ"); } break;
+
+            case VoxelRuleDir_Count: { Result = CSz("Count"); } break;
+
 
 
       
@@ -62,13 +76,20 @@ ToString(voxel_rule_direction Type)
   counted_string Result = {};
   switch (Type)
   {
-        case VoxelRuleDir_PosX: { Result = CSz("VoxelRuleDir_PosX"); } break;
-    case VoxelRuleDir_NegX: { Result = CSz("VoxelRuleDir_NegX"); } break;
-    case VoxelRuleDir_PosY: { Result = CSz("VoxelRuleDir_PosY"); } break;
-    case VoxelRuleDir_NegY: { Result = CSz("VoxelRuleDir_NegY"); } break;
-    case VoxelRuleDir_PosZ: { Result = CSz("VoxelRuleDir_PosZ"); } break;
-    case VoxelRuleDir_NegZ: { Result = CSz("VoxelRuleDir_NegZ"); } break;
-    case VoxelRuleDir_Count: { Result = CSz("VoxelRuleDir_Count"); } break;
+            case VoxelRuleDir_PosX: { Result = CSz("VoxelRuleDir_PosX"); } break;
+
+        case VoxelRuleDir_NegX: { Result = CSz("VoxelRuleDir_NegX"); } break;
+
+        case VoxelRuleDir_PosY: { Result = CSz("VoxelRuleDir_PosY"); } break;
+
+        case VoxelRuleDir_NegY: { Result = CSz("VoxelRuleDir_NegY"); } break;
+
+        case VoxelRuleDir_PosZ: { Result = CSz("VoxelRuleDir_PosZ"); } break;
+
+        case VoxelRuleDir_NegZ: { Result = CSz("VoxelRuleDir_NegZ"); } break;
+
+        case VoxelRuleDir_Count: { Result = CSz("VoxelRuleDir_Count"); } break;
+
 
 
     

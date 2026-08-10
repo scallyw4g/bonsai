@@ -9,6 +9,7 @@
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, easing_function *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -3506,6 +3507,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, white_noise_params *Element, 
   }
 
 }
+
+
 
 
 
@@ -13330,6 +13333,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_chord *Element, cs Nam
   }
 
 }
+
 
 
 
@@ -23871,6 +23875,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader *Element, cs Name, u32
   }
 
 }
+
 
 
 

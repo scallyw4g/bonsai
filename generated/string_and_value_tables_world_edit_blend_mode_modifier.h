@@ -2,18 +2,23 @@
 // src/engine/editor.h:1251:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(world_edit_blend_mode_modifier Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case WorldEdit_Modifier_None:
-    case WorldEdit_ValueModifier_ClampPos:
-    case WorldEdit_ValueModifier_ClampNeg:
-    case WorldEdit_ValueModifier_Threshold:
-    case WorldEdit_ColorModifier_Discard:
+            case WorldEdit_Modifier_None:
+
+        case WorldEdit_ValueModifier_ClampPos:
+
+        case WorldEdit_ValueModifier_ClampNeg:
+
+        case WorldEdit_ValueModifier_Threshold:
+
+        case WorldEdit_ColorModifier_Discard:
+
 
     {
       Result = True;
@@ -32,11 +37,16 @@ ToStringPrefixless(world_edit_blend_mode_modifier Type)
   {
     switch (Type)
     {
-            case WorldEdit_Modifier_None: { Result = CSz("None"); } break;
-      case WorldEdit_ValueModifier_ClampPos: { Result = CSz("ClampPos"); } break;
-      case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
-      case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
-      case WorldEdit_ColorModifier_Discard: { Result = CSz("Discard"); } break;
+                  case WorldEdit_Modifier_None: { Result = CSz("None"); } break;
+
+            case WorldEdit_ValueModifier_ClampPos: { Result = CSz("ClampPos"); } break;
+
+            case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("ClampNeg"); } break;
+
+            case WorldEdit_ValueModifier_Threshold: { Result = CSz("Threshold"); } break;
+
+            case WorldEdit_ColorModifier_Discard: { Result = CSz("Discard"); } break;
+
 
 
             // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -87,11 +97,16 @@ ToString(world_edit_blend_mode_modifier Type)
   counted_string Result = {};
   switch (Type)
   {
-        case WorldEdit_Modifier_None: { Result = CSz("WorldEdit_Modifier_None"); } break;
-    case WorldEdit_ValueModifier_ClampPos: { Result = CSz("WorldEdit_ValueModifier_ClampPos"); } break;
-    case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
-    case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
-    case WorldEdit_ColorModifier_Discard: { Result = CSz("WorldEdit_ColorModifier_Discard"); } break;
+            case WorldEdit_Modifier_None: { Result = CSz("WorldEdit_Modifier_None"); } break;
+
+        case WorldEdit_ValueModifier_ClampPos: { Result = CSz("WorldEdit_ValueModifier_ClampPos"); } break;
+
+        case WorldEdit_ValueModifier_ClampNeg: { Result = CSz("WorldEdit_ValueModifier_ClampNeg"); } break;
+
+        case WorldEdit_ValueModifier_Threshold: { Result = CSz("WorldEdit_ValueModifier_Threshold"); } break;
+
+        case WorldEdit_ColorModifier_Discard: { Result = CSz("WorldEdit_ColorModifier_Discard"); } break;
+
 
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,

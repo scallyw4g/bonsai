@@ -2,23 +2,33 @@
 // src/engine/editor.h:1268:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(world_edit_blend_mode Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case WorldEdit_Mode_Union:
-    case WorldEdit_Mode_Intersection:
-    case WorldEdit_Mode_Difference:
-    case WorldEdit_Mode_SmoothUnion:
-    case WorldEdit_Mode_SmoothIntersection:
-    case WorldEdit_Mode_SmoothDifference:
-    case WorldEdit_Mode_Additive:
-    case WorldEdit_Mode_Subtractive:
-    case WorldEdit_Mode_Multiply:
-    case WorldEdit_Mode_Disabled:
+            case WorldEdit_Mode_Union:
+
+        case WorldEdit_Mode_Intersection:
+
+        case WorldEdit_Mode_Difference:
+
+        case WorldEdit_Mode_SmoothUnion:
+
+        case WorldEdit_Mode_SmoothIntersection:
+
+        case WorldEdit_Mode_SmoothDifference:
+
+        case WorldEdit_Mode_Additive:
+
+        case WorldEdit_Mode_Subtractive:
+
+        case WorldEdit_Mode_Multiply:
+
+        case WorldEdit_Mode_Disabled:
+
 
     {
       Result = True;
@@ -37,16 +47,26 @@ ToStringPrefixless(world_edit_blend_mode Type)
   {
     switch (Type)
     {
-            case WorldEdit_Mode_Union: { Result = CSz("Union"); } break;
-      case WorldEdit_Mode_Intersection: { Result = CSz("Intersection"); } break;
-      case WorldEdit_Mode_Difference: { Result = CSz("Difference"); } break;
-      case WorldEdit_Mode_SmoothUnion: { Result = CSz("SmoothUnion"); } break;
-      case WorldEdit_Mode_SmoothIntersection: { Result = CSz("SmoothIntersection"); } break;
-      case WorldEdit_Mode_SmoothDifference: { Result = CSz("SmoothDifference"); } break;
-      case WorldEdit_Mode_Additive: { Result = CSz("Additive"); } break;
-      case WorldEdit_Mode_Subtractive: { Result = CSz("Subtractive"); } break;
-      case WorldEdit_Mode_Multiply: { Result = CSz("Multiply"); } break;
-      case WorldEdit_Mode_Disabled: { Result = CSz("Disabled"); } break;
+                  case WorldEdit_Mode_Union: { Result = CSz("Union"); } break;
+
+            case WorldEdit_Mode_Intersection: { Result = CSz("Intersection"); } break;
+
+            case WorldEdit_Mode_Difference: { Result = CSz("Difference"); } break;
+
+            case WorldEdit_Mode_SmoothUnion: { Result = CSz("SmoothUnion"); } break;
+
+            case WorldEdit_Mode_SmoothIntersection: { Result = CSz("SmoothIntersection"); } break;
+
+            case WorldEdit_Mode_SmoothDifference: { Result = CSz("SmoothDifference"); } break;
+
+            case WorldEdit_Mode_Additive: { Result = CSz("Additive"); } break;
+
+            case WorldEdit_Mode_Subtractive: { Result = CSz("Subtractive"); } break;
+
+            case WorldEdit_Mode_Multiply: { Result = CSz("Multiply"); } break;
+
+            case WorldEdit_Mode_Disabled: { Result = CSz("Disabled"); } break;
+
 
 
       
@@ -68,16 +88,26 @@ ToString(world_edit_blend_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case WorldEdit_Mode_Union: { Result = CSz("WorldEdit_Mode_Union"); } break;
-    case WorldEdit_Mode_Intersection: { Result = CSz("WorldEdit_Mode_Intersection"); } break;
-    case WorldEdit_Mode_Difference: { Result = CSz("WorldEdit_Mode_Difference"); } break;
-    case WorldEdit_Mode_SmoothUnion: { Result = CSz("WorldEdit_Mode_SmoothUnion"); } break;
-    case WorldEdit_Mode_SmoothIntersection: { Result = CSz("WorldEdit_Mode_SmoothIntersection"); } break;
-    case WorldEdit_Mode_SmoothDifference: { Result = CSz("WorldEdit_Mode_SmoothDifference"); } break;
-    case WorldEdit_Mode_Additive: { Result = CSz("WorldEdit_Mode_Additive"); } break;
-    case WorldEdit_Mode_Subtractive: { Result = CSz("WorldEdit_Mode_Subtractive"); } break;
-    case WorldEdit_Mode_Multiply: { Result = CSz("WorldEdit_Mode_Multiply"); } break;
-    case WorldEdit_Mode_Disabled: { Result = CSz("WorldEdit_Mode_Disabled"); } break;
+            case WorldEdit_Mode_Union: { Result = CSz("WorldEdit_Mode_Union"); } break;
+
+        case WorldEdit_Mode_Intersection: { Result = CSz("WorldEdit_Mode_Intersection"); } break;
+
+        case WorldEdit_Mode_Difference: { Result = CSz("WorldEdit_Mode_Difference"); } break;
+
+        case WorldEdit_Mode_SmoothUnion: { Result = CSz("WorldEdit_Mode_SmoothUnion"); } break;
+
+        case WorldEdit_Mode_SmoothIntersection: { Result = CSz("WorldEdit_Mode_SmoothIntersection"); } break;
+
+        case WorldEdit_Mode_SmoothDifference: { Result = CSz("WorldEdit_Mode_SmoothDifference"); } break;
+
+        case WorldEdit_Mode_Additive: { Result = CSz("WorldEdit_Mode_Additive"); } break;
+
+        case WorldEdit_Mode_Subtractive: { Result = CSz("WorldEdit_Mode_Subtractive"); } break;
+
+        case WorldEdit_Mode_Multiply: { Result = CSz("WorldEdit_Mode_Multiply"); } break;
+
+        case WorldEdit_Mode_Disabled: { Result = CSz("WorldEdit_Mode_Disabled"); } break;
+
 
 
     

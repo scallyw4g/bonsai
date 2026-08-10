@@ -2,15 +2,17 @@
 // src/engine/editor.h:1949:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(prefab_spawn_callback Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case PrefabSpawnCallback_None:
-    case PrefabSpawnCallback_DefaultPrefabSpawnCallback:
+            case PrefabSpawnCallback_None:
+
+        case PrefabSpawnCallback_DefaultPrefabSpawnCallback:
+
 
     {
       Result = True;
@@ -29,8 +31,10 @@ ToStringPrefixless(prefab_spawn_callback Type)
   {
     switch (Type)
     {
-            case PrefabSpawnCallback_None: { Result = CSz("None"); } break;
-      case PrefabSpawnCallback_DefaultPrefabSpawnCallback: { Result = CSz("DefaultPrefabSpawnCallback"); } break;
+                  case PrefabSpawnCallback_None: { Result = CSz("None"); } break;
+
+            case PrefabSpawnCallback_DefaultPrefabSpawnCallback: { Result = CSz("DefaultPrefabSpawnCallback"); } break;
+
 
 
       
@@ -52,8 +56,10 @@ ToString(prefab_spawn_callback Type)
   counted_string Result = {};
   switch (Type)
   {
-        case PrefabSpawnCallback_None: { Result = CSz("PrefabSpawnCallback_None"); } break;
-    case PrefabSpawnCallback_DefaultPrefabSpawnCallback: { Result = CSz("PrefabSpawnCallback_DefaultPrefabSpawnCallback"); } break;
+            case PrefabSpawnCallback_None: { Result = CSz("PrefabSpawnCallback_None"); } break;
+
+        case PrefabSpawnCallback_DefaultPrefabSpawnCallback: { Result = CSz("PrefabSpawnCallback_DefaultPrefabSpawnCallback"); } break;
+
 
 
     

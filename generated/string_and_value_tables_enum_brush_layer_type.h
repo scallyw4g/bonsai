@@ -2,16 +2,19 @@
 // src/engine/editor.h:1556:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(brush_layer_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case BrushLayerType_Noise:
-    case BrushLayerType_Shape:
-    case BrushLayerType_Brush:
+            case BrushLayerType_Noise:
+
+        case BrushLayerType_Shape:
+
+        case BrushLayerType_Brush:
+
 
     {
       Result = True;
@@ -30,9 +33,12 @@ ToStringPrefixless(brush_layer_type Type)
   {
     switch (Type)
     {
-            case BrushLayerType_Noise: { Result = CSz("Noise"); } break;
-      case BrushLayerType_Shape: { Result = CSz("Shape"); } break;
-      case BrushLayerType_Brush: { Result = CSz("Brush"); } break;
+                  case BrushLayerType_Noise: { Result = CSz("Noise"); } break;
+
+            case BrushLayerType_Shape: { Result = CSz("Shape"); } break;
+
+            case BrushLayerType_Brush: { Result = CSz("Brush"); } break;
+
 
 
       
@@ -54,9 +60,12 @@ ToString(brush_layer_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case BrushLayerType_Noise: { Result = CSz("BrushLayerType_Noise"); } break;
-    case BrushLayerType_Shape: { Result = CSz("BrushLayerType_Shape"); } break;
-    case BrushLayerType_Brush: { Result = CSz("BrushLayerType_Brush"); } break;
+            case BrushLayerType_Noise: { Result = CSz("BrushLayerType_Noise"); } break;
+
+        case BrushLayerType_Shape: { Result = CSz("BrushLayerType_Shape"); } break;
+
+        case BrushLayerType_Brush: { Result = CSz("BrushLayerType_Brush"); } break;
+
 
 
     

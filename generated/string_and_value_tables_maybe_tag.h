@@ -2,15 +2,17 @@
 // src/engine/editor.h:1039:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(maybe_tag Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case Maybe_No:
-    case Maybe_Yes:
+            case Maybe_No:
+
+        case Maybe_Yes:
+
 
     {
       Result = True;
@@ -29,8 +31,10 @@ ToStringPrefixless(maybe_tag Type)
   {
     switch (Type)
     {
-            case Maybe_No: { Result = CSz("No"); } break;
-      case Maybe_Yes: { Result = CSz("Yes"); } break;
+                  case Maybe_No: { Result = CSz("No"); } break;
+
+            case Maybe_Yes: { Result = CSz("Yes"); } break;
+
 
 
       
@@ -52,8 +56,10 @@ ToString(maybe_tag Type)
   counted_string Result = {};
   switch (Type)
   {
-        case Maybe_No: { Result = CSz("Maybe_No"); } break;
-    case Maybe_Yes: { Result = CSz("Maybe_Yes"); } break;
+            case Maybe_No: { Result = CSz("Maybe_No"); } break;
+
+        case Maybe_Yes: { Result = CSz("Maybe_Yes"); } break;
+
 
 
     

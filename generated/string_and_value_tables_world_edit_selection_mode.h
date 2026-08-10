@@ -2,19 +2,25 @@
 // src/engine/editor.h:1131:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(world_edit_selection_mode Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case SelectionMode_Noop:
-    case SelectionMode_ResizeSingleLinearAxis:
-    case SelectionMode_ResizeBothLinearAxies:
-    case SelectionMode_ResizeAllAxies:
-    case SelectionMode_TranslateLinear:
-    case SelectionMode_TranslatePlanar:
+            case SelectionMode_Noop:
+
+        case SelectionMode_ResizeSingleLinearAxis:
+
+        case SelectionMode_ResizeBothLinearAxies:
+
+        case SelectionMode_ResizeAllAxies:
+
+        case SelectionMode_TranslateLinear:
+
+        case SelectionMode_TranslatePlanar:
+
 
     {
       Result = True;
@@ -33,12 +39,18 @@ ToStringPrefixless(world_edit_selection_mode Type)
   {
     switch (Type)
     {
-            case SelectionMode_Noop: { Result = CSz("Noop"); } break;
-      case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("ResizeSingleLinearAxis"); } break;
-      case SelectionMode_ResizeBothLinearAxies: { Result = CSz("ResizeBothLinearAxies"); } break;
-      case SelectionMode_ResizeAllAxies: { Result = CSz("ResizeAllAxies"); } break;
-      case SelectionMode_TranslateLinear: { Result = CSz("TranslateLinear"); } break;
-      case SelectionMode_TranslatePlanar: { Result = CSz("TranslatePlanar"); } break;
+                  case SelectionMode_Noop: { Result = CSz("Noop"); } break;
+
+            case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("ResizeSingleLinearAxis"); } break;
+
+            case SelectionMode_ResizeBothLinearAxies: { Result = CSz("ResizeBothLinearAxies"); } break;
+
+            case SelectionMode_ResizeAllAxies: { Result = CSz("ResizeAllAxies"); } break;
+
+            case SelectionMode_TranslateLinear: { Result = CSz("TranslateLinear"); } break;
+
+            case SelectionMode_TranslatePlanar: { Result = CSz("TranslatePlanar"); } break;
+
 
 
       
@@ -60,12 +72,18 @@ ToString(world_edit_selection_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case SelectionMode_Noop: { Result = CSz("SelectionMode_Noop"); } break;
-    case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("SelectionMode_ResizeSingleLinearAxis"); } break;
-    case SelectionMode_ResizeBothLinearAxies: { Result = CSz("SelectionMode_ResizeBothLinearAxies"); } break;
-    case SelectionMode_ResizeAllAxies: { Result = CSz("SelectionMode_ResizeAllAxies"); } break;
-    case SelectionMode_TranslateLinear: { Result = CSz("SelectionMode_TranslateLinear"); } break;
-    case SelectionMode_TranslatePlanar: { Result = CSz("SelectionMode_TranslatePlanar"); } break;
+            case SelectionMode_Noop: { Result = CSz("SelectionMode_Noop"); } break;
+
+        case SelectionMode_ResizeSingleLinearAxis: { Result = CSz("SelectionMode_ResizeSingleLinearAxis"); } break;
+
+        case SelectionMode_ResizeBothLinearAxies: { Result = CSz("SelectionMode_ResizeBothLinearAxies"); } break;
+
+        case SelectionMode_ResizeAllAxies: { Result = CSz("SelectionMode_ResizeAllAxies"); } break;
+
+        case SelectionMode_TranslateLinear: { Result = CSz("SelectionMode_TranslateLinear"); } break;
+
+        case SelectionMode_TranslatePlanar: { Result = CSz("SelectionMode_TranslatePlanar"); } break;
+
 
 
     

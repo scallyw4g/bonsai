@@ -2,19 +2,25 @@
 // src/engine/editor.cpp:377:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(tone_mapping_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case ToneMappingType_None:
-    case ToneMappingType_Reinhard:
-    case ToneMappingType_Exposure:
-    case ToneMappingType_AGX:
-    case ToneMappingType_AGX_Sepia:
-    case ToneMappingType_AGX_Punchy:
+            case ToneMappingType_None:
+
+        case ToneMappingType_Reinhard:
+
+        case ToneMappingType_Exposure:
+
+        case ToneMappingType_AGX:
+
+        case ToneMappingType_AGX_Sepia:
+
+        case ToneMappingType_AGX_Punchy:
+
 
     {
       Result = True;
@@ -33,12 +39,18 @@ ToStringPrefixless(tone_mapping_type Type)
   {
     switch (Type)
     {
-            case ToneMappingType_None: { Result = CSz("None"); } break;
-      case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
-      case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
-      case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
-      case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
-      case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
+                  case ToneMappingType_None: { Result = CSz("None"); } break;
+
+            case ToneMappingType_Reinhard: { Result = CSz("Reinhard"); } break;
+
+            case ToneMappingType_Exposure: { Result = CSz("Exposure"); } break;
+
+            case ToneMappingType_AGX: { Result = CSz("AGX"); } break;
+
+            case ToneMappingType_AGX_Sepia: { Result = CSz("Sepia"); } break;
+
+            case ToneMappingType_AGX_Punchy: { Result = CSz("Punchy"); } break;
+
 
 
       
@@ -60,12 +72,18 @@ ToString(tone_mapping_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case ToneMappingType_None: { Result = CSz("ToneMappingType_None"); } break;
-    case ToneMappingType_Reinhard: { Result = CSz("ToneMappingType_Reinhard"); } break;
-    case ToneMappingType_Exposure: { Result = CSz("ToneMappingType_Exposure"); } break;
-    case ToneMappingType_AGX: { Result = CSz("ToneMappingType_AGX"); } break;
-    case ToneMappingType_AGX_Sepia: { Result = CSz("ToneMappingType_AGX_Sepia"); } break;
-    case ToneMappingType_AGX_Punchy: { Result = CSz("ToneMappingType_AGX_Punchy"); } break;
+            case ToneMappingType_None: { Result = CSz("ToneMappingType_None"); } break;
+
+        case ToneMappingType_Reinhard: { Result = CSz("ToneMappingType_Reinhard"); } break;
+
+        case ToneMappingType_Exposure: { Result = CSz("ToneMappingType_Exposure"); } break;
+
+        case ToneMappingType_AGX: { Result = CSz("ToneMappingType_AGX"); } break;
+
+        case ToneMappingType_AGX_Sepia: { Result = CSz("ToneMappingType_AGX_Sepia"); } break;
+
+        case ToneMappingType_AGX_Punchy: { Result = CSz("ToneMappingType_AGX_Punchy"); } break;
+
 
 
     

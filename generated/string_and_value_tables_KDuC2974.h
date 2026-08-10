@@ -2,15 +2,17 @@
 // src/engine/editor.h:7:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(brush_window_mode Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case BrushWindowMode_Details:
-    case BrushWindowMode_Select:
+            case BrushWindowMode_Details:
+
+        case BrushWindowMode_Select:
+
 
     {
       Result = True;
@@ -29,8 +31,10 @@ ToStringPrefixless(brush_window_mode Type)
   {
     switch (Type)
     {
-            case BrushWindowMode_Details: { Result = CSz("Details"); } break;
-      case BrushWindowMode_Select: { Result = CSz("Select"); } break;
+                  case BrushWindowMode_Details: { Result = CSz("Details"); } break;
+
+            case BrushWindowMode_Select: { Result = CSz("Select"); } break;
+
 
 
       
@@ -52,8 +56,10 @@ ToString(brush_window_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case BrushWindowMode_Details: { Result = CSz("BrushWindowMode_Details"); } break;
-    case BrushWindowMode_Select: { Result = CSz("BrushWindowMode_Select"); } break;
+            case BrushWindowMode_Details: { Result = CSz("BrushWindowMode_Details"); } break;
+
+        case BrushWindowMode_Select: { Result = CSz("BrushWindowMode_Select"); } break;
+
 
 
     

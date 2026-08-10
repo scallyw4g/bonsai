@@ -2,18 +2,23 @@
 // src/engine/work_queue.h:204:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(async_function_call_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case type_check_occlusion_query_async_params:
-    case type_finalize_shit_and_fuckin_do_stuff_async_params:
-    case type_initialize_easing_function_visualizer_render_pass_async_params:
-    case type_render_to_texture_async_params:
-    case type_compile_shader_pair_async_params:
+            case type_check_occlusion_query_async_params:
+
+        case type_finalize_shit_and_fuckin_do_stuff_async_params:
+
+        case type_initialize_easing_function_visualizer_render_pass_async_params:
+
+        case type_render_to_texture_async_params:
+
+        case type_compile_shader_pair_async_params:
+
 
     {
       Result = True;
@@ -32,11 +37,16 @@ ToStringPrefixless(async_function_call_type Type)
   {
     switch (Type)
     {
-            case type_check_occlusion_query_async_params: { Result = CSz("params"); } break;
-      case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("params"); } break;
-      case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("params"); } break;
-      case type_render_to_texture_async_params: { Result = CSz("params"); } break;
-      case type_compile_shader_pair_async_params: { Result = CSz("params"); } break;
+                  case type_check_occlusion_query_async_params: { Result = CSz("params"); } break;
+
+            case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("params"); } break;
+
+            case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("params"); } break;
+
+            case type_render_to_texture_async_params: { Result = CSz("params"); } break;
+
+            case type_compile_shader_pair_async_params: { Result = CSz("params"); } break;
+
 
 
       
@@ -58,11 +68,16 @@ ToString(async_function_call_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case type_check_occlusion_query_async_params: { Result = CSz("type_check_occlusion_query_async_params"); } break;
-    case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("type_finalize_shit_and_fuckin_do_stuff_async_params"); } break;
-    case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("type_initialize_easing_function_visualizer_render_pass_async_params"); } break;
-    case type_render_to_texture_async_params: { Result = CSz("type_render_to_texture_async_params"); } break;
-    case type_compile_shader_pair_async_params: { Result = CSz("type_compile_shader_pair_async_params"); } break;
+            case type_check_occlusion_query_async_params: { Result = CSz("type_check_occlusion_query_async_params"); } break;
+
+        case type_finalize_shit_and_fuckin_do_stuff_async_params: { Result = CSz("type_finalize_shit_and_fuckin_do_stuff_async_params"); } break;
+
+        case type_initialize_easing_function_visualizer_render_pass_async_params: { Result = CSz("type_initialize_easing_function_visualizer_render_pass_async_params"); } break;
+
+        case type_render_to_texture_async_params: { Result = CSz("type_render_to_texture_async_params"); } break;
+
+        case type_compile_shader_pair_async_params: { Result = CSz("type_compile_shader_pair_async_params"); } break;
+
 
 
     

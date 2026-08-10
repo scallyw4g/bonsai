@@ -2,17 +2,21 @@
 // src/engine/editor.h:1095:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(brush_noise_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case NoiseType_Perlin:
-    case NoiseType_Voronoi:
-    case NoiseType_White:
-    case NoiseType_RectLattice:
+            case NoiseType_Perlin:
+
+        case NoiseType_Voronoi:
+
+        case NoiseType_White:
+
+        case NoiseType_RectLattice:
+
 
     {
       Result = True;
@@ -31,10 +35,14 @@ ToStringPrefixless(brush_noise_type Type)
   {
     switch (Type)
     {
-            case NoiseType_Perlin: { Result = CSz("Perlin"); } break;
-      case NoiseType_Voronoi: { Result = CSz("Voronoi"); } break;
-      case NoiseType_White: { Result = CSz("White"); } break;
-      case NoiseType_RectLattice: { Result = CSz("RectLattice"); } break;
+                  case NoiseType_Perlin: { Result = CSz("Perlin"); } break;
+
+            case NoiseType_Voronoi: { Result = CSz("Voronoi"); } break;
+
+            case NoiseType_White: { Result = CSz("White"); } break;
+
+            case NoiseType_RectLattice: { Result = CSz("RectLattice"); } break;
+
 
 
       
@@ -56,10 +64,14 @@ ToString(brush_noise_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case NoiseType_Perlin: { Result = CSz("NoiseType_Perlin"); } break;
-    case NoiseType_Voronoi: { Result = CSz("NoiseType_Voronoi"); } break;
-    case NoiseType_White: { Result = CSz("NoiseType_White"); } break;
-    case NoiseType_RectLattice: { Result = CSz("NoiseType_RectLattice"); } break;
+            case NoiseType_Perlin: { Result = CSz("NoiseType_Perlin"); } break;
+
+        case NoiseType_Voronoi: { Result = CSz("NoiseType_Voronoi"); } break;
+
+        case NoiseType_White: { Result = CSz("NoiseType_White"); } break;
+
+        case NoiseType_RectLattice: { Result = CSz("NoiseType_RectLattice"); } break;
+
 
 
     

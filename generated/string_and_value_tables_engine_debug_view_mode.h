@@ -2,20 +2,27 @@
 // src/engine/editor.cpp:380:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(engine_debug_view_mode Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case EngineDebugViewMode_Level:
-    case EngineDebugViewMode_WorldEdit:
-    case EngineDebugViewMode_Entities:
-    case EngineDebugViewMode_WorldChunks:
-    case EngineDebugViewMode_Textures:
-    case EngineDebugViewMode_RenderSettings:
-    case EngineDebugViewMode_EngineDebug:
+            case EngineDebugViewMode_Level:
+
+        case EngineDebugViewMode_WorldEdit:
+
+        case EngineDebugViewMode_Entities:
+
+        case EngineDebugViewMode_WorldChunks:
+
+        case EngineDebugViewMode_Textures:
+
+        case EngineDebugViewMode_RenderSettings:
+
+        case EngineDebugViewMode_EngineDebug:
+
 
     {
       Result = True;
@@ -34,13 +41,20 @@ ToStringPrefixless(engine_debug_view_mode Type)
   {
     switch (Type)
     {
-            case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
-      case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
-      case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
-      case EngineDebugViewMode_WorldChunks: { Result = CSz("WorldChunks"); } break;
-      case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
-      case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
-      case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
+                  case EngineDebugViewMode_Level: { Result = CSz("Level"); } break;
+
+            case EngineDebugViewMode_WorldEdit: { Result = CSz("WorldEdit"); } break;
+
+            case EngineDebugViewMode_Entities: { Result = CSz("Entities"); } break;
+
+            case EngineDebugViewMode_WorldChunks: { Result = CSz("WorldChunks"); } break;
+
+            case EngineDebugViewMode_Textures: { Result = CSz("Textures"); } break;
+
+            case EngineDebugViewMode_RenderSettings: { Result = CSz("RenderSettings"); } break;
+
+            case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebug"); } break;
+
 
 
             // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -91,13 +105,20 @@ ToString(engine_debug_view_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case EngineDebugViewMode_Level: { Result = CSz("EngineDebugViewMode_Level"); } break;
-    case EngineDebugViewMode_WorldEdit: { Result = CSz("EngineDebugViewMode_WorldEdit"); } break;
-    case EngineDebugViewMode_Entities: { Result = CSz("EngineDebugViewMode_Entities"); } break;
-    case EngineDebugViewMode_WorldChunks: { Result = CSz("EngineDebugViewMode_WorldChunks"); } break;
-    case EngineDebugViewMode_Textures: { Result = CSz("EngineDebugViewMode_Textures"); } break;
-    case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
-    case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
+            case EngineDebugViewMode_Level: { Result = CSz("EngineDebugViewMode_Level"); } break;
+
+        case EngineDebugViewMode_WorldEdit: { Result = CSz("EngineDebugViewMode_WorldEdit"); } break;
+
+        case EngineDebugViewMode_Entities: { Result = CSz("EngineDebugViewMode_Entities"); } break;
+
+        case EngineDebugViewMode_WorldChunks: { Result = CSz("EngineDebugViewMode_WorldChunks"); } break;
+
+        case EngineDebugViewMode_Textures: { Result = CSz("EngineDebugViewMode_Textures"); } break;
+
+        case EngineDebugViewMode_RenderSettings: { Result = CSz("EngineDebugViewMode_RenderSettings"); } break;
+
+        case EngineDebugViewMode_EngineDebug: { Result = CSz("EngineDebugViewMode_EngineDebug"); } break;
+
 
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,

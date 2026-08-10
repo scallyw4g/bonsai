@@ -2,20 +2,27 @@
 // src/engine/world_chunk.h:85:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(chunk_flag Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case Chunk_Uninitialized:
-    case Chunk_Queued:
-    case Chunk_VoxelsInitialized:
-    case Chunk_Garbage:
-    case Chunk_Deallocate:
-    case Chunk_Freelist:
-    case Chunk_SpawnTriggersRun:
+            case Chunk_Uninitialized:
+
+        case Chunk_Queued:
+
+        case Chunk_VoxelsInitialized:
+
+        case Chunk_Garbage:
+
+        case Chunk_Deallocate:
+
+        case Chunk_Freelist:
+
+        case Chunk_SpawnTriggersRun:
+
 
     {
       Result = True;
@@ -34,13 +41,20 @@ ToStringPrefixless(chunk_flag Type)
   {
     switch (Type)
     {
-            case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
-      case Chunk_Queued: { Result = CSz("Queued"); } break;
-      case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
-      case Chunk_Garbage: { Result = CSz("Garbage"); } break;
-      case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
-      case Chunk_Freelist: { Result = CSz("Freelist"); } break;
-      case Chunk_SpawnTriggersRun: { Result = CSz("SpawnTriggersRun"); } break;
+                  case Chunk_Uninitialized: { Result = CSz("Uninitialized"); } break;
+
+            case Chunk_Queued: { Result = CSz("Queued"); } break;
+
+            case Chunk_VoxelsInitialized: { Result = CSz("VoxelsInitialized"); } break;
+
+            case Chunk_Garbage: { Result = CSz("Garbage"); } break;
+
+            case Chunk_Deallocate: { Result = CSz("Deallocate"); } break;
+
+            case Chunk_Freelist: { Result = CSz("Freelist"); } break;
+
+            case Chunk_SpawnTriggersRun: { Result = CSz("SpawnTriggersRun"); } break;
+
 
 
             // TODO(Jesse): This is pretty barf and we could do it in a single allocation,
@@ -91,13 +105,20 @@ ToString(chunk_flag Type)
   counted_string Result = {};
   switch (Type)
   {
-        case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
-    case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
-    case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
-    case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
-    case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
-    case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
-    case Chunk_SpawnTriggersRun: { Result = CSz("Chunk_SpawnTriggersRun"); } break;
+            case Chunk_Uninitialized: { Result = CSz("Chunk_Uninitialized"); } break;
+
+        case Chunk_Queued: { Result = CSz("Chunk_Queued"); } break;
+
+        case Chunk_VoxelsInitialized: { Result = CSz("Chunk_VoxelsInitialized"); } break;
+
+        case Chunk_Garbage: { Result = CSz("Chunk_Garbage"); } break;
+
+        case Chunk_Deallocate: { Result = CSz("Chunk_Deallocate"); } break;
+
+        case Chunk_Freelist: { Result = CSz("Chunk_Freelist"); } break;
+
+        case Chunk_SpawnTriggersRun: { Result = CSz("Chunk_SpawnTriggersRun"); } break;
+
 
 
         // TODO(Jesse): This is pretty barf and we could do it in a single allocation,

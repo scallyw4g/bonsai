@@ -1,5 +1,11 @@
 struct world_chunk;
 
+  struct render_matrix_pair
+  {
+    m4 ModelMatrix;
+    m4 NormalMatrix;
+  };
+
 
 #define GLOBAL_RENDER_SCALE_FACTOR (0.001f)
 

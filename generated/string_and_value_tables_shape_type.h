@@ -2,20 +2,27 @@
 // src/engine/editor.h:1433:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(brush_shape_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case ShapeType_Rect:
-    case ShapeType_Sphere:
-    case ShapeType_Line:
-    case ShapeType_Cylinder:
-    case ShapeType_Plane:
-    case ShapeType_Torus:
-    case ShapeType_Pyramid:
+            case ShapeType_Rect:
+
+        case ShapeType_Sphere:
+
+        case ShapeType_Line:
+
+        case ShapeType_Cylinder:
+
+        case ShapeType_Plane:
+
+        case ShapeType_Torus:
+
+        case ShapeType_Pyramid:
+
 
     {
       Result = True;
@@ -34,13 +41,20 @@ ToStringPrefixless(brush_shape_type Type)
   {
     switch (Type)
     {
-            case ShapeType_Rect: { Result = CSz("Rect"); } break;
-      case ShapeType_Sphere: { Result = CSz("Sphere"); } break;
-      case ShapeType_Line: { Result = CSz("Line"); } break;
-      case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
-      case ShapeType_Plane: { Result = CSz("Plane"); } break;
-      case ShapeType_Torus: { Result = CSz("Torus"); } break;
-      case ShapeType_Pyramid: { Result = CSz("Pyramid"); } break;
+                  case ShapeType_Rect: { Result = CSz("Rect"); } break;
+
+            case ShapeType_Sphere: { Result = CSz("Sphere"); } break;
+
+            case ShapeType_Line: { Result = CSz("Line"); } break;
+
+            case ShapeType_Cylinder: { Result = CSz("Cylinder"); } break;
+
+            case ShapeType_Plane: { Result = CSz("Plane"); } break;
+
+            case ShapeType_Torus: { Result = CSz("Torus"); } break;
+
+            case ShapeType_Pyramid: { Result = CSz("Pyramid"); } break;
+
 
 
       
@@ -62,13 +76,20 @@ ToString(brush_shape_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case ShapeType_Rect: { Result = CSz("ShapeType_Rect"); } break;
-    case ShapeType_Sphere: { Result = CSz("ShapeType_Sphere"); } break;
-    case ShapeType_Line: { Result = CSz("ShapeType_Line"); } break;
-    case ShapeType_Cylinder: { Result = CSz("ShapeType_Cylinder"); } break;
-    case ShapeType_Plane: { Result = CSz("ShapeType_Plane"); } break;
-    case ShapeType_Torus: { Result = CSz("ShapeType_Torus"); } break;
-    case ShapeType_Pyramid: { Result = CSz("ShapeType_Pyramid"); } break;
+            case ShapeType_Rect: { Result = CSz("ShapeType_Rect"); } break;
+
+        case ShapeType_Sphere: { Result = CSz("ShapeType_Sphere"); } break;
+
+        case ShapeType_Line: { Result = CSz("ShapeType_Line"); } break;
+
+        case ShapeType_Cylinder: { Result = CSz("ShapeType_Cylinder"); } break;
+
+        case ShapeType_Plane: { Result = CSz("ShapeType_Plane"); } break;
+
+        case ShapeType_Torus: { Result = CSz("ShapeType_Torus"); } break;
+
+        case ShapeType_Pyramid: { Result = CSz("ShapeType_Pyramid"); } break;
+
 
 
     

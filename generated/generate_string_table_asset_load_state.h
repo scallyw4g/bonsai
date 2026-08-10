@@ -9,11 +9,16 @@ IsValid(asset_load_state Value)
   b32 Result = False;
   switch (Value)
   {
-        case AssetLoadState_Unloaded:
-    case AssetLoadState_Allocated:
-    case AssetLoadState_Queued:
-    case AssetLoadState_Loaded:
-    case AssetLoadState_Error:
+            case AssetLoadState_Unloaded:
+
+        case AssetLoadState_Allocated:
+
+        case AssetLoadState_Queued:
+
+        case AssetLoadState_Loaded:
+
+        case AssetLoadState_Error:
+
 
     {
       Result = True;
@@ -32,11 +37,16 @@ ToStringPrefixless(asset_load_state Type)
   {
     switch (Type)
     {
-            case AssetLoadState_Unloaded: { Result = CSz("Unloaded"); } break;
-      case AssetLoadState_Allocated: { Result = CSz("Allocated"); } break;
-      case AssetLoadState_Queued: { Result = CSz("Queued"); } break;
-      case AssetLoadState_Loaded: { Result = CSz("Loaded"); } break;
-      case AssetLoadState_Error: { Result = CSz("Error"); } break;
+                  case AssetLoadState_Unloaded: { Result = CSz("Unloaded"); } break;
+
+            case AssetLoadState_Allocated: { Result = CSz("Allocated"); } break;
+
+            case AssetLoadState_Queued: { Result = CSz("Queued"); } break;
+
+            case AssetLoadState_Loaded: { Result = CSz("Loaded"); } break;
+
+            case AssetLoadState_Error: { Result = CSz("Error"); } break;
+
 
 
       
@@ -58,11 +68,16 @@ ToString(asset_load_state Type)
   counted_string Result = {};
   switch (Type)
   {
-        case AssetLoadState_Unloaded: { Result = CSz("AssetLoadState_Unloaded"); } break;
-    case AssetLoadState_Allocated: { Result = CSz("AssetLoadState_Allocated"); } break;
-    case AssetLoadState_Queued: { Result = CSz("AssetLoadState_Queued"); } break;
-    case AssetLoadState_Loaded: { Result = CSz("AssetLoadState_Loaded"); } break;
-    case AssetLoadState_Error: { Result = CSz("AssetLoadState_Error"); } break;
+            case AssetLoadState_Unloaded: { Result = CSz("AssetLoadState_Unloaded"); } break;
+
+        case AssetLoadState_Allocated: { Result = CSz("AssetLoadState_Allocated"); } break;
+
+        case AssetLoadState_Queued: { Result = CSz("AssetLoadState_Queued"); } break;
+
+        case AssetLoadState_Loaded: { Result = CSz("AssetLoadState_Loaded"); } break;
+
+        case AssetLoadState_Error: { Result = CSz("AssetLoadState_Error"); } break;
+
 
 
     

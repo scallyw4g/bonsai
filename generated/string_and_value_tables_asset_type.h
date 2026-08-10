@@ -2,17 +2,21 @@
 // src/engine/editor.cpp:575:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(asset_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case AssetType_Undefined:
-    case AssetType_Models:
-    case AssetType_Texture:
-    case AssetType_WorldChunk:
+            case AssetType_Undefined:
+
+        case AssetType_Models:
+
+        case AssetType_Texture:
+
+        case AssetType_WorldChunk:
+
 
     {
       Result = True;
@@ -31,10 +35,14 @@ ToStringPrefixless(asset_type Type)
   {
     switch (Type)
     {
-            case AssetType_Undefined: { Result = CSz("Undefined"); } break;
-      case AssetType_Models: { Result = CSz("Models"); } break;
-      case AssetType_Texture: { Result = CSz("Texture"); } break;
-      case AssetType_WorldChunk: { Result = CSz("WorldChunk"); } break;
+                  case AssetType_Undefined: { Result = CSz("Undefined"); } break;
+
+            case AssetType_Models: { Result = CSz("Models"); } break;
+
+            case AssetType_Texture: { Result = CSz("Texture"); } break;
+
+            case AssetType_WorldChunk: { Result = CSz("WorldChunk"); } break;
+
 
 
       
@@ -56,10 +64,14 @@ ToString(asset_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case AssetType_Undefined: { Result = CSz("AssetType_Undefined"); } break;
-    case AssetType_Models: { Result = CSz("AssetType_Models"); } break;
-    case AssetType_Texture: { Result = CSz("AssetType_Texture"); } break;
-    case AssetType_WorldChunk: { Result = CSz("AssetType_WorldChunk"); } break;
+            case AssetType_Undefined: { Result = CSz("AssetType_Undefined"); } break;
+
+        case AssetType_Models: { Result = CSz("AssetType_Models"); } break;
+
+        case AssetType_Texture: { Result = CSz("AssetType_Texture"); } break;
+
+        case AssetType_WorldChunk: { Result = CSz("AssetType_WorldChunk"); } break;
+
 
 
     

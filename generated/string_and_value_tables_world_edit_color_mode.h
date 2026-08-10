@@ -2,16 +2,19 @@
 // src/engine/editor.h:1274:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(world_edit_color_mode Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case WorldEditColorMode_Color:
-    case WorldEditColorMode_Texture:
-    case WorldEditColorMode_TintedTexture:
+            case WorldEditColorMode_Color:
+
+        case WorldEditColorMode_Texture:
+
+        case WorldEditColorMode_TintedTexture:
+
 
     {
       Result = True;
@@ -30,9 +33,12 @@ ToStringPrefixless(world_edit_color_mode Type)
   {
     switch (Type)
     {
-            case WorldEditColorMode_Color: { Result = CSz("Color"); } break;
-      case WorldEditColorMode_Texture: { Result = CSz("Texture"); } break;
-      case WorldEditColorMode_TintedTexture: { Result = CSz("TintedTexture"); } break;
+                  case WorldEditColorMode_Color: { Result = CSz("Color"); } break;
+
+            case WorldEditColorMode_Texture: { Result = CSz("Texture"); } break;
+
+            case WorldEditColorMode_TintedTexture: { Result = CSz("TintedTexture"); } break;
+
 
 
       
@@ -54,9 +60,12 @@ ToString(world_edit_color_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case WorldEditColorMode_Color: { Result = CSz("WorldEditColorMode_Color"); } break;
-    case WorldEditColorMode_Texture: { Result = CSz("WorldEditColorMode_Texture"); } break;
-    case WorldEditColorMode_TintedTexture: { Result = CSz("WorldEditColorMode_TintedTexture"); } break;
+            case WorldEditColorMode_Color: { Result = CSz("WorldEditColorMode_Color"); } break;
+
+        case WorldEditColorMode_Texture: { Result = CSz("WorldEditColorMode_Texture"); } break;
+
+        case WorldEditColorMode_TintedTexture: { Result = CSz("WorldEditColorMode_TintedTexture"); } break;
+
 
 
     

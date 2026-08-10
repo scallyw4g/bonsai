@@ -2,17 +2,21 @@
 // src/engine/settings.h:30:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(lighting_quality_setting Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case LightingQualitySetting_High:
-    case LightingQualitySetting_Med:
-    case LightingQualitySetting_Low:
-    case LightingQualitySetting_Off:
+            case LightingQualitySetting_High:
+
+        case LightingQualitySetting_Med:
+
+        case LightingQualitySetting_Low:
+
+        case LightingQualitySetting_Off:
+
 
     {
       Result = True;
@@ -31,10 +35,14 @@ ToStringPrefixless(lighting_quality_setting Type)
   {
     switch (Type)
     {
-            case LightingQualitySetting_High: { Result = CSz("High"); } break;
-      case LightingQualitySetting_Med: { Result = CSz("Med"); } break;
-      case LightingQualitySetting_Low: { Result = CSz("Low"); } break;
-      case LightingQualitySetting_Off: { Result = CSz("Off"); } break;
+                  case LightingQualitySetting_High: { Result = CSz("High"); } break;
+
+            case LightingQualitySetting_Med: { Result = CSz("Med"); } break;
+
+            case LightingQualitySetting_Low: { Result = CSz("Low"); } break;
+
+            case LightingQualitySetting_Off: { Result = CSz("Off"); } break;
+
 
 
       
@@ -56,10 +64,14 @@ ToString(lighting_quality_setting Type)
   counted_string Result = {};
   switch (Type)
   {
-        case LightingQualitySetting_High: { Result = CSz("LightingQualitySetting_High"); } break;
-    case LightingQualitySetting_Med: { Result = CSz("LightingQualitySetting_Med"); } break;
-    case LightingQualitySetting_Low: { Result = CSz("LightingQualitySetting_Low"); } break;
-    case LightingQualitySetting_Off: { Result = CSz("LightingQualitySetting_Off"); } break;
+            case LightingQualitySetting_High: { Result = CSz("LightingQualitySetting_High"); } break;
+
+        case LightingQualitySetting_Med: { Result = CSz("LightingQualitySetting_Med"); } break;
+
+        case LightingQualitySetting_Low: { Result = CSz("LightingQualitySetting_Low"); } break;
+
+        case LightingQualitySetting_Off: { Result = CSz("LightingQualitySetting_Off"); } break;
+
 
 
     

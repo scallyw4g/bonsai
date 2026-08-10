@@ -17,6 +17,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_language_setting *Elem
   {
     PushNewRow(Ui);
         if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("460core"), UiId(Window, "enum ShaderLanguageSetting_460core", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = ShaderLanguageSetting_460core;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("330core"), UiId(Window, "enum ShaderLanguageSetting_330core", Element, ThisHash), Params))
     {
       Result = True;
@@ -31,6 +41,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, shader_language_setting *Elem
     {
       Result = True;
             *Element = ShaderLanguageSetting_310es;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("default"), UiId(Window, "enum ShaderLanguageSetting_default", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = ShaderLanguageSetting_default;
 
 
       SetToggleButton(Ui, ToggleButtonId, False);

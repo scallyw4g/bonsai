@@ -2,16 +2,19 @@
 // src/engine/settings.h:26:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(resolution_setting Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case ResolutionSetting_4096x2160:
-    case ResolutionSetting_1920x1080:
-    case ResolutionSetting_1280x720:
+            case ResolutionSetting_4096x2160:
+
+        case ResolutionSetting_1920x1080:
+
+        case ResolutionSetting_1280x720:
+
 
     {
       Result = True;
@@ -30,9 +33,12 @@ ToStringPrefixless(resolution_setting Type)
   {
     switch (Type)
     {
-            case ResolutionSetting_4096x2160: { Result = CSz("4096x2160"); } break;
-      case ResolutionSetting_1920x1080: { Result = CSz("1920x1080"); } break;
-      case ResolutionSetting_1280x720: { Result = CSz("1280x720"); } break;
+                  case ResolutionSetting_4096x2160: { Result = CSz("4096x2160"); } break;
+
+            case ResolutionSetting_1920x1080: { Result = CSz("1920x1080"); } break;
+
+            case ResolutionSetting_1280x720: { Result = CSz("1280x720"); } break;
+
 
 
       
@@ -54,9 +60,12 @@ ToString(resolution_setting Type)
   counted_string Result = {};
   switch (Type)
   {
-        case ResolutionSetting_4096x2160: { Result = CSz("ResolutionSetting_4096x2160"); } break;
-    case ResolutionSetting_1920x1080: { Result = CSz("ResolutionSetting_1920x1080"); } break;
-    case ResolutionSetting_1280x720: { Result = CSz("ResolutionSetting_1280x720"); } break;
+            case ResolutionSetting_4096x2160: { Result = CSz("ResolutionSetting_4096x2160"); } break;
+
+        case ResolutionSetting_1920x1080: { Result = CSz("ResolutionSetting_1920x1080"); } break;
+
+        case ResolutionSetting_1280x720: { Result = CSz("ResolutionSetting_1280x720"); } break;
+
 
 
     

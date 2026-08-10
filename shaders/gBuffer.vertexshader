@@ -14,17 +14,24 @@ uniform vec3 MaxClipP_worldspace;
 
 uniform vec3 OffsetOfWorldCenterToGrid;
 uniform vec3 CameraToWorld;
-uniform mat4 ModelMatrix;
+
 uniform mat4 ViewProjection;
 
 uniform sampler2D ColorPalette;
 
+struct transform_data
+{
+  mat4 ModelMatrix;
+  mat4 NormalMatrix;
+};
 
+layout(std430, binding = 0) readonly buffer TransformBuffer
+{
+  transform_data Transforms[];
+};
 
 // TODO(Jesse): Pass in a m3 here.  I didn't have an m3 struct, so I didn't
 // bother, but I should do that at some point..
-//
-uniform mat4 NormalMatrix; // Inverted and transposed ModelMatrix.
 
 void main()
 {
@@ -41,6 +48,10 @@ void main()
   /* MaterialColor = V3(1,0,1); */
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));
   /* TransEmiss = V2(0.5f, 0.5f); */
+
+  transform_data Transform = Transforms[gl_DrawID];
+  mat4 ModelMatrix = Transform.ModelMatrix;
+  mat4 NormalMatrix = Transform.NormalMatrix;
 
   v4 WorldVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 

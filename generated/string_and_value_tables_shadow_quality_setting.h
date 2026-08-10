@@ -2,17 +2,21 @@
 // src/engine/settings.h:28:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(shadow_quality_setting Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case ShadowQualitySetting_High:
-    case ShadowQualitySetting_Med:
-    case ShadowQualitySetting_Low:
-    case ShadowQualitySetting_Off:
+            case ShadowQualitySetting_High:
+
+        case ShadowQualitySetting_Med:
+
+        case ShadowQualitySetting_Low:
+
+        case ShadowQualitySetting_Off:
+
 
     {
       Result = True;
@@ -31,10 +35,14 @@ ToStringPrefixless(shadow_quality_setting Type)
   {
     switch (Type)
     {
-            case ShadowQualitySetting_High: { Result = CSz("High"); } break;
-      case ShadowQualitySetting_Med: { Result = CSz("Med"); } break;
-      case ShadowQualitySetting_Low: { Result = CSz("Low"); } break;
-      case ShadowQualitySetting_Off: { Result = CSz("Off"); } break;
+                  case ShadowQualitySetting_High: { Result = CSz("High"); } break;
+
+            case ShadowQualitySetting_Med: { Result = CSz("Med"); } break;
+
+            case ShadowQualitySetting_Low: { Result = CSz("Low"); } break;
+
+            case ShadowQualitySetting_Off: { Result = CSz("Off"); } break;
+
 
 
       
@@ -56,10 +64,14 @@ ToString(shadow_quality_setting Type)
   counted_string Result = {};
   switch (Type)
   {
-        case ShadowQualitySetting_High: { Result = CSz("ShadowQualitySetting_High"); } break;
-    case ShadowQualitySetting_Med: { Result = CSz("ShadowQualitySetting_Med"); } break;
-    case ShadowQualitySetting_Low: { Result = CSz("ShadowQualitySetting_Low"); } break;
-    case ShadowQualitySetting_Off: { Result = CSz("ShadowQualitySetting_Off"); } break;
+            case ShadowQualitySetting_High: { Result = CSz("ShadowQualitySetting_High"); } break;
+
+        case ShadowQualitySetting_Med: { Result = CSz("ShadowQualitySetting_Med"); } break;
+
+        case ShadowQualitySetting_Low: { Result = CSz("ShadowQualitySetting_Low"); } break;
+
+        case ShadowQualitySetting_Off: { Result = CSz("ShadowQualitySetting_Off"); } break;
+
 
 
     

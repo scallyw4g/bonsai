@@ -59,21 +59,36 @@ IsValid(ui_editor_action Value)
   b32 Result = False;
   switch (Value)
   {
-        case UiEditorAction_NoAction:
-    case UiEditorAction_New:
-    case UiEditorAction_Show:
-    case UiEditorAction_Hide:
-    case UiEditorAction_HideObstructed:
-    case UiEditorAction_ReorderUp:
-    case UiEditorAction_ReorderDown:
-    case UiEditorAction_Duplicate:
-    case UiEditorAction_SetBrush:
-    case UiEditorAction_ExportAsPrefab:
-    case UiEditorAction_Save:
-    case UiEditorAction_Delete:
-    case UiEditorAction_Expand:
-    case UiEditorAction_Collapse:
-    case UiEditorAction_Count:
+            case UiEditorAction_NoAction:
+
+        case UiEditorAction_New:
+
+        case UiEditorAction_Show:
+
+        case UiEditorAction_Hide:
+
+        case UiEditorAction_HideObstructed:
+
+        case UiEditorAction_ReorderUp:
+
+        case UiEditorAction_ReorderDown:
+
+        case UiEditorAction_Duplicate:
+
+        case UiEditorAction_SetBrush:
+
+        case UiEditorAction_ExportAsPrefab:
+
+        case UiEditorAction_Save:
+
+        case UiEditorAction_Delete:
+
+        case UiEditorAction_Expand:
+
+        case UiEditorAction_Collapse:
+
+        case UiEditorAction_Count:
+
 
     {
       Result = True;
@@ -92,21 +107,36 @@ ToStringPrefixless(ui_editor_action Type)
   {
     switch (Type)
     {
-            case UiEditorAction_NoAction: { Result = CSz("NoAction"); } break;
-      case UiEditorAction_New: { Result = CSz("New"); } break;
-      case UiEditorAction_Show: { Result = CSz("Show"); } break;
-      case UiEditorAction_Hide: { Result = CSz("Hide"); } break;
-      case UiEditorAction_HideObstructed: { Result = CSz("HideObstructed"); } break;
-      case UiEditorAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
-      case UiEditorAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
-      case UiEditorAction_Duplicate: { Result = CSz("Duplicate"); } break;
-      case UiEditorAction_SetBrush: { Result = CSz("SetBrush"); } break;
-      case UiEditorAction_ExportAsPrefab: { Result = CSz("ExportAsPrefab"); } break;
-      case UiEditorAction_Save: { Result = CSz("Save"); } break;
-      case UiEditorAction_Delete: { Result = CSz("Delete"); } break;
-      case UiEditorAction_Expand: { Result = CSz("Expand"); } break;
-      case UiEditorAction_Collapse: { Result = CSz("Collapse"); } break;
-      case UiEditorAction_Count: { Result = CSz("Count"); } break;
+                  case UiEditorAction_NoAction: { Result = CSz("NoAction"); } break;
+
+            case UiEditorAction_New: { Result = CSz("New"); } break;
+
+            case UiEditorAction_Show: { Result = CSz("Show"); } break;
+
+            case UiEditorAction_Hide: { Result = CSz("Hide"); } break;
+
+            case UiEditorAction_HideObstructed: { Result = CSz("HideObstructed"); } break;
+
+            case UiEditorAction_ReorderUp: { Result = CSz("ReorderUp"); } break;
+
+            case UiEditorAction_ReorderDown: { Result = CSz("ReorderDown"); } break;
+
+            case UiEditorAction_Duplicate: { Result = CSz("Duplicate"); } break;
+
+            case UiEditorAction_SetBrush: { Result = CSz("SetBrush"); } break;
+
+            case UiEditorAction_ExportAsPrefab: { Result = CSz("ExportAsPrefab"); } break;
+
+            case UiEditorAction_Save: { Result = CSz("Save"); } break;
+
+            case UiEditorAction_Delete: { Result = CSz("Delete"); } break;
+
+            case UiEditorAction_Expand: { Result = CSz("Expand"); } break;
+
+            case UiEditorAction_Collapse: { Result = CSz("Collapse"); } break;
+
+            case UiEditorAction_Count: { Result = CSz("Count"); } break;
+
 
 
       
@@ -128,21 +158,36 @@ ToString(ui_editor_action Type)
   counted_string Result = {};
   switch (Type)
   {
-        case UiEditorAction_NoAction: { Result = CSz("UiEditorAction_NoAction"); } break;
-    case UiEditorAction_New: { Result = CSz("UiEditorAction_New"); } break;
-    case UiEditorAction_Show: { Result = CSz("UiEditorAction_Show"); } break;
-    case UiEditorAction_Hide: { Result = CSz("UiEditorAction_Hide"); } break;
-    case UiEditorAction_HideObstructed: { Result = CSz("UiEditorAction_HideObstructed"); } break;
-    case UiEditorAction_ReorderUp: { Result = CSz("UiEditorAction_ReorderUp"); } break;
-    case UiEditorAction_ReorderDown: { Result = CSz("UiEditorAction_ReorderDown"); } break;
-    case UiEditorAction_Duplicate: { Result = CSz("UiEditorAction_Duplicate"); } break;
-    case UiEditorAction_SetBrush: { Result = CSz("UiEditorAction_SetBrush"); } break;
-    case UiEditorAction_ExportAsPrefab: { Result = CSz("UiEditorAction_ExportAsPrefab"); } break;
-    case UiEditorAction_Save: { Result = CSz("UiEditorAction_Save"); } break;
-    case UiEditorAction_Delete: { Result = CSz("UiEditorAction_Delete"); } break;
-    case UiEditorAction_Expand: { Result = CSz("UiEditorAction_Expand"); } break;
-    case UiEditorAction_Collapse: { Result = CSz("UiEditorAction_Collapse"); } break;
-    case UiEditorAction_Count: { Result = CSz("UiEditorAction_Count"); } break;
+            case UiEditorAction_NoAction: { Result = CSz("UiEditorAction_NoAction"); } break;
+
+        case UiEditorAction_New: { Result = CSz("UiEditorAction_New"); } break;
+
+        case UiEditorAction_Show: { Result = CSz("UiEditorAction_Show"); } break;
+
+        case UiEditorAction_Hide: { Result = CSz("UiEditorAction_Hide"); } break;
+
+        case UiEditorAction_HideObstructed: { Result = CSz("UiEditorAction_HideObstructed"); } break;
+
+        case UiEditorAction_ReorderUp: { Result = CSz("UiEditorAction_ReorderUp"); } break;
+
+        case UiEditorAction_ReorderDown: { Result = CSz("UiEditorAction_ReorderDown"); } break;
+
+        case UiEditorAction_Duplicate: { Result = CSz("UiEditorAction_Duplicate"); } break;
+
+        case UiEditorAction_SetBrush: { Result = CSz("UiEditorAction_SetBrush"); } break;
+
+        case UiEditorAction_ExportAsPrefab: { Result = CSz("UiEditorAction_ExportAsPrefab"); } break;
+
+        case UiEditorAction_Save: { Result = CSz("UiEditorAction_Save"); } break;
+
+        case UiEditorAction_Delete: { Result = CSz("UiEditorAction_Delete"); } break;
+
+        case UiEditorAction_Expand: { Result = CSz("UiEditorAction_Expand"); } break;
+
+        case UiEditorAction_Collapse: { Result = CSz("UiEditorAction_Collapse"); } break;
+
+        case UiEditorAction_Count: { Result = CSz("UiEditorAction_Count"); } break;
+
 
 
     
@@ -803,9 +848,12 @@ IsValid(selection_modification_mode Value)
   b32 Result = False;
   switch (Value)
   {
-        case SelectionModificationMode_None:
-    case SelectionModificationMode_Initialize:
-    case SelectionModificationMode_Modify:
+            case SelectionModificationMode_None:
+
+        case SelectionModificationMode_Initialize:
+
+        case SelectionModificationMode_Modify:
+
 
     {
       Result = True;
@@ -824,9 +872,12 @@ ToStringPrefixless(selection_modification_mode Type)
   {
     switch (Type)
     {
-            case SelectionModificationMode_None: { Result = CSz("None"); } break;
-      case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
-      case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
+                  case SelectionModificationMode_None: { Result = CSz("None"); } break;
+
+            case SelectionModificationMode_Initialize: { Result = CSz("Initialize"); } break;
+
+            case SelectionModificationMode_Modify: { Result = CSz("Modify"); } break;
+
 
 
       
@@ -848,9 +899,12 @@ ToString(selection_modification_mode Type)
   counted_string Result = {};
   switch (Type)
   {
-        case SelectionModificationMode_None: { Result = CSz("SelectionModificationMode_None"); } break;
-    case SelectionModificationMode_Initialize: { Result = CSz("SelectionModificationMode_Initialize"); } break;
-    case SelectionModificationMode_Modify: { Result = CSz("SelectionModificationMode_Modify"); } break;
+            case SelectionModificationMode_None: { Result = CSz("SelectionModificationMode_None"); } break;
+
+        case SelectionModificationMode_Initialize: { Result = CSz("SelectionModificationMode_Initialize"); } break;
+
+        case SelectionModificationMode_Modify: { Result = CSz("SelectionModificationMode_Modify"); } break;
+
 
 
     
@@ -1010,9 +1064,12 @@ IsValid(ui_editor_tool Value)
   b32 Result = False;
   switch (Value)
   {
-        case UiEditorTool_Brush:
-    case UiEditorTool_Prefab:
-    case UiEditorTool_Entity:
+            case UiEditorTool_Brush:
+
+        case UiEditorTool_Prefab:
+
+        case UiEditorTool_Entity:
+
 
     {
       Result = True;
@@ -1031,9 +1088,12 @@ ToStringPrefixless(ui_editor_tool Type)
   {
     switch (Type)
     {
-            case UiEditorTool_Brush: { Result = CSz("Brush"); } break;
-      case UiEditorTool_Prefab: { Result = CSz("Prefab"); } break;
-      case UiEditorTool_Entity: { Result = CSz("Entity"); } break;
+                  case UiEditorTool_Brush: { Result = CSz("Brush"); } break;
+
+            case UiEditorTool_Prefab: { Result = CSz("Prefab"); } break;
+
+            case UiEditorTool_Entity: { Result = CSz("Entity"); } break;
+
 
 
       
@@ -1055,9 +1115,12 @@ ToString(ui_editor_tool Type)
   counted_string Result = {};
   switch (Type)
   {
-        case UiEditorTool_Brush: { Result = CSz("UiEditorTool_Brush"); } break;
-    case UiEditorTool_Prefab: { Result = CSz("UiEditorTool_Prefab"); } break;
-    case UiEditorTool_Entity: { Result = CSz("UiEditorTool_Entity"); } break;
+            case UiEditorTool_Brush: { Result = CSz("UiEditorTool_Brush"); } break;
+
+        case UiEditorTool_Prefab: { Result = CSz("UiEditorTool_Prefab"); } break;
+
+        case UiEditorTool_Entity: { Result = CSz("UiEditorTool_Entity"); } break;
+
 
 
     

@@ -2,16 +2,19 @@
 // src/engine/editor.cpp:374:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(file_traversal_type Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case FileTraversalType_None:
-    case FileTraversalType_Dir:
-    case FileTraversalType_File:
+            case FileTraversalType_None:
+
+        case FileTraversalType_Dir:
+
+        case FileTraversalType_File:
+
 
     {
       Result = True;
@@ -30,9 +33,12 @@ ToStringPrefixless(file_traversal_type Type)
   {
     switch (Type)
     {
-            case FileTraversalType_None: { Result = CSz("None"); } break;
-      case FileTraversalType_Dir: { Result = CSz("Dir"); } break;
-      case FileTraversalType_File: { Result = CSz("File"); } break;
+                  case FileTraversalType_None: { Result = CSz("None"); } break;
+
+            case FileTraversalType_Dir: { Result = CSz("Dir"); } break;
+
+            case FileTraversalType_File: { Result = CSz("File"); } break;
+
 
 
       
@@ -54,9 +60,12 @@ ToString(file_traversal_type Type)
   counted_string Result = {};
   switch (Type)
   {
-        case FileTraversalType_None: { Result = CSz("FileTraversalType_None"); } break;
-    case FileTraversalType_Dir: { Result = CSz("FileTraversalType_Dir"); } break;
-    case FileTraversalType_File: { Result = CSz("FileTraversalType_File"); } break;
+            case FileTraversalType_None: { Result = CSz("FileTraversalType_None"); } break;
+
+        case FileTraversalType_Dir: { Result = CSz("FileTraversalType_Dir"); } break;
+
+        case FileTraversalType_File: { Result = CSz("FileTraversalType_File"); } break;
+
 
 
     

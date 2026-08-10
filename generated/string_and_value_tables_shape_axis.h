@@ -2,21 +2,29 @@
 // src/engine/editor.h:173:0
 
 // def (string_and_value_tables)
-// external/bonsai_stdlib/src/poof_functions.h:2138:0
+// external/bonsai_stdlib/src/poof_functions.h:2148:0
 link_internal b32
 IsValid(shape_axis Value)
 {
   b32 Result = False;
   switch (Value)
   {
-        case ShapeAxis_InferFromMajorAxis:
-    case ShapeAxis_PosX:
-    case ShapeAxis_NegX:
-    case ShapeAxis_PosY:
-    case ShapeAxis_NegY:
-    case ShapeAxis_PosZ:
-    case ShapeAxis_NegZ:
-    case ShapeAxis_Count:
+            case ShapeAxis_InferFromMajorAxis:
+
+        case ShapeAxis_PosX:
+
+        case ShapeAxis_NegX:
+
+        case ShapeAxis_PosY:
+
+        case ShapeAxis_NegY:
+
+        case ShapeAxis_PosZ:
+
+        case ShapeAxis_NegZ:
+
+        case ShapeAxis_Count:
+
 
     {
       Result = True;
@@ -35,14 +43,22 @@ ToStringPrefixless(shape_axis Type)
   {
     switch (Type)
     {
-            case ShapeAxis_InferFromMajorAxis: { Result = CSz("InferFromMajorAxis"); } break;
-      case ShapeAxis_PosX: { Result = CSz("PosX"); } break;
-      case ShapeAxis_NegX: { Result = CSz("NegX"); } break;
-      case ShapeAxis_PosY: { Result = CSz("PosY"); } break;
-      case ShapeAxis_NegY: { Result = CSz("NegY"); } break;
-      case ShapeAxis_PosZ: { Result = CSz("PosZ"); } break;
-      case ShapeAxis_NegZ: { Result = CSz("NegZ"); } break;
-      case ShapeAxis_Count: { Result = CSz("Count"); } break;
+                  case ShapeAxis_InferFromMajorAxis: { Result = CSz("InferFromMajorAxis"); } break;
+
+            case ShapeAxis_PosX: { Result = CSz("PosX"); } break;
+
+            case ShapeAxis_NegX: { Result = CSz("NegX"); } break;
+
+            case ShapeAxis_PosY: { Result = CSz("PosY"); } break;
+
+            case ShapeAxis_NegY: { Result = CSz("NegY"); } break;
+
+            case ShapeAxis_PosZ: { Result = CSz("PosZ"); } break;
+
+            case ShapeAxis_NegZ: { Result = CSz("NegZ"); } break;
+
+            case ShapeAxis_Count: { Result = CSz("Count"); } break;
+
 
 
       
@@ -64,14 +80,22 @@ ToString(shape_axis Type)
   counted_string Result = {};
   switch (Type)
   {
-        case ShapeAxis_InferFromMajorAxis: { Result = CSz("ShapeAxis_InferFromMajorAxis"); } break;
-    case ShapeAxis_PosX: { Result = CSz("ShapeAxis_PosX"); } break;
-    case ShapeAxis_NegX: { Result = CSz("ShapeAxis_NegX"); } break;
-    case ShapeAxis_PosY: { Result = CSz("ShapeAxis_PosY"); } break;
-    case ShapeAxis_NegY: { Result = CSz("ShapeAxis_NegY"); } break;
-    case ShapeAxis_PosZ: { Result = CSz("ShapeAxis_PosZ"); } break;
-    case ShapeAxis_NegZ: { Result = CSz("ShapeAxis_NegZ"); } break;
-    case ShapeAxis_Count: { Result = CSz("ShapeAxis_Count"); } break;
+            case ShapeAxis_InferFromMajorAxis: { Result = CSz("ShapeAxis_InferFromMajorAxis"); } break;
+
+        case ShapeAxis_PosX: { Result = CSz("ShapeAxis_PosX"); } break;
+
+        case ShapeAxis_NegX: { Result = CSz("ShapeAxis_NegX"); } break;
+
+        case ShapeAxis_PosY: { Result = CSz("ShapeAxis_PosY"); } break;
+
+        case ShapeAxis_NegY: { Result = CSz("ShapeAxis_NegY"); } break;
+
+        case ShapeAxis_PosZ: { Result = CSz("ShapeAxis_PosZ"); } break;
+
+        case ShapeAxis_NegZ: { Result = CSz("ShapeAxis_NegZ"); } break;
+
+        case ShapeAxis_Count: { Result = CSz("ShapeAxis_Count"); } break;
+
 
 
     
