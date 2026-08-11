@@ -659,7 +659,7 @@ GetOrAllocate(gen_chunk_freelist *Freelist, v3i WorldP, v3i Dim, v3i DimInChunks
     Result->Voxels = AllocateAlignedProtection( voxel, Memory , Volume(Dim), CACHE_LINE_SIZE, false);
   }
 
-  Assert(HasGpuMesh(&Result->Mesh) == False);
+  Assert(Result->Buffer.End == 0);
   Assert(HasGpuMesh(&Result->Chunk) == False);
   Assert(Result->Chunk.Dim == Dim);
 
@@ -717,7 +717,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       gen_chunk *GenChunk = GetOrAllocate(&EngineResources->GenChunkFreelist, {}, Chunk->Dim + V3i(0, 2, 2), Chunk->DimInChunks, Thread->PermMemory);
       world_chunk *SynChunk = &GenChunk->Chunk;
 
-      Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+      Assert(GenChunk->Buffer.End == 0);
       Assert(HasGpuMesh(SynChunk) == False);
 
       voxel *Voxels = GenChunk->Voxels;
@@ -796,11 +796,20 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         if (FacesRequired)
         {
           Continued = True;
+
           /* Info("Chunk had faces (%d)", FacesRequired); */
           Assert(Node->Flags & Chunk_Queued);
-          PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-              LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh,
-              GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here..
+          /* PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer( */
+          /*     LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GenChunk->Mesh, */
+          /*     GenChunk, Node); // NOTE(Jesse): These should go away once we can specify the next job here.. */
+
+          AllocateMesh(&GenChunk->Buffer, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &EngineResources->Heap);
+
+          BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
+
+          /* FinalizeShitAndFuckinDoStuff(GenChunk, DestModel->Node); */
+          FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, GenChunk, Node);
+
         }
       }
 
@@ -810,7 +819,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       //
       if (Continued == False)
       {
-        Assert(HasGpuMesh(&GenChunk->Mesh) == False);
+        Assert(GenChunk->Buffer.End == 0);
         /* DeallocateHandles(LoRenderQ, &GenChunk->Mesh.Handles); */
 
         Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
@@ -819,7 +828,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         // Deallocate the stale mesh if the new chunk didn't have a mesh
         if (Node->Chunk && HasGpuMesh(Node->Chunk) )
         {
-          DeallocateHandles(LoRenderQ, &Node->Chunk->Handles);
+          GpuHeapDeallocate(&GetGraphics()->GpuHeap, &Node->Chunk->Mesh);
         }
       }
 
@@ -841,7 +850,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
       gen_chunk                 *GenChunk      =  Job->GenChunk;
       world_chunk               *SynChunk      = &GenChunk->Chunk;
 
-      Assert( HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert( GenChunk->Buffer.End > 0);
       Assert( HasGpuMesh(SynChunk) == False);
 
 
@@ -853,9 +862,9 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
 
       /* Info("Buidling Chunk Mesh"); */
 
-      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Mesh.Buffer, 0);
+      BuildWorldChunkMeshFromMarkedVoxels_Naieve( GenChunk->Voxels, SynChunk->FaceMasks, SynChunk->Dim, {}, {}, &GenChunk->Buffer, 0);
 
-      Assert(HasGpuMesh(&GenChunk->Mesh) == True);
+      Assert(GenChunk->Buffer.End > 0);
       Assert(HasGpuMesh( SynChunk)       == False);
 
       // @dest_chunk_can_have_mesh

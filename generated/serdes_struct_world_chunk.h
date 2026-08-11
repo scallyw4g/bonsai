@@ -84,7 +84,6 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
 
 
         
-        
                                 Result &= Serialize(Bytes, &Element->OcclusionQueryId); // default
 
 
@@ -149,7 +148,6 @@ Serialize(u8_cursor_block_array *Bytes, world_chunk *BaseElement, umm Count)
 
         
 
-        
         
         
 
@@ -324,14 +322,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
   /* Assert(ThisMember != 3); */
   if (ThisMember == False)
   {
-    SoftError("Deserializing gpu_element_buffer_handles Handles on world_chunk");
-  }
-  Result &= ThisMember;
-  ThisMember = 3;
-    
-  /* Assert(ThisMember != 3); */
-  if (ThisMember == False)
-  {
     SoftError("Deserializing gpu_heap_allocation Mesh on world_chunk");
   }
   Result &= ThisMember;
@@ -494,7 +484,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_chunk *Element, memory_arena *
   }
 
 
-  
   
   
   

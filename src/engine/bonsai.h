@@ -279,7 +279,7 @@ ClearWorldChunk( world_chunk *Chunk )
   Chunk->Entities = {};
   Chunk->Next = {};
 
-  Chunk->Handles = {};
+  Chunk->Mesh = {};
 
   Chunk->DimInChunks = {};
 

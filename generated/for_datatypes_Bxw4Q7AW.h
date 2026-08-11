@@ -17814,10 +17814,10 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk *Element, cs Name, 
             
             
             
-            cs MemberName = CSz("Mesh");
+            cs MemberName = CSz("Buffer");
 
                                                                                                 // Regular struct member
-                        auto Member = Cast(gpu_mapped_element_buffer*, &Element->Mesh);
+                        auto Member = Cast(untextured_3d_geometry_buffer*, &Element->Buffer);
             DoEditorUi(Ui,
               Window,
               Member,
@@ -18154,44 +18154,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, world_chunk *Element, cs Name
 
                         PushNewRow(Ui);
 
-
-
-          }
-        }
-      }
-      {
-        /* member.has_tag(ui_null_behavior)? */
-        /* { */
-        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
-        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
-        /* }{} */
-
-        {
-          
-          { 
-            
-            
-            
-            cs MemberName = CSz("Handles");
-
-                                                                                                // Regular struct member
-                        auto Member = Cast(gpu_element_buffer_handles*, &Element->Handles);
-            DoEditorUi(Ui,
-              Window,
-              Member,
-              MemberName,
-              ThisHash,
-              Params
-              );
-
-
-
-
-
-
-
-
-            
 
 
           }

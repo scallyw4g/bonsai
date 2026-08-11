@@ -47,6 +47,17 @@ poof(mesh_allocator(untextured_3d_geometry_buffer, memory_arena, {AllocateAligne
 poof(mesh_allocator(untextured_3d_geometry_buffer, heap_allocator, {HeapAlloc}))
 #include <generated/mesh_allocator_untextured_3d_geometry_buffer_heap_allocator_190647831.h>
 
+link_internal void
+DeallocateMesh(heap_allocator *Memory, untextured_3d_geometry_buffer *Mesh)
+{
+  Assert(Mesh->Type);
+  HeapDeallocate(Memory, Mesh->Verts);
+  HeapDeallocate(Memory, Mesh->Normals);
+  HeapDeallocate(Memory, Mesh->Mat);
+
+  *Mesh = {};
+}
+
 /* poof(mesh_allocator(world_chunk_geometry_buffer, memory_arena, {AllocateAlignedProtection})) */
 /* #include <generated/mesh_allocator_world_chunk_geometry_buffer_memory_arena_821677495.h> */
 

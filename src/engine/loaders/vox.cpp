@@ -554,9 +554,20 @@ AllocateAndBuildMesh(platform *Plat, gen_chunk *Gen, model *DestModel, memory_ar
     s32 FacesRequired = CountRequiredFacesForMesh_Naieve(CD.FaceMasks, CD.Dim, V3i(0,1,1));
     if (FacesRequired)
     {
-      PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer(
-          &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh,
-          Gen, DestModel->Node); // NOTE(Jesse): These should go away once we can specify the next job here..
+      untextured_3d_geometry_buffer Buf = {};
+      AllocateMesh(&Buf, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &GetEngineResources()->Heap);
+
+      /* BuildWorldChunkMeshFromMarkedVoxels_Naieve( Gen->Voxels, CD.FaceMasks, CD.Dim, v3i SrcChunkMin, v3i SrcChunkMax, untextured_3d_geometry_buffer *DestGeometry, untextured_3d_geometry_buffer *DestTransparentGeometry, v3 VertexOffset = {}) */
+
+      BuildWorldChunkMeshFromMarkedVoxels_Naieve( Gen->Voxels, CD.FaceMasks, CD.Dim, {}, {}, &Buf, 0);
+
+      /* FinalizeShitAndFuckinDoStuff(GenChunk, DestModel->Node); */
+      auto LoRenderQ = &Plat->LoRenderQ;
+      FinalizeShitAndFuckinDoStuff_Async(LoRenderQ, Gen, DestModel->Node);
+
+      /* PushBonsaiRenderCommandAllocateAndMapGpuElementBuffer( */
+      /*     &Plat->LoRenderQ, DataType_v3_u8, u32(FacesRequired*VERTS_PER_FACE), &Gen->Mesh, */
+      /*     Gen, DestModel->Node); // NOTE(Jesse): These should go away once we can specify the next job here.. */
     }
     else
     {

@@ -450,7 +450,6 @@ DrainLoRenderQueue(engine_resources *Engine)
 
           { tmatch(bonsai_render_command_allocate_and_map_gpu_element_buffer, RenderCommand, Command)
             TIMED_NAMED_BLOCK(bonsai_render_command_allocate_and_map_gpu_element_buffer);
-
             AllocateGpuBuffer_gpu_mapped_element_buffer(&Command->Dest->Handles, Command->Type, Command->ElementCount);
             /* SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Handles) */
             MapGpuBuffer(Command->Dest);
@@ -459,7 +458,7 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* Assert(Command->DestNode->Flags & Chunk_Queued); */
             Assert(Command->SynChunk);
 
-            Command->DestNode->Chunk->Mesh = GpuHeapAllocate(&Graphics->GpuHeap, Command->ElementCount);
+            /* Command->DestNode->Chunk->Mesh = GpuHeapAllocate(&Graphics->GpuHeap, Command->ElementCount); */
 
             auto LowPriorityQ = &Engine->Stdlib.Plat.LowPriority;
             auto Next = WorkQueueEntry(WorkQueueEntryBuildWorldChunkMesh(Command->SynChunk, Command->DestNode));

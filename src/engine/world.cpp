@@ -502,7 +502,7 @@ DEBUG_OctreeTraversal( engine_resources *Engine, octree_node *Node, octree_stats
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
 
-        if (HasGpuMesh(&Node->Chunk->Handles) && EngineDebug->DrawBranchNodesWithMeshes)
+        if (HasGpuMesh(Node->Chunk) && EngineDebug->DrawBranchNodesWithMeshes)
         {
           DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
         }
@@ -700,7 +700,7 @@ ComputePriorityIndex(world *World, octree_node *Node, octree_node *Parent, camer
 #endif
 
   // Prefer chunks who have a higher chance of having geometry
-  if (Parent && Parent->Chunk && HasGpuMesh(&Parent->Chunk->Handles))
+  if (Parent && Parent->Chunk && HasGpuMesh(Parent->Chunk))
   {
     IdealListIndex = Max(0, IdealListIndex-256);
   }
@@ -859,7 +859,7 @@ SplitOctreeNode_Recursive( engine_resources *Engine,
   {
     if (Initialized)
     {
-      if (Chunk) { if (HasGpuMesh(&Chunk->Handles) == False) { NodeToSplit->Chunk = 0; FreeWorldChunk(Engine, Chunk); Chunk = 0; /* Info("%d", ComputePriorityIndex(World, NodeToSplit, Parent, GameCamera)); */ }}
+      if (Chunk) { if (HasGpuMesh(Chunk) == False) { NodeToSplit->Chunk = 0; FreeWorldChunk(Engine, Chunk); Chunk = 0; /* Info("%d", ComputePriorityIndex(World, NodeToSplit, Parent, GameCamera)); */ }}
       if (Dirty) { PushOctreeNodeToPriorityQueue(World, GameCamera, Queue, NodeToSplit, Parent); }
     }
     else
@@ -992,7 +992,7 @@ DrawOctreeRecursive( engine_resources *Engine,
         DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
       }
 
-      if (Chunk && HasGpuMesh(&Chunk->Handles) && EngineDebug->DrawBranchNodesWithMeshes)
+      if (Chunk && HasGpuMesh(Chunk) && EngineDebug->DrawBranchNodesWithMeshes)
       {
         DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_ORANGE, AABBLineDim);
       }
@@ -1025,7 +1025,7 @@ DrawOctreeRecursive( engine_resources *Engine,
               DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
             }
 
-            if (HasGpuMesh(&Chunk->Handles))
+            if (HasGpuMesh(Chunk))
             {
               if (IsInFrustum( World, Camera, Chunk ))
               {
@@ -1054,7 +1054,7 @@ DrawOctreeRecursive( engine_resources *Engine,
             DEBUG_DrawChunkAABB(&GpuMap->Buffer, Graphics, Chunk, World->ChunkDim, RGB_GREEN, AABBLineDim);
           }
 
-          if (HasGpuMesh(&Chunk->Handles))
+          if (HasGpuMesh(Chunk))
           {
             if (IsInFrustum( World, Camera, Chunk ))
             {

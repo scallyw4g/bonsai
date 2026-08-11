@@ -342,7 +342,7 @@ poof(@version(1) @do_editor_ui)
 
   b32 IsOnFreelist;
 
-  gpu_element_buffer_handles Handles; poof(@no_serialize)
+  /* gpu_element_buffer_handles Handles; poof(@no_serialize) */
   gpu_heap_allocation Mesh; poof(@no_serialize)
 
 
@@ -372,12 +372,13 @@ struct gen_chunk
 poof(@do_editor_ui)
 {
   // TODO(Jesse): Remove somehow ..?
-  gen_chunk *Next;
-
+  gen_chunk   *Next;
 
   world_chunk  Chunk;
   voxel       *Voxels;
-  gpu_mapped_element_buffer Mesh;
+
+  /* gpu_mapped_element_buffer Mesh; */
+  untextured_3d_geometry_buffer Buffer;
 };
 typedef gen_chunk* gen_chunk_ptr;
 poof(block_array_h(gen_chunk_ptr, {32}, {}))

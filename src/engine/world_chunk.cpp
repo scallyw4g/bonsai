@@ -340,9 +340,16 @@ HasGpuMesh(gpu_element_buffer_handles *Handles)
 }
 
 link_internal b32
+HasGpuMesh(gpu_heap_allocation *Alloc)
+{
+  b32 Result = Alloc->SizeInElements > 0;
+  return Result;
+}
+
+link_internal b32
 HasGpuMesh(world_chunk *Chunk)
 {
-  return HasGpuMesh(&Chunk->Handles);
+  return HasGpuMesh(&Chunk->Mesh);
 }
 
 link_internal world_chunk *

@@ -10,7 +10,7 @@ DeallocateAndClearWorldChunk(engine_resources *Engine, world_chunk *Chunk)
 
   if (HasGpuMesh(Chunk))
   {
-    DeallocateHandles(LoRenderQ, &Chunk->Handles);
+    GpuHeapDeallocate(&Engine->Graphics.GpuHeap, &Chunk->Mesh);
   }
 
   ClearWorldChunk(Chunk);

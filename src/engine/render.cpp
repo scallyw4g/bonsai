@@ -873,12 +873,12 @@ struct DrawArraysIndirectCommand
   u32 BaseInstance;
 };
 
+#if 0
 link_internal void
 SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_allocation *Allocation)
 {
   Assert(Heap);
   Assert(Allocation);
-  Assert(Allocation->Data.At);
 
   auto GL = GetGL();
   GL->BindVertexArray(Heap->Storage.Handles.VAO);
@@ -929,6 +929,7 @@ SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_all
   GetGL()->VertexAttribIPointer(VERTEX_TRANS_EMISS_LAYOUT_LOCATION, 2, GL_BYTE,  sizeof(matl), Cast(void*, BaseOffset + Cast(umm, OffsetOf(Transparency, matl))));
   AssertNoGlErrors;
 }
+#endif
 
 
 link_internal void
@@ -1393,11 +1394,15 @@ DrawEntity(              shader *Shader,
         v3 Basis = GetRenderP(GetEngineResources(), Entity->P) + Offset;
         AssertNoGlErrors;
 
+#if 1
+        NotImplemented;
+#else
         auto Handles = &Model->Node->Chunk->Handles;
         if ( Handles->Mapped == False )
         {
           DrawLod(GetEngineResources(), Shader, Handles,  Basis, FromEuler(Entity->EulerAngles), V3(Entity->Scale));
         }
+#endif
       }
     }
   }
@@ -1798,8 +1803,12 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
       {
         Basis = GetSimSpaceP(World, Chunk->WorldP);
       }
-      DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks));
-      /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis); */
+#if 1
+      NotImplemented;
+#else
+      /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
+      DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis);
+#endif
       AssertNoGlErrors;
     }
   }
@@ -1949,39 +1958,46 @@ link_internal void
 poof(@async @render)
 FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
 {
-  Assert(HasGpuMesh(&GenChunk->Mesh)  == True);
   Assert(HasGpuMesh(&GenChunk->Chunk) == False);
 
   auto GL = GetGL();
-  auto Graphics = GetGraphics();
+  graphics *Graphics = GetGraphics();
 
-  s64 v3u8Offset = s64(DestNode->Chunk->Mesh.BaseOffsetInElements*sizeof(v3_u8));
-  s64 v3u8Size = s64(GenChunk->Mesh.Buffer.At*sizeof(v3_u8));
+  gpu_heap_allocation NewGpuAllocation = {};
 
-  Assert(DestNode->Chunk->Mesh.Data.End == GenChunk->Mesh.Buffer.At);
+  if (GenChunk->Buffer.At)
+  {
+    /* Info("Got mesh in FinalizeShitAndFuckinDoStuff (%d)", GenChunk->Buffer.At); */
+    // CopyDataToGpuHeapAllocation
+    {
+      gpu_heap_allocation Allocation = GpuHeapAllocate(&Graphics->GpuHeap, GenChunk->Buffer.At);
+      NewGpuAllocation = Allocation;
 
-  s64 matlOffset = s64(DestNode->Chunk->Mesh.BaseOffsetInElements*sizeof(matl));
-  s64 matlSize = s64(GenChunk->Mesh.Buffer.At*sizeof(matl));
+      s64 v3u8Offset = s64(Allocation.BaseOffsetInElements*sizeof(v3_u8));
+      s64 matlOffset = s64(Allocation.BaseOffsetInElements*sizeof(matl));
 
-  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
-  GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Mesh.Buffer.Verts);
+      s64 v3u8Size = s64(GenChunk->Buffer.At*sizeof(v3_u8));
+      s64 matlSize = s64(GenChunk->Buffer.At*sizeof(matl));
 
-  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
-  GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Mesh.Buffer.Normals);
+      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_VertexHandle]);
+      GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Verts);
 
-  GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
-  GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Mesh.Buffer.Mat);
+      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_NormalHandle]);
+      GL->BufferSubData(GL_ARRAY_BUFFER, v3u8Offset, v3u8Size, GenChunk->Buffer.Normals);
 
-  FlushBuffersToCard_gpu_mapped_element_buffer(&GenChunk->Mesh.Handles);
+      GL->BindBuffer(GL_ARRAY_BUFFER, Graphics->GpuHeap.Storage.Handles.Handles[mesh_MatHandle]);
+      GL->BufferSubData(GL_ARRAY_BUFFER, matlOffset, matlSize, GenChunk->Buffer.Mat);
+    }
+    DeallocateMesh(&GetEngineResources()->Heap, &GenChunk->Buffer);
+  }
 
   Assert(DestNode);
-
   {
     world_chunk *DestChunk = DestNode->Chunk;
     // @dest_chunk_can_have_mesh
     /* Assert(HasGpuMesh(DestChunk)       == False); */
-    auto OldHandles = DestChunk->Handles;
-    DestChunk->Handles = GenChunk->Mesh.Handles;
+    if (IsGpuHeapAllocated(&Graphics->GpuHeap, &DestChunk->Mesh)) { GpuHeapDeallocate(&Graphics->GpuHeap, &DestChunk->Mesh); }
+    if (IsGpuHeapAllocated(&Graphics->GpuHeap, &NewGpuAllocation)) { DestChunk->Mesh = NewGpuAllocation; }
 
     Assert(GenChunk->Chunk.Dim == V3i(64,66,66));
     Assert(DestChunk->Dim == V3i(64));
@@ -1996,15 +2012,9 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
     }
 
 
-    if (HasGpuMesh(&OldHandles))
-    {
-      DeleteGpuBuffer(&OldHandles);
-    }
-
     Assert(DestNode->Flags & Chunk_Queued);
     FinalizeNodeInitializaion(DestNode);
 
-    GenChunk->Mesh = {};
     Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
   }
 }
