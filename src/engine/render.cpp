@@ -940,8 +940,7 @@ BufferIndirectDrawCommand(DrawArraysIndirectCommand *DrawCommands,
                                          Quaternion  Rotation,
                                                  v3  Scale)
 {
-
-  DrawCommands[DrawCommandsAt] = { Allocation->Data.End, 1, 0, DrawCommandsAt };
+  DrawCommands[DrawCommandsAt] = { Cast(u32, Allocation->SizeInElements), 1, Cast(u32, Allocation->BaseOffsetInElements), DrawCommandsAt };
 }
 
 link_internal void

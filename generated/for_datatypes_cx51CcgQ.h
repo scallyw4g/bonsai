@@ -246,7 +246,6 @@
 
 
 
-
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -268,8 +267,6 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
-
-
 
 
 
@@ -967,7 +964,6 @@ DoJob(compile_shader_pair_async_params *Params)
 
 
 
-
 link_internal void
 InitializeEasingFunctionVisualizerRenderPass_Async(work_queue *Queue,  easing_function_visualizer_render_pass *Element , easing_function *Func   , b32* Result )
 {
@@ -1222,6 +1218,8 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
+
 
 
 
