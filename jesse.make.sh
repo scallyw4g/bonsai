@@ -17,9 +17,9 @@
   BuildExecutables                                             \
   BuildSingleExample examples/asset_editor                     \
   BuildSingleExample examples/terrain_gen                      \
+  BuildTests                                                   \
   # BuildSingleExample examples/blank_project                    \
   # BuildSingleExample examples/character_controller             \
-  # BuildTests                                                   \
   # BuildSingleExample examples/ui_test                          \
   # BuildSingleExample examples/transparency                     \
   # BuildSingleExample examples/turn_based                       \
