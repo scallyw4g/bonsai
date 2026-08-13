@@ -325,7 +325,6 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_block_array *Element, mem
 
 
 
-
 struct smooth_blend_params;
 
 link_internal b32
@@ -514,6 +513,7 @@ DeserializeCurrentVersion(u8_cursor *Bytes, world_edit_brush *Element, memory_ar
 
 
 
+
 struct layer_settings_1;
 
 link_internal b32
@@ -530,6 +530,7 @@ Deserialize(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory, u
 
 link_internal b32
 DeserializeCurrentVersion(u8_cursor *Bytes, layer_settings_1 *Element, memory_arena *Memory);
+
 
 
 

@@ -2208,7 +2208,12 @@ AllocateAssetThumbnail(platform *Plat, asset_thumbnail_block_array *AssetThumbna
 }
 
 link_internal interactable_handle
-RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_layout *Window, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Mesh, v3 Dim, b32 Selected)
+RenderMeshPreviewToTextureAndInteractWithThumb( engine_resources *Engine,
+                                                   window_layout *Window,
+                                                 asset_thumbnail *Thumb,
+                                             gpu_heap_allocation *Mesh,
+                                                              v3  Dim,
+                                                             b32  Selected )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
 
@@ -2233,11 +2238,11 @@ RenderMeshPreviewToTextureAndInteractWithThumb(engine_resources *Engine, window_
 
   PushForceAdvance(Ui, V2(8, 0));
 
-  if (Pressed(Ui, &B))
+  /* if (Pressed(Ui, &B)) */
   {
-    /* if (Mesh->Handles.Mapped == False) */
+    if (HasGpuMesh(Mesh))
     {
-      RenderToTexture_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
+      RenderToTexture_gpu_heap_allocation_Async(&Plat->LoRenderQ, Engine, Thumb, Mesh, {}, 0);
     }
   }
 
@@ -2439,9 +2444,10 @@ DoAssetWindow(engine_resources *Engine)
 
                     b32 Selected = ModelIndex == EngineDebug->ModelIndex;
 
-                    NotImplemented;
-                    /* interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Node->Mesh, V3(Model->Gen->Chunk.CollisionVolume), Selected); */
-                    /* if (Pressed(Ui, &B)) */
+                    /* NotImplemented; */
+
+                    interactable_handle B = RenderMeshPreviewToTextureAndInteractWithThumb(Engine, &AssetViewWindow, Thumb, &Model->Node->Chunk->Mesh, V3(Model->Node->Chunk->CollisionVolume), Selected);
+                    if (Pressed(Ui, &B))
                     {
                       EngineDebug->ModelIndex = ModelIndex;
                     }

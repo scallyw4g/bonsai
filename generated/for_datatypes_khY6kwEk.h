@@ -247,6 +247,7 @@
 
 
 
+
 struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_params)
 {
   
@@ -254,6 +255,7 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
   octree_node *DestNode;
 
 };
+
 
 
 
@@ -1697,63 +1699,7 @@ struct check_occlusion_query_async_params poof(@async_function_params)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-struct render_to_texture_async_params poof(@async_function_params)
+struct render_to_texture_gpu_mapped_element_buffer_async_params poof(@async_function_params)
 {
   
     engine_resources *Engine;
@@ -1863,6 +1809,75 @@ struct render_to_texture_async_params poof(@async_function_params)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct render_to_texture_gpu_heap_allocation_async_params poof(@async_function_params)
+{
+  
+    engine_resources *Engine;
+  asset_thumbnail *Thumb;
+  gpu_heap_allocation *Src;
+  v3 Offset;
+  camera *Camera;
+
+};
 
 
 

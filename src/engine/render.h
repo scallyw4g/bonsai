@@ -271,7 +271,10 @@ link_internal void
 CheckOcclusionQuery(world_chunk *Chunk);
 
 link_internal void
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera = 0);
+RenderToTexture_gpu_mapped_element_buffer(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera = 0);
+
+link_internal void
+RenderToTexture_gpu_heap_allocation(engine_resources *Engine, asset_thumbnail *Thumb, gpu_heap_allocation *Src, v3 Offset, camera *Camera = 0);
 
 link_internal m4
 GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation);

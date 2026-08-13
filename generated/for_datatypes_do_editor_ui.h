@@ -318,7 +318,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, hotkey_cho
 
 
 
-
 struct smooth_blend_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, smooth_blend_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -474,9 +473,11 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_light
 
 
 
+
 struct octree_node_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 
 
 
@@ -494,7 +495,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gen_chunk_
 
 
 
-
+struct gpu_heap_allocation;
+link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, gpu_heap_allocation *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
+; 
 
 struct memory_arena;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, memory_arena *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)

@@ -247,6 +247,7 @@
 
 
 
+
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -268,6 +269,7 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
    FinalizeShitAndFuckinDoStuff( Params->GenChunk , Params->DestNode );
   
 }
+
 
 
 
@@ -1751,69 +1753,13 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 link_internal void
-RenderToTexture_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
+RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
 {
   // Make sure we don't accidentally pass something that's not the render queue
   Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
 
-  render_to_texture_async_params Params =
+  render_to_texture_gpu_mapped_element_buffer_async_params Params =
   {
       Engine,  Thumb,  Src,  Offset,  Camera, 
   };
@@ -1823,9 +1769,9 @@ RenderToTexture_Async(work_queue *Queue,  engine_resources *Engine , asset_thumb
 }
 
 link_internal void
-DoJob(render_to_texture_async_params *Params)
+DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 {
-   RenderToTexture( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
+   RenderToTexture_gpu_mapped_element_buffer( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
 
@@ -1928,6 +1874,86 @@ DoJob(render_to_texture_async_params *Params)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+link_internal void
+RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera  )
+{
+  // Make sure we don't accidentally pass something that's not the render queue
+  Assert(Queue == &GetStdlib()->Plat.LoRenderQ);
+
+  render_to_texture_gpu_heap_allocation_async_params Params =
+  {
+      Engine,  Thumb,  Src,  Offset,  Camera, 
+  };
+
+  work_queue_entry Entry = WorkQueueEntryAsyncFunction(&Params);
+  PushWorkQueueEntry(Queue, &Entry);
+}
+
+link_internal void
+DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
+{
+   RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
+  
+}
 
 
 

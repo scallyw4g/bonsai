@@ -935,11 +935,7 @@ SetupVertexAttribsFor_gpu_heap_allocation(gpu_heap_allocator *Heap, gpu_heap_all
 link_internal void
 BufferIndirectDrawCommand(DrawArraysIndirectCommand *DrawCommands,
                                                 u32  DrawCommandsAt,
-                                gpu_heap_allocation *Allocation,
-                                        world_chunk *Chunk,
-                                                 v3  Basis,
-                                         Quaternion  Rotation,
-                                                 v3  Scale)
+                                gpu_heap_allocation *Allocation )
 {
   DrawCommands[DrawCommandsAt] = { Cast(u32, Allocation->SizeInElements), 1, Cast(u32, Allocation->BaseOffsetInElements), DrawCommandsAt };
 }
@@ -1297,8 +1293,64 @@ RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, model *Model, 
 #endif
 
 link_internal void
+DrawGpuHeapAllocationImmediate(engine_resources *Engine, gpu_heap_allocation *Mesh)
+{
+  DrawArraysIndirectCommand DrawCommand = {};
+  BufferIndirectDrawCommand(&DrawCommand, 0, Mesh);
+
+  /* m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion()); */
+  /* m4 NormalMatrix = Transpose(Inverse(ModelMatrix)); */
+  /* MatrixData[DrawIndex] = { ModelMatrix, NormalMatrix }; */
+
+  /* GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, IndirectDrawBuffer); */
+  /* AssertNoGlErrors; */
+
+  /* GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW); */
+  /* AssertNoGlErrors; */
+
+  auto GL = GetGL();
+
+  GL->BindVertexArray(Engine->Graphics.GpuHeap.Storage.Handles.VAO);
+  AssertNoGlErrors;
+
+  GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+  /* GL->MultiDrawArraysIndirect(GL_TRIANGLES, 0, 1, 0); */
+  /* GL->DrawArraysIndirect(GL_TRIANGLES, &DrawCommand); */
+  GL->DrawArrays(GL_TRIANGLES, s32(DrawCommand.First), s32(DrawCommand.Count) );
+  AssertNoGlErrors;
+}
+
+link_internal void
 poof(@async @render)
-RenderToTexture(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera)
+RenderToTexture_gpu_heap_allocation(engine_resources *Engine, asset_thumbnail *Thumb, gpu_heap_allocation *Src, v3 Offset, camera *Camera)
+{
+  if (Camera == 0) { Camera = &Thumb->Camera; }
+  if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
+  {
+    auto RTTGroup = &Engine->RTTGroup;
+
+    Assert(HasGpuMesh(Src));
+
+    /* Info("Draw(%d)", Src->Handles.ElementCount); */
+
+    /* DrawLod( Engine, */
+    /*          &Engine->RTTGroup.Shader, */
+    /*          &Src->Handles, */
+    /*          {}, {}, V3(1.f)); */
+
+    DrawGpuHeapAllocationImmediate(Engine, Src);
+    AssertNoGlErrors;
+  }
+  else
+  {
+    Warn("Attempted to render to an unallocated texture.");
+  }
+}
+
+link_internal void
+poof(@async @render)
+RenderToTexture_gpu_mapped_element_buffer(engine_resources *Engine, asset_thumbnail *Thumb, gpu_mapped_element_buffer *Src, v3 Offset, camera *Camera)
 {
   if (Camera == 0) { Camera = &Thumb->Camera; }
   if (SetupRenderToTextureShader(Engine, &Thumb->Texture, Camera))
@@ -1711,7 +1763,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 
             /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
             u32 DrawIndex = DrawCommandsAt++;
-            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
 
             m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
             m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
@@ -1723,7 +1775,7 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
             /* DrawLod(Engine, Shader, &Chunk->Handles, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
             /* DrawGpuHeapAllocationIndirect(Engine, Shader, &Engine->Graphics.GpuHeap, &Chunk->Mesh, Basis, Quaternion(), V3(Chunk->DimInChunks)); */
             u32 DrawIndex = DrawCommandsAt++;
-            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh, Chunk, Basis, Quaternion(), V3(Chunk->DimInChunks));
+            BufferIndirectDrawCommand(DrawCommands, DrawIndex, &Chunk->Mesh);
 
             m4 ModelMatrix = GetTransformMatrix(Basis*GLOBAL_RENDER_SCALE_FACTOR, V3(Chunk->DimInChunks)*GLOBAL_RENDER_SCALE_FACTOR, Quaternion());
             m4 NormalMatrix = Transpose(Inverse(ModelMatrix));
