@@ -678,6 +678,23 @@ MarshalMagicaVoxelEncodedColors(voxel *Src, voxel *Dest, v3i Dim)
   }
 }
 
+link_internal void
+ClearWorldChunk( world_chunk *Chunk );
+
+link_internal void
+ClearGenChunk( gen_chunk *Gen )
+{
+  auto Chunk = &Gen->Chunk;
+  RangeIterator(z, Chunk->Dim.z)
+  RangeIterator(y, Chunk->Dim.y)
+  RangeIterator(x, Chunk->Dim.x)
+  {
+    Gen->Voxels[GetIndex(x,y,z, Chunk->Dim)] = {};
+  }
+
+  ClearWorldChunk(Chunk);
+}
+
 struct octree_node;
 struct octree_stats;
 struct octree_node_priority_queue;

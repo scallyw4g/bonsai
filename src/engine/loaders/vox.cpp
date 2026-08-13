@@ -476,15 +476,15 @@ LoadVoxData( engine_resources *Engine,
           u16 PaletteIndex = Gen->Voxels[Index].PackedHSV;
           Assert(PaletteIndex < ArrayCount(TempGRBPalette)); // Either branch requires this to be true
 
-          if   (HadPaletteData)
-          { 
+          if (HadPaletteData)
+          {
             Gen->Voxels[Index].PackedHSV = PackV3_655b(TempGRBPalette[PaletteIndex]);
           }
           else
-            {
-              v3 RGB = MagicaVoxelDefaultPaletteToRGB(PaletteIndex);
-              Gen->Voxels[Index].PackedHSV = PackV3_655b(V3(RGB.g, RGB.r, RGB.b)); 
-            }
+          {
+            v3 RGB = MagicaVoxelDefaultPaletteToRGB(PaletteIndex);
+            Gen->Voxels[Index].PackedHSV = PackV3_655b(V3(RGB.g, RGB.r, RGB.b)); 
+          }
         }
       }
     }

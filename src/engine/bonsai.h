@@ -247,47 +247,6 @@ Unspawned(entity *Entity)
 
 
 
-link_internal void
-ClearWorldChunk( world_chunk *Chunk )
-{
-  Assert(HasGpuMesh(Chunk) == False);
-
-  RangeIterator(zIndex, Chunk->Dim.z)
-  RangeIterator(yIndex, Chunk->Dim.y)
-  {
-    s32 Index = GetIndex(yIndex, zIndex, Chunk->Dim.yz);
-    Chunk->Occupancy[Index] = {};
-
-    Chunk->FaceMasks[(Index*6)+0] = {};
-    Chunk->FaceMasks[(Index*6)+1] = {};
-    Chunk->FaceMasks[(Index*6)+2] = {};
-    Chunk->FaceMasks[(Index*6)+3] = {};
-    Chunk->FaceMasks[(Index*6)+4] = {};
-    Chunk->FaceMasks[(Index*6)+5] = {};
-  }
-
-#if 0
-  *Chunk = {};
-#else
-  Chunk->WorldP = INVALID_WORLD_CHUNK_POSITION;
-  Chunk->FilledCount = {};
-  /* Chunk->DrawBoundingVoxels = {}; */
-  /* Chunk->PointsToLeaveRemaining = {}; */
-  /* Chunk->TriCount = {}; */
-  /* Chunk->EdgeBoundaryVoxelCount = {}; */
-  Chunk->StandingSpots.At = Chunk->StandingSpots.Start;
-  Chunk->Entities = {};
-  Chunk->Next = {};
-
-  Chunk->Mesh = {};
-
-  Chunk->DimInChunks = {};
-
-  Chunk->QueryActive = {};
-  Chunk->OcclusionFrames = {};
-#endif
-}
-
 inline world_position
 GetAbsoluteP( world_position P, chunk_dimension WorldChunkDim)
 {

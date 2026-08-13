@@ -822,6 +822,7 @@ WorkerThread_ApplicationDefaultImplementation(BONSAI_API_WORKER_THREAD_CALLBACK_
         Assert(GenChunk->Buffer.End == 0);
         /* DeallocateHandles(LoRenderQ, &GenChunk->Mesh.Handles); */
 
+        ClearGenChunk( GenChunk );
         Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
         FinalizeNodeInitializaion(Node);
 

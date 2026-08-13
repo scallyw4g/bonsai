@@ -2015,6 +2015,8 @@ FinalizeShitAndFuckinDoStuff(gen_chunk *GenChunk, octree_node *DestNode)
     Assert(DestNode->Flags & Chunk_Queued);
     FinalizeNodeInitializaion(DestNode);
 
+
+    ClearGenChunk( GenChunk );
     Free(&GetEngineResources()->GenChunkFreelist, GenChunk);
   }
 }
