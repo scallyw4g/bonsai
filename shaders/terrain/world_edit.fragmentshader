@@ -3,7 +3,7 @@ uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 uniform int BrushType;
 uniform int BlendMode;
-uniform int ColorMode;
+uniform int ColorMode; // enum world_edit_color_mode
 uniform int ValueModifiers;
 
 uniform int GenerateNormals;
@@ -326,7 +326,7 @@ f32 rect_lattice( vec3 x, f32 squareness)
 // Blend Value
 //
 void BlendSample(
-    int SampleMode, int ColorMode,
+    int SampleMode, int BlendType,
     inout f32 Accumulator, inout v3 ColorValue,
     inout f32  ThisSample_in,    in v3 ColorSample )
 {
@@ -414,7 +414,7 @@ void BlendSample(
 
   // Blend Color
   //
-  switch (ColorMode)
+  switch (BlendType)
   {
 
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
@@ -522,6 +522,27 @@ float iq_opOnion( in float sdf, in float thickness )
     return abs(sdf)-thickness;
 }
 
+#if 0
+// NOTE(Jesse): This branchless version return will 3 if v.y==v.z
+int getIndexOfMax(vec3 v)
+{
+    // Step 1: Find the maximum single scalar value
+    float maxVal = max(v.x, max(v.y, v.z));
+    
+    // Step 2: Compare vector components to the maximum value
+    // equal(v, vec3(maxVal)) returns a bvec3 where true = 1.0, false = 0.0
+    vec3 mask = vec3(equal(v, vec3(maxVal)));
+    
+    // Step 3: Use dot product to isolate the index (0, 1, or 2)
+    // If multiple components are identical, this returns the sum of their indices
+    return int(dot(mask, vec3(0.0, 1.0, 2.0)));
+}
+#else
+int getIndexOfMax(vec3 v) {
+    return (v.x > v.y) ? ((v.x > v.z) ? 0 : 2) : ((v.y > v.z) ? 1 : 2);
+}
+#endif
+
 void main()
 {
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
@@ -580,9 +601,11 @@ void main()
 
     f32 InitialSample = 0.f;
     v3 ColorSample = V3(0);
-   if (SampleColorTex > 0)
+   if (ColorMode == 1 || ColorMode == 2) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
+   /* if (SampleColorTex > 0) */
    {
-     f32 compress = 1.0f;
+     /* f32 compress = 1.0f; */
+     f32 compress = 0.8f;
      /* int compress = 20; */
      /* int compress = 10; */
      /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
@@ -602,6 +625,16 @@ void main()
        /* vec4 x = texture( s, p.yz ); */
        /* vec4 y = texture( s, p.zx ); */
        /* vec4 z = texture( s, p.xy ); */
+       v2 SampleCoords[3];
+       /* SampleCoords[0] = compress*(v2(x,y)/66); */
+       /* SampleCoords[1] = compress*(v2(z,y)/66); */
+       /* SampleCoords[2] = compress*(v2(x,z)/66); */
+
+       SampleCoords[0] = compress*(v2(y,z)/66);
+       SampleCoords[1] = compress*(v2(z,x)/66);
+       SampleCoords[2] = compress*(v2(x,y)/66);
+
+
        v3 xC = texture(ColorTex, (vec2(x,y)*compress)/66).rgb;
        v3 yC = texture(ColorTex, vec2(z,y)*compress/66).rgb;
        v3 zC = texture(ColorTex, vec2(x,z)*compress/66).rgb;
@@ -613,13 +646,22 @@ void main()
        /* v3 Center  = (EditDim)/2.f; */
        /* v3 p       = (EditRelxyz - Center); */
        /* v3 n = p-Center; */
+       /* v3 n  = EditRelxyz - (EditRelativeSphereCenter); */
        v3 n  = normalize(EditRelxyz - (EditRelativeSphereCenter));
+
+       /* int i = getIndexOfMax(abs(n)); */
 
        f32 k = 1.f;
 
        vec3 m = pow( abs(n), vec3(k) );
        ColorSample = (xC*m.x + yC*m.y + zC*m.z) / (m.x + m.y + m.z);
+       /* ColorSample = texture(ColorTex, SampleCoords[i]).rgb; */
        /* ColorSample = abs(n); */
+
+       if (ColorMode == 2) // WorldEditColorMode_TintedTexture
+       {
+         ColorSample = normalize(ColorSample+(0.1f*RGBColor));
+       }
     }
 #endif
    }

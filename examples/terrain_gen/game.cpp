@@ -14,6 +14,31 @@ BONSAI_API_WORKER_THREAD_INIT_CALLBACK()
 
 debug_global random_series SpawnerRNG = {6253765347};
 
+struct voxel_data
+{
+  u16 Filled;
+  u16 HasCollision;
+  v3 Normal;
+  v3 Color;
+};
+
+link_internal voxel_data
+UnpackVoxelData(u32 PackedValue)
+{
+  u16 SixteenBits = u16_MAX;
+  u16 FifteenBits = u16_MAX >> 1;
+
+  u16 Filled = (PackedValue >> 31) & 1;
+  voxel_data Result = {
+    Filled,
+    Filled,
+    UnpackV3_15b( (PackedValue >> 16) & FifteenBits),
+    UnpackV3_655b( (PackedValue >> 16) & SixteenBits),
+  };
+
+  return Result;
+}
+
 b32
 TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, octree_node *Node)
 {
@@ -22,39 +47,41 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
 
   world_edit_layer *Layer = GetOrCreateLayer(Editor, CSz("spawned_prefabs"));
 
-#if 0
-  if (Node->Resolution == V3i(1) )
+  if (Node->Resolution == V3i(8) )
   {
-    if (RandomUnilateral(&SpawnerRNG) > 0.99f)
+    Assert(NoiseDim == V3i(66));
+
+    voxel_data V0, V1;
+    for(s32 z = 1; z < NoiseDim.z-1; ++z)
+    for(s32 y = 1; y < NoiseDim.y-1; ++y)
+    for(s32 x = 1; x < NoiseDim.x-1; ++x)
     {
-      IterateOver(&Editor->LoadedBrushes, Brush, BrushIndex)
       {
-        if (StringsMatch(CS(Brush->NameBuf), CSz("foliage.perlin.brush")))
-        {
-          v3 Dim = V3(64);
-          rect3cp Region = Rect3CPMinDim( CP(V3(32), Node->WorldP), CP(V3(Dim), V3i(0)) );
-          SpawnBrushInstance(Engine, Layer, Brush, Region, {});
-        }
+        s32 Index = GetIndex(x,y,z, NoiseDim);
+        V0 = UnpackVoxelData(NoiseValues[Index]);
       }
 
-      Info("Spawn!");
-    }
-  }
-#else
-  if (Node->Resolution == V3i(1) )
-  {
-    if (RandomUnilateral(&SpawnerRNG) > 0.99f)
-    {
-      prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("simple_tree.prefab")).Value;
-      if (SpawnPrefab)
       {
-        cp SpawnPoint = CP(V3(32), Node->WorldP);
-        SpawnPrefabInstance(Engine, SpawnPrefab, SpawnPoint, Layer);
-        Info("Spawn!");
+        s32 Index = GetIndex(x,y,z+1, NoiseDim);
+        V1 = UnpackVoxelData(NoiseValues[Index]);
+      }
+
+      b32 Surface = V0.Filled && !V1.Filled;
+      if (Surface)
+      {
+        if (RandomUnilateral(&SpawnerRNG) > 0.9999f)
+        {
+          prefab *SpawnPrefab = GetPtrByName(&Editor->Prefabs, CSz("simple_tree.prefab")).Value;
+          if (SpawnPrefab)
+          {
+            cp SpawnPoint = Canonicalize(World, CP(V3(x,y,z)*Node->Resolution, Node->WorldP));
+            SpawnPrefabInstance(Engine, SpawnPrefab, SpawnPoint, Layer);
+            Info("Spawn!");
+          }
+        }
       }
     }
   }
-#endif
 
   return Result;
 }
@@ -68,8 +95,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   // NOTE(Jesse): For some reason you have to use a temporary here .. not sure
   // if that's a compiler bug or some random C++ minutae.  If you don't use a
   // temporary it fails to find the correct Push overload
-  chunk_completion_callback Callback = TestSpawnerCallback;
-  Push(&Engine->ChunkCompletionCallbacks, &Callback);
+  //
+  /* chunk_completion_callback Callback = TestSpawnerCallback; */
+  /* Push(&Engine->ChunkCompletionCallbacks, &Callback); */
 
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 

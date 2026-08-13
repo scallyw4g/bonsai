@@ -3774,7 +3774,9 @@ BindUniformsForBrushLayer(
     v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
     BindUniformByName(Program, "RGBColor", &RGBColor);
 
-    if (Layer->Settings.ColorTextureFilePath.Type == FileTraversalType_File)
+    /* if (Layer->Settings.ColorTextureFilePath.Type == FileTraversalType_File) */
+    if (Layer->Settings.ColorMode == WorldEditColorMode_Texture ||
+        Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture)
     {
       engine_resources *Engine = GetEngineResources();
       asset *Asset = GetOrAllocateAsset(Engine, &Layer->Settings.ColorTextureFilePath).Value;
@@ -3796,7 +3798,7 @@ BindUniformsForBrushLayer(
   BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
   BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
   BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc);
-  /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
+  BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
   BindUniformByName(Program, "Power",          Layer->Settings.Power);

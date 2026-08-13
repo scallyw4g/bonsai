@@ -123,6 +123,12 @@ main( s32 ArgCount, const char ** Args )
   }
 
 
+  /* bonsai_level */ 
+  /* if (EndsWith(GameLibName, CSz(".level"))) */
+  /* { */
+  /*   // We asked to open a level manifest.  Parse it. */
+  /* } */
+
   // First we load DLLs and initialize API structs.  We have to do this first
   // because InitializeBonsaiStdlib requires that we pass the GameApi so it can
   // kick off the worker threads.
