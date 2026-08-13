@@ -1,0 +1,972 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+f32 ForestBiomeBlendWeight(v3 Basis);
+f32 MountainBiomeBlendWeight(v3 Basis);
+
+b32 CanSpawnMausoleumAt(v3 Basis)
+{
+  // Grassland-only: avoid forest-heavy and mountain-influenced areas.
+  f32 MountainW = MountainBiomeBlendWeight(Basis);
+  if (MountainW > 0.02f) { return False; }
+
+  f32 ForestW = ForestBiomeBlendWeight(Basis);
+  return ForestW < 0.42f;
+}
+
+b32 GetMausoleumRectForRegion(v2 RegionCell, out v2 RectCenter, out v2 HalfExtents)
+{
+  f32 SpawnHash = rand(RegionCell + V2(301.7f, 89.4f));
+  if (SpawnHash < 0.72f)
+  {
+    RectCenter = V2(0.0f);
+    HalfExtents = V2(0.0f);
+    return False;
+  }
+
+  v2 RegionSize = V2(2400.0f, 2400.0f);
+  v2 RegionCenter = (RegionCell + 0.5f) * RegionSize;
+  v2 CenterJitter = V2(rand(RegionCell + V2(17.2f, 143.8f)),
+                       rand(RegionCell + V2(91.5f, 46.1f))) - 0.5f;
+  CenterJitter *= V2(700.0f, 700.0f);
+  RectCenter = RegionCenter + CenterJitter;
+
+  // Keep rectangles generally near a 2:5 aspect ratio (x:y), then snap to 16x16 grid.
+  f32 TileSize = 16.0f;
+
+  f32 RectWidth = 180.0f + rand(RegionCell + V2(64.3f, 211.9f)) * 120.0f;
+  f32 AspectJitter = 0.85f + rand(RegionCell + V2(118.6f, 271.4f)) * 0.30f;
+  f32 RectHeight = RectWidth * 2.5f * AspectJitter;
+
+  RectWidth = max(TileSize, floor((RectWidth / TileSize) + 0.5f) * TileSize);
+  RectHeight = max(TileSize, floor((RectHeight / TileSize) + 0.5f) * TileSize);
+
+  v2 RectMin = RectCenter - V2(RectWidth, RectHeight) * 0.5f;
+  RectMin = floor(RectMin / TileSize) * TileSize;
+  v2 RectMax = RectMin + V2(RectWidth, RectHeight);
+
+  RectCenter = (RectMin + RectMax) * 0.5f;
+  HalfExtents = (RectMax - RectMin) * 0.5f;
+  return True;
+}
+
+void DoMausoleumBiome(v3 Basis, out v3 ColorValue, out f32 NoiseValue)
+{
+  v2 RegionSize = V2(2400.0f, 2400.0f);
+  v2 RegionCell = floor(Basis.xy / RegionSize);
+  v2 RectCenter = V2(0.0f);
+  v2 HalfExtents = V2(0.0f);
+  b32 HasMausoleumRect = GetMausoleumRectForRegion(RegionCell, RectCenter, HalfExtents);
+
+  b32 DaisEnabled = HasMausoleumRect && (rand(RegionCell + V2(611.3f, 29.8f)) > 0.5f);
+  v2 DaisCenter = (floor(RectCenter / 16.0f) + V2(0.5f)) * 16.0f;
+  f32 DaisHalfX = 24.0f;
+  f32 DaisHalfY = 40.0f;
+  f32 DaisHeight = 10.0f;
+  f32 DaisKeepoutRadius = 46.0f;
+
+  // Base floor height, then raise it with stepped tiers near biome edges.
+  f32 FloorHeight = 10000.0f;
+  {
+    if (HasMausoleumRect)
+    {
+      v2 Local = abs(Basis.xy - RectCenter);
+      f32 EdgeIn = min(HalfExtents.x - Local.x, HalfExtents.y - Local.y);
+
+      f32 StepRun = 16.0f;
+      f32 StepCount = 4.0f;
+      f32 StepRise = 8.0f;
+      f32 EdgeBand = StepRun * StepCount;
+
+      f32 StepLevel = StepCount;
+      if (EdgeIn < EdgeBand)
+      {
+        StepLevel = floor(max(0.0f, EdgeIn) / StepRun) + 1.0f;
+      }
+
+      FloorHeight += StepLevel * StepRise;
+    }
+  }
+  NoiseValue = FloorHeight - Basis.z;
+
+  // Build a 16x16 world-space square tile pattern.
+  v2 tileUV = Basis.xy / 16.0f;
+  v2 tileCell = floor(tileUV);
+  v2 tileFrac = fract(tileUV);
+
+  f32 edgeDist = min(min(tileFrac.x, 1.0f - tileFrac.x), min(tileFrac.y, 1.0f - tileFrac.y));
+  f32 grout = 1.0f - smoothstep(0.055f, 0.095f, edgeDist);
+
+  // Dark mausoleum stone with subtle per-tile variation.
+  f32 tileHashA = rand(tileCell + V2(13.7f, 2.1f));
+  f32 tileHashB = rand(tileCell + V2(4.3f, 19.6f));
+  f32 stoneShade = 0.17f + 0.11f * tileHashA;
+  v3 stoneColor = V3(stoneShade, stoneShade * 1.02f, stoneShade * 1.08f);
+
+  f32 grain = rand(Basis.xy * 0.23f + tileCell * 0.71f);
+  f32 speckle = rand(Basis.xy * 1.87f + tileCell * 0.13f);
+  stoneColor += (grain - 0.5f) * 0.04f;
+  stoneColor -= max(0.0f, speckle - 0.82f) * 0.10f;
+
+  f32 alt = step(0.5f, fract((tileCell.x + tileCell.y) * 0.5f + tileHashB * 0.35f));
+  stoneColor = mix(stoneColor * V3(0.92f, 0.92f, 0.95f), stoneColor * V3(1.02f, 1.00f, 0.98f), alt);
+
+  v3 groutColor = V3(0.045f, 0.047f, 0.052f);
+  ColorValue = mix(stoneColor, groutColor, grout);
+
+  // In about half of mausoleums, add a raised dais with a single standing coffin.
+  if (DaisEnabled)
+  {
+    v2 DaisLocal2 = Basis.xy - DaisCenter;
+
+    f32 DaisField = min(min(DaisHalfX - abs(DaisLocal2.x), DaisHalfY - abs(DaisLocal2.y)),
+                        min(Basis.z - FloorHeight, (FloorHeight + DaisHeight) - Basis.z));
+
+    v3 StandingCoffinLocal = V3(DaisLocal2, Basis.z - (FloorHeight + DaisHeight));
+    f32 StandingHeight = 34.0f;
+    f32 StandingBaseHalfX = 3.8f;
+    f32 StandingBaseHalfY = 2.8f;
+    f32 StandingTopHalfX = 5.8f;
+    f32 StandingTopHalfY = 4.2f;
+
+    f32 HeightT = Clamp01(StandingCoffinLocal.z / StandingHeight);
+    f32 CoffinHalfX = mix(StandingBaseHalfX, StandingTopHalfX, HeightT);
+    f32 CoffinHalfY = mix(StandingBaseHalfY, StandingTopHalfY, HeightT);
+
+    f32 StandingField = min(min(CoffinHalfX - abs(StandingCoffinLocal.x), CoffinHalfY - abs(StandingCoffinLocal.y)),
+                            min(StandingCoffinLocal.z, StandingHeight - StandingCoffinLocal.z));
+
+    f32 DaisCoffinField = max(DaisField, StandingField);
+    NoiseValue = max(NoiseValue, DaisCoffinField);
+
+    f32 DaisMask = smoothstep(-0.10f, 0.50f, DaisField);
+    f32 StandingMask = smoothstep(-0.10f, 0.50f, StandingField);
+
+    v3 DaisStone = stoneColor * V3(1.06f, 1.05f, 1.08f);
+    ColorValue = mix(ColorValue, DaisStone, DaisMask);
+
+    v3 StandingWood = V3(0.28f, 0.18f, 0.09f);
+    ColorValue = mix(ColorValue, StandingWood, StandingMask);
+  }
+
+  // Carve grout seams so they noticeably reduce density at the floor surface.
+  NoiseValue -= grout * 1.35f;
+
+  // Add procedural cracks in scattered regions of the floor.
+  {
+    f32 CrackPatchSize = 16.0f * 2.0f;
+    v2 CrackPatchCell = floor(Basis.xy / CrackPatchSize);
+    v2 CrackPatchLocal = Basis.xy - (CrackPatchCell + 0.5f) * CrackPatchSize;
+
+    f32 CrackPatchHash = rand(CrackPatchCell + V2(77.1f, 14.3f));
+    f32 HasCracks = step(0.25f, CrackPatchHash);
+
+    f32 Angle = rand(CrackPatchCell + V2(5.2f, 31.7f)) * (2.0f * PI32);
+    v2 CrackDir = V2(cos(Angle), sin(Angle));
+    v2 CrackN = V2(-CrackDir.y, CrackDir.x);
+
+    f32 MainOffset = (rand(CrackPatchCell + V2(11.8f, 42.6f)) - 0.5f) * 8.0f;
+    f32 MainDist = abs(dot(CrackPatchLocal, CrackN) - MainOffset);
+
+    f32 BranchAngle = Angle + (rand(CrackPatchCell + V2(24.1f, 63.4f)) - 0.5f) * 1.2f;
+    v2 BranchDir = V2(cos(BranchAngle), sin(BranchAngle));
+    v2 BranchN = V2(-BranchDir.y, BranchDir.x);
+    f32 BranchOffset = (rand(CrackPatchCell + V2(8.4f, 52.9f)) - 0.5f) * 10.0f;
+    f32 BranchDist = abs(dot(CrackPatchLocal, BranchN) - BranchOffset);
+
+    f32 MainWidth = 0.55f + rand(CrackPatchCell + V2(91.3f, 7.5f)) * 0.55f;
+    f32 BranchWidth = MainWidth * 0.65f;
+
+    f32 MainCrack = 1.0f - smoothstep(MainWidth, MainWidth + 1.25f, MainDist);
+    f32 BranchCrack = 1.0f - smoothstep(BranchWidth, BranchWidth + 1.15f, BranchDist);
+
+    f32 CrackMask = HasCracks * max(MainCrack, BranchCrack * 0.75f);
+
+    // Keep cracks irregular and broken-up instead of perfectly continuous.
+    f32 Breakup = rand(Basis.xy * 0.19f + CrackPatchCell * 3.7f);
+    CrackMask *= smoothstep(0.08f, 0.72f, Breakup);
+
+    v3 CrackColor = V3(0.02f, 0.022f, 0.027f);
+    ColorValue = mix(ColorValue, CrackColor, CrackMask);
+
+    // Depress the floor surface where cracks appear.
+    NoiseValue -= CrackMask * 1.05f;
+  }
+
+  // Occasionally place pillars on a coarse, grid-aligned layout.
+  {
+    f32 TileSize = 16.0f;
+    f32 PillarSuperTileCount = 6.0f;
+    v2 PillarCell = floor(tileCell / PillarSuperTileCount);
+
+    f32 PillarSpawnHash = rand(PillarCell + V2(41.2f, 9.7f));
+    f32 PlacePillar = step(0.70f, PillarSpawnHash);
+
+    v2 PillarCenterTile = (PillarCell * PillarSuperTileCount) + V2(3.0f);
+    v2 PillarCenter = (PillarCenterTile + 0.5f) * TileSize;
+    if (DaisEnabled && length(PillarCenter - DaisCenter) < DaisKeepoutRadius) { PlacePillar = 0.0f; }
+    v2 PillarLocal = Basis.xy - PillarCenter;
+
+    f32 PillarRadius = 4.6f;
+    f32 PillarHeight = 44.0f;
+    f32 PlinthHalfExtent = 6.2f;
+    f32 PlinthHeight = 5.5f;
+
+    f32 RadialField = PillarRadius - length(PillarLocal);
+    f32 TopField = (FloorHeight + PillarHeight) - Basis.z;
+    f32 BaseField = Basis.z - (FloorHeight - 0.25f);
+
+    f32 CylPillarField = min(min(RadialField, TopField), BaseField);
+
+    f32 SquareRadialField = PlinthHalfExtent - max(abs(PillarLocal.x), abs(PillarLocal.y));
+    f32 PlinthTopField = (FloorHeight + PlinthHeight) - Basis.z;
+    f32 SquarePlinthField = min(min(SquareRadialField, PlinthTopField), BaseField);
+
+    f32 PillarFieldCandidate = max(CylPillarField, SquarePlinthField);
+    f32 PillarField = mix(-10000.0f, PillarFieldCandidate, PlacePillar);
+
+    // Some pillars sprout attached, grid-aligned wall segments.
+    f32 WallSpawnHash = rand(PillarCell + V2(14.8f, 58.2f));
+    f32 AttachWall = PlacePillar * step(0.58f, WallSpawnHash);
+
+    f32 DirHash = rand(PillarCell + V2(97.3f, 6.4f));
+    v2 WallDir = V2(1.0f, 0.0f);
+    if (DirHash > 0.75f) { WallDir = V2( 1.0f,  0.0f); }
+    else if (DirHash > 0.50f) { WallDir = V2(-1.0f,  0.0f); }
+    else if (DirHash > 0.25f) { WallDir = V2( 0.0f,  1.0f); }
+    else { WallDir = V2( 0.0f, -1.0f); }
+
+    v2 WallPerp = V2(-WallDir.y, WallDir.x);
+    f32 WallLength = 16.0f * (4.0f + floor(rand(PillarCell + V2(72.9f, 35.7f)) * 5.0f));
+    f32 WallHalfThickness = 2.6f;
+    f32 WallHeight = 30.0f;
+
+    f32 Along = dot(PillarLocal, WallDir);
+    f32 Across = dot(PillarLocal, WallPerp);
+    f32 WallStart = PlinthHalfExtent - 0.25f;
+    f32 WallEnd = WallStart + WallLength;
+
+    f32 WallAlongField = min(Along - WallStart, WallEnd - Along);
+    f32 WallAcrossField = WallHalfThickness - abs(Across);
+    f32 WallTopField = (FloorHeight + WallHeight) - Basis.z;
+    f32 WallFieldCandidate = min(min(WallAlongField, WallAcrossField), BaseField);
+    WallFieldCandidate = min(WallFieldCandidate, WallTopField);
+    f32 WallField = mix(-10000.0f, WallFieldCandidate, AttachWall);
+
+    f32 StructureField = max(PillarField, WallField);
+
+    // Union pillars with the floor SDF/density field.
+    NoiseValue = max(NoiseValue, StructureField);
+
+    // Slightly cooler, darker tone on pillar volumes.
+    f32 PillarMask = PlacePillar * smoothstep(-0.10f, 0.50f, PillarField);
+    f32 WallMask = AttachWall * smoothstep(-0.10f, 0.50f, WallField);
+    f32 PillarStreak = rand(V2(Basis.z * 0.07f, dot(PillarLocal, V2(0.13f, 0.21f))));
+    v3 PillarColor = stoneColor * V3(0.84f, 0.86f, 0.92f);
+    PillarColor += (PillarStreak - 0.5f) * 0.03f;
+    ColorValue = mix(ColorValue, PillarColor, PillarMask);
+
+    // Brick pattern for walls, using the same stone/grout palette as the floor.
+    f32 BrickWidth = 8.0f;
+    f32 BrickHeight = 4.0f;
+    f32 Row = floor((Basis.z - FloorHeight) / BrickHeight);
+    f32 Stagger = mod(Row, 2.0f) * 0.5f;
+
+    f32 BrickU = (Along / BrickWidth) + Stagger;
+    f32 BrickV = (Basis.z - FloorHeight) / BrickHeight;
+    v2 BrickFrac = fract(V2(BrickU, BrickV));
+
+    f32 BrickEdge = min(min(BrickFrac.x, 1.0f - BrickFrac.x), min(BrickFrac.y, 1.0f - BrickFrac.y));
+    f32 Mortar = 1.0f - smoothstep(0.06f, 0.14f, BrickEdge);
+
+    f32 BrickHash = rand(floor(V2(BrickU, BrickV)) + PillarCell * 0.37f);
+    v3 BrickColor = stoneColor * (0.90f + BrickHash * 0.16f);
+    v3 WallColor = mix(BrickColor, groutColor, Mortar);
+
+    ColorValue = mix(ColorValue, WallColor, WallMask);
+  }
+
+  // Sparse, tile-aligned treasure chests on mausoleum floors.
+  {
+    f32 ChestSuperTileCount = 10.0f;
+    v2 ChestCell = floor(tileCell / ChestSuperTileCount);
+    f32 PlaceChest = step(0.92f, rand(ChestCell + V2(212.4f, 17.9f)));
+
+    v2 ChestCellOriginTile = ChestCell * ChestSuperTileCount;
+    f32 ChestOffsetTileX = floor(rand(ChestCell + V2(73.2f, 55.9f)) * ChestSuperTileCount);
+    f32 ChestOffsetTileY = floor(rand(ChestCell + V2(11.8f, 161.3f)) * ChestSuperTileCount);
+    v2 ChestCenterTile = ChestCellOriginTile + V2(ChestOffsetTileX, ChestOffsetTileY);
+    v2 ChestCenter = (ChestCenterTile + 0.5f) * 16.0f;
+    if (DaisEnabled && length(ChestCenter - DaisCenter) < DaisKeepoutRadius) { PlaceChest = 0.0f; }
+
+    v3 ChestLocal = V3(Basis.xy - ChestCenter, Basis.z - (FloorHeight + 2.0f));
+    v3 ChestBodyHalf = V3(3.8f, 2.8f, 2.0f);
+    f32 BodyField = min(min(ChestBodyHalf.x - abs(ChestLocal.x), ChestBodyHalf.y - abs(ChestLocal.y)), ChestBodyHalf.z - abs(ChestLocal.z));
+
+    v3 LidLocal = V3(Basis.xy - ChestCenter, Basis.z - (FloorHeight + 5.0f));
+    v3 ChestLidHalf = V3(3.9f, 2.9f, 1.2f);
+    f32 LidField = min(min(ChestLidHalf.x - abs(LidLocal.x), ChestLidHalf.y - abs(LidLocal.y)), ChestLidHalf.z - abs(LidLocal.z));
+
+    v3 LatchLocal = V3(Basis.xy - (ChestCenter + V2(0.0f, 3.1f)), Basis.z - (FloorHeight + 4.3f));
+    v3 LatchHalf = V3(0.7f, 0.25f, 0.9f);
+    f32 LatchField = min(min(LatchHalf.x - abs(LatchLocal.x), LatchHalf.y - abs(LatchLocal.y)), LatchHalf.z - abs(LatchLocal.z));
+
+    f32 ChestFieldCandidate = max(max(BodyField, LidField), LatchField);
+    f32 ChestField = mix(-10000.0f, ChestFieldCandidate, PlaceChest);
+
+    NoiseValue = max(NoiseValue, ChestField);
+
+    f32 ChestMask = PlaceChest * smoothstep(-0.10f, 0.45f, ChestField);
+    f32 MetalMask = PlaceChest * smoothstep(-0.10f, 0.35f, LatchField);
+
+    v3 ChestWood = V3(0.34f, 0.22f, 0.10f);
+    f32 WoodVar = rand(ChestCenterTile + V2(4.7f, 9.9f));
+    ChestWood *= 0.85f + WoodVar * 0.25f;
+    ColorValue = mix(ColorValue, ChestWood, ChestMask);
+
+    v3 ChestMetal = V3(0.62f, 0.54f, 0.24f);
+    ColorValue = mix(ColorValue, ChestMetal, MetalMask);
+  }
+
+  // Wooden coffins placed on mausoleum floors.
+  {
+    f32 CoffinSuperTileCount = 3.0f;
+    v2 CoffinCell = floor(tileCell / CoffinSuperTileCount);
+    f32 PlaceCoffin = step(0.12f, rand(CoffinCell + V2(512.4f, 103.7f)));
+
+    v2 CoffinCellOriginTile = CoffinCell * CoffinSuperTileCount;
+    f32 CoffinOffsetTileX = floor(rand(CoffinCell + V2(36.2f, 219.9f)) * CoffinSuperTileCount);
+    f32 CoffinOffsetTileY = floor(rand(CoffinCell + V2(117.8f, 74.6f)) * CoffinSuperTileCount);
+    v2 CoffinCenterTile = CoffinCellOriginTile + V2(CoffinOffsetTileX, CoffinOffsetTileY);
+    v2 CoffinCenter = (CoffinCenterTile + 0.5f) * 16.0f;
+    if (DaisEnabled && length(CoffinCenter - DaisCenter) < DaisKeepoutRadius) { PlaceCoffin = 0.0f; }
+
+    // Two-tile span along the coffin's long axis (2 * 16 units).
+    f32 CoffinHalfLen = 16.0f;
+    f32 CoffinHalfWidth = 4.8f;
+    f32 CoffinBaseHalfWidth = 2.6f;
+    f32 CoffinBaseHeight = 1.9f;
+    f32 CoffinTopHeight = 4.4f;
+
+    // Keep coffins off step bands: only allow on the inner plateau.
+    {
+      v2 RegionSize = V2(2400.0f, 2400.0f);
+      v2 RegionCell = floor(CoffinCenter / RegionSize);
+      v2 RectCenter = V2(0.0f);
+      v2 HalfExtents = V2(0.0f);
+      if (GetMausoleumRectForRegion(RegionCell, RectCenter, HalfExtents))
+      {
+        v2 Local = abs(CoffinCenter - RectCenter);
+        f32 EdgeIn = min(HalfExtents.x - Local.x, HalfExtents.y - Local.y);
+        f32 StepBand = 16.0f * 4.0f;
+        f32 Clearance = StepBand + CoffinHalfLen + 2.0f;
+        PlaceCoffin *= step(Clearance, EdgeIn);
+      }
+      else
+      {
+        PlaceCoffin = 0.0f;
+      }
+    }
+
+    // Reject coffins that would intersect pillars or pillar-attached walls.
+    {
+      f32 TileSize = 16.0f;
+      f32 PillarSuperTileCount = 6.0f;
+      v2 BasePillarCell = floor(CoffinCenterTile / PillarSuperTileCount);
+
+      f32 HitStructure = 0.0f;
+      for (s32 Oy = -3; Oy <= 3; ++Oy)
+      {
+        for (s32 Ox = -3; Ox <= 3; ++Ox)
+        {
+          v2 PillarCell = BasePillarCell + V2(f32(Ox), f32(Oy));
+          f32 PlacePillar = step(0.70f, rand(PillarCell + V2(41.2f, 9.7f)));
+          if (PlacePillar > 0.5f)
+          {
+            v2 PillarCenterTile = (PillarCell * PillarSuperTileCount) + V2(3.0f);
+            v2 PillarCenter = (PillarCenterTile + 0.5f) * TileSize;
+
+            f32 DistToPillar = length(CoffinCenter - PillarCenter);
+            f32 PillarAvoidRadius = 6.2f + CoffinHalfLen + 1.0f;
+            HitStructure = max(HitStructure, 1.0f - step(PillarAvoidRadius, DistToPillar));
+
+            f32 AttachWall = PlacePillar * step(0.58f, rand(PillarCell + V2(14.8f, 58.2f)));
+            if (AttachWall > 0.5f)
+            {
+              f32 WallDirHash = rand(PillarCell + V2(97.3f, 6.4f));
+              v2 WallDir = V2(1.0f, 0.0f);
+              if (WallDirHash > 0.75f) { WallDir = V2( 1.0f,  0.0f); }
+              else if (WallDirHash > 0.50f) { WallDir = V2(-1.0f,  0.0f); }
+              else if (WallDirHash > 0.25f) { WallDir = V2( 0.0f,  1.0f); }
+              else { WallDir = V2( 0.0f, -1.0f); }
+
+              v2 WallPerp = V2(-WallDir.y, WallDir.x);
+              f32 WallLength = 16.0f * (4.0f + floor(rand(PillarCell + V2(72.9f, 35.7f)) * 5.0f));
+              f32 WallHalfThickness = 2.6f;
+              f32 WallStart = 6.2f - 0.25f;
+              f32 WallEnd = WallStart + WallLength;
+
+              v2 ToCoffin = CoffinCenter - PillarCenter;
+              f32 AlongW = dot(ToCoffin, WallDir);
+              f32 AcrossW = dot(ToCoffin, WallPerp);
+
+              f32 AlongHit = step(WallStart - CoffinHalfLen, AlongW) * step(AlongW, WallEnd + CoffinHalfLen);
+              f32 AcrossHit = 1.0f - step(WallHalfThickness + CoffinHalfWidth + 1.0f, abs(AcrossW));
+              HitStructure = max(HitStructure, AlongHit * AcrossHit);
+            }
+          }
+        }
+      }
+
+      PlaceCoffin *= (1.0f - Clamp01(HitStructure));
+    }
+
+    // Reject coffins that would intersect treasure chests.
+    {
+      f32 ChestSuperTileCount = 10.0f;
+      v2 BaseChestCell = floor(CoffinCenterTile / ChestSuperTileCount);
+      f32 HitChest = 0.0f;
+      for (s32 Oy = -2; Oy <= 2; ++Oy)
+      {
+        for (s32 Ox = -2; Ox <= 2; ++Ox)
+        {
+          v2 ChestCell = BaseChestCell + V2(f32(Ox), f32(Oy));
+          f32 PlaceChest = step(0.92f, rand(ChestCell + V2(212.4f, 17.9f)));
+          if (PlaceChest > 0.5f)
+          {
+            v2 ChestCellOriginTile = ChestCell * ChestSuperTileCount;
+            f32 ChestOffsetTileX = floor(rand(ChestCell + V2(73.2f, 55.9f)) * ChestSuperTileCount);
+            f32 ChestOffsetTileY = floor(rand(ChestCell + V2(11.8f, 161.3f)) * ChestSuperTileCount);
+            v2 ChestCenterTile = ChestCellOriginTile + V2(ChestOffsetTileX, ChestOffsetTileY);
+            v2 ChestCenter = (ChestCenterTile + 0.5f) * 16.0f;
+
+            f32 DistToChest = length(CoffinCenter - ChestCenter);
+            f32 ChestAvoidRadius = 4.2f + CoffinHalfLen + 1.0f;
+            HitChest = max(HitChest, 1.0f - step(ChestAvoidRadius, DistToChest));
+          }
+        }
+      }
+
+      PlaceCoffin *= (1.0f - Clamp01(HitChest));
+    }
+
+    f32 DirHash = rand(CoffinCell + V2(261.5f, 42.8f));
+    v2 CoffinDir = DirHash > 0.5f ? V2(1.0f, 0.0f) : V2(0.0f, 1.0f);
+    v2 CoffinPerp = V2(-CoffinDir.y, CoffinDir.x);
+
+    v2 CoffinLocal2 = Basis.xy - CoffinCenter;
+    f32 Along = dot(CoffinLocal2, CoffinDir);
+    f32 Across = dot(CoffinLocal2, CoffinPerp);
+
+    // Bottom: narrower and shorter.
+    f32 AlongField = CoffinHalfLen - abs(Along);
+    f32 BaseAcrossField = CoffinBaseHalfWidth - abs(Across);
+    f32 BaseBottomZ = FloorHeight + 0.15f;
+    f32 BaseTopZ = BaseBottomZ + CoffinBaseHeight;
+    f32 CoffinBaseField = min(min(AlongField, BaseAcrossField), min(Basis.z - BaseBottomZ, BaseTopZ - Basis.z));
+
+    // Top: wider and taller, with a classical tapered profile (wide shoulders, narrow ends).
+    f32 AlongNorm = abs(Along) / max(0.1f, CoffinHalfLen);
+    f32 ShoulderMask = 1.0f - smoothstep(0.35f, 0.98f, AlongNorm);
+    f32 TopHalfWidthAtAlong = mix(2.0f, CoffinHalfWidth, ShoulderMask);
+    f32 TopAcrossField = TopHalfWidthAtAlong - abs(Across);
+
+    f32 TopBottomZ = BaseTopZ - 0.15f;
+    f32 TopTopZ = TopBottomZ + CoffinTopHeight;
+
+    // Add a subtle roof ridge to the top lid.
+    f32 RidgeBoost = max(0.0f, 0.9f - abs(Across) * 0.28f) * ShoulderMask;
+    f32 TopTopZRidged = TopTopZ + RidgeBoost;
+    f32 CoffinTopField = min(min(AlongField, TopAcrossField), min(Basis.z - TopBottomZ, TopTopZRidged - Basis.z));
+
+    // Optional raised cross decoration on some coffins.
+    f32 HasCross = PlaceCoffin * step(0.62f, rand(CoffinCell + V2(801.5f, 67.2f)));
+    f32 CrossStemPlan = min(4.6f - abs(Along + 1.6f), 0.42f - abs(Across));
+    f32 CrossArmPlan = min(1.1f - abs(Along - 0.5f), 1.8f - abs(Across));
+    f32 CrossPlan = max(CrossStemPlan, CrossArmPlan);
+    f32 CrossBottomZ = TopTopZ - 0.05f;
+    f32 CrossTopZ = TopTopZ + 0.55f;
+    f32 CrossFieldCandidate = min(CrossPlan, min(Basis.z - CrossBottomZ, CrossTopZ - Basis.z));
+    f32 CrossField = mix(-10000.0f, CrossFieldCandidate, HasCross);
+
+    f32 CoffinFieldCandidate = max(max(CoffinBaseField, CoffinTopField), CrossField);
+    f32 CoffinField = mix(-10000.0f, CoffinFieldCandidate, PlaceCoffin);
+
+    NoiseValue = max(NoiseValue, CoffinField);
+
+    f32 CoffinMask = PlaceCoffin * smoothstep(-0.10f, 0.85f, CoffinField);
+    f32 CrossMask = HasCross * smoothstep(-0.10f, 0.35f, CrossField);
+    f32 PlankLine = 1.0f - smoothstep(0.00f, 0.28f, abs(fract((Along + 32.0f) / 2.6f) - 0.5f));
+
+    v3 CoffinWood = V3(0.30f, 0.19f, 0.09f);
+    f32 CoffinWoodVar = rand(CoffinCenterTile + V2(27.3f, 8.1f));
+    CoffinWood *= 0.88f + CoffinWoodVar * 0.22f;
+    CoffinWood -= PlankLine * 0.03f;
+    ColorValue = mix(ColorValue, CoffinWood, CoffinMask);
+
+    v3 CrossColor = V3(0.72f, 0.67f, 0.53f);
+    ColorValue = mix(ColorValue, CrossColor, CrossMask);
+  }
+
+  // Add occasional large fissures that cut deep, wide grooves.
+  {
+    f32 FissureRegionSize = 16.0f * 18.0f;
+    v2 FissureRegionCell = floor(Basis.xy / FissureRegionSize);
+    v2 FissureRegionLocal = Basis.xy - (FissureRegionCell + 0.5f) * FissureRegionSize;
+
+    f32 RegionHash = rand(FissureRegionCell + V2(151.3f, 27.7f));
+    f32 HasLargeFissure = step(0.67f, RegionHash);
+
+    f32 Angle = rand(FissureRegionCell + V2(19.4f, 83.1f)) * (2.0f * PI32);
+    v2 FissureDir = V2(cos(Angle), sin(Angle));
+    v2 FissureN = V2(-FissureDir.y, FissureDir.x);
+
+    f32 Along = dot(FissureRegionLocal, FissureDir);
+    f32 Meander = sin(Along * 0.034f + RegionHash * 6.28318f) * 9.0f;
+    Meander += sin(Along * 0.012f + RegionHash * 15.91f) * 5.0f;
+
+    f32 MainDist = abs(dot(FissureRegionLocal, FissureN) - Meander);
+    f32 FissureWidth = 6.0f + rand(FissureRegionCell + V2(64.2f, 11.9f)) * 4.0f;
+    f32 MainFissure = 1.0f - smoothstep(FissureWidth, FissureWidth + 4.2f, MainDist);
+
+    f32 SplitOffset = 8.0f + rand(FissureRegionCell + V2(47.5f, 39.2f)) * 5.0f;
+    f32 SplitDist = abs(dot(FissureRegionLocal, FissureN) - (Meander + SplitOffset));
+    f32 SplitFissure = 1.0f - smoothstep(FissureWidth * 0.80f, FissureWidth * 0.80f + 3.8f, SplitDist);
+
+    f32 SegmentGate = smoothstep(-0.35f, 0.45f, sin(Along * 0.017f + RegionHash * 21.7f));
+    f32 LargeFissureMask = HasLargeFissure * max(MainFissure, SplitFissure * 0.82f) * SegmentGate;
+
+    f32 FissureDepth = 14.0f + rand(FissureRegionCell + V2(92.8f, 73.6f)) * 8.0f;
+    NoiseValue -= LargeFissureMask * FissureDepth;
+
+    v3 FissureColor = V3(0.012f, 0.013f, 0.017f);
+    ColorValue = mix(ColorValue, FissureColor, LargeFissureMask);
+  }
+
+}
+
+f32 DistanceToNearestMausoleumRectEdge(v3 Basis)
+{
+  f32 Result = 1000000.0f;
+  v2 RegionSize = V2(2400.0f, 2400.0f);
+  v2 BaseRegionCell = floor(Basis.xy / RegionSize);
+
+  for (s32 Oy = -1; Oy <= 1; ++Oy)
+  {
+    for (s32 Ox = -1; Ox <= 1; ++Ox)
+    {
+      v2 RegionCell = BaseRegionCell + V2(f32(Ox), f32(Oy));
+
+      v2 RectCenter = V2(0.0f);
+      v2 HalfExtents = V2(0.0f);
+      if (GetMausoleumRectForRegion(RegionCell, RectCenter, HalfExtents))
+      {
+        if (CanSpawnMausoleumAt(V3(RectCenter, Basis.z)) == False) { continue; }
+
+        v2 Local = abs(Basis.xy - RectCenter) - HalfExtents;
+        v2 Outside = max(Local, V2(0.0f));
+        f32 Dist = length(Outside);
+        Result = min(Result, Dist);
+      }
+    }
+  }
+
+  return Result;
+}
+
+f32 ComputeOpenBiomeTerrainHeight(v3 Basis)
+{
+  // High-variation terrain field remapped to explicit [100, 250] range.
+  f32 MacroA = sin(Basis.x * 0.0019f) * 0.70f;
+  f32 MacroB = cos(Basis.y * 0.0017f) * 0.62f;
+  f32 MacroC = sin((Basis.x + Basis.y) * 0.0013f) * 0.48f;
+  f32 MacroD = cos((Basis.x - Basis.y) * 0.0011f) * 0.40f;
+
+  f32 N0 = gradient_noise_derivs(V3(Basis.xy / 1400.0f, 11.0f)).x * 0.55f;
+  f32 N1 = gradient_noise_derivs(V3(Basis.xy / 700.0f, 29.0f)).x * 0.35f;
+  f32 N2 = gradient_noise_derivs(V3(Basis.yx / 320.0f, 57.0f)).x * 0.22f;
+
+  f32 HeightSignal = MacroA + MacroB + MacroC + MacroD + N0 + N1 + N2;
+  f32 HeightSignalN = clamp(HeightSignal / 2.8f, -1.0f, 1.0f);
+  f32 TerrainHeight = MapValueToRange(HeightSignalN, -1.0f, 1.0f, 10000.0f, 10150.0f);
+
+  // Pull open-biome terrain toward the mausoleum floor near biome edges.
+  f32 MausoleumFloorHeight = 10088.0f;
+  f32 EdgeDistance = DistanceToNearestMausoleumRectEdge(Basis);
+  f32 EdgeBlend = 1.0f - smoothstep(30.0f, 180.0f, EdgeDistance);
+  TerrainHeight = mix(TerrainHeight, MausoleumFloorHeight, EdgeBlend);
+
+  return TerrainHeight;
+}
+
+void DoGrassBiome(v3 Basis, out v3 ColorValue, out f32 NoiseValue)
+{
+  // Rolling hills with broad, smooth elevation changes.
+  f32 TerrainHeight = ComputeOpenBiomeTerrainHeight(Basis);
+  f32 EdgeDistance = DistanceToNearestMausoleumRectEdge(Basis);
+  f32 EdgeBlend = 1.0f - smoothstep(30.0f, 180.0f, EdgeDistance);
+
+  NoiseValue = TerrainHeight - Basis.z;
+
+  // Green grass palette with subtle color variation.
+  f32 GrassNoise = rand(Basis.xy * 0.10f + V2(11.3f, 6.2f));
+  v3 GrassDark = V3(0.11f, 0.30f, 0.09f);
+  v3 GrassLight = V3(0.18f, 0.45f, 0.14f);
+  ColorValue = mix(GrassDark, GrassLight, GrassNoise);
+
+  // Patches of taller grass with brighter, denser color and slight extra height.
+  f32 TallPatchSize = 18.0f;
+  v2 TallPatchCell = floor(Basis.xy / TallPatchSize);
+  f32 TallPatchSpawn = step(0.78f, rand(TallPatchCell + V2(17.4f, 93.6f)));
+
+  v2 TallPatchCenter = (TallPatchCell + 0.5f) * TallPatchSize;
+  f32 TallDist = length(Basis.xy - TallPatchCenter);
+  f32 TallShape = 1.0f - smoothstep(2.5f, 8.5f, TallDist);
+
+  f32 SurfaceMask = 1.0f - smoothstep(0.15f, 1.40f, abs(NoiseValue));
+  f32 TallGrassMask = SurfaceMask * TallPatchSpawn * TallShape;
+
+  v3 TallGrassColor = V3(0.16f, 0.50f, 0.13f);
+  ColorValue = mix(ColorValue, TallGrassColor, TallGrassMask * 0.85f);
+
+  // Add a few voxels of lift where tall grass patches occur.
+  NoiseValue += TallGrassMask * 2.3f;
+
+  // Deciduous trees in large clumps (groves) with trunk + leafy canopy.
+  {
+    f32 GroveSize = 16.0f * 48.0f;
+    v2 GroveCell = floor(Basis.xy / GroveSize);
+
+    f32 HasGrove = step(0.42f, rand(GroveCell + V2(415.2f, 63.7f)));
+    v2 GroveCenterJitter = V2(rand(GroveCell + V2(29.6f, 11.2f)), rand(GroveCell + V2(72.5f, 144.7f))) - 0.5f;
+    v2 GroveCenter = (GroveCell + 0.5f) * GroveSize + GroveCenterJitter * (GroveSize * 0.35f);
+    f32 GroveRadius = 220.0f + rand(GroveCell + V2(188.3f, 52.4f)) * 120.0f;
+
+    f32 GroveDist = length(Basis.xy - GroveCenter);
+    f32 GroveMask = HasGrove * (1.0f - smoothstep(GroveRadius * 0.88f, GroveRadius, GroveDist));
+
+    f32 TreePatchSize = 16.0f * 12.0f;
+    v2 TreeCell = floor(Basis.xy / TreePatchSize);
+
+    f32 TreeSpawnHash = rand(TreeCell + V2(309.4f, 58.1f));
+    f32 EdgeSuppression = 1.0f - smoothstep(0.22f, 0.60f, EdgeBlend);
+    f32 PlaceTree = step(0.24f, TreeSpawnHash) * GroveMask * EdgeSuppression;
+
+    v2 TreeJitter = V2(rand(TreeCell + V2(17.7f, 81.6f)), rand(TreeCell + V2(91.2f, 7.4f))) - 0.5f;
+    v2 TreeCenter = (TreeCell + 0.5f) * TreePatchSize + TreeJitter * (TreePatchSize * 0.35f);
+
+    // Never spawn these trees where mountain biome participates.
+    f32 TreeMountainWeight = MountainBiomeBlendWeight(V3(TreeCenter, Basis.z));
+    PlaceTree *= (1.0f - step(0.001f, TreeMountainWeight));
+
+    // Anchor trunks to the same blended terrain-height function as the biome surface.
+    f32 TerrainHeightAtTree = ComputeOpenBiomeTerrainHeight(V3(TreeCenter, Basis.z));
+
+    v3 TreeLocal = V3(Basis.xy - TreeCenter, Basis.z - TerrainHeightAtTree);
+
+    f32 TrunkRadius = 1.8f;
+    f32 TrunkHeight = 22.0f;
+    f32 TrunkRadial = TrunkRadius - length(TreeLocal.xy);
+    f32 TrunkField = min(min(TrunkRadial, TreeLocal.z), TrunkHeight - TreeLocal.z);
+
+    v3 LeafLocalA = TreeLocal - V3(0.0f, 0.0f, TrunkHeight + 6.0f);
+    v3 LeafLocalB = TreeLocal - V3(2.2f, -1.4f, TrunkHeight + 9.0f);
+    f32 LeafFieldA = 9.5f - length(LeafLocalA);
+    f32 LeafFieldB = 7.0f - length(LeafLocalB);
+    f32 LeafField = max(LeafFieldA, LeafFieldB);
+
+    f32 TreeFieldCandidate = max(TrunkField, LeafField);
+    f32 TreeField = mix(-10000.0f, TreeFieldCandidate, PlaceTree);
+
+    NoiseValue = max(NoiseValue, TreeField);
+
+    f32 TrunkMask = PlaceTree * smoothstep(-0.10f, 0.45f, TrunkField);
+    f32 LeafMask = PlaceTree * smoothstep(-0.10f, 0.45f, LeafField);
+
+    v3 TrunkColor = V3(0.33f, 0.22f, 0.10f);
+    ColorValue = mix(ColorValue, TrunkColor, TrunkMask);
+
+    f32 LeafTone = rand(TreeCell + V2(144.3f, 211.8f));
+    v3 LeafGreen = V3(0.20f, 0.56f, 0.18f);
+    v3 LeafOlive = V3(0.39f, 0.48f, 0.17f);
+    v3 LeafColor = mix(LeafGreen, LeafOlive, LeafTone);
+    ColorValue = mix(ColorValue, LeafColor, LeafMask);
+  }
+
+  // Occasional flowers near the terrain surface.
+  f32 FlowerPatchSize = 16.0f;
+  v2 FlowerPatchCell = floor(Basis.xy / FlowerPatchSize);
+  f32 FlowerPatchHash = rand(FlowerPatchCell + V2(143.7f, 18.9f));
+  f32 HasFlowers = step(0.86f, FlowerPatchHash);
+
+  v2 FlowerPatchCenter = (FlowerPatchCell + 0.5f) * FlowerPatchSize;
+  v2 FlowerLocal = Basis.xy - FlowerPatchCenter;
+  f32 PetalDist = length(FlowerLocal);
+
+  f32 FlowerShape = 1.0f - smoothstep(1.4f, 2.8f, PetalDist);
+  f32 FlowerMask = SurfaceMask * HasFlowers * FlowerShape;
+
+  f32 FlowerHuePick = rand(FlowerPatchCell + V2(9.8f, 201.3f));
+  v3 FlowerA = V3(0.92f, 0.84f, 0.24f);
+  v3 FlowerB = V3(0.90f, 0.58f, 0.78f);
+  v3 FlowerC = V3(0.88f, 0.88f, 0.84f);
+  v3 FlowerColor = FlowerA;
+  if (FlowerHuePick > 0.66f) { FlowerColor = FlowerC; }
+  else if (FlowerHuePick > 0.33f) { FlowerColor = FlowerB; }
+
+  ColorValue = mix(ColorValue, FlowerColor, FlowerMask);
+}
+
+void DoForestBiome(v3 Basis, out v3 ColorValue, out f32 NoiseValue)
+{
+  f32 TerrainHeight = ComputeOpenBiomeTerrainHeight(Basis);
+  NoiseValue = TerrainHeight - Basis.z;
+
+  // Darker forest-floor greens.
+  f32 ForestNoise = rand(Basis.xy * 0.08f + V2(37.1f, 91.4f));
+  v3 ForestDark = V3(0.06f, 0.20f, 0.06f);
+  v3 ForestLight = V3(0.12f, 0.30f, 0.10f);
+  ColorValue = mix(ForestDark, ForestLight, ForestNoise);
+
+  // Dense conifer stands.
+  {
+    f32 StandSize = 16.0f * 44.0f;
+    v2 StandCell = floor(Basis.xy / StandSize);
+
+    f32 HasStand = step(0.36f, rand(StandCell + V2(522.4f, 41.7f)));
+    v2 StandJitter = V2(rand(StandCell + V2(67.2f, 12.5f)), rand(StandCell + V2(19.6f, 83.3f))) - 0.5f;
+    v2 StandCenter = (StandCell + 0.5f) * StandSize + StandJitter * (StandSize * 0.28f);
+    f32 StandRadius = 260.0f + rand(StandCell + V2(101.5f, 74.9f)) * 150.0f;
+
+    f32 StandDist = length(Basis.xy - StandCenter);
+    f32 StandMask = HasStand * (1.0f - smoothstep(StandRadius * 0.86f, StandRadius, StandDist));
+
+    f32 PatchSize = 16.0f * 5.0f;
+    v2 TreeCell = floor(Basis.xy / PatchSize);
+    f32 SpawnHash = rand(TreeCell + V2(611.9f, 28.6f));
+    f32 PlaceTree = step(0.20f, SpawnHash) * StandMask;
+
+    v2 TreeJitter = V2(rand(TreeCell + V2(7.2f, 43.7f)), rand(TreeCell + V2(92.6f, 14.3f))) - 0.5f;
+    v2 TreeCenter = (TreeCell + 0.5f) * PatchSize + TreeJitter * (PatchSize * 0.55f);
+
+    // Never spawn conifers where mountain biome participates.
+    f32 TreeMountainWeight = MountainBiomeBlendWeight(V3(TreeCenter, Basis.z));
+    PlaceTree *= (1.0f - step(0.001f, TreeMountainWeight));
+
+    f32 TerrainHeightAtTree = ComputeOpenBiomeTerrainHeight(V3(TreeCenter, Basis.z));
+    v3 TreeLocal = V3(Basis.xy - TreeCenter, Basis.z - TerrainHeightAtTree);
+
+    // Strong height gradient: short near stand edges, very tall near stand center.
+    f32 StandCore = 1.0f - smoothstep(StandRadius * 0.64f, StandRadius, StandDist);
+    f32 BaseTreeHeight = mix(75.0f, 200.0f, StandCore);
+    f32 TreeHeightVar = (rand(TreeCell + V2(444.4f, 219.1f)) - 0.5f) * 0.32f;
+    f32 ConiferHeight = clamp(BaseTreeHeight * (1.0f + TreeHeightVar), 60.0f, 200.0f);
+    f32 HeightNorm = Clamp01((ConiferHeight - 75.0f) / (200.0f - 75.0f));
+    f32 RadiusScale = mix(1.0f, 2.7f, HeightNorm);
+
+    // Trunk
+    f32 TrunkRadius = mix(1.45f, 3.6f, HeightNorm);
+    f32 TrunkHeight = ConiferHeight * 0.33f;
+    f32 TrunkField = min(min(TrunkRadius - length(TreeLocal.xy), TreeLocal.z), TrunkHeight - TreeLocal.z);
+
+    // Layered branch fans: cardinal + diagonal fans stacked up the trunk.
+    f32 FoliageField = -10000.0f;
+    f32 LayerCount = StandCore*25;
+    for (s32 LayerIndex = 0; LayerIndex < 10; ++LayerIndex)
+    {
+      f32 LayerT = f32(LayerIndex) / max(1.0f, LayerCount - 1.0f);
+      f32 LayerZ = (TrunkHeight - 0.8f) + LayerT * (ConiferHeight * 0.58f);
+      v3 LayerLocal = TreeLocal - V3(0.0f, 0.0f, LayerZ);
+
+      f32 LayerRadius = mix(8.8f * RadiusScale, 2.2f * RadiusScale, LayerT);
+      f32 LayerThickness = mix(1.15f * RadiusScale, 0.55f * RadiusScale, LayerT);
+
+      v2 P = LayerLocal.xy;
+      v2 P45 = V2((P.x + P.y) * 0.7071067f, (P.y - P.x) * 0.7071067f);
+      v2 P135 = V2((P.x - P.y) * 0.7071067f, (P.x + P.y) * 0.7071067f);
+
+      f32 FanX = min((LayerThickness * 0.92f) - abs(P.y), LayerRadius - abs(P.x));
+      f32 FanY = min((LayerThickness * 0.92f) - abs(P.x), LayerRadius - abs(P.y));
+      f32 FanD1 = min((LayerThickness * 0.70f) - abs(P45.y), (LayerRadius * 0.82f) - abs(P45.x));
+      f32 FanD2 = min((LayerThickness * 0.70f) - abs(P135.y), (LayerRadius * 0.82f) - abs(P135.x));
+
+      f32 PlanField = max(max(FanX, FanY), max(FanD1, FanD2));
+
+      // Slight droop toward branch tips so fans feel organic.
+      f32 TipDist = length(P);
+      f32 DroopZ = LayerLocal.z + TipDist * 0.11f;
+      f32 VerticalField = LayerThickness - abs(DroopZ);
+
+      f32 LayerField = min(PlanField, VerticalField);
+      FoliageField = max(FoliageField, LayerField);
+    }
+
+    // Top spire to finish silhouette.
+    f32 SpireBaseZ = TrunkHeight + (ConiferHeight * 0.44f);
+    f32 SpireHeight = ConiferHeight * 0.23f;
+    f32 SpireZ = TreeLocal.z - SpireBaseZ;
+    f32 SpireT = Clamp01(SpireZ / SpireHeight);
+    f32 SpireRadius = mix(2.4f * RadiusScale, 0.15f * RadiusScale, SpireT);
+    f32 SpireField = min(min(SpireRadius - length(TreeLocal.xy), SpireZ), SpireHeight - SpireZ);
+
+    f32 ConiferFieldCandidate = max(max(TrunkField, FoliageField), SpireField);
+    f32 ConiferField = mix(-10000.0f, ConiferFieldCandidate, PlaceTree);
+
+    NoiseValue = max(NoiseValue, ConiferField);
+
+    f32 TrunkMask = PlaceTree * smoothstep(-0.10f, 0.45f, TrunkField);
+    f32 LeafMask = PlaceTree * smoothstep(-0.10f, 0.45f, max(FoliageField, SpireField));
+
+    v3 TrunkColor = V3(0.24f, 0.15f, 0.08f);
+    ColorValue = mix(ColorValue, TrunkColor, TrunkMask);
+
+    f32 NeedleTone = rand(TreeCell + V2(144.3f, 311.8f));
+    v3 NeedleDark = V3(0.05f, 0.22f, 0.09f);
+    v3 NeedleLight = V3(0.10f, 0.34f, 0.16f);
+    v3 NeedleColor = mix(NeedleDark, NeedleLight, NeedleTone);
+    ColorValue = mix(ColorValue, NeedleColor, LeafMask);
+  }
+}
+
+void DoMountainBiome(v3 Basis, out v3 ColorValue, out f32 NoiseValue)
+{
+  // Tall mountain field with peaks approaching 10,000 units.
+  f32 BaseHeight = 10000.0f;
+  f32 PeakHeight = 19750.0f;
+
+  // Ridge-noise-driven macro shape with extra octave detail for sharp crests.
+  v3 WarpP = V3(Basis.xy / 3600.0f, 17.0f);
+  f32 WarpA = gradient_noise_derivs(WarpP).x;
+  f32 WarpB = gradient_noise_derivs(V3(Basis.yx / 3600.0f, 53.0f)).x;
+  v2 RidgeBasis = Basis.xy + V2(WarpA, WarpB) * 340.0f;
+
+  f32 R0 = ridge_noise(V3(RidgeBasis / 7600.0f, 13.0f));
+  f32 R1 = ridge_noise(V3(RidgeBasis / 3800.0f, 37.0f));
+  f32 R2 = ridge_noise(V3(RidgeBasis / 1900.0f, 79.0f));
+  f32 R3 = ridge_noise(V3(RidgeBasis / 950.0f, 121.0f));
+
+  f32 Ridge = R0 * 0.46f + R1 * 0.28f + R2 * 0.18f + R3 * 0.08f;
+  Ridge = Clamp01(Ridge);
+
+  // Push mass into steep walls and needle-like summits.
+  Ridge = pow(Ridge, 3.4f);
+
+  f32 TerrainHeight = BaseHeight + Ridge * (PeakHeight - BaseHeight);
+  NoiseValue = TerrainHeight - Basis.z;
+
+  // Rock-to-snow palette by elevation.
+  f32 Height01 = Clamp01((TerrainHeight - BaseHeight) / (PeakHeight - BaseHeight));
+  v3 RockDark = V3(0.16f, 0.15f, 0.14f);
+  v3 RockLight = V3(0.40f, 0.39f, 0.37f);
+  f32 RockDetail = Clamp01((gradient_noise_derivs(V3(Basis.xy / 420.0f, 191.0f)).x + 1.0f) * 0.5f);
+  v3 RockColor = mix(RockDark, RockLight, RockDetail);
+
+  f32 SnowMask = smoothstep(0.76f, 0.92f, Height01);
+  v3 SnowColor = V3(0.91f, 0.93f, 0.95f);
+  ColorValue = mix(RockColor, SnowColor, SnowMask);
+}
+
+f32 ForestBiomeBlendWeight(v3 Basis)
+{
+  // Continuous biome mask using Perlin-style gradient noise (no hard grid cells).
+  v3 BiomeSampleP = V3(Basis.xy / 2600.0f, 0.0f);
+  f32 WarpX = gradient_noise_derivs(V3(Basis.xy / 1200.0f, 37.0f)).x;
+  f32 WarpY = gradient_noise_derivs(V3(Basis.yx / 1200.0f, 91.0f)).x;
+  BiomeSampleP.xy += V2(WarpX, WarpY) * 0.22f;
+
+  f32 BiomeNoise = (gradient_noise_derivs(BiomeSampleP).x + 1.0f) * 0.5f;
+  // Blend band around the center threshold to avoid hard biome seams.
+  f32 ForestWeight = smoothstep(0.44f, 0.60f, BiomeNoise);
+  return ForestWeight;
+}
+
+f32 MountainBiomeBlendWeight(v3 Basis)
+{
+  // Sparse, continuous mask for mountain regions.
+  v3 P = V3(Basis.xy / 10000.0f, 0.0f);
+  f32 WarpX = gradient_noise_derivs(V3(Basis.xy / 5200.0f, 211.0f)).x;
+  f32 WarpY = gradient_noise_derivs(V3(Basis.yx / 5200.0f, 317.0f)).x;
+  P.xy += V2(WarpX, WarpY) * 0.18f;
+
+  f32 NoiseV = (gradient_noise_derivs(P).x + 1.0f) * 0.5f;
+  f32 MountainWeight = smoothstep(0.66f, 0.82f, NoiseV);
+  return MountainWeight;
+}
+
+b32 IsInMausoleumBiomeRect(v3 Basis)
+{
+  if (CanSpawnMausoleumAt(Basis) == False)
+  {
+    return False;
+  }
+
+  v2 RegionSize = V2(2400.0f, 2400.0f);
+  v2 RegionCell = floor(Basis.xy / RegionSize);
+
+  v2 RectCenter = V2(0.0f);
+  v2 HalfExtents = V2(0.0f);
+  if (GetMausoleumRectForRegion(RegionCell, RectCenter, HalfExtents) == False)
+  {
+    return False;
+  }
+
+  if (CanSpawnMausoleumAt(V3(RectCenter, Basis.z)) == False)
+  {
+    return False;
+  }
+
+  v2 RectLocal = Basis.xy - RectCenter;
+
+  return abs(RectLocal.x) <= HalfExtents.x && abs(RectLocal.y) <= HalfExtents.y;
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  b32 InBiomeRect = IsInMausoleumBiomeRect(Basis);
+
+  v3 ColorValue = V3(0.0f);
+  f32 NoiseValue = -10000.0f;
+
+  if (InBiomeRect)
+  {
+    DoMausoleumBiome(Basis, ColorValue, NoiseValue);
+  }
+  else
+  {
+    v3 GrassColor = V3(0.0f);
+    f32 GrassNoise = -10000.0f;
+    DoGrassBiome(Basis, GrassColor, GrassNoise);
+
+    v3 ForestColor = V3(0.0f);
+    f32 ForestNoise = -10000.0f;
+    DoForestBiome(Basis, ForestColor, ForestNoise);
+
+    f32 ForestWeight = ForestBiomeBlendWeight(Basis);
+    v3 OpenColor = mix(GrassColor, ForestColor, ForestWeight);
+    f32 OpenNoise = mix(GrassNoise, ForestNoise, ForestWeight);
+
+    v3 MountainColor = V3(0.0f);
+    f32 MountainNoise = -10000.0f;
+    DoMountainBiome(Basis, MountainColor, MountainNoise);
+
+    f32 MountainWeight = MountainBiomeBlendWeight(Basis);
+    ColorValue = mix(OpenColor, MountainColor, MountainWeight);
+    NoiseValue = mix(OpenNoise, MountainNoise, MountainWeight);
+  }
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

@@ -1,0 +1,13 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+void main()
+{
+
+}

@@ -1,0 +1,108 @@
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+uniform sampler2D DerivsTex;
+uniform sampler2D InputTex;
+
+in vec2 UV;
+out v4 Output;
+
+f32 SphereMask(v3 Point, v3 Center, f32 Radius)
+{
+  return Clamp01(1.f - (length(Point - Center) / Radius));
+}
+
+f32 CylinderMask(v3 Point, f32 Height, f32 Radius)
+{
+  f32 RadialMask = Clamp01(1.f - (length(Point.xy) / Radius));
+  f32 HeightMask = step(0.f, Point.z) * step(Point.z, Height);
+  return RadialMask * HeightMask;
+}
+
+f32 ConiferCrownMask(v3 Point, f32 TreeHeight, f32 BaseRadius)
+{
+  v3 Crown0 = V3(0.f, 0.f, TreeHeight * 0.38f);
+  v3 Crown1 = V3(0.f, 0.f, TreeHeight * 0.56f);
+  v3 Crown2 = V3(0.f, 0.f, TreeHeight * 0.72f);
+  v3 Crown3 = V3(0.f, 0.f, TreeHeight * 0.86f);
+
+  f32 Radius0 = BaseRadius * 1.00f;
+  f32 Radius1 = BaseRadius * 0.78f;
+  f32 Radius2 = BaseRadius * 0.56f;
+  f32 Radius3 = BaseRadius * 0.34f;
+
+  f32 Mask0 = SphereMask(Point, Crown0, Radius0);
+  f32 Mask1 = SphereMask(Point, Crown1, Radius1);
+  f32 Mask2 = SphereMask(Point, Crown2, Radius2);
+  f32 Mask3 = SphereMask(Point, Crown3, Radius3);
+
+  Mask0 *= step(TreeHeight * 0.25f, Point.z);
+  Mask1 *= step(TreeHeight * 0.42f, Point.z);
+  Mask2 *= step(TreeHeight * 0.58f, Point.z);
+  Mask3 *= step(TreeHeight * 0.72f, Point.z);
+
+  return Max(Max(Mask0, Mask1), Max(Mask2, Mask3));
+}
+
+f32 SpawnTreeOnGrid(v3 Basis, v3 NormalValue, f32 NoiseValue)
+{
+  f32 GridSize = 16.f;
+  v2 GridP = Basis.xy / GridSize;
+  v2 Cell = floor(GridP);
+  v2 Local = fract(GridP) - V2(0.5f);
+
+  f32 TreePresent = step(0.90f, white_noise(V3(Cell, 59.f)));
+  f32 TreeHeight = 48.f + (6.f * white_noise(V3(Cell, 61.f)));
+  f32 TrunkRadius = 0.80f + (0.15f * white_noise(V3(Cell, 63.f)));
+  f32 CrownRadius = 7.5f + (1.0f * white_noise(V3(Cell, 65.f)));
+
+  f32 TreeRelativeZ = -NoiseValue;
+  v3 Point = V3(Local.x, Local.y, TreeRelativeZ);
+
+  f32 SurfaceMask = step(0.f, TreeRelativeZ) * step(TreeRelativeZ, TreeHeight);
+  f32 NormalMask = Clamp01((NormalValue.z - 0.35f) / 0.65f);
+  f32 TrunkMask = CylinderMask(Point, TreeHeight * 0.72f, TrunkRadius);
+  TrunkMask *= step(0.f, Point.z);
+  TrunkMask *= step(Point.z, TreeHeight * 0.60f);
+
+  f32 CrownMask = ConiferCrownMask(Point, TreeHeight, CrownRadius);
+
+  return TreePresent * SurfaceMask * NormalMask * Max(TrunkMask, CrownMask);
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 66);
+  f32 y = floor(gl_FragCoord.y - (z*66));
+
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+  ivec2 InputTexCoord = ivec2(gl_FragCoord.x + 1, (y + 1) + (z * 68) + 68 );
+  v4 TexLookup = texelFetch(InputTex,  InputTexCoord, 0);
+  v3 NormalValue = texelFetch(DerivsTex, ivec2(gl_FragCoord.xy) + ivec2(0, 0), 0).xyz;
+
+  vec3 ColorValue = TexLookup.rgb;
+  f32 NoiseValue = TexLookup.a;
+
+  if (length(ColorValue) < 0.01f)
+  {
+    ColorValue = V3(0.1f, 0.8f, 0.1f);
+  }
+
+  {
+    f32 TreeMask = SpawnTreeOnGrid(Basis, NormalValue, NoiseValue);
+    v3 BarkColor = V3(0.24f, 0.15f, 0.05f);
+    v3 LeafColor = V3(0.08f, 0.30f, 0.08f);
+
+    NoiseValue += 80.f * TreeMask;
+    ColorValue = Lerp(ColorValue, BarkColor, TreeMask);
+    ColorValue = Lerp(ColorValue, LeafColor, TreeMask * 0.80f);
+  }
+
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}

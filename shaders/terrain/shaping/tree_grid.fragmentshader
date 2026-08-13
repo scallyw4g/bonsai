@@ -1,0 +1,87 @@
+uniform  v2 SampleRemapCurvePoints[16];
+uniform u32 SampleRemapCurvePointCount;
+
+uniform v3 WorldspaceChunkBasis;
+uniform v3 ChunkResolution;
+
+in vec2 UV;
+out v4 Output;
+
+f32 TreeCylinderMask(v3 Point, f32 Height, f32 Radius)
+{
+  v3 Base = V3(0.f, 0.f, 0.f);
+  f32 RadialMask = Clamp01(1.f - (length(Point.xy - Base.xy) / Radius));
+  f32 HeightMask = step(Base.z, Point.z) * step(Point.z, Height);
+  return RadialMask * HeightMask;
+}
+
+f32 SpawnTreeOnGrid(v3 Basis, f32 NoiseValue)
+{
+  f32 GridSize = 16.f;
+  v2 GridP = Basis.xy / GridSize;
+  v2 Cell = floor(GridP);
+  v2 Local = fract(GridP) - V2(0.5f);
+
+  f32 TreePresent = step(0.90f, white_noise(V3(Cell, 59.f)));
+  f32 TreeHeight = 48.f;
+  f32 TreeRadius = 1.75f;
+
+  f32 TreeRelativeZ = -NoiseValue;
+  v3 Point = V3(Local.x, Local.y, TreeRelativeZ);
+
+  f32 SurfaceMask = step(0.f, TreeRelativeZ) * step(TreeRelativeZ, TreeHeight);
+  f32 TreeMask = TreeCylinderMask(Point, TreeHeight, TreeRadius);
+
+  return TreePresent * SurfaceMask * TreeMask;
+}
+
+void main()
+{
+  f32 x = floor(gl_FragCoord.x);
+  f32 z = floor(gl_FragCoord.y / 68);
+  f32 y = floor(gl_FragCoord.y - (z*68));
+
+
+  v3 Offset = V3(0);
+  v3 Basis = Offset + WorldspaceChunkBasis + (v3(x,y,z)*ChunkResolution);
+
+
+  f32 NoiseValue = 1000.f-Basis.z;
+  /* f32 NoiseValue = 500.f-Basis.z; */
+  /* f32 NoiseValue = 3500.f-Basis.z; */
+
+  v3 ColorValue = V3(0.008f, 0.05f, 0.008f)*2.f;
+
+  f32 White = white_noise(v3(x,y,z));
+  ColorValue -= 0.01f*White;
+
+  {
+    v3 Period = V3(300.f);
+    float Amplitude = 0.f;
+    v3 xyz = Basis / Period;
+    v4 gn = gradient_noise_derivs(xyz);
+    NoiseValue += gn.x * Amplitude;
+  }
+
+  {
+    v4 Grass = DoGrass(Basis, NoiseValue, V3(0,0,1), ColorValue);
+    ColorValue  = Grass.rgb;
+    NoiseValue += Grass.w;
+  }
+
+
+  {
+    f32 TreeMask = SpawnTreeOnGrid(Basis, NoiseValue);
+    v3 BarkColor = V3(0.24f, 0.15f, 0.05f);
+
+    NoiseValue += TreeMask;
+    ColorValue = Lerp(ColorValue, BarkColor, TreeMask);
+  }
+
+  //
+  // -- end user code --
+  //
+
+  Output.rgb = ColorValue;
+  Output.a = NoiseValue;
+}
