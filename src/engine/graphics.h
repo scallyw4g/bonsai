@@ -187,6 +187,8 @@ poof(@do_editor_ui)
 {
   bonsai_futex Initialized;
   bonsai_futex RenderGate;
+  gl_fence FrameFence;
+  gl_fence SwapbuffersFence;
 
   render_settings Settings;
   render_settings PrevSettings;

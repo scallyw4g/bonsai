@@ -254,39 +254,11 @@ DrainHiRenderQueue(engine_resources *Engine)
 
             UiFrameEnd(&Engine->Ui);
 
-            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-            MapGpuBuffer(&Ui->TextGroup->Buf);
-
-            BonsaiSwapBuffers(&Engine->Stdlib.Os);
-
-
-            HotReloadShaders(GetStdlib());
-
-
-            /* GpuMap = GetNextGpuMap(Graphics); */
-
-            // Map GPU buffers for next frame
-            MapGpuBuffer(GpuMap);
-            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-            Assert(GpuMap->Buffer.At == 0);
-
-            UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
-
-            IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
             {
-              if (Timer->Ns == 0)
-              {
-                if (QueryGpuTimer(Timer))
-                {
-#if BONSAI_DEBUG_SYSTEM_API
-                  GetDebugState()->PushHistogramDataPoint(Timer->Ns);
-                  // NOTE(Jesse): This skips the next timer, but it'll get
-                  // hit on the next frame, so no worries ..
-                  RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
-#endif
-                }
-              }
+              TIMED_NAMED_BLOCK(GL_FenceSync);
+              Graphics->FrameFence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
             }
+
             AssertNoGlErrors;
           } break;
 
@@ -357,7 +329,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
   /* RenderInfo("DrainRenderQueue"); */
 
-  if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
+  if (FutexIsSignaled(&Graphics->RenderGate)) return;
 
   AssertNoGlErrors;
   while (work_queue_entry *Job = PopWorkQueueEntry(LoRenderQ))
@@ -817,63 +789,9 @@ DrainLoRenderQueue(engine_resources *Engine)
 
     RewindArena(GetTranArena());
 
-    if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
+    if (FutexIsSignaled(&Graphics->RenderGate)) return;
   }
 
-  {
-    TIMED_NAMED_BLOCK(CheckReadbackJobs);
-    IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
-    {
-      TIMED_NAMED_BLOCK(CheckJob);
-      Assert(PBOJob);
-
-      /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
-      /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
-
-      u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-      AssertNoGlErrors;
-      switch(SyncStatus)
-      {
-        case GL_ALREADY_SIGNALED:
-        case GL_CONDITION_SATISFIED:
-        {
-          TIMED_NAMED_BLOCK(MapBuffer);
-
-          AssertNoGlErrors;
-          /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
-          /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
-          GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
-          AssertNoGlErrors;
-          u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
-          AssertNoGlErrors;
-
-          auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
-          PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
-
-          // TODO(Jesse): This actually makes the loop skip a job because we
-          // shorten the array, but never update the index we're looking at.
-          //
-          // It doesn't matter in this case because this runs every frame, so
-          // the skipped job is just a frame late.  But, it would be nice if
-          // this was better.
-          // 
-          // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
-          RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
-        } break;
-
-        case GL_TIMEOUT_EXPIRED:
-        {
-        } break;
-
-        case GL_WAIT_FAILED:
-        {
-          SoftError("Error waiting on gl sync object");
-        } break;
-      }
-
-      if (FutexIsSignaled(&Engine->Graphics.RenderGate)) return;
-    }
-  }
 }
 
 #define MillisecondsToNanoseconds(ms) (ms*1000.0)
@@ -898,6 +816,63 @@ SpinlockNs(s32 Nanoseconds)
   }
 }
 
+link_internal void
+CheckNoiseReadbackJobs(engine_resources *Engine, graphics *Graphics, platform *Plat)
+{
+  TIMED_NAMED_BLOCK(CheckReadbackJobs);
+  IterateOver(&Graphics->NoiseReadbackJobs, PBOJob, JobIndex)
+  {
+    TIMED_NAMED_BLOCK(CheckJob);
+    Assert(PBOJob);
+
+    /* Info("PBOJob(0x%x) JobIndex(%u)", PBOJob, JobIndex.Index); */
+    /* Info("0x%x 0x%x", PBOJob->PBOBuf.PBO, PBOJob->PBOBuf.Fence); */
+
+    u32 SyncStatus = GetGL()->ClientWaitSync(PBOJob->PBOBuf.Fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+    AssertNoGlErrors;
+    switch(SyncStatus)
+    {
+      case GL_ALREADY_SIGNALED:
+      case GL_CONDITION_SATISFIED:
+      {
+        TIMED_NAMED_BLOCK(MapBuffer);
+
+        AssertNoGlErrors;
+        /* umm JobCount = AtElements(&Graphics->NoiseReadbackJobs).Index; */
+        /* Info("(%d) Binding and Mapping PBOJob(0x%x) PBO(%u) JobCount(%d) JobIndex(%u)", ThreadLocal_ThreadIndex, PBOJob, PBOJob->PBOBuf.PBO, JobCount, JobIndex.Index); */
+        GetGL()->BindBuffer(GL_PIXEL_PACK_BUFFER, PBOJob->PBOBuf.PBO);
+        AssertNoGlErrors;
+        u32 *NoiseValues = Cast(u32*, GetGL()->MapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+        AssertNoGlErrors;
+
+        auto BuildMeshJob = WorkQueueEntry(WorkQueueEntryFinalizeNoiseValues(PBOJob->PBOBuf, NoiseValues, PBOJob->NoiseDim, PBOJob->DestNode));
+        PushWorkQueueEntry(&Plat->LowPriority, &BuildMeshJob);
+
+        // TODO(Jesse): This actually makes the loop skip a job because we
+        // shorten the array, but never update the index we're looking at.
+        //
+        // It doesn't matter in this case because this runs every frame, so
+        // the skipped job is just a frame late.  But, it would be nice if
+        // this was better.
+        // 
+        // NOTE(Jesse): Must happen after we read the PBOJob values for the work queue entry
+        RemoveUnordered(&Graphics->NoiseReadbackJobs, JobIndex);
+      } break;
+
+      case GL_TIMEOUT_EXPIRED:
+      {
+      } break;
+
+      case GL_WAIT_FAILED:
+      {
+        SoftError("Error waiting on gl sync object");
+      } break;
+    }
+
+    if (FutexIsSignaled(&Graphics->RenderGate)) return;
+  }
+}
+
 link_export THREAD_MAIN_RETURN
 RenderThread_Main(void *ThreadStartupParams)
 {
@@ -914,10 +889,11 @@ RenderThread_Main(void *ThreadStartupParams)
                 os *Os        = &Engine->Stdlib.Os;
           platform *Plat      = &Engine->Stdlib.Plat;
         engine_api *EngineApi = &Engine->EngineApi;
+          graphics *Graphics  = &Engine->Graphics;
 
   PlatformMakeRenderContextCurrent(Os);
 
-  b32 InitResult = GraphicsInit(&Engine->Graphics, &Engine->Settings, AllocateArena());
+  b32 InitResult = GraphicsInit(Graphics, &Engine->Settings, AllocateArena());
 
   memory_arena *UiMemory = AllocateArena();
   if (InitResult)
@@ -931,15 +907,15 @@ RenderThread_Main(void *ThreadStartupParams)
   }
 
   // Map immediate GPU buffers for first frame
-  MapGpuBuffer(&Engine->Graphics.ImmediateGeometry);
-  MapGpuBuffer(&Engine->Graphics.Transparency.GpuBuffer);
+  MapGpuBuffer(&Graphics->ImmediateGeometry);
+  MapGpuBuffer(&Graphics->Transparency.GpuBuffer);
 
   auto Ui = &Engine->Ui;
   MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
   MapGpuBuffer(&Ui->TextGroup->Buf);
 
   FullBarrier;
-  SignalFutex(&Engine->Graphics.Initialized);
+  SignalFutex(&Graphics->Initialized);
 
   if (InitResult)
   {
@@ -955,6 +931,105 @@ RenderThread_Main(void *ThreadStartupParams)
 
       EngineApi->DrainHiRenderQueue(Engine);
       EngineApi->DrainLoRenderQueue(Engine);
+
+      CheckNoiseReadbackJobs(Engine, Graphics, Plat);
+
+      if (Graphics->FrameFence)
+      {
+        TIMED_NAMED_BLOCK(WaitForFrameFence);
+
+        u32 SyncStatus = 0;
+        {
+          TIMED_NAMED_BLOCK(ClientWaitSync);
+          SyncStatus = GetGL()->ClientWaitSync(Graphics->FrameFence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+        }
+        switch(SyncStatus)
+        {
+          case GL_ALREADY_SIGNALED:
+          case GL_CONDITION_SATISFIED:
+          {
+            GetGL()->DeleteSync(Graphics->FrameFence);
+            Graphics->FrameFence = 0;
+            AssertNoGlErrors;
+
+            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+
+            Graphics->SwapbuffersFence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+          } break;
+
+          case GL_WAIT_FAILED:
+          {
+            SoftError("Error waiting on gl sync object");
+          } break;
+
+          case GL_TIMEOUT_EXPIRED:
+          {
+          } break;
+        }
+      }
+
+      if (Graphics->SwapbuffersFence)
+      {
+        TIMED_NAMED_BLOCK(WaitForSwapbuffersFence);
+
+        u32 SyncStatus = 0;
+        {
+          TIMED_NAMED_BLOCK(ClientWaitSync);
+          SyncStatus = GetGL()->ClientWaitSync(Graphics->SwapbuffersFence, GL_SYNC_FLUSH_COMMANDS_BIT, 100);
+        }
+        switch(SyncStatus)
+        {
+          case GL_ALREADY_SIGNALED:
+          case GL_CONDITION_SATISFIED:
+          {
+            GetGL()->DeleteSync(Graphics->SwapbuffersFence);
+            Graphics->SwapbuffersFence = 0;
+            AssertNoGlErrors;
+
+            HotReloadShaders(GetStdlib());
+
+            // Map GPU buffers for next frame
+            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+            MapGpuBuffer(&Ui->TextGroup->Buf);
+
+            triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
+            MapGpuBuffer(GpuMap);
+            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
+            Assert(GpuMap->Buffer.At == 0);
+
+            UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
+
+            AssertNoGlErrors;
+          } break;
+
+          case GL_WAIT_FAILED:
+          {
+            SoftError("Error waiting on gl sync object");
+          } break;
+
+          case GL_TIMEOUT_EXPIRED:
+          {
+          } break;
+        }
+      }
+
+#if 0
+      IterateOver(&Graphics->GpuTimers, Timer, TimerIndex)
+      {
+        if (Timer->Ns == 0)
+        {
+          if (QueryGpuTimer(Timer))
+          {
+#if BONSAI_DEBUG_SYSTEM_API
+            GetDebugState()->PushHistogramDataPoint(Timer->Ns);
+            // NOTE(Jesse): This skips the next timer, but it'll get
+            // hit on the next frame, so no worries ..
+            RemoveUnordered(&Graphics->GpuTimers, TimerIndex);
+#endif
+          }
+        }
+      }
+#endif
 
       if (FutexIsSignaled(&Plat->WorkerThreadsSuspendFutex))
       {
@@ -982,9 +1057,8 @@ RenderThread_Main(void *ThreadStartupParams)
         WaitOnFutex(&Plat->WorkerThreadsSuspendFutex);
       }
 
-      SpinlockNs(100);
-
-      /* SleepMs(1); */
+      /* SpinlockNs(100); */
+      SleepMs(1);
     }
 
     Info("Exiting Render Thread (%d)", Thread->ThreadIndex);

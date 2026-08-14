@@ -1933,6 +1933,7 @@ DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 
 
 
+
 link_internal void
 RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera  )
 {
