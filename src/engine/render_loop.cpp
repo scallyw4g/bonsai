@@ -881,6 +881,7 @@ RenderThread_Main(void *ThreadStartupParams)
 
   Assert(GetStdlib()->ThreadStates);
 
+  PlatformPinCurrentThreadToCore(1);
   /* Assert(Thread->ThreadIndex > 0); */
   /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 
@@ -934,6 +935,7 @@ RenderThread_Main(void *ThreadStartupParams)
 
       CheckNoiseReadbackJobs(Engine, Graphics, Plat);
 
+      /* Info("Refresh Rate (%d)", GetCurrentWindowRefreshRate(Os->Window)); */
       if (Graphics->FrameFence)
       {
         TIMED_NAMED_BLOCK(WaitForFrameFence);
@@ -948,58 +950,29 @@ RenderThread_Main(void *ThreadStartupParams)
           case GL_ALREADY_SIGNALED:
           case GL_CONDITION_SATISFIED:
           {
-            GetGL()->DeleteSync(Graphics->FrameFence);
-            Graphics->FrameFence = 0;
-            AssertNoGlErrors;
+            /* if (PlatformGetNextVBlank().NextVBlankInNanoseconds < MillisecondsToNanoseconds(1)) */
+            {
+              BonsaiSwapBuffers(&Engine->Stdlib.Os);
 
-            BonsaiSwapBuffers(&Engine->Stdlib.Os);
+              GetGL()->Finish();
 
-            Graphics->SwapbuffersFence = GetGL()->FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-          } break;
+              HotReloadShaders(GetStdlib());
 
-          case GL_WAIT_FAILED:
-          {
-            SoftError("Error waiting on gl sync object");
-          } break;
+              // Map GPU buffers for next frame
+              MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
+              MapGpuBuffer(&Ui->TextGroup->Buf);
 
-          case GL_TIMEOUT_EXPIRED:
-          {
-          } break;
-        }
-      }
+              triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
+              MapGpuBuffer(GpuMap);
+              /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
+              Assert(GpuMap->Buffer.At == 0);
 
-      if (Graphics->SwapbuffersFence)
-      {
-        TIMED_NAMED_BLOCK(WaitForSwapbuffersFence);
+              UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
 
-        u32 SyncStatus = 0;
-        {
-          TIMED_NAMED_BLOCK(ClientWaitSync);
-          SyncStatus = GetGL()->ClientWaitSync(Graphics->SwapbuffersFence, GL_SYNC_FLUSH_COMMANDS_BIT, 100);
-        }
-        switch(SyncStatus)
-        {
-          case GL_ALREADY_SIGNALED:
-          case GL_CONDITION_SATISFIED:
-          {
-            GetGL()->DeleteSync(Graphics->SwapbuffersFence);
-            Graphics->SwapbuffersFence = 0;
-            AssertNoGlErrors;
-
-            HotReloadShaders(GetStdlib());
-
-            // Map GPU buffers for next frame
-            MapGpuBuffer(&Ui->SolidQuadGeometryBuffer);
-            MapGpuBuffer(&Ui->TextGroup->Buf);
-
-            triple_buffered_gpu_mapped_element_buffer *GpuMap        = &Graphics->ImmediateGeometry;
-            MapGpuBuffer(GpuMap);
-            /* MapGpuBuffer(&Graphics->Transparency.GpuBuffer); */
-            Assert(GpuMap->Buffer.At == 0);
-
-            UnsignalFutex(&Graphics->RenderGate, MAIN_THREAD_ThreadLocal_ThreadIndex);
-
-            AssertNoGlErrors;
+              GetGL()->DeleteSync(Graphics->FrameFence);
+              Graphics->FrameFence = 0;
+              AssertNoGlErrors;
+            }
           } break;
 
           case GL_WAIT_FAILED:
