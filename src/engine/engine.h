@@ -39,6 +39,7 @@ link_internal engine_resources *GetEngineResources();
 
 #include <engine/animation.h>
 #include <engine/model.h>
+#include <engine/sound.h>
 #include <engine/asset.h>
 #include <engine/particle.h>
 #include <engine/debug.h>

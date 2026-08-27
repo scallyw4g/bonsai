@@ -881,7 +881,6 @@ RenderThread_Main(void *ThreadStartupParams)
 
   Assert(GetStdlib()->ThreadStates);
 
-  PlatformPinCurrentThreadToCore(1);
   /* Assert(Thread->ThreadIndex > 0); */
   /* SetThreadLocal_ThreadIndex(Thread->ThreadIndex); */
 

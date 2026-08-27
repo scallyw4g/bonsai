@@ -27,6 +27,16 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, asset_type *Element, cs Name,
     }
     PushNewRow(Ui);
     if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
+    if (Button(Ui, CSz("Sound"), UiId(Window, "enum AssetType_Sound", Element, ThisHash), Params))
+    {
+      Result = True;
+            *Element = AssetType_Sound;
+
+
+      SetToggleButton(Ui, ToggleButtonId, False);
+    }
+    PushNewRow(Ui);
+    if (Name.Count) { PushColumn(Ui, CSz("|")); } // Skip the first Name column
     if (Button(Ui, CSz("Models"), UiId(Window, "enum AssetType_Models", Element, ThisHash), Params))
     {
       Result = True;

@@ -439,6 +439,7 @@ FreeAsset(engine_resources *Engine, asset *Asset)
       FreeModelBuffer(&Engine->AssetSystem.AssetMemory, &Asset->Models);
     } break;
 
+    case AssetType_Sound:
     case AssetType_Texture:
     case AssetType_WorldChunk:
     {
@@ -907,6 +908,7 @@ GetDimForAssetModel(asset *Asset, u32 ModelIndex)
   {
     InvalidCase(AssetType_Undefined);
     InvalidCase(AssetType_Texture);
+    InvalidCase(AssetType_Sound);
 
     case AssetType_WorldChunk:
     {

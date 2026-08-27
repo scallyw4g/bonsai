@@ -145,6 +145,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_de
 
 
 
+
 struct terrain_finalize_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_finalize_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -565,6 +566,7 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, keyframe *
 struct rectangular_lattice_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
 struct world_update_op_shape_params_torus;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -662,6 +664,8 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_down
 struct brush_layer;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
+
+
 
 
 

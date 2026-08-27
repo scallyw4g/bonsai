@@ -4217,6 +4217,44 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, platform *Element, cs Name, u
             
             
             
+            cs MemberName = CSz("Audio");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(audio*, &Element->Audio);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+
+            
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("ServerState");
 
                                                                                                 // Regular struct member
@@ -6616,6 +6654,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_decoration_render_con
   }
 
 }
+
 
 
 
@@ -23748,6 +23787,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, rectangular_lattice_params *E
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, world_update_op_shape_params_torus *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -27782,6 +27822,8 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, brush_layer *Element, cs Name
   }
 
 }
+
+
 
 
 

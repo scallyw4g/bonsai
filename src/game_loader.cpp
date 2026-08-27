@@ -161,6 +161,7 @@ main( s32 ArgCount, const char ** Args )
   thread_main_callback_type_buffer CustomWorkerProcs = ThreadMainCallbackTypeBuffer(Procs, ArrayCount(Procs));
 
   auto Flags = bonsai_init_flags( BonsaiInit_OpenWindow            |
+                                  BonsaiInit_Audio                 |
                                   BonsaiInit_LaunchThreadPool      |
                                   BonsaiInit_InitDebugSystem       |
                                   BonsaiInit_ProfileContextSwitches );

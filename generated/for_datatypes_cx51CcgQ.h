@@ -742,6 +742,8 @@ DoJob(finalize_shit_and_fuckin_do_stuff_async_params *Params)
 
 
 
+
+
 link_internal void
 CompileShaderPair_Async(work_queue *Queue,  shader *Shader , cs VertShaderPath , cs FragShaderPath , b32 DumpErrors , b32 RegisterForHotReload   , b32* Result )
 {
@@ -1756,6 +1758,8 @@ DoJob(check_occlusion_query_async_params *Params)
 
 
 
+
+
 link_internal void
 RenderToTexture_gpu_mapped_element_buffer_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_mapped_element_buffer *Src , v3 Offset , camera *Camera  )
 {
@@ -1937,6 +1941,7 @@ DoJob(render_to_texture_gpu_mapped_element_buffer_async_params *Params)
 
 
 
+
 link_internal void
 RenderToTexture_gpu_heap_allocation_Async(work_queue *Queue,  engine_resources *Engine , asset_thumbnail *Thumb , gpu_heap_allocation *Src , v3 Offset , camera *Camera  )
 {
@@ -1958,6 +1963,7 @@ DoJob(render_to_texture_gpu_heap_allocation_async_params *Params)
    RenderToTexture_gpu_heap_allocation( Params->Engine , Params->Thumb , Params->Src , Params->Offset , Params->Camera );
   
 }
+
 
 
 

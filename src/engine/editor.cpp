@@ -2419,6 +2419,7 @@ DoAssetWindow(engine_resources *Engine)
               {
                 InvalidCase(AssetType_Undefined);
                 InvalidCase(AssetType_Texture);
+                InvalidCase(AssetType_Sound);
 
                 case AssetType_WorldChunk:
                 {

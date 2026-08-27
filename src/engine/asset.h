@@ -168,10 +168,13 @@ poof(
 )
 #endif
 
+
+
 enum asset_type
 {
   AssetType_Undefined,
 
+  AssetType_Sound,
   AssetType_Models,
   AssetType_Texture,
   AssetType_WorldChunk,
@@ -192,6 +195,7 @@ struct asset
     model_buffer Models; poof(@ui_union_primal)
      world_chunk Chunk;
          texture Texture;
+       wav_sound WavSound;
   };
 };
 
@@ -229,7 +233,8 @@ GetChunkDataForAssetModel(asset *Asset, u32 ModelIndex)
   switch (Asset->Type)
   {
     InvalidCase(AssetType_Undefined);
-    InvalidCase(AssetType_Texture );
+    InvalidCase(AssetType_Texture);
+    InvalidCase(AssetType_Sound);
 
     case AssetType_WorldChunk:
     {

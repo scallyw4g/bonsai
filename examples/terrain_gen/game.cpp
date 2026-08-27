@@ -120,6 +120,11 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   *GameState = {};
   GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
+  if (LoadWavFromDisk("assets/sound/music.wav", &GameState->Music, Resources->GameMemory))
+  {
+    PlaySound(&GameState->Music);
+  }
+
   Camera->DistanceFromTarget = 100.f;
 
 #if 1
