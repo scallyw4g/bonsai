@@ -3843,7 +3843,7 @@ BindUniformsForBrushLayer(
   BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
   BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
   /* BindUniformByName(Program, "BrushType",      Layer->Settings.Type); */
-  BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
+  /* BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode); */
   /* BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc); */
   /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);

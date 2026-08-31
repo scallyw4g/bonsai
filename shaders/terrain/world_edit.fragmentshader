@@ -21,7 +21,7 @@ uniform  v3 WorldspaceChunkBasis;
 uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 /* uniform int BrushType; */
-uniform int BlendMode;
+/* uniform int BlendMode; */
 /* uniform int ColorMode; // enum world_edit_color_mode */
 /* uniform int ValueModifiers; */
 
@@ -570,7 +570,7 @@ void main()
   world_edit_op Op = Ops[0];
 
   int BrushType = Op.BrushType;
-  /* int BlendMode = Op.BlendMode; */
+  int BlendMode = Op.BlendMode;
 
   mat4 RotTransform = Op.RotTransform;
   s32 ColorMode = Op.ColorMode;
