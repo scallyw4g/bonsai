@@ -3813,8 +3813,6 @@ WorldEditOpForBrushLayer(
   Op.Flags = Op.Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
   Op.Flags = Op.Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
 
-  /* Op.ChunkRelEditMin = ChunkRelEditMin; */
-  /* Op.ChunkRelEditMax = ChunkRelEditMax; */
   Op.BasisOffset = BasisOffset;
 
   {
@@ -3830,8 +3828,6 @@ WorldEditOpForBrushLayer(
 
         Op.ColorMode = Layer->Settings.ColorMode;
         *OutTex = Asset->Texture;
-        /* BindUniformByName(Program, "SampleColorTex", 1); */
-        /* BindUniformByName(Program, "ColorTex", &Asset->Texture, 3); */
       }
       else
       {
@@ -4114,48 +4110,3 @@ WorldEditOpForBrushLayer(
   return Op;
 }
 
-link_internal void
-BindUniformsForBrushLayer(
-    shader *Program,
-    brush_layer *Layer,
-    rtt_framebuffer *Write,
-    rtt_framebuffer *Read,
-
-    world_edit_blend_mode  BlendMode,
-
-    r32 ColorBlendBias
-    )
-{
-  BindFramebuffer(Write);
-
-  // @derivs_texture_binding_to_shader_unit_0
-  BindUniformByName(Program, "InputTex", &Read->DestTexture, 1);
-  /* BindUniformByName(Program, "BlendTex", &Blend->DestTexture, 2); */
-
-  // NOTE(Jesse): We pass this blend mode in because we want to take the
-  // layers blend mode, not the blend mode for the brush.
-  BindUniformByName(Program, "BlendTexBlendMode", BlendMode);
-
-  {
-    if (Layer->Settings.ColorMode == WorldEditColorMode_Texture ||
-        Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture)
-    {
-      engine_resources *Engine = GetEngineResources();
-      asset *Asset = GetOrAllocateAsset(Engine, &Layer->Settings.ColorTextureFilePath).Value;
-      if (Asset && Asset->LoadState == AssetLoadState_Loaded)
-      {
-        Assert(Asset->Type == AssetType_Texture);
-        BindUniformByName(Program, "SampleColorTex", 1);
-        BindUniformByName(Program, "ColorTex", &Asset->Texture, 3);
-      }
-      else
-      {
-        BUG("ColorTex asset has been deallocated, we should properly handle this case");
-      }
-    }
-  }
-
-  BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
-
-  AssertNoGlErrors;
-}
