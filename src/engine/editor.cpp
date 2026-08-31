@@ -3732,8 +3732,38 @@ GetOrAllocateTextureFramebufferForWorldEdit(rtt_framebuffer_paged_list *Freelist
   return Result;
 }
 
+#pragma pack(push, 1)
+struct world_edit_op
+{
+  s32 BrushType;
+  s32 SubType;
+
+  s32 BlendMode;
+  s32 pad0;
+
+  m4 RotTransform;
+};
+#pragma pack(pop)
+
+link_internal void
+SetSubType(layer_settings *Settings, world_edit_op *Dest)
+{
+  // TODO(Jesse): Refactor such that this is true and we don't have to do this switch?
+  //
+  /* CAssert(OffsetOf(Settings->Noise.Type) == OffsetOf(Settings.Shape.Type)); */
+
+  switch (Settings->Type)
+  {
+    case BrushLayerType_Noise: { Dest->SubType = Settings->Noise.Type; } break;
+    case BrushLayerType_Shape: { Dest->SubType = Settings->Shape.Type;  } break;
+    case BrushLayerType_Brush: { } break;
+  }
+}
+
 link_internal void
 BindUniformsForBrushLayer(
+    world_edit_op *Op,
+
     shader *Program,
     brush_layer *Layer,
     rtt_framebuffer *Write,
@@ -3754,6 +3784,11 @@ BindUniformsForBrushLayer(
     )
 {
   BindFramebuffer(Write);
+
+  Op->BrushType = Layer->Settings.Type;
+  Op->BlendMode = Layer->Settings.BlendMode;
+
+  SetSubType(&Layer->Settings, Op);
 
   BindUniformByName(Program, "SeedNoiseValueFromInput", SeedNoiseValueFromInput);
   BindUniformByName(Program, "SeedColorValueFromInput", SeedColorValueFromInput);
@@ -3802,8 +3837,8 @@ BindUniformsForBrushLayer(
 
   BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
   BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
-  BindUniformByName(Program, "BrushType",      Layer->Settings.Type);
-  BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
+  /* BindUniformByName(Program, "BrushType",      Layer->Settings.Type); */
+  /* BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode); */
   BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc);
   BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
@@ -3872,7 +3907,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     BubbleSort_descending(EditDimKeys, 3);
 
 
-    BindUniformsForBrushLayer( &WorldEditRC->Program,
+    world_edit_op Op = {};
+    BindUniformsForBrushLayer(  &Op,
+                                &WorldEditRC->Program,
                                 Layer,
                                 Write,
 
@@ -3894,6 +3931,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
     Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
                                   FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
+
+    Op.RotTransform = RotateTransform(ParentQuaternion);
 
     switch (Layer->Settings.Type)
     {
@@ -3980,10 +4019,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       {
         noise_layer *Noise = &Layer->Settings.Noise;
         BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power);
-        BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type);
-
-        m4 RotationMatrix = RotateTransform(ParentQuaternion);
-        BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
+        /* BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type); */
 
         switch (Noise->Type)
         {
@@ -4017,14 +4053,11 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       case BrushLayerType_Shape:
       {
         shape_layer *Shape = &Layer->Settings.Shape;
-        BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type);
+        /* BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type); */
         BindUniformByName(&WorldEditRC->Program, "Hollow",     Shape->Advanced.Hollow);
         BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
         BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
         BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
-
-        m4 RotationMatrix = RotateTransform(ParentQuaternion);
-        BindUniformByName(&WorldEditRC->Program, "RotTransform", &RotationMatrix);
 
         switch(Shape->Type)
         {
@@ -4092,8 +4125,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               case 0:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                m4 Rot2 = RotateTransform(Q2);
-                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                Op.RotTransform = RotateTransform(Q2);
               } break;
 
               case 1:
@@ -4104,8 +4136,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               case 2:
               {
                 Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                m4 Rot2 = RotateTransform(Q2);
-                BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                Op.RotTransform = RotateTransform(Q2);
               } break;
 
             }
@@ -4214,8 +4245,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                 case 0:
                 {
                   Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                  m4 Rot2 = RotateTransform(Q2);
-                  BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                  Op.RotTransform = RotateTransform(Q2);
                 } break;
 
                 case 1:
@@ -4226,8 +4256,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                 case 2:
                 {
                   Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                  m4 Rot2 = RotateTransform(Q2);
-                  BindUniformByName(&WorldEditRC->Program, "RotTransform", &Rot2);
+                  Op.RotTransform = RotateTransform(Q2);
                 } break;
 
               }
@@ -4253,6 +4282,22 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
         }
       } break;
     }
+
+    auto GL = GetGL();
+
+    /* Op.RotTransform = Transpose(Op.RotTransform); */
+    BindUniformByName(&WorldEditRC->Program, "RotTransform", &Op.RotTransform);
+
+    local_persist u32 OpStorageBuffer = 0;
+    if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
+
+    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
+    AssertNoGlErrors;
+
+    GL->BufferData(GL_SHADER_STORAGE_BUFFER, sizeof(world_edit_op), &Op, GL_DYNAMIC_DRAW);
+    AssertNoGlErrors;
+
+    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
 
 
     /* gpu_timer Timer = StartGpuTimer(); */

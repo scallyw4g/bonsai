@@ -105,8 +105,9 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 
   canonical_position CameraTargetP = {};
 
+  auto VisibleRegionSize = VisibleRegionSize_32;
   /* auto VisibleRegionSize = VisibleRegionSize_128; */
-  auto VisibleRegionSize = VisibleRegionSize_256;
+  /* auto VisibleRegionSize = VisibleRegionSize_256; */
   /* auto VisibleRegionSize = VisibleRegionSize_1k; */
   /* auto VisibleRegionSize = VisibleRegionSize_8k; */
   /* auto VisibleRegionSize = VisibleRegionSize_16k; */
@@ -120,10 +121,10 @@ BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
   *GameState = {};
   GameState->VisibleRegionSize = &World->VisibleRegionSize;
 
-  if (LoadWavFromDisk("assets/sound/music.wav", &GameState->Music, Resources->GameMemory))
-  {
-    PlaySound(&GameState->Music);
-  }
+  /* if (LoadWavFromDisk("assets/sound/music.wav", &GameState->Music, Resources->GameMemory)) */
+  /* { */
+  /*   PlaySound(&GameState->Music); */
+  /* } */
 
   Camera->DistanceFromTarget = 100.f;
 

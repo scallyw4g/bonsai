@@ -1,8 +1,26 @@
+
+struct world_edit_op
+{
+  int BrushType; // Noise, Shape or Brush
+  int SubType;   // Noise or Shape type (perlin, voronoi, rect, sphere, etc.
+
+  // Common params
+  int BlendMode;
+  int pad0;
+
+  mat4 RotTransform;
+};
+
+layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
+{
+  world_edit_op Ops[];
+};
+
 uniform  v3 WorldspaceChunkBasis;
 uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
-uniform int BrushType;
-uniform int BlendMode;
+/* uniform int BrushType; */
+/* uniform int BlendMode; */
 uniform int ColorMode; // enum world_edit_color_mode
 uniform int ValueModifiers;
 
@@ -22,13 +40,23 @@ uniform v3 BasisOffset;
 
 
 //
-// Shape params
+// Common Shape params
 //
-uniform s32  ShapeType; // shape_type
-uniform mat4 RotTransform;
+/* uniform s32  ShapeType; // shape_type */
+/* uniform mat4 RotTransform; */
 uniform f32  Rounding;
 uniform  v3  Stretch;
 uniform  v3  Repeat;
+
+//
+// Common Noise params
+//
+/* uniform  int NoiseType; */
+uniform   v3 Period;
+uniform  f32 Threshold;
+uniform  f32 Power;
+uniform bool Invert;
+uniform bool Normalized;
 
 //
 // Rect Params
@@ -64,15 +92,8 @@ uniform f32 MinorRadius;
 
 
 
-//
-// Noise params
-//
-uniform  int NoiseType;
-uniform   v3 Period;
-uniform  f32 Threshold;
-uniform  f32 Power;
-uniform bool Invert;
-uniform bool Normalized;
+
+
 
 //
 // Voronoi Params
@@ -545,6 +566,20 @@ int getIndexOfMax(vec3 v) {
 
 void main()
 {
+  world_edit_op Op = Ops[0];
+
+  int BrushType = Op.BrushType;
+  int BlendMode = Op.BlendMode;
+
+  mat4 RotTransform = Op.RotTransform;
+
+  /* mat4 RotTransform = mat4( */
+  /*     vec4(1,0,0,0), */
+  /*     vec4(0,1,0,0), */
+  /*     vec4(0,0,1,0), */
+  /*     vec4(0,0,0,1) */
+  /*   ); */
+
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
    v3 ColorAccumulator = DefaultValue.rgb;
@@ -674,6 +709,7 @@ void main()
     {
       case 0: // BrushLayerType_Noise
       {
+        u32 NoiseType = Op.SubType;
         /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
         v3 NoiseBasis =  ((Basis+BasisOffset) / Period) * RotMatrix; 
         switch (NoiseType)
@@ -705,6 +741,7 @@ void main()
 
       case 1: // BrushLayerType_Shape
       {
+        u32 ShapeType = Op.SubType;
         switch (ShapeType)
         {
           // ShapeType_Rect

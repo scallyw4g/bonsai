@@ -1794,8 +1794,8 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
   if (DrawCommandsAt)
   {
     auto GL = GetGL();
-    static u32 IndirectDrawBuffer = 0;
-    static u32 MatrixStorageBuffer = 0;
+    local_persist u32 IndirectDrawBuffer = 0;
+    local_persist u32 MatrixStorageBuffer = 0;
 
     u32 RequiredIndirectDrawBufferSize = Cast(GLsizeiptr, sizeof(DrawArraysIndirectCommand))*DrawCommandsAt;
     u32 RequiredMatrixBufferSize = Cast(GLsizeiptr, sizeof(render_matrix_pair))*DrawCommandsAt;

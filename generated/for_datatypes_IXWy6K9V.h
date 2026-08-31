@@ -2273,6 +2273,7 @@ UseShader( terrain_derivs_render_context *Element )
 
 
 
+
 link_internal b32
 poof()
 InitializeBloomDownsampleShader
