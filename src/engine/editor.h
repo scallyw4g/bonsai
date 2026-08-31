@@ -1347,7 +1347,7 @@ struct world_update_op_shape_params_cylinder
 poof(@do_editor_ui)
 {
   r32 Radius = 4.f;
-  r32 Height = 25.f;
+  r32 Height = 0.f;
 };
 
 struct world_update_op_shape_params_plane

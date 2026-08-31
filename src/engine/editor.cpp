@@ -3732,6 +3732,12 @@ GetOrAllocateTextureFramebufferForWorldEdit(rtt_framebuffer_paged_list *Freelist
   return Result;
 }
 
+enum world_edit_op_flags
+{
+  WorldEditOpFlag_Invert     = 1<<0,
+  WorldEditOpFlag_Normalized = 1<<1,
+};
+
 #pragma pack(push, 1)
 struct world_edit_op
 {
@@ -3741,9 +3747,63 @@ struct world_edit_op
   s32 BrushType;
   s32 SubType;
 
+  // Common Params
   s32 BlendMode;
   s32 ColorMode; // enum world_edit_color_mode
   s32 ValueModifiers;
+  r32 ValueBias;
+
+  // Shape Params
+  r32 Hollow;
+  r32 Rounding;
+
+   v3 Stretch;
+  f32 Radius;
+
+   v3 Repeat;
+  r32 Pad1;
+
+  // Noise Params
+   v3 Period;
+  f32 Threshold;
+  f32 Power;
+
+  s32 Flags; // Invert, Normalized
+  f32 Pad3;
+  f32 Pad4;
+
+  // Clipping params
+   v3 ChunkRelEditMin;
+  f32 Pad5;
+
+   v3 ChunkRelEditMax;
+  f32 Pad6;
+
+   v3 BasisOffset;
+  f32 Pad7;
+
+  // Specific Params
+
+  // Rect
+  v3 RectDim;
+  f32 Pad8;
+
+  // Sphere
+  v3 EditRelativeSphereCenter;
+
+  // Cylinder
+  f32 Height;
+
+  // Plane
+   v3 PlaneNormal;
+  f32 Planed;
+  f32 PlaneRadius;
+
+  // Torus
+  f32 MinorRadius;
+
+  // Voronoi / Rect Lattice
+  f32 Squareness; // 0 == not square, 1 == square
 };
 #pragma pack(pop)
 
@@ -3792,6 +3852,8 @@ BindUniformsForBrushLayer(
   Op->ColorMode = Layer->Settings.ColorMode;
 
   Op->ValueModifiers = Layer->Settings.ValueFunc;
+  Op->ValueBias = Layer->Settings.ValueBias;
+  Op->Power = Layer->Settings.Power;
 
   SetSubType(&Layer->Settings, Op);
 
@@ -3840,22 +3902,29 @@ BindUniformsForBrushLayer(
     }
   }
 
-  BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
-  BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
+  /* BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias); */
   /* BindUniformByName(Program, "BrushType",      Layer->Settings.Type); */
   /* BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode); */
   /* BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc); */
   /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
-  BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
+  /* BindUniformByName(Program, "Invert",         Layer->Settings.Invert); */
+  /* BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized); */
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
-  BindUniformByName(Program, "Power",          Layer->Settings.Power);
+  /* BindUniformByName(Program, "Power",          Layer->Settings.Power); */
+
+  Op->Flags = Op->Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
+  Op->Flags = Op->Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
 
   // NOTE(Jesse): Must call bind explicitly because the
   // driver doesn't cache these values otherwise .. it
   // just reads them whenever it wants through the pointer..
-  BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin);
-  BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax);
-  BindUniformByName(Program, "BasisOffset", BasisOffset);
+  /* BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin); */
+  /* BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax); */
+  /* BindUniformByName(Program, "BasisOffset", BasisOffset); */
+
+  Op->ChunkRelEditMin = *ChunkRelEditMin;
+  Op->ChunkRelEditMax = *ChunkRelEditMax;
+  Op->BasisOffset = *BasisOffset;
 
   BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
 
@@ -4023,7 +4092,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       case BrushLayerType_Noise:
       {
         noise_layer *Noise = &Layer->Settings.Noise;
-        BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power);
+        Op.Power = Noise->Power;
+        /* BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power); */
         /* BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type); */
 
         switch (Noise->Type)
@@ -4031,22 +4101,25 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           case NoiseType_Perlin:
           {
             auto *Perlin = &Noise->Perlin;
-            BindUniformByName(&WorldEditRC->Program, "Period",   &Perlin->Period);
+            Op.Period = Perlin->Period;
           } break;
 
           case NoiseType_Voronoi:
           {
             auto *Voronoi = &Noise->Voronoi;
-            BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness);
-            BindUniformByName(&WorldEditRC->Program, "Period",   &Voronoi->Period);
+            /* BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness); */
+            Op.Squareness = Voronoi->Squareness;
+            Op.Period = Voronoi->Period;
           } break;
 
           case NoiseType_RectLattice:
           {
             auto *RectLattice = &Noise->RectLattice;
-            BindUniformByName(&WorldEditRC->Program, "Squareness", RectLattice->Jitter);
-            BindUniformByName(&WorldEditRC->Program, "Period",    &RectLattice->Period);
-            BindUniformByName(&WorldEditRC->Program, "Radius",     RectLattice->Radius);
+            /* BindUniformByName(&WorldEditRC->Program, "Squareness", RectLattice->Jitter); */
+            /* BindUniformByName(&WorldEditRC->Program, "Radius",     RectLattice->Radius); */
+            Op.Squareness = RectLattice->Jitter;
+            Op.Radius = RectLattice->Radius;
+            Op.Period = RectLattice->Period;
           } break;
 
           case NoiseType_White:
@@ -4059,10 +4132,15 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       {
         shape_layer *Shape = &Layer->Settings.Shape;
         /* BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type); */
-        BindUniformByName(&WorldEditRC->Program, "Hollow",     Shape->Advanced.Hollow);
-        BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding);
-        BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch);
-        BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat);
+        /* BindUniformByName(&WorldEditRC->Program, "Hollow",     Shape->Advanced.Hollow); */
+        /* BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding); */
+        /* BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch); */
+        /* BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat); */
+
+        Op.Hollow   = Shape->Advanced.Hollow;
+        Op.Rounding = Shape->Advanced.Rounding;
+        Op.Stretch  =  Shape->Advanced.Stretch;
+        Op.Repeat   = Shape->Advanced.Repeat;
 
         switch(Shape->Type)
         {
@@ -4079,7 +4157,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                 if (Layer->Settings.Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
               }
             }
-            BindUniformByName(&WorldEditRC->Program, "RectDim", &RectDim);
+            Op.RectDim = RectDim;
+            /* BindUniformByName(&WorldEditRC->Program, "RectDim", &RectDim); */
           } break;
 
           case ShapeType_Sphere:
@@ -4096,14 +4175,17 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
               if (Layer->Settings.Normalized) { Rad /= (MinChannel(EditDim)); }
             }
 
-            BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter);
-            BindUniformByName(&WorldEditRC->Program, "Radius", Rad);
+            Op.EditRelativeSphereCenter = EditRelativeSphereCenter;
+            Op.Radius = Rad;
+            /* BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter); */
+            /* BindUniformByName(&WorldEditRC->Program, "Radius", Rad); */
           } break;
 
           case ShapeType_Line:
           {
             auto Line = &Shape->Line;
-            BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius);
+            Op.Radius = Line->Radius;
+            /* BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius); */
           } break;
 
           case ShapeType_Cylinder:
@@ -4146,8 +4228,10 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
             }
 
-            BindUniformByName(&WorldEditRC->Program, "Radius", Radius);
-            BindUniformByName(&WorldEditRC->Program, "Height", Height);
+            Op.Height = Height;
+            Op.Radius = Radius;
+            /* BindUniformByName(&WorldEditRC->Program, "Radius", Radius); */
+            /* BindUniformByName(&WorldEditRC->Program, "Height", Height); */
           } break;
 
           case ShapeType_Plane:
@@ -4221,9 +4305,12 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
             auto PlanePos = Plane_SimShapeOrigin;
 
-            BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal);
-            BindUniformByName(&WorldEditRC->Program, "Planed",       Planed);
-            BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius);
+            Op.PlaneNormal = PlaneNormal;
+            Op.Planed = Planed;
+            Op.PlaneRadius = PlaneRadius;
+            /* BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal); */
+            /* BindUniformByName(&WorldEditRC->Program, "Planed",       Planed); */
+            /* BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius); */
 
           } break;
 
@@ -4268,8 +4355,10 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
             }
 
 
-            BindUniformByName(&WorldEditRC->Program, "Radius",      MajRad);
-            BindUniformByName(&WorldEditRC->Program, "MinorRadius", MinRad);
+            Op.Radius = MajRad;
+            Op.MinorRadius = MinRad;
+            /* BindUniformByName(&WorldEditRC->Program, "Radius",      MajRad); */
+            /* BindUniformByName(&WorldEditRC->Program, "MinorRadius", MinRad); */
 
           } break;
 
@@ -4277,7 +4366,8 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
           {
             auto Pyramid = &Shape->Pyramid;
 
-            BindUniformByName(&WorldEditRC->Program, "Radius",      Pyramid->Height);
+            Op.Radius = Pyramid->Height;
+            /* BindUniformByName(&WorldEditRC->Program, "Radius",      Pyramid->Height); */
 
           } break;
 

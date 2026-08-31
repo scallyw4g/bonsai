@@ -1,15 +1,76 @@
 
 struct world_edit_op
 {
-  mat4 RotTransform; // NOTE(Jesse): Make sure this is 16-byte aligned
+  //
+  // Common Params
+  //
 
+  mat4 RotTransform; // NOTE(Jesse): Make sure this is 16-byte aligned
   s32 BrushType; // Noise, Shape or Brush
   s32 SubType;   // Noise or Shape type (perlin, voronoi, rect, sphere, etc.
-
-  // Common params
   s32 BlendMode;
   s32 ColorMode;      // world_edit_color_mode
   s32 ValueModifiers; // world_edit_blend_mode_modifier
+  f32 ValueBias;
+
+  //
+  // Shape Params
+  //
+  r32 Hollow;
+  r32 Rounding;
+
+  v3 Stretch;
+  f32 Radius; // Sphere, Line, Cylinder, Torus, Pyramid, Rect Lattice
+
+  v3 Repeat;
+  r32 Pad1;
+
+  //
+  // Noise Params
+  //
+    v3 Period;
+   f32 Threshold;
+   f32 Power;
+   u32 Flags; // world_edit_op_flags
+   f32 Pad3;
+   f32 Pad4;
+
+  //
+  // Clipping params
+  //
+  v3 ChunkRelEditMin;
+  f32 Pad5;
+
+  v3 ChunkRelEditMax;
+  f32 Pad6;
+
+  v3 BasisOffset;
+  f32 Pad7;
+
+  //
+  // Specific Params
+  //
+
+  // Rect
+  v3 RectDim;
+  f32 Pad8;
+
+  // Sphere
+  v3 EditRelativeSphereCenter;
+
+  // Cylinder
+  f32 Height;
+
+  // Plane
+   v3 PlaneNormal;
+  f32 Planed;
+  f32 PlaneRadius;
+
+  // Torus
+  f32 MinorRadius;
+
+  // Voronoi / Rect Lattice
+  f32 Squareness; // 0 == not square, 1 == square
 };
 
 layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
@@ -24,20 +85,16 @@ uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 /* uniform int BlendMode; */
 /* uniform int ColorMode; // enum world_edit_color_mode */
 /* uniform int ValueModifiers; */
+/* uniform f32 ValueBias; */
 
-uniform int GenerateNormals;
-
-uniform f32 Hollow;
-uniform f32 ValueBias;
-
-uniform v3 Axis;
+/* uniform f32 Hollow; */
 
 //
 // Clipping params
 //
-uniform v3 ChunkRelEditMin;
-uniform v3 ChunkRelEditMax;
-uniform v3 BasisOffset;
+/* uniform v3 ChunkRelEditMin; */
+/* uniform v3 ChunkRelEditMax; */
+/* uniform v3 BasisOffset; */
 
 
 //
@@ -45,50 +102,50 @@ uniform v3 BasisOffset;
 //
 /* uniform s32  ShapeType; // shape_type */
 /* uniform mat4 RotTransform; */
-uniform f32  Rounding;
-uniform  v3  Stretch;
-uniform  v3  Repeat;
+/* uniform f32  Rounding; */
+/* uniform  v3  Stretch; */
+/* uniform  v3  Repeat; */
 
 //
 // Common Noise params
 //
 /* uniform  int NoiseType; */
-uniform   v3 Period;
-uniform  f32 Threshold;
-uniform  f32 Power;
-uniform bool Invert;
-uniform bool Normalized;
+/* uniform   v3 Period; */
+/* uniform  f32 Threshold; */
+/* uniform  f32 Power; */
+/* uniform bool Invert; */
+/* uniform bool Normalized; */
 
 //
 // Rect Params
 //
 
-uniform v3 RectDim;
+/* uniform v3 RectDim; */
 
 //
 // Sphere Params
 //
-uniform  v3 EditRelativeSphereCenter;
-uniform f32 Radius;
+/* uniform  v3 EditRelativeSphereCenter; */
+/* uniform f32 Radius; */
 
 //
 // Cylinder Params
 //
 
-uniform r32 Height;
+/* uniform r32 Height; */
 
 //
 // Plane Params
 //
-uniform v3 PlaneNormal;
-uniform f32 Planed;
-uniform f32 PlaneRadius;
+/* uniform v3 PlaneNormal; */
+/* uniform f32 Planed; */
+/* uniform f32 PlaneRadius; */
 
 //
 // Torus Params
 //
 
-uniform f32 MinorRadius;
+/* uniform f32 MinorRadius; */
 
 
 
@@ -99,7 +156,7 @@ uniform f32 MinorRadius;
 //
 // Voronoi Params
 //
-uniform f32 Squareness; // 0 == not square, 1 == square
+/* uniform f32 Squareness; // 0 == not square, 1 == square */
 
 
 
@@ -291,13 +348,11 @@ v3 lattice_hash(v3 p, f32 jit)
   return p + (jit*((hash3f(p))));
 }
 
-f32 rect_lattice( vec3 x, f32 squareness)
+f32 rect_lattice( vec3 x, f32 rad, f32 squareness)
 {
   vec3 p  = floor( x );
 
   vec3 hp = lattice_hash(p, squareness);
-
-  f32 rad = 0.05f;
 
   f32 off = 1.0f;
   f32 ret = 0.f;
@@ -575,12 +630,40 @@ void main()
   mat4 RotTransform = Op.RotTransform;
   s32 ColorMode = Op.ColorMode;
   s32 ValueModifiers = Op.ValueModifiers;
+  r32 ValueBias = Op.ValueBias;
+
+  r32 Hollow = Op.Hollow;
+  r32 Rounding = Op.Rounding;
+  v3 Stretch = Op.Stretch;
+  v3 Repeat = Op.Repeat;
+
+  v3 Period = Op.Period;
+  f32 Threshold = Op.Threshold;
+  f32 Power = Op.Power;
+
+  v3 ChunkRelEditMin = Op.ChunkRelEditMin;
+  v3 ChunkRelEditMax = Op.ChunkRelEditMax;
+  v3 BasisOffset     = Op.BasisOffset;
+
+  f32 Radius = Op.Radius;
+
+
+   v3 PlaneNormal = Op.PlaneNormal;
+  f32 Planed = Op.Planed;
+  f32 PlaneRadius = Op.PlaneRadius;
+
+  f32 MinorRadius = Op.MinorRadius;
+
+  f32 Squareness = Op.Squareness;
 
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
    v3 ColorAccumulator = DefaultValue.rgb;
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
+
+  bool Invert     = (Op.Flags & 1<<0) > 0;
+  bool Normalized = (Op.Flags & 1<<1) > 0;
 
 
   if (SeedColorValueFromInput > 0 || SeedNoiseValueFromInput > 0)
@@ -648,7 +731,7 @@ void main()
      //     transitions areas.
      // "s" texture sampler
      /* vec4 boxmap( in sampler2D s, in vec3 p, in vec3 n, in float k ) */
-#if 1
+#if 0
      {
          // project+fetch
        /* vec4 x = texture( s, p.yz ); */
@@ -726,7 +809,7 @@ void main()
 
           case 3: // NoiseType_RectLattice:
           {
-            InitialSample = rect_lattice(NoiseBasis, Squareness);
+            InitialSample = rect_lattice(NoiseBasis, Radius, Squareness);
           } break;
         }
 
@@ -741,6 +824,7 @@ void main()
           // ShapeType_Rect
           case 0:
           {
+            v3 RectDim = Op.RectDim;
             v3 RectRad = RectDim/2.f;
             v3 Center  = (EditDim)/2.f;
             v3 p       = (EditRelxyz - Center);
@@ -760,8 +844,9 @@ void main()
           // ShapeType_Sphere
           case 1:
           {
-            f32 r = (Radius - Hollow);
+            v3 EditRelativeSphereCenter = Op.EditRelativeSphereCenter;
 
+            f32 r = (Radius - Hollow);
             v3 p  = EditRelxyz - (EditRelativeSphereCenter);
             if (Normalized) { p /= EditDim; }
             p += BasisOffset;
@@ -789,7 +874,7 @@ void main()
           // ShapeType_Cylinder
           case 3:
           {
-            f32 h = Height;
+            f32 h = Op.Height;
             f32 r = Radius;
 
             v3 p = (EditRelxyz - EditRad);
