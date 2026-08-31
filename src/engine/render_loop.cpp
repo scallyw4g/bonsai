@@ -635,10 +635,16 @@ DrainLoRenderQueue(engine_resources *Engine)
                   TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
 #if 1
+                  auto Program = &WorldEditRC->Program;
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
                     world_edit_brush *Brush = Edit->Brush;
+
+                    /* if (Brush->LayerCount  > 1) */
+                    /* { */
+                    /*   int breakhere; */
+                    /* } */
 
                     // Buffer up all layer ops in brush
                     //
@@ -650,13 +656,43 @@ DrainLoRenderQueue(engine_resources *Engine)
                       Assert(AtOpIndex <= TotalOps);
                     }
 
-                    ApplyBrushFromOps( WorldEditRC,
-                                       Edit->Region,
-                                       Edit->Rotation,
-                                       Brush,
-                                       Brush->BrushBlendMode,
-                                       Chunk,
-                                       Read, Write, False, False, Brush->Smoothing.ColorBlend);
+                    /* ApplyBrushFromOps( WorldEditRC, */
+                    /*                    Edit->Region, */
+                    /*                    Edit->Rotation, */
+                    /*                    Brush, */
+                    /*                    Brush->BrushBlendMode, */
+                    /*                    Chunk, */
+                    /*                    Read, Write, False, False, Brush->Smoothing.ColorBlend); */
+
+
+                    // @derivs_texture_binding_to_shader_unit_0
+                    BindUniformByName(Program, "InputTex", &Read->DestTexture, 1);
+
+                    // NOTE(Jesse): We pass this blend mode in because we want to take the
+                    // layers blend mode, not the blend mode for the brush.
+                    BindUniformByName(Program, "BrushBlendMode", Brush->BrushBlendMode);
+
+                    /* { */
+                    /*   if (Layer->Settings.ColorMode == WorldEditColorMode_Texture || */
+                    /*       Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture) */
+                    /*   { */
+                    /*     asset *Asset = GetOrAllocateAsset(Engine, &Layer->Settings.ColorTextureFilePath).Value; */
+                    /*     if (Asset && Asset->LoadState == AssetLoadState_Loaded) */
+                    /*     { */
+                    /*       Assert(Asset->Type == AssetType_Texture); */
+                    /*       BindUniformByName(Program, "SampleColorTex", 1); */
+                    /*       BindUniformByName(Program, "ColorTex", &Asset->Texture, 3); */
+                    /*     } */
+                    /*     else */
+                    /*     { */
+                    /*       BUG("ColorTex asset has been deallocated, we should properly handle this case"); */
+                    /*     } */
+                    /*   } */
+                    /* } */
+
+                    /* BindUniformByName(Program, "ColorBlendBias", ColorBlendBias); */
+
+                    AssertNoGlErrors;
 
                     auto GL = GetGL();
                     local_persist u32 OpStorageBuffer = 0;
@@ -670,17 +706,18 @@ DrainLoRenderQueue(engine_resources *Engine)
 
                     GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
 
-                    BindUniformByName(&WorldEditRC->Program, "OpCount", AtOpIndex);
+                    BindUniformByName(Program, "OpCount", AtOpIndex);
 
                  rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
                     v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
                     v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
                     v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
 
-                    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
-                    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
+                    BindUniformByName(Program, "ChunkRelEditMin", &ChunkRelEditMin);
+                    BindUniformByName(Program, "ChunkRelEditMax", &ChunkRelEditMax);
 
 
+                    BindFramebuffer(Write);
                     RenderQuad();
 
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)

@@ -2107,6 +2107,7 @@ struct world_edit_op
 
   // Voronoi / Rect Lattice
   f32 Squareness; // 0 == not square, 1 == square
+  f32 Pad9;
 };
 #pragma pack(pop)
 

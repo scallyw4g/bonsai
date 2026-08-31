@@ -65,6 +65,7 @@ struct world_edit_op
 
   // Voronoi / Rect Lattice
   f32 Squareness; // 0 == not square, 1 == square
+  f32 Pad9;
 };
 
 layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
@@ -89,7 +90,7 @@ uniform sampler2D InputTex;
 
 /* uniform       int SampleBlendTex; */
 /* uniform sampler2D BlendTex; */
-uniform       int BlendTexBlendMode;
+uniform       int BrushBlendMode;
 
 uniform       int SampleColorTex;
 uniform sampler2D ColorTex;
@@ -544,8 +545,8 @@ int getIndexOfMax(vec3 v) {
 
 void main()
 {
-  v4 DefaultValue = vec4(0);
-  /* v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38); */
+  /* v4 DefaultValue = vec4(0); */
+  v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
    v3 ColorAccumulator = DefaultValue.rgb;
   f32 InitialAccumulator = DefaultValue.a;
@@ -904,12 +905,12 @@ void main()
       }
 
 
-      /* BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample); */
-      if (Accumulator < ThisSample)
-      {
-        Accumulator = ThisSample;
-        ColorAccumulator = ColorSample;
-      }
+      BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample);
+      /* if (ThisSample > Accumulator) */
+      /* { */
+      /*   Accumulator = ThisSample; */
+      /*   ColorAccumulator = ColorSample; */
+      /* } */
     }
   }
 #endif
@@ -923,13 +924,7 @@ void main()
     f32 BlendValue = TexLookup.a;
     v3 BlendColor = TexLookup.rgb;
 
-    // Conceptually, we want to blend the accumulator into the blendvalue here,
-    // so we don't do it this way.
-    /* BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor ); */
-    /* BlendSample(BlendTexBlendMode, 0 /1* WorldEdit_ColorBlendMode_ValuePositive *1/ , BlendValue, BlendColor, Accumulator, ColorAccumulator); */
-    /* BlendSample(BlendTexBlendMode, ColorMode, BlendValue, BlendColor, Accumulator, ColorAccumulator); */
-    BlendSample(BlendTexBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
-    /* Accumulator = max(BlendValue, Accumulator); */
+    BlendSample(BrushBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
     Accumulator = BlendValue;
     ColorAccumulator = BlendColor;
   }
