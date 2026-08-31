@@ -2041,6 +2041,75 @@ struct selection_region poof(@do_editor_ui)
   selection_modification_state ModState;
 };
 
+#pragma pack(push, 1)
+struct world_edit_op
+{
+  // NOTE(Jesse): Make sure this is 16-byte aligned
+  m4 RotTransform;
+
+  s32 BrushType;
+  s32 SubType;
+
+  // Common Params
+  s32 BlendMode;
+  s32 ColorMode; // enum world_edit_color_mode
+  s32 ValueModifiers;
+  r32 ValueBias;
+
+  // Shape Params
+  r32 Hollow;
+  r32 Rounding;
+
+   v3 Stretch;
+  f32 Radius;
+
+   v3 Repeat;
+  r32 Pad1;
+
+  // Noise Params
+   v3 Period;
+  f32 Threshold;
+  f32 Power;
+
+  s32 Flags; // Invert, Normalized
+  f32 Pad3;
+  f32 Pad4;
+
+  // Clipping params
+   v3 ChunkRelEditMin;
+  f32 Pad5;
+
+   v3 ChunkRelEditMax;
+  f32 Pad6;
+
+   v3 BasisOffset;
+  f32 Pad7;
+
+  // Specific Params
+
+  // Rect
+  v3 RectDim;
+  f32 Pad8;
+
+  // Sphere
+  v3 EditRelativeSphereCenter;
+
+  // Cylinder
+  f32 Height;
+
+  // Plane
+   v3 PlaneNormal;
+  f32 Planed;
+  f32 PlaneRadius;
+
+  // Torus
+  f32 MinorRadius;
+
+  // Voronoi / Rect Lattice
+  f32 Squareness; // 0 == not square, 1 == square
+};
+#pragma pack(pop)
+
 struct level_editor
 poof(@do_editor_ui)
 {
@@ -2077,6 +2146,7 @@ poof(@do_editor_ui)
   prefab_hashtable Prefabs;
   prefab *SelectedPrefab;
 };
+
 
 
 

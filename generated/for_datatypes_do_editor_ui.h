@@ -26,7 +26,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, render_deb
 
 
 
-
 struct ui_toggle;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, ui_toggle *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
@@ -228,7 +227,6 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, world_edit
 struct shape_layer_advanced_params;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, shape_layer_advanced_params *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 struct world_update_op_shape_params_sphere;
@@ -474,11 +472,9 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, game_light
 
 
 
-
 struct octree_node_freelist;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, octree_node_freelist *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 
@@ -621,10 +617,10 @@ link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_rend
 ; 
 
 
+
 struct terrain_derivs_render_context;
 link_internal void DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params = &DefaultUiRenderParams_Button)
 ; 
-
 
 
 

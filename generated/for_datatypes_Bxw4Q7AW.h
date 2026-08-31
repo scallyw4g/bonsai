@@ -26119,6 +26119,7 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, bloom_render_group *Element, 
 
 
 
+
 link_internal void
 DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context *Element, cs Name, u32 ParentHash, ui_render_params *Params)
 
@@ -26368,7 +26369,6 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, terrain_derivs_render_context
   }
 
 }
-
 
 
 

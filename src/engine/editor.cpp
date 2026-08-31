@@ -3738,75 +3738,6 @@ enum world_edit_op_flags
   WorldEditOpFlag_Normalized = 1<<1,
 };
 
-#pragma pack(push, 1)
-struct world_edit_op
-{
-  // NOTE(Jesse): Make sure this is 16-byte aligned
-  m4 RotTransform;
-
-  s32 BrushType;
-  s32 SubType;
-
-  // Common Params
-  s32 BlendMode;
-  s32 ColorMode; // enum world_edit_color_mode
-  s32 ValueModifiers;
-  r32 ValueBias;
-
-  // Shape Params
-  r32 Hollow;
-  r32 Rounding;
-
-   v3 Stretch;
-  f32 Radius;
-
-   v3 Repeat;
-  r32 Pad1;
-
-  // Noise Params
-   v3 Period;
-  f32 Threshold;
-  f32 Power;
-
-  s32 Flags; // Invert, Normalized
-  f32 Pad3;
-  f32 Pad4;
-
-  // Clipping params
-   v3 ChunkRelEditMin;
-  f32 Pad5;
-
-   v3 ChunkRelEditMax;
-  f32 Pad6;
-
-   v3 BasisOffset;
-  f32 Pad7;
-
-  // Specific Params
-
-  // Rect
-  v3 RectDim;
-  f32 Pad8;
-
-  // Sphere
-  v3 EditRelativeSphereCenter;
-
-  // Cylinder
-  f32 Height;
-
-  // Plane
-   v3 PlaneNormal;
-  f32 Planed;
-  f32 PlaneRadius;
-
-  // Torus
-  f32 MinorRadius;
-
-  // Voronoi / Rect Lattice
-  f32 Squareness; // 0 == not square, 1 == square
-};
-#pragma pack(pop)
-
 link_internal void
 SetSubType(layer_settings *Settings, world_edit_op *Dest)
 {
@@ -3822,10 +3753,343 @@ SetSubType(layer_settings *Settings, world_edit_op *Dest)
   }
 }
 
+link_internal world_edit_op
+WorldEditOpForBrushLayer(
+    brush_layer *Layer,
+    v3 ParentRotation,
+    rect3cp  EditBounds,
+    v3i ChunkWorldP
+  )
+{
+  world_edit_op Op = {};
+
+  world *World = GetWorld();
+
+  rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
+     v3 SimChunkMin = GetSimSpaceP(World, ChunkWorldP);
+     v3 EditRectRad = GetRadius(&SimEditRect);
+
+  v3 BasisOffset = Layer->Settings.Offset;
+  v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
+  v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
+  v3 EditDim = ChunkRelEditMax -  ChunkRelEditMin;
+
+  sort_key_f32 EditDimKeys[3];
+
+  EditDimKeys[0].Index = 0;
+  EditDimKeys[0].Value = EditDim.E[0];
+
+  EditDimKeys[1].Index = 1;
+  EditDimKeys[1].Value = EditDim.E[1];
+
+  EditDimKeys[2].Index = 2;
+  EditDimKeys[2].Value = EditDim.E[2];
+
+
+  BubbleSort_descending(EditDimKeys, 3);
+
+  Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
+                                FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
+
+  Op.RotTransform = RotateTransform(ParentQuaternion);
+
+
+  ///
+
+  Op.BrushType = Layer->Settings.Type;
+  Op.BlendMode = Layer->Settings.BlendMode;
+  Op.ColorMode = Layer->Settings.ColorMode;
+
+  Op.ValueModifiers = Layer->Settings.ValueFunc;
+  Op.ValueBias = Layer->Settings.ValueBias;
+  Op.Power = Layer->Settings.Power;
+
+  SetSubType(&Layer->Settings, &Op);
+
+  Op.Flags = Op.Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
+  Op.Flags = Op.Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
+
+  Op.ChunkRelEditMin = ChunkRelEditMin;
+  Op.ChunkRelEditMax = ChunkRelEditMax;
+  Op.BasisOffset = BasisOffset;
+
+
+  switch (Layer->Settings.Type)
+  {
+    case BrushLayerType_Brush:
+    {
+      world_edit_brush *NestedBrush = Layer->Settings.Brush;
+      if (NestedBrush)
+      {
+        NotImplemented;
+      }
+    } break;
+
+    case BrushLayerType_Noise:
+    {
+      noise_layer *Noise = &Layer->Settings.Noise;
+      Op.Power = Noise->Power;
+      switch (Noise->Type)
+      {
+        case NoiseType_Perlin:
+        {
+          Op.Period = Noise->Perlin.Period;
+        } break;
+
+        case NoiseType_Voronoi:
+        {
+          auto *Voronoi = &Noise->Voronoi;
+          Op.Squareness = Voronoi->Squareness;
+          Op.Period = Voronoi->Period;
+        } break;
+
+        case NoiseType_RectLattice:
+        {
+          auto *RectLattice = &Noise->RectLattice;
+          Op.Squareness = RectLattice->Jitter;
+          Op.Radius = RectLattice->Radius;
+          Op.Period = RectLattice->Period;
+        } break;
+
+        case NoiseType_White:
+        {} break;
+      }
+
+    } break;
+
+    case BrushLayerType_Shape:
+    {
+      shape_layer *Shape = &Layer->Settings.Shape;
+
+      Op.Hollow   = Shape->Advanced.Hollow;
+      Op.Rounding = Shape->Advanced.Rounding;
+      Op.Stretch  =  Shape->Advanced.Stretch;
+      Op.Repeat   = Shape->Advanced.Repeat;
+
+      switch(Shape->Type)
+      {
+        case ShapeType_Rect:
+        {
+          auto Rect = &Shape->Rect;
+
+          v3 RectDim = Rect->Dim;
+          RangeIterator(Index, 3)
+          {
+            if (RectDim.E[Index] <= 0.f)
+            {
+              RectDim.E[Index] = EditDim.E[Index] + RectDim.E[Index];
+              if (Layer->Settings.Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
+            }
+          }
+          Op.RectDim = RectDim;
+        } break;
+
+        case ShapeType_Sphere:
+        {
+          auto Sphere = &Shape->Sphere;
+
+          v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
+          v3 EditRelativeSphereCenter = (SimSphereOrigin - SimEditRect.Min);
+
+          f32 Rad = Sphere->Radius;
+          if (Sphere->Radius <= 0.f)
+          {
+            Rad = (MinChannel(EditDim)/2.f) + Sphere->Radius;
+            if (Layer->Settings.Normalized) { Rad /= (MinChannel(EditDim)); }
+          }
+
+          Op.EditRelativeSphereCenter = EditRelativeSphereCenter;
+          Op.Radius = Rad;
+        } break;
+
+        case ShapeType_Line:
+        {
+          auto Line = &Shape->Line;
+          Op.Radius = Line->Radius;
+        } break;
+
+        case ShapeType_Cylinder:
+        {
+          auto Cylinder = &Shape->Cylinder;
+
+          f32 Radius = Cylinder->Radius;
+          f32 Height = Cylinder->Height;
+
+          if (Radius <= 0.f)
+          {
+            Radius = Radius + (EditDimKeys[0].Value/2.f);
+          }
+
+          if (Height <= 0.f)
+          {
+            // NOTE(Jesse): We divide height by two because the height
+            // extends up and down from the middle of the selection.
+            Height = (Height/2.f) + (EditDimKeys[2].Value/2.f);
+          }
+
+          switch(EditDimKeys[2].Index)
+          {
+            case 0:
+            {
+              Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
+              Op.RotTransform = RotateTransform(Q2);
+            } break;
+
+            case 1:
+            {
+              // Already facing the Y axis
+            } break;
+
+            case 2:
+            {
+              Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
+              Op.RotTransform = RotateTransform(Q2);
+            } break;
+
+          }
+
+          Op.Height = Height;
+          Op.Radius = Radius;
+        } break;
+
+        case ShapeType_Plane:
+        {
+          auto Plane = &Shape->Plane;
+          auto Orientation = Plane->Orientation;
+
+          v3 xAxis = V3(1,0,0);
+          v3 yAxis = V3(0,1,0);
+          v3 zAxis = V3(0,0,1);
+
+          switch (Orientation)
+          {
+            InvalidCase(ShapeAxis_Count);
+
+            case ShapeAxis_InferFromMajorAxis:
+            {} break;
+
+            // Traverses the X axis and ascends
+            case ShapeAxis_PosX:
+            {
+              xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
+              yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+            // Traverses the X axis and descends
+            case ShapeAxis_NegX:
+            {
+              xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
+              yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+
+
+            case ShapeAxis_PosY:
+            {
+              xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
+              yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+            case ShapeAxis_NegY:
+            {
+              xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
+              yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+
+
+            case ShapeAxis_PosZ:
+            {
+              xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+              yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+
+            case ShapeAxis_NegZ:
+            {
+              xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
+              yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
+              zAxis = Normalize(Cross(xAxis, yAxis));
+            } break;
+          }
+
+          v3 Plane_SimShapeOrigin = EditRectRad;
+          v3 PlaneNormal = zAxis;
+
+          auto PlaneRadius = Plane->Thickness/2.f;
+          auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
+                                  PlaneNormal.y*Plane_SimShapeOrigin.y +
+                                  PlaneNormal.z*Plane_SimShapeOrigin.z );
+
+          auto PlanePos = Plane_SimShapeOrigin;
+
+          Op.PlaneNormal = PlaneNormal;
+          Op.Planed = Planed;
+          Op.PlaneRadius = PlaneRadius;
+
+        } break;
+
+        case ShapeType_Torus:
+        {
+          auto Torus = &Shape->Torus;
+
+          r32 MinRad = Torus->MinorRadius;
+          r32 MajRad = Torus->MajorRadius;
+
+          if (MinRad <= 0.f)
+          {
+            MinRad += EditDimKeys[0].Value/2.f; 
+          }
+
+          if (MajRad <= 0.f)
+          {
+            // Take the middle dimension for the radius
+            MajRad += (EditDimKeys[1].Value/2.f) - MinRad;
+
+            // Orient along the minimum dimension
+            switch(EditDimKeys[0].Index)
+            {
+              case 0:
+              {
+                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
+                Op.RotTransform = RotateTransform(Q2);
+              } break;
+
+              case 1:
+              {
+                // Already facing the Y axis
+              } break;
+
+              case 2:
+              {
+                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
+                Op.RotTransform = RotateTransform(Q2);
+              } break;
+
+            }
+          }
+
+          Op.Radius = MajRad;
+          Op.MinorRadius = MinRad;
+
+        } break;
+
+        case ShapeType_Pyramid:
+        {
+          Op.Radius = Shape->Pyramid.Height;
+        } break;
+
+        // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
+        //
+      }
+    } break;
+  }
+
+  return Op;
+}
+
 link_internal void
 BindUniformsForBrushLayer(
-    world_edit_op *Op,
-
     shader *Program,
     brush_layer *Layer,
     rtt_framebuffer *Write,
@@ -3846,16 +4110,6 @@ BindUniformsForBrushLayer(
     )
 {
   BindFramebuffer(Write);
-
-  Op->BrushType = Layer->Settings.Type;
-  Op->BlendMode = Layer->Settings.BlendMode;
-  Op->ColorMode = Layer->Settings.ColorMode;
-
-  Op->ValueModifiers = Layer->Settings.ValueFunc;
-  Op->ValueBias = Layer->Settings.ValueBias;
-  Op->Power = Layer->Settings.Power;
-
-  SetSubType(&Layer->Settings, Op);
 
   BindUniformByName(Program, "SeedNoiseValueFromInput", SeedNoiseValueFromInput);
   BindUniformByName(Program, "SeedColorValueFromInput", SeedColorValueFromInput);
@@ -3901,30 +4155,6 @@ BindUniformsForBrushLayer(
       }
     }
   }
-
-  /* BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias); */
-  /* BindUniformByName(Program, "BrushType",      Layer->Settings.Type); */
-  /* BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode); */
-  /* BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc); */
-  /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
-  /* BindUniformByName(Program, "Invert",         Layer->Settings.Invert); */
-  /* BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized); */
-  /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
-  /* BindUniformByName(Program, "Power",          Layer->Settings.Power); */
-
-  Op->Flags = Op->Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
-  Op->Flags = Op->Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
-
-  // NOTE(Jesse): Must call bind explicitly because the
-  // driver doesn't cache these values otherwise .. it
-  // just reads them whenever it wants through the pointer..
-  /* BindUniformByName(Program, "ChunkRelEditMin", ChunkRelEditMin); */
-  /* BindUniformByName(Program, "ChunkRelEditMax", ChunkRelEditMax); */
-  /* BindUniformByName(Program, "BasisOffset", BasisOffset); */
-
-  Op->ChunkRelEditMin = *ChunkRelEditMin;
-  Op->ChunkRelEditMax = *ChunkRelEditMax;
-  Op->BasisOffset = *BasisOffset;
 
   BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
 
@@ -3981,9 +4211,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     BubbleSort_descending(EditDimKeys, 3);
 
 
-    world_edit_op Op = {};
-    BindUniformsForBrushLayer(  &Op,
-                                &WorldEditRC->Program,
+    BindUniformsForBrushLayer( &WorldEditRC->Program,
                                 Layer,
                                 Write,
 
@@ -4005,8 +4233,6 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
 
     Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
                                   FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
-
-    Op.RotTransform = RotateTransform(ParentQuaternion);
 
     switch (Layer->Settings.Type)
     {
@@ -4090,298 +4316,16 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       } break;
 
       case BrushLayerType_Noise:
-      {
-        noise_layer *Noise = &Layer->Settings.Noise;
-        Op.Power = Noise->Power;
-        /* BindUniformByName(&WorldEditRC->Program, "Power", Noise->Power); */
-        /* BindUniformByName(&WorldEditRC->Program, "NoiseType", Noise->Type); */
-
-        switch (Noise->Type)
-        {
-          case NoiseType_Perlin:
-          {
-            auto *Perlin = &Noise->Perlin;
-            Op.Period = Perlin->Period;
-          } break;
-
-          case NoiseType_Voronoi:
-          {
-            auto *Voronoi = &Noise->Voronoi;
-            /* BindUniformByName(&WorldEditRC->Program, "Squareness", Voronoi->Squareness); */
-            Op.Squareness = Voronoi->Squareness;
-            Op.Period = Voronoi->Period;
-          } break;
-
-          case NoiseType_RectLattice:
-          {
-            auto *RectLattice = &Noise->RectLattice;
-            /* BindUniformByName(&WorldEditRC->Program, "Squareness", RectLattice->Jitter); */
-            /* BindUniformByName(&WorldEditRC->Program, "Radius",     RectLattice->Radius); */
-            Op.Squareness = RectLattice->Jitter;
-            Op.Radius = RectLattice->Radius;
-            Op.Period = RectLattice->Period;
-          } break;
-
-          case NoiseType_White:
-          {} break;
-        }
-
-      } break;
-
       case BrushLayerType_Shape:
       {
-        shape_layer *Shape = &Layer->Settings.Shape;
-        /* BindUniformByName(&WorldEditRC->Program, "ShapeType",  Shape->Type); */
-        /* BindUniformByName(&WorldEditRC->Program, "Hollow",     Shape->Advanced.Hollow); */
-        /* BindUniformByName(&WorldEditRC->Program, "Rounding",   Shape->Advanced.Rounding); */
-        /* BindUniformByName(&WorldEditRC->Program, "Stretch",   &Shape->Advanced.Stretch); */
-        /* BindUniformByName(&WorldEditRC->Program, "Repeat",    &Shape->Advanced.Repeat); */
-
-        Op.Hollow   = Shape->Advanced.Hollow;
-        Op.Rounding = Shape->Advanced.Rounding;
-        Op.Stretch  =  Shape->Advanced.Stretch;
-        Op.Repeat   = Shape->Advanced.Repeat;
-
-        switch(Shape->Type)
-        {
-          case ShapeType_Rect:
-          {
-            auto Rect = &Shape->Rect;
-
-            v3 RectDim = Rect->Dim;
-            RangeIterator(Index, 3)
-            {
-              if (RectDim.E[Index] <= 0.f)
-              {
-                RectDim.E[Index] = EditDim.E[Index] + RectDim.E[Index];
-                if (Layer->Settings.Normalized) { RectDim.E[Index] /= EditDim.E[Index]; }
-              }
-            }
-            Op.RectDim = RectDim;
-            /* BindUniformByName(&WorldEditRC->Program, "RectDim", &RectDim); */
-          } break;
-
-          case ShapeType_Sphere:
-          {
-            auto Sphere = &Shape->Sphere;
-
-            v3 SimSphereOrigin = GetSimSpaceP(World, EditBounds.Min + EditRectRad);
-            v3 EditRelativeSphereCenter = (SimSphereOrigin - SimEditRect.Min);
-
-            f32 Rad = Sphere->Radius;
-            if (Sphere->Radius <= 0.f)
-            {
-              Rad = (MinChannel(EditDim)/2.f) + Sphere->Radius;
-              if (Layer->Settings.Normalized) { Rad /= (MinChannel(EditDim)); }
-            }
-
-            Op.EditRelativeSphereCenter = EditRelativeSphereCenter;
-            Op.Radius = Rad;
-            /* BindUniformByName(&WorldEditRC->Program, "EditRelativeSphereCenter", &EditRelativeSphereCenter); */
-            /* BindUniformByName(&WorldEditRC->Program, "Radius", Rad); */
-          } break;
-
-          case ShapeType_Line:
-          {
-            auto Line = &Shape->Line;
-            Op.Radius = Line->Radius;
-            /* BindUniformByName(&WorldEditRC->Program, "Radius", Line->Radius); */
-          } break;
-
-          case ShapeType_Cylinder:
-          {
-            auto Cylinder = &Shape->Cylinder;
-
-            f32 Radius = Cylinder->Radius;
-            f32 Height = Cylinder->Height;
-
-            if (Radius <= 0.f)
-            {
-              Radius = Radius + (EditDimKeys[0].Value/2.f);
-            }
-
-            if (Height <= 0.f)
-            {
-              // NOTE(Jesse): We divide height by two because the height
-              // extends up and down from the middle of the selection.
-              Height = (Height/2.f) + (EditDimKeys[2].Value/2.f);
-            }
-
-            switch(EditDimKeys[2].Index)
-            {
-              case 0:
-              {
-                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                Op.RotTransform = RotateTransform(Q2);
-              } break;
-
-              case 1:
-              {
-                // Already facing the Y axis
-              } break;
-
-              case 2:
-              {
-                Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                Op.RotTransform = RotateTransform(Q2);
-              } break;
-
-            }
-
-            Op.Height = Height;
-            Op.Radius = Radius;
-            /* BindUniformByName(&WorldEditRC->Program, "Radius", Radius); */
-            /* BindUniformByName(&WorldEditRC->Program, "Height", Height); */
-          } break;
-
-          case ShapeType_Plane:
-          {
-            auto Plane = &Shape->Plane;
-            auto Orientation = Plane->Orientation;
-
-            v3 xAxis = V3(1,0,0);
-            v3 yAxis = V3(0,1,0);
-            v3 zAxis = V3(0,0,1);
-
-            switch (Orientation)
-            {
-              InvalidCase(ShapeAxis_Count);
-
-              case ShapeAxis_InferFromMajorAxis:
-              {} break;
-
-              // Traverses the X axis and ascends
-              case ShapeAxis_PosX:
-              {
-                xAxis = Normalize(V3(EditRectRad.x, 0.f, EditRectRad.z));
-                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-              // Traverses the X axis and descends
-              case ShapeAxis_NegX:
-              {
-                xAxis = Normalize(V3(EditRectRad.x, 0.f, -EditRectRad.z));
-                yAxis = Normalize(V3(0.f, EditRectRad.y, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-
-
-              case ShapeAxis_PosY:
-              {
-                xAxis = Normalize(V3(0.f, EditRectRad.y, EditRectRad.z));
-                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-              case ShapeAxis_NegY:
-              {
-                xAxis = Normalize(V3(0.f, EditRectRad.y, -EditRectRad.z));
-                yAxis = Normalize(V3(EditRectRad.x, 0.f, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-
-
-              case ShapeAxis_PosZ:
-              {
-                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                yAxis = Normalize(V3(EditRectRad.x, EditRectRad.y, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-
-              case ShapeAxis_NegZ:
-              {
-                xAxis = Normalize(V3(0.f, 0.f, EditRectRad.z));
-                yAxis = Normalize(V3(-EditRectRad.x, EditRectRad.y, 0.f));
-                zAxis = Normalize(Cross(xAxis, yAxis));
-              } break;
-            }
-
-            v3 Plane_SimShapeOrigin = EditRectRad;
-            v3 PlaneNormal = zAxis;
-
-            auto PlaneRadius = Plane->Thickness/2.f;
-            auto Planed = -1.0f * ( PlaneNormal.x*Plane_SimShapeOrigin.x +
-                                    PlaneNormal.y*Plane_SimShapeOrigin.y +
-                                    PlaneNormal.z*Plane_SimShapeOrigin.z );
-
-            auto PlanePos = Plane_SimShapeOrigin;
-
-            Op.PlaneNormal = PlaneNormal;
-            Op.Planed = Planed;
-            Op.PlaneRadius = PlaneRadius;
-            /* BindUniformByName(&WorldEditRC->Program, "PlaneNormal", &PlaneNormal); */
-            /* BindUniformByName(&WorldEditRC->Program, "Planed",       Planed); */
-            /* BindUniformByName(&WorldEditRC->Program, "PlaneRadius",  PlaneRadius); */
-
-          } break;
-
-          case ShapeType_Torus:
-          {
-            auto Torus = &Shape->Torus;
-
-            r32 MinRad = Torus->MinorRadius;
-            r32 MajRad = Torus->MajorRadius;
-
-            if (MinRad <= 0.f)
-            {
-              MinRad += EditDimKeys[0].Value/2.f; 
-            }
-
-            if (MajRad <= 0.f)
-            {
-              // Take the middle dimension for the radius
-              MajRad += (EditDimKeys[1].Value/2.f) - MinRad;
-
-              // Orient along the minimum dimension
-              switch(EditDimKeys[0].Index)
-              {
-                case 0:
-                {
-                  Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(0,0,90)));
-                  Op.RotTransform = RotateTransform(Q2);
-                } break;
-
-                case 1:
-                {
-                  // Already facing the Y axis
-                } break;
-
-                case 2:
-                {
-                  Quaternion Q2 = ParentQuaternion * FromEuler(RadiansFromDegress(V3(90,0,0)));
-                  Op.RotTransform = RotateTransform(Q2);
-                } break;
-
-              }
-            }
-
-
-            Op.Radius = MajRad;
-            Op.MinorRadius = MinRad;
-            /* BindUniformByName(&WorldEditRC->Program, "Radius",      MajRad); */
-            /* BindUniformByName(&WorldEditRC->Program, "MinorRadius", MinRad); */
-
-          } break;
-
-          case ShapeType_Pyramid:
-          {
-            auto Pyramid = &Shape->Pyramid;
-
-            Op.Radius = Pyramid->Height;
-            /* BindUniformByName(&WorldEditRC->Program, "Radius",      Pyramid->Height); */
-
-          } break;
-
-
-          // @sdf_shape_step(5): Calculate values and bind uniform variables for the new shape
-          //
-        }
+        // Intentionally do nothing
       } break;
     }
 
     auto GL = GetGL();
 
-    /* Op.RotTransform = Transpose(Op.RotTransform); */
-    /* BindUniformByName(&WorldEditRC->Program, "RotTransform", &Op.RotTransform); */
+
+    world_edit_op Op = WorldEditOpForBrushLayer( Layer, ParentRotation, EditBounds, Chunk->WorldP );
 
     local_persist u32 OpStorageBuffer = 0;
     if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }

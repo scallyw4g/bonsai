@@ -616,16 +616,23 @@ DrainLoRenderQueue(engine_resources *Engine)
                 sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
 
 
+                s32 TotalOps = 0;
                 IterateOver(&Node->Edits, Edit, EditIndex)
                 {
                   u32 KeyIndex = u32(GetIndex(&EditIndex));
                   Keys[KeyIndex] = {u64(Edit), u64(Edit->Ordinal)};
+
+                  if (Edit->Brush)
+                  {
+                    TotalOps += Edit->Brush->LayerCount;
+                  }
                 }
 
                 BubbleSort_descending(Keys, u32(EditCount));
 #endif
                 // }
 
+                world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), TotalOps);
 
                 RangeIterator(KeyIndex, EditCount)
                 {
