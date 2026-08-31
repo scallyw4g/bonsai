@@ -1,3 +1,4 @@
+#define MAX_COLOR_TEXTURES 16
 uniform int OpCount;
 
 struct world_edit_op
@@ -17,7 +18,7 @@ struct world_edit_op
   s32 Pad00;
 
   v3 RGBColor;
-  s32 Pad000;
+  s32 ColorTextureUnit;
 
   // Shape Params
   r32 Hollow;
@@ -86,16 +87,11 @@ uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 /* uniform       int SeedColorValueFromInput; */
 /* uniform       int SeedNoiseValueFromInput; */
+uniform sampler2D ColorTextureArray[MAX_COLOR_TEXTURES];
 uniform sampler2D InputTex;
 
-/* uniform       int SampleBlendTex; */
-/* uniform sampler2D BlendTex; */
-uniform       int BrushBlendMode;
-
-uniform       int SampleColorTex;
-uniform sampler2D ColorTex;
-
-uniform f32 ColorBlendBias;
+uniform int BrushBlendMode;
+uniform f32 BrushColorBlendBias; // ColorBlendBias
 
 in vec2 UV;
 out vec4 Output;
@@ -420,7 +416,7 @@ void BlendSample(
     case 5: // WorldEdit_ColorBlendMode_FinalBlend
 #if 1
     {
-      b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias;
+      b32 ThisSampleCloserToBlendThanAccumulator = Foo > BrushColorBlendBias;
       if (
           /* ThisSample_in > 0.f && */
           /* Blended > 0.f */
@@ -440,7 +436,7 @@ void BlendSample(
 
     case 0: // WorldEdit_ColorBlendMode_ValuePositive
     {
-      /* b32 ThisSampleCloserToBlendThanAccumulator = Foo > ColorBlendBias; */
+      /* b32 ThisSampleCloserToBlendThanAccumulator = Foo > BrushColorBlendBias; */
       /* /1* ColorValue = V3(0,1,1); *1/ */
       /* if ( */
       /*     /1* ThisSample_in > 0.f *1/ */
@@ -545,7 +541,9 @@ int getIndexOfMax(vec3 v) {
 
 void main()
 {
-  /* v4 DefaultValue = vec4(0); */
+  // We have to set the DefaultValue to the most negative number because we're
+  // going to union the first layer and we want to preserve negative values such
+  // that subsequent layers behave properly.  Specifically, Additive.
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
    v3 ColorAccumulator = DefaultValue.rgb;
@@ -573,6 +571,9 @@ void main()
 #if 1
     for (int OpIndex = 0; OpIndex < OpCount; ++OpIndex)
     {
+      f32 InitialSample = 0.f;
+      v3 ColorSample = V3(0);
+
       world_edit_op Op = Ops[OpIndex];
 
       int BrushType      = Op.BrushType;
@@ -609,11 +610,6 @@ void main()
       bool Invert     = (Op.Flags & 1<<0) > 0;
       bool Normalized = (Op.Flags & 1<<1) > 0;
 
-
-      /* bool SampleBlendTex = (OpIndex == OpCount-1); */
-      /* bool SeedColorValueFromInput = (OpIndex == 0); */
-      /* bool SeedNoiseValueFromInput = (OpIndex == 0); */
-
       mat3 RotMatrix = mat3(RotTransform);
       v3 Basis = WorldspaceChunkBasis + xyz;
       v3 EditRelxyz = xyz - ChunkRelEditMin;
@@ -621,16 +617,41 @@ void main()
       v3 EditRad = EditDim/2.f;
 
 
-      f32 InitialSample = 0.f;
-      v3 ColorSample = V3(0);
-      if (ColorMode == 1 || ColorMode == 2) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
-      /* if (SampleColorTex > 0) */
+
+#if 0
+      if ( (Op.ColorTextureUnit > 0) && (ColorMode == 1 || ColorMode == 2) ) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
       {
         /* f32 compress = 1.0f; */
         f32 compress = 0.8f;
         /* int compress = 20; */
         /* int compress = 10; */
-        /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
+        v2 uv = (vec2(x,y)*compress)/66;
+        /* ColorSample = texture(ColorTextureArray[Op.ColorTextureUnit], uv).rgb; */
+
+        for (int i = 0; i < MAX_COLOR_TEXTURES; ++i)
+        {
+            if (i == Op.ColorTextureUnit)
+            {
+                if (i == 0)
+                  ColorSample = V3(1,0,0);
+
+                if (i == 1)
+                  ColorSample = V3(0,1,0);
+
+                if (i == 2)
+                  ColorSample = V3(0,0,1);
+
+                if (i == 3)
+                  ColorSample = V3(1,0,1);
+
+                /* ColorSample = texture(ColorTextureArray[Op.ColorTextureUnit-1], uv).rgb; */
+                ColorSample = texture(ColorTextureArray[0], uv).rgb;
+                /* ColorSample = texture(InputTex, uv).rgb; */
+                /* ColorSample = V3(0); */
+            }
+        }
+
+
         /* ColorSample += texelFetch(ColorTex, ivec2(z,y), 0).rgb; */
         /* ColorSample += texelFetch(ColorTex, ivec2(x,z), 0).rgb; */
         /* ColorSample /= 3.f; */
@@ -641,6 +662,7 @@ void main()
         //     transitions areas.
         // "s" texture sampler
         /* vec4 boxmap( in sampler2D s, in vec3 p, in vec3 n, in float k ) */
+
 #if 0
         {
            // project+fetch
@@ -688,6 +710,7 @@ void main()
 #endif
        }
        else
+#endif
        {
          ColorSample = RGBColor;
        }

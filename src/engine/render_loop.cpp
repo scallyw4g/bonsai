@@ -634,67 +634,48 @@ DrainLoRenderQueue(engine_resources *Engine)
                 {
                   TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
-#if 1
                   auto Program = &WorldEditRC->Program;
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
                     world_edit_brush *Brush = Edit->Brush;
 
-                    /* if (Brush->LayerCount  > 1) */
-                    /* { */
-                    /*   int breakhere; */
-                    /* } */
-
                     // Buffer up all layer ops in brush
                     //
                     s32 AtOpIndex = 0;
+                    u32 TexUnit = 0;
+                    BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
+
+#if 0
                     RangeIterator(LayerIndex, Brush->LayerCount)
                     {
+                      texture ColorTex = {};
                       brush_layer *Layer = Brush->Layers + LayerIndex;
-                      Ops[AtOpIndex++] = WorldEditOpForBrushLayer( Layer, Edit->Region, Edit->Rotation, Chunk->WorldP );
+
+                      auto Op = WorldEditOpForBrushLayer(Layer, Edit->Region, Edit->Rotation, Chunk->WorldP, &TexUnit, &ColorTex);
+                      if (Op.ColorTextureUnit)
+                      {
+                        Info("Binding Tex (%d) to unit (%d)", ColorTex.ID, Op.ColorTextureUnit);
+                        BindUniformByName(Program, "ColorTextureArray", &ColorTex, Op.ColorTextureUnit);
+                      }
+
+                      Ops[AtOpIndex++] = Op;
                       Assert(AtOpIndex <= TotalOps);
                     }
+#endif
 
-                    /* ApplyBrushFromOps( WorldEditRC, */
-                    /*                    Edit->Region, */
-                    /*                    Edit->Rotation, */
-                    /*                    Brush, */
-                    /*                    Brush->BrushBlendMode, */
-                    /*                    Chunk, */
-                    /*                    Read, Write, False, False, Brush->Smoothing.ColorBlend); */
-
-
-                    // @derivs_texture_binding_to_shader_unit_0
-                    BindUniformByName(Program, "InputTex", &Read->DestTexture, 1);
 
                     // NOTE(Jesse): We pass this blend mode in because we want to take the
                     // layers blend mode, not the blend mode for the brush.
                     BindUniformByName(Program, "BrushBlendMode", Brush->BrushBlendMode);
 
-                    /* { */
-                    /*   if (Layer->Settings.ColorMode == WorldEditColorMode_Texture || */
-                    /*       Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture) */
-                    /*   { */
-                    /*     asset *Asset = GetOrAllocateAsset(Engine, &Layer->Settings.ColorTextureFilePath).Value; */
-                    /*     if (Asset && Asset->LoadState == AssetLoadState_Loaded) */
-                    /*     { */
-                    /*       Assert(Asset->Type == AssetType_Texture); */
-                    /*       BindUniformByName(Program, "SampleColorTex", 1); */
-                    /*       BindUniformByName(Program, "ColorTex", &Asset->Texture, 3); */
-                    /*     } */
-                    /*     else */
-                    /*     { */
-                    /*       BUG("ColorTex asset has been deallocated, we should properly handle this case"); */
-                    /*     } */
-                    /*   } */
-                    /* } */
-
-                    /* BindUniformByName(Program, "ColorBlendBias", ColorBlendBias); */
-
                     AssertNoGlErrors;
 
                     auto GL = GetGL();
+
+                    s32 MaxFragShaderTexUnits = 0;
+                    GL->GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS_ARB, &MaxFragShaderTexUnits);
+
                     local_persist u32 OpStorageBuffer = 0;
                     if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
 
@@ -723,67 +704,13 @@ DrainLoRenderQueue(engine_resources *Engine)
 #define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
                     Swap(Read, Write);
 #undef Swap
-
-                    /* Assert(Read->FBO.ID != Write->FBO.ID); */
-                    /* Assert(Read->FBO.ID != Accum->FBO.ID); */
-                    /* Assert(Write->FBO.ID != Accum->FBO.ID); */
-
-                    /* GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f); */
-                    /* ClearFramebuffer(Write); */
-                    /* ClearFramebuffer(Read); */
-
-
                   }
-#else
-                  world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
-                  if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
-                  {
-                    world_edit_brush *Brush = Edit->Brush;
-
-                    Assert(Read->FBO.ID != Write->FBO.ID);
-                    Assert(Read->FBO.ID != Accum->FBO.ID);
-                    Assert(Write->FBO.ID != Accum->FBO.ID);
-
-                    rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
-                                                          Edit->Region,
-                                                          Edit->Rotation,
-                                                          Brush,
-                                                          Brush->BrushBlendMode,
-                                                          Chunk,
-                                                          Read, Write, Accum, False, False, Brush->Smoothing.ColorBlend);
-
-                    if (Applied.FBO.ID == Read->FBO.ID)
-                    {
-                      *Read = *Accum;
-                    }
-                    else
-                    {
-                      Assert(Applied.FBO.ID == Write->FBO.ID);
-                      *Write = *Accum;
-                    }
-
-                    *Accum = Applied;
-
-                    Assert(Read->FBO.ID != Write->FBO.ID);
-                    Assert(Read->FBO.ID != Accum->FBO.ID);
-                    Assert(Write->FBO.ID != Accum->FBO.ID);
-
-                    GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
-                    ClearFramebuffer(Write);
-                    ClearFramebuffer(Read);
-                  }
-#endif
 
                   AssertNoGlErrors;
                 }
               }
               ReleaseFutex(&Node->Lock);
             }
-
-            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, xAxis*200.f, RGB_RED, DEFAULT_LINE_THICKNESS*4.f ); */
-            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, yAxis*200.f, RGB_GREEN, DEFAULT_LINE_THICKNESS*4.f ); */
-            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
-            /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
             // We always swap textures, so we read from the Read texture
             texture *CurrentAccumulationTexture = &Read->DestTexture;
@@ -797,10 +724,6 @@ DrainLoRenderQueue(engine_resources *Engine)
 
               UseShader(&Graphics->TerrainFinalizeRC);
 
-              // NOTE(Jesse): The other inputtex calls bind to texture unit 1 .. it is correct that
-              // this bind to unit 0 because there's no derivs texture being bound here.
-              //
-              // @derivs_texture_binding_to_shader_unit_0
               BindUniformByName(&Graphics->TerrainFinalizeRC.Program, "InputTex", CurrentAccumulationTexture, 0);
 
               /* gpu_timer Timer = StartGpuTimer(); */

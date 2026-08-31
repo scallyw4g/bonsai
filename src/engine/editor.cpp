@@ -3758,7 +3758,9 @@ WorldEditOpForBrushLayer(
     brush_layer *Layer,
     rect3cp  EditBounds,
     v3 ParentRotation,
-    v3i ChunkWorldP
+    v3i ChunkWorldP,
+    u32 *ColorTextureUnit,
+    texture *OutTex
   )
 {
   world_edit_op Op = {};
@@ -3815,6 +3817,28 @@ WorldEditOpForBrushLayer(
   /* Op.ChunkRelEditMax = ChunkRelEditMax; */
   Op.BasisOffset = BasisOffset;
 
+  {
+    if (Layer->Settings.ColorMode == WorldEditColorMode_Texture ||
+        Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture)
+    {
+      asset *Asset = GetOrAllocateAsset(GetEngineResources(), &Layer->Settings.ColorTextureFilePath).Value;
+      if (Asset && Asset->LoadState == AssetLoadState_Loaded)
+      {
+        Assert(Asset->Type == AssetType_Texture);
+        Op.ColorTextureUnit = *ColorTextureUnit;
+        *ColorTextureUnit = *ColorTextureUnit + 1;
+
+        Op.ColorMode = Layer->Settings.ColorMode;
+        *OutTex = Asset->Texture;
+        /* BindUniformByName(Program, "SampleColorTex", 1); */
+        /* BindUniformByName(Program, "ColorTex", &Asset->Texture, 3); */
+      }
+      else
+      {
+        BUG("ColorTex asset has been deallocated, we should properly handle this case");
+      }
+    }
+  }
 
   switch (Layer->Settings.Type)
   {
@@ -4134,243 +4158,4 @@ BindUniformsForBrushLayer(
   BindUniformByName(Program, "ColorBlendBias", ColorBlendBias);
 
   AssertNoGlErrors;
-}
-
-link_internal rtt_framebuffer
-ApplyBrush( world_edit_render_context *WorldEditRC,
-                              rect3cp  EditBounds,
-                                   v3  ParentRotation,
-                     world_edit_brush *Brush,
-                world_edit_blend_mode  BlendMode,
-                          world_chunk *Chunk,
-                      rtt_framebuffer *Read,
-                      rtt_framebuffer *Write,
-                      rtt_framebuffer *Accum,
-                                  b32  SeedNoise,
-                                  b32  SeedColor,
-                                  r32  ColorBlendBias)
-{
-  (void)SeedNoise;
-  (void)SeedColor;
-
-  world *World = GetWorld();
-
-  RangeIterator(LayerIndex, Brush->LayerCount)
-  {
-    b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False);
-    b32 SampleBlendTex = IsLastValidLayer;
-
-    brush_layer *Layer = Brush->Layers + LayerIndex;
-
-    if (Layer->Settings.Disabled) continue;
-
-    rect3 SimEditRect = GetSimSpaceRect(World, EditBounds);
-       v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
-       v3 EditRectRad = GetRadius(&SimEditRect);
-
-    v3 BasisOffset = Layer->Settings.Offset;
-    v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
-    v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
-    v3 EditDim = ChunkRelEditMax -  ChunkRelEditMin;
-
-    // NOTE(Jesse): Key 0 is the Min, Key 2 is Max
-    sort_key_f32 EditDimKeys[3];
-
-    EditDimKeys[0].Index = 0;
-    EditDimKeys[0].Value = EditDim.E[0];
-
-    EditDimKeys[1].Index = 1;
-    EditDimKeys[1].Value = EditDim.E[1];
-
-    EditDimKeys[2].Index = 2;
-    EditDimKeys[2].Value = EditDim.E[2];
-
-
-    BubbleSort_descending(EditDimKeys, 3);
-
-
-    BindUniformsForBrushLayer( &WorldEditRC->Program,
-                                Layer,
-                                Write,
-
-                                Read,
-                                /* Accum, */
-
-                                BlendMode,
-                                ColorBlendBias
-                              );
-    SeedNoise = True;
-    SeedColor = True;
-
-    switch (Layer->Settings.Type)
-    {
-      case BrushLayerType_Brush:
-      {
-        world_edit_brush *NestedBrush = Layer->Settings.Brush;
-        if (NestedBrush)
-        {
-          /* rtt_framebuffer B0 = {}, B1 = {}; */
-
-          rtt_framebuffer B0 = GetOrAllocateTextureFramebufferForWorldEdit(&WorldEditRC->BrushTextureFramebufferFreelist, Read->DestTexture.Dim);
-          rtt_framebuffer B1 = GetOrAllocateTextureFramebufferForWorldEdit(&WorldEditRC->BrushTextureFramebufferFreelist, Read->DestTexture.Dim);
-
-          /* InitializeRenderToTextureFramebuffer(&B0, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 0")); */
-          /* InitializeRenderToTextureFramebuffer(&B1, Read->DestTexture.Dim, CSz("Nested Brush Framebuffer 1")); */
-
-          rtt_framebuffer Applied = ApplyBrush( WorldEditRC,
-                                                EditBounds,
-                                                ParentRotation,
-                                                NestedBrush,
-                                                Layer->Settings.BlendMode,
-                                                Chunk,
-                                                &B0, &B1, Read, False, False, NestedBrush->Smoothing.ColorBlend);
-
-          // NOTE(Jesse): This is kinda gross, but if we're the last layer we have 
-          // to apply the result of the brush back into the accumulation texture
-          //*
-          // There's probably a better way of doing this, but I'm pretty sure
-          // this'll work, so I'm just going to put the pig-hat on and go for it.
-          //
-          if (IsLastValidLayer)
-          {
-            world_edit_brush BlendBrush = {};
-            BlendBrush.BrushBlendMode = WorldEdit_Mode_Disabled;
-            BlendBrush.LayerCount = 1;
-            BlendBrush.Layers[0].Settings.BlendMode = WorldEdit_Mode_Disabled;
-            /* BlendBrush.Layers[0].Settings.ColorMode = WorldEdit_ColorBlendMode_FinalBlend; */
-
-
-            Applied = ApplyBrush( WorldEditRC,
-                                  EditBounds,
-                                  ParentRotation,
-                                  &BlendBrush,
-                                  Brush->BrushBlendMode,
-                                  Chunk,
-                                  &Applied,
-                                  Read, // Intentionally writing into read here because that's what we return
-                                  Accum,
-                                  True, True, ColorBlendBias);
-
-            Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B0);
-            Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B1);
-            /* DeallocateRenderToTextureFramebuffer(&B0); */
-            /* DeallocateRenderToTextureFramebuffer(&B1); */
-          }
-          else
-          {
-            Push(&WorldEditRC->BrushTextureFramebufferFreelist, Read);
-            /* DeallocateRenderToTextureFramebuffer(Read); */
-            *Read = Applied;
-
-            if (Applied.FBO.ID == B0.FBO.ID)
-            {
-              Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B1);
-              /* DeallocateRenderToTextureFramebuffer(&B1); */
-            }
-            else
-            {
-              Assert(Applied.FBO.ID == B1.FBO.ID);
-              Push(&WorldEditRC->BrushTextureFramebufferFreelist, &B0);
-              /* DeallocateRenderToTextureFramebuffer(&B0); */
-            }
-          }
-        }
-
-        // NOTE(Jesse): It is important we continue here so we do not do the
-        // draw call and swap the read/write Framebuffer pointers 
-        //
-        continue;
-
-      } break;
-
-      case BrushLayerType_Noise:
-      case BrushLayerType_Shape:
-      {
-        // Intentionally do nothing
-      } break;
-    }
-
-    world_edit_op Op = WorldEditOpForBrushLayer( Layer, EditBounds, ParentRotation, Chunk->WorldP );
-
-    auto GL = GetGL();
-    local_persist u32 OpStorageBuffer = 0;
-    if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
-    AssertNoGlErrors;
-
-    GL->BufferData(GL_SHADER_STORAGE_BUFFER, sizeof(world_edit_op), &Op, GL_DYNAMIC_DRAW);
-    AssertNoGlErrors;
-
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
-
-
-    /* gpu_timer Timer = StartGpuTimer(); */
-    RenderQuad();
-    /* EndGpuTimer(&Timer); */
-    /* Push(&Graphics->GpuTimers, &Timer); */
-
-#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
-    Swap(Read, Write);
-#undef Swap
-  }
-
-  // This is actually the last-written to texture
-  return *Read;
-}
-
-link_internal void
-ApplyBrushFromOps( world_edit_render_context *WorldEditRC,
-                                     rect3cp  EditBounds,
-                                          v3  ParentRotation,
-                            world_edit_brush *Brush,
-                       world_edit_blend_mode  BlendMode,
-                                 world_chunk *Chunk,
-                             rtt_framebuffer *Read,
-                             rtt_framebuffer *Write,
-                             /* rtt_framebuffer *Accum, */
-                                         b32  SeedNoise,
-                                         b32  SeedColor,
-                                         r32  ColorBlendBias)
-{
-  (void)SeedNoise;
-  (void)SeedColor;
-
-  world *World = GetWorld();
-
-#if 0
-  world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), Brush->LayerCount);
-
-  s32 AtOpIndex = 0;
-  RangeIterator(LayerIndex, Brush->LayerCount)
-  {
-    brush_layer *Layer = Brush->Layers + LayerIndex;
-    if (Layer->Settings.Disabled) continue;
-
-    Ops[AtOpIndex++] = WorldEditOpForBrushLayer( Layer, EditBounds, ParentRotation, Chunk->WorldP );
-
-    Assert(AtOpIndex <= Brush->LayerCount);
-  }
-#endif
-
-  RangeIterator(LayerIndex, Brush->LayerCount)
-  {
-    /* b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False); */
-    /* b32 SampleBlendTex = IsLastValidLayer; */
-
-    brush_layer *Layer = Brush->Layers + LayerIndex;
-
-    if (Layer->Settings.Disabled) continue;
-
-    BindUniformsForBrushLayer(
-        &WorldEditRC->Program,
-                                Layer,
-                                Write,
-                                Read,
-                                /* Accum, */
-
-                                BlendMode,
-                                ColorBlendBias
-        );
-  }
 }

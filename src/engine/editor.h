@@ -2059,7 +2059,7 @@ struct world_edit_op
   s32 Pad00;
 
   v3 RGBColor;
-  s32 Pad000;
+  u32 ColorTextureUnit;
 
   // Shape Params
   r32 Hollow;
@@ -2303,14 +2303,8 @@ DoColorPickerToggle(renderer_2d *Ui, window_layout *Window, v3 *HSVDest, b32 Sho
 link_internal sort_key_buffer
 GetEditsSortedByOrdianl(world_edit_block_array *Edits, memory_arena *TempMem);
 
-link_internal rtt_framebuffer
-ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32, r32);
-
-link_internal void
-ApplyBrushFromOps( world_edit_render_context *WorldEditRC, rect3cp  EditBounds, v3  ParentRotation, world_edit_brush *Brush, world_edit_blend_mode  BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, b32  SeedNoise, b32  SeedColor, r32  ColorBlendBias);
-
 link_internal void
 ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);
 
 link_internal world_edit_op
-WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP );
+WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP, u32 *, texture *OutTex);
