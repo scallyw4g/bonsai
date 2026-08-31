@@ -3756,8 +3756,8 @@ SetSubType(layer_settings *Settings, world_edit_op *Dest)
 link_internal world_edit_op
 WorldEditOpForBrushLayer(
     brush_layer *Layer,
-    v3 ParentRotation,
     rect3cp  EditBounds,
+    v3 ParentRotation,
     v3i ChunkWorldP
   )
 {
@@ -3800,6 +3800,8 @@ WorldEditOpForBrushLayer(
   Op.BlendMode = Layer->Settings.BlendMode;
   Op.ColorMode = Layer->Settings.ColorMode;
 
+  Op.RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
+
   Op.ValueModifiers = Layer->Settings.ValueFunc;
   Op.ValueBias = Layer->Settings.ValueBias;
   Op.Power = Layer->Settings.Power;
@@ -3809,8 +3811,8 @@ WorldEditOpForBrushLayer(
   Op.Flags = Op.Flags | (Layer->Settings.Invert * WorldEditOpFlag_Invert);
   Op.Flags = Op.Flags | (Layer->Settings.Normalized * WorldEditOpFlag_Normalized);
 
-  Op.ChunkRelEditMin = ChunkRelEditMin;
-  Op.ChunkRelEditMax = ChunkRelEditMax;
+  /* Op.ChunkRelEditMin = ChunkRelEditMin; */
+  /* Op.ChunkRelEditMax = ChunkRelEditMax; */
   Op.BasisOffset = BasisOffset;
 
 
@@ -4093,51 +4095,24 @@ BindUniformsForBrushLayer(
     shader *Program,
     brush_layer *Layer,
     rtt_framebuffer *Write,
-
-    b32 SeedNoiseValueFromInput,
-    b32 SeedColorValueFromInput,
     rtt_framebuffer *Read,
 
-    b32 SampleBlendTex,
-    rtt_framebuffer *Blend,
     world_edit_blend_mode  BlendMode,
-
-    v3 *ChunkRelEditMin,
-    v3 *ChunkRelEditMax,
-    v3 *BasisOffset,
 
     r32 ColorBlendBias
     )
 {
   BindFramebuffer(Write);
 
-  BindUniformByName(Program, "SeedNoiseValueFromInput", SeedNoiseValueFromInput);
-  BindUniformByName(Program, "SeedColorValueFromInput", SeedColorValueFromInput);
-  if (SeedNoiseValueFromInput || SeedColorValueFromInput)
-  {
-    texture *InputTex = &Read->DestTexture;
-    // @derivs_texture_binding_to_shader_unit_0
-    BindUniformByName(Program, "InputTex", InputTex, 1);
-  }
-  SeedNoiseValueFromInput = True;
-  SeedColorValueFromInput = True;
+  // @derivs_texture_binding_to_shader_unit_0
+  BindUniformByName(Program, "InputTex", &Read->DestTexture, 1);
+  /* BindUniformByName(Program, "BlendTex", &Blend->DestTexture, 2); */
 
-  BindUniformByName(Program, "SampleBlendTex", SampleBlendTex);
-  if (SampleBlendTex)
-  {
-    texture *BlendTex = &Blend->DestTexture;
-    BindUniformByName(Program, "BlendTex", BlendTex, 2);
-
-    // NOTE(Jesse): We pass this blend mode in because we want to take the
-    // layers blend mode, not the blend mode for the brush.
-    BindUniformByName(Program, "BlendTexBlendMode", BlendMode);
-  }
+  // NOTE(Jesse): We pass this blend mode in because we want to take the
+  // layers blend mode, not the blend mode for the brush.
+  BindUniformByName(Program, "BlendTexBlendMode", BlendMode);
 
   {
-    v3 RGBColor = HSVtoRGB(Layer->Settings.HSVColor);
-    BindUniformByName(Program, "RGBColor", &RGBColor);
-
-    /* if (Layer->Settings.ColorTextureFilePath.Type == FileTraversalType_File) */
     if (Layer->Settings.ColorMode == WorldEditColorMode_Texture ||
         Layer->Settings.ColorMode == WorldEditColorMode_TintedTexture)
     {
@@ -4175,6 +4150,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                   b32  SeedColor,
                                   r32  ColorBlendBias)
 {
+  (void)SeedNoise;
+  (void)SeedColor;
+
   world *World = GetWorld();
 
   RangeIterator(LayerIndex, Brush->LayerCount)
@@ -4215,24 +4193,14 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
                                 Layer,
                                 Write,
 
-                                SeedNoise,
-                                SeedColor,
                                 Read,
-
-                                SampleBlendTex,
-                                Accum,
+                                /* Accum, */
 
                                 BlendMode,
-                                &ChunkRelEditMin,
-                                &ChunkRelEditMax,
-                                &BasisOffset,
                                 ColorBlendBias
                               );
     SeedNoise = True;
     SeedColor = True;
-
-    Quaternion ParentQuaternion = FromEuler(RadiansFromDegress(ParentRotation)) *
-                                  FromEuler(RadiansFromDegress(Layer->Settings.Rotation));
 
     switch (Layer->Settings.Type)
     {
@@ -4322,11 +4290,9 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
       } break;
     }
 
+    world_edit_op Op = WorldEditOpForBrushLayer( Layer, EditBounds, ParentRotation, Chunk->WorldP );
+
     auto GL = GetGL();
-
-
-    world_edit_op Op = WorldEditOpForBrushLayer( Layer, ParentRotation, EditBounds, Chunk->WorldP );
-
     local_persist u32 OpStorageBuffer = 0;
     if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
 
@@ -4353,3 +4319,58 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
   return *Read;
 }
 
+link_internal void
+ApplyBrushFromOps( world_edit_render_context *WorldEditRC,
+                                     rect3cp  EditBounds,
+                                          v3  ParentRotation,
+                            world_edit_brush *Brush,
+                       world_edit_blend_mode  BlendMode,
+                                 world_chunk *Chunk,
+                             rtt_framebuffer *Read,
+                             rtt_framebuffer *Write,
+                             /* rtt_framebuffer *Accum, */
+                                         b32  SeedNoise,
+                                         b32  SeedColor,
+                                         r32  ColorBlendBias)
+{
+  (void)SeedNoise;
+  (void)SeedColor;
+
+  world *World = GetWorld();
+
+#if 0
+  world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), Brush->LayerCount);
+
+  s32 AtOpIndex = 0;
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+    if (Layer->Settings.Disabled) continue;
+
+    Ops[AtOpIndex++] = WorldEditOpForBrushLayer( Layer, EditBounds, ParentRotation, Chunk->WorldP );
+
+    Assert(AtOpIndex <= Brush->LayerCount);
+  }
+#endif
+
+  RangeIterator(LayerIndex, Brush->LayerCount)
+  {
+    /* b32 IsLastValidLayer = (AnyValidLayersRemaining(Brush, LayerIndex+1) == False); */
+    /* b32 SampleBlendTex = IsLastValidLayer; */
+
+    brush_layer *Layer = Brush->Layers + LayerIndex;
+
+    if (Layer->Settings.Disabled) continue;
+
+    BindUniformsForBrushLayer(
+        &WorldEditRC->Program,
+                                Layer,
+                                Write,
+                                Read,
+                                /* Accum, */
+
+                                BlendMode,
+                                ColorBlendBias
+        );
+  }
+}

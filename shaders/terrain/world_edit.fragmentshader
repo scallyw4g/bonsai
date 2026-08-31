@@ -1,55 +1,49 @@
+uniform int OpCount;
 
 struct world_edit_op
 {
-  //
+  // NOTE(Jesse): Make sure this is 16-byte aligned
+  mat4 RotTransform;
+
+  s32 BrushType;
+  s32 SubType;
+
   // Common Params
-  //
-
-  mat4 RotTransform; // NOTE(Jesse): Make sure this is 16-byte aligned
-  s32 BrushType; // Noise, Shape or Brush
-  s32 SubType;   // Noise or Shape type (perlin, voronoi, rect, sphere, etc.
   s32 BlendMode;
-  s32 ColorMode;      // world_edit_color_mode
-  s32 ValueModifiers; // world_edit_blend_mode_modifier
-  f32 ValueBias;
+  s32 ColorMode; // enum world_edit_color_mode
+  s32 ValueModifiers;
+  r32 ValueBias;
+  f32 Pad0;
+  s32 Pad00;
 
-  //
+  v3 RGBColor;
+  s32 Pad000;
+
   // Shape Params
-  //
   r32 Hollow;
   r32 Rounding;
+  s32 Pad0000;
+  s32 Pad00000;
 
-  v3 Stretch;
-  f32 Radius; // Sphere, Line, Cylinder, Torus, Pyramid, Rect Lattice
+   v3 Stretch;
+  f32 Radius;
 
-  v3 Repeat;
+   v3 Repeat;
   r32 Pad1;
 
-  //
   // Noise Params
-  //
-    v3 Period;
-   f32 Threshold;
-   f32 Power;
-   u32 Flags; // world_edit_op_flags
-   f32 Pad3;
-   f32 Pad4;
+   v3 Period;
+  f32 Threshold;
+  f32 Power;
 
-  //
-  // Clipping params
-  //
-  v3 ChunkRelEditMin;
-  f32 Pad5;
+  s32 Flags; // Invert, Normalized
+  f32 Pad3;
+  f32 Pad4;
 
-  v3 ChunkRelEditMax;
-  f32 Pad6;
-
-  v3 BasisOffset;
+   v3 BasisOffset;
   f32 Pad7;
 
-  //
   // Specific Params
-  //
 
   // Rect
   v3 RectDim;
@@ -78,99 +72,27 @@ layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
   world_edit_op Ops[];
 };
 
-uniform  v3 WorldspaceChunkBasis;
-uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
-
-/* uniform int BrushType; */
-/* uniform int BlendMode; */
-/* uniform int ColorMode; // enum world_edit_color_mode */
-/* uniform int ValueModifiers; */
-/* uniform f32 ValueBias; */
-
-/* uniform f32 Hollow; */
 
 //
 // Clipping params
 //
-/* uniform v3 ChunkRelEditMin; */
-/* uniform v3 ChunkRelEditMax; */
-/* uniform v3 BasisOffset; */
+uniform v3 ChunkRelEditMin;
+uniform v3 ChunkRelEditMax;
+
+uniform  v3 WorldspaceChunkBasis;
+uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 
-//
-// Common Shape params
-//
-/* uniform s32  ShapeType; // shape_type */
-/* uniform mat4 RotTransform; */
-/* uniform f32  Rounding; */
-/* uniform  v3  Stretch; */
-/* uniform  v3  Repeat; */
-
-//
-// Common Noise params
-//
-/* uniform  int NoiseType; */
-/* uniform   v3 Period; */
-/* uniform  f32 Threshold; */
-/* uniform  f32 Power; */
-/* uniform bool Invert; */
-/* uniform bool Normalized; */
-
-//
-// Rect Params
-//
-
-/* uniform v3 RectDim; */
-
-//
-// Sphere Params
-//
-/* uniform  v3 EditRelativeSphereCenter; */
-/* uniform f32 Radius; */
-
-//
-// Cylinder Params
-//
-
-/* uniform r32 Height; */
-
-//
-// Plane Params
-//
-/* uniform v3 PlaneNormal; */
-/* uniform f32 Planed; */
-/* uniform f32 PlaneRadius; */
-
-//
-// Torus Params
-//
-
-/* uniform f32 MinorRadius; */
-
-
-
-
-
-
-
-//
-// Voronoi Params
-//
-/* uniform f32 Squareness; // 0 == not square, 1 == square */
-
-
-
-uniform       int SeedColorValueFromInput;
-uniform       int SeedNoiseValueFromInput;
+/* uniform       int SeedColorValueFromInput; */
+/* uniform       int SeedNoiseValueFromInput; */
 uniform sampler2D InputTex;
 
-uniform       int SampleBlendTex;
-uniform sampler2D BlendTex;
+/* uniform       int SampleBlendTex; */
+/* uniform sampler2D BlendTex; */
 uniform       int BlendTexBlendMode;
 
 uniform       int SampleColorTex;
 uniform sampler2D ColorTex;
-uniform        v3 RGBColor;
 
 uniform f32 ColorBlendBias;
 
@@ -622,76 +544,17 @@ int getIndexOfMax(vec3 v) {
 
 void main()
 {
-  world_edit_op Op = Ops[0];
-
-  int BrushType = Op.BrushType;
-  int BlendMode = Op.BlendMode;
-
-  mat4 RotTransform = Op.RotTransform;
-  s32 ColorMode = Op.ColorMode;
-  s32 ValueModifiers = Op.ValueModifiers;
-  r32 ValueBias = Op.ValueBias;
-
-  r32 Hollow = Op.Hollow;
-  r32 Rounding = Op.Rounding;
-  v3 Stretch = Op.Stretch;
-  v3 Repeat = Op.Repeat;
-
-  v3 Period = Op.Period;
-  f32 Threshold = Op.Threshold;
-  f32 Power = Op.Power;
-
-  v3 ChunkRelEditMin = Op.ChunkRelEditMin;
-  v3 ChunkRelEditMax = Op.ChunkRelEditMax;
-  v3 BasisOffset     = Op.BasisOffset;
-
-  f32 Radius = Op.Radius;
-
-
-   v3 PlaneNormal = Op.PlaneNormal;
-  f32 Planed = Op.Planed;
-  f32 PlaneRadius = Op.PlaneRadius;
-
-  f32 MinorRadius = Op.MinorRadius;
-
-  f32 Squareness = Op.Squareness;
-
-  v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
+  v4 DefaultValue = vec4(0);
+  /* v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38); */
 
    v3 ColorAccumulator = DefaultValue.rgb;
   f32 InitialAccumulator = DefaultValue.a;
   f32 Accumulator = DefaultValue.a;
 
-  bool Invert     = (Op.Flags & 1<<0) > 0;
-  bool Normalized = (Op.Flags & 1<<1) > 0;
-
-
-  if (SeedColorValueFromInput > 0 || SeedNoiseValueFromInput > 0)
-  {
-    v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
-
-    if (SeedColorValueFromInput > 0)
-    {
-      ColorAccumulator = TexLookup.rgb;
-    }
-
-    if (SeedNoiseValueFromInput > 0)
-    {
-      InitialAccumulator = TexLookup.a;
-      Accumulator = TexLookup.a;
-    }
-  }
-
-  // NOTE(Jesse): Set these in the -- user code -- section
-
   f32 x = floor(gl_FragCoord.x);
   f32 z = floor(gl_FragCoord.y / 66);
   f32 y = floor(gl_FragCoord.y - (z*66));
   v3 xyz = (V3(x,y,z)) * ChunkResolution;
-
-
-
-  mat3 RotMatrix = mat3(RotTransform);
 
   // TODO(Jesse): I have no idea why this works out to > Min and <= Max.  I
   // think it should be >= Min and < Max .. but I'm just going to leave it for now..
@@ -705,266 +568,312 @@ void main()
       xyz.z <= ChunkRelEditMax.z  )
   {
 
-    v3 Basis = WorldspaceChunkBasis + xyz;
-    v3 EditRelxyz = xyz - ChunkRelEditMin;
-    v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
-    v3 EditRad = EditDim/2.f;
 
-
-    f32 InitialSample = 0.f;
-    v3 ColorSample = V3(0);
-   if (ColorMode == 1 || ColorMode == 2) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
-   /* if (SampleColorTex > 0) */
-   {
-     /* f32 compress = 1.0f; */
-     f32 compress = 0.8f;
-     /* int compress = 20; */
-     /* int compress = 10; */
-     /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
-     /* ColorSample += texelFetch(ColorTex, ivec2(z,y), 0).rgb; */
-     /* ColorSample += texelFetch(ColorTex, ivec2(x,z), 0).rgb; */
-     /* ColorSample /= 3.f; */
-
-     // "p" point apply texture to
-     // "n" normal at "p"
-     // "k" controls the sharpness of the blending in the
-     //     transitions areas.
-     // "s" texture sampler
-     /* vec4 boxmap( in sampler2D s, in vec3 p, in vec3 n, in float k ) */
-#if 0
-     {
-         // project+fetch
-       /* vec4 x = texture( s, p.yz ); */
-       /* vec4 y = texture( s, p.zx ); */
-       /* vec4 z = texture( s, p.xy ); */
-       v2 SampleCoords[3];
-       /* SampleCoords[0] = compress*(v2(x,y)/66); */
-       /* SampleCoords[1] = compress*(v2(z,y)/66); */
-       /* SampleCoords[2] = compress*(v2(x,z)/66); */
-
-       SampleCoords[0] = compress*(v2(y,z)/66);
-       SampleCoords[1] = compress*(v2(z,x)/66);
-       SampleCoords[2] = compress*(v2(x,y)/66);
-
-
-       v3 xC = texture(ColorTex, (vec2(x,y)*compress)/66).rgb;
-       v3 yC = texture(ColorTex, vec2(z,y)*compress/66).rgb;
-       v3 zC = texture(ColorTex, vec2(x,z)*compress/66).rgb;
-
-     /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
-       /* ColorSample = xColor; */
-
-       /* v3 RectRad = RectDim/2.f; */
-       /* v3 Center  = (EditDim)/2.f; */
-       /* v3 p       = (EditRelxyz - Center); */
-       /* v3 n = p-Center; */
-       /* v3 n  = EditRelxyz - (EditRelativeSphereCenter); */
-       v3 n  = normalize(EditRelxyz - (EditRelativeSphereCenter));
-
-       /* int i = getIndexOfMax(abs(n)); */
-
-       f32 k = 1.f;
-
-       vec3 m = pow( abs(n), vec3(k) );
-       ColorSample = (xC*m.x + yC*m.y + zC*m.z) / (m.x + m.y + m.z);
-       /* ColorSample = texture(ColorTex, SampleCoords[i]).rgb; */
-       /* ColorSample = abs(n); */
-
-       if (ColorMode == 2) // WorldEditColorMode_TintedTexture
-       {
-         ColorSample = normalize(ColorSample+(0.1f*RGBColor));
-       }
-    }
-#endif
-   }
-   else
-   {
-     ColorSample = RGBColor;
-   }
-    s32 Octaves = 1;
-    switch (BrushType)
+#if 1
+    for (int OpIndex = 0; OpIndex < OpCount; ++OpIndex)
     {
-      case 0: // BrushLayerType_Noise
+      world_edit_op Op = Ops[OpIndex];
+
+      int BrushType      = Op.BrushType;
+      int BlendMode      = Op.BlendMode;
+
+      mat4 RotTransform  = Op.RotTransform;
+      s32 ColorMode      = Op.ColorMode;
+      s32 ValueModifiers = Op.ValueModifiers;
+      r32 ValueBias      = Op.ValueBias;
+      v3 RGBColor        = Op.RGBColor;
+
+      r32 Hollow         = Op.Hollow;
+      r32 Rounding       = Op.Rounding;
+      v3 Stretch         = Op.Stretch;
+      v3 Repeat          = Op.Repeat;
+
+      v3 Period          = Op.Period;
+      f32 Threshold      = Op.Threshold;
+      f32 Power          = Op.Power;
+
+      v3 BasisOffset     = Op.BasisOffset;
+
+      f32 Radius         = Op.Radius;
+
+
+       v3 PlaneNormal    = Op.PlaneNormal;
+      f32 Planed         = Op.Planed;
+      f32 PlaneRadius    = Op.PlaneRadius;
+
+      f32 MinorRadius    = Op.MinorRadius;
+
+      f32 Squareness     = Op.Squareness;
+
+      bool Invert     = (Op.Flags & 1<<0) > 0;
+      bool Normalized = (Op.Flags & 1<<1) > 0;
+
+
+      /* bool SampleBlendTex = (OpIndex == OpCount-1); */
+      /* bool SeedColorValueFromInput = (OpIndex == 0); */
+      /* bool SeedNoiseValueFromInput = (OpIndex == 0); */
+
+      mat3 RotMatrix = mat3(RotTransform);
+      v3 Basis = WorldspaceChunkBasis + xyz;
+      v3 EditRelxyz = xyz - ChunkRelEditMin;
+      v3 EditDim = ChunkRelEditMax-ChunkRelEditMin;
+      v3 EditRad = EditDim/2.f;
+
+
+      f32 InitialSample = 0.f;
+      v3 ColorSample = V3(0);
+      if (ColorMode == 1 || ColorMode == 2) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
+      /* if (SampleColorTex > 0) */
       {
-        u32 NoiseType = Op.SubType;
-        /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
-        v3 NoiseBasis =  ((Basis+BasisOffset) / Period) * RotMatrix; 
-        switch (NoiseType)
+        /* f32 compress = 1.0f; */
+        f32 compress = 0.8f;
+        /* int compress = 20; */
+        /* int compress = 10; */
+        /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
+        /* ColorSample += texelFetch(ColorTex, ivec2(z,y), 0).rgb; */
+        /* ColorSample += texelFetch(ColorTex, ivec2(x,z), 0).rgb; */
+        /* ColorSample /= 3.f; */
+
+        // "p" point apply texture to
+        // "n" normal at "p"
+        // "k" controls the sharpness of the blending in the
+        //     transitions areas.
+        // "s" texture sampler
+        /* vec4 boxmap( in sampler2D s, in vec3 p, in vec3 n, in float k ) */
+#if 0
         {
-          case 0: // NoiseType_Perlin:
-          {
-            InitialSample = gradient_noise_derivs(NoiseBasis).x;
-            /* InitialSample = (abs(InitialSample)*-1.f)+ 0.5f; */
-          } break;
+           // project+fetch
+           /* vec4 x = texture( s, p.yz ); */
+           /* vec4 y = texture( s, p.zx ); */
+           /* vec4 z = texture( s, p.xy ); */
+           v2 SampleCoords[3];
+           /* SampleCoords[0] = compress*(v2(x,y)/66); */
+           /* SampleCoords[1] = compress*(v2(z,y)/66); */
+           /* SampleCoords[2] = compress*(v2(x,z)/66); */
 
-          case 1: // NoiseType_Voronoi:
-          {
-            InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
-          } break;
+           SampleCoords[0] = compress*(v2(y,z)/66);
+           SampleCoords[1] = compress*(v2(z,x)/66);
+           SampleCoords[2] = compress*(v2(x,y)/66);
 
-          case 2: // NoiseType_White:
-          {
-            InitialSample = white_noise(NoiseBasis);
-          } break;
 
-          case 3: // NoiseType_RectLattice:
+           v3 xC = texture(ColorTex, (vec2(x,y)*compress)/66).rgb;
+           v3 yC = texture(ColorTex, vec2(z,y)*compress/66).rgb;
+           v3 zC = texture(ColorTex, vec2(x,z)*compress/66).rgb;
+
+           /* ColorSample += texture(ColorTex, (vec2(x,y)*compress)/66).rgb; */
+           /* ColorSample = xColor; */
+
+           /* v3 RectRad = RectDim/2.f; */
+           /* v3 Center  = (EditDim)/2.f; */
+           /* v3 p       = (EditRelxyz - Center); */
+           /* v3 n = p-Center; */
+           /* v3 n  = EditRelxyz - (EditRelativeSphereCenter); */
+           v3 n  = normalize(EditRelxyz - (EditRelativeSphereCenter));
+
+           /* int i = getIndexOfMax(abs(n)); */
+
+           f32 k = 1.f;
+
+           vec3 m = pow( abs(n), vec3(k) );
+           ColorSample = (xC*m.x + yC*m.y + zC*m.z) / (m.x + m.y + m.z);
+           /* ColorSample = texture(ColorTex, SampleCoords[i]).rgb; */
+           /* ColorSample = abs(n); */
+
+           if (ColorMode == 2) // WorldEditColorMode_TintedTexture
+           {
+             ColorSample = normalize(ColorSample+(0.1f*RGBColor));
+           }
+         }
+#endif
+       }
+       else
+       {
+         ColorSample = RGBColor;
+       }
+
+      switch (BrushType)
+      {
+        case 0: // BrushLayerType_Noise
+        {
+          u32 NoiseType = Op.SubType;
+          /* v3 NoiseBasis = (Basis / Period) * RotMatrix; */
+          v3 NoiseBasis =  ((Basis+BasisOffset) / Period) * RotMatrix; 
+          switch (NoiseType)
           {
-            InitialSample = rect_lattice(NoiseBasis, Radius, Squareness);
-          } break;
+            case 0: // NoiseType_Perlin:
+            {
+              InitialSample = gradient_noise_derivs(NoiseBasis).x;
+              /* InitialSample = (abs(InitialSample)*-1.f)+ 0.5f; */
+            } break;
+
+            case 1: // NoiseType_Voronoi:
+            {
+              InitialSample = voronoi_noise(NoiseBasis, Squareness).x;
+            } break;
+
+            case 2: // NoiseType_White:
+            {
+              InitialSample = white_noise(NoiseBasis);
+            } break;
+
+            case 3: // NoiseType_RectLattice:
+            {
+              InitialSample = rect_lattice(NoiseBasis, Radius, Squareness);
+            } break;
+          }
+
+          break;
         }
 
-        break;
+        case 1: // BrushLayerType_Shape
+        {
+          u32 ShapeType = Op.SubType;
+          switch (ShapeType)
+          {
+            // ShapeType_Rect
+            case 0:
+            {
+              v3 RectDim = Op.RectDim;
+              v3 RectRad = RectDim/2.f;
+              v3 Center  = (EditDim)/2.f;
+              v3 p       = (EditRelxyz - Center);
+
+              if (Normalized) { p/=EditDim; Center/=EditDim; }
+
+              Center += BasisOffset;
+              p += BasisOffset;
+
+              v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample = w.w+iq_sdBox(w.xyz, RectRad);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+              InitialSample = -IQSample;
+
+            } break;
+
+            // ShapeType_Sphere
+            case 1:
+            {
+              v3 EditRelativeSphereCenter = Op.EditRelativeSphereCenter;
+
+              f32 r = (Radius - Hollow);
+              v3 p  = EditRelxyz - (EditRelativeSphereCenter);
+              if (Normalized) { p /= EditDim; }
+              p += BasisOffset;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample  = w.w+iq_sdSphere(w.xyz, r);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Line
+            case 2:
+            {
+              v3 p = EditRelxyz;
+              v3 start = v3(Radius);
+              v3 end = EditDim-v3(Radius);
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+              f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
+              /* if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); } */
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Cylinder
+            case 3:
+            {
+              f32 h = Op.Height;
+              f32 r = Radius;
+
+              v3 p = (EditRelxyz - EditRad);
+              if (Normalized) { p /= EditDim; }
+
+              // NOTE(Jesse): I dunno why we have to subtract BasisOffset here when
+              // we add it everywhere else .. but .. that's how the maff works out
+              // I guess.  If we add it, we get the opposite translation as other shapes.
+              // @subtract_basis_offset_instead_of_add
+              p -= BasisOffset;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, h, r);
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+              InitialSample = -IQSample;
+            } break;
+
+            // ShapeType_Plane
+            case 4:
+            {
+              f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
+              if (abs(Dist) < PlaneRadius*ChunkResolution.x)
+              {
+                InitialSample = 1.f;
+              }
+            } break;
+
+            // ShapeType_Torus
+            case 5:
+            {
+              v2  t = v2(Radius, MinorRadius);
+              v3  p = EditRelxyz;
+
+              v3  BoxR = EditDim/2.f;
+              // @subtract_basis_offset_instead_of_add
+              p = EditRelxyz - BasisOffset;
+              p   -= BoxR;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 IQSample = w.w+iq_sdTorus( w.xyz, t );
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+
+              InitialSample = -IQSample;
+
+            } break;
+
+            // ShapeType_Pyramid
+            case 6:
+            {
+              f32 S = EditDim.z;
+
+              f32  h = Radius > 0.f ? Radius : 1.f;
+
+              v3  BoxR = EditDim/(2.f*S);
+              v3  p = (EditRelxyz-BasisOffset)/EditDim;
+              p.xy   -= 0.5f;
+
+              v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
+
+              f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
+              if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
+
+              InitialSample = -IQSample;
+            } break;
+
+            // @sdf_shape_step(7): Add more cases and implementations here
+            // for shape types added in Step 1
+            //
+          }
+
+          InitialSample += Rounding;
+        } break;
+
+        default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
       }
 
-      case 1: // BrushLayerType_Shape
+
+      if (Power != 0.f)
       {
-        u32 ShapeType = Op.SubType;
-        switch (ShapeType)
-        {
-          // ShapeType_Rect
-          case 0:
-          {
-            v3 RectDim = Op.RectDim;
-            v3 RectRad = RectDim/2.f;
-            v3 Center  = (EditDim)/2.f;
-            v3 p       = (EditRelxyz - Center);
-
-            if (Normalized) { p/=EditDim; Center/=EditDim; }
-
-            Center += BasisOffset;
-            p += BasisOffset;
-
-            v4 w    = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample = w.w+iq_sdBox(w.xyz, RectRad);
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-            InitialSample = -IQSample;
-
-          } break;
-
-          // ShapeType_Sphere
-          case 1:
-          {
-            v3 EditRelativeSphereCenter = Op.EditRelativeSphereCenter;
-
-            f32 r = (Radius - Hollow);
-            v3 p  = EditRelxyz - (EditRelativeSphereCenter);
-            if (Normalized) { p /= EditDim; }
-            p += BasisOffset;
-
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample  = w.w+iq_sdSphere(w.xyz, r);
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-
-            InitialSample = -IQSample;
-          } break;
-
-          // ShapeType_Line
-          case 2:
-          {
-            v3 p = EditRelxyz;
-            v3 start = v3(Radius);
-            v3 end = EditDim-v3(Radius);
-
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-            f32 IQSample  = w.w+iq_sdRoundedLine(w.xyz, start, end, Radius);
-            /* if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); } */
-            InitialSample = -IQSample;
-          } break;
-
-          // ShapeType_Cylinder
-          case 3:
-          {
-            f32 h = Op.Height;
-            f32 r = Radius;
-
-            v3 p = (EditRelxyz - EditRad);
-            if (Normalized) { p /= EditDim; }
-
-            // NOTE(Jesse): I dunno why we have to subtract BasisOffset here when
-            // we add it everywhere else .. but .. that's how the maff works out
-            // I guess.  If we add it, we get the opposite translation as other shapes.
-            // @subtract_basis_offset_instead_of_add
-            p -= BasisOffset;
-
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-
-            f32 IQSample = w.w+iq_sdCappedCylinder(w.xyz, h, r);
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-            InitialSample = -IQSample;
-          } break;
-
-          // ShapeType_Plane
-          case 4:
-          {
-            f32 Dist = DistanceToPlane(PlaneNormal, Planed, EditRelxyz);
-            if (abs(Dist) < PlaneRadius*ChunkResolution.x)
-            {
-              InitialSample = 1.f;
-            }
-          } break;
-
-          // ShapeType_Torus
-          case 5:
-          {
-            v2  t = v2(Radius, MinorRadius);
-            v3  p = EditRelxyz;
-
-            v3  BoxR = EditDim/2.f;
-            // @subtract_basis_offset_instead_of_add
-            p = EditRelxyz - BasisOffset;
-            p   -= BoxR;
-
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-
-            f32 IQSample = w.w+iq_sdTorus( w.xyz, t );
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-
-            InitialSample = -IQSample;
-
-          } break;
-
-          // ShapeType_Pyramid
-          case 6:
-          {
-            f32 S = EditDim.z;
-
-            f32  h = Radius > 0.f ? Radius : 1.f;
-
-            v3  BoxR = EditDim/(2.f*S);
-            v3  p = (EditRelxyz-BasisOffset)/EditDim;
-            p.xy   -= 0.5f;
-
-            v4 w = DoInputTransforms(p, RotMatrix, Stretch, Repeat);
-
-            f32 IQSample = w.w+iq_sdPyramid( w.xyz, h );
-            if (Hollow > 0.f) { IQSample = iq_opOnion(IQSample, Hollow ); }
-
-            InitialSample = -IQSample;
-          } break;
-
-          // @sdf_shape_step(7): Add more cases and implementations here
-          // for shape types added in Step 1
-          //
-        }
-
-        InitialSample += Rounding;
-      } break;
-
-      default: {ColorAccumulator = V3(1.f, 0.f, 1.f);  InitialSample = 1.f;} break;
-    }
+        InitialSample *= Power;
+      }
 
 
-    if (Power != 0.f)
-    {
-      InitialSample *= Power;
-    }
-
-
-    f32 ThisSample = (InitialSample + ValueBias);
-    if (Invert)
-    {
-      ThisSample = ThisSample * -1.f;
-    }
+      f32 ThisSample = (InitialSample + ValueBias);
+      if (Invert)
+      {
+        ThisSample = ThisSample * -1.f;
+      }
 
 
 
@@ -974,61 +883,57 @@ void main()
 
 
 
-    if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
-    {
-      ThisSample = max(0.f, ThisSample);
-    }
+      if ( (ValueModifiers & (1<<1)) > 0) // WorldEdit_ValueModifier_ClampPos
+      {
+        ThisSample = max(0.f, ThisSample);
+      }
 
-    if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
-    {
-      ThisSample = min(0.f, ThisSample);
-    }
+      if ( (ValueModifiers & (1<<2)) > 0) // WorldEdit_ValueModifier_ClampNeg
+      {
+        ThisSample = min(0.f, ThisSample);
+      }
 
-    if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
-    {
-      if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
-    }
+      if ( (ValueModifiers & (1<<3)) > 0) // WorldEdit_ValueModifier_Threshold
+      {
+        if (abs(InitialSample) < Threshold) { ThisSample = 0.f; }
+      }
 
-    if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
-    {
-      ThisSample = 0.f;
-    }
+      if ( (ValueModifiers & (1<<4)) > 0) // WorldEdit_ValueModifier_Discard
+      {
+        ThisSample = 0.f;
+      }
 
 
-    BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample);
-
-    // We sample the blend texture outside the bounds check because we need to pass
-    // the previous stage sample values through
-    if (SampleBlendTex > 0)
-    {
-      v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
-
-      f32 BlendValue = TexLookup.a;
-      v3 BlendColor = TexLookup.rgb;
-
-      // Conceptually, we want to blend the accumulator into the blendvalue here,
-      // so we don't do it this way.
-      /* BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor ); */
-      /* BlendSample(BlendTexBlendMode, 0 /1* WorldEdit_ColorBlendMode_ValuePositive *1/ , BlendValue, BlendColor, Accumulator, ColorAccumulator); */
-      /* BlendSample(BlendTexBlendMode, ColorMode, BlendValue, BlendColor, Accumulator, ColorAccumulator); */
-      BlendSample(BlendTexBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
-      Accumulator = BlendValue;
-      ColorAccumulator = BlendColor;
+      /* BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample); */
+      if (Accumulator < ThisSample)
+      {
+        Accumulator = ThisSample;
+        ColorAccumulator = ColorSample;
+      }
     }
   }
-  else
+#endif
+
+
+#if 1
+  /* if (SampleBlendTex) */
   {
-    // if we were outside the affected brush region, we just pass the blend values through
-    if (SampleBlendTex > 0)
-    {
-      v4 TexLookup = texelFetch(BlendTex, ivec2(gl_FragCoord.xy), 0);
-      Accumulator = TexLookup.a;
-      ColorAccumulator = TexLookup.rgb;;
-    }
+    v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
 
+    f32 BlendValue = TexLookup.a;
+    v3 BlendColor = TexLookup.rgb;
+
+    // Conceptually, we want to blend the accumulator into the blendvalue here,
+    // so we don't do it this way.
+    /* BlendSample(BlendTexBlendMode, Accumulator, ColorAccumulator, BlendValue, BlendColor ); */
+    /* BlendSample(BlendTexBlendMode, 0 /1* WorldEdit_ColorBlendMode_ValuePositive *1/ , BlendValue, BlendColor, Accumulator, ColorAccumulator); */
+    /* BlendSample(BlendTexBlendMode, ColorMode, BlendValue, BlendColor, Accumulator, ColorAccumulator); */
+    BlendSample(BlendTexBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
+    /* Accumulator = max(BlendValue, Accumulator); */
+    Accumulator = BlendValue;
+    ColorAccumulator = BlendColor;
   }
-
-
+#endif
 
 
   Output.a = Accumulator;

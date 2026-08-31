@@ -574,7 +574,7 @@ DrainLoRenderQueue(engine_resources *Engine)
 
             Assert(s64(Chunk) == s64(Chunk1));
 
-            auto WorldEditRC = &Graphics->WorldEditRC;
+            world_edit_render_context *WorldEditRC = &Graphics->WorldEditRC;
 
             GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f);
             ClearFramebuffer(WorldEditRC->Framebuffers + 0);
@@ -587,13 +587,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             // Apply edits
             //
 
-            s32 CurrentAccumulationTextureIndex = 0;
-            s32 CurrentWriteTextureIndex = CurrentAccumulationTextureIndex + 1;
-            s32 CurrentReadTextureIndex = CurrentAccumulationTextureIndex + 2;
-
-            rtt_framebuffer *Accum = WorldEditRC->Framebuffers + CurrentAccumulationTextureIndex;
-            rtt_framebuffer *Read  = WorldEditRC->Framebuffers + CurrentReadTextureIndex;
-            rtt_framebuffer *Write = WorldEditRC->Framebuffers + CurrentWriteTextureIndex;
+            rtt_framebuffer *Read  = WorldEditRC->Framebuffers;
+            rtt_framebuffer *Write = WorldEditRC->Framebuffers + 1;
 
             /* rtt_framebuffer Accum = WorldEditRC->Framebuffers[CurrentAccumulationTextureIndex]; */
             {
@@ -616,6 +611,8 @@ DrainLoRenderQueue(engine_resources *Engine)
                 sort_key *Keys = Allocate(sort_key, GetTranArena(), EditCount);
 
 
+                // Count Ops and Sort them by Ordinal
+                //
                 s32 TotalOps = 0;
                 IterateOver(&Node->Edits, Edit, EditIndex)
                 {
@@ -633,11 +630,74 @@ DrainLoRenderQueue(engine_resources *Engine)
                 // }
 
                 world_edit_op *Ops = Allocate(world_edit_op, GetTranArena(), TotalOps);
-
                 RangeIterator(KeyIndex, EditCount)
                 {
                   TIMED_NAMED_BLOCK(WorldEditDrawCall);
 
+#if 1
+                  world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
+                  if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
+                  {
+                    world_edit_brush *Brush = Edit->Brush;
+
+                    // Buffer up all layer ops in brush
+                    //
+                    s32 AtOpIndex = 0;
+                    RangeIterator(LayerIndex, Brush->LayerCount)
+                    {
+                      brush_layer *Layer = Brush->Layers + LayerIndex;
+                      Ops[AtOpIndex++] = WorldEditOpForBrushLayer( Layer, Edit->Region, Edit->Rotation, Chunk->WorldP );
+                      Assert(AtOpIndex <= TotalOps);
+                    }
+
+                    ApplyBrushFromOps( WorldEditRC,
+                                       Edit->Region,
+                                       Edit->Rotation,
+                                       Brush,
+                                       Brush->BrushBlendMode,
+                                       Chunk,
+                                       Read, Write, False, False, Brush->Smoothing.ColorBlend);
+
+                    auto GL = GetGL();
+                    local_persist u32 OpStorageBuffer = 0;
+                    if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }
+
+                    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, OpStorageBuffer);
+                    AssertNoGlErrors;
+
+                    GL->BufferData(GL_SHADER_STORAGE_BUFFER, Cast(u32, sizeof(world_edit_op))*Cast(u32, AtOpIndex), Ops, GL_DYNAMIC_DRAW);
+                    AssertNoGlErrors;
+
+                    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, OpStorageBuffer);
+
+                    BindUniformByName(&WorldEditRC->Program, "OpCount", AtOpIndex);
+
+                 rect3 SimEditRect = GetSimSpaceRect(World, Edit->Region);
+                    v3 SimChunkMin = GetSimSpaceP(World, Chunk->WorldP);
+                    v3 ChunkRelEditMin = (SimEditRect.Min - SimChunkMin);
+                    v3 ChunkRelEditMax = (SimEditRect.Max - SimChunkMin);
+
+                    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMin", &ChunkRelEditMin);
+                    BindUniformByName(&WorldEditRC->Program, "ChunkRelEditMax", &ChunkRelEditMax);
+
+
+                    RenderQuad();
+
+#define Swap(a, b) do { auto tmp = b; b = a; a = tmp; } while (false)
+                    Swap(Read, Write);
+#undef Swap
+
+                    /* Assert(Read->FBO.ID != Write->FBO.ID); */
+                    /* Assert(Read->FBO.ID != Accum->FBO.ID); */
+                    /* Assert(Write->FBO.ID != Accum->FBO.ID); */
+
+                    /* GetGL()->ClearColor(-10000000000.f, -10000000000.f, -10000000000.f, -10000000000.f); */
+                    /* ClearFramebuffer(Write); */
+                    /* ClearFramebuffer(Read); */
+
+
+                  }
+#else
                   world_edit *Edit = Cast(world_edit*, Keys[KeyIndex].Index);
                   if (Edit->Brush) // NOTE(Jesse): Don't necessarily have to have a brush if we created the edit before we created a brush.
                   {
@@ -675,6 +735,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                     ClearFramebuffer(Write);
                     ClearFramebuffer(Read);
                   }
+#endif
 
                   AssertNoGlErrors;
                 }
@@ -687,7 +748,8 @@ DrainLoRenderQueue(engine_resources *Engine)
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, zAxis*200.f, RGB_BLUE, DEFAULT_LINE_THICKNESS*4.f ); */
             /* DEBUG_DrawSimSpaceVectorAt(Engine, SimEditRect.Min + EditRectRad, PlaneNormal*400.f, RGB_PINK, DEFAULT_LINE_THICKNESS*2.f ); */
 
-            texture *CurrentAccumulationTexture = &Accum->DestTexture;
+            // We always swap textures, so we read from the Read texture
+            texture *CurrentAccumulationTexture = &Read->DestTexture;
 
             //
             // Terrain Finalize

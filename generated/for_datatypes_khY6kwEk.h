@@ -731,6 +731,8 @@ struct finalize_shit_and_fuckin_do_stuff_async_params poof(@async_function_param
 
 
 
+
+
 struct compile_shader_pair_async_params poof(@async_function_params)
 {
    b32* Result; 
@@ -1165,12 +1167,15 @@ struct initialize_easing_function_visualizer_render_pass_async_params poof(@asyn
 
 
 
+
 struct check_occlusion_query_async_params poof(@async_function_params)
 {
   
     world_chunk *Chunk;
 
 };
+
+
 
 
 

@@ -2055,10 +2055,17 @@ struct world_edit_op
   s32 ColorMode; // enum world_edit_color_mode
   s32 ValueModifiers;
   r32 ValueBias;
+  f32 Pad0;
+  s32 Pad00;
+
+  v3 RGBColor;
+  s32 Pad000;
 
   // Shape Params
   r32 Hollow;
   r32 Rounding;
+  s32 Pad0000;
+  s32 Pad00000;
 
    v3 Stretch;
   f32 Radius;
@@ -2069,18 +2076,11 @@ struct world_edit_op
   // Noise Params
    v3 Period;
   f32 Threshold;
-  f32 Power;
 
+  f32 Power;
   s32 Flags; // Invert, Normalized
   f32 Pad3;
   f32 Pad4;
-
-  // Clipping params
-   v3 ChunkRelEditMin;
-  f32 Pad5;
-
-   v3 ChunkRelEditMax;
-  f32 Pad6;
 
    v3 BasisOffset;
   f32 Pad7;
@@ -2306,4 +2306,10 @@ link_internal rtt_framebuffer
 ApplyBrush(world_edit_render_context *WorldEditRC, rect3cp EditBounds, v3 Axis, world_edit_brush *EditBrush, world_edit_blend_mode BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, rtt_framebuffer *Accum, b32, b32, r32);
 
 link_internal void
+ApplyBrushFromOps( world_edit_render_context *WorldEditRC, rect3cp  EditBounds, v3  ParentRotation, world_edit_brush *Brush, world_edit_blend_mode  BlendMode, world_chunk *Chunk, rtt_framebuffer *Read, rtt_framebuffer *Write, b32  SeedNoise, b32  SeedColor, r32  ColorBlendBias);
+
+link_internal void
 ReapplyEditsUsingBrush(engine_resources *Engine, world_edit_brush *Brush);
+
+link_internal world_edit_op
+WorldEditOpForBrushLayer( brush_layer *Layer, rect3cp  EditBounds, v3 ParentRotation, v3i ChunkWorldP );
