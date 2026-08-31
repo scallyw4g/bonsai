@@ -3735,13 +3735,15 @@ GetOrAllocateTextureFramebufferForWorldEdit(rtt_framebuffer_paged_list *Freelist
 #pragma pack(push, 1)
 struct world_edit_op
 {
+  // NOTE(Jesse): Make sure this is 16-byte aligned
+  m4 RotTransform;
+
   s32 BrushType;
   s32 SubType;
 
   s32 BlendMode;
-  s32 pad0;
-
-  m4 RotTransform;
+  s32 ColorMode; // enum world_edit_color_mode
+  s32 ValueModifiers;
 };
 #pragma pack(pop)
 
@@ -3787,6 +3789,9 @@ BindUniformsForBrushLayer(
 
   Op->BrushType = Layer->Settings.Type;
   Op->BlendMode = Layer->Settings.BlendMode;
+  Op->ColorMode = Layer->Settings.ColorMode;
+
+  Op->ValueModifiers = Layer->Settings.ValueFunc;
 
   SetSubType(&Layer->Settings, Op);
 
@@ -3838,9 +3843,9 @@ BindUniformsForBrushLayer(
   BindUniformByName(Program, "Normalized",     Layer->Settings.Normalized);
   BindUniformByName(Program, "ValueBias",      Layer->Settings.ValueBias);
   /* BindUniformByName(Program, "BrushType",      Layer->Settings.Type); */
-  /* BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode); */
-  BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc);
-  BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode);
+  BindUniformByName(Program, "BlendMode",      Layer->Settings.BlendMode);
+  /* BindUniformByName(Program, "ValueModifiers", Layer->Settings.ValueFunc); */
+  /* BindUniformByName(Program, "ColorMode",      Layer->Settings.ColorMode); */
   BindUniformByName(Program, "Invert",         Layer->Settings.Invert);
   /* BindUniformByName(Program, "Threshold",      Layer->Settings.Threshold); */
   BindUniformByName(Program, "Power",          Layer->Settings.Power);
@@ -4286,7 +4291,7 @@ ApplyBrush( world_edit_render_context *WorldEditRC,
     auto GL = GetGL();
 
     /* Op.RotTransform = Transpose(Op.RotTransform); */
-    BindUniformByName(&WorldEditRC->Program, "RotTransform", &Op.RotTransform);
+    /* BindUniformByName(&WorldEditRC->Program, "RotTransform", &Op.RotTransform); */
 
     local_persist u32 OpStorageBuffer = 0;
     if (OpStorageBuffer == 0) { GL->GenBuffers(1, &OpStorageBuffer); }

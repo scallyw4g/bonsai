@@ -1,14 +1,15 @@
 
 struct world_edit_op
 {
-  int BrushType; // Noise, Shape or Brush
-  int SubType;   // Noise or Shape type (perlin, voronoi, rect, sphere, etc.
+  mat4 RotTransform; // NOTE(Jesse): Make sure this is 16-byte aligned
+
+  s32 BrushType; // Noise, Shape or Brush
+  s32 SubType;   // Noise or Shape type (perlin, voronoi, rect, sphere, etc.
 
   // Common params
-  int BlendMode;
-  int pad0;
-
-  mat4 RotTransform;
+  s32 BlendMode;
+  s32 ColorMode;      // world_edit_color_mode
+  s32 ValueModifiers; // world_edit_blend_mode_modifier
 };
 
 layout(std430, binding = 0) readonly buffer WorldEditOpBuffer
@@ -20,9 +21,9 @@ uniform  v3 WorldspaceChunkBasis;
 uniform  v3 ChunkResolution; // TODO(Jesse): Make this a scalar?
 
 /* uniform int BrushType; */
-/* uniform int BlendMode; */
-uniform int ColorMode; // enum world_edit_color_mode
-uniform int ValueModifiers;
+uniform int BlendMode;
+/* uniform int ColorMode; // enum world_edit_color_mode */
+/* uniform int ValueModifiers; */
 
 uniform int GenerateNormals;
 
@@ -569,16 +570,11 @@ void main()
   world_edit_op Op = Ops[0];
 
   int BrushType = Op.BrushType;
-  int BlendMode = Op.BlendMode;
+  /* int BlendMode = Op.BlendMode; */
 
   mat4 RotTransform = Op.RotTransform;
-
-  /* mat4 RotTransform = mat4( */
-  /*     vec4(1,0,0,0), */
-  /*     vec4(0,1,0,0), */
-  /*     vec4(0,0,1,0), */
-  /*     vec4(0,0,0,1) */
-  /*   ); */
+  s32 ColorMode = Op.ColorMode;
+  s32 ValueModifiers = Op.ValueModifiers;
 
   v4 DefaultValue = vec4(-3.4028234663852885981170418348451692544e+38);
 
@@ -610,8 +606,6 @@ void main()
   f32 y = floor(gl_FragCoord.y - (z*66));
   v3 xyz = (V3(x,y,z)) * ChunkResolution;
 
-
-   
 
 
   mat3 RotMatrix = mat3(RotTransform);
