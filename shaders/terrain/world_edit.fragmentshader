@@ -567,7 +567,6 @@ void main()
       xyz.z <= ChunkRelEditMax.z  )
   {
 
-
 #if 1
     for (int OpIndex = 0; OpIndex < OpCount; ++OpIndex)
     {
@@ -618,7 +617,7 @@ void main()
 
 
 
-#if 1
+#if 0
       if ( (Op.ColorTextureUnit > 0) && (ColorMode == 1 || ColorMode == 2) ) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
       {
         /* f32 compress = 1.0f; */
@@ -927,31 +926,21 @@ void main()
         ThisSample = 0.f;
       }
 
-
       BlendSample(BlendMode, 0, Accumulator, ColorAccumulator, ThisSample, ColorSample);
-      /* if (ThisSample > Accumulator) */
-      /* { */
-      /*   Accumulator = ThisSample; */
-      /*   ColorAccumulator = ColorSample; */
-      /* } */
+
     }
   }
 #endif
 
 
-#if 1
-  /* if (SampleBlendTex) */
-  {
-    v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
+  v4 TexLookup = texelFetch(InputTex, ivec2(gl_FragCoord.xy), 0);
 
-    f32 BlendValue = TexLookup.a;
-    v3 BlendColor = TexLookup.rgb;
+  f32 BlendValue = TexLookup.a;
+  v3 BlendColor = TexLookup.rgb;
 
-    BlendSample(BrushBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
-    Accumulator = BlendValue;
-    ColorAccumulator = BlendColor;
-  }
-#endif
+  BlendSample(BrushBlendMode, 5, BlendValue, BlendColor, Accumulator, ColorAccumulator);
+  Accumulator = BlendValue;
+  ColorAccumulator = BlendColor;
 
 
   Output.a = Accumulator;

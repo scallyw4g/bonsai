@@ -646,7 +646,7 @@ DrainLoRenderQueue(engine_resources *Engine)
                     u32 TexUnit = 0;
                     BindUniformByName(Program, "InputTex", &Read->DestTexture, TexUnit++);
 
-#if 0
+#if 1
                     RangeIterator(LayerIndex, Brush->LayerCount)
                     {
                       texture ColorTex = {};
