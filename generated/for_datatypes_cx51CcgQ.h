@@ -247,7 +247,6 @@
 
 
 
-
 link_internal void
 FinalizeShitAndFuckinDoStuff_Async(work_queue *Queue,  gen_chunk *GenChunk , octree_node *DestNode  )
 {
@@ -1205,6 +1204,7 @@ DoJob(initialize_easing_function_visualizer_render_pass_async_params *Params)
 
 
 
+
 link_internal void
 CheckOcclusionQuery_Async(work_queue *Queue,  world_chunk *Chunk  )
 {
@@ -1226,6 +1226,8 @@ DoJob(check_occlusion_query_async_params *Params)
    CheckOcclusionQuery( Params->Chunk );
   
 }
+
+
 
 
 

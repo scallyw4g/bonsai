@@ -240,9 +240,6 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
     Unspawn(EntityTable[EntityIndex]);
   }
 
-  VaporizeArena(Engine->GameMemory);
-  Engine->GameMemory = AllocateArena();
-
   HardResetEditor(&Engine->Editor);
 
   HardResetWorld(Engine);
@@ -250,7 +247,7 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   SoftResetGraphics(Graphics);
 
   // TODO(Jesse)(leak): This leaks the texture handles; make a HardResetEngineDebug()
-  Leak("?");
+  Leak("Leaking EngineDebug texture handles");
   VaporizeArena(Engine->EngineDebug.Memory);
   Engine->EngineDebug = {};
   Engine->EngineDebug.Memory = AllocateArena();
@@ -260,10 +257,14 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
   Assert(ThreadLocal_ThreadIndex == 0);
   thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
   auto GameApi = &Engine->Stdlib.AppApi;
+
+  auto OldGameMemory = Engine->GameMemory;
+  Engine->GameMemory = AllocateArena();
   if (GameApi->GameInit)
   {
     Engine->GameState = GameApi->GameInit(Engine, MainThread);
   }
+  VaporizeArena(OldGameMemory);
 
   Info("Hard Reset End");
 }
