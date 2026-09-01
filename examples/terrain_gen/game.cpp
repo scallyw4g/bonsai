@@ -86,26 +86,18 @@ TestSpawnerCallback(engine_resources *Engine, v3i NoiseDim, u32 *NoiseValues, oc
   return Result;
 }
 
-/* BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK() */
-/* { */
-/*   UNPACK_ENGINE_RESOURCES(Engine); */
-/*   UnregisterShaderForHotReload(&Engine->Stdlib, &GameState->EasingFunctionVisRP.Program); */
-/* } */
+BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK()
+{
+  auto Engine = Resources;
+  UNPACK_ENGINE_RESOURCES(Engine);
+  UnregisterShaderForHotReload(&Engine->Stdlib, &GameState->EasingFunctionVisRP.Program);
+}
 
 BONSAI_API_MAIN_THREAD_INIT_CALLBACK()
 {
   UNPACK_ENGINE_RESOURCES(Resources);
 
   auto Engine = Resources;
-
-
-  // NOTE(Jesse): For some reason you have to use a temporary here .. not sure
-  // if that's a compiler bug or some random C++ minutae.  If you don't use a
-  // temporary it fails to find the correct Push overload
-  //
-  /* chunk_completion_callback Callback = TestSpawnerCallback; */
-  /* Push(&Engine->ChunkCompletionCallbacks, &Callback); */
-
   Global_AssetPrefixPath = CSz("examples/terrain_gen/assets");
 
   world_position WorldCenter = V3i(100, 100, 0);

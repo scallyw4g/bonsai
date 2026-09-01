@@ -51,6 +51,7 @@ InitializeGameApi(application_api *GameApi, shared_lib GameLib)
 {
   GameApi->GameInit        = (bonsai_main_thread_init_callback)        GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_INIT_CALLBACK_NAME));
   GameApi->GameMain        = (bonsai_main_thread_callback)             GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_CALLBACK_NAME));
+  GameApi->GameDeInit      = (bonsai_main_thread_callback)             GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_MAIN_THREAD_DEINIT_CALLBACK_NAME));
   GameApi->WorkerInit      = (bonsai_worker_thread_init_callback)      GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_INIT_CALLBACK_NAME));
   GameApi->WorkerMain      = (bonsai_worker_thread_callback)           GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_CALLBACK_NAME) );
   GameApi->WorkerBeforeJob = (bonsai_worker_thread_before_job_callback)GetProcFromLib(GameLib, STRINGIZE(BONSAI_API_WORKER_THREAD_BEFORE_JOB_CALLBACK_NAME));

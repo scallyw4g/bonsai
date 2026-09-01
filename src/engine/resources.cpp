@@ -225,10 +225,14 @@ SoftResetGraphics(graphics *Graphics)
   Graphics->TerrainShapingRC.ReshapeFunc = {};
 }
 
-link_internal void
-HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag_None)
+link_internal shared_lib
+HardResetEngine( engine_resources *Engine,
+                       const char *NewLibName,
+                 hard_reset_flags  Flags       = HardResetFlag_None )
 {
   UNPACK_ENGINE_RESOURCES(Engine);
+
+  shared_lib Result = {};
 
   Info("Hard Reset Begin");
 
@@ -254,18 +258,47 @@ HardResetEngine(engine_resources *Engine, hard_reset_flags Flags = HardResetFlag
 
   HardResetAssets(Engine);
 
-  Assert(ThreadLocal_ThreadIndex == 0);
-  thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
-  auto GameApi = &Engine->Stdlib.AppApi;
 
-  auto OldGameMemory = Engine->GameMemory;
-  Engine->GameMemory = AllocateArena();
-  if (GameApi->GameInit)
+
+  application_api *GameApi   = &Engine->Stdlib.AppApi;
+  engine_api      *EngineApi = &Engine->EngineApi;
+
+  /* if (NewLibName) */
   {
-    Engine->GameState = GameApi->GameInit(Engine, MainThread);
+    if (GameApi->GameDeInit)
+    {
+      Assert(ThreadLocal_ThreadIndex == 0);
+      thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+      GameApi->GameDeInit(Engine, MainThread);
+    }
+
+    Result = OpenLibrary(NewLibName);
+    Ensure(InitializeEngineApi(EngineApi, Result));
+    Ensure(InitializeGameApi(GameApi, Result));
+    // Hook up global pointers
+    Ensure( EngineApi->OnLibraryLoad(Engine) );
+
+    Assert(ThreadLocal_ThreadIndex == 0);
+    thread_local_state *MainThread = GetThreadLocalState(ThreadLocal_ThreadIndex);
+
+    {
+      auto OldGameMemory = Engine->GameMemory;
+      Engine->GameMemory = AllocateArena();
+
+      if (GameApi->GameInit)
+      {
+        Engine->GameState = GameApi->GameInit(Engine, MainThread);
+      }
+
+      VaporizeArena(OldGameMemory);
+    }
   }
-  VaporizeArena(OldGameMemory);
+
+
+
 
   Info("Hard Reset End");
+
+  return Result;
 }
 

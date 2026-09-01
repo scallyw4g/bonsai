@@ -28019,6 +28019,45 @@ DoEditorUi(renderer_2d *Ui, window_layout *Window, engine_resources *Element, cs
             
             
             
+            cs MemberName = CSz("GameLibName");
+
+                                                                                                // Regular struct member
+                        auto Member = Cast(char *, Element->GameLibName);
+            DoEditorUi(Ui,
+              Window,
+              Member,
+              MemberName,
+              ThisHash,
+              Params
+              );
+
+
+
+
+
+
+
+
+                        PushNewRow(Ui);
+
+
+
+          }
+        }
+      }
+      {
+        /* member.has_tag(ui_null_behavior)? */
+        /* { */
+        /*   auto Member = Cast((member.type)*, member.is_pointer?{}{&}Element->(member.name)); */
+        /*   if (Member == 0) { member.tag_value(ui_null_behavior); } else */
+        /* }{} */
+
+        {
+          
+          { 
+            
+            
+            
             cs MemberName = CSz("Stdlib");
 
                                                                                                 // Regular struct member

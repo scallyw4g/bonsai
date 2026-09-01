@@ -47,6 +47,8 @@ poof(@do_editor_ui)
 {
   bonsai_futex ReadyToStartMainLoop;
 
+  char *GameLibName;
+
   bonsai_stdlib Stdlib;
      engine_api EngineApi;
 

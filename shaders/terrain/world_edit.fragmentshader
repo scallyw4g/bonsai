@@ -618,7 +618,7 @@ void main()
 
 
 
-#if 0
+#if 1
       if ( (Op.ColorTextureUnit > 0) && (ColorMode == 1 || ColorMode == 2) ) // WorldEditColorMode_Texture || WorldEditColorMode_TintedTexture
       {
         /* f32 compress = 1.0f; */

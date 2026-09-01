@@ -80,8 +80,6 @@ PrintFiles(file_traversal_node *Node)
   }
 }
 
-global_variable const char *
-Global_ProjectSwitcherGameLibName = "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION;
 
 s32
 main( s32 ArgCount, const char ** Args )
@@ -114,11 +112,13 @@ main( s32 ArgCount, const char ** Args )
   engine_resources EngineResources_ = {};
   engine_resources *EngineResources = &EngineResources_;
 
-  const char* GameLibName = Global_ProjectSwitcherGameLibName;
+  char *ProjectSwitcherGameLibName = Cast(char *, "./bin/game_libs/project_and_level_picker_loadable" PLATFORM_RUNTIME_LIB_EXTENSION);
+  EngineResources->GameLibName = ProjectSwitcherGameLibName;
+
   switch (ArgCount)
   {
     case 1:  {} break;
-    case 2:  { GameLibName = Args[1]; } break;
+    case 2:  { EngineResources->GameLibName = Cast(char*, Args[1]); } break;
     default: { Error("Invalid number of arguments"); } break;
   }
 
@@ -137,10 +137,10 @@ main( s32 ArgCount, const char ** Args )
   application_api *GameApi   = &EngineResources->Stdlib.AppApi;
   engine_api      *EngineApi = &EngineResources->EngineApi;
   {
-    FileIsNew(GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
+    FileIsNew(EngineResources->GameLibName, &LastGameLibTime); // Hack to initialize the lib timer statics
     FileIsNew(DEFAULT_DEBUG_LIB, &LastDebugLibTime);
 
-    GameLib = OpenLibrary(GameLibName);
+    GameLib = OpenLibrary(EngineResources->GameLibName);
     if (!GameLib) { Error("Loading GameLib :( "); return 1; }
 
     if (!InitializeGameApi(GameApi, GameLib)) { Error("Initializing GameApi :( "); return 1; }
@@ -234,7 +234,7 @@ main( s32 ArgCount, const char ** Args )
 
     if (Plat->Input.Escape.Clicked)
     {
-      if (StringsMatch(GameLibName, Global_ProjectSwitcherGameLibName))
+      if (StringsMatch(EngineResources->GameLibName, ProjectSwitcherGameLibName))
       {
         Os->ContinueRunning = False;
         break;
@@ -242,7 +242,7 @@ main( s32 ArgCount, const char ** Args )
       else
       {
         EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
-        GameLibName = Global_ProjectSwitcherGameLibName;
+        EngineResources->GameLibName = ProjectSwitcherGameLibName;
         LastGameLibTime = 0;
       }
     }
@@ -253,7 +253,7 @@ main( s32 ArgCount, const char ** Args )
         EngineResources->Settings.Hotkeys.Debug_ToggleProfiling->Clicked);
 
 #if !EMCC
-    if ( FileIsNew(GameLibName, &LastGameLibTime) )
+    if ( FileIsNew(EngineResources->GameLibName, &LastGameLibTime) )
     {
       Info("Reloading Game Lib");
 
@@ -263,28 +263,7 @@ main( s32 ArgCount, const char ** Args )
 
       DuplicateMetaTableNameStrings(EngineResources);
 
-      CloseLibrary(GameLib);
-      GameLib = OpenLibrary(GameLibName);
-
-      Ensure(InitializeEngineApi(EngineApi, GameLib));
-      Ensure(InitializeGameApi(GameApi, GameLib));
-
-      // Hook up global pointers
-      Ensure( EngineApi->OnLibraryLoad(EngineResources) );
-
-      if (EngineResources->RequestedGameLibReloadBehavior & GameLibReloadBehavior_FullInitialize)
-      {
-        EngineResources->RequestedGameLibReloadBehavior = game_lib_reload_behavior(EngineResources->RequestedGameLibReloadBehavior & ~GameLibReloadBehavior_FullInitialize);
-
-        HardResetEngine(EngineResources);
-        /* ApplyEditBufferToOctree(Engine, &Editor->WorldEdits); */
-
-        /* EngineResources->GameState = GameApi->GameInit(EngineResources, MainThread); */
-        /* if (!EngineResources->GameState) { Error("Initializing Game :( "); return 1; } */
-      }
-
-      // Do game-specific reload code
-      if (GameApi->OnLibraryLoad) { GameApi->OnLibraryLoad(EngineResources, MainThread); }
+      shared_lib NewGameLib = HardResetEngine(EngineResources, EngineResources->GameLibName);
 
       UnsignalFutex(&Plat->WorkerThreadsSuspendFutex);
       Info("Game Reload Success");
@@ -329,7 +308,7 @@ main( s32 ArgCount, const char ** Args )
       Info("Requestin hot-reload of game lib (%S)", EngineResources->RequestedGameLibReloadNode.Name);
       LastGameLibTime = 0;
       // TODO(Jesse)(leak): We probably don't want to just leak these strings..
-      GameLibName = ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena );
+      EngineResources->GameLibName = Cast(char*, ConcatZ( EngineResources->RequestedGameLibReloadNode.Dir, CSz("/"), EngineResources->RequestedGameLibReloadNode.Name, &BootstrapArena ));
 
       EngineResources->RequestedGameLibReloadNode = {};
       EngineResources->RequestedGameLibReloadBehavior = GameLibReloadBehavior_FullInitialize;
