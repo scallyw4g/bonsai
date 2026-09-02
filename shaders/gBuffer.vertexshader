@@ -49,9 +49,26 @@ void main()
   TransEmiss = V2(float(Transparency)/255.f, float(Emission)/(255.f/RENDERER_MAX_LIGHT_EMISSION_VALUE));
   /* TransEmiss = V2(0.5f, 0.5f); */
 
+#if 1
   transform_data Transform = Transforms[gl_DrawID];
   mat4 ModelMatrix = Transform.ModelMatrix;
   mat4 NormalMatrix = Transform.NormalMatrix;
+#else
+  mat4 ModelMatrix = mat4(
+      v4(1,0,0,0),
+      v4(0,1,0,0),
+      v4(0,0,1,0),
+      v4(0,0,0,1)
+      );
+
+  mat4 NormalMatrix = mat4(
+      v4(1,0,0,0),
+      v4(0,1,0,0),
+      v4(0,0,1,0),
+      v4(0,0,0,1)
+      );
+
+#endif
 
   v4 WorldVertex = ModelMatrix*vec4(vertexPosition_modelspace, 1);
 

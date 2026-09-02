@@ -12,6 +12,14 @@ struct world_chunk;
 
 #define DEFAULT_LINE_THICKNESS (0.3f)
 
+struct DrawArraysIndirectCommand
+{
+  u32 Count;
+  u32 InstanceCount;
+  u32 First;
+  u32 BaseInstance;
+};
+
 #define SSAO_KERNEL_SIZE 32
 struct ao_render_group
 {
@@ -281,3 +289,6 @@ GetTransformMatrix(v3 Basis, v3 Scale, Quaternion Rotation);
 
 link_internal m4
 GetTransformMatrix(entity *Entity);
+
+link_internal void
+MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData);

@@ -107,14 +107,16 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, triple_buffered_gpu_
 {
   TIMED_FUNCTION();
 
-
   auto Handles = CurrentHandles(ImmediateGeometry);
   Assert(Handles->Mapped == False);
 
-  auto GBufferRenderGroup = Graphics->gBuffer;
+  g_buffer_render_group *GBufferRenderGroup = Graphics->gBuffer;
 
   GetGL()->BindFramebuffer(GL_FRAMEBUFFER, GBufferRenderGroup->FBO.ID);
-  GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID);
+
+  /* GetGL()->UseProgram(GBufferRenderGroup->gBufferShader.ID); */
+
+  UseShader(&GBufferRenderGroup->gBufferShader);
 
   SetViewport(ApplicationResolution);
 
@@ -123,10 +125,37 @@ RenderImmediateGeometryToGBuffer(v2i ApplicationResolution, triple_buffered_gpu_
   // TODO(Jesse): Hoist this check out of here
   GetGL()->Disable(GL_CULL_FACE);
 
-  /* Draw(GpuMap->Buffer.At); */
+  DrawArraysIndirectCommand Cmd = {
+    ImmediateGeometry->Buffer.At,
+    1,
+    0,
+    0,
+  };
+  render_matrix_pair MatrixData = {
+    m4(
+        V4(1,0,0,0),
+        V4(0,1,0,0),
+        V4(0,0,1,0),
+        V4(0,0,0,1)
+        ),
 
-  DrawGpuBufferImmediate(Handles, ImmediateGeometry->Buffer.At);
-  GetGL()->Enable(GL_CULL_FACE);
+    m4(
+        V4(1,0,0,0),
+        V4(0,1,0,0),
+        V4(0,0,1,0),
+        V4(0,0,0,1)
+        ),
+  };
+
+
+  /* DrawGpuBufferImmediate(Handles, ImmediateGeometry->Buffer.At); */
+
+  auto GL = GetGL();
+
+  GL->BindVertexArray(Handles->VAO);
+  MultiDrawIndirect(1, &Cmd, &MatrixData);
+
+  GL->Enable(GL_CULL_FACE);
 
   CleanupTextureBindings(&GBufferRenderGroup->gBufferShader);
 
@@ -865,13 +894,6 @@ SetupVertexAttribsFor_world_chunk_element_buffer(gpu_element_buffer_handles *Han
   AssertNoGlErrors;
 }
 
-struct DrawArraysIndirectCommand
-{
-  u32 Count;
-  u32 InstanceCount;
-  u32 First;
-  u32 BaseInstance;
-};
 
 #if 0
 link_internal void
@@ -937,7 +959,11 @@ BufferIndirectDrawCommand(DrawArraysIndirectCommand *DrawCommands,
                                                 u32  DrawCommandsAt,
                                 gpu_heap_allocation *Allocation )
 {
-  DrawCommands[DrawCommandsAt] = { Cast(u32, Allocation->SizeInElements), 1, Cast(u32, Allocation->BaseOffsetInElements), DrawCommandsAt };
+  DrawCommands[DrawCommandsAt] = {
+    Cast(u32, Allocation->SizeInElements),
+    1,
+    Cast(u32, Allocation->BaseOffsetInElements),
+    DrawCommandsAt };
 }
 
 link_internal void
@@ -1681,8 +1707,54 @@ CheckOcclusionQuery(world_chunk *Chunk)
 }
 
 link_internal void
+MultiDrawIndirect(u32 DrawCommandsAt, DrawArraysIndirectCommand *DrawCommands, render_matrix_pair *MatrixData)
+{
+  Assert(DrawCommandsAt);
+
+  auto GL = GetGL();
+  local_persist u32 IndirectDrawBuffer = 0;
+  local_persist u32 MatrixStorageBuffer = 0;
+
+  u32 RequiredIndirectDrawBufferSize = Cast(GLsizeiptr, sizeof(DrawArraysIndirectCommand))*DrawCommandsAt;
+  u32 RequiredMatrixBufferSize = Cast(GLsizeiptr, sizeof(render_matrix_pair))*DrawCommandsAt;
+
+  if (IndirectDrawBuffer == 0)
+  {
+    GL->GenBuffers(1, &IndirectDrawBuffer);
+  }
+
+  if (MatrixStorageBuffer == 0)
+  {
+    GL->GenBuffers(1, &MatrixStorageBuffer);
+  }
+
+  GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, IndirectDrawBuffer);
+  AssertNoGlErrors;
+
+  GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW);
+  AssertNoGlErrors;
+
+  GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, MatrixStorageBuffer);
+  AssertNoGlErrors;
+
+  GL->BufferData(GL_SHADER_STORAGE_BUFFER, RequiredMatrixBufferSize, MatrixData, GL_DYNAMIC_DRAW);
+  AssertNoGlErrors;
+
+  GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, MatrixStorageBuffer);
+  AssertNoGlErrors;
+
+  GL->MultiDrawArraysIndirect(GL_TRIANGLES, 0, s32(DrawCommandsAt), 0);
+  AssertNoGlErrors;
+
+  GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+  AssertNoGlErrors;
+}
+
+link_internal void
 RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
+  auto GL = GetGL();
+
   // TODO(Jesse): Turn this into an assert; there's no reason to have a draw command with an empty draw list!
   if (DrawList->ElementCount == 0) return;
 
@@ -1744,7 +1816,6 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 
         if (Camera)
         {
-          auto GL = GetGL();
           if (Chunk->OcclusionQueryId == 0)
           {
             GL->GenQueries(1, &Chunk->OcclusionQueryId);
@@ -1793,49 +1864,13 @@ RenderDrawList(engine_resources *Engine, octree_node_ptr_paged_list *DrawList, s
 
   if (DrawCommandsAt)
   {
-    auto GL = GetGL();
-    local_persist u32 IndirectDrawBuffer = 0;
-    local_persist u32 MatrixStorageBuffer = 0;
-
-    u32 RequiredIndirectDrawBufferSize = Cast(GLsizeiptr, sizeof(DrawArraysIndirectCommand))*DrawCommandsAt;
-    u32 RequiredMatrixBufferSize = Cast(GLsizeiptr, sizeof(render_matrix_pair))*DrawCommandsAt;
-
-    if (IndirectDrawBuffer == 0)
-    {
-      GL->GenBuffers(1, &IndirectDrawBuffer);
-    }
-
-    if (MatrixStorageBuffer == 0)
-    {
-      GL->GenBuffers(1, &MatrixStorageBuffer);
-    }
-
-    GL->BindBuffer(GL_DRAW_INDIRECT_BUFFER, IndirectDrawBuffer);
+    GL->BindVertexArray(GetEngineResources()->Graphics.GpuHeap.Storage.Handles.VAO);
     AssertNoGlErrors;
-
-    GL->BufferData(GL_DRAW_INDIRECT_BUFFER, RequiredIndirectDrawBufferSize, DrawCommands, GL_DYNAMIC_DRAW);
-    AssertNoGlErrors;
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, MatrixStorageBuffer);
-    AssertNoGlErrors;
-
-    GL->BufferData(GL_SHADER_STORAGE_BUFFER, RequiredMatrixBufferSize, MatrixData, GL_DYNAMIC_DRAW);
-    AssertNoGlErrors;
-
-    GL->BindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, MatrixStorageBuffer);
-    AssertNoGlErrors;
-
-    GL->BindVertexArray(Engine->Graphics.GpuHeap.Storage.Handles.VAO);
-    AssertNoGlErrors;
-
-    GL->MultiDrawArraysIndirect(GL_TRIANGLES, 0, s32(DrawCommandsAt), 0);
-    AssertNoGlErrors;
-
-    GL->BindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    AssertNoGlErrors;
+    MultiDrawIndirect(DrawCommandsAt, DrawCommands, MatrixData);
   }
 }
 
+#if 0
 link_internal void
 RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, shader *Shader, camera *Camera)
 {
@@ -1865,6 +1900,7 @@ RenderDrawList(engine_resources *Engine, world_chunk_ptr_paged_list *DrawList, s
     }
   }
 }
+#endif
 
 #if 0
 link_internal void
@@ -1906,16 +1942,6 @@ DrawWorld(engine_resources *Engine, v2i ApplicationResolution)
   }
 }
 #endif
-
-link_internal void
-DrawStuffToGBufferTextures(engine_resources *Engine, v2i ApplicationResolution)
-{
-  TIMED_FUNCTION();
-
-  UNPACK_ENGINE_RESOURCES(Engine);
-
-
-}
 
 link_internal void
 DrawWorldAndEntitiesToShadowMap(v2i ShadowMapResolution, engine_resources *Engine)
